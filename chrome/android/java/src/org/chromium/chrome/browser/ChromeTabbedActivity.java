@@ -242,9 +242,17 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private AppIndexingUtil mAppIndexingUtil;
 
     /**
+     * Whether an initial tab needs to be created during UI initialization.
+     */
+    private boolean mCreateInitialTabDuringUiInit;
+
+    /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
     private boolean mCreatedTabOnStartup;
+
+    /** Whether new tabs should be created using the {@link BottomSheet}. */
+    private Boolean mShouldCreateNewTabsUsingBottomSheet;
 
     // Whether or not chrome was launched with an intent to open a tab.
     private boolean mIntentWithEffect;
@@ -298,14 +306,29 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     private class TabbedModeTabCreator extends ChromeTabCreator {
-        public TabbedModeTabCreator(ChromeActivity activity, WindowAndroid nativeWindow,
-                boolean incognito) {
+        private boolean mIsIncognito;
+
+        public TabbedModeTabCreator(
+                ChromeTabbedActivity activity, WindowAndroid nativeWindow, boolean incognito) {
             super(activity, nativeWindow, incognito);
+
+            mIsIncognito = incognito;
         }
 
         @Override
         public TabDelegateFactory createDefaultTabDelegateFactory() {
             return new TabbedModeTabDelegateFactory();
+        }
+
+        @Override
+        public Tab launchUrl(
+                String url, TabModel.TabLaunchType type, Intent intent, long intentTimestamp) {
+            if (shouldCreateNewTabsUsingBottomSheet() && NewTabPage.isNTPUrl(url)) {
+                getBottomSheet().displayNewTabUi(mIsIncognito);
+                return null;
+            }
+
+            return super.launchUrl(url, type, intent, intentTimestamp);
         }
     }
 
@@ -634,6 +657,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
             mLayoutManager.addOverviewModeObserver(this);
 
+            if (getBottomSheet() != null) getBottomSheet().setLayoutManagerChrome(mLayoutManager);
+
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
             initializeCompositorContent(mLayoutManager, findViewById(R.id.url_bar),
                     mContentContainer, mControlContainer);
@@ -694,7 +719,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 bgViewWrapper.initialize();
             }
 
-            mLayoutManager.hideOverview(false);
+            if (mCreateInitialTabDuringUiInit) {
+                getTabCreator(false).launchNTP();
+            } else {
+                mLayoutManager.hideOverview(false);
+            }
+
             FeatureEngagementTracker tracker =
                     FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
                             Profile.getLastUsedProfile());
@@ -925,7 +955,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      */
     private void createInitialTab() {
         String url = HomepageManager.getHomepageUri(getApplicationContext());
-        if (TextUtils.isEmpty(url)) url = UrlConstants.NTP_URL;
+        if (TextUtils.isEmpty(url)) {
+            if (shouldCreateNewTabsUsingBottomSheet()) {
+                mCreateInitialTabDuringUiInit = true;
+                return;
+            }
+
+            url = UrlConstants.NTP_URL;
+        }
+
         getTabCreator(false).launchUrl(url, TabLaunchType.FROM_CHROME_UI);
     }
 
@@ -994,6 +1032,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             if (getBottomSheet() != null) {
+                if (getBottomSheet().isShowingNewTab()) {
+                    tabOpenType = mTabModelSelectorImpl.isIncognitoSelected()
+                            ? TabOpenType.OPEN_NEW_INCOGNITO_TAB
+                            : TabOpenType.OPEN_NEW_TAB;
+                    getBottomSheet().onProcessUrlViewIntent();
+                }
+
                 // Either a new tab is opening, a tab is being clobbered, or a tab is being brought
                 // to the front. In all scenarios, the bottom sheet should be closed.
                 getBottomSheet().getBottomSheetMetrics().setSheetCloseReason(
@@ -1455,7 +1500,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
             reportNewTabShortcutUsed(false);
-            getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
+            getTabCreator(false).launchNTP();
+
             mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
@@ -1465,7 +1511,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 RecordUserAction.record("MobileMenuNewIncognitoTab");
                 RecordUserAction.record("MobileNewTabOpened");
                 reportNewTabShortcutUsed(true);
-                getTabCreator(true).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
+                getTabCreator(true).launchNTP();
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
             if (currentTab != null) {
@@ -1573,6 +1619,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 
+        // Close the bottom sheet before trying to navigate back. If the tab is on the NTP, fall
+        // through to decide if the browser should be sent into the background.
+        if (getBottomSheet() != null
+                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK
+                && (currentTab == null
+                           || !(currentTab.getNativePage() instanceof ChromeHomeNewTabPage))) {
+            getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+            return true;
+        }
+
         if (currentTab == null) {
             recordBackPressedUma("currentTab is null", BACK_PRESSED_TAB_IS_NULL);
             moveTaskToBack(true);
@@ -1588,15 +1644,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (exitFullscreenIfShowing()) {
             recordBackPressedUma("Exited fullscreen", BACK_PRESSED_EXITED_FULLSCREEN);
-            return true;
-        }
-
-        // Close the bottom sheet before trying to navigate back. If the tab is on the NTP, fall
-        // through to decide if the browser should be sent into the background.
-        if (getBottomSheet() != null
-                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK
-                && !(currentTab.getNativePage() instanceof ChromeHomeNewTabPage)) {
-            getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
             return true;
         }
 
@@ -2051,5 +2098,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public boolean supportsFullscreenActivity() {
         return true;
+    }
+
+    private boolean shouldCreateNewTabsUsingBottomSheet() {
+        if (mShouldCreateNewTabsUsingBottomSheet == null) {
+            mShouldCreateNewTabsUsingBottomSheet = getBottomSheet() != null
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_NTP_REDESIGN);
+        }
+
+        return mShouldCreateNewTabsUsingBottomSheet;
     }
 }

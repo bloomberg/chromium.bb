@@ -21135,17 +21135,6 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="LoginCustomFlags" type="int">
-<!--
-Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
-This enum is verified by AboutFlagsHistogramTest unit test.
-To add a new entry, add it with any unique value and run test to compute valid
-value. After that run tools/metrics/histograms/validate_format.py to find out
-where the value should be inserted to maintain ordering.
-Don't remove entries when removing a flag, they are still used to decode data
-from previous Chrome versions.
--->
-
-  <summary>Chrome flags that lead to chrome restart on ChromeOS.</summary>
   <int value="-2146613579" label="V8Future:disabled"/>
   <int value="-2143961262" label="D3DVsync:disabled"/>
   <int value="-2143328006"
@@ -21630,6 +21619,18 @@ from previous Chrome versions.
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
+<!--
+Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
+This enum is verified by AboutFlagsHistogramTest unit test.
+To add a new entry, add it with any unique value and run test to compute valid
+value. After that run tools/metrics/histograms/validate_format.py to find out
+where the value should be inserted to maintain ordering.
+Don't remove entries when removing a flag, they are still used to decode data
+from previous Chrome versions.
+-->
+
+  <summary>Chrome flags that lead to chrome restart on ChromeOS.</summary>
+  <int value="-400584764" label="ChromeHomeNtpRedesign:enabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>
@@ -22095,6 +22096,7 @@ from previous Chrome versions.
   <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
+  <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
   <int value="1314681756" label="NoStatePrefetch:disabled"/>
   <int value="1317562265" label="SeccompSandboxAndroid:disabled"/>

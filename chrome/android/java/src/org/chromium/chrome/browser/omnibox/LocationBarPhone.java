@@ -219,6 +219,13 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     private void updateGoogleG() {
+        // TODO(twellington): Show the Google G in the location bar on the redesigned Chrome Home
+        //                    NTP.
+        if (mBottomSheet != null) {
+            mGoogleGContainer.setVisibility(View.GONE);
+            return;
+        }
+
         // The toolbar data provider can be null during startup, before the ToolbarManager has been
         // initialized.
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
