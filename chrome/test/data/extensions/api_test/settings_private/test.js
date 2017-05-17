@@ -8,6 +8,11 @@
 
 var kTestPrefName = 'download.default_directory';
 var kTestPrefValue = '/Downloads';
+
+// This corresponds to policy key: kHomepageIsNewTabPage used in
+// settings_private_apitest.cc.
+var kTestEnforcedPrefName = 'homepage_is_newtabpage';
+
 var kTestPageId = 'pageId';
 
 function callbackResult(result) {
@@ -46,6 +51,46 @@ var availableTests = [
           callbackResult(true);
           chrome.test.succeed();
         });
+  },
+  function getEnforcedPref() {
+    chrome.settingsPrivate.getPref(kTestEnforcedPrefName, function(value) {
+      chrome.test.assertEq('object', typeof value);
+      callbackResult(true);
+      chrome.test.assertEq(
+          chrome.settingsPrivate.ControlledBy.USER_POLICY, value.controlledBy);
+      chrome.test.assertEq(
+          chrome.settingsPrivate.Enforcement.ENFORCED, value.enforcement);
+      chrome.test.succeed();
+    });
+  },
+  function getRecommendedPref() {
+    chrome.settingsPrivate.getPref(kTestEnforcedPrefName, function(value) {
+      chrome.test.assertEq('object', typeof value);
+      callbackResult(true);
+      chrome.test.assertEq(true, value.value);
+      chrome.test.assertEq(
+          chrome.settingsPrivate.ControlledBy.USER_POLICY, value.controlledBy);
+      chrome.test.assertEq(
+          chrome.settingsPrivate.Enforcement.RECOMMENDED, value.enforcement);
+      // Set the value to false, policy properties should still be set.
+      chrome.settingsPrivate.setPref(
+          kTestEnforcedPrefName, false, kTestPageId, function(success) {
+            callbackResult(success);
+            chrome.settingsPrivate.getPref(
+                kTestEnforcedPrefName, function(value) {
+                  chrome.test.assertEq('object', typeof value);
+                  callbackResult(true);
+                  chrome.test.assertEq(false, value.value);
+                  chrome.test.assertEq(
+                      chrome.settingsPrivate.ControlledBy.USER_POLICY,
+                      value.controlledBy);
+                  chrome.test.assertEq(
+                      chrome.settingsPrivate.Enforcement.RECOMMENDED,
+                      value.enforcement);
+                  chrome.test.succeed();
+                });
+          });
+    });
   },
   function getPref_CrOSSetting() {
     chrome.settingsPrivate.getPref(
@@ -100,4 +145,3 @@ var testToRun = window.location.search.substring(1);
 chrome.test.runTests(availableTests.filter(function(op) {
   return op.name == testToRun;
 }));
-
