@@ -329,12 +329,13 @@ public class DownloadManagerService
         updateDownloadProgress(item, status);
         scheduleUpdateIfNeeded();
 
+        DownloadProgress progress = mDownloadProgressMap.get(item.getId());
+        if (progress == null) return;
         if (!isAutoResumable || sIsNetworkListenerDisabled) return;
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
         if (info == null || !info.isConnected()) return;
-        DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress.mCanDownloadWhileMetered && !isActiveNetworkMetered(mContext)) {
             // Normally the download will automatically resume when network is reconnected.
             // However, if there are multiple network connections and the interruption is caused

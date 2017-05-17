@@ -294,9 +294,6 @@ void DownloadController::OnDownloadStarted(
     DownloadItem* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Register for updates to the DownloadItem.
-  download_item->AddObserver(this);
-
   // For dangerous item, we need to show the dangerous infobar before the
   // download can start.
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -312,6 +309,9 @@ void DownloadController::OnDownloadStarted(
       Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
     }
   }
+
+  // Register for updates to the DownloadItem.
+  download_item->AddObserver(this);
 
   OnDownloadUpdated(download_item);
 }
