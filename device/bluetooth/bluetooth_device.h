@@ -617,7 +617,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // DidDisconnectGatt.
   void DidConnectGatt();
   void DidFailToConnectGatt(ConnectErrorCode);
-  void DidDisconnectGatt(bool notifyDeviceChanged);
+  void DidDisconnectGatt();
 
   // Tracks BluetoothGattConnection instances that act as a reference count
   // keeping the GATT connection open. Instances call Add/RemoveGattConnection
