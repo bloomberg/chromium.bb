@@ -21,6 +21,10 @@
 #include "ios/web/public/test/response_providers/html_response_provider.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::WebViewContainingText;
 
 namespace {
@@ -61,9 +65,8 @@ id<GREYMatcher> ProgressViewWithProgress(CGFloat progress) {
                                               progress]];
   };
 
-  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                               descriptionBlock:describe]
-      autorelease];
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 // Response provider that serves the page which never finishes loading.

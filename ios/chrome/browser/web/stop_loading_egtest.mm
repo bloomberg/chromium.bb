@@ -17,6 +17,10 @@
 #include "ios/web/public/test/response_providers/html_response_provider.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::WebViewContainingText;
 

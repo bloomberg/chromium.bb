@@ -20,6 +20,10 @@
 #include "ios/web/public/test/http_server_util.h"
 #include "url/url_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Timeout to use when waiting for a condition to be true.

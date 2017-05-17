@@ -22,6 +22,10 @@
 #include "ios/web/public/test/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::AssertMainTabCount;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
@@ -79,7 +83,7 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
 - (void)testLinkWithBlankTargetSessionStorage {
   using chrome_test_util::ExecuteJavaScript;
 
-  NSError* error = nil;
+  __unsafe_unretained NSError* error = nil;
   ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
 

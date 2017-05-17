@@ -12,6 +12,10 @@
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/http_server_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Test case for bringing up the print dialog when a web site's JavaScript runs
 // "window.print".
 @interface JSPrintTestCase : ChromeTestCase
