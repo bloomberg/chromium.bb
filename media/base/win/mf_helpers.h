@@ -8,6 +8,8 @@
 #include <mfapi.h>
 #include <stdint.h>
 
+#include "base/logging.h"
+#include "base/macros.h"
 #include "base/win/scoped_comptr.h"
 #include "media/base/win/mf_initializer_export.h"
 
