@@ -565,16 +565,13 @@ bool ImageCapture::HasNonImageCaptureConstraints(
 
   const auto& advanced_constraints = constraints.advanced();
   for (const auto& constraint : advanced_constraints) {
-    if (constraint.hasWidth() || constraint.hasHeight() ||
-        constraint.hasAspectRatio() || constraint.hasFrameRate() ||
-        constraint.hasFacingMode() || constraint.hasVolume() ||
-        constraint.hasSampleRate() || constraint.hasSampleSize() ||
-        constraint.hasEchoCancellation() || constraint.hasLatency() ||
-        constraint.hasChannelCount() || constraint.hasDeviceId() ||
-        constraint.hasGroupId() || constraint.hasVideoKind() ||
-        constraint.hasDepthNear() || constraint.hasDepthFar() ||
-        constraint.hasFocalLengthX() || constraint.hasFocalLengthY() ||
-        constraint.hasMandatory() || constraint.hasOptional()) {
+    if (!constraint.hasWhiteBalanceMode() && !constraint.hasExposureMode() &&
+        !constraint.hasFocusMode() && !constraint.hasPointsOfInterest() &&
+        !constraint.hasExposureCompensation() &&
+        !constraint.hasColorTemperature() && !constraint.hasIso() &&
+        !constraint.hasBrightness() && !constraint.hasContrast() &&
+        !constraint.hasSaturation() && !constraint.hasSharpness() &&
+        !constraint.hasZoom() && !constraint.hasTorch()) {
       return true;
     }
   }
