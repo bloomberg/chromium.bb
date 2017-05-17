@@ -4801,7 +4801,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Blink.BudgetAPI.QueryBudget" units="budget">
-  <owner>harkness@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     Whenever the Budget API framework receives a query for the current budget,
     this records the total budget available to the origin, which is an internal
@@ -4814,7 +4814,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Blink.BudgetAPI.Reserve" enum="BooleanSuccess">
-  <owner>harkness@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     Whenever the Budget API framework receives a request to reserve budget for a
     future background operation, this records whether the reserve request
@@ -21831,7 +21831,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GCM.PendingConnectionEventsAtShutdown" units="events">
-  <owner>harkness@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     Number of connection events which have not been sent to GCM. This is
     recorded only at the time of shutdown to capture the events which are being
@@ -57384,7 +57384,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PushMessaging.BackgroundBudget">
-  <owner>harkness@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     Whenever a Service Worker receives a push message, this records the budget
     available to the service worker, which is an internal Chrome value for the
@@ -57452,7 +57452,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PushMessaging.SESForLowBudgetOrigin">
-  <owner>harkness@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     When a Service Worker hits low budget when servicing a push message, this
     records what the Site Engagement Service score is at that time.
@@ -57460,7 +57460,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PushMessaging.SESForNoBudgetOrigin">
-  <owner>harkness@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     When a Service Worker hits zero budget when servicing a push message, this
     records what the Site Engagement Service score is at that time.
