@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -109,6 +110,7 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
     message_box_view_->SetCheckBoxLabel(checkbox_text);
     message_box_view_->SetCheckBoxSelected(true);
   }
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIMPLE_MESSAGE_BOX);
 }
 
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -225,7 +226,9 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       intent_picker_cb_(intent_picker_cb),
       selected_app_tag_(0),
       scroll_view_(nullptr),
-      app_info_(app_info) {}
+      app_info_(app_info) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
+}
 
 IntentPickerBubbleView::~IntentPickerBubbleView() {
   SetLayoutManager(nullptr);

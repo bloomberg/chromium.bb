@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/device_permissions_dialog_controller.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -42,6 +43,7 @@ ChooserDialogView::ChooserDialogView(
   DCHECK(chooser_controller);
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER);
 }
 
 ChooserDialogView::~ChooserDialogView() {}

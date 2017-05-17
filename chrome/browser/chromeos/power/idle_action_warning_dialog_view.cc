@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -79,6 +80,7 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
       base::TimeDelta::FromMilliseconds(kCountdownUpdateIntervalMs),
       this,
       &IdleActionWarningDialogView::UpdateLabel);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::IDLE_ACTION_WARNING);
 }
 
 void IdleActionWarningDialogView::CloseDialog() {

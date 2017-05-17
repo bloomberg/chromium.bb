@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/login_view.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -33,6 +34,7 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
       : LoginHandler(auth_info, request),
         login_view_(NULL),
         dialog_(NULL) {
+    chrome::RecordDialogCreation(chrome::DialogIdentifier::LOGIN_HANDLER);
   }
 
   // LoginModelObserver:

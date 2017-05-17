@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/page_navigator.h"
@@ -85,6 +86,7 @@ ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
       link_url_(link_url),
       weak_ptr_factory_(this) {
   SetAnchorRect(anchor_rect);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PROXIMITY_AUTH_ERROR);
 }
 
 void ProximityAuthErrorBubbleView::Init() {

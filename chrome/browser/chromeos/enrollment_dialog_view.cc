@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -93,6 +94,7 @@ EnrollmentDialogView::EnrollmentDialogView(const std::string& network_name,
       target_uri_(target_uri),
       connect_(connect),
       added_cert_(false) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::ENROLLMENT);
 }
 
 EnrollmentDialogView::~EnrollmentDialogView() {

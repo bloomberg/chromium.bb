@@ -19,6 +19,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -212,6 +213,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
   constrained_window::ShowWebModalDialogViews(this, web_contents);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

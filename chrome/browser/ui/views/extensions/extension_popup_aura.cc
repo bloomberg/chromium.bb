@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extension_popup_aura.h"
 
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
@@ -34,6 +35,7 @@ ExtensionPopupAura::ExtensionPopupAura(extensions::ExtensionViewHost* host,
                                        views::BubbleBorder::Arrow arrow,
                                        ShowAction show_action)
     : ExtensionPopup(host, anchor_view, arrow, show_action) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_POPUP_AURA);
 }
 
 ExtensionPopupAura::~ExtensionPopupAura() {

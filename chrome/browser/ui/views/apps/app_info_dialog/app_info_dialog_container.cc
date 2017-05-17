@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -216,6 +217,7 @@ class NativeDialogContainer : public BaseDialogContainer {
                         const base::Closure& close_callback)
       : BaseDialogContainer(dialog_body, close_callback), size_(size) {
     SetLayoutManager(new views::FillLayout());
+    chrome::RecordDialogCreation(chrome::DialogIdentifier::NATIVE_CONTAINER);
   }
   ~NativeDialogContainer() override {}
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -54,6 +55,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
 
   message_box_view_ = new views::MessageBoxView(
       views::MessageBoxView::InitParams(explanation_text));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::DOWNLOAD_IN_PROGRESS);
 }
 
 DownloadInProgressDialogView::~DownloadInProgressDialogView() {}

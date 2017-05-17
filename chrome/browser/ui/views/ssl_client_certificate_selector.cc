@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -33,7 +34,10 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       SSLClientAuthObserver(web_contents->GetBrowserContext(),
                             cert_request_info,
                             std::move(delegate)),
-      WebContentsObserver(web_contents) {}
+      WebContentsObserver(web_contents) {
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::SSL_CLIENT_CERTIFICATE_SELECTOR);
+}
 
 SSLClientCertificateSelector::~SSLClientCertificateSelector() {}
 

@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
@@ -95,6 +96,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
       new DeviceChooserContentView(this, std::move(chooser_controller));
   if (!anchor_view)
     SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
 ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}

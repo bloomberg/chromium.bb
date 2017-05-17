@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
@@ -27,6 +28,8 @@ PlatformKeysCertificateSelector::PlatformKeysCertificateSelector(
       extension_name_(extension_name),
       callback_(callback) {
   DCHECK(!callback_.is_null());
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::PLATFORM_KEYS_CERTIFICATE_SELECTOR);
 }
 
 PlatformKeysCertificateSelector::~PlatformKeysCertificateSelector() {

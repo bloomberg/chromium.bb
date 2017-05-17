@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -85,6 +86,7 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       gfx::Range(offsets[1], offsets[1] + learn_more.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
   AddChildView(headline_label);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PLATFORM_VERIFICATION);
 }
 
 bool PlatformVerificationDialog::Cancel() {

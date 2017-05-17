@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -74,6 +75,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
     constrained_window::ShowWebModalDialogViews(this,
                                                 controller->WebContents());
   }
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::MEDIA_GALLERIES);
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {

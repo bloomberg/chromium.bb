@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -52,6 +53,7 @@ ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::Source<BrowserContext>(host->browser_context()));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
 }
 
 ExtensionDialog::~ExtensionDialog() {

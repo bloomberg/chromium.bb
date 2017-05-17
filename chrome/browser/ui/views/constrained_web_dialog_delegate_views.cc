@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
@@ -107,9 +108,13 @@ class ConstrainedWebDialogDelegateViews
                                     ui::WebDialogDelegate* delegate,
                                     InitiatorWebContentsObserver* observer,
                                     views::WebView* view)
-      : ConstrainedWebDialogDelegateBase(context, delegate,
+      : ConstrainedWebDialogDelegateBase(
+            context,
+            delegate,
             new WebDialogWebContentsDelegateViews(context, observer, view)),
-        view_(view) {}
+        view_(view) {
+    chrome::RecordDialogCreation(chrome::DialogIdentifier::CONSTRAINED_WEB);
+  }
 
   ~ConstrainedWebDialogDelegateViews() override {}
 

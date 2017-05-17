@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -60,6 +61,8 @@ class MultiprofilesSessionAbortedView : public views::DialogDelegateView {
 // MultiprofilesSessionAbortedView implementation.
 
 MultiprofilesSessionAbortedView::MultiprofilesSessionAbortedView() {
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::MULTIPROFILES_SESSION_ABORTED);
 }
 
 MultiprofilesSessionAbortedView::~MultiprofilesSessionAbortedView() {
