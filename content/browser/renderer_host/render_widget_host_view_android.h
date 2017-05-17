@@ -268,6 +268,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DismissTextHandles();
   void SetTextHandlesTemporarilyHidden(bool hidden);
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
+  void OnSelectWordAroundCaretAck(bool did_select,
+                                  int start_adjust,
+                                  int end_adjust);
 
   void SynchronousFrameMetadata(cc::CompositorFrameMetadata frame_metadata);
 

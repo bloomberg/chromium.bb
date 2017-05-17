@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.text.TextUtils;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 
 import javax.annotation.Nullable;
@@ -19,7 +18,6 @@ import javax.annotation.Nullable;
  */
 public abstract class ContextualSearchContext {
     static final int INVALID_SELECTION_OFFSET = -1;
-    private static final String TAG = "ContextualSearch";
 
     // Pointer to the native instance of this class.
     private long mNativePointer;
@@ -158,53 +156,14 @@ public abstract class ContextualSearchContext {
      *        the selection (typically a positive value when the selection expands).
      */
     void onSelectionAdjusted(int startAdjust, int endAdjust) {
-        makeSelectionAdjustments(startAdjust, endAdjust);
-    }
-
-    /**
-     * Update the context based on the given selection.
-     * TODO(donnd): This method of finding the adjustment to the selection is unreliable!
-     * TODO(donnd): Replace by getting the selection adjustment directly from
-     *              {@link #onSelectionAdjusted} which is called by SelectWordAroundCaretAck
-     *              (since it knows how the selection was actually adjusted).
-     *              This method can be removed once SelectWordAroundCaretAck is in place.
-     *              See crbug.com/435778 for details.
-     * @param selection The new selection.
-     */
-    void updateContextFromSelection(String selection) {
-        mInitialSelectedWord = selection;
-        if (mSelectionStartOffset == INVALID_SELECTION_OFFSET
-                || mSelectionEndOffset == INVALID_SELECTION_OFFSET
-                || TextUtils.isEmpty(mSurroundingText) || TextUtils.isEmpty(selection)) {
-            return;
-        }
-
-        int selectionLength = selection.length();
-        for (int i = 0; i <= selectionLength; i++) {
-            int possibleStart = mSelectionStartOffset - i;
-            int possibleEnd = possibleStart + selectionLength;
-            if (possibleStart >= 0 && possibleEnd <= mSurroundingText.length()
-                    && selection.equals(mSurroundingText.substring(possibleStart, possibleEnd))) {
-                makeSelectionAdjustments(-i, selectionLength - i);
-                return;
-            }
-        }
-
-        Log.w(TAG, "Warning, unable to update context from the selection!");
-    }
-
-    /**
-     * Makes adjustments to the selection offsets.
-     * @param startAdjust A signed value indicating the direction of the adjustment to the start of
-     *        the selection (typically a negative value when the selection expands).
-     * @param endAdjust A signed value indicating the direction of the adjustment to the end of
-     *        the selection (typically a positive value when the selection expands).
-     */
-    private void makeSelectionAdjustments(int startAdjust, int endAdjust) {
         nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
         // Fully track the selection as it changes.
         mSelectionStartOffset += startAdjust;
         mSelectionEndOffset += endAdjust;
+        if (TextUtils.isEmpty(mInitialSelectedWord) && !TextUtils.isEmpty(mSurroundingText)) {
+            mInitialSelectedWord =
+                    mSurroundingText.substring(mSelectionStartOffset, mSelectionEndOffset);
+        }
         // Notify of changes.
         onSelectionChanged();
     }

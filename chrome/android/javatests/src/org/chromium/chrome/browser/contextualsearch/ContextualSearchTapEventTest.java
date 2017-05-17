@@ -26,8 +26,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
@@ -128,10 +126,7 @@ public class ContextualSearchTapEventTest {
 
         @Override
         protected void nativeGatherSurroundingText(long nativeContextualSearchManager,
-                ContextualSearchContext contextualSearchContext, WebContents baseWebContents) {
-            getContextualSearchInternalStateController().notifyFinishedWorkOn(
-                    InternalState.GATHERING_SURROUNDINGS);
-        }
+                ContextualSearchContext contextualSearchContext, WebContents baseWebContents) {}
 
         /**
          * @return A stubbed ContentViewCore for mocking text selection.
@@ -251,11 +246,32 @@ public class ContextualSearchTapEventTest {
         });
     }
 
-    private void mockSelectWordAroundCaretAck(final String text) {
+    /**
+     * Generates a call indicating that surrounding text and selection range are available.
+     */
+    private void generateTextSurroundingSelectionAvailable() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mContextualSearchManager.handleSelection(text, true, SelectionType.TAP, 0, 0);
+                // It only makes sense to send dummy data here because we can't easily control
+                // what's in the native context.
+                mContextualSearchManager.onTextSurroundingSelectionAvailable(
+                        "UTF-8", "unused", 0, 0);
+            }
+        });
+    }
+
+    /**
+     * Generates an ACK for the SelectWordAroundCaret native call, which indicates that the select
+     * action has completed with the given result.
+     */
+    private void generateSelectWordAroundCaretAck() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // It only makes sense to send dummy data here because we can't easily control
+                // what's in the native context.
+                mContextualSearchManager.selectWordAroundCaretAck(true, 0, 0);
             }
         });
     }
@@ -296,6 +312,9 @@ public class ContextualSearchTapEventTest {
 
         // Fake a selection event.
         mockLongpressText("text");
+        // Generate the surrounding-text-available callback.
+        // Surrounding text is gathered for longpress due to icing integration.
+        generateTextSurroundingSelectionAvailable();
 
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 1);
         Assert.assertEquals(mPanelManager.getPanelHideCount(), 0);
@@ -322,9 +341,11 @@ public class ContextualSearchTapEventTest {
 
         // Fake a Tap event.
         mockTapText("text");
+        // Generate the surrounding-text-available callback.
+        generateTextSurroundingSelectionAvailable();
         // Right now the tap-processing sequence will stall at selectWordAroundCaret, so we need
-        // to prod it forward with a manual hack:
-        mockSelectWordAroundCaretAck("text");
+        // to prod it forward by generating an ACK:
+        generateSelectWordAroundCaretAck();
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 1);
         Assert.assertEquals(mPanelManager.getPanelHideCount(), 0);
     }

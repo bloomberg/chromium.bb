@@ -867,6 +867,12 @@ public class ContentViewCore
         mSelectionPopupController.onShowUnhandledTapUIIfNeeded(x, y);
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onSelectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
+        mSelectionPopupController.onSelectWordAroundCaretAck(didSelect, startAdjust, endAdjust);
+    }
+
     /**
      * Called just prior to a tap or press gesture being forwarded to the renderer.
      */

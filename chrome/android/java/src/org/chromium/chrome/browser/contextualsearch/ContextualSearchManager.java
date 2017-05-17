@@ -167,6 +167,10 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private ContextualSearchHeuristics mHeuristics;
     private QuickAnswersHeuristic mQuickAnswersHeuristic;
 
+    // Counter for how many times we've called SelectWordAroundCaret without an ACK returned.
+    // TODO(donnd): replace with a more systematic approach using the InternalStateController.
+    private int mSelectWordAroundCaretCounter;
+
     /**
      * The delegate that is responsible for promoting a {@link ContentViewCore} to a {@link Tab}
      * when necessary.
@@ -583,7 +587,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * @param endOffset The end offset of the selection.
      */
     @CalledByNative
-    private void onTextSurroundingSelectionAvailable(
+    @VisibleForTesting
+    void onTextSurroundingSelectionAvailable(
             final String encoding, final String surroundingText, int startOffset, int endOffset) {
         if (mInternalStateController.isStillWorkingOn(InternalState.GATHERING_SURROUNDINGS)) {
             assert mContext != null;
@@ -1212,7 +1217,23 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @Override
     public void cancelAllRequests() {}
 
-    // TODO(donnd): add handling of an ACK to selectWordAroundCaret (crbug.com/435778 has details).
+    @Override
+    public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
+        if (mSelectWordAroundCaretCounter > 0) mSelectWordAroundCaretCounter--;
+        if (mSelectWordAroundCaretCounter > 0
+                || !mInternalStateController.isStillWorkingOn(InternalState.START_SHOWING_TAP_UI)) {
+            return;
+        }
+
+        if (didSelect) {
+            assert mContext != null;
+            mContext.onSelectionAdjusted(startAdjust, endAdjust);
+            showSelectionAsSearchInBar(mSelectionController.getSelectedText());
+            mInternalStateController.notifyFinishedWorkOn(InternalState.START_SHOWING_TAP_UI);
+        } else {
+            hideContextualSearch(StateChangeReason.UNKNOWN);
+        }
+    }
 
     /**
      * @return Whether the display is in a full-screen video overlay mode.
@@ -1297,9 +1318,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         if (!selection.isEmpty()) {
             ContextualSearchUma.logSelectionIsValid(selectionValid);
 
-            // Update the context so it knows the selection has changed.
-            if (mContext != null) mContext.updateContextFromSelection(selection);
-
             if (selectionValid && mSearchPanel != null) {
                 mSearchPanel.updateBasePageSelectionYPx(y);
                 if (!mSearchPanel.isShowing()) {
@@ -1307,12 +1325,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 }
                 showSelectionAsSearchInBar(selection);
 
-                // TODO(donnd): remove this complication when we get an ACK message from
-                // selectWordAroundCaret (see crbug.com/435778).
-                if (type == SelectionType.TAP) {
-                    mInternalStateController.notifyFinishedWorkOn(
-                            InternalState.START_SHOWING_TAP_UI);
-                } else {
+                if (type == SelectionType.LONG_PRESS) {
                     mInternalStateController.enter(InternalState.LONG_PRESS_RECOGNIZED);
                 }
             } else {
@@ -1430,6 +1443,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 if (baseWebContents != null && mPolicy.isTapSupported()) {
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.START_SHOWING_TAP_UI);
+                    mSelectWordAroundCaretCounter++;
                     baseWebContents.selectWordAroundCaret();
                     // Let the policy know that a valid tap gesture has been received.
                     mPolicy.registerTap();

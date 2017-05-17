@@ -97,6 +97,9 @@ public class SmartSelectionClient implements SelectionClient {
         mProvider.cancelAllRequests();
     }
 
+    @Override
+    public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}
+
     private void requestSurroundingText(@RequestType int callbackData) {
         if (mNativeSmartSelectionClient == 0) {
             onSurroundingTextReceived(callbackData, "", 0, 0);
