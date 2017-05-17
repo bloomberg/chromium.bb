@@ -38,10 +38,6 @@ KEYBOARD_EXPORT extern const char kEnableFloatingVirtualKeyboard[];
 // with the keybaord area.
 KEYBOARD_EXPORT extern const char kDisableVirtualKeyboardOverscroll[];
 
-// Controls automatic showing/hiding of the keyboard based on the devices
-// plugged in.
-KEYBOARD_EXPORT extern const char kDisableSmartVirtualKeyboard[];
-
 }  // namespace switches
 }  // namespace keyboard
 

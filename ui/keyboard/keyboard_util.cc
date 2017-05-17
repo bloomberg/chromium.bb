@@ -210,11 +210,6 @@ bool IsGestureEditingEnabled() {
       switches::kDisableGestureEditing);
 }
 
-bool IsSmartDeployEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSmartVirtualKeyboard);
-}
-
 bool IsVoiceInputEnabled() {
   return !g_keyboard_restricted &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(

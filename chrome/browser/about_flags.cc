@@ -1565,10 +1565,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFloatingVirtualKeyboardName,
      flag_descriptions::kFloatingVirtualKeyboardDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(keyboard::switches::kEnableFloatingVirtualKeyboard)},
-    {"smart-virtual-keyboard", flag_descriptions::kSmartVirtualKeyboardName,
-     flag_descriptions::kSmartVirtualKeyboardDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(
-         keyboard::switches::kDisableSmartVirtualKeyboard)},
     {"gesture-typing", flag_descriptions::kGestureTypingName,
      flag_descriptions::kGestureTypingDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},
