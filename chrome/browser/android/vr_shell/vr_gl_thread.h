@@ -67,6 +67,9 @@ class VrGLThread : public base::Thread,
   void SetURL(const GURL& gurl) override;
   void SetWebVrMode(bool enabled) override;
   void SetWebVrSecureOrigin(bool secure) override;
+  void SetVideoCapturingIndicator(bool enabled) override;
+  void SetScreenCapturingIndicator(bool enabled) override;
+  void SetAudioCapturingIndicator(bool enabled) override;
 
  protected:
   void Init() override;

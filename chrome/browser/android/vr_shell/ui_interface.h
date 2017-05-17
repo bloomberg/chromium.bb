@@ -32,6 +32,9 @@ class UiInterface {
   virtual void SetLoadProgress(float progress) = 0;
   virtual void SetHistoryButtonsEnabled(bool can_go_back,
                                         bool can_go_forward) = 0;
+  virtual void SetVideoCapturingIndicator(bool enabled) = 0;
+  virtual void SetScreenCapturingIndicator(bool enabled) = 0;
+  virtual void SetAudioCapturingIndicator(bool enabled) = 0;
 
   // Tab handling.
   virtual void InitTabList() {}

@@ -1381,18 +1381,6 @@ void VrShellGl::SetControllerModel(std::unique_ptr<VrControllerModel> model) {
   vr_shell_renderer_->GetControllerRenderer()->SetUp(std::move(model));
 }
 
-void VrShellGl::SetAudioCapturingWarning(bool is_capturing) {
-  // TODO inform scene_;
-}
-
-void VrShellGl::SetVideoCapturingWarning(bool is_capturing) {
-  // TODO inform scene_;
-}
-
-void VrShellGl::SetScreenCapturingWarning(bool is_capturing) {
-  // TODO inform scene_;
-}
-
 void VrShellGl::OnVSync() {
   while (premature_received_frames_ > 0) {
     TRACE_EVENT0("gpu", "VrShellGl::OnWebVRFrameAvailableRetry");
