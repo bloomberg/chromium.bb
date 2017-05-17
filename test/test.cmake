@@ -186,6 +186,12 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/obmc_sad_test.cc"
         "${AOM_ROOT}/test/obmc_variance_test.cc")
   endif ()
+
+  if (CONFIG_TX64X64)
+    set(AOM_UNIT_TEST_ENCODER_SOURCES
+        ${AOM_UNIT_TEST_ENCODER_SOURCES}
+        "${AOM_ROOT}/test/av1_fht64x64_test.cc")
+  endif ()
 endif ()
 
 if (CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
