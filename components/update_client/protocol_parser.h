@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_UPDATE_RESPONSE_H_
-#define COMPONENTS_UPDATE_CLIENT_UPDATE_RESPONSE_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_PROTOCOL_PARSER_H_
+#define COMPONENTS_UPDATE_CLIENT_PROTOCOL_PARSER_H_
 
 #include <map>
 #include <memory>
@@ -62,7 +62,7 @@ constexpr char kProtocolVersion[] = "3.1";
 //
 // The diff data members correspond to the differential update package, if
 // a differential update is specified in the response.
-class UpdateResponse {
+class ProtocolParser {
  public:
   // The result of parsing one <app> tag in an xml update check response.
   struct Result {
@@ -138,8 +138,8 @@ class UpdateResponse {
     std::vector<Result> list;
   };
 
-  UpdateResponse();
-  ~UpdateResponse();
+  ProtocolParser();
+  ~ProtocolParser();
 
   // Parses an update response xml string into Result data. Returns a bool
   // indicating success or failure. On success, the results are available by
@@ -158,9 +158,9 @@ class UpdateResponse {
   // Adds parse error details to |errors_| string.
   void ParseError(const char* details, ...);
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateResponse);
+  DISALLOW_COPY_AND_ASSIGN(ProtocolParser);
 };
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_UPDATE_RESPONSE_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_PROTOCOL_PARSER_H_

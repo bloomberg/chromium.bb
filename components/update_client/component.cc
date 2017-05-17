@@ -193,7 +193,7 @@ CrxUpdateItem Component::GetCrxUpdateItem() const {
   return crx_update_item;
 }
 
-void Component::SetParseResult(const UpdateResponse::Result& result) {
+void Component::SetParseResult(const ProtocolParser::Result& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK_EQ(0, update_check_error_);

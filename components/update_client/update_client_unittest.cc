@@ -24,6 +24,7 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
+#include "components/update_client/protocol_parser.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_checker.h"
@@ -251,7 +252,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
       EXPECT_FALSE(component->on_demand());
 
-      UpdateResponse::Result result;
+      ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "noupdate";
       component->SetParseResult(result);
@@ -386,12 +387,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
         package.hash_sha256 =
             "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -410,7 +411,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
         EXPECT_EQ(id, ids_to_check[1]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "noupdate";
 
@@ -613,12 +614,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
         package.hash_sha256 =
             "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -637,12 +638,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
         EXPECT_EQ(id, ids_to_check[1]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_1.crx";
         package.hash_sha256 =
             "813c59747e139a608b3b5fc49633affc6db574373f309f156ea6d27229c0b3f9";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -886,12 +887,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
         package.hash_sha256 =
             "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -908,12 +909,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
         EXPECT_EQ(id, ids_to_check[1]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_1.crx";
         package.hash_sha256 =
             "813c59747e139a608b3b5fc49633affc6db574373f309f156ea6d27229c0b3f9";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -1118,7 +1119,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       static int num_call = 0;
       ++num_call;
 
-      UpdateResponse::Results results;
+      ProtocolParser::Results results;
 
       if (num_call == 1) {
         /*
@@ -1145,12 +1146,12 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_1.crx";
         package.hash_sha256 =
             "813c59747e139a608b3b5fc49633affc6db574373f309f156ea6d27229c0b3f9";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -1190,7 +1191,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_2.crx";
         package.namediff = "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx";
         package.hash_sha256 =
@@ -1199,7 +1200,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
             "73c6e2d4f783fc4ca5481e89e0b8bfce7aec8ead3686290c94792658ec06f2f2";
         package.fingerprint = "22";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -1453,12 +1454,12 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       EXPECT_EQ(id, ids_to_check[0]);
       EXPECT_EQ(1u, components.count(id));
 
-      UpdateResponse::Result::Manifest::Package package;
+      ProtocolParser::Result::Manifest::Package package;
       package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
       package.hash_sha256 =
           "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
 
-      UpdateResponse::Result result;
+      ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "ok";
       result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -1621,7 +1622,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       static int num_call = 0;
       ++num_call;
 
-      UpdateResponse::Results results;
+      ProtocolParser::Results results;
 
       if (num_call == 1) {
         /*
@@ -1649,13 +1650,13 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_1.crx";
         package.hash_sha256 =
             "813c59747e139a608b3b5fc49633affc6db574373f309f156ea6d27229c0b3f9";
         package.fingerprint = "1";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -1695,7 +1696,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_2.crx";
         package.namediff = "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx";
         package.hash_sha256 =
@@ -1704,7 +1705,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
             "73c6e2d4f783fc4ca5481e89e0b8bfce7aec8ead3686290c94792658ec06f2f2";
         package.fingerprint = "22";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -1936,7 +1937,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
       EXPECT_FALSE(component->on_demand());
 
-      UpdateResponse::Result result;
+      ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "noupdate";
       component->SetParseResult(result);
@@ -2069,12 +2070,12 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       EXPECT_EQ(id, ids_to_check[0]);
       EXPECT_EQ(1u, components.count(id));
 
-      UpdateResponse::Result::Manifest::Package package;
+      ProtocolParser::Result::Manifest::Package package;
       package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
       package.hash_sha256 =
           "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
 
-      UpdateResponse::Result result;
+      ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "ok";
       result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -2242,7 +2243,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       EXPECT_EQ(id, ids_to_check.front());
       EXPECT_EQ(1u, components.count(id));
 
-      UpdateResponse::Result result;
+      ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "noupdate";
 
@@ -2519,7 +2520,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
       auto& component = components.at(id);
 
-      UpdateResponse::Result result;
+      ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "noupdate";
       component->SetParseResult(result);
@@ -2726,12 +2727,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
         EXPECT_EQ(id, ids_to_check[0]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
         package.hash_sha256 =
             "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
@@ -2748,12 +2749,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
         EXPECT_EQ(id, ids_to_check[1]);
         EXPECT_EQ(1u, components.count(id));
 
-        UpdateResponse::Result::Manifest::Package package;
+        ProtocolParser::Result::Manifest::Package package;
         package.name = "ihfokbkgjpifnbbojhneepfflplebdkc_1.crx";
         package.hash_sha256 =
             "813c59747e139a608b3b5fc49633affc6db574373f309f156ea6d27229c0b3f9";
 
-        UpdateResponse::Result result;
+        ProtocolParser::Result result;
         result.extension_id = id;
         result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));

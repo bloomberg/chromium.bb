@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/update_client/crx_downloader.h"
+#include "components/update_client/protocol_parser.h"
 #include "components/update_client/update_client.h"
-#include "components/update_client/update_response.h"
 #include "url/gurl.h"
 
 
@@ -48,7 +48,7 @@ class Component {
   CrxUpdateItem GetCrxUpdateItem() const;
 
   // Called by the UpdateChecker to set the update response for this component.
-  void SetParseResult(const UpdateResponse::Result& result);
+  void SetParseResult(const ProtocolParser::Result& result);
 
   // Sets the uninstall state for this component.
   void Uninstall(const base::Version& cur_version, int reason);
