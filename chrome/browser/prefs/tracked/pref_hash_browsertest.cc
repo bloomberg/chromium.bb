@@ -519,7 +519,9 @@ class PrefHashBrowserTestUnchangedDefault : public PrefHashBrowserTestBase {
   }
 };
 
-PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUnchangedDefault, UnchangedDefault);
+// Test is flaky. crbug.com/723639
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUnchangedDefault,
+                       DISABLED_UnchangedDefault);
 
 // Augments PrefHashBrowserTestUnchangedDefault to confirm that nothing is reset
 // when nothing is tampered with, even if Chrome itself wrote custom prefs in
@@ -546,7 +548,9 @@ class PrefHashBrowserTestUnchangedCustom
   }
 };
 
-PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUnchangedCustom, UnchangedCustom);
+// Test is flaky. crbug.com/723639
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUnchangedCustom,
+                       DISABLED_UnchangedCustom);
 
 // Verifies that cleared prefs are reported.
 class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
@@ -618,7 +622,9 @@ class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
   }
 };
 
-PREF_HASH_BROWSER_TEST(PrefHashBrowserTestClearedAtomic, ClearedAtomic);
+// Test is flaky. crbug.com/723639
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestClearedAtomic,
+                       DISABLED_ClearedAtomic);
 
 // Verifies that clearing the MACs results in untrusted Initialized pings for
 // non-null protected prefs.
@@ -752,8 +758,9 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
   }
 };
 
+// Test is flaky. crbug.com/723639
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedInitialized,
-                       UntrustedInitialized);
+                       DISABLED_UntrustedInitialized);
 
 // Verifies that changing an atomic pref results in it being reported (and reset
 // if the protection level allows it).
@@ -851,7 +858,9 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
   }
 };
 
-PREF_HASH_BROWSER_TEST(PrefHashBrowserTestChangedAtomic, ChangedAtomic);
+// Test is flaky. crbug.com/723639
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestChangedAtomic,
+                       DISABLED_ChangedAtomic);
 
 // Verifies that changing or adding an entry in a split pref results in both
 // items being reported (and remove if the protection level allows it).
@@ -958,7 +967,9 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
   }
 };
 
-PREF_HASH_BROWSER_TEST(PrefHashBrowserTestChangedSplitPref, ChangedSplitPref);
+// Test is flaky. crbug.com/723639
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestChangedSplitPref,
+                       DISABLED_ChangedSplitPref);
 
 // Verifies that adding a value to unprotected preferences for a key which is
 // still using the default (i.e. has no value stored in protected preferences)
@@ -1042,8 +1053,9 @@ class PrefHashBrowserTestUntrustedAdditionToPrefs
   }
 };
 
+// Test is flaky. crbug.com/723639
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedAdditionToPrefs,
-                       UntrustedAdditionToPrefs);
+                       DISABLED_UntrustedAdditionToPrefs);
 
 // Verifies that adding a value to unprotected preferences while wiping a
 // user-selected value from protected preferences doesn't allow that value to
@@ -1129,8 +1141,9 @@ class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
   }
 };
 
+// Test is flaky. crbug.com/723639
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe,
-                       UntrustedAdditionToPrefsAfterWipe);
+                       DISABLED_UntrustedAdditionToPrefsAfterWipe);
 
 #if defined(OS_WIN)
 class PrefHashBrowserTestRegistryValidationFailure
@@ -1173,8 +1186,9 @@ class PrefHashBrowserTestRegistryValidationFailure
   }
 };
 
+// Test is flaky. crbug.com/723639
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestRegistryValidationFailure,
-                       RegistryValidationFailure);
+                       DISABLED_RegistryValidationFailure);
 #endif
 
 // Verifies that all preferences related to choice of default search engine are
@@ -1279,4 +1293,6 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
   }
 };
 
-PREF_HASH_BROWSER_TEST(PrefHashBrowserTestDefaultSearch, SearchProtected);
+// Test is flaky. crbug.com/723639
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestDefaultSearch,
+                       DISABLED_SearchProtected);
