@@ -37,6 +37,8 @@ PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
   pointer_properties.id = touch.pointer_details().id;
   pointer_properties.pressure = touch.pointer_details().force;
   pointer_properties.source_device_id = touch.source_device_id();
+  pointer_properties.tilt_x = touch.pointer_details().tilt_x;
+  pointer_properties.tilt_y = touch.pointer_details().tilt_y;
 
   pointer_properties.SetAxesAndOrientation(touch.pointer_details().radius_x,
                                            touch.pointer_details().radius_y,

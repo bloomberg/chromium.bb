@@ -145,8 +145,8 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
   SetWebPointerPropertiesFromMotionEventData(
       touch, event.GetPointerId(pointer_index),
       event.GetPressure(pointer_index), event.GetOrientation(pointer_index),
-      event.GetTilt(pointer_index), 0 /* no button changed */,
-      event.GetToolType(pointer_index));
+      event.GetTiltX(pointer_index), event.GetTiltY(pointer_index),
+      0 /* no button changed */, event.GetToolType(pointer_index));
 
   touch.state = ToWebTouchPointState(event, pointer_index);
   touch.position.x = event.GetX(pointer_index);
@@ -897,22 +897,18 @@ void SetWebPointerPropertiesFromMotionEventData(
     int pointer_id,
     float pressure,
     float orientation_rad,
-    float tilt_rad,
+    float tilt_x,
+    float tilt_y,
     int android_buttons_changed,
     int tool_type) {
-
   webPointerProperties.id = pointer_id;
   webPointerProperties.force = pressure;
 
   if (tool_type == MotionEvent::TOOL_TYPE_STYLUS) {
     // A stylus points to a direction specified by orientation and tilts to
     // the opposite direction. Coordinate system is left-handed.
-    float r = sin(tilt_rad);
-    float z = cos(tilt_rad);
-    webPointerProperties.tilt_x =
-        lround(atan2(sin(-orientation_rad) * r, z) * 180.f / M_PI);
-    webPointerProperties.tilt_y =
-        lround(atan2(cos(-orientation_rad) * r, z) * 180.f / M_PI);
+    webPointerProperties.tilt_x = tilt_x;
+    webPointerProperties.tilt_y = tilt_y;
   } else {
     webPointerProperties.tilt_x = webPointerProperties.tilt_y = 0;
   }
