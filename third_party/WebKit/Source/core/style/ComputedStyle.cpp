@@ -44,6 +44,7 @@
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
+#include "core/style/StyleRay.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
@@ -1331,25 +1332,32 @@ void ComputedStyle::ApplyMotionPathTransform(
   }
   const LengthPoint& position = OffsetPosition();
   const LengthPoint& anchor = OffsetAnchor();
-  if (motion_data.path_->GetType() == BasicShape::kStyleRayType) {
-    // TODO(ericwilligers): crbug.com/641245 Support ray paths.
-    return;
-  }
-  const StylePath& motion_path = ToStylePath(*motion_data.path_);
-  float path_length = motion_path.length();
-  float distance = FloatValueForLength(motion_data.distance_, path_length);
-  float computed_distance;
-  if (motion_path.IsClosed() && path_length > 0) {
-    computed_distance = fmod(distance, path_length);
-    if (computed_distance < 0)
-      computed_distance += path_length;
-  } else {
-    computed_distance = clampTo<float>(distance, 0, path_length);
-  }
 
   FloatPoint point;
   float angle;
-  motion_path.GetPath().PointAndNormalAtLength(computed_distance, point, angle);
+  if (motion_data.path_->GetType() == BasicShape::kStyleRayType) {
+    // TODO(ericwilligers): crbug.com/641245 Support <size> for ray paths.
+    float distance = FloatValueForLength(motion_data.distance_, 0);
+
+    angle = ToStyleRay(*motion_data.path_).Angle() - 90;
+    point.SetX(distance * cos(deg2rad(angle)));
+    point.SetY(distance * sin(deg2rad(angle)));
+  } else {
+    const StylePath& motion_path = ToStylePath(*motion_data.path_);
+    float path_length = motion_path.length();
+    float distance = FloatValueForLength(motion_data.distance_, path_length);
+    float computed_distance;
+    if (motion_path.IsClosed() && path_length > 0) {
+      computed_distance = fmod(distance, path_length);
+      if (computed_distance < 0)
+        computed_distance += path_length;
+    } else {
+      computed_distance = clampTo<float>(distance, 0, path_length);
+    }
+
+    motion_path.GetPath().PointAndNormalAtLength(computed_distance, point,
+                                                 angle);
+  }
 
   if (motion_data.rotation_.type == kOffsetRotationFixed)
     angle = 0;
