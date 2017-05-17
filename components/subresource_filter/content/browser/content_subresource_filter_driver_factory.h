@@ -17,6 +17,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/common/activation_decision.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/page_transition_types.h"
@@ -48,34 +49,6 @@ class ContentSubresourceFilterDriverFactory
       public content::WebContentsObserver,
       public ContentSubresourceFilterThrottleManager::Delegate {
  public:
-  // NOTE: ActivationDecision backs a UMA histogram, so it is append-only.
-  enum class ActivationDecision {
-    // The activation decision is unknown, or not known yet.
-    UNKNOWN,
-
-    // Subresource filtering was activated.
-    ACTIVATED,
-
-    // Did not activate because subresource filtering was disabled by the
-    // highest priority configuration whose activation conditions were met.
-    ACTIVATION_DISABLED,
-
-    // Did not activate because the main frame document URL had an unsupported
-    // scheme.
-    UNSUPPORTED_SCHEME,
-
-    // Did not activate because although there was a configuration whose
-    // activation conditions were met, the main frame URL was whitelisted.
-    URL_WHITELISTED,
-
-    // Did not activate because the main frame document URL did not match the
-    // activation conditions of any of enabled configurations.
-    ACTIVATION_CONDITIONS_NOT_MET,
-
-    // Max value for enum.
-    ACTIVATION_DECISION_MAX
-  };
-
   static void CreateForWebContents(content::WebContents* web_contents,
                                    SubresourceFilterClient* client);
 
