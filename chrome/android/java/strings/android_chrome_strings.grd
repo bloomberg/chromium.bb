@@ -2951,6 +2951,14 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
         Webpage shortcuts
       </message>
 
+       <!-- Chrome VR feedback infobar -->
+      <message name="IDS_VR_SHELL_FEEDBACK_INFOBAR_DESCRIPTION" desc="Description for infobar prompting the user for feedback on their VR browsing experience.">
+        Help improve the VR experience in Chrome
+      </message>
+      <message name="IDS_VR_SHELL_FEEDBACK_INFOBAR_FEEDBACK_BUTTON" desc="Brief button text asking the user to provide feedback in the VR feedback infobar.">
+        Provide feedback
+      </message>
+
       <!-- VR services check infobar -->
       <message name="IDS_VR_SERVICES_CHECK_INFOBAR_INSTALL_TEXT" desc="Text to be displayed in the VR Services check infobar. When a WebVR page is loaded if the VR services that are needed to display WebVR don't exist an infobar will be shown to the user prompting them to install VR services.">
         To view virtual reality content, install Google VR Services
