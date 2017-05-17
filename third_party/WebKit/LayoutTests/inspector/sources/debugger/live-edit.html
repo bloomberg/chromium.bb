@@ -117,7 +117,6 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 testSourceFrame = sourceFrame;
-                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame).then(breakpointAdded);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
@@ -145,7 +144,6 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 testSourceFrame = sourceFrame;
-                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 InspectorTest.waitJavaScriptSourceFrameBreakpoints(testSourceFrame).then(breakpointAdded);
                 InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
             }

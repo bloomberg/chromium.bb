@@ -30,7 +30,6 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 currentSourceFrame = sourceFrame;
-                InspectorTest.prepareSourceFrameForBreakpointTest(currentSourceFrame);
                 InspectorTest.addResult("Script source was shown.");
                 InspectorTest.waitUntilPaused(didPause);
                 InspectorTest.createNewBreakpoint(currentSourceFrame, 16, "", true)
