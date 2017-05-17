@@ -7,7 +7,7 @@ import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
-import("//ios/chrome/extension_repack.gni")
+import("//tools/grit/repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 
 tweak_info_plist("tweak_info_plist") {
@@ -97,10 +97,19 @@ bundle_data("resources") {
   ]
 }
 
-extension_repack_all_locales("packed_resources") {
-  extension = "search_widget_extension"
+repack_locales("packed_resources") {
   input_locales = ios_packed_locales
   output_locales = ios_packed_locales_as_mac_outputs
+
+  source_patterns = [
+    "$root_gen_dir/ios/search_widget_extension/ios_search_widget_extension_strings_",
+    "$root_gen_dir/ios/search_widget_extension/ios_search_widget_extension_${branding_path_component}_strings_",
+  ]
+
+  deps = [
+    "//ios/chrome/search_widget_extension/strings:ios_search_widget_extension_${branding_path_component}_strings",
+    "//ios/chrome/search_widget_extension/strings:ios_search_widget_extension_strings",
+  ]
 }
 
 generate_localizable_strings("system_strings") {
@@ -109,8 +118,17 @@ generate_localizable_strings("system_strings") {
   config_file = "search_widget_extension_localize_strings_config.plist"
   datapack_dir = get_label_info(_packed_resources_target, "target_gen_dir")
   packed_locales = ios_packed_locales_as_mac_outputs
-  output_filenames = [ "Localizable.strings" ]
+  output_filenames = [
+    "InfoPlist.strings",
+    "Localizable.strings",
+  ]
   deps = [
+    "//ios/chrome/search_widget_extension/strings:ios_search_widget_extension_chromium_strings",
+
+    # Depends on both branding strings target to ensure the proper .h exists
+    # (the .plist configuration can only reference one of them, and their
+    # content is identical).
+    "//ios/chrome/search_widget_extension/strings:ios_search_widget_extension_google_chrome_strings",
     _packed_resources_target,
   ]
 }

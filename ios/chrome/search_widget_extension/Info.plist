@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>${CHROMIUM_SHORT_NAME}</string>
+	<string>IDS_IOS_SEARCH_WIDGET_TITLE</string>
 	<key>CFBundleExecutable</key>
 	<string>search_widget_extension</string>
 	<key>CFBundleIdentifier</key>
