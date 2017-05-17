@@ -30,13 +30,15 @@ class UrlBarTexture : public UiTexture {
   ~UrlBarTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
-  bool SetDrawFlags(int draw_flags) override;
 
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
 
   bool HitsBackButton(const gfx::PointF& position) const;
   bool HitsUrlBar(const gfx::PointF& position) const;
+
+  void SetHovered(bool hovered);
+  void SetPressed(bool pressed);
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
@@ -45,6 +47,8 @@ class UrlBarTexture : public UiTexture {
 
   gfx::SizeF size_;
   int security_level_;
+  bool hovered_ = false;
+  bool pressed_ = false;
   GURL gurl_;
   GURL last_drawn_gurl_;
   std::vector<std::unique_ptr<gfx::RenderText>> gurl_render_texts_;

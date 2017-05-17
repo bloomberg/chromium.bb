@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_CLOSE_BUTTON_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_CLOSE_BUTTON_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_BUTTON_H_
+#define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_BUTTON_H_
 
 #include <memory>
 
@@ -11,15 +11,19 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
 
+namespace gfx {
+class PointF;
+}  // gfx
+
 namespace vr_shell {
 
-class CloseButtonTexture;
-class UiTexture;
+class ButtonTexture;
 
-class CloseButton : public TexturedElement {
+class Button : public TexturedElement {
  public:
-  explicit CloseButton(base::Callback<void()> click_handler);
-  ~CloseButton() override;
+  explicit Button(base::Callback<void()> click_handler,
+                  std::unique_ptr<ButtonTexture> texture);
+  ~Button() override;
 
   void OnHoverLeave() override;
   void OnHoverEnter(const gfx::PointF& position) override;
@@ -32,13 +36,13 @@ class CloseButton : public TexturedElement {
   UiTexture* GetTexture() const override;
   void OnStateUpdated(const gfx::PointF& position);
 
-  std::unique_ptr<CloseButtonTexture> texture_;
+  std::unique_ptr<ButtonTexture> texture_;
   bool down_ = false;
   base::Callback<void()> click_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(CloseButton);
+  DISALLOW_COPY_AND_ASSIGN(Button);
 };
 
 }  // namespace vr_shell
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_CLOSE_BUTTON_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_BUTTON_H_

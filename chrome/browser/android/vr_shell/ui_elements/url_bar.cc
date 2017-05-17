@@ -91,13 +91,11 @@ void UrlBar::SetBackButtonCallback(const base::Callback<void()>& callback) {
 }
 
 void UrlBar::OnStateUpdated(const gfx::PointF& position) {
-  bool hitting = texture_->HitsBackButton(position);
-  bool down = hitting ? down_ : false;
+  const bool hovered = texture_->HitsBackButton(position);
+  const bool pressed = hovered ? down_ : false;
 
-  int flags = hitting ? UrlBarTexture::FLAG_BACK_HOVER : 0;
-  flags |= down ? UrlBarTexture::FLAG_BACK_DOWN : 0;
-  if (!texture_->SetDrawFlags(flags))
-    return;
+  texture_->SetHovered(hovered);
+  texture_->SetPressed(pressed);
   UpdateTexture();
 }
 

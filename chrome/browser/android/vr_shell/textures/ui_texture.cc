@@ -29,33 +29,6 @@ namespace {
 
 static constexpr char kDefaultFontFamily[] = "sans-serif";
 
-std::unique_ptr<gfx::RenderText> CreateRenderText(
-    const base::string16& text,
-    const gfx::FontList& font_list,
-    SkColor color,
-    int flags) {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
-  render_text->SetText(text);
-  render_text->SetFontList(font_list);
-  render_text->SetColor(color);
-
-  if (flags & UiTexture::TEXT_ALIGN_LEFT)
-    render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  else if (flags & UiTexture::TEXT_ALIGN_RIGHT)
-    render_text->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  else if (flags & UiTexture::TEXT_ALIGN_CENTER)
-    render_text->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-
-  const int font_style = font_list.GetFontStyle();
-  render_text->SetStyle(gfx::ITALIC, (font_style & gfx::Font::ITALIC) != 0);
-  render_text->SetStyle(gfx::UNDERLINE,
-                        (font_style & gfx::Font::UNDERLINE) != 0);
-  render_text->SetWeight(font_list.GetFontWeight());
-
-  return render_text;
-}
-
 std::set<UChar32> CollectDifferentChars(base::string16 text) {
   std::set<UChar32> characters;
   for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
@@ -70,13 +43,6 @@ UiTexture::UiTexture() = default;
 
 UiTexture::~UiTexture() = default;
 
-bool UiTexture::SetDrawFlags(int draw_flags) {
-  if (draw_flags == draw_flags_)
-    return false;
-  draw_flags_ = draw_flags;
-  return true;
-}
-
 void UiTexture::DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size) {
   TRACE_EVENT0("gpu", "UiTexture::DrawAndLayout");
   canvas->drawColor(SK_ColorTRANSPARENT);
@@ -84,18 +50,23 @@ void UiTexture::DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size) {
   Draw(canvas, texture_size);
 }
 
+bool UiTexture::HitTest(const gfx::PointF& point) const {
+  return false;
+}
+
 std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     const base::string16& text,
     const gfx::FontList& font_list,
     SkColor color,
     gfx::Rect* bounds,
-    int flags) {
+    UiTexture::TextAlignment text_alignment,
+    UiTexture::WrappingBehavior wrapping_behavior) {
   DCHECK(bounds);
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines;
   gfx::Rect rect(*bounds);
 
-  if (flags & MULTI_LINE) {
+  if (wrapping_behavior == kWrappingBehaviorWrap) {
     std::vector<base::string16> strings;
     gfx::ElideRectangleText(text, font_list, bounds->width(),
                             bounds->height() ? bounds->height() : INT_MAX,
@@ -105,7 +76,7 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     int line_height = 0;
     for (size_t i = 0; i < strings.size(); i++) {
       std::unique_ptr<gfx::RenderText> render_text =
-          CreateRenderText(strings[i], font_list, color, flags);
+          CreateRenderText(strings[i], font_list, color, text_alignment);
 
       if (i == 0) {
         // Measure line and center text vertically.
@@ -129,7 +100,7 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
 
   } else {
     std::unique_ptr<gfx::RenderText> render_text =
-        CreateRenderText(text, font_list, color, flags);
+        CreateRenderText(text, font_list, color, text_alignment);
     if (bounds->width() != 0)
       render_text->SetElideBehavior(gfx::TRUNCATE);
     else
@@ -147,6 +118,40 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     lines.push_back(std::move(render_text));
   }
   return lines;
+}
+
+std::unique_ptr<gfx::RenderText> UiTexture::CreateRenderText(
+    const base::string16& text,
+    const gfx::FontList& font_list,
+    SkColor color,
+    UiTexture::TextAlignment text_alignment) {
+  std::unique_ptr<gfx::RenderText> render_text(
+      gfx::RenderText::CreateInstance());
+  render_text->SetText(text);
+  render_text->SetFontList(font_list);
+  render_text->SetColor(color);
+
+  switch (text_alignment) {
+    case UiTexture::kTextAlignmentNone:
+      break;
+    case UiTexture::kTextAlignmentLeft:
+      render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      break;
+    case UiTexture::kTextAlignmentRight:
+      render_text->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+      break;
+    case UiTexture::kTextAlignmentCenter:
+      render_text->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+      break;
+  }
+
+  const int font_style = font_list.GetFontStyle();
+  render_text->SetStyle(gfx::ITALIC, (font_style & gfx::Font::ITALIC) != 0);
+  render_text->SetStyle(gfx::UNDERLINE,
+                        (font_style & gfx::Font::UNDERLINE) != 0);
+  render_text->SetWeight(font_list.GetFontWeight());
+
+  return render_text;
 }
 
 bool UiTexture::IsRTL() {

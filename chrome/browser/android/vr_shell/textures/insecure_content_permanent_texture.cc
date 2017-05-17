@@ -50,7 +50,8 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
   gfx::Rect text_size(0, kTextHeightFactor * size_.height());
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines =
-      PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size, 0);
+      PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size,
+                            kTextAlignmentNone, kWrappingBehaviorNoWrap);
 
   DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
   // Setting background size giving some extra lateral padding to the text.

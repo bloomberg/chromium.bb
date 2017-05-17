@@ -61,7 +61,7 @@ void LoadingIndicator::SetVisibility() {
 }
 
 void LoadingIndicator::OnBeginFrame(const base::TimeTicks& ticks) {
-  if (enabled_ && texture_->dirty())
+  if (enabled_)
     UpdateTexture();
 }
 

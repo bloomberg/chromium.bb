@@ -6,9 +6,10 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/vr_shell/textures/close_button_texture.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
-#include "chrome/browser/android/vr_shell/ui_elements/close_button.h"
+#include "chrome/browser/android/vr_shell/ui_elements/button.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
@@ -245,9 +246,9 @@ void UiSceneManager::CreateUrlBar() {
 }
 
 void UiSceneManager::CreateCloseButton() {
-  std::unique_ptr<CloseButton> element =
-      base::MakeUnique<CloseButton>(base::Bind(
-          &UiSceneManager::OnCloseButtonClicked, base::Unretained(this)));
+  std::unique_ptr<Button> element = base::MakeUnique<Button>(
+      base::Bind(&UiSceneManager::OnCloseButtonClicked, base::Unretained(this)),
+      base::MakeUnique<CloseButtonTexture>());
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
   element->set_translation(
