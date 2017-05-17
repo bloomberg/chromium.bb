@@ -48,7 +48,7 @@ void InsecureContentTransientTexture::Draw(SkCanvas* sk_canvas,
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines =
       PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size,
-                            TEXT_ALIGN_CENTER | MULTI_LINE);
+                            kTextAlignmentCenter, kWrappingBehaviorWrap);
 
   DCHECK_LE(text_size.height(),
             static_cast<int>((1.0 - 2 * kBorderFactor) * size_.width()));

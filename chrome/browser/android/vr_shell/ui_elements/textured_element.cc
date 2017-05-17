@@ -31,7 +31,7 @@ void TexturedElement::Initialize() {
 }
 
 void TexturedElement::UpdateTexture() {
-  if (!initialized_)
+  if (!initialized_ || !GetTexture()->dirty())
     return;
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
       texture_size_.width(), texture_size_.height());

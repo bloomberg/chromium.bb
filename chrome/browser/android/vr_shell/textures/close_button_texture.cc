@@ -5,7 +5,9 @@
 #include "chrome/browser/android/vr_shell/textures/close_button_texture.h"
 
 #include "cc/paint/skia_paint_canvas.h"
+#include "chrome/browser/android/vr_shell/ui_elements/button.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -39,9 +41,8 @@ void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
   size_.set_width(texture_size.width());
 
   cc::PaintFlags flags;
-  SkColor color =
-      (GetDrawFlags() & FLAG_HOVER) ? kBackgroundColorHover : kBackgroundColor;
-  color = (GetDrawFlags() & FLAG_DOWN) ? kBackgroundColorDown : color;
+  SkColor color = hovered() ? kBackgroundColorHover : kBackgroundColor;
+  color = pressed() ? kBackgroundColorDown : color;
   flags.setColor(color);
   canvas->DrawCircle(gfx::PointF(size_.width() / 2, size_.height() / 2),
                      size_.width() / 2, flags);
@@ -60,6 +61,10 @@ gfx::Size CloseButtonTexture::GetPreferredTextureSize(int maximum_width) const {
 
 gfx::SizeF CloseButtonTexture::GetDrawnSize() const {
   return size_;
+}
+
+bool CloseButtonTexture::HitTest(const gfx::PointF& point) const {
+  return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
 }
 
 }  // namespace vr_shell

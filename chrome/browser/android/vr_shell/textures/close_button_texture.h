@@ -5,21 +5,21 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_CLOSE_BUTTON_TEXTURE_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_CLOSE_BUTTON_TEXTURE_H_
 
-#include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/textures/button_texture.h"
+
+namespace gfx {
+class PointF;
+}  // namespace gfx
 
 namespace vr_shell {
 
-class CloseButtonTexture : public UiTexture {
+class CloseButtonTexture : public ButtonTexture {
  public:
-  enum DrawFlags {
-    FLAG_HOVER = 1 << 0,
-    FLAG_DOWN = 1 << 1,
-  };
-
   CloseButtonTexture();
   ~CloseButtonTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
+  bool HitTest(const gfx::PointF& point) const override;
 
  private:
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;

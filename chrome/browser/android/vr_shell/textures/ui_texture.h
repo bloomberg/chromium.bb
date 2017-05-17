@@ -20,6 +20,7 @@ class SkCanvas;
 namespace gfx {
 
 class FontList;
+class PointF;
 class RenderText;
 
 }  // namespace gfx
@@ -28,26 +29,29 @@ namespace vr_shell {
 
 class UiTexture {
  public:
-  enum {
-    // Flags to configure PrepareDrawStringRect
-    TEXT_ALIGN_LEFT = 1 << 0,
-    TEXT_ALIGN_CENTER = 1 << 1,
-    TEXT_ALIGN_RIGHT = 1 << 2,
-    MULTI_LINE = 1 << 3
-  };
-
   UiTexture();
   virtual ~UiTexture();
 
   void DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size);
   virtual gfx::Size GetPreferredTextureSize(int maximum_width) const = 0;
   virtual gfx::SizeF GetDrawnSize() const = 0;
-  // Returns true if the state changed.
-  virtual bool SetDrawFlags(int draw_flags);
-  int GetDrawFlags() { return draw_flags_; }
+  virtual bool HitTest(const gfx::PointF& point) const;
+
   bool dirty() const { return dirty_; }
 
  protected:
+  enum TextAlignment {
+    kTextAlignmentNone,
+    kTextAlignmentLeft,
+    kTextAlignmentCenter,
+    kTextAlignmentRight,
+  };
+
+  enum WrappingBehavior {
+    kWrappingBehaviorWrap,
+    kWrappingBehaviorNoWrap,
+  };
+
   virtual void Draw(SkCanvas* canvas, const gfx::Size& texture_size) = 0;
 
   // Prepares a set of RenderText objects with the given color and fonts.
@@ -61,7 +65,14 @@ class UiTexture {
       const gfx::FontList& font_list,
       SkColor color,
       gfx::Rect* bounds,
-      int flags);
+      TextAlignment text_alignment,
+      WrappingBehavior wrapping_behavior);
+
+  static std::unique_ptr<gfx::RenderText> CreateRenderText(
+      const base::string16& text,
+      const gfx::FontList& font_list,
+      SkColor color,
+      TextAlignment text_alignment);
 
   void set_dirty() { dirty_ = true; }
 
@@ -70,8 +81,7 @@ class UiTexture {
   static gfx::FontList GetFontList(int size, base::string16 text);
 
  private:
-  int draw_flags_ = 0;
-  bool dirty_ = false;
+  bool dirty_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UiTexture);
 };

@@ -128,6 +128,18 @@ bool UrlBarTexture::HitsTransparentRegion(const gfx::PointF& meters,
   return (meters - circle_center).LengthSquared() > radius * radius;
 }
 
+void UrlBarTexture::SetHovered(bool hovered) {
+  if (hovered_ != hovered)
+    set_dirty();
+  hovered_ = hovered;
+}
+
+void UrlBarTexture::SetPressed(bool pressed) {
+  if (pressed_ != pressed)
+    set_dirty();
+  pressed_ = pressed;
+}
+
 void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   size_.set_height(texture_size.height());
   size_.set_width(texture_size.width());
@@ -144,9 +156,8 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   SkVector rounded_corner = {kHeight / 2, kHeight / 2};
   SkVector left_corners[4] = {rounded_corner, {0, 0}, {0, 0}, rounded_corner};
   round_rect.setRectRadii({0, 0, kHeight, kHeight}, left_corners);
-  SkColor color =
-      (GetDrawFlags() & FLAG_BACK_HOVER) ? kBackgroundHover : kBackground;
-  color = (GetDrawFlags() & FLAG_BACK_DOWN) ? kBackgroundDown : color;
+  SkColor color = hovered_ ? kBackgroundHover : kBackground;
+  color = pressed_ ? kBackgroundDown : color;
   SkPaint paint;
   paint.setColor(color);
   canvas->drawRRect(round_rect, paint);
@@ -199,10 +210,10 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
       float url_width = kWidth - url_x - kUrlRightMargin;
       gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
                             ToPixels(kHeight));
-      gurl_render_texts_ =
-          PrepareDrawStringRect(base::UTF8ToUTF16(gurl_.spec()),
-                                GetDefaultFontList(pixel_font_height),
-                                SK_ColorBLACK, &text_bounds, TEXT_ALIGN_LEFT);
+      gurl_render_texts_ = PrepareDrawStringRect(
+          base::UTF8ToUTF16(gurl_.spec()),
+          GetDefaultFontList(pixel_font_height), SK_ColorBLACK, &text_bounds,
+          kTextAlignmentLeft, kWrappingBehaviorNoWrap);
       last_drawn_gurl_ = gurl_;
     }
     for (auto& render_text : gurl_render_texts_)
@@ -216,12 +227,6 @@ gfx::Size UrlBarTexture::GetPreferredTextureSize(int maximum_width) const {
 
 gfx::SizeF UrlBarTexture::GetDrawnSize() const {
   return size_;
-}
-
-bool UrlBarTexture::SetDrawFlags(int draw_flags) {
-  if (draw_flags != GetDrawFlags())
-    set_dirty();
-  return UiTexture::SetDrawFlags(draw_flags);
 }
 
 }  // namespace vr_shell
