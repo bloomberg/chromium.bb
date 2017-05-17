@@ -150,3 +150,7 @@ template("chrome_ios_eg_test") {
     }
   }
 }
+
+set_defaults("chrome_ios_eg_test") {
+  configs = default_executable_configs
+}

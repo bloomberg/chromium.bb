@@ -9,6 +9,10 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::WebViewContainingText;
 
 // Test suite to verify Internet connectivity.
