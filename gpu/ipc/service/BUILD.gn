@@ -87,6 +87,7 @@ target(link_target_type, "ipc_service_sources") {
       "direct_composition_surface_win.h",
       "image_transport_surface_win.cc",
     ]
+    libs += [ "dwmapi.lib" ]
   }
   if (is_mac) {
     sources += [
