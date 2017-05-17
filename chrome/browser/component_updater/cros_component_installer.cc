@@ -51,14 +51,14 @@ void ImageLoaderRegistration(const std::string& version,
 }
 
 ComponentConfig::ComponentConfig(const std::string& name,
-                                 const std::string& dir,
+                                 const std::string& env_version,
                                  const std::string& sha2hashstr)
-    : name(name), dir(dir), sha2hashstr(sha2hashstr) {}
+    : name(name), env_version(env_version), sha2hashstr(sha2hashstr) {}
 ComponentConfig::~ComponentConfig() {}
 
 CrOSComponentInstallerTraits::CrOSComponentInstallerTraits(
     const ComponentConfig& config)
-    : dir_name(config.dir), name(config.name) {
+    : name(config.name), env_version(config.env_version) {
   if (config.sha2hashstr.length() != 64)
     return;
   auto strstream = config.sha2hashstr;
@@ -104,7 +104,7 @@ bool CrOSComponentInstallerTraits::VerifyInstallation(
 }
 
 base::FilePath CrOSComponentInstallerTraits::GetRelativeInstallDir() const {
-  return base::FilePath(dir_name);
+  return base::FilePath(name);
 }
 
 void CrOSComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
@@ -117,7 +117,9 @@ std::string CrOSComponentInstallerTraits::GetName() const {
 
 update_client::InstallerAttributes
 CrOSComponentInstallerTraits::GetInstallerAttributes() const {
-  return update_client::InstallerAttributes();
+  update_client::InstallerAttributes attrs;
+  attrs["_env_version"] = env_version;
+  return attrs;
 }
 
 std::vector<std::string> CrOSComponentInstallerTraits::GetMimeTypes() const {
@@ -150,8 +152,8 @@ bool CrOSComponent::InstallCrOSComponent(
     const update_client::Callback& install_callback) {
   auto* const cus = g_browser_process->component_updater();
   const ConfigMap components = {
-      {"escpr",
-       {{"dir", "epson-inkjet-printer-escpr"},
+      {"epson-inkjet-printer-escpr",
+       {{"env_version", "0.0"},
         {"sha2hashstr",
          "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"}}}};
   if (name.empty()) {
@@ -169,7 +171,7 @@ bool CrOSComponent::InstallCrOSComponent(
         base::Bind(install_callback, update_client::Error::INVALID_ARGUMENT));
     return false;
   }
-  ComponentConfig config(it->first, it->second.find("dir")->second,
+  ComponentConfig config(it->first, it->second.find("env_version")->second,
                          it->second.find("sha2hashstr")->second);
   RegisterCrOSComponentInternal(
       cus, config,
