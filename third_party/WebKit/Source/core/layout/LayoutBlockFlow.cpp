@@ -655,11 +655,13 @@ void LayoutBlockFlow::DetermineLogicalLeftPositionForChild(LayoutBox& child) {
 
 void LayoutBlockFlow::SetLogicalLeftForChild(LayoutBox& child,
                                              LayoutUnit logical_left) {
+  LayoutPoint new_location(child.Location());
   if (IsHorizontalWritingMode()) {
-    child.SetX(logical_left);
+    new_location.SetX(logical_left);
   } else {
-    child.SetY(logical_left);
+    new_location.SetY(logical_left);
   }
+  child.SetLocationAndUpdateOverflowControlsIfNeeded(new_location);
 }
 
 void LayoutBlockFlow::SetLogicalTopForChild(LayoutBox& child,

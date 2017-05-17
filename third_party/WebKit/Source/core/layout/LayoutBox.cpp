@@ -747,7 +747,7 @@ void LayoutBox::UpdateAfterLayout() {
   // transform after layout.
   if (HasLayer()) {
     Layer()->UpdateTransformationMatrix();
-    Layer()->UpdateScrollingAfterLayout();
+    Layer()->UpdateSizeAndScrollingAfterLayout();
   }
 }
 
@@ -831,18 +831,13 @@ LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
 
 void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
     const LayoutPoint& location) {
-  if (HasOverflowClip()) {
-    IntSize old_pixel_snapped_border_rect_size =
-        PixelSnappedBorderBoxRect().Size();
-    SetLocation(location);
-    if (PixelSnappedBorderBoxRect().Size() !=
-        old_pixel_snapped_border_rect_size) {
-      Layer()->UpdateScrollingAfterLayout();
-    }
-    return;
-  }
-
+  IntSize old_pixel_snapped_border_rect_size =
+      PixelSnappedBorderBoxRect().Size();
   SetLocation(location);
+  if (HasLayer() && PixelSnappedBorderBoxRect().Size() !=
+                        old_pixel_snapped_border_rect_size) {
+    Layer()->UpdateSizeAndScrollingAfterLayout();
+  }
 }
 
 IntRect LayoutBox::AbsoluteContentBox() const {
