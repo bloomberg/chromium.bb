@@ -1318,6 +1318,10 @@
       getter: "SpecifiedLineHeight",
       inherited: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      default_value: "Length(-100.0, kPercent)",
+      field_group: "inherited",
     },
     {
       name: "line-height-step",
@@ -2163,6 +2167,10 @@
       inherited: true,
       interpolable: true,
       name_for_methods: "HorizontalBorderSpacing",
+      field_template: "storage_only",
+      type_name: "short",
+      field_group: "inherited",
+      default_value: "0",
     },
     {
       name: "-webkit-border-image",
@@ -2178,6 +2186,10 @@
       inherited: true,
       interpolable: true,
       name_for_methods: "VerticalBorderSpacing",
+      field_template: "storage_only",
+      type_name: "short",
+      field_group: "inherited",
+      default_value: "0",
     },
     {
       name: "-webkit-box-align",

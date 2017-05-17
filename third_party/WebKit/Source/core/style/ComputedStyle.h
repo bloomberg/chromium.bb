@@ -127,7 +127,6 @@ class ScaleTransformOperation;
 class ShadowList;
 class ShapeValue;
 class StyleImage;
-class StyleInheritedData;
 class StylePath;
 class StyleResolver;
 class TransformationMatrix;
@@ -230,7 +229,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // inherited attributes
   DataRef<StyleRareInheritedData> rare_inherited_data_;
-  DataRef<StyleInheritedData> inherited_data_;
 
   // list of associated pseudo styles
   std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;

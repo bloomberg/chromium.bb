@@ -72,11 +72,11 @@ ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 // re-create the same structure for an accurate size comparison.
 struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
   struct ComputedStyleBase {
-    void* data_refs[4];
+    void* data_refs[5];
     unsigned bitfields_[4];
   } base_;
 
-  void* data_refs[3];
+  void* data_refs[2];
   void* own_ptrs[1];
   void* data_ref_svg_style;
 };
@@ -132,7 +132,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
   rare_non_inherited_data_.Access()->grid_item_.Init();
   rare_non_inherited_data_.Access()->scroll_snap_.Init();
   rare_inherited_data_.Init();
-  inherited_data_.Init();
   svg_style_.Init();
 }
 
@@ -141,7 +140,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
       RefCounted<ComputedStyle>(),
       rare_non_inherited_data_(o.rare_non_inherited_data_),
       rare_inherited_data_(o.rare_inherited_data_),
-      inherited_data_(o.inherited_data_),
       svg_style_(o.svg_style_) {}
 
 static StyleRecalcChange DiffPseudoStyles(const ComputedStyle& old_style,
@@ -318,7 +316,6 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
 
   ComputedStyleBase::InheritFrom(inherit_parent, is_at_shadow_boundary);
   rare_inherited_data_ = inherit_parent.rare_inherited_data_;
-  inherited_data_ = inherit_parent.inherited_data_;
   if (svg_style_ != inherit_parent.svg_style_)
     svg_style_.Access()->InheritFrom(inherit_parent.svg_style_.Get());
 
@@ -458,7 +455,6 @@ bool ComputedStyle::IndependentInheritedEqual(
 bool ComputedStyle::NonIndependentInheritedEqual(
     const ComputedStyle& other) const {
   return ComputedStyleBase::NonIndependentInheritedEqual(other) &&
-         inherited_data_ == other.inherited_data_ &&
          svg_style_->InheritedEqual(*other.svg_style_) &&
          rare_inherited_data_ == other.rare_inherited_data_;
 }
@@ -477,7 +473,6 @@ bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
 bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
   // This is a fast check that only looks if the data structures are shared.
   return ComputedStyleBase::InheritedDataShared(other) &&
-         inherited_data_.Get() == other.inherited_data_.Get() &&
          svg_style_.Get() == other.svg_style_.Get() &&
          rare_inherited_data_.Get() == other.rare_inherited_data_.Get();
 }
