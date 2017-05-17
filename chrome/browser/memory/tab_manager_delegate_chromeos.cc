@@ -37,15 +37,14 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/device_event_log/device_event_log.h"
-#include "components/exo/shell_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/zygote_host_linux.h"
-#include "ui/aura/window.h"
 #include "ui/wm/public/activation_client.h"
 
 using base::ProcessHandle;
@@ -55,9 +54,6 @@ using content::BrowserThread;
 
 namespace memory {
 namespace {
-
-const char kExoShellSurfaceWindowName[] = "ExoShellSurface";
-const char kArcProcessNamePrefix[] = "org.chromium.arc.";
 
 // When switching to a new tab the tab's renderer's OOM score needs to be
 // updated to reflect its front-most status and protect it from discard.
@@ -69,15 +65,6 @@ aura::client::ActivationClient* GetActivationClient() {
   if (!ash::Shell::HasInstance())
     return nullptr;
   return aura::client::GetActivationClient(ash::Shell::GetPrimaryRootWindow());
-}
-
-// Checks if a window renders ARC apps.
-bool IsArcWindow(aura::Window* window) {
-  if (!window || window->GetName() != kExoShellSurfaceWindowName)
-    return false;
-  std::string application_id = exo::ShellSurface::GetApplicationId(window);
-  return base::StartsWith(application_id, kArcProcessNamePrefix,
-                          base::CompareCase::SENSITIVE);
 }
 
 bool IsArcMemoryManagementEnabled() {
@@ -340,7 +327,7 @@ void TabManagerDelegate::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  if (IsArcWindow(gained_active)) {
+  if (arc::IsArcAppWindow(gained_active)) {
     // Currently there is no way to know which app is displayed in the ARC
     // window, so schedule an early adjustment for all processes to reflect
     // the change.
@@ -355,7 +342,7 @@ void TabManagerDelegate::OnWindowActivated(
         TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs),
         this, &TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment);
   }
-  if (IsArcWindow(lost_active)) {
+  if (arc::IsArcAppWindow(lost_active)) {
     // Do not bother adjusting OOM score if the ARC window is deactivated
     // shortly.
     if (focused_process_->ResetIfIsArcApp() &&

@@ -7,11 +7,15 @@
 #include <memory>
 #include <string>
 
+#include "ash/shared/app_types.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/test_windows.h"
+#include "ui/aura/window.h"
 
 namespace arc {
 namespace {
@@ -161,6 +165,21 @@ TEST_F(ArcUtilTest, IsArcOptInVerificationDisabled) {
 
   command_line->InitFromArgv({"", "--disable-arc-opt-in-verification"});
   EXPECT_TRUE(IsArcOptInVerificationDisabled());
+}
+
+TEST_F(ArcUtilTest, IsArcAppWindow) {
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, nullptr));
+  EXPECT_FALSE(IsArcAppWindow(window.get()));
+
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::CHROME_APP));
+  EXPECT_FALSE(IsArcAppWindow(window.get()));
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::ARC_APP));
+  EXPECT_TRUE(IsArcAppWindow(window.get()));
+
+  EXPECT_FALSE(IsArcAppWindow(nullptr));
 }
 
 }  // namespace

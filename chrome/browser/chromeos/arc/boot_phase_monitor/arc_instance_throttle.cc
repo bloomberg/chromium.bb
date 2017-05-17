@@ -4,14 +4,13 @@
 
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 
-#include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace arc {
@@ -29,12 +28,7 @@ void OnDBusReply(login_manager::ContainerCpuRestrictionState state,
   LOG(WARNING) << "Failed to " << message << " the instance";
 }
 
-bool IsArcAppWindow(ash::WmWindow* active) {
-  DCHECK(active);
-  return active->GetAppType() == static_cast<int>(ash::AppType::ARC_APP);
-}
-
-void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
+void ThrottleInstanceIfNeeded(aura::Window* active) {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   if (!session_manager_client) {
@@ -42,7 +36,7 @@ void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
     return;
   }
   const login_manager::ContainerCpuRestrictionState state =
-      (!active || !IsArcAppWindow(active))
+      !IsArcAppWindow(active)
           ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
           : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
   session_manager_client->SetArcCpuRestriction(state,
@@ -53,7 +47,7 @@ void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
 
 ArcInstanceThrottle::ArcInstanceThrottle() {
   ash::Shell::Get()->activation_client()->AddObserver(this);
-  ThrottleInstanceIfNeeded(ash::WmWindow::Get(ash::wm::GetActiveWindow()));
+  ThrottleInstanceIfNeeded(ash::wm::GetActiveWindow());
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() {
@@ -64,7 +58,7 @@ ArcInstanceThrottle::~ArcInstanceThrottle() {
 void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
-  ThrottleInstanceIfNeeded(ash::WmWindow::Get(gained_active));
+  ThrottleInstanceIfNeeded(gained_active);
 }
 
 }  // namespace arc
