@@ -211,8 +211,8 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedSuccess) {
 TEST_F(DownloadNotifyingObserverTest, OnCompletedCanceled) {
   SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
                           kTestCreationTime, kTestUserRequested);
-  observer()->OnCompleted(request,
-                          RequestNotifier::BackgroundSavePageResult::REMOVED);
+  observer()->OnCompleted(
+      request, RequestNotifier::BackgroundSavePageResult::USER_CANCELED);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_CANCELED,
             notifier()->last_notification_type());
   EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);

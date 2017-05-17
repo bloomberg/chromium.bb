@@ -1105,7 +1105,7 @@ TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
   coordinator()->MarkRequestCompleted(request_id);
   PumpLoop();
 
-  // Our observer should have seen SUCCESS instead of REMOVED.
+  // Our observer should have seen SUCCESS instead of USER_CANCELED.
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
             observer().last_status());
   EXPECT_TRUE(observer().completed_called());
@@ -1359,7 +1359,7 @@ TEST_F(RequestCoordinatorTest, RemoveRequest) {
   PumpLoop();
 
   EXPECT_TRUE(observer().completed_called());
-  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::REMOVED,
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::USER_CANCELED,
             observer().last_status());
   EXPECT_EQ(1UL, last_remove_results().size());
   EXPECT_EQ(kRequestId1, std::get<0>(last_remove_results().at(0)));

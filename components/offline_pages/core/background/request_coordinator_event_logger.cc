@@ -68,7 +68,7 @@ static std::string BackgroundSavePageResultToString(
       return "RETRY_COUNT_EXCEEDED";
     case RequestNotifier::BackgroundSavePageResult::START_COUNT_EXCEEDED:
       return "START_COUNT_EXCEEDED";
-    case RequestNotifier::BackgroundSavePageResult::REMOVED:
+    case RequestNotifier::BackgroundSavePageResult::USER_CANCELED:
       return "REMOVED";
     default:
       NOTREACHED();
