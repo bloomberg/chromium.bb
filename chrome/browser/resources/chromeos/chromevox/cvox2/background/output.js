@@ -431,7 +431,7 @@ Output.RULES = {
       '$tableCellRowIndex), ' +
       '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
       '$tableCellColumnIndex)) $node(tableColumnHeader)',
-      speak: '@cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
+      speak: '$name @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
       '$tableCellRowIndex), ' +
       '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
       '$tableCellColumnIndex)) $node(tableColumnHeader) $state'
