@@ -167,7 +167,7 @@
           on-close="onSetupPinClosed_" set-modes="[[setModes_]]">
       </settings-setup-pin-dialog>
 
-      <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]">
+      <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]" restamp>
         <easy-unlock-turn-off-dialog id="easyUnlockTurnOffDialog"
             on-close="onEasyUnlockTurnOffDialogClose_">
         </easy-unlock-turn-off-dialog>

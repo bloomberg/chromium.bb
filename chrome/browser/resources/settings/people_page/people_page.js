@@ -326,8 +326,15 @@ Polymer({
   },
 
 // <if expr="chromeos">
-  /** @private */
-  onConfigureLockTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onConfigureLockTap_: function(e) {
+    // Navigating to the lock screen will always open the password prompt
+    // dialog, so prevent the end of the tap event to focus what is underneath
+    // it, which takes focus from the dialog.
+    e.preventDefault();
     settings.navigateTo(settings.Route.LOCK_SCREEN);
   },
 // </if>
