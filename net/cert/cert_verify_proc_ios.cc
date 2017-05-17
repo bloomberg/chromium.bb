@@ -257,6 +257,10 @@ int CertVerifyProcIOS::VerifyInternal(
 
   ScopedCFTypeRef<CFMutableArrayRef> cert_array(
       x509_util::CreateSecCertificateArrayForX509Certificate(cert));
+  if (!cert_array) {
+    verify_result->cert_status |= CERT_STATUS_INVALID;
+    return ERR_CERT_INVALID;
+  }
   ScopedCFTypeRef<SecTrustRef> trust_ref;
   SecTrustResultType trust_result = kSecTrustResultDeny;
   ScopedCFTypeRef<CFArrayRef> final_chain;
