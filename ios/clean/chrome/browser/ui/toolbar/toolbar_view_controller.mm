@@ -11,20 +11,12 @@
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Stackview Vertical Margin.
-CGFloat kVerticalMargin = 5.0f;
-// Stackview Horizontal Margin.
-CGFloat kHorizontalMargin = 8.0f;
-// Progress Bar Height.
-CGFloat kProgressBarHeight = 2.0f;
-}  // namespace
 
 @interface ToolbarViewController ()
 @property(nonatomic, strong) UIView* locationBarContainer;
@@ -68,7 +60,10 @@ CGFloat kProgressBarHeight = 2.0f;
 #pragma mark - View lifecyle
 
 - (void)viewDidLoad {
-  self.view.backgroundColor = [UIColor lightGrayColor];
+  self.view.backgroundColor =
+      [UIColor colorWithWhite:kToolbarBackgroundBrightness alpha:1.0];
+  self.view.tintColor =
+      [UIColor colorWithWhite:kToolbarTintColorBrightness alpha:1.0];
   [self addChildViewController:self.locationBarViewController
                      toSubview:self.locationBarContainer];
   [self setUpToolbarStackView];
@@ -87,7 +82,7 @@ CGFloat kProgressBarHeight = 2.0f;
     self.tabSwitchGridButton, self.toolsMenuButton
   ]];
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.stackView.spacing = 16.0;
+  self.stackView.spacing = kStackViewSpacing;
   self.stackView.distribution = UIStackViewDistributionFill;
   [self updateAllButtonsVisibility];
 }
@@ -198,6 +193,14 @@ CGFloat kProgressBarHeight = 2.0f;
   UIView* locationBarContainer = [[UIView alloc] initWithFrame:CGRectZero];
   locationBarContainer.translatesAutoresizingMaskIntoConstraints = NO;
   locationBarContainer.backgroundColor = [UIColor whiteColor];
+  locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
+  locationBarContainer.layer.borderColor =
+      [UIColor colorWithWhite:kLocationBarBorderColorBrightness alpha:1.0]
+          .CGColor;
+  locationBarContainer.layer.shadowRadius = kLocationBarShadowRadius;
+  locationBarContainer.layer.shadowOpacity = kLocationBarShadowOpacity;
+  locationBarContainer.layer.shadowOffset = CGSizeMake(0.0f, 0.5f);
+
   [locationBarContainer
       setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];

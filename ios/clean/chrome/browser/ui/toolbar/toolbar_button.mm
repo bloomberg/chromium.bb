@@ -21,11 +21,6 @@
   [button setImage:highlightedImage forState:UIControlStateHighlighted];
   [button setImage:disabledImage forState:UIControlStateDisabled];
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  [button
-      setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                      forAxis:UILayoutConstraintAxisHorizontal];
-  [button setContentHuggingPriority:UILayoutPriorityRequired
-                            forAxis:UILayoutConstraintAxisHorizontal];
   return button;
 }
 

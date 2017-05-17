@@ -12,6 +12,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// ToolbarButton fixed width.
+CGFloat kToolbarButtonWidth = 42.0f;
+}  // namespace
+
 @implementation ToolbarButton (Factory)
 
 #pragma mark - ToolbarButton Setup
@@ -26,6 +31,8 @@
                      imageForDisabledState:
                          NativeReversableImage(
                              IDR_IOS_TOOLBAR_LIGHT_BACK_DISABLED, YES)];
+  [backButton.widthAnchor constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
   return backButton;
 }
 
@@ -40,21 +47,33 @@
                      imageForDisabledState:
                          NativeReversableImage(
                              IDR_IOS_TOOLBAR_LIGHT_FORWARD_DISABLED, YES)];
+  [forwardButton.widthAnchor constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
   return forwardButton;
 }
 
 + (instancetype)tabSwitcherStripToolbarButton {
-  return [self toolbarButtonWithImageForNormalState:
-                   [UIImage imageNamed:@"tabswitcher_open_tabs"]
-                           imageForHighlightedState:nil
-                              imageForDisabledState:nil];
+  ToolbarButton* tabSwitcherStripButton =
+      [self toolbarButtonWithImageForNormalState:
+                [UIImage imageNamed:@"tabswitcher_open_tabs"]
+                        imageForHighlightedState:nil
+                           imageForDisabledState:nil];
+  [tabSwitcherStripButton.widthAnchor
+      constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
+  return tabSwitcherStripButton;
 }
 
 + (instancetype)tabSwitcherGridToolbarButton {
-  return [self toolbarButtonWithImageForNormalState:
-                   [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
-                           imageForHighlightedState:nil
-                              imageForDisabledState:nil];
+  ToolbarButton* tabSwitcherGridButton =
+      [self toolbarButtonWithImageForNormalState:
+                [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
+                        imageForHighlightedState:nil
+                           imageForDisabledState:nil];
+  [tabSwitcherGridButton.widthAnchor
+      constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
+  return tabSwitcherGridButton;
 }
 
 + (instancetype)toolsMenuToolbarButton {
@@ -64,6 +83,8 @@
                   imageForHighlightedState:nil
                      imageForDisabledState:nil];
   [toolsMenuButton setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -3, 0, 0)];
+  [toolsMenuButton.widthAnchor constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
   return toolsMenuButton;
 }
 
@@ -75,6 +96,8 @@
                       NativeImage(IDR_IOS_TOOLBAR_LIGHT_SHARE_PRESSED)
                      imageForDisabledState:
                          NativeImage(IDR_IOS_TOOLBAR_LIGHT_SHARE_DISABLED)];
+  [shareButton.widthAnchor constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
   return shareButton;
 }
 
@@ -89,6 +112,8 @@
                      imageForDisabledState:
                          NativeReversableImage(
                              IDR_IOS_TOOLBAR_LIGHT_RELOAD_DISABLED, YES)];
+  [reloadButton.widthAnchor constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
   return reloadButton;
 }
 
@@ -100,6 +125,8 @@
                       NativeImage(IDR_IOS_TOOLBAR_LIGHT_STOP_PRESSED)
                      imageForDisabledState:
                          NativeImage(IDR_IOS_TOOLBAR_LIGHT_STOP_DISABLED)];
+  [stopButton.widthAnchor constraintEqualToConstant:kToolbarButtonWidth]
+      .active = YES;
   return stopButton;
 }
 
