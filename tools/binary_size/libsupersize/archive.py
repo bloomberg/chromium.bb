@@ -85,11 +85,12 @@ def _NormalizeNames(raw_symbols):
   """
   found_prefixes = set()
   for symbol in raw_symbols:
-    if symbol.full_name.startswith('*'):
+    full_name = symbol.full_name
+    if full_name.startswith('*'):
       # See comment in _CalculatePadding() about when this
       # can happen.
-      symbol.template_name = symbol.full_name
-      symbol.name = symbol.full_name
+      symbol.template_name = full_name
+      symbol.name = full_name
       continue
 
     # Remove [clone] suffix, and set flag accordingly.
@@ -100,29 +101,43 @@ def _NormalizeNames(raw_symbols):
     #     [clone .constprop.1064]  # GCC
     #     [clone .11064]  # clang
     # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
-    idx = symbol.full_name.find(' [clone ')
+    idx = full_name.find(' [clone ')
     if idx != -1:
-      symbol.full_name = symbol.full_name[:idx]
+      full_name = full_name[:idx]
       symbol.flags |= models.FLAG_CLONE
 
+    # Clones for C symbols.
+    if symbol.section == 't':
+      idx = full_name.rfind('.')
+      if idx != -1 and full_name[idx + 1:].isdigit():
+        new_name = full_name[:idx]
+        # Generated symbols that end with .123 but are not clones.
+        # Find these via:
+        #   size_info.symbols.WhereInSection('t').WhereIsGroup().SortedByCount()
+        if new_name not in ('__tcf_0', 'startup'):
+          full_name = new_name
+          symbol.flags |= models.FLAG_CLONE
+          # Remove .part / .isra / .constprop.
+          idx = full_name.rfind('.', 0, idx)
+          if idx != -1:
+            full_name = full_name[:idx]
+
     # E.g.: vtable for FOO
-    idx = symbol.full_name.find(' for ', 0, 30)
+    idx = full_name.find(' for ', 0, 30)
     if idx != -1:
-      found_prefixes.add(symbol.full_name[:idx + 4])
-      symbol.full_name = (
-          symbol.full_name[idx + 5:] + ' [' + symbol.full_name[:idx] + ']')
+      found_prefixes.add(full_name[:idx + 4])
+      full_name = '{} [{}]'.format(full_name[idx + 5:], full_name[:idx])
 
     # E.g.: virtual thunk to FOO
-    idx = symbol.full_name.find(' to ', 0, 30)
+    idx = full_name.find(' to ', 0, 30)
     if idx != -1:
-      found_prefixes.add(symbol.full_name[:idx + 3])
-      symbol.full_name = (
-          symbol.full_name[idx + 4:] + ' [' + symbol.full_name[:idx] + ']')
+      found_prefixes.add(full_name[:idx + 3])
+      full_name = '{} [{}]'.format(full_name[idx + 4:], full_name[:idx])
 
     # Strip out return type, and split out name, template_name.
     # Function parsing also applies to non-text symbols. E.g. Function statics.
     symbol.full_name, symbol.template_name, symbol.name = (
-        function_signature.Parse(symbol.full_name))
+        function_signature.Parse(full_name))
 
     # Remove anonymous namespaces (they just harm clustering).
     symbol.template_name = symbol.template_name.replace(
@@ -375,16 +390,12 @@ def LoadAndPostProcessSizeInfo(path):
   """Returns a SizeInfo for the given |path|."""
   logging.debug('Loading results from: %s', path)
   size_info = file_format.LoadSizeInfo(path)
-  _PostProcessSizeInfo(size_info)
-  return size_info
-
-
-def _PostProcessSizeInfo(size_info):
   logging.info('Normalizing symbol names')
   _NormalizeNames(size_info.raw_symbols)
   logging.info('Calculating padding')
   _CalculatePadding(size_info.raw_symbols)
-  logging.info('Processed %d symbols', len(size_info.raw_symbols))
+  logging.info('Loaded %d symbols', len(size_info.raw_symbols))
+  return size_info
 
 
 def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
@@ -419,7 +430,8 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
   return metadata
 
 
-def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory):
+def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
+                   normalize_names=True):
   """Creates a SizeInfo.
 
   Args:
@@ -519,13 +531,19 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory):
     for symbol in raw_symbols:
       symbol.object_path = _NormalizeObjectPath(symbol.object_path)
 
-  size_info = models.SizeInfo(section_sizes, raw_symbols)
-
-  # When creating the .size file, name normalization is not strictly required,
-  # but makes for smaller files.
-  # Padding not required either, but it is useful to check for large padding and
+  # Padding not really required, but it is useful to check for large padding and
   # log a warning.
-  _PostProcessSizeInfo(size_info)
+  logging.info('Calculating padding')
+  _CalculatePadding(raw_symbols)
+
+  # Do not call _NormalizeNames() during archive since that method tends to need
+  # tweaks over time. Calling it only when loading .size files allows for more
+  # flexability.
+  if normalize_names:
+    _NormalizeNames(raw_symbols)
+
+  logging.info('Processed %d symbols', len(raw_symbols))
+  size_info = models.SizeInfo(section_sizes, raw_symbols)
 
   if logging.getLogger().isEnabledFor(logging.INFO):
     for line in describe.DescribeSizeInfoCoverage(size_info):
@@ -674,7 +692,8 @@ def Run(args, parser):
     apk_elf_result = concurrent.ForkAndCall(
         _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
 
-  size_info = CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory)
+  size_info = CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
+                             normalize_names=False)
 
   if metadata:
     size_info.metadata = metadata

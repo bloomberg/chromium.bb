@@ -21,10 +21,46 @@ def _IsRelevantNmName(name):
   # Skip lines like:
   # 00000000 t $t
   # 00000000 r $d
+  # 0000041b r .L.str
   # 0000041b r .L.str.38
   # 00000344 N
-  return name and not name.startswith('.L.str.') and not (
+  return name and not name.startswith('.L.str') and not (
       len(name) == 2 and name.startswith('$'))
+
+
+def _IsRelevantObjectFileName(name):
+  # Prevent marking compiler-generated symbols as candidates for shared paths.
+  # E.g., multiple files might have "CSWTCH.12", but they are different symbols.
+  #
+  # Find these via:
+  #   size_info.symbols.GroupedByFullName(min_count=-2).Filter(
+  #       lambda s: s.WhereObjectPathMatches('{')).SortedByCount()
+  # and then search for {shared}.
+  # List of names this applies to:
+  #   startup
+  #   __tcf_0  <-- Generated for global destructors.
+  #   ._79
+  #   .Lswitch.table, .Lswitch.table.12
+  #   CSWTCH.12
+  #   lock.12
+  #   table.12
+  #   __compound_literal.12
+  #   .L.ref.tmp.1
+  #   .L.str, .L.str.3
+  if name in ('__tcf_0', 'startup'):
+    return False
+  if name.startswith('._') and name[2:].isdigit():
+    return False
+  if name.startswith('.L') and name.find('.', 2) != -1:
+    return False
+
+  dot_idx = name.find('.')
+  if dot_idx == -1:
+    return True
+  name = name[:dot_idx]
+
+  return name not in (
+      'CSWTCH', 'lock', '__compound_literal', '__func__', 'table')
 
 
 def CollectAliasesByAddress(elf_path, tool_prefix):
@@ -87,7 +123,7 @@ def _ParseOneObjectFileOutput(lines):
       break
     space_idx = line.find(' ')  # Skip over address.
     name = line[space_idx + 3:]
-    if _IsRelevantNmName(name):
+    if _IsRelevantNmName(name) and _IsRelevantObjectFileName(name):
       ret.append(name)
   return ret
 

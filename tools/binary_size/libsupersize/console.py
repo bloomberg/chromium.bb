@@ -121,7 +121,8 @@ class _Session(object):
     if isinstance(obj, int):
       obj = self._printed_variables[obj]
     elif not self._printed_variables or self._printed_variables[-1] != obj:
-      self._printed_variables.append(obj)
+      if not isinstance(obj, models.SymbolGroup) or len(obj) > 0:
+        self._printed_variables.append(obj)
     obj = obj if obj is not None else self._size_infos[-1]
     lines = describe.GenerateLines(obj, verbose=verbose, recursive=recursive)
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
