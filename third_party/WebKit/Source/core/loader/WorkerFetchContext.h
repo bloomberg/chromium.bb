@@ -60,6 +60,9 @@ class WorkerFetchContext final : public BaseFetchContext {
   bool IsControlledByServiceWorker() const override;
   RefPtr<WebTaskRunner> LoadingTaskRunner() const override;
 
+  void AddAdditionalRequestHeaders(ResourceRequest&,
+                                   FetchResourceType) override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

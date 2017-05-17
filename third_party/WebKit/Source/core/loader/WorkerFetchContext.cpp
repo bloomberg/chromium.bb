@@ -173,6 +173,18 @@ RefPtr<WebTaskRunner> WorkerFetchContext::LoadingTaskRunner() const {
   return loading_task_runner_;
 }
 
+void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
+                                                     FetchResourceType type) {
+  BaseFetchContext::AddAdditionalRequestHeaders(request, type);
+
+  // The remaining modifications are only necessary for HTTP and HTTPS.
+  if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
+    return;
+
+  if (web_context_->IsDataSaverEnabled())
+    request.SetHTTPHeaderField("Save-Data", "on");
+}
+
 DEFINE_TRACE(WorkerFetchContext) {
   visitor->Trace(worker_global_scope_);
   visitor->Trace(resource_fetcher_);

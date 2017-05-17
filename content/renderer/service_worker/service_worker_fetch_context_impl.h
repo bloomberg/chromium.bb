@@ -27,6 +27,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override;
   void WillSendRequest(blink::WebURLRequest&) override;
   bool IsControlledByServiceWorker() const override;
+  void SetDataSaverEnabled(bool enabled) override;
+  bool IsDataSaverEnabled() const override;
 
  private:
   mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info_;
@@ -36,6 +38,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
   mojom::WorkerURLLoaderFactoryProviderPtr provider_;
   mojom::URLLoaderFactoryAssociatedPtr url_loader_factory_;
+
+  bool is_data_saver_enabled_ = false;
 };
 
 }  // namespace content

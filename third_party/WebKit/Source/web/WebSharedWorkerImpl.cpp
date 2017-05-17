@@ -345,8 +345,10 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
                 ->DataSource()
                 ->GetServiceWorkerNetworkProvider());
     DCHECK(web_worker_fetch_context);
-    // TODO(horo): Set more information about the context (ex: DataSaverEnabled)
+    // TODO(horo): Set more information about the context (ex: AppCacheHostID)
     // to |web_worker_fetch_context|.
+    web_worker_fetch_context->SetDataSaverEnabled(
+        document->GetFrame()->GetSettings()->GetDataSaverEnabled());
     ProvideWorkerFetchContextToWorker(worker_clients,
                                       std::move(web_worker_fetch_context));
   }
