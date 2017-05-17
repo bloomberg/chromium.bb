@@ -100,7 +100,8 @@ void AXSlider::AddChildren() {
     children_.push_back(thumb);
 }
 
-AXObject* AXSlider::ElementAccessibilityHitTest(const IntPoint& point) const {
+AXObjectImpl* AXSlider::ElementAccessibilityHitTest(
+    const IntPoint& point) const {
   if (children_.size()) {
     DCHECK(children_.size() == 1);
     if (children_[0]->GetBoundsInFrameCoordinates().Contains(point))

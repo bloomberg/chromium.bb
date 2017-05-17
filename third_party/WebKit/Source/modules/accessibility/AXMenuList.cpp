@@ -82,7 +82,7 @@ void AXMenuList::AddChildren() {
 
   AXObjectCacheImpl& cache = AxObjectCache();
 
-  AXObject* list = cache.GetOrCreate(kMenuListPopupRole);
+  AXObjectImpl* list = cache.GetOrCreate(kMenuListPopupRole);
   if (!list)
     return;
 

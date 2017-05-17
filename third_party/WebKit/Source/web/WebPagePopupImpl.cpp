@@ -48,8 +48,8 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupSupplement.h"
-#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXObjectImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -224,9 +224,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       AXObjectCache::AXNotification notification) override {
     WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
         popup_->popup_client_->OwnerElement().GetDocument().GetFrame());
-    if (obj && frame && frame->Client())
+    if (obj && frame && frame->Client()) {
       frame->Client()->PostAccessibilityEvent(
-          WebAXObject(obj), static_cast<WebAXEvent>(notification));
+          WebAXObject(ToAXObjectImpl(obj)),
+          static_cast<WebAXEvent>(notification));
+    }
   }
 
   void SetToolTip(LocalFrame&,

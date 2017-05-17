@@ -493,7 +493,7 @@ is defined by [automation.idl], which must be kept synchronized with
 [AXContentNodeData]: https://cs.chromium.org/chromium/src/content/common/ax_content_node_data.h
 [AXLayoutObject]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXLayoutObject.h
 [AXNodeObject]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXNodeObject.h
-[AXObject]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXObject.h
+[AXObjectImpl]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXObjectImpl.h
 [AXObjectCacheImpl]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXObjectCacheImpl.h
 [AXPlatformNode]: https://cs.chromium.org/chromium/src/ui/accessibility/platform/ax_platform_node.h
 [AXTreeSerializer]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_tree_serializer.h

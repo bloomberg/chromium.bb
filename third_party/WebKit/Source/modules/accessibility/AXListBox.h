@@ -47,7 +47,7 @@ class AXListBox final : public AXLayoutObject {
 
   AccessibilityRole DetermineAccessibilityRole() final;
   bool IsAXListBox() const override { return true; }
-  AXObject* ActiveDescendant() final;
+  AXObjectImpl* ActiveDescendant() final;
 
   void ActiveIndexChanged();
 

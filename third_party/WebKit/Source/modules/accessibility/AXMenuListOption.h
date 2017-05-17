@@ -62,7 +62,7 @@ class AXMenuListOption final : public AXMockObject {
   bool IsSelected() const override;
   void SetSelected(bool) override;
   bool CanSetSelectedAttribute() const override;
-  void GetRelativeBounds(AXObject** out_container,
+  void GetRelativeBounds(AXObjectImpl** out_container,
                          FloatRect& out_bounds_in_container,
                          SkMatrix44& out_container_transform) const override;
   String TextAlternative(bool recursive,

@@ -387,7 +387,7 @@ void AXTable::AddChildren() {
   // Add caption
   if (HTMLTableCaptionElement* caption =
           toHTMLTableElement(table_node)->caption()) {
-    AXObject* caption_object = ax_cache.GetOrCreate(caption);
+    AXObjectImpl* caption_object = ax_cache.GetOrCreate(caption);
     if (caption_object && !caption_object->AccessibilityIsIgnored())
       children_.push_back(caption_object);
   }
@@ -401,14 +401,14 @@ void AXTable::AddChildren() {
 
   LayoutTableSection* initial_table_section = table_section;
   while (table_section) {
-    HeapHashSet<Member<AXObject>> appended_rows;
+    HeapHashSet<Member<AXObjectImpl>> appended_rows;
     unsigned num_rows = table_section->NumRows();
     for (unsigned row_index = 0; row_index < num_rows; ++row_index) {
       LayoutTableRow* layout_row = table_section->RowLayoutObjectAt(row_index);
       if (!layout_row)
         continue;
 
-      AXObject* row_object = ax_cache.GetOrCreate(layout_row);
+      AXObjectImpl* row_object = ax_cache.GetOrCreate(layout_row);
       if (!row_object || !row_object->IsTableRow())
         continue;
 
@@ -439,13 +439,13 @@ void AXTable::AddChildren() {
       children_.push_back(column);
   }
 
-  AXObject* header_container_object = HeaderContainer();
+  AXObjectImpl* header_container_object = HeaderContainer();
   if (header_container_object &&
       !header_container_object->AccessibilityIsIgnored())
     children_.push_back(header_container_object);
 }
 
-AXObject* AXTable::HeaderContainer() {
+AXObjectImpl* AXTable::HeaderContainer() {
   if (header_container_)
     return header_container_.Get();
 
@@ -457,13 +457,13 @@ AXObject* AXTable::HeaderContainer() {
   return header_container_.Get();
 }
 
-const AXObject::AXObjectVector& AXTable::Columns() {
+const AXObjectImpl::AXObjectVector& AXTable::Columns() {
   UpdateChildrenIfNecessary();
 
   return columns_;
 }
 
-const AXObject::AXObjectVector& AXTable::Rows() {
+const AXObjectImpl::AXObjectVector& AXTable::Rows() {
   UpdateChildrenIfNecessary();
 
   return rows_;
@@ -476,7 +476,7 @@ void AXTable::ColumnHeaders(AXObjectVector& headers) {
   UpdateChildrenIfNecessary();
   unsigned column_count = columns_.size();
   for (unsigned c = 0; c < column_count; c++) {
-    AXObject* column = columns_[c].Get();
+    AXObjectImpl* column = columns_[c].Get();
     if (column->IsTableCol())
       ToAXTableColumn(column)->HeaderObjectsForColumn(headers);
   }
@@ -489,7 +489,7 @@ void AXTable::RowHeaders(AXObjectVector& headers) {
   UpdateChildrenIfNecessary();
   unsigned row_count = rows_.size();
   for (unsigned r = 0; r < row_count; r++) {
-    AXObject* row = rows_[r].Get();
+    AXObjectImpl* row = rows_[r].Get();
     if (row->IsTableRow())
       ToAXTableRow(rows_[r].Get())->HeaderObjectsForRow(headers);
   }
@@ -565,7 +565,7 @@ AXTableCell* AXTable::CellForColumnAndRow(unsigned column, unsigned row) {
              std::min(static_cast<unsigned>(children.size()), column + 1);
          col_index_counter > 0; --col_index_counter) {
       unsigned col_index = col_index_counter - 1;
-      AXObject* child = children[col_index].Get();
+      AXObjectImpl* child = children[col_index].Get();
 
       if (!child->IsTableCell())
         continue;
