@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
@@ -32,16 +33,15 @@ void PrerenderHistory::Clear() {
   entries_.clear();
 }
 
-base::Value* PrerenderHistory::GetEntriesAsValue() const {
-  base::ListValue* return_list = new base::ListValue();
+std::unique_ptr<base::Value> PrerenderHistory::GetEntriesAsValue() const {
+  auto return_list = base::MakeUnique<base::ListValue>();
   // Javascript needs times in terms of milliseconds since Jan 1, 1970.
   base::Time epoch_start = base::Time::UnixEpoch();
   for (std::list<Entry>::const_reverse_iterator it = entries_.rbegin();
        it != entries_.rend();
        ++it) {
     const Entry& entry = *it;
-    std::unique_ptr<base::DictionaryValue> entry_dict(
-        new base::DictionaryValue());
+    auto entry_dict = base::MakeUnique<base::DictionaryValue>();
     entry_dict->SetString("url", entry.url.spec());
     entry_dict->SetString("final_status",
                           NameFromFinalStatus(entry.final_status));
@@ -53,7 +53,7 @@ base::Value* PrerenderHistory::GetEntriesAsValue() const {
         base::Int64ToString((entry.end_time - epoch_start).InMilliseconds()));
     return_list->Append(std::move(entry_dict));
   }
-  return return_list;
+  return std::move(return_list);
 }
 
 }  // namespace prerender

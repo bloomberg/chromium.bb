@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -21,6 +22,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -816,7 +818,7 @@ Status WritePrefsFile(
   if (custom_prefs) {
     for (base::DictionaryValue::Iterator it(*custom_prefs); !it.IsAtEnd();
          it.Advance()) {
-      prefs->Set(it.key(), it.value().DeepCopy());
+      prefs->Set(it.key(), base::MakeUnique<base::Value>(it.value()));
     }
   }
 

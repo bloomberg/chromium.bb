@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/json/json_parser.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -265,7 +266,8 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
 
   void CreateHostedApp(Manifest::Location location) {
     base::DictionaryValue values;
-    values.Set(extensions::manifest_keys::kWebURLs, new base::ListValue());
+    values.Set(extensions::manifest_keys::kWebURLs,
+               base::MakeUnique<base::ListValue>());
     values.SetString(extensions::manifest_keys::kLaunchWebURL,
                      "http://www.example.com");
     CreateExtensionFromValues(location, &values);

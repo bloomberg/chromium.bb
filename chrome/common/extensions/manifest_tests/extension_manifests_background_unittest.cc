@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "components/version_info/version_info.h"
@@ -102,9 +104,9 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
-  base::ListValue* permissions = new base::ListValue();
+  auto permissions = base::MakeUnique<base::ListValue>();
   permissions->AppendString("webRequest");
-  manifest->Set(keys::kPermissions, permissions);
+  manifest->Set(keys::kPermissions, std::move(permissions));
   LoadAndExpectError(ManifestData(manifest.get(), ""),
                      errors::kWebRequestConflictsWithLazyBackground);
 }

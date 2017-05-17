@@ -4,6 +4,10 @@
 
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,9 +18,9 @@ TEST_F(ChromeManifestTest, StorageAPIManifestVersionAvailability) {
   {
     base_manifest.SetString(keys::kName, "test");
     base_manifest.SetString(keys::kVersion, "0.1");
-    base::ListValue* permissions = new base::ListValue();
+    auto permissions = base::MakeUnique<base::ListValue>();
     permissions->AppendString("storage");
-    base_manifest.Set(keys::kPermissions, permissions);
+    base_manifest.Set(keys::kPermissions, std::move(permissions));
   }
 
   std::string kManifestVersionError =

@@ -124,13 +124,12 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   std::vector<std::unique_ptr<ManifestData>> manifests;
   // Create each manifest.
   for (const char* api_name : kPlatformAppExperimentalApis) {
-    // DictionaryValue will take ownership of this ListValue.
-    base::ListValue *permissions = new base::ListValue();
+    auto permissions = base::MakeUnique<base::ListValue>();
     permissions->AppendString("experimental");
     permissions->AppendString(api_name);
-    manifest->Set("permissions", permissions);
-    manifests.push_back(
-        base::MakeUnique<ManifestData>(manifest->CreateDeepCopy(), ""));
+    manifest->Set("permissions", std::move(permissions));
+    manifests.push_back(base::MakeUnique<ManifestData>(
+        base::MakeUnique<base::DictionaryValue>(*manifest), ""));
   }
   // First try to load without any flags. This should warn for every API.
   for (const std::unique_ptr<ManifestData>& manifest : manifests) {

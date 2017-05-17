@@ -556,7 +556,7 @@ Status WebViewImpl::SetFileInputFiles(
     return Status(kUnknownError, "no node ID for file input");
   base::DictionaryValue params;
   params.SetInteger("nodeId", node_id);
-  params.Set("files", file_list.DeepCopy());
+  params.Set("files", base::MakeUnique<base::Value>(file_list));
   return client_->SendCommand("DOM.setFileInputFiles", params);
 }
 

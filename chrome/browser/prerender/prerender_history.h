@@ -68,7 +68,7 @@ class PrerenderHistory : public base::NonThreadSafe {
   void Clear();
 
   // Retrieves the entries as a value which can be displayed.
-  base::Value* GetEntriesAsValue() const;
+  std::unique_ptr<base::Value> GetEntriesAsValue() const;
 
  private:
   std::list<Entry> entries_;

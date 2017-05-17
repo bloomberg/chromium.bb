@@ -664,7 +664,7 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
 
     std::unique_ptr<base::DictionaryValue> result_dictionary(
         new base::DictionaryValue);
-    result_dictionary->Set(kMetadataKey, metadata.ToValue().release());
+    result_dictionary->Set(kMetadataKey, metadata.ToValue());
     SetResult(std::move(result_dictionary));
     SendResponse(true);
     return;
@@ -700,7 +700,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
 
   std::unique_ptr<base::DictionaryValue> result_dictionary(
       new base::DictionaryValue);
-  result_dictionary->Set(kMetadataKey, metadata_dictionary.release());
+  result_dictionary->Set(kMetadataKey, std::move(metadata_dictionary));
 
   if (attached_images->empty()) {
     SetResult(std::move(result_dictionary));
@@ -708,7 +708,8 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
     return;
   }
 
-  result_dictionary->Set(kAttachedImagesBlobInfoKey, new base::ListValue);
+  result_dictionary->Set(kAttachedImagesBlobInfoKey,
+                         base::MakeUnique<base::ListValue>());
   metadata::AttachedImage* first_image = &attached_images->front();
   content::BrowserContext::CreateMemoryBackedBlob(
       GetProfile(), first_image->data.c_str(), first_image->data.size(),
@@ -743,11 +744,10 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
       &(*attached_images)[blob_uuids->size()];
   std::unique_ptr<base::DictionaryValue> attached_image(
       new base::DictionaryValue);
-  attached_image->Set(kBlobUUIDKey, new base::Value(current_blob->GetUUID()));
-  attached_image->Set(kTypeKey, new base::Value(current_image->type));
-  attached_image->Set(
-      kSizeKey,
-      new base::Value(base::checked_cast<int>(current_image->data.size())));
+  attached_image->SetString(kBlobUUIDKey, current_blob->GetUUID());
+  attached_image->SetString(kTypeKey, current_image->type);
+  attached_image->SetInteger(
+      kSizeKey, base::checked_cast<int>(current_image->data.size()));
   attached_images_list->Append(std::move(attached_image));
 
   blob_uuids->push_back(current_blob->GetUUID());

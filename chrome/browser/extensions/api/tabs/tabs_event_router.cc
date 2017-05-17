@@ -55,7 +55,7 @@ bool WillDispatchTabUpdatedEvent(
   const base::Value* value = nullptr;
   for (const auto& property : changed_property_names) {
     if (tab_value->Get(property, &value))
-      changed_properties->Set(property, value->CreateDeepCopy());
+      changed_properties->Set(property, base::MakeUnique<base::Value>(*value));
   }
 
   event->event_args->Set(1, std::move(changed_properties));
@@ -354,7 +354,7 @@ void TabsEventRouter::TabSelectionChanged(
       base::MakeUnique<Value>(
           ExtensionTabUtil::GetWindowIdOfTabStripModel(tab_strip_model)));
 
-  select_info->Set(tabs_constants::kTabIdsKey, all_tabs.release());
+  select_info->Set(tabs_constants::kTabIdsKey, std::move(all_tabs));
   args->Append(std::move(select_info));
 
   // The onHighlighted event replaced onHighlightChanged.

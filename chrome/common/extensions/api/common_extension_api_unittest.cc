@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -431,7 +432,7 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
         i != permissions.end(); ++i) {
       permissions_list->AppendString(*i);
     }
-    manifest.Set("permissions", permissions_list.release());
+    manifest.Set("permissions", std::move(permissions_list));
   }
 
   std::string error;
@@ -512,7 +513,7 @@ scoped_refptr<Extension> CreateHostedApp() {
   base::DictionaryValue values;
   values.SetString(manifest_keys::kName, "test");
   values.SetString(manifest_keys::kVersion, "0.1");
-  values.Set(manifest_keys::kWebURLs, new base::ListValue());
+  values.Set(manifest_keys::kWebURLs, base::MakeUnique<base::ListValue>());
   values.SetString(manifest_keys::kLaunchWebURL,
                    "http://www.example.com");
   std::string error;
@@ -531,20 +532,20 @@ scoped_refptr<Extension> CreatePackagedAppWithPermissions(
   values.SetString(manifest_keys::kPlatformAppBackground,
       "http://www.example.com");
 
-  base::DictionaryValue* app = new base::DictionaryValue();
-  base::DictionaryValue* background = new base::DictionaryValue();
-  base::ListValue* scripts = new base::ListValue();
+  auto app = base::MakeUnique<base::DictionaryValue>();
+  auto background = base::MakeUnique<base::DictionaryValue>();
+  auto scripts = base::MakeUnique<base::ListValue>();
   scripts->AppendString("test.js");
-  background->Set("scripts", scripts);
-  app->Set("background", background);
-  values.Set(manifest_keys::kApp, app);
+  background->Set("scripts", std::move(scripts));
+  app->Set("background", std::move(background));
+  values.Set(manifest_keys::kApp, std::move(app));
   {
-    std::unique_ptr<base::ListValue> permissions_list(new base::ListValue());
+    auto permissions_list = base::MakeUnique<base::ListValue>();
     for (std::set<std::string>::const_iterator i = permissions.begin();
         i != permissions.end(); ++i) {
       permissions_list->AppendString(*i);
     }
-    values.Set("permissions", permissions_list.release());
+    values.Set("permissions", std::move(permissions_list));
   }
 
   std::string error;

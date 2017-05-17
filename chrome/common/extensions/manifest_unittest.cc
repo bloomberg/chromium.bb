@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
@@ -47,11 +48,11 @@ class ManifestUnitTest : public testing::Test {
   // instead be deleted.
   void MutateManifest(std::unique_ptr<Manifest>* manifest,
                       const std::string& key,
-                      base::Value* value) {
-    std::unique_ptr<base::DictionaryValue> manifest_value(
-        manifest->get()->value()->DeepCopy());
+                      std::unique_ptr<base::Value> value) {
+    auto manifest_value =
+        base::MakeUnique<base::DictionaryValue>(*manifest->get()->value());
     if (value)
-      manifest_value->Set(key, value);
+      manifest_value->Set(key, std::move(value));
     else
       manifest_value->Remove(key, NULL);
     manifest->reset(
@@ -92,7 +93,8 @@ TEST_F(ManifestUnitTest, Extension) {
 
   // Set the manifest_version to 2; background_page should stop working.
   value.clear();
-  MutateManifest(&manifest, keys::kManifestVersion, new base::Value(2));
+  MutateManifest(&manifest, keys::kManifestVersion,
+                 base::MakeUnique<base::Value>(2));
   EXPECT_FALSE(manifest->GetString("background_page", &value));
   EXPECT_EQ("", value);
 
@@ -114,7 +116,7 @@ TEST_F(ManifestUnitTest, Extension) {
   std::unique_ptr<Manifest> manifest2(manifest->DeepCopy());
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
-  MutateManifest(&manifest, "foo", new base::Value("blah"));
+  MutateManifest(&manifest, "foo", base::MakeUnique<base::Value>("blah"));
   EXPECT_FALSE(manifest->Equals(manifest2.get()));
 }
 
@@ -136,38 +138,39 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
 
   // Theme.
-  MutateManifest(
-      &manifest, keys::kTheme, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kTheme,
+                 base::MakeUnique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_THEME);
   MutateManifest(
       &manifest, keys::kTheme, NULL);
 
   // Shared module.
-  MutateManifest(
-      &manifest, keys::kExport, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kExport,
+                 base::MakeUnique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_SHARED_MODULE);
   MutateManifest(
       &manifest, keys::kExport, NULL);
 
   // Packaged app.
-  MutateManifest(
-      &manifest, keys::kApp, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kApp,
+                 base::MakeUnique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   // Platform app with event page.
-  MutateManifest(
-      &manifest, keys::kPlatformAppBackground, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kPlatformAppBackground,
+                 base::MakeUnique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
 
   // Hosted app.
-  MutateManifest(
-      &manifest, keys::kWebURLs, new base::ListValue());
+  MutateManifest(&manifest, keys::kWebURLs,
+                 base::MakeUnique<base::ListValue>());
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kWebURLs, NULL);
-  MutateManifest(&manifest, keys::kLaunchWebURL, new base::Value("foo"));
+  MutateManifest(&manifest, keys::kLaunchWebURL,
+                 base::MakeUnique<base::Value>("foo"));
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, NULL);
@@ -189,24 +192,25 @@ TEST_F(ManifestUnitTest, RestrictedKeys) {
 
   // "Commands" requires manifest version 2.
   const base::Value* output = NULL;
-  MutateManifest(
-      &manifest, keys::kCommands, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kCommands,
+                 base::MakeUnique<base::DictionaryValue>());
   EXPECT_FALSE(manifest->HasKey(keys::kCommands));
   EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
 
-  MutateManifest(&manifest, keys::kManifestVersion, new base::Value(2));
+  MutateManifest(&manifest, keys::kManifestVersion,
+                 base::MakeUnique<base::Value>(2));
   EXPECT_TRUE(manifest->HasKey(keys::kCommands));
   EXPECT_TRUE(manifest->Get(keys::kCommands, &output));
 
-  MutateManifest(
-      &manifest, keys::kPageAction, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kPageAction,
+                 base::MakeUnique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
   EXPECT_TRUE(manifest->HasKey(keys::kPageAction));
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 
   // Platform apps cannot have a "page_action" key.
-  MutateManifest(
-      &manifest, keys::kPlatformAppBackground, new base::DictionaryValue());
+  MutateManifest(&manifest, keys::kPlatformAppBackground,
+                 base::MakeUnique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   EXPECT_FALSE(manifest->HasKey(keys::kPageAction));
   EXPECT_FALSE(manifest->Get(keys::kPageAction, &output));
