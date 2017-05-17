@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions/browser_list_router_helper.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
@@ -12,34 +13,48 @@
 namespace sync_sessions {
 
 BrowserListRouterHelper::BrowserListRouterHelper(
-    SyncSessionsWebContentsRouter* router)
-    : router_(router) {
+    SyncSessionsWebContentsRouter* router,
+    Profile* profile)
+    : router_(router), profile_(profile) {
   BrowserList* browser_list = BrowserList::GetInstance();
-  for (Browser* browser : *browser_list)
-    browser->tab_strip_model()->AddObserver(this);
+  for (Browser* browser : *browser_list) {
+    if (browser->profile() == profile_) {
+      browser->tab_strip_model()->AddObserver(this);
+    }
+  }
   browser_list->AddObserver(this);
 }
 
 BrowserListRouterHelper::~BrowserListRouterHelper() {
   BrowserList* browser_list = BrowserList::GetInstance();
-  for (Browser* browser : *browser_list)
-    browser->tab_strip_model()->RemoveObserver(this);
+  for (Browser* browser : *browser_list) {
+    if (browser->profile() == profile_) {
+      browser->tab_strip_model()->RemoveObserver(this);
+    }
+  }
+
   BrowserList::GetInstance()->RemoveObserver(this);
 }
 
 void BrowserListRouterHelper::OnBrowserAdded(Browser* browser) {
-  browser->tab_strip_model()->AddObserver(this);
+  if (browser->profile() == profile_) {
+    browser->tab_strip_model()->AddObserver(this);
+  }
 }
 
 void BrowserListRouterHelper::OnBrowserRemoved(Browser* browser) {
-  browser->tab_strip_model()->RemoveObserver(this);
+  if (browser->profile() == profile_) {
+    browser->tab_strip_model()->RemoveObserver(this);
+  }
 }
 
 void BrowserListRouterHelper::TabInsertedAt(TabStripModel* model,
                                             content::WebContents* web_contents,
                                             int index,
                                             bool foreground) {
-  router_->NotifyTabModified(web_contents, false);
+  if (web_contents && Profile::FromBrowserContext(
+                          web_contents->GetBrowserContext()) == profile_)
+    router_->NotifyTabModified(web_contents, false);
 }
 
 }  // namespace sync_sessions
