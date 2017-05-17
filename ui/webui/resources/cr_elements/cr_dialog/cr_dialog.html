@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -6,7 +7,7 @@
 
 <dom-module id="cr-dialog">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         --scroll-border: 1px solid var(--paper-grey-300);
         border: 0;
@@ -129,7 +130,8 @@
         <content select=".title"></content>
       </div>
       <paper-icon-button icon="cr:clear" on-tap="cancel" id="close"
-          aria-label$="[[closeText]]" on-keypress="onCloseKeypress_">
+          aria-label$="[[closeText]]" on-keypress="onCloseKeypress_"
+          hidden$="[[noCancel]]">
       </paper-icon-button>
     </div>
     <div class="body-container">

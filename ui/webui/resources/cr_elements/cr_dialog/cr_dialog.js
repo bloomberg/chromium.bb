@@ -37,6 +37,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * True if the dialog should not be able to be cancelled, which will hide
+     * the 'x' button and prevent 'Escape' key presses from closing the dialog.
+     */
+    noCancel: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {?IntersectionObserver} */
@@ -56,6 +65,9 @@ Polymer({
 
     if (!this.ignoreEnterKey)
       this.addEventListener('keypress', this.onKeypress_.bind(this));
+
+    if (this.noCancel)
+      this.addEventListener('cancel', this.onCancel_.bind(this));
   },
 
   /** @override */
@@ -175,5 +187,14 @@ Polymer({
       actionButton.click();
       e.preventDefault();
     }
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onCancel_: function(e) {
+    if (this.noCancel)
+      e.preventDefault();
   },
 });

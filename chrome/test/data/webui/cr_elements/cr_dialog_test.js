@@ -222,4 +222,28 @@ suite('cr-dialog', function() {
     bodyContainer.style.height = '60px';  // Element has "min-height: 60px".
     bodyContainer.scrollTop = 100;
   });
+
+  test('dialog cannot be cancelled when `no-cancel` is set', function() {
+    document.body.innerHTML = `
+      <dialog is="cr-dialog" no-cancel>
+        <div class="title">title</div>
+      </dialog>`;
+
+    var dialog = document.body.querySelector('dialog');
+    dialog.showModal();
+
+    assertTrue(dialog.getCloseButton().hidden);
+
+    // Hitting escape fires a 'cancel' event. Cancelling that event prevents the
+    // dialog from closing.
+    var e = new Event('cancel', {cancelable: true});
+    dialog.dispatchEvent(e);
+    assertTrue(e.defaultPrevented);
+
+    dialog.noCancel = false;
+
+    var e = new Event('cancel', {cancelable: true});
+    dialog.dispatchEvent(e);
+    assertFalse(e.defaultPrevented);
+  });
 });

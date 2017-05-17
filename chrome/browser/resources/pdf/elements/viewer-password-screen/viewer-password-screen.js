@@ -8,21 +8,20 @@ Polymer({
   properties: {
     invalid: Boolean,
 
-    active: {
-      type: Boolean,
-      value: false,
-      observer: 'activeChanged'
-    },
-
     strings: Object,
   },
 
-  ready: function() {
-    this.activeChanged();
+  get active() {
+    return this.$.dialog.open;
   },
 
-  accept: function() {
-    this.active = false;
+  show: function() {
+    this.$.dialog.showModal();
+  },
+
+  close: function() {
+    if (this.active)
+      this.$.dialog.close();
   },
 
   deny: function() {
@@ -30,12 +29,7 @@ Polymer({
     this.$.submit.disabled = false;
     this.invalid = true;
     this.$.password.focus();
-    this.$.password.select();
-  },
-
-  handleKey: function(e) {
-    if (e.keyCode == 13)
-      this.submit();
+    this.$.password.inputElement.select();
   },
 
   submit: function() {
@@ -45,13 +39,4 @@ Polymer({
     this.$.submit.disabled = true;
     this.fire('password-submitted', {password: this.$.password.value});
   },
-
-  activeChanged: function() {
-    if (this.active) {
-      this.$.dialog.open();
-      this.$.password.focus();
-    } else {
-      this.$.dialog.close();
-    }
-  }
 });
