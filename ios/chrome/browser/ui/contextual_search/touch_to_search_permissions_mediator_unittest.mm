@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -34,6 +33,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using testing::Return;
 
@@ -104,15 +107,15 @@ class TouchToSearchPermissionsMediatorTest : public PlatformTest {
     template_url_service_ =
         ios::TemplateURLServiceFactory::GetForBrowserState(BrowserState());
     template_url_service_->Load();
-    tts_permissions_.reset([[TouchToSearchPermissionsMediator alloc]
-        initWithBrowserState:BrowserState()]);
+    tts_permissions_ = [[TouchToSearchPermissionsMediator alloc]
+        initWithBrowserState:BrowserState()];
   }
 
   ios::ChromeBrowserState* BrowserState() { return browser_state_.get(); }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  base::scoped_nsobject<TouchToSearchPermissionsMediator> tts_permissions_;
+  TouchToSearchPermissionsMediator* tts_permissions_;
   TemplateURLService* template_url_service_;
 };
 
@@ -268,9 +271,9 @@ TEST_F(TouchToSearchPermissionsMediatorTest,
   TestChromeBrowserState::Builder browserStateBuilder;
   std::unique_ptr<TestChromeBrowserState> browser_state(
       browserStateBuilder.Build());
-  base::scoped_nsobject<TouchToSearchPermissionsMediator> tts_permissions(
+  TouchToSearchPermissionsMediator* tts_permissions =
       [[TouchToSearchPermissionsMediator alloc]
-          initWithBrowserState:browser_state.get()]);
+          initWithBrowserState:browser_state.get()];
   EXPECT_FALSE([tts_permissions areContextualSearchQueriesSupported]);
 }
 
@@ -293,9 +296,9 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AreQueriesAllowed) {
 }
 
 TEST_F(TouchToSearchPermissionsMediatorTest, CanEnable) {
-  base::scoped_nsobject<MockTouchToSearchPermissionsMediator> permissions(
+  MockTouchToSearchPermissionsMediator* permissions =
       [[MockTouchToSearchPermissionsMediator alloc]
-          initWithBrowserState:BrowserState()]);
+          initWithBrowserState:BrowserState()];
 
   const struct {
     BOOL enabled_on_device;
@@ -340,17 +343,15 @@ TEST_F(TouchToSearchPermissionsMediatorTest, CanEnable) {
   for (const auto& test : tests) {
     [[permissions class]
         setIsTouchToSearchAvailableOnDevice:test.enabled_on_device];
-    permissions.get().preferenceState = test.prefState;
-    permissions.get().isVoiceOverEnabled = test.voiceover_enabled;
-    permissions.get().areContextualSearchQueriesSupported =
-        test.queries_allowed;
+    permissions.preferenceState = test.prefState;
+    permissions.isVoiceOverEnabled = test.voiceover_enabled;
+    permissions.areContextualSearchQueriesSupported = test.queries_allowed;
     EXPECT_EQ(test.expect_available, [permissions canEnable]);
   }
 }
 
 TEST_F(TouchToSearchPermissionsMediatorTest, AudienceNotifications) {
-  base::scoped_nsobject<id> audience(
-      [[TestTouchToSearchPermissionsAudience alloc] init]);
+  id audience = [[TestTouchToSearchPermissionsAudience alloc] init];
   [tts_permissions_ setAudience:audience];
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
   [[NSNotificationCenter defaultCenter]
@@ -430,15 +431,14 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceNotifications) {
   // Reset |audience|.
   [audience setUpdated:NO];
 
-  base::scoped_nsobject<id> audience2(
-      [[TestTouchToSearchPermissionsAudience alloc] init]);
+  id audience2 = [[TestTouchToSearchPermissionsAudience alloc] init];
   // If the permissions object is destroyed, queued notifications should still
   // be sent.
   [tts_permissions_ setAudience:audience2];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:UIAccessibilityVoiceOverStatusChanged
                     object:nil];
-  tts_permissions_.reset();
+  tts_permissions_ = nil;
   base::test::ios::WaitUntilCondition(
       ^bool(void) {
         return [audience2 updated];
@@ -462,9 +462,9 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudiencePrefsSynchronous) {
 
   // Test that setting preferences through another permissions object triggers
   // audience methods.
-  base::scoped_nsobject<TouchToSearchPermissionsMediator> other_permissions(
+  TouchToSearchPermissionsMediator* other_permissions =
       [[TouchToSearchPermissionsMediator alloc]
-          initWithBrowserState:BrowserState()]);
+          initWithBrowserState:BrowserState()];
   [[audience expect]
       touchToSearchDidChangePreferenceState:TouchToSearch::ENABLED];
   [other_permissions setPreferenceState:TouchToSearch::ENABLED];
@@ -483,8 +483,8 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudiencePrefsSynchronous) {
 TEST_F(TouchToSearchPermissionsMediatorTest, OTR) {
   ios::ChromeBrowserState* otr_state =
       BrowserState()->GetOffTheRecordChromeBrowserState();
-  base::scoped_nsobject<TouchToSearchPermissionsMediator> permissions([
-      [TouchToSearchPermissionsMediator alloc] initWithBrowserState:otr_state]);
+  TouchToSearchPermissionsMediator* permissions =
+      [[TouchToSearchPermissionsMediator alloc] initWithBrowserState:otr_state];
 
   EXPECT_FALSE([permissions canEnable]);
   EXPECT_FALSE([permissions canSendPageURLs]);
@@ -505,11 +505,10 @@ TEST_F(TouchToSearchPermissionsMediatorTest, OTR) {
 
 TEST_F(TouchToSearchPermissionsMediatorTest, AudienceRemovedNotifications) {
   @autoreleasepool {
-    base::scoped_nsobject<id> audience(
-        [[TestTouchToSearchPermissionsAudience alloc] init]);
+    id audience = [[TestTouchToSearchPermissionsAudience alloc] init];
     [tts_permissions_ setAudience:audience];
     EXPECT_TRUE([tts_permissions_ observing]);
-    audience.reset();
+    audience = nil;
   }
   // Permissions shouldn't be observing after notifying a nil audience.
   [[NSNotificationCenter defaultCenter]
@@ -518,11 +517,10 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceRemovedNotifications) {
   EXPECT_FALSE([tts_permissions_ observing]);
 
   // Permissions shouldn't observe while still observing.
-  base::scoped_nsobject<id> audience(
-      [[TestTouchToSearchPermissionsAudience alloc] init]);
+  id audience = [[TestTouchToSearchPermissionsAudience alloc] init];
   [tts_permissions_ setAudience:audience];
-  audience.reset();
-  audience.reset([[TestTouchToSearchPermissionsAudience alloc] init]);
+  audience = nil;
+  audience = [[TestTouchToSearchPermissionsAudience alloc] init];
   [tts_permissions_ setAudience:audience];
 }
 
@@ -589,9 +587,9 @@ TEST(TouchToSearchPermissionsAvailabilityTest, FieldTrial) {
 #pragma mark - Unit tests for mock class
 
 TEST(MockTouchToSearchPermissionsTest, Mocking) {
-  base::scoped_nsobject<MockTouchToSearchPermissionsMediator>
-      scoped_permissions([[MockTouchToSearchPermissionsMediator alloc]
-          initWithBrowserState:nullptr]);
+  MockTouchToSearchPermissionsMediator* scoped_permissions =
+      [[MockTouchToSearchPermissionsMediator alloc]
+          initWithBrowserState:nullptr];
   MockTouchToSearchPermissionsMediator* permissions = scoped_permissions;
 
   const GURL test_urls[] = {

@@ -8,7 +8,6 @@
 
 #include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -26,6 +25,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Unit tests for the resources/contextualsearch.js JavaScript file.
 
@@ -223,17 +226,16 @@ class ContextualSearchJsTest : public ChromeWebTest {
 
   void SetUp() override {
     ChromeWebTest::SetUp();
-    mockDelegate_.reset([[OCMockObject
-        niceMockForProtocol:@protocol(ContextualSearchControllerDelegate)]
-        retain]);
+    mockDelegate_ = [OCMockObject
+        niceMockForProtocol:@protocol(ContextualSearchControllerDelegate)];
     jsUnittestsAdditions_ = static_cast<JsContextualSearchAdditionsManager*>(
         [web_state()->GetJSInjectionReceiver()
             instanceOfClass:[JsContextualSearchAdditionsManager class]]);
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
-    controller_.reset([[ContextualSearchController alloc]
+    controller_ = [[ContextualSearchController alloc]
         initWithBrowserState:chrome_browser_state_.get()
-                    delegate:mockDelegate_]);
+                    delegate:mockDelegate_];
     [controller_
         setPermissions:[[MockTouchToSearchPermissionsMediator alloc]
                            initWithBrowserState:chrome_browser_state_.get()]];
@@ -245,15 +247,15 @@ class ContextualSearchJsTest : public ChromeWebTest {
     [controller_ close];
     // Need to tear down the controller so it deregisters its JS handlers
     // before |webController_| is destroyed.
-    controller_.reset();
+    controller_ = nil;
     ChromeWebTest::TearDown();
   }
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   __unsafe_unretained JsContextualSearchAdditionsManager* jsUnittestsAdditions_;
-  base::scoped_nsobject<ContextualSearchController> controller_;
-  base::scoped_nsobject<id> mockDelegate_;
-  base::scoped_nsobject<id> mockToolbarDelegate_;
+  ContextualSearchController* controller_;
+  id mockDelegate_;
+  id mockToolbarDelegate_;
 };
 
 // Test that ignored elements do not trigger CS when tapped.
