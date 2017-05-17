@@ -18,6 +18,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Added more unicode symbols (fractions and not equal) to the UEB
   tables. Thanks to Paul Wood and James Bowden.
 - Fixes to UEB grade 2 (en-ueb-g2.ctb) thanks to Mike Gray.
+- Vastly improved Danish tables thanks to Bue Vester-Andersen.
 ** License changes
 ** Backwards incompatible changes
 
