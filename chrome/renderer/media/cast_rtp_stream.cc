@@ -208,7 +208,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     void WillConnectToTrack(
         base::WeakPtr<CastVideoSink> sink,
         scoped_refptr<media::cast::VideoFrameInput> frame_input) {
-      DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
       sink_ = sink;
       frame_input_ = std::move(frame_input);
     }

@@ -204,7 +204,7 @@ SkBitmap AddToHomescreenManager::FinalizeLauncherIconInBackground(
     const SkBitmap& bitmap,
     const GURL& url,
     bool* is_generated) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
 
   return ShortcutHelper::FinalizeLauncherIconInBackground(bitmap, url,
                                                           is_generated);

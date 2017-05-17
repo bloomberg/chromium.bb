@@ -190,7 +190,7 @@ bool ManagedValueStoreCache::ExtensionTracker::UsesManagedStorage(
 void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnBlockingPool(
     std::unique_ptr<ExtensionSet> extensions,
     base::WeakPtr<ExtensionTracker> self) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
   std::unique_ptr<policy::ComponentMap> components(new policy::ComponentMap);
 
   for (ExtensionSet::const_iterator it = extensions->begin();

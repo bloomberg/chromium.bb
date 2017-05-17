@@ -23,7 +23,7 @@ namespace {
 void ResetFileChangeTracker(storage::FileSystemContext* file_system_context,
                             const storage::FileSystemURL& url) {
   DCHECK(file_system_context->default_file_task_runner()->
-             RunsTasksOnCurrentThread());
+             RunsTasksInCurrentSequence());
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
   DCHECK(backend);

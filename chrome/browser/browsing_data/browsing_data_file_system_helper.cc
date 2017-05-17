@@ -93,7 +93,7 @@ void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
 
 void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
     const FetchCallback& callback) {
-  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
 
   // We check usage for these filesystem types.
@@ -136,7 +136,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
     const GURL& origin) {
-  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
   filesystem_context_->DeleteDataForOriginOnFileTaskRunner(origin);
 }
 

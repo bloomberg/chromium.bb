@@ -209,7 +209,7 @@ TestRequestInterceptor::Delegate::~Delegate() {}
 net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (request->url().host_piece() != hostname_) {
     // Reject requests to other servers.
@@ -240,19 +240,19 @@ net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
 
 void TestRequestInterceptor::Delegate::GetPendingSize(
     size_t* pending_size) const {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(io_task_runner_->RunsTasksInCurrentSequence());
   *pending_size = pending_job_callbacks_.size();
 }
 
 void TestRequestInterceptor::Delegate::AddRequestServicedCallback(
     const base::Closure& callback) {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(io_task_runner_->RunsTasksInCurrentSequence());
   request_serviced_callbacks_.push_back(callback);
 }
 
 void TestRequestInterceptor::Delegate::PushJobCallback(
     const JobCallback& callback) {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(io_task_runner_->RunsTasksInCurrentSequence());
   pending_job_callbacks_.push(callback);
 }
 

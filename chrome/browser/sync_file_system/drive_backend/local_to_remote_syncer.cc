@@ -508,7 +508,7 @@ void LocalToRemoteSyncer::UploadExistingFile(
     std::unique_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
-  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksInCurrentSequence());
 
   const std::string local_file_md5 = drive::util::GetMd5Digest(local_path_,
                                                                nullptr);
@@ -611,7 +611,7 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
     std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::FileResource> entry) {
-  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksInCurrentSequence());
 
   if (error == google_apis::HTTP_NOT_FOUND) {
     retry_on_success_ = true;

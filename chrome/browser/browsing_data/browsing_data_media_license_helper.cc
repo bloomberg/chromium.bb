@@ -87,7 +87,7 @@ void BrowsingDataMediaLicenseHelperImpl::DeleteMediaLicenseOrigin(
 
 void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
     const FetchCallback& callback) {
-  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
 
   const storage::FileSystemType kType = storage::kFileSystemTypePluginPrivate;
@@ -117,7 +117,7 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
 
 void BrowsingDataMediaLicenseHelperImpl::
     DeleteMediaLicenseOriginOnFileTaskRunner(const GURL& origin) {
-  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
 
   const storage::FileSystemType kType = storage::kFileSystemTypePluginPrivate;
   storage::FileSystemBackend* backend =

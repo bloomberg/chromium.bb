@@ -55,7 +55,7 @@ void ModuleDatabase::SetInstance(
 void ModuleDatabase::OnProcessStarted(uint32_t process_id,
                                       uint64_t creation_time,
                                       content::ProcessType process_type) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   CreateProcessInfo(process_id, creation_time, process_type);
 }
 
@@ -67,7 +67,7 @@ void ModuleDatabase::OnModuleLoad(uint32_t process_id,
                                   uintptr_t module_load_address) {
   // Messages can arrive from any thread (UI thread for calls over IPC, and
   // anywhere at all for calls from ModuleWatcher), so bounce if necessary.
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&ModuleDatabase::OnModuleLoad,
                               weak_ptr_factory_.GetWeakPtr(), process_id,
@@ -104,7 +104,7 @@ void ModuleDatabase::OnModuleUnload(uint32_t process_id,
                                     uintptr_t module_load_address) {
   // Messages can arrive from any thread (UI thread for calls over IPC, and
   // anywhere at all for calls from ModuleWatcher), so bounce if necessary.
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&ModuleDatabase::OnModuleUnload,
                               weak_ptr_factory_.GetWeakPtr(), process_id,
@@ -142,7 +142,7 @@ void ModuleDatabase::OnProcessEnded(uint32_t process_id,
                                     uint64_t creation_time) {
   // Messages can arrive from any thread (UI thread for calls over IPC, and
   // anywhere at all for calls from ModuleWatcher), so bounce if necessary.
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&ModuleDatabase::OnProcessEnded,
@@ -347,7 +347,7 @@ void ModuleDatabase::DeleteProcessInfo(uint32_t process_id,
 void ModuleDatabase::OnModuleInspected(
     const ModuleInfoKey& module_key,
     std::unique_ptr<ModuleInspectionResult> inspection_result) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   auto it = modules_.find(module_key);
   if (it == modules_.end())

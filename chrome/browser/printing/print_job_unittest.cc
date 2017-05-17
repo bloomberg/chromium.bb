@@ -103,7 +103,7 @@ TEST(PrintJobTest, SimplePrint) {
                  content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
-  EXPECT_TRUE(job->RunsTasksOnCurrentThread());
+  EXPECT_TRUE(job->RunsTasksInCurrentSequence());
   scoped_refptr<TestOwner> owner(new TestOwner);
   TestSource source;
   job->Initialize(owner.get(), &source, 1);

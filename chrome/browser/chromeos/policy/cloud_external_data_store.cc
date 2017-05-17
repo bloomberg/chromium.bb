@@ -37,12 +37,12 @@ CloudExternalDataStore::CloudExternalDataStore(
 }
 
 CloudExternalDataStore::~CloudExternalDataStore() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
 void CloudExternalDataStore::Prune(
     const CloudExternalDataManager::Metadata& metadata) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   std::set<std::string> subkeys_to_keep;
   for (CloudExternalDataManager::Metadata::const_iterator it = metadata.begin();
        it != metadata.end(); ++it) {
@@ -54,7 +54,7 @@ void CloudExternalDataStore::Prune(
 bool CloudExternalDataStore::Store(const std::string& policy,
                                    const std::string& hash,
                                    const std::string& data) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return cache_->Store(cache_key_, GetSubkey(policy, hash), data);
 }
 
@@ -62,7 +62,7 @@ bool CloudExternalDataStore::Load(const std::string& policy,
                                   const std::string& hash,
                                   size_t max_size,
                                   std::string* data) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   const std::string subkey = GetSubkey(policy, hash);
   if (cache_->Load(cache_key_, subkey, data)) {
     if (data->size() <= max_size && crypto::SHA256HashString(*data) == hash)

@@ -34,7 +34,7 @@ void VerifyCalledOnTaskRunner(base::TaskRunner* task_runner,
   ASSERT_TRUE(called);
   ASSERT_TRUE(task_runner);
 
-  EXPECT_TRUE(task_runner->RunsTasksOnCurrentThread());
+  EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
   EXPECT_FALSE(*called);
   *called = true;
 }

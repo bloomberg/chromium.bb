@@ -31,7 +31,7 @@ void MigrateOnFileSystemThread(FileSystemContext* old_fs_context,
                                FileSystemContext* fs_context,
                                const extensions::Extension* extension) {
   DCHECK(
-      old_fs_context->default_file_task_runner()->RunsTasksOnCurrentThread());
+      old_fs_context->default_file_task_runner()->RunsTasksInCurrentSequence());
 
   SandboxFileSystemBackendDelegate* old_sandbox_delegate =
       old_fs_context->sandbox_delegate();
@@ -67,7 +67,7 @@ void MigrateOnFileSystemThread(FileSystemContext* old_fs_context,
 void MigrateOnIndexedDBThread(IndexedDBContext* old_indexed_db_context,
                               IndexedDBContext* indexed_db_context,
                               const extensions::Extension* extension) {
-  DCHECK(old_indexed_db_context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(old_indexed_db_context->TaskRunner()->RunsTasksInCurrentSequence());
 
   GURL extension_url =
       extensions::Extension::GetBaseURLFromExtensionId(extension->id());

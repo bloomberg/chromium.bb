@@ -643,7 +643,7 @@ void SettingsAppMonitor::Context::Initialize(
     const base::WeakPtr<SettingsAppMonitor>& monitor) {
   // This and all other methods must be called on the automation thread.
   DCHECK(task_runner->BelongsToCurrentThread());
-  DCHECK(!monitor_runner->RunsTasksOnCurrentThread());
+  DCHECK(!monitor_runner->RunsTasksInCurrentSequence());
 
   task_runner_ = task_runner;
   monitor_runner_ = monitor_runner;

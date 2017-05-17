@@ -129,7 +129,7 @@ class LocalFileSyncContextTest : public testing::Test {
                          SyncStatusCode status,
                          const LocalFileSyncInfo& sync_file_info,
                          storage::ScopedFile snapshot) {
-    ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    ASSERT_TRUE(ui_task_runner_->RunsTasksInCurrentSequence());
     has_inflight_prepare_for_sync_ = false;
     status_ = status;
     *metadata_out = sync_file_info.metadata;
@@ -179,16 +179,16 @@ class LocalFileSyncContextTest : public testing::Test {
   void StartModifyFileOnIOThread(CannedSyncableFileSystem* file_system,
                                  const FileSystemURL& url) {
     ASSERT_TRUE(file_system != nullptr);
-    if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    if (!io_task_runner_->RunsTasksInCurrentSequence()) {
       async_modify_finished_ = false;
-      ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+      ASSERT_TRUE(ui_task_runner_->RunsTasksInCurrentSequence());
       io_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&LocalFileSyncContextTest::StartModifyFileOnIOThread,
                          base::Unretained(this), file_system, url));
       return;
     }
-    ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
+    ASSERT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
     file_error_ = base::File::FILE_ERROR_FAILED;
     file_system->operation_runner()->Truncate(
         url, 1, base::Bind(&LocalFileSyncContextTest::DidModifyFile,
@@ -202,14 +202,14 @@ class LocalFileSyncContextTest : public testing::Test {
   }
 
   void DidModifyFile(base::File::Error error) {
-    if (!ui_task_runner_->RunsTasksOnCurrentThread()) {
-      ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
+    if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+      ASSERT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
       ui_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&LocalFileSyncContextTest::DidModifyFile,
                                     base::Unretained(this), error));
       return;
     }
-    ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    ASSERT_TRUE(ui_task_runner_->RunsTasksInCurrentSequence());
     file_error_ = error;
     async_modify_finished_ = true;
   }

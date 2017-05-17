@@ -236,7 +236,7 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
     const SkBitmap& bitmap,
     const GURL& url,
     bool* is_generated) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result;
