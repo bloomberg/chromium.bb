@@ -696,6 +696,13 @@ public class ImeTest {
         DOMUtils.clickNode(mRule.getContentViewCore(), "plain_text");
         mRule.assertWaitForKeyboardStatus(false);
         mRule.assertWaitForSelectActionBarStatus(false);
+
+        DOMUtils.longPressNode(mRule.getContentViewCore(), "input_text");
+        mRule.assertWaitForKeyboardStatus(true);
+        mRule.assertWaitForSelectActionBarStatus(true);
+        DOMUtils.clickNode(mRule.getContentViewCore(), "input_radio");
+        mRule.assertWaitForKeyboardStatus(false);
+        mRule.assertWaitForSelectActionBarStatus(false);
     }
 
     @Test
