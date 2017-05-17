@@ -16,7 +16,7 @@
 
 namespace {
 
-#if !defined(NDEBUG) && TARGET_IPHONE_SIMULATOR
+#if !defined(NDEBUG)
 
 // Swizzles [UIImage imageNamed:] to trigger a DCHECK if an invalid image is
 // attempted to be loaded.
@@ -42,7 +42,7 @@ void swizzleUIImageImageNamed() {
 
   id swizzleBlock = ^(id self, NSString* imageName) {
     // Call the original [UIImage imageNamed:] method.
-    IMP imp = *originalImpPtr;
+    UIImage* (*imp)(id, SEL, id) = (UIImage*(*)(id,SEL,id))*originalImpPtr;
     Class aClass = objc_getClass("UIImage");
     UIImage* image = imp(aClass, @selector(imageNamed:), imageName);
 
@@ -72,7 +72,7 @@ void swizzleUIImageImageNamed() {
   DCHECK(ObjcEvilDoers::ZombieEnable(true, 10000));
 #endif
 
-#if !defined(NDEBUG) && TARGET_IPHONE_SIMULATOR
+#if !defined(NDEBUG)
   // Enable the detection of missing image assets.
   swizzleUIImageImageNamed();
 #endif
