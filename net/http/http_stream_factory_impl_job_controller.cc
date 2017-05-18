@@ -119,8 +119,7 @@ bool HttpStreamFactoryImpl::JobController::for_websockets() {
   return factory_->for_websockets_;
 }
 
-std::unique_ptr<HttpStreamFactoryImpl::Request>
-HttpStreamFactoryImpl::JobController::Start(
+HttpStreamFactoryImpl::Request* HttpStreamFactoryImpl::JobController::Start(
     HttpStreamRequest::Delegate* delegate,
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
@@ -133,12 +132,9 @@ HttpStreamFactoryImpl::JobController::Start(
   stream_type_ = stream_type;
   priority_ = priority;
 
-  auto request = base::MakeUnique<Request>(
-      request_info_.url, this, delegate,
-      websocket_handshake_stream_create_helper, source_net_log, stream_type);
-  // Keep a raw pointer but release ownership of Request instance.
-  request_ = request.get();
-
+  request_ = new Request(request_info_.url, this, delegate,
+                         websocket_handshake_stream_create_helper,
+                         source_net_log, stream_type);
   // Associates |net_log_| with |source_net_log|.
   source_net_log.AddEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
                           net_log_.source().ToEventParametersCallback());
@@ -146,7 +142,7 @@ HttpStreamFactoryImpl::JobController::Start(
                     source_net_log.source().ToEventParametersCallback());
 
   RunLoop(OK);
-  return request;
+  return request_;
 }
 
 void HttpStreamFactoryImpl::JobController::Preconnect(int num_streams) {
