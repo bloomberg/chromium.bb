@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 
@@ -51,8 +52,7 @@ class BASE_EXPORT RunLoop {
   void RunUntilIdle();
 
   bool running() const {
-    // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-    // DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return running_;
   }
 
@@ -175,6 +175,7 @@ class BASE_EXPORT RunLoop {
     // RegisterDelegateForCurrentThread().
     bool bound_ = false;
 
+    // Thread-affine per its use of TLS.
     THREAD_CHECKER(bound_thread_checker_);
 
     Client client_interface_ = Client(this);
@@ -208,8 +209,9 @@ class BASE_EXPORT RunLoop {
   bool BeforeRun();
   void AfterRun();
 
-  // A copy of RunLoop::Delegate for this thread for quick access without using
-  // TLS.
+  // A copy of RunLoop::Delegate for the thread driven by tis RunLoop for quick
+  // access without using TLS (also allows access to state from another sequence
+  // during Run(), ref. |sequence_checker_| below).
   Delegate* delegate_;
 
   bool run_called_ = false;
@@ -220,9 +222,11 @@ class BASE_EXPORT RunLoop {
   // that we should quit Run once it becomes idle.
   bool quit_when_idle_received_ = false;
 
-  // RunLoop's non-static methods are affine to the thread it's running on per
-  // this class' underlying use of thread-local-storage.
-  base::ThreadChecker thread_checker_;
+  // RunLoop is not thread-safe. Its state may not be accessed from any other
+  // sequence than the thread it was constructed on. Exception: RunLoop can be
+  // safely accessed from one other sequence (or single parallel task) during
+  // Run().
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // WeakPtrFactory for QuitClosure safety.
   base::WeakPtrFactory<RunLoop> weak_factory_;

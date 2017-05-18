@@ -70,14 +70,21 @@ RunLoop::RunLoop() : delegate_(tls_delegate.Get().Get()), weak_factory_(this) {
 
 RunLoop::~RunLoop() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void RunLoop::Run() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!BeforeRun())
     return;
+
+  // It is okay to access this RunLoop from another sequence while Run() is
+  // active as this RunLoop won't touch its state until after that returns (if
+  // the RunLoop's state is accessed while processing Run(), it will be re-bound
+  // to the accessing sequence for the remainder of that Run() -- accessing from
+  // multiple sequences is still disallowed).
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 
   // Use task stopwatch to exclude the loop run time from the current task, if
   // any.
@@ -86,18 +93,22 @@ void RunLoop::Run() {
   delegate_->Run();
   stopwatch.Stop();
 
+  // Rebind this RunLoop to the current thread after Run().
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   AfterRun();
 }
 
 void RunLoop::RunUntilIdle() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   quit_when_idle_received_ = true;
   Run();
 }
 
 void RunLoop::Quit() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   quit_called_ = true;
   if (running_ && delegate_->active_run_loops_.top() == this) {
@@ -107,19 +118,19 @@ void RunLoop::Quit() {
 }
 
 void RunLoop::QuitWhenIdle() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   quit_when_idle_received_ = true;
 }
 
 base::Closure RunLoop::QuitClosure() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr());
 }
 
 base::Closure RunLoop::QuitWhenIdleClosure() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr());
 }
 
@@ -162,7 +173,7 @@ void RunLoop::DisallowNestingOnCurrentThread() {
 }
 
 bool RunLoop::BeforeRun() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!run_called_);
   run_called_ = true;
@@ -187,7 +198,7 @@ bool RunLoop::BeforeRun() {
 }
 
 void RunLoop::AfterRun() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   running_ = false;
 
