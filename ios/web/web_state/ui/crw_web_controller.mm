@@ -824,9 +824,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when a non-document-changing URL change occurs. Updates the
 // _documentURL, and informs the superclass of the change.
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)URL;
-// Returns YES if there is currently a requested but uncommitted load for
-// |targetURL|.
-- (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL;
+// Returns context for pending navigation that has |URL|. null if there is no
+// matching pending navigation.
+- (web::NavigationContextImpl*)contextForPendingNavigationWithURL:
+    (const GURL&)URL;
 // Loads request for the URL of the current navigation item. Subclasses may
 // choose to build a new NSURLRequest and call |loadRequest| on the underlying
 // web view, or use native web view navigation where possible (for example,
@@ -4162,8 +4163,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
-  std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl, URL);
+  std::unique_ptr<web::NavigationContextImpl> context;
+  if (_webStateImpl->HasWebUI()) {
+    // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
+    // should not be treated as a navigation, but WKNavigationDelegate callbacks
+    // still expect a valid context.
+    context =
+        web::NavigationContextImpl::CreateNavigationContext(_webStateImpl, URL);
+  } else {
+    context = [self
+        registerLoadRequestForURL:URL
+                         referrer:web::Referrer()
+                       transition:ui::PageTransition::PAGE_TRANSITION_TYPED];
+  }
   [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
 
@@ -4543,7 +4555,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   // If |navigation| is nil (which happens for windows open by DOM), then it
-  // should be the first and the only pending navigaiton.
+  // should be the first and the only pending navigation.
   BOOL isLastNavigation =
       !navigation ||
       [[_navigationStates lastAddedNavigation] isEqual:navigation];
@@ -4795,18 +4807,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self setDocumentURL:webViewURL];
     [self webPageChanged];
 
+    web::NavigationContextImpl* context =
+        [self contextForPendingNavigationWithURL:webViewURL];
     // Same document navigation does not contain response headers.
-    // TODO(crbug.com/713836): Instead of creating a new context, find
-    // existing navigation context stored in |_navigationStates| and use it.
-    std::unique_ptr<web::NavigationContextImpl> context =
-        web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
-                                                            webViewURL);
     net::HttpResponseHeaders* headers =
         isSameDocumentNavigation ? nullptr
                                  : _webStateImpl->GetHttpResponseHeaders();
     context->SetResponseHeaders(headers);
     context->SetIsSameDocument(isSameDocumentNavigation);
-    _webStateImpl->OnNavigationFinished(context.get());
+    _webStateImpl->OnNavigationFinished(context);
   }
 
   [self updateSSLStatusForCurrentNavigationItem];
@@ -4953,48 +4962,63 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // registering a load request logically comes before updating the document
   // URL, but also must come first since it uses state that is reset on URL
   // changes.
-  std::unique_ptr<web::NavigationContextImpl> navigationContext;
+
+  // |newNavigationContext| only exists if this method has to create a new
+  // context object.
+  std::unique_ptr<web::NavigationContextImpl> newNavigationContext;
   if (!_changingHistoryState) {
-    if ([self isLoadRequestPendingForURL:newURL]) {
+    if ([self contextForPendingNavigationWithURL:newURL]) {
       // |loadWithParams:| was called with URL that has different fragment
-      // comparing to the orevious URL.
-      // TODO(crbug.com/713836): Instead of creating a new context, find
-      // existing navigation context stored in |_navigationStates| and use it.
-      navigationContext = web::NavigationContextImpl::CreateNavigationContext(
-          _webStateImpl, newURL);
+      // comparing to the previous URL.
     } else {
       // This could be:
       //   1.) Renderer-initiated fragment change
       //   2.) Assigning same-origin URL to window.location
       //   3.) Incorrectly handled window.location.replace (crbug.com/307072)
       //   4.) Back-forward same document navigation
-      navigationContext = [self registerLoadRequestForURL:newURL];
+      newNavigationContext = [self registerLoadRequestForURL:newURL];
 
       // Use the current title for items created by same document navigations.
       auto* pendingItem = self.navigationManagerImpl->GetPendingItem();
       if (pendingItem)
         pendingItem->SetTitle(_webStateImpl->GetTitle());
     }
-    navigationContext->SetIsSameDocument(true);
   }
 
   [self setDocumentURL:newURL];
 
   if (!_changingHistoryState) {
     [self didStartLoadingURL:_documentURL];
-    _webStateImpl->OnNavigationFinished(navigationContext.get());
+
+    // Pass either newly created context (if it exists) or context that already
+    // existed before.
+    web::NavigationContextImpl* navigationContext = newNavigationContext.get();
+    if (!navigationContext)
+      navigationContext = [self contextForPendingNavigationWithURL:newURL];
+    navigationContext->SetIsSameDocument(true);
+    _webStateImpl->OnNavigationFinished(navigationContext);
+
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation:nil];
   }
 }
 
-- (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL {
-  if (self.loadPhase != web::LOAD_REQUESTED)
-    return NO;
+- (web::NavigationContextImpl*)contextForPendingNavigationWithURL:
+    (const GURL&)URL {
+  for (id navigation in [_navigationStates pendingNavigations]) {
+    if (navigation == [NSNull null]) {
+      // null is a valid navigation object passed to WKNavigationDelegate
+      // callbacks and represents window opening action.
+      navigation = nil;
+    }
 
-  web::NavigationItem* pendingItem =
-      self.webState->GetNavigationManager()->GetPendingItem();
-  return pendingItem && pendingItem->GetURL() == targetURL;
+    web::NavigationContextImpl* context =
+        [_navigationStates contextForNavigation:navigation];
+    if (context->GetUrl() == URL) {
+      return context;
+    }
+  }
+  return nullptr;
 }
 
 - (void)loadRequestForCurrentNavigationItem {
