@@ -96,9 +96,7 @@ class PacedPacketSender {
   virtual ~PacedPacketSender() {}
 };
 
-class PacedSender : public PacedPacketSender,
-                    public base::NonThreadSafe,
-                    public base::SupportsWeakPtr<PacedSender> {
+class PacedSender : public PacedPacketSender {
  public:
   // |recent_packet_events| is an externally-owned vector where PacedSender will
   // add PacketEvents related to sending, retransmission, and rejection.  The
