@@ -23,65 +23,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorSpace_h
-#define ColorSpace_h
+#ifndef InterpolationSpace_h
+#define InterpolationSpace_h
 
-#include "platform/PlatformExport.h"
 #include "platform/graphics/Color.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkColorFilter;
-class SkColorSpace;
 
 namespace blink {
 
-struct WebScreenInfo;
-
-enum ColorSpace { kColorSpaceDeviceRGB, kColorSpaceSRGB, kColorSpaceLinearRGB };
-
-enum class ColorSpaceGamut {
-  // Values synced with 'Gamut' in src/tools/metrics/histograms/histograms.xml
-  kUnknown = 0,
-  kLessThanNTSC = 1,
-  NTSC = 2,
-  SRGB = 3,
-  kAlmostP3 = 4,
-  P3 = 5,
-  kAdobeRGB = 6,
-  kWide = 7,
-  BT2020 = 8,
-  kProPhoto = 9,
-  kUltraWide = 10,
-  kEnd
+enum InterpolationSpace {
+  // Interpolation is performed on (assumed to be sRGB) pixel values directly,
+  // so a halfway interpolation of 0 and 255 is 127.
+  kInterpolationSpaceSRGB,
+  // Interpolation is performed in linear physical value space, so a halfway
+  // interpolation of 0 and 255 is 188.
+  kInterpolationSpaceLinear
 };
 
-namespace ColorSpaceUtilities {
+namespace InterpolationSpaceUtilities {
 
 // Get a pointer to a 8-bit lookup table that will convert color components
-// in the |srcColorSpace| to the |dstColorSpace|.
+// in the |src_interpolation_space| to the |dst_interpolation_space|.
 // If the conversion cannot be performed, or is a no-op (identity transform),
 // then 0 is returned.
 // (Note that a round-trip - f(B,A)[f(A,B)[x]] - is not lossless in general.)
 const uint8_t* GetConversionLUT(
-    ColorSpace dst_color_space,
-    ColorSpace src_color_space = kColorSpaceDeviceRGB);
+    InterpolationSpace dst_interpolation_space,
+    InterpolationSpace src_interpolation_space = kInterpolationSpaceSRGB);
 
-// Convert a Color assumed to be in the |srcColorSpace| into the
-// |dstColorSpace|.
-Color ConvertColor(const Color& src_color,
-                   ColorSpace dst_color_space,
-                   ColorSpace src_color_space = kColorSpaceDeviceRGB);
+// Convert a Color assumed to be in the |src_interpolation_space| into the
+// |dst_interpolation_space|.
+Color ConvertColor(
+    const Color& src_color,
+    InterpolationSpace dst_interpolation_space,
+    InterpolationSpace src_interpolation_space = kInterpolationSpaceSRGB);
 
-// Create a color filter that will convert from |srcColorSpace| into
-// |dstColorSpace|.
-sk_sp<SkColorFilter> CreateColorSpaceFilter(ColorSpace src_color_space,
-                                            ColorSpace dst_color_space);
+// Create a color filter that will convert from |src_interpolation_space| into
+// |dst_interpolation_space|.
+sk_sp<SkColorFilter> CreateInterpolationSpaceFilter(
+    InterpolationSpace src_interpolation_space,
+    InterpolationSpace dst_interpolation_space);
 
-PLATFORM_EXPORT ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo&);
-ColorSpaceGamut GetColorSpaceGamut(SkColorSpace*);
-
-}  // namespace ColorSpaceUtilities
+}  // namespace InterpolationSpaceUtilities
 
 }  // namespace blink
 
-#endif  // ColorSpace_h
+#endif  // InterpolationSpace_h

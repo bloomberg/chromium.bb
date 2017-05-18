@@ -28,8 +28,8 @@ TextStream& FEBoxReflect::ExternalRepresentation(TextStream& ts,
 
 sk_sp<SkImageFilter> FEBoxReflect::CreateImageFilter() {
   return SkiaImageFilterBuilder::BuildBoxReflectFilter(
-      reflection_,
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+      reflection_, SkiaImageFilterBuilder::Build(
+                       InputEffect(0), OperatingInterpolationSpace()));
 }
 
 }  // namespace blink

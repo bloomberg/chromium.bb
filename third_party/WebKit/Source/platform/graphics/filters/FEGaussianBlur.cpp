@@ -81,8 +81,8 @@ FloatRect FEGaussianBlur::MapEffect(const FloatRect& rect) const {
 }
 
 sk_sp<SkImageFilter> FEGaussianBlur::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   float std_x = GetFilter()->ApplyHorizontalScale(std_x_);
   float std_y = GetFilter()->ApplyVerticalScale(std_y_);
   SkImageFilter::CropRect rect = GetCropRect();

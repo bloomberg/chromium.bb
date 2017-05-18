@@ -35,13 +35,13 @@ SourceAlpha* SourceAlpha::Create(FilterEffect* source_effect) {
 
 SourceAlpha::SourceAlpha(FilterEffect* source_effect)
     : FilterEffect(source_effect->GetFilter()) {
-  SetOperatingColorSpace(source_effect->OperatingColorSpace());
+  SetOperatingInterpolationSpace(source_effect->OperatingInterpolationSpace());
   InputEffects().push_back(source_effect);
 }
 
 sk_sp<SkImageFilter> SourceAlpha::CreateImageFilter() {
-  sk_sp<SkImageFilter> source_graphic(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> source_graphic(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
                          0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
   sk_sp<SkColorFilter> color_filter =

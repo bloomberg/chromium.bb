@@ -58,9 +58,9 @@ sk_sp<SkImageFilter> FELighting::CreateImageFilter() {
     return CreateTransparentBlack();
 
   SkImageFilter::CropRect rect = GetCropRect();
-  Color light_color = AdaptColorToOperatingColorSpace(lighting_color_);
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  Color light_color = AdaptColorToOperatingInterpolationSpace(lighting_color_);
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   switch (light_source_->GetType()) {
     case LS_DISTANT: {
       DistantLightSource* distant_light_source =

@@ -45,7 +45,7 @@ class FEImage final : public FilterEffect {
 
   // feImage does not perform color interpolation of any kind, so doesn't
   // depend on the value of color-interpolation-filters.
-  void SetOperatingColorSpace(ColorSpace) override {}
+  void SetOperatingInterpolationSpace(InterpolationSpace) override {}
 
   TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 

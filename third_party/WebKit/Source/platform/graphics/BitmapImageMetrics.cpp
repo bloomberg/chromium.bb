@@ -5,7 +5,7 @@
 #include "platform/graphics/BitmapImageMetrics.h"
 
 #include "platform/Histogram.h"
-#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/ColorSpaceGamut.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/WTFString.h"
 

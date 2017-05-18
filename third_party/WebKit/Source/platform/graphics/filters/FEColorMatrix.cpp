@@ -153,8 +153,8 @@ bool FEColorMatrix::AffectsTransparentPixels() const {
 }
 
 sk_sp<SkImageFilter> FEColorMatrix::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   sk_sp<SkColorFilter> filter = CreateColorFilter(type_, values_);
   SkImageFilter::CropRect rect = GetCropRect();
   return SkColorFilterImageFilter::Make(std::move(filter), std::move(input),

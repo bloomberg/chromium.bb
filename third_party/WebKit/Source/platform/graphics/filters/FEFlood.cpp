@@ -33,7 +33,7 @@ FEFlood::FEFlood(Filter* filter, const Color& flood_color, float flood_opacity)
     : FilterEffect(filter),
       flood_color_(flood_color),
       flood_opacity_(flood_opacity) {
-  FilterEffect::SetOperatingColorSpace(kColorSpaceDeviceRGB);
+  FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
 FEFlood* FEFlood::Create(Filter* filter,

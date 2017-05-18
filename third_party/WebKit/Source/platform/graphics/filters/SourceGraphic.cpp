@@ -26,7 +26,7 @@
 namespace blink {
 
 SourceGraphic::SourceGraphic(Filter* filter) : FilterEffect(filter) {
-  SetOperatingColorSpace(kColorSpaceDeviceRGB);
+  SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
 SourceGraphic::~SourceGraphic() {}

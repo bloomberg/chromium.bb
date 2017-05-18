@@ -141,8 +141,8 @@ sk_sp<SkImageFilter> FEConvolveMatrix::CreateImageFilter() {
   if (!ParametersValid())
     return CreateTransparentBlack();
 
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   SkISize kernel_size(
       SkISize::Make(kernel_size_.Width(), kernel_size_.Height()));
   // parametersValid() above checks that the kernel area fits in int.

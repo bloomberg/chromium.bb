@@ -30,9 +30,9 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/InterpolationSpace.h"
 #include "platform/graphics/Path.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecord.h"
@@ -1262,11 +1262,11 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
     case kColorFilterLuminanceToAlpha:
       return SkLumaColorFilter::Make();
     case kColorFilterLinearRGBToSRGB:
-      return ColorSpaceUtilities::CreateColorSpaceFilter(kColorSpaceLinearRGB,
-                                                         kColorSpaceDeviceRGB);
+      return InterpolationSpaceUtilities::CreateInterpolationSpaceFilter(
+          kInterpolationSpaceLinear, kInterpolationSpaceSRGB);
     case kColorFilterSRGBToLinearRGB:
-      return ColorSpaceUtilities::CreateColorSpaceFilter(kColorSpaceDeviceRGB,
-                                                         kColorSpaceLinearRGB);
+      return InterpolationSpaceUtilities::CreateInterpolationSpaceFilter(
+          kInterpolationSpaceSRGB, kInterpolationSpaceLinear);
     case kColorFilterNone:
       break;
     default:

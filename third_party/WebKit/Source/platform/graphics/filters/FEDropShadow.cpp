@@ -75,13 +75,13 @@ FloatRect FEDropShadow::MapEffect(const FloatRect& rect) const {
 }
 
 sk_sp<SkImageFilter> FEDropShadow::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   float dx = GetFilter()->ApplyHorizontalScale(dx_);
   float dy = GetFilter()->ApplyVerticalScale(dy_);
   float std_x = GetFilter()->ApplyHorizontalScale(std_x_);
   float std_y = GetFilter()->ApplyVerticalScale(std_y_);
-  Color color = AdaptColorToOperatingColorSpace(
+  Color color = AdaptColorToOperatingInterpolationSpace(
       shadow_color_.CombineWithAlpha(shadow_opacity_));
   SkImageFilter::CropRect crop_rect = GetCropRect();
   return SkDropShadowImageFilter::Make(

@@ -67,7 +67,8 @@ sk_sp<SkImageFilter> FEOffset::CreateImageFilter() {
   return SkOffsetImageFilter::Make(
       SkFloatToScalar(filter->ApplyHorizontalScale(dx_)),
       SkFloatToScalar(filter->ApplyVerticalScale(dy_)),
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()),
+      SkiaImageFilterBuilder::Build(InputEffect(0),
+                                    OperatingInterpolationSpace()),
       &crop_rect);
 }
 

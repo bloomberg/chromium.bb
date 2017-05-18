@@ -306,7 +306,7 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
       filter_effect_builder.BuildFilterEffect(operations);
   if (last_effect) {
     resolved_filter_ =
-        SkiaImageFilterBuilder::Build(last_effect, kColorSpaceDeviceRGB);
+        SkiaImageFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
   }
 
   return resolved_filter_;
@@ -359,7 +359,7 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::GetFilter(
     if (FilterEffect* last_effect =
             filter_effect_builder.BuildFilterEffect(filter_style->Filter())) {
       resolved_filter_ =
-          SkiaImageFilterBuilder::Build(last_effect, kColorSpaceDeviceRGB);
+          SkiaImageFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
       if (resolved_filter_) {
         context->UpdateFilterReferences(filter_style->Filter());
         if (last_effect->OriginTainted())
