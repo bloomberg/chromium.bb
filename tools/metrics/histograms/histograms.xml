@@ -31386,6 +31386,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MojoLevelDBEnv.IOError" enum="LevelDBIOErrorMethods">
+  <owner>mek@chromium.org</owner>
+  <summary>Methods where leveldb's Mojo environment has IO errors.</summary>
+</histogram>
+
+<histogram name="MojoLevelDBEnv.IOError.BFE" enum="PlatformFileError">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    Errors (base::File::Error) encountered by a single leveldb method in
+    leveldb's Mojo environment.
+  </summary>
+</histogram>
+
 <histogram name="Mouse.PointerSensitivity.Changed" enum="PointerSensitivity">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -87135,6 +87148,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="LevelDBEnv.IDB.IOError.BFE"/>
   <affected-histogram name="LevelDBEnv.IOError.BFE"/>
   <affected-histogram name="LevelDBEnv.ServiceWorker.IOError.BFE"/>
+  <affected-histogram name="MojoLevelDBEnv.IOError.BFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.BFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBReadErrors.BFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.BFE"/>
