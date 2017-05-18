@@ -12,16 +12,18 @@ BorderEdge::BorderEdge(float edge_width,
                        bool edge_is_present)
     : color(edge_color),
       is_present(edge_is_present),
-      style(edge_style),
+      style(static_cast<unsigned>(edge_style)),
       width_(edge_width) {
-  if (style == kBorderStyleDouble && edge_width < 3)
-    style = kBorderStyleSolid;
+  if (style == static_cast<unsigned>(EBorderStyle::kDouble) && edge_width < 3)
+    style = static_cast<unsigned>(EBorderStyle::kSolid);
 }
 
-BorderEdge::BorderEdge() : is_present(false), style(kBorderStyleHidden) {}
+BorderEdge::BorderEdge()
+    : is_present(false), style(static_cast<unsigned>(EBorderStyle::kHidden)) {}
 
 bool BorderEdge::HasVisibleColorAndStyle() const {
-  return style > kBorderStyleHidden && color.Alpha() > 0;
+  return style > static_cast<unsigned>(EBorderStyle::kHidden) &&
+         color.Alpha() > 0;
 }
 
 bool BorderEdge::ShouldRender() const {
@@ -33,21 +35,25 @@ bool BorderEdge::PresentButInvisible() const {
 }
 
 bool BorderEdge::ObscuresBackgroundEdge() const {
-  if (!is_present || color.HasAlpha() || style == kBorderStyleHidden)
+  if (!is_present || color.HasAlpha() ||
+      style == static_cast<unsigned>(EBorderStyle::kHidden))
     return false;
 
-  if (style == kBorderStyleDotted || style == kBorderStyleDashed)
+  if (style == static_cast<unsigned>(EBorderStyle::kDotted) ||
+      style == static_cast<unsigned>(EBorderStyle::kDashed))
     return false;
 
   return true;
 }
 
 bool BorderEdge::ObscuresBackground() const {
-  if (!is_present || color.HasAlpha() || style == kBorderStyleHidden)
+  if (!is_present || color.HasAlpha() ||
+      style == static_cast<unsigned>(EBorderStyle::kHidden))
     return false;
 
-  if (style == kBorderStyleDotted || style == kBorderStyleDashed ||
-      style == kBorderStyleDouble)
+  if (style == static_cast<unsigned>(EBorderStyle::kDotted) ||
+      style == static_cast<unsigned>(EBorderStyle::kDashed) ||
+      style == static_cast<unsigned>(EBorderStyle::kDouble))
     return false;
 
   return true;

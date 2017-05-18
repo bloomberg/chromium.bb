@@ -881,13 +881,13 @@ void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   style.ResetBorder();
   const short border_width = kSearchFieldBorderWidth * style.EffectiveZoom();
   style.SetBorderLeftWidth(border_width);
-  style.SetBorderLeftStyle(kBorderStyleInset);
+  style.SetBorderLeftStyle(EBorderStyle::kInset);
   style.SetBorderRightWidth(border_width);
-  style.SetBorderRightStyle(kBorderStyleInset);
+  style.SetBorderRightStyle(EBorderStyle::kInset);
   style.SetBorderBottomWidth(border_width);
-  style.SetBorderBottomStyle(kBorderStyleInset);
+  style.SetBorderBottomStyle(EBorderStyle::kInset);
   style.SetBorderTopWidth(border_width);
-  style.SetBorderTopStyle(kBorderStyleInset);
+  style.SetBorderTopStyle(EBorderStyle::kInset);
 
   // Override height.
   style.SetHeight(Length(kAuto));

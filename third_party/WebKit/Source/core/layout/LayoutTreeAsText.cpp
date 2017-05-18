@@ -67,34 +67,34 @@ using namespace HTMLNames;
 
 static void PrintBorderStyle(TextStream& ts, const EBorderStyle border_style) {
   switch (border_style) {
-    case kBorderStyleNone:
+    case EBorderStyle::kNone:
       ts << "none";
       break;
-    case kBorderStyleHidden:
+    case EBorderStyle::kHidden:
       ts << "hidden";
       break;
-    case kBorderStyleInset:
+    case EBorderStyle::kInset:
       ts << "inset";
       break;
-    case kBorderStyleGroove:
+    case EBorderStyle::kGroove:
       ts << "groove";
       break;
-    case kBorderStyleRidge:
+    case EBorderStyle::kRidge:
       ts << "ridge";
       break;
-    case kBorderStyleOutset:
+    case EBorderStyle::kOutset:
       ts << "outset";
       break;
-    case kBorderStyleDotted:
+    case EBorderStyle::kDotted:
       ts << "dotted";
       break;
-    case kBorderStyleDashed:
+    case EBorderStyle::kDashed:
       ts << "dashed";
       break;
-    case kBorderStyleSolid:
+    case EBorderStyle::kSolid:
       ts << "solid";
       break;
-    case kBorderStyleDouble:
+    case EBorderStyle::kDouble:
       ts << "double";
       break;
   }

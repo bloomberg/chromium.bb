@@ -59,7 +59,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   Color custom_color = MakeRGB(123, 145, 167);
 
   // Checking unfocused style.
-  EXPECT_EQ(kBorderStyleNone, OutlineStyle(span));
+  EXPECT_EQ(EBorderStyle::kNone, OutlineStyle(span));
   EXPECT_NE(custom_color, OutlineColor(span));
 
   // Do focus.
@@ -69,7 +69,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Checking focused style.
-  EXPECT_NE(kBorderStyleNone, OutlineStyle(span));
+  EXPECT_NE(EBorderStyle::kNone, OutlineStyle(span));
   EXPECT_NE(custom_color, OutlineColor(span));
 
   // Change focus ring color.
@@ -78,7 +78,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Check that the focus ring color is updated.
-  EXPECT_NE(kBorderStyleNone, OutlineStyle(span));
+  EXPECT_NE(EBorderStyle::kNone, OutlineStyle(span));
   EXPECT_EQ(custom_color, OutlineColor(span));
 }
 

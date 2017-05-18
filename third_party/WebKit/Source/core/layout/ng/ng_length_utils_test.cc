@@ -361,10 +361,10 @@ TEST_F(NGLengthUtilsTest, testBorders) {
   style_->SetBorderRightWidth(2);
   style_->SetBorderBottomWidth(3);
   style_->SetBorderLeftWidth(4);
-  style_->SetBorderTopStyle(kBorderStyleSolid);
-  style_->SetBorderRightStyle(kBorderStyleSolid);
-  style_->SetBorderBottomStyle(kBorderStyleSolid);
-  style_->SetBorderLeftStyle(kBorderStyleSolid);
+  style_->SetBorderTopStyle(EBorderStyle::kSolid);
+  style_->SetBorderRightStyle(EBorderStyle::kSolid);
+  style_->SetBorderBottomStyle(EBorderStyle::kSolid);
+  style_->SetBorderLeftStyle(EBorderStyle::kSolid);
   style_->SetWritingMode(WritingMode::kVerticalLr);
 
   RefPtr<NGConstraintSpace> constraint_space(

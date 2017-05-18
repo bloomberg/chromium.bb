@@ -316,7 +316,7 @@ FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
     // Use the most conservative inset to avoid mixed-style corner issues.
     float fractional_inset = 1.0f / 2;
     for (auto& edge : edges) {
-      if (edge.BorderStyle() == kBorderStyleDouble) {
+      if (edge.BorderStyle() == EBorderStyle::kDouble) {
         fractional_inset = 1.0f / 6;
         break;
       }

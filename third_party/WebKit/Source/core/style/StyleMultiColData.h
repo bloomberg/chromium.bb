@@ -48,8 +48,8 @@ class CORE_EXPORT StyleMultiColData : public RefCounted<StyleMultiColData> {
   bool operator!=(const StyleMultiColData& o) const { return !(*this == o); }
 
   unsigned short RuleWidth() const {
-    if (rule_.Style() == kBorderStyleNone ||
-        rule_.Style() == kBorderStyleHidden)
+    if (rule_.Style() == EBorderStyle::kNone ||
+        rule_.Style() == EBorderStyle::kHidden)
       return 0;
     return rule_.Width();
   }

@@ -47,7 +47,7 @@ TEST(ComputedStyleTest, FocusRingWidth) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   style->SetEffectiveZoom(3.5);
 #if OS(MACOSX)
-  style->SetOutlineStyle(kBorderStyleSolid);
+  style->SetOutlineStyle(EBorderStyle::kSolid);
   ASSERT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
 #else
   ASSERT_EQ(3.5, style->GetOutlineStrokeWidthForFocusRing());
@@ -58,7 +58,7 @@ TEST(ComputedStyleTest, FocusRingWidth) {
 
 TEST(ComputedStyleTest, FocusRingOutset) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetOutlineStyle(kBorderStyleSolid);
+  style->SetOutlineStyle(EBorderStyle::kSolid);
   style->SetOutlineStyleIsAuto(kOutlineIsAutoOn);
   style->SetEffectiveZoom(4.75);
 #if OS(MACOSX)
@@ -110,7 +110,7 @@ TEST(CompuetedStyleTest, HasOutlineWithCurrentColor) {
   EXPECT_FALSE(style->HasOutlineWithCurrentColor());
   style->SetOutlineWidth(5);
   EXPECT_FALSE(style->HasOutlineWithCurrentColor());
-  style->SetOutlineStyle(kBorderStyleSolid);
+  style->SetOutlineStyle(EBorderStyle::kSolid);
   EXPECT_TRUE(style->HasOutlineWithCurrentColor());
 }
 
@@ -121,7 +121,7 @@ TEST(CompuetedStyleTest, HasBorderColorReferencingCurrentColor) {
   EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
   style->SetBorderBottomWidth(5);
   EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
-  style->SetBorderBottomStyle(kBorderStyleSolid);
+  style->SetBorderBottomStyle(EBorderStyle::kSolid);
   EXPECT_TRUE(style->HasBorderColorReferencingCurrentColor());
 }
 

@@ -568,7 +568,7 @@ bool LayoutMultiColumnSet::ComputeColumnRuleBounds(
   EBorderStyle rule_style = block_style.ColumnRuleStyle();
   LayoutUnit rule_thickness(block_style.ColumnRuleWidth());
   LayoutUnit col_gap = ColumnGap();
-  bool render_rule = rule_style > kBorderStyleHidden && !rule_transparent;
+  bool render_rule = rule_style > EBorderStyle::kHidden && !rule_transparent;
   if (!render_rule)
     return false;
 

@@ -197,34 +197,34 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBorderStyle e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kBorderStyleNone:
+    case EBorderStyle::kNone:
       value_id_ = CSSValueNone;
       break;
-    case kBorderStyleHidden:
+    case EBorderStyle::kHidden:
       value_id_ = CSSValueHidden;
       break;
-    case kBorderStyleInset:
+    case EBorderStyle::kInset:
       value_id_ = CSSValueInset;
       break;
-    case kBorderStyleGroove:
+    case EBorderStyle::kGroove:
       value_id_ = CSSValueGroove;
       break;
-    case kBorderStyleRidge:
+    case EBorderStyle::kRidge:
       value_id_ = CSSValueRidge;
       break;
-    case kBorderStyleOutset:
+    case EBorderStyle::kOutset:
       value_id_ = CSSValueOutset;
       break;
-    case kBorderStyleDotted:
+    case EBorderStyle::kDotted:
       value_id_ = CSSValueDotted;
       break;
-    case kBorderStyleDashed:
+    case EBorderStyle::kDashed:
       value_id_ = CSSValueDashed;
       break;
-    case kBorderStyleSolid:
+    case EBorderStyle::kSolid:
       value_id_ = CSSValueSolid;
       break;
-    case kBorderStyleDouble:
+    case EBorderStyle::kDouble:
       value_id_ = CSSValueDouble;
       break;
   }
@@ -233,7 +233,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(EBorderStyle e)
 template <>
 inline EBorderStyle CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueAuto)  // Valid for CSS outline-style
-    return kBorderStyleDotted;
+    return EBorderStyle::kDotted;
   return (EBorderStyle)(value_id_ - CSSValueNone);
 }
 

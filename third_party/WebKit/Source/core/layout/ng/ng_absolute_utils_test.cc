@@ -19,10 +19,10 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
   void SetUp() override {
     style_ = ComputedStyle::Create();
     // If not set, border widths will always be 0.
-    style_->SetBorderLeftStyle(EBorderStyle::kBorderStyleSolid);
-    style_->SetBorderRightStyle(EBorderStyle::kBorderStyleSolid);
-    style_->SetBorderTopStyle(EBorderStyle::kBorderStyleSolid);
-    style_->SetBorderBottomStyle(EBorderStyle::kBorderStyleSolid);
+    style_->SetBorderLeftStyle(EBorderStyle::kSolid);
+    style_->SetBorderRightStyle(EBorderStyle::kSolid);
+    style_->SetBorderTopStyle(EBorderStyle::kSolid);
+    style_->SetBorderBottomStyle(EBorderStyle::kSolid);
     style_->SetBoxSizing(EBoxSizing::kBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
     NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
