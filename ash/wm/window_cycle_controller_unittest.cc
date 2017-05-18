@@ -73,7 +73,7 @@ class EventCounter : public ui::EventHandler {
 };
 
 bool IsWindowMinimized(aura::Window* window) {
-  return WmWindow::Get(window)->GetWindowState()->IsMinimized();
+  return wm::GetWindowState(window)->IsMinimized();
 }
 
 }  // namespace
@@ -106,7 +106,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
   }
 
   const aura::Window::Windows GetWindows(WindowCycleController* controller) {
-    return WmWindow::ToAuraWindows(controller->window_cycle_list()->windows());
+    return controller->window_cycle_list()->windows();
   }
 
   const views::Widget* GetWindowCycleListWidget() const {

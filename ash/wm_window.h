@@ -36,10 +36,6 @@ class EventHandler;
 class Layer;
 }
 
-namespace views {
-class View;
-}
-
 namespace ash {
 
 class ImmersiveFullscreenController;
@@ -310,9 +306,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
 
   // Makes the hit region for children slightly larger for easier resizing.
   void SetChildrenUseExtendedHitRegion();
-
-  // Returns a View that renders the contents of this window's layers.
-  std::unique_ptr<views::View> CreateViewWithRecreatedLayers();
 
   void AddTransientWindowObserver(WmTransientWindowObserver* observer);
   void RemoveTransientWindowObserver(WmTransientWindowObserver* observer);
