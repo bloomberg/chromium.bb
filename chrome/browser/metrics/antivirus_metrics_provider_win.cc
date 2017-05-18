@@ -398,8 +398,12 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
       return RESULT_FAILED_TO_GET_PRODUCT_STATE;
 
     LONG state_val = V_I4(product_state.ptr());
-    // Map the values from product_state to the proto values.
-    switch (reinterpret_cast<PRODUCT_STATE*>(&state_val)->security_state) {
+    PRODUCT_STATE product_state_struct;
+    std::copy(reinterpret_cast<const char*>(&state_val),
+              reinterpret_cast<const char*>(&state_val) + sizeof state_val,
+              reinterpret_cast<char*>(&product_state_struct));
+    // Map the values from product_state_struct to the proto values.
+    switch (product_state_struct.security_state) {
       case 0:
         av_product.set_product_state(
             metrics::SystemProfileProto::AntiVirusState::
