@@ -96,6 +96,10 @@ class PaintArtifactCompositorTestWithPropertyTrees
     return *web_layer_tree_view_->GetLayerTreeHost()->property_trees();
   }
 
+  const cc::LayerTreeHost& GetLayerTreeHost() {
+    return *web_layer_tree_view_->GetLayerTreeHost();
+  }
+
   int ElementIdToEffectNodeIndex(CompositorElementId element_id) {
     return web_layer_tree_view_->GetLayerTreeHost()
         ->property_trees()
@@ -2264,6 +2268,33 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
   ASSERT_EQ(0u, ContentLayerCount());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       UpdateManagesLayerElementIds) {
+  RefPtr<TransformPaintPropertyNode> transform =
+      CreateSampleTransformNodeWithElementId();
+  CompositorElementId element_id = transform->GetCompositorElementId();
+
+  {
+    TestPaintArtifact artifact;
+    artifact
+        .Chunk(transform, ClipPaintPropertyNode::Root(),
+               EffectPaintPropertyNode::Root())
+        .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+
+    Update(artifact.Build());
+    ASSERT_EQ(1u, ContentLayerCount());
+    ASSERT_TRUE(GetLayerTreeHost().LayerByElementId(element_id));
+  }
+
+  {
+    TestPaintArtifact artifact;
+    ASSERT_TRUE(GetLayerTreeHost().LayerByElementId(element_id));
+    Update(artifact.Build());
+    ASSERT_EQ(0u, ContentLayerCount());
+    ASSERT_FALSE(GetLayerTreeHost().LayerByElementId(element_id));
+  }
 }
 
 }  // namespace blink

@@ -607,22 +607,30 @@ void PaintArtifactCompositor::Update(
 
   DCHECK(root_layer_);
 
-  cc::LayerTreeHost* layer_tree_host = root_layer_->layer_tree_host();
-
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
-  if (!layer_tree_host)
+  cc::LayerTreeHost* host = root_layer_->layer_tree_host();
+  if (!host)
     return;
 
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_ = WTF::WrapUnique(new ExtraDataForTesting);
 
+  // Unregister element ids for all layers. For now we rely on the
+  // element id being set on the layer, but we'll both be removing
+  // that for SPv2 soon. We may also shift to having multiple element
+  // ids per layer. When we do either of these, we'll need to keep
+  // around the element ids for unregistering in some other manner.
+  for (auto child : root_layer_->children()) {
+    host->UnregisterElement(child->element_id(), cc::ElementListType::ACTIVE,
+                            child.get());
+  }
   root_layer_->RemoveAllChildren();
 
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
 
-  PropertyTreeManager property_tree_manager(*layer_tree_host->property_trees(),
+  PropertyTreeManager property_tree_manager(*host->property_trees(),
                                             root_layer_.get(),
                                             g_s_property_tree_sequence_number);
 
@@ -651,11 +659,23 @@ void PaintArtifactCompositor::Update(
         pending_layer.property_tree_state.GetCompositorElementId(
             composited_element_ids);
     if (element_id) {
+      // TODO(wkorman): Cease setting element id on layer once
+      // animation subsystem no longer requires element id to layer
+      // map. http://crbug.com/709137
       layer->SetElementId(element_id);
       composited_element_ids.insert(element_id);
     }
 
     root_layer_->AddChild(layer);
+    // TODO(wkorman): Once we've removed all uses of
+    // LayerTreeHost::{LayerByElementId,element_layers_map} we can
+    // revise element register/unregister to cease passing layer and
+    // only register/unregister element id with the mutator host.
+    if (element_id) {
+      host->RegisterElement(element_id, cc::ElementListType::ACTIVE,
+                            layer.get());
+    }
+
     layer->set_property_tree_sequence_number(g_s_property_tree_sequence_number);
     layer->SetTransformTreeIndex(transform_id);
     layer->SetClipTreeIndex(clip_id);
@@ -671,10 +691,9 @@ void PaintArtifactCompositor::Update(
   content_layer_clients_.swap(new_content_layer_clients);
 
   // Mark the property trees as having been rebuilt.
-  layer_tree_host->property_trees()->sequence_number =
-      g_s_property_tree_sequence_number;
-  layer_tree_host->property_trees()->needs_rebuild = false;
-  layer_tree_host->property_trees()->ResetCachedData();
+  host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
+  host->property_trees()->needs_rebuild = false;
+  host->property_trees()->ResetCachedData();
 
   g_s_property_tree_sequence_number++;
 }
