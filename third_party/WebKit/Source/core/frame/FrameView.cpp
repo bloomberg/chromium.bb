@@ -3076,8 +3076,7 @@ void FrameView::SetupPrintContext() {
   int height = is_us ? kLetterPortraitPageHeight : kA4PortraitPageHeight;
   FloatRect page_rect(0, 0, width, height);
   print_context_->BeginPrintMode(page_rect.Width(), page_rect.Height());
-  float dummy_height;
-  print_context_->ComputePageRects(page_rect, 0, 0, 1.0, dummy_height);
+  print_context_->ComputePageRects(page_rect);
   DispatchEventsForPrintingOnAllFrames();
 }
 

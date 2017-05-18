@@ -327,9 +327,7 @@ class ChromePrintContext : public PrintContext {
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
       return;
 
-    float page_height;
-    ComputePageRects(FloatRect(FloatPoint(0, 0), page_size_in_pixels), 0, 0, 1,
-                     page_height);
+    ComputePageRects(FloatRect(FloatPoint(0, 0), page_size_in_pixels));
 
     const float page_width = page_size_in_pixels.Width();
     size_t num_pages = PageRects().size();
@@ -466,11 +464,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
     return 1.0;
   }
 
-  void ComputePageRects(const FloatRect& print_rect,
-                        float header_height,
-                        float footer_height,
-                        float user_scale_factor,
-                        float& out_page_height) override {
+  void ComputePageRects(const FloatRect& print_rect) override {
     print_params_.print_content_area = IntRect(print_rect);
     page_rects_.Fill(IntRect(print_rect), plugin_->PrintBegin(print_params_));
   }
@@ -1397,7 +1391,7 @@ WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
 int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
                                   const WebNode& constrain_to_node) {
   DCHECK(!GetFrame()->GetDocument()->IsFrameSet());
-  WebPluginContainerImpl* plugin_container = nullptr;
+  WebPluginContainerImpl* plugin_container;
   if (constrain_to_node.IsNull()) {
     // If this is a plugin document, check if the plugin supports its own
     // printing. If it does, we will delegate all printing to that.
@@ -1408,20 +1402,18 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
         ToWebPluginContainerImpl(constrain_to_node.PluginContainer());
   }
 
-  if (plugin_container && plugin_container->SupportsPaginatedPrint())
+  if (plugin_container && plugin_container->SupportsPaginatedPrint()) {
     print_context_ = new ChromePluginPrintContext(GetFrame(), plugin_container,
                                                   print_params);
-  else
+  } else {
     print_context_ = new ChromePrintContext(GetFrame());
+  }
 
   FloatRect rect(0, 0,
                  static_cast<float>(print_params.print_content_area.width),
                  static_cast<float>(print_params.print_content_area.height));
   print_context_->BeginPrintMode(rect.Width(), rect.Height());
-  float page_height;
-  // We ignore the overlays calculation for now since they are generated in the
-  // browser. pageHeight is actually an output parameter.
-  print_context_->ComputePageRects(rect, 0, 0, 1.0, page_height);
+  print_context_->ComputePageRects(rect);
 
   return static_cast<int>(print_context_->PageCount());
 }
