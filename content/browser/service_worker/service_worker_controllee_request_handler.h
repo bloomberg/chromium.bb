@@ -29,6 +29,7 @@ class URLRequest;
 namespace content {
 
 class ResourceRequestBodyImpl;
+class ServiceWorkerURLJobWrapper;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
@@ -63,7 +64,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   typedef ServiceWorkerControlleeRequestHandler self;
 
   // For main resource case.
-  void PrepareForMainResource(const net::URLRequest* request);
+  void PrepareForMainResource(const GURL& url,
+                              const GURL& first_party_for_cookies);
   void DidLookupRegistrationForMainResource(
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
@@ -99,9 +101,11 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // that job, except for timing information.
   void ClearJob();
 
+  bool JobWasCanceled() const;
+
   const bool is_main_resource_load_;
   const bool is_main_frame_load_;
-  base::WeakPtr<ServiceWorkerURLRequestJob> job_;
+  std::unique_ptr<ServiceWorkerURLJobWrapper> url_job_;
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
