@@ -52,9 +52,8 @@ class PaymentShippingOption;
 
 // Notifies the delegate that the user has completed the payment request.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-        didCompletePaymentRequest:(PaymentRequest*)paymentRequest
-                             card:(const autofill::CreditCard&)card
-                 verificationCode:(const base::string16&)verificationCode;
+    didCompletePaymentRequestWithCard:(const autofill::CreditCard&)card
+                     verificationCode:(const base::string16&)verificationCode;
 
 // Notifies the delegate that the user has selected a shipping address.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator

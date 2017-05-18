@@ -38,7 +38,6 @@
 
 typedef void (^mock_coordinator_cancel)(PaymentRequestCoordinator*);
 typedef void (^mock_coordinator_complete)(PaymentRequestCoordinator*,
-                                          PaymentRequest*,
                                           const autofill::CreditCard&,
                                           const base::string16&);
 typedef void (^mock_coordinator_select_shipping_address)(
@@ -55,11 +54,10 @@ typedef void (^mock_coordinator_select_shipping_option)(
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-        didCompletePaymentRequest:(PaymentRequest*)paymentRequest
-                             card:(const autofill::CreditCard&)card
-                 verificationCode:(const base::string16&)verificationCode {
+    didCompletePaymentRequestWithCard:(const autofill::CreditCard&)card
+                     verificationCode:(const base::string16&)verificationCode {
   return static_cast<mock_coordinator_complete>([self blockForSelector:_cmd])(
-      coordinator, paymentRequest, card, verificationCode);
+      coordinator, card, verificationCode);
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -151,11 +149,11 @@ TEST_F(PaymentRequestCoordinatorTest, FullCardRequestDidSucceed) {
       mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
   id delegate_mock([[PaymentRequestCoordinatorDelegateMock alloc]
       initWithRepresentedObject:delegate]);
-  SEL selector = @selector(paymentRequestCoordinator:didCompletePaymentRequest:
-                           card:verificationCode:);
+  SEL selector =
+      @selector(paymentRequestCoordinator:didCompletePaymentRequestWithCard
+                                         :verificationCode:);
   [delegate_mock onSelector:selector
        callBlockExpectation:^(PaymentRequestCoordinator* callerCoordinator,
-                              PaymentRequest* paymentRequest,
                               const autofill::CreditCard& card,
                               const base::string16& verificationCode) {
          EXPECT_EQ(credit_card_, card);

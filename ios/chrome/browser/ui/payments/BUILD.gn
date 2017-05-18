@@ -77,6 +77,7 @@ source_set("payments") {
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
+    "//third_party/libaddressinput",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]

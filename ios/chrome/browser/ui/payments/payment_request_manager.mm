@@ -13,15 +13,19 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/values.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/payments/core/address_normalization_manager.h"
+#include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/procedural_block_types.h"
@@ -41,6 +45,8 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
+#include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,6 +66,14 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
 NSString* kAbortMessage = @"The payment request was aborted.";
 NSString* kCancelMessage = @"The payment request was canceled.";
+
+struct PendingPaymentResponse {
+  autofill::CreditCard creditCard;
+  base::string16 verificationCode;
+  autofill::AutofillProfile billingAddress;
+  autofill::AutofillProfile shippingAddress;
+  autofill::AutofillProfile contactAddress;
+};
 
 }  // namespace
 
@@ -104,6 +118,15 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   // Timer used to cancel the Payment Request flow and close the UI if the
   // page does not settle the pending update promise in a timely fashion.
   NSTimer* _updateEventTimeoutTimer;
+
+  // AddressNormalizationManager used to normalize the various addresses (e.g.
+  // shipping, contact, billing).
+  std::unique_ptr<payments::AddressNormalizationManager>
+      _addressNormalizationManager;
+
+  // Storage for data to return in the payment response, until we're ready to
+  // send an actual PaymentResponse.
+  PendingPaymentResponse _pendingPaymentResponse;
 }
 
 // Object that manages JavaScript injection into the web view.
@@ -135,7 +158,7 @@ NSString* kCancelMessage = @"The payment request was canceled.";
 
 // Called by |_updateEventTimeoutTimer|, displays an error message. Upon
 // dismissal of the error message, cancels the Payment Request as if it was
-// performend by the user.
+// performed by the user.
 - (BOOL)displayErrorThenCancelRequest;
 
 // Called by |_paymentResponseTimeoutTimer|, invokes handleResponseComplete:
@@ -168,6 +191,10 @@ NSString* kCancelMessage = @"The payment request was canceled.";
 // promise doesn't get settled in a reasonable amount of time, it is as if it
 // was rejected.
 - (void)setUpdateEventTimeoutTimer;
+
+// Called when the relevant addresses from a Payment Request have been
+// normalized. Resolves the request promise with a PaymentResponse.
+- (void)paymentRequestAddressNormalizationDidComplete;
 
 @end
 
@@ -322,6 +349,43 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   return NO;
 }
 
+- (void)startAddressNormalizer {
+  autofill::PersonalDataManager* personalDataManager =
+      _paymentRequest->GetPersonalDataManager();
+
+  std::unique_ptr<i18n::addressinput::Source> addressNormalizerSource =
+      base::MakeUnique<autofill::ChromeMetadataSource>(
+          I18N_ADDRESS_VALIDATION_DATA_URL,
+          personalDataManager->GetURLRequestContextGetter());
+
+  std::unique_ptr<i18n::addressinput::Storage> addressNormalizerStorage =
+      autofill::ValidationRulesStorageFactory::CreateStorage();
+
+  std::unique_ptr<payments::AddressNormalizer> addressNormalizer =
+      base::MakeUnique<payments::AddressNormalizerImpl>(
+          std::move(addressNormalizerSource),
+          std::move(addressNormalizerStorage));
+
+  // Kickoff the process of loading the rules (which is asynchronous) for each
+  // profile's country, to get faster address normalization later.
+  for (const autofill::AutofillProfile* profile :
+       personalDataManager->GetProfilesToSuggest()) {
+    std::string countryCode =
+        base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+    if (autofill::data_util::IsValidCountryCode(countryCode)) {
+      addressNormalizer->LoadRulesForRegion(countryCode);
+    }
+  }
+
+  const std::string default_country_code =
+      autofill::AutofillCountry::CountryCodeForLocale(
+          GetApplicationContext()->GetApplicationLocale());
+
+  _addressNormalizationManager =
+      base::MakeUnique<payments::AddressNormalizationManager>(
+          std::move(addressNormalizer), default_country_code);
+}
+
 // Ensures that |_paymentRequest| is set to the correct value for |message|.
 // Returns YES if |_paymentRequest| was already set to the right value, or if it
 // was updated to match |message|.
@@ -358,6 +422,8 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   if (![self createPaymentRequestFromMessage:message]) {
     return NO;
   }
+
+  [self startAddressNormalizer];
 
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =
@@ -566,25 +632,10 @@ NSString* kCancelMessage = @"The payment request was canceled.";
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-        didCompletePaymentRequest:(PaymentRequest*)paymentRequest
-                             card:(const autofill::CreditCard&)card
-                 verificationCode:(const base::string16&)verificationCode {
-  web::PaymentResponse paymentResponse;
-
-  // If the merchant specified the card network as part of the "basic-card"
-  // payment method, return "basic-card" as the method_name. Otherwise, return
-  // the name of the network directly.
-  std::string issuer_network =
-      autofill::data_util::GetPaymentRequestData(card.network())
-          .basic_card_issuer_network;
-  paymentResponse.method_name =
-      paymentRequest->basic_card_specified_networks().find(issuer_network) !=
-              paymentRequest->basic_card_specified_networks().end()
-          ? base::ASCIIToUTF16("basic-card")
-          : base::ASCIIToUTF16(issuer_network);
-
-  // Get the billing address
-  autofill::AutofillProfile billingAddress;
+    didCompletePaymentRequestWithCard:(const autofill::CreditCard&)card
+                     verificationCode:(const base::string16&)verificationCode {
+  _pendingPaymentResponse.creditCard = card;
+  _pendingPaymentResponse.verificationCode = verificationCode;
 
   // TODO(crbug.com/714768): Make sure the billing address is set and valid
   // before getting here. Once the bug is addressed, there will be no need to
@@ -593,61 +644,93 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   if (!card.billing_address_id().empty()) {
     autofill::AutofillProfile* billingAddressPtr =
         autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-            card.billing_address_id(), paymentRequest->billing_profiles());
-    if (billingAddressPtr)
-      billingAddress = *billingAddressPtr;
+            card.billing_address_id(), _paymentRequest->billing_profiles());
+    if (billingAddressPtr) {
+      _pendingPaymentResponse.billingAddress = *billingAddressPtr;
+      _addressNormalizationManager->StartNormalizingAddress(
+          &_pendingPaymentResponse.billingAddress);
+    }
   }
+
+  if (_paymentRequest->request_shipping()) {
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a shipping address.
+    DCHECK(_paymentRequest->selected_shipping_profile());
+    _pendingPaymentResponse.shippingAddress =
+        *_paymentRequest->selected_shipping_profile();
+    _addressNormalizationManager->StartNormalizingAddress(
+        &_pendingPaymentResponse.shippingAddress);
+  }
+
+  if (_paymentRequest->request_payer_name() ||
+      _paymentRequest->request_payer_email() ||
+      _paymentRequest->request_payer_phone()) {
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(_paymentRequest->selected_contact_profile());
+    _pendingPaymentResponse.contactAddress =
+        *_paymentRequest->selected_contact_profile();
+    _addressNormalizationManager->StartNormalizingAddress(
+        &_pendingPaymentResponse.contactAddress);
+  }
+
+  __weak PaymentRequestManager* weakSelf = self;
+  _addressNormalizationManager->FinalizeWithCompletionCallback(
+      base::BindBlockArc(^() {
+        [weakSelf paymentRequestAddressNormalizationDidComplete];
+      }));
+}
+
+- (void)paymentRequestAddressNormalizationDidComplete {
+  web::PaymentResponse paymentResponse;
+
+  // If the merchant specified the card network as part of the "basic-card"
+  // payment method, return "basic-card" as the method_name. Otherwise, return
+  // the name of the network directly.
+  std::string issuer_network = autofill::data_util::GetPaymentRequestData(
+                                   _pendingPaymentResponse.creditCard.network())
+                                   .basic_card_issuer_network;
+  paymentResponse.method_name =
+      _paymentRequest->basic_card_specified_networks().find(issuer_network) !=
+              _paymentRequest->basic_card_specified_networks().end()
+          ? base::ASCIIToUTF16("basic-card")
+          : base::ASCIIToUTF16(issuer_network);
 
   paymentResponse.details =
       payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
-          card, verificationCode, billingAddress,
+          _pendingPaymentResponse.creditCard,
+          _pendingPaymentResponse.verificationCode,
+          _pendingPaymentResponse.billingAddress,
           GetApplicationContext()->GetApplicationLocale());
 
-  if (paymentRequest->request_shipping()) {
-    autofill::AutofillProfile* shippingAddress =
-        paymentRequest->selected_shipping_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a shipping address.
-    DCHECK(shippingAddress);
+  if (_paymentRequest->request_shipping()) {
     paymentResponse.shipping_address =
         payments::data_util::GetPaymentAddressFromAutofillProfile(
-            *shippingAddress, GetApplicationContext()->GetApplicationLocale());
+            _pendingPaymentResponse.shippingAddress,
+            GetApplicationContext()->GetApplicationLocale());
 
     web::PaymentShippingOption* shippingOption =
-        paymentRequest->selected_shipping_option();
+        _paymentRequest->selected_shipping_option();
     DCHECK(shippingOption);
     paymentResponse.shipping_option = shippingOption->id;
   }
 
-  if (paymentRequest->request_payer_name()) {
-    autofill::AutofillProfile* contactInfo =
-        paymentRequest->selected_contact_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(contactInfo);
-    paymentResponse.payer_name =
-        contactInfo->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                             GetApplicationContext()->GetApplicationLocale());
+  if (_paymentRequest->request_payer_name()) {
+    paymentResponse.payer_name = _pendingPaymentResponse.contactAddress.GetInfo(
+        autofill::AutofillType(autofill::NAME_FULL),
+        GetApplicationContext()->GetApplicationLocale());
   }
 
-  if (paymentRequest->request_payer_email()) {
-    autofill::AutofillProfile* contactInfo =
-        paymentRequest->selected_contact_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(contactInfo);
+  if (_paymentRequest->request_payer_email()) {
     paymentResponse.payer_email =
-        contactInfo->GetRawInfo(autofill::EMAIL_ADDRESS);
+        _pendingPaymentResponse.contactAddress.GetRawInfo(
+            autofill::EMAIL_ADDRESS);
   }
 
-  if (paymentRequest->request_payer_phone()) {
-    autofill::AutofillProfile* contactInfo =
-        paymentRequest->selected_contact_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(contactInfo);
+  if (_paymentRequest->request_payer_phone()) {
     paymentResponse.payer_phone =
-        contactInfo->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
+        _pendingPaymentResponse.contactAddress.GetRawInfo(
+            autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
   [_paymentRequestJsManager
