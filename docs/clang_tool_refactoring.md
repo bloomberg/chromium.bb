@@ -87,7 +87,7 @@ While clang has a [`clang::tooling::RefactoringTool`](http://clang.llvm.org/doxy
 to automatically apply the generated replacements and save the results, it
 doesn't work well for Chromium:
 
-*   Clang tools run actions serially, so runtime scales poorly to tens of
+*   Clang tools run actions serially, so run time scales poorly to tens of
     thousands of files.
 *   A parsing error in any file (quite common in NaCl source) prevents any of
     the generated replacements from being applied.
