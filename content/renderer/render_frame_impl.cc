@@ -3034,6 +3034,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       base::MakeUnique<WorkerFetchContextImpl>(
           worker_url_loader_factory_provider.PassInterface());
+  worker_fetch_context->set_parent_frame_id(routing_id_);
   blink::WebServiceWorkerNetworkProvider* web_provider =
       frame_->DataSource()->GetServiceWorkerNetworkProvider();
   if (web_provider) {

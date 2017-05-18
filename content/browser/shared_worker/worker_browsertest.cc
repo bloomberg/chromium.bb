@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -13,7 +14,9 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -105,6 +108,21 @@ class WorkerTest : public ContentBrowserTest {
   int select_certificate_count_;
 };
 
+class WorkerFetchTest : public testing::WithParamInterface<bool>,
+                        public WorkerTest {
+ public:
+  ~WorkerFetchTest() override {}
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (GetParam()) {
+      command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                      features::kOffMainThreadFetch.name);
+    } else {
+      command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                      features::kOffMainThreadFetch.name);
+    }
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(WorkerTest, SingleWorker) {
   RunTest("single_worker.html", std::string());
 }
@@ -143,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, IncognitoSharedWorkers) {
 
 // Make sure that auth dialog is displayed from worker context.
 // http://crbug.com/33344
-IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
+IN_PROC_BROWSER_TEST_P(WorkerFetchTest, WorkerHttpAuth) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/workers/worker_auth.html");
 
@@ -157,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
 // but this test only tests that the delegate is called. Move handling the
 // WebContentsless case from chrome/ to content/ and adjust the test
 // accordingly.
-IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
+IN_PROC_BROWSER_TEST_P(WorkerFetchTest, SharedWorkerHttpAuth) {
   if (!SupportsSharedWorker())
     return;
 
@@ -166,8 +184,8 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   NavigateAndWaitForAuth(url);
 }
 
-// Tests that TLS client auth prompts for normal workers.
-IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuth) {
+// Tests that TLS client auth prompts for normal workers's importScripts.
+IN_PROC_BROWSER_TEST_P(WorkerFetchTest, WorkerTlsClientAuthImportScripts) {
   // Launch HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory("content/test/data");
@@ -178,14 +196,32 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuth) {
   ASSERT_TRUE(https_server.Start());
 
   RunTest("worker_tls_client_auth.html",
-          "url=" + net::EscapeQueryParamValue(https_server.GetURL("/").spec(),
-                                              true));
+          "test=import&url=" + net::EscapeQueryParamValue(
+                                   https_server.GetURL("/").spec(), true));
+  EXPECT_EQ(1, select_certificate_count());
+}
+
+// Tests that TLS client auth prompts for normal workers's fetch() call.
+IN_PROC_BROWSER_TEST_P(WorkerFetchTest, WorkerTlsClientAuthFetch) {
+  // Launch HTTPS server.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  ASSERT_TRUE(https_server.Start());
+
+  RunTest("worker_tls_client_auth.html",
+          "test=fetch&url=" + net::EscapeQueryParamValue(
+                                  https_server.GetURL("/").spec(), true));
   EXPECT_EQ(1, select_certificate_count());
 }
 
 // Tests that TLS client auth does not prompt for a shared worker; shared
 // workers are not associated with a WebContents.
-IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerTlsClientAuth) {
+IN_PROC_BROWSER_TEST_P(WorkerFetchTest,
+                       SharedWorkerTlsClientAuthImportScripts) {
   if (!SupportsSharedWorker())
     return;
 
@@ -198,9 +234,10 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerTlsClientAuth) {
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
   ASSERT_TRUE(https_server.Start());
 
-  RunTest("worker_tls_client_auth.html",
-          "shared=true&url=" + net::EscapeQueryParamValue(
-                                   https_server.GetURL("/").spec(), true));
+  RunTest(
+      "worker_tls_client_auth.html",
+      "test=import&shared=true&url=" +
+          net::EscapeQueryParamValue(https_server.GetURL("/").spec(), true));
   EXPECT_EQ(0, select_certificate_count());
 }
 
@@ -243,5 +280,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest,
 
   RunTest("pass_messageport_to_sharedworker_dont_wait_for_connect.html", "");
 }
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        WorkerFetchTest,
+                        ::testing::Values(true, false));
 
 }  // namespace content

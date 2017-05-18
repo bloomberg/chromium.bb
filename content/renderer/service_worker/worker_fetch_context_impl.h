@@ -7,6 +7,7 @@
 
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
+#include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
 
@@ -39,6 +40,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   // Sets the service worker status of the parent frame.
   void set_service_worker_provider_id(int id);
   void set_is_controlled_by_service_worker(bool flag);
+  void set_parent_frame_id(int id);
 
  private:
   mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info_;
@@ -57,6 +59,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   int controller_version_id_ = kInvalidServiceWorkerVersionId;
 
   bool is_data_saver_enabled_ = false;
+  int parent_frame_id_ = MSG_ROUTING_NONE;
 };
 
 }  // namespace content

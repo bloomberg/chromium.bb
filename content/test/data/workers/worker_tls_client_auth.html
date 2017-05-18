@@ -7,15 +7,19 @@
 
 <script>
 
-// TODO(davidben): When URLSearchParams is stable and implemented, switch this
-// (and a lot of other test code) to it. https://crbug.com/303152
-var url = decodeURIComponent(/url=([^&]*)/.exec(location.search)[1]);
+var parms = new URLSearchParams(location.search);
+var test = parms.get("test");
+var url = parms.get("url");
 var worker = getWorker("worker_common.js");
 worker.onmessage = function(ev) {
   if (ev.data == "done")
     onSuccess();
 };
-worker.postMessage("tls-client-auth " + url);
+if (test == "import") {
+  worker.postMessage("tls-client-auth-import " + url);
+} else if (test == "fetch") {
+  worker.postMessage("tls-client-auth-fetch " + url);
+}
 </script>
 </head>
 

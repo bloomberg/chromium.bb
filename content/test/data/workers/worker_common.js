@@ -21,23 +21,25 @@ if (!self.postMessage) {
   num_clients++;
 }
 onmessage = function(evt) {
-  if (evt.data == "ping")
+  if (evt.data == "ping") {
     postMessage("pong");
-  else if (evt.data == "auth")
+  } else if (evt.data == "auth") {
     importScripts("/auth-basic");
-  else if (evt.data == "close")
+  } else if (evt.data == "close") {
     close();
-  else if (/eval.+/.test(evt.data)) {
+  } else if (/eval.+/.test(evt.data)) {
     try {
       postMessage(eval(evt.data.substr(5)));
     } catch (ex) {
       postMessage(ex);
     }
-  } else if (/tls-client-auth.+/.test(evt.data)) {
+  } else if (/tls-client-auth-import.+/.test(evt.data)) {
     try {
-      importScripts(evt.data.substr(16));
+      importScripts(evt.data.substr(23));
     } catch (ex) {
     }
     postMessage("done");
+  } else if (/tls-client-auth-fetch.+/.test(evt.data)) {
+    fetch(evt.data.substr(22)).then(_ => {}, _ => postMessage("done"));
   }
 }
