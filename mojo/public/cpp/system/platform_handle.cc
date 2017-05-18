@@ -124,11 +124,11 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR);
   *memory_handle = base::SharedMemoryHandle(
       base::FileDescriptor(static_cast<int>(platform_handle.value), false),
-      guid);
+      num_bytes, guid);
 #elif defined(OS_WIN)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE);
   *memory_handle = base::SharedMemoryHandle(
-      reinterpret_cast<HANDLE>(platform_handle.value), guid);
+      reinterpret_cast<HANDLE>(platform_handle.value), num_bytes, guid);
 #endif
 
   return MOJO_RESULT_OK;

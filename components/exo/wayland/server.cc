@@ -445,7 +445,7 @@ void shm_create_pool(wl_client* client,
                      int32_t size) {
   std::unique_ptr<SharedMemory> shared_memory =
       GetUserDataAs<Display>(resource)->CreateSharedMemory(
-          base::SharedMemoryHandle::ImportHandle(fd), size);
+          base::SharedMemoryHandle::ImportHandle(fd, size), size);
   if (!shared_memory) {
     wl_resource_post_no_memory(resource);
     return;

@@ -69,6 +69,7 @@ void WriteHandle(int handle_index,
       msg->WriteInt(handle_index);
       msg->WriteUInt64(handle.shmem().GetGUID().GetHighForSerialization());
       msg->WriteUInt64(handle.shmem().GetGUID().GetLowForSerialization());
+      msg->WriteUInt64(handle.shmem().GetSize());
     } else {
       msg->WriteBool(false);  // valid == false
     }

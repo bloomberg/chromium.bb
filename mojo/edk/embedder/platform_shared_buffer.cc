@@ -236,13 +236,15 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
   // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
   base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(platform_handle.release().handle, guid);
+  base::SharedMemoryHandle handle(platform_handle.release().handle, num_bytes_,
+                                  guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::SharedMemoryHandle handle = base::SharedMemoryHandle(
       platform_handle.release().port, num_bytes_, guid);
 #else
   base::SharedMemoryHandle handle(
-      base::FileDescriptor(platform_handle.release().handle, false), guid);
+      base::FileDescriptor(platform_handle.release().handle, false), num_bytes_,
+      guid);
 #endif
 
   shared_memory_.reset(new base::SharedMemory(handle, read_only_));
@@ -260,13 +262,17 @@ bool PlatformSharedBuffer::InitFromPlatformHandlePair(
   // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
   base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(rw_platform_handle.release().handle, guid);
-  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle, guid);
+  base::SharedMemoryHandle handle(rw_platform_handle.release().handle,
+                                  num_bytes_, guid);
+  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
+                                     num_bytes_, guid);
 #else  // defined(OS_WIN)
   base::SharedMemoryHandle handle(
-      base::FileDescriptor(rw_platform_handle.release().handle, false), guid);
+      base::FileDescriptor(rw_platform_handle.release().handle, false),
+      num_bytes_, guid);
   base::SharedMemoryHandle ro_handle(
-      base::FileDescriptor(ro_platform_handle.release().handle, false), guid);
+      base::FileDescriptor(ro_platform_handle.release().handle, false),
+      num_bytes_, guid);
 #endif  // defined(OS_WIN)
 
   DCHECK(!shared_memory_);
