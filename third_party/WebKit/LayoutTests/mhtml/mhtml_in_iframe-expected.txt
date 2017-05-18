@@ -1,3 +1,4 @@
+CONSOLE ERROR: Attempted to load a multipart archive into an subframe: simple_page_unmht.mht
 This page has an IFrame that tries to load some MHTML.
 The load should fail.
 

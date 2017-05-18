@@ -1239,10 +1239,24 @@ void ResourceFetcher::WarnUnusedPreloads() {
 
 ArchiveResource* ResourceFetcher::CreateArchive(Resource* resource) {
   // Only the top-frame can load MHTML.
-  if (!Context().IsMainFrame())
+  if (!Context().IsMainFrame()) {
+    Context().AddConsoleMessage(
+        "Attempted to load a multipart archive into an subframe: " +
+            resource->Url().GetString(),
+        FetchContext::kLogErrorMessage);
     return nullptr;
+  }
+
   archive_ = MHTMLArchive::Create(resource->Url(), resource->ResourceBuffer());
-  return archive_ ? archive_->MainResource() : nullptr;
+  if (!archive_) {
+    // Log if attempting to load an invalid archive resource.
+    Context().AddConsoleMessage(
+        "Malformed multipart archive: " + resource->Url().GetString(),
+        FetchContext::kLogErrorMessage);
+    return nullptr;
+  }
+
+  return archive_->MainResource();
 }
 
 ResourceTimingInfo* ResourceFetcher::GetNavigationTimingInfo() {
