@@ -1937,9 +1937,6 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 crbug.com/491764 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 
-# expected.txt has weird chars that rietveld doesn't handle; will land it manually.
-crbug.com/660581 html/tabular_data/col_span.html [ Failure ]
-
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
 
