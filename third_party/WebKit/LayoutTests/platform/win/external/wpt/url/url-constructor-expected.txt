@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 477 tests; 366 PASS, 111 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 479 tests; 368 PASS, 111 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL.searchParams getter 
 PASS URL.searchParams updating, clearing 
 PASS URL.searchParams setter, invalid values 
@@ -277,6 +277,7 @@ FAIL Parsing: <http://GOO 　goo.com> against <http://other.com/> assert_throws
           bURL(expected.input, expected.base)
         }" did not throw
 PASS Parsing: <http://GOO​⁠﻿goo.com> against <http://other.com/> 
+PASS Parsing: <\0 http://example.com/ \r > against <about:blank> 
 PASS Parsing: <http://www.foo。bar.com> against <http://other.com/> 
 PASS Parsing: <http://﷐zyx.com> against <http://other.com/> 
 PASS Parsing: <http://%ef%b7%90zyx.com> against <http://other.com/> 
@@ -474,6 +475,8 @@ FAIL Parsing: <C|> against <file://host/dir/file> assert_equals: href expected "
 FAIL Parsing: <C|#> against <file://host/dir/file> assert_equals: href expected "file:///C:#" but got "file:///C:/#"
 FAIL Parsing: <C|?> against <file://host/dir/file> assert_equals: href expected "file:///C:?" but got "file:///C:/?"
 PASS Parsing: <C|/> against <file://host/dir/file> 
+PASS Parsing: <C|
+/> against <file://host/dir/file> 
 PASS Parsing: <C|\> against <file://host/dir/file> 
 PASS Parsing: <C> against <file://host/dir/file> 
 FAIL Parsing: <C|a> against <file://host/dir/file> assert_equals: href expected "file://host/dir/C|a" but got "file:///C:/a"
