@@ -154,6 +154,9 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Returns true if a user cert should be selected.
   bool UserCertActive() const;
 
+  // Returns true if the user cert is managed but could not be found.
+  bool ManagedUserCertNotFound() const { return managed_user_cert_not_found_; }
+
   // Returns true if a CA cert selection should be allowed.
   bool CaCertActive() const;
 
@@ -211,6 +214,10 @@ class WifiConfigView : public ChildNetworkConfigView,
   PassphraseTextfield* passphrase_textfield_;
   views::ToggleImageButton* passphrase_visible_button_;
   views::Label* error_label_;
+
+  // Indicates that the user certificate is managed by policy (not editable),
+  // but the policy-specified certificate has not been found.
+  bool managed_user_cert_not_found_ = false;
 
   base::WeakPtrFactory<WifiConfigView> weak_ptr_factory_;
 
