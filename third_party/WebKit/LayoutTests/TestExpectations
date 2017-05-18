@@ -2343,6 +2343,8 @@ crbug.com/723741 virtual/threaded/inspector/tracing/idle-callback.html [ Failure
 crbug.com/723826 http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 
+crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Android Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 [ Android Mac ] external/wpt/pointerevents/pointerevent_disabled_form_control-manual.html [ Timeout ]
