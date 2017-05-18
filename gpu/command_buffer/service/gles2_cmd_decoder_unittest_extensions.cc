@@ -589,7 +589,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, GenDeletePaths) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(delete_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  delete_cmd.Init(std::numeric_limits<GLsizei>::max() + 1,
+  delete_cmd.Init(static_cast<GLuint>(std::numeric_limits<GLsizei>::max()) + 1,
                   std::numeric_limits<GLsizei>::max());
   EXPECT_EQ(error::kNoError, ExecuteCmd(delete_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -775,7 +775,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Too big range causes client id to wrap, connection error.
-  gen_cmd.Init(std::numeric_limits<GLsizei>::max() + 3,
+  gen_cmd.Init(static_cast<GLuint>(std::numeric_limits<GLsizei>::max()) + 3,
                std::numeric_limits<GLsizei>::max());
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(gen_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -819,7 +819,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   // Too big range causes client id to wrap, connection error.
-  delete_cmd.Init(std::numeric_limits<GLsizei>::max() + 3,
+  delete_cmd.Init(static_cast<GLuint>(std::numeric_limits<GLsizei>::max()) + 3,
                   std::numeric_limits<GLsizei>::max());
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(delete_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
