@@ -96,4 +96,24 @@ public interface SmartSelectionProvider {
      * Cancel all asynchronous requests.
      */
     public void cancelAllRequests();
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    /**
+     * Sets TextClassifier for Smart Text selection.
+     */
+    public void setTextClassifier(Object textClassifier);
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    /**
+     * Returns TextClassifier used for Smart Text selection.
+     * If the user sets non-null text classifier object, returns that object. Otherwise returns
+     * the system classifier obtained from the TextClassificationManager service.
+     */
+    public Object getTextClassifier();
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    /**
+     * Returns TextClassifier object if the one has been set with setTextClassifier(), or null.
+     */
+    public Object getCustomTextClassifier();
 }

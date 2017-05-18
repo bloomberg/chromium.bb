@@ -1039,6 +1039,10 @@ public class AwContents implements SmartClipProvider {
      * ^^^^^^^^^  See the native class declaration for more details on relative object lifetimes.
      */
     private void setNewAwContents(long newAwContentsPtr) {
+        // Move the text classifier to the new ContentViewCore.
+        Object textClassifier =
+                mContentViewCore == null ? null : mContentViewCore.getCustomTextClassifier();
+
         if (mNativeAwContents != 0) {
             destroyNatives();
             mContentViewCore = null;
@@ -1070,6 +1074,8 @@ public class AwContents implements SmartClipProvider {
         mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
+
+        if (textClassifier != null) mContentViewCore.setTextClassifier(textClassifier);
 
         final float dipScale = mWindowAndroid.getWindowAndroid().getDisplay().getDipScale();
         mDisplayObserver.onDIPScaleChanged(dipScale);
@@ -2712,6 +2718,19 @@ public class AwContents implements SmartClipProvider {
         nativeSetRendererPriorityPolicy(
                 mNativeAwContents, rendererRequestedPriority, waivedWhenNotVisible);
     }
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    public void setTextClassifier(Object textClassifier) {
+        assert mContentViewCore != null;
+        mContentViewCore.setTextClassifier(textClassifier);
+    }
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    public Object getTextClassifier() {
+        assert mContentViewCore != null;
+        return mContentViewCore.getTextClassifier();
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------

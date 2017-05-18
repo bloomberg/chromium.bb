@@ -1210,14 +1210,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     @Override
-    public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
-        return false;
-    }
-
-    @Override
-    public void cancelAllRequests() {}
-
-    @Override
     public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
         if (mSelectWordAroundCaretCounter > 0) mSelectWordAroundCaretCounter--;
         if (mSelectWordAroundCaretCounter > 0
@@ -1233,6 +1225,27 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         } else {
             hideContextualSearch(StateChangeReason.UNKNOWN);
         }
+    }
+
+    @Override
+    public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
+        return false;
+    }
+
+    @Override
+    public void cancelAllRequests() {}
+
+    @Override
+    public void setTextClassifier(Object textClassifier) {}
+
+    @Override
+    public Object getTextClassifier() {
+        return null;
+    }
+
+    @Override
+    public Object getCustomTextClassifier() {
+        return null;
     }
 
     /**

@@ -30,6 +30,16 @@ public interface SelectionClient {
     void showUnhandledTapUIIfNeeded(int x, int y);
 
     /**
+     * Acknowledges that a selectWordAroundCaret action has completed with the given result.
+     * @param didSelect Whether a word was actually selected or not.
+     * @param startAdjust The adjustment to the selection start offset needed to select the word.
+     *        This is typically a negative number (expressed in terms of number of characters).
+     * @param endAdjust The adjustment to the selection end offset needed to select the word.
+     *        This is typically a positive number (expressed in terms of number of characters).
+     */
+    void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust);
+
+    /**
      * Notifies the SelectionClient that the selection menu has been requested.
      * @param shouldSuggest Whether SelectionClient should suggest and classify or just classify.
      * @return True if embedder should wait for a response before showing selection menu.
@@ -43,12 +53,20 @@ public interface SelectionClient {
     public void cancelAllRequests();
 
     /**
-     * Acknowledges that a selectWordAroundCaret action has completed with the given result.
-     * @param didSelect Whether a word was actually selected or not.
-     * @param startAdjust The adjustment to the selection start offset needed to select the word.
-     *        This is typically a negative number (expressed in terms of number of characters).
-     * @param endAdjust The adjustment to the selection end offset needed to select the word.
-     *        This is typically a positive number (expressed in terms of number of characters).
+     * Sets TextClassifier for the Smart Text selection. Pass null argument to use the system
+     * classifier
      */
-    void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust);
+    public void setTextClassifier(Object textClassifier);
+
+    /**
+     * Gets TextClassifier that is used for the Smart Text selection. If the custom classifier
+     * has been set with setTextClassifier, returns that object, otherwise returns the system
+     * classifier.
+     */
+    public Object getTextClassifier();
+
+    /**
+     * Returns the TextClassifier which has been set with setTextClassifier(), or null.
+     */
+    public Object getCustomTextClassifier();
 }

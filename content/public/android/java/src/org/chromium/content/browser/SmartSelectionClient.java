@@ -83,6 +83,9 @@ public class SmartSelectionClient implements SelectionClient {
     public void showUnhandledTapUIIfNeeded(int x, int y) {}
 
     @Override
+    public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}
+
+    @Override
     public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
         requestSurroundingText(shouldSuggest ? SUGGEST_AND_CLASSIFY : CLASSIFY);
         return true;
@@ -97,8 +100,23 @@ public class SmartSelectionClient implements SelectionClient {
         mProvider.cancelAllRequests();
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     @Override
-    public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}
+    public void setTextClassifier(Object textClassifier) {
+        mProvider.setTextClassifier(textClassifier);
+    }
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    @Override
+    public Object getTextClassifier() {
+        return mProvider.getTextClassifier();
+    }
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    @Override
+    public Object getCustomTextClassifier() {
+        return mProvider.getCustomTextClassifier();
+    }
 
     private void requestSurroundingText(@RequestType int callbackData) {
         if (mNativeSmartSelectionClient == 0) {
