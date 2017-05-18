@@ -470,6 +470,8 @@ class NET_EXPORT NetworkQualityEstimator
                            TypicalNetworkQualities);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            OnPrefsReadWithReadingDisabled);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           ForceEffectiveConnectionTypeThroughFieldTrial);
 
   // Value of round trip time observations is in base::TimeDelta.
   typedef nqe::internal::Observation<base::TimeDelta> RttObservation;
