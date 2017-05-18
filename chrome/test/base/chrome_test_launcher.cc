@@ -104,11 +104,22 @@ void ChromeTestLauncherDelegate::PreSharding() {
   // proliferate with the use of uniquely named scoped_dirs):
   // https://crbug.com/721245. This needs to be here in order not to be racy
   // with any tests that will access that state.
-  base::win::RegKey key(HKEY_CURRENT_USER,
-                        install_static::GetRegistryPath().c_str(),
-                        KEY_SET_VALUE | KEY_QUERY_VALUE);
-  if (key.Valid())
-    key.DeleteKey(L"PreferenceMACs");
+  base::win::RegKey distrubution_key;
+  LONG result = distrubution_key.Open(HKEY_CURRENT_USER,
+                                      install_static::GetRegistryPath().c_str(),
+                                      KEY_SET_VALUE);
+
+  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+    LOG(ERROR) << "Failed to open distribution key for cleanup: " << result;
+    return;
+  }
+
+  result = distrubution_key.DeleteKey(L"PreferenceMACs");
+
+  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+    LOG(ERROR) << "Failed to cleanup PreferenceMACs: " << result;
+    return;
+  }
 #endif
 }
 
