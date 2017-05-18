@@ -304,8 +304,15 @@ class PageLoadMetricsObserver {
   // observer to query |navigation_handle| to determine which happened. Note
   // that |navigation_handle| will be destroyed soon after this call. Don't
   // hold a reference to it.
-  virtual ObservePolicy OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle);
+  virtual void OnDidFinishSubFrameNavigation(
+      content::NavigationHandle* navigation_handle) {}
+
+  // OnCommitSameDocumentNavigation is triggered when a same-document navigation
+  // commits within the main frame of the current page. Note that
+  // |navigation_handle| will be destroyed soon after this call. Don't hold a
+  // reference to it.
+  virtual void OnCommitSameDocumentNavigation(
+      content::NavigationHandle* navigation_handle) {}
 
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to

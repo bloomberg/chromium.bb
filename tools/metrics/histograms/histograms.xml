@@ -47731,6 +47731,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.AMP.SameDocumentView"
+    enum="PageLoadMetricsAMPViewType">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>Count of same document page views for AMP pages.</summary>
+</histogram>
+
 <histogram
     name="PageLoad.Clients.DataReductionProxy.Experimental.Bytes.Network.CompressionRatio"
     units="%">

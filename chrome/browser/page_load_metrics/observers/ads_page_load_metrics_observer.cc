@@ -91,8 +91,7 @@ AdsPageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
+void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   // Determine if the frame is part of an existing ad, the root of a new ad,
   // or a non-ad frame. Once a frame is labled as an ad, it is always
@@ -115,7 +114,7 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
             "PageLoad.Clients.Ads.Google.Navigations.AdFrameRenavigatedToAd",
             FrameIsAd(navigation_handle));
       }
-      return CONTINUE_OBSERVING;
+      return;
     }
     // This frame was previously not an ad, process it as usual. If it had
     // any child frames that were ads, those will still be recorded.
@@ -132,7 +131,7 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     // it's a frame from a previous navigation.
     RecordParentExistsForSubFrame(false /* parent_exists */);
 
-    return CONTINUE_OBSERVING;
+    return;
   }
   RecordParentExistsForSubFrame(true /* parent_exists */);
 
@@ -147,7 +146,6 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   ad_frames_data_[frame_tree_node_id] = ad_data;
 
   ProcessOngoingNavigationResource(frame_tree_node_id);
-  return CONTINUE_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
