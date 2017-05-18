@@ -77,6 +77,25 @@ cr.define('languages_page_tests', function() {
       var dialogItems;
       var cancelButton;
       var actionButton;
+      var dialogClosedResolver;
+      var dialogClosedObserver;
+
+      // Resolves the PromiseResolver if the mutation includes removal of the
+      // settings-add-languages-dialog.
+      // TODO(michaelpg): Extract into a common method similar to
+      // test_util.whenAttributeIs for use elsewhere.
+      var onMutation = function(mutations, observer) {
+        if (mutations.some(function(mutation) {
+          return mutation.type == 'childList' &&
+              Array.from(mutation.removedNodes).includes(dialog);
+        })) {
+          // Sanity check: the dialog should no longer be in the DOM.
+          assertEquals(null, languagesPage.$$('settings-add-languages-dialog'));
+          observer.disconnect();
+          assertTrue(!!dialogClosedResolver);
+          dialogClosedResolver.resolve();
+        }
+      };
 
       setup(function(done) {
         var addLanguagesButton =
@@ -88,6 +107,12 @@ cr.define('languages_page_tests', function() {
         setTimeout(function() {
           dialog = languagesPage.$$('settings-add-languages-dialog');
           assertTrue(!!dialog);
+
+          // Observe the removal of the dialog via MutationObserver since the
+          // HTMLDialogElement 'close' event fires at an unpredictable time.
+          dialogClosedResolver = new PromiseResolver();
+          dialogClosedObserver = new MutationObserver(onMutation);
+          dialogClosedObserver.observe(languagesPage.root, {childList: true});
 
           actionButton = assert(dialog.$$('.action-button'));
           cancelButton = assert(dialog.$$('.cancel-button'));
@@ -107,30 +132,29 @@ cr.define('languages_page_tests', function() {
         });
       });
 
-      // After every test, check that the dialog is removed from the DOM.
       teardown(function() {
-        Polymer.dom.flush();
-        assertEquals(null, languagesPage.$$('settings-add-languages-dialog'));
+        dialogClosedObserver.disconnect();
       });
 
       test('cancel', function() {
         // Canceling the dialog should close and remove it.
         MockInteractions.tap(cancelButton);
+
+        return dialogClosedResolver.promise;
       });
 
-      test('add languages and cancel', function(done) {
+      test('add languages and cancel', function() {
         // Check some languages.
         MockInteractions.tap(dialogItems[1]);  // en-CA.
         MockInteractions.tap(dialogItems[2]);  // tk.
 
         // Canceling the dialog should close and remove it without enabling
-        // the checked languages. A small timeout lets us check this.
+        // the checked languages.
         MockInteractions.tap(cancelButton);
-        setTimeout(function() {
+        return dialogClosedResolver.promise.then(function() {
           assertEquals(initialLanguages,
                        languageHelper.getPref(languagesPref).value);
-          done();
-        }, 100);
+        });
       });
 
       test('add languages and confirm', function() {
@@ -157,6 +181,8 @@ cr.define('languages_page_tests', function() {
         assertEquals(
             initialLanguages + ',en,tk',
             languageHelper.getPref(languagesPref).value);
+
+        return dialogClosedResolver.promise;
       });
     });
 
