@@ -31,6 +31,7 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "crypto/signature_verifier.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -374,8 +375,36 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
                                      base::Unretained(this));
 
   delegate_.reset(new FetcherDelegate(closure));
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("extension_install_signer", R"(
+        semantics {
+          sender: "Extension Install Signer"
+          description: "Fetches the signatures for installed extensions."
+          trigger:
+            "Chrome detects an extension that requires installation "
+            "verification."
+          data:
+            "The ids of the extensions that need to be verified, as well as a "
+            "non-revertable salted hash of the user's machine id provided by "
+            "RLZ library, which varies between different installs. This id is "
+            "only used to verify the validity of the response."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled, but it is only activated if "
+            "extensions are installed."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              policy_options {mode: MANDATORY}
+              ExtensionInstallBlacklist: '*'
+            }
+          }
+        })");
   url_fetcher_ = net::URLFetcher::Create(GetBackendUrl(), net::URLFetcher::POST,
-                                         delegate_.get());
+                                         delegate_.get(), traffic_annotation);
   url_fetcher_->SetRequestContext(context_getter_);
 
   // The request protocol is JSON of the form:
