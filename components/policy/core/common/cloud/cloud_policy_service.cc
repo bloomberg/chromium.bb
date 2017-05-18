@@ -123,12 +123,6 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
   else
     client_->clear_public_key_version();
 
-  // Whether to submit the machine ID.
-  bool submit_machine_id = false;
-  if (policy && policy->has_valid_serial_number_missing())
-    submit_machine_id = policy->valid_serial_number_missing();
-  client_->set_submit_machine_id(submit_machine_id);
-
   // Finally, set up registration if necessary.
   if (policy && policy->has_request_token() && policy->has_device_id() &&
       !client_->is_registered()) {

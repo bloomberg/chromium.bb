@@ -203,10 +203,6 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string& machine_id() const { return machine_id_; }
   const std::string& machine_model() const { return machine_model_; }
 
-  void set_submit_machine_id(bool submit_machine_id) {
-    submit_machine_id_ = submit_machine_id;
-  }
-
   void set_last_policy_timestamp(const base::Time& timestamp) {
     last_policy_timestamp_ = timestamp;
   }
@@ -384,9 +380,6 @@ class POLICY_EXPORT CloudPolicyClient {
   int public_key_version_ = -1;
   bool public_key_version_valid_ = false;
   std::string robot_api_auth_code_;
-
-  // Whether to send |machine_id_| as part of policy fetch.
-  bool submit_machine_id_ = false;
 
   // Information for the latest policy invalidation received.
   int64_t invalidation_version_ = 0;

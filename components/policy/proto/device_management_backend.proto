@@ -187,6 +187,8 @@ message DeviceServiceApiAccessResponse {
 }
 
 message PolicyFetchRequest {
+  reserved 5, 10;
+
   // This is the policy type, which maps to D3 policy type internally.
   // By convention, we use "/" as separator to create policy namespace.
   // The policy type names are case insensitive.
@@ -219,12 +221,6 @@ message PolicyFetchRequest {
   // This field is unspecified if the client does not yet have a
   // public key.
   optional int32 public_key_version = 4;
-
-  // Machine hardware id, such as serial number.
-  // This field is should be set only if the serial number for the device is
-  // missing from the server, as indicated by the valid_serial_number_missing
-  // field in the last policy fetch response.
-  optional string machine_id = 5;
 
   // This field is used for devices to send the additional ID to fetch settings.
   // Retrieving some settings requires more than just device or user ID.
@@ -340,12 +336,6 @@ message PolicyData {
     DEPROVISIONED = 2;
   }
   optional AssociationState state = 9 [default = ACTIVE];
-
-  // Indicates if the the server cannot find a valid serial number for the
-  // device.  If this flag is set, the device should send the valid serial
-  // number with a device policy fetch request.  Note that this only
-  // applies to device policy.
-  optional bool valid_serial_number_missing = 10;
 
   // Indicates which public account or extension/plug-in this policy data is
   // for. See PolicyFetchRequest.settings_entity_id for more details.

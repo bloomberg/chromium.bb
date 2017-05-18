@@ -60,7 +60,6 @@ class MockCloudPolicyClient : public CloudPolicyClient {
 
   using CloudPolicyClient::dm_token_;
   using CloudPolicyClient::client_id_;
-  using CloudPolicyClient::submit_machine_id_;
   using CloudPolicyClient::last_policy_timestamp_;
   using CloudPolicyClient::public_key_version_;
   using CloudPolicyClient::public_key_version_valid_;

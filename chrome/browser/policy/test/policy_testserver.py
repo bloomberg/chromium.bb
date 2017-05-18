@@ -96,10 +96,6 @@ except ImportError:
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
-# List of bad machine identifiers that trigger the |valid_serial_number_missing|
-# flag to be set set in the policy fetch response.
-BAD_MACHINE_IDS = [ '123490EN400015' ]
-
 # List of machines that trigger the server to send kiosk enrollment response
 # for the register request.
 KIOSK_MACHINE_IDS = [ 'KIOSK' ]
@@ -838,9 +834,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       username: The username for the response. May be None.
     """
 
-    if msg.machine_id:
-      self.server.UpdateMachineId(token_info['device_token'], msg.machine_id)
-
     # Response is only given if the scope is specified in the config file.
     # Normally 'google/chromeos/device', 'google/chromeos/user' and
     # 'google/chromeos/publicaccount' should be accepted.
@@ -905,8 +898,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.request_token = token_info['device_token']
     policy_data.policy_value = payload
     policy_data.machine_name = token_info['machine_name']
-    policy_data.valid_serial_number_missing = (
-        token_info['machine_id'] in BAD_MACHINE_IDS)
     policy_data.settings_entity_id = msg.settings_entity_id
     policy_data.service_account_identity = policy.get(
         'service_account_identity',
@@ -1240,17 +1231,6 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     }
     self.WriteClientState()
     return self._registered_tokens[dmtoken]
-
-  def UpdateMachineId(self, dmtoken, machine_id):
-    """Updates the machine identifier for a registered device.
-
-    Args:
-      dmtoken: The device management token provided by the client.
-      machine_id: Updated hardware identifier value.
-    """
-    if dmtoken in self._registered_tokens:
-      self._registered_tokens[dmtoken]['machine_id'] = machine_id
-      self.WriteClientState()
 
   def UpdateStateKeys(self, dmtoken, state_keys):
     """Updates the state keys for a given client.

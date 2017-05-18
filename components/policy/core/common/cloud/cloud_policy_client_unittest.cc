@@ -531,12 +531,10 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
 
   const base::Time timestamp(
       base::Time::UnixEpoch() + base::TimeDelta::FromDays(20));
-  client_->set_submit_machine_id(true);
   client_->set_last_policy_timestamp(timestamp);
   client_->set_public_key_version(42);
   em::PolicyFetchRequest* policy_fetch_request =
       policy_request_.mutable_policy_request()->mutable_request(0);
-  policy_fetch_request->set_machine_id(kMachineID);
   policy_fetch_request->set_timestamp(timestamp.ToJavaTime());
   policy_fetch_request->set_public_key_version(42);
 

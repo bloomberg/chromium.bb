@@ -436,12 +436,10 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
 
   EXPECT_EQ(dm_protocol::kChromePublicAccountPolicyType,
             public_account->policy_type());
-  EXPECT_FALSE(public_account->has_machine_id());
   EXPECT_EQ(kAccount1, public_account->settings_entity_id());
 
   EXPECT_EQ(dm_protocol::kChromeExtensionPolicyType,
             extensions->policy_type());
-  EXPECT_FALSE(extensions->has_machine_id());
   EXPECT_FALSE(extensions->has_settings_entity_id());
 
   ASSERT_TRUE(broker->core()->store());
