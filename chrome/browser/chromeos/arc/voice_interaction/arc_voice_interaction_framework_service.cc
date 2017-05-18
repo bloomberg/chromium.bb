@@ -9,16 +9,29 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/instance_holder.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_owner.h"
+#include "ui/compositor/layer_tree_owner.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_util.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/snapshot/snapshot.h"
+#include "ui/snapshot/snapshot_aura.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace arc {
@@ -35,6 +48,64 @@ void ScreenshotCallback(
   }
   std::vector<uint8_t> result(data->front(), data->front() + data->size());
   callback.Run(result);
+}
+
+std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
+    aura::Window* root_window) {
+  using LayerSet = base::flat_set<const ui::Layer*>;
+  LayerSet blocked_layers;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->IsOffTheRecord())
+      blocked_layers.insert(browser->window()->GetNativeWindow()->layer());
+  }
+
+  auto layer_tree_owner = ::wm::RecreateLayersWithClosure(
+      root_window, base::BindRepeating(
+                       [](LayerSet blocked_layers,
+                          ui::LayerOwner* owner) -> std::unique_ptr<ui::Layer> {
+                         // Parent layer is excluded meaning that it's pointless
+                         // to clone current child and all its descendants. This
+                         // reduces the number of layers to create.
+                         if (blocked_layers.count(owner->layer()->parent()))
+                           return nullptr;
+                         if (blocked_layers.count(owner->layer())) {
+                           auto layer = base::MakeUnique<ui::Layer>(
+                               ui::LayerType::LAYER_SOLID_COLOR);
+                           layer->SetBounds(owner->layer()->bounds());
+                           layer->SetColor(SK_ColorBLACK);
+                           return layer;
+                         }
+                         return owner->RecreateLayer();
+                       },
+                       std::move(blocked_layers)));
+
+  // layer_tree_owner cannot be null since we are starting off from the root
+  // window, which could never be incognito.
+  DCHECK(layer_tree_owner);
+
+  auto* root_layer = layer_tree_owner->root();
+  root_window->layer()->Add(root_layer);
+  root_window->layer()->StackAtBottom(root_layer);
+  return layer_tree_owner;
+}
+
+void EncodeAndReturnImage(
+    const ArcVoiceInteractionFrameworkService::CaptureFullscreenCallback&
+        callback,
+    std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
+    const gfx::Image& image) {
+  old_layer_owner.reset();
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits{base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::Bind(
+          [](const gfx::Image& image) -> std::vector<uint8_t> {
+            std::vector<uint8_t> res;
+            gfx::JPEG1xEncodedDataFromImage(image, 100, &res);
+            return res;
+          },
+          image),
+      callback);
 }
 
 }  // namespace
@@ -136,11 +207,12 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
   // the screenshot to it.
   aura::Window* window = ash::Shell::GetPrimaryRootWindow();
   DCHECK(window);
-  ui::GrabWindowSnapshotAsyncJPEG(
-      window, gfx::Rect(window->bounds().size()),
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING}),
-      base::Bind(&ScreenshotCallback, callback));
+
+  auto old_layer_owner = CreateLayerTreeForSnapshot(window);
+  ui::GrabLayerSnapshotAsync(
+      old_layer_owner->root(), gfx::Rect(window->bounds().size()),
+      base::Bind(&EncodeAndReturnImage, callback,
+                 base::Passed(std::move(old_layer_owner))));
 }
 
 void ArcVoiceInteractionFrameworkService::OnMetalayerClosed() {

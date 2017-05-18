@@ -6,8 +6,10 @@
 #define UI_WM_CORE_WINDOW_UTIL_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "ui/wm/wm_export.h"
 
@@ -45,6 +47,17 @@ WM_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 // have not yet been painted to.
 WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
     ui::LayerOwner* root);
+
+using MapLayerFunc =
+    base::RepeatingCallback<std::unique_ptr<ui::Layer>(ui::LayerOwner*)>;
+
+// Maps |map_func| over each layer of the layer tree and returns a copy of the
+// layer tree. The recursion stops at the level when |map_func| returns nullptr
+// on the owner's layer. MapLayers might return nullptr when |map_func| returns
+// nullptr on the root layer's owner.
+WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(
+    ui::LayerOwner* root,
+    const MapLayerFunc& map_func);
 
 // Returns a layer tree that mirrors |root|. Used for live window previews. If
 // |sync_bounds| is true, the bounds of all mirror layers except the root are
