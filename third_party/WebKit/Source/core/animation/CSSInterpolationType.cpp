@@ -305,11 +305,11 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   const AtomicString& property_name = property.CustomPropertyName();
   DCHECK(registration_);
   if (registration_->Inherits()) {
-    style.SetResolvedInheritedVariable(property_name, variable_data.Release(),
+    style.SetResolvedInheritedVariable(property_name, std::move(variable_data),
                                        css_value);
   } else {
     style.SetResolvedNonInheritedVariable(property_name,
-                                          variable_data.Release(), css_value);
+                                          std::move(variable_data), css_value);
   }
 }
 
