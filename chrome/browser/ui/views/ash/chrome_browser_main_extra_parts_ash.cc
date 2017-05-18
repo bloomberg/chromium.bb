@@ -42,6 +42,9 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   if (ash_util::IsRunningInMash()) {
+    // ash::Shell will not be created because ash is running out-of-process.
+    ash::Shell::SetIsBrowserProcessWithMash();
+
     // Register ash-specific window properties with Chrome's property converter.
     // This propagates ash properties set on chrome windows to ash, via mojo.
     DCHECK(views::MusClient::Exists());

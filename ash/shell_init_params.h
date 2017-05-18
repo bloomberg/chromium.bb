@@ -17,6 +17,7 @@ class SequencedWorkerPool;
 
 namespace ui {
 class ContextFactory;
+class ContextFactoryPrivate;
 }
 
 namespace ash {
