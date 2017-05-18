@@ -23,6 +23,8 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/version_info/version_info.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -38,6 +40,9 @@ const char* const kReportingFlags[] = {
 
 // Strings used to generate the serial number part of the version string.
 const char kSerialNumberPrefix[] = "SN:";
+
+// Strings used to generate the bluetooth device name.
+const char kBluetoothDeviceNamePrefix[] = "Bluetooth device name: ";
 
 }  // namespace
 
@@ -92,6 +97,10 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
     subscriptions_.push_back(
         cros_settings_->AddSettingsObserver(kReportingFlags[i], callback));
   }
+
+  // Update device bluetooth info.
+  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+      &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
 }
 
 void VersionInfoUpdater::UpdateVersionLabel() {
@@ -144,6 +153,14 @@ void VersionInfoUpdater::UpdateSerialNumberInfo() {
 void VersionInfoUpdater::OnVersion(const std::string& version) {
   version_text_ = version;
   UpdateVersionLabel();
+}
+
+void VersionInfoUpdater::OnGetAdapter(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (delegate_ && adapter->IsDiscoverable() && !adapter->GetName().empty()) {
+    delegate_->OnDeviceInfoUpdated(kBluetoothDeviceNamePrefix +
+                                   adapter->GetName());
+  }
 }
 
 void VersionInfoUpdater::OnStoreLoaded(policy::CloudPolicyStore* store) {

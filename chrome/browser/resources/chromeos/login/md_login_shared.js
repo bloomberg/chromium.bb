@@ -251,6 +251,14 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Sets the text content of the Bluetooth device info message.
+   * @param {string} bluetoothName The Bluetooth device name text.
+   */
+  Oobe.setBluetoothDeviceInfo = function(bluetoothName) {
+    DisplayManager.setBluetoothDeviceInfo(bluetoothName);
+  };
+
+  /**
    * Updates the device requisition string shown in the requisition prompt.
    * @param {string} requisition The device requisition.
    */

@@ -429,6 +429,10 @@ void CoreOobeHandler::OnEnterpriseInfoUpdated(
   CallJSOrDefer("setEnterpriseInfo", message_text, asset_id);
 }
 
+void CoreOobeHandler::OnDeviceInfoUpdated(const std::string& bluetooth_name) {
+  CallJSOrDefer("setBluetoothDeviceInfo", bluetooth_name);
+}
+
 ui::EventSink* CoreOobeHandler::GetEventSink() {
   return ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
 }
