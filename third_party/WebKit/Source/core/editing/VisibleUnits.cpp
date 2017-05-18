@@ -1815,7 +1815,7 @@ EphemeralRange ExpandRangeToSentenceBoundary(const EphemeralRange& range) {
 
 static bool NodeIsUserSelectAll(const Node* node) {
   return node && node->GetLayoutObject() &&
-         node->GetLayoutObject()->Style()->UserSelect() == SELECT_ALL;
+         node->GetLayoutObject()->Style()->UserSelect() == EUserSelect::kAll;
 }
 
 template <typename Strategy>
