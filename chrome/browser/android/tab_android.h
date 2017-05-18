@@ -147,6 +147,7 @@ class TabAndroid : public CoreTabHelperDelegate,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean incognito,
+      jboolean is_background_tab,
       const base::android::JavaParamRef<jobject>& jweb_contents,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
       const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
@@ -250,6 +251,9 @@ class TabAndroid : public CoreTabHelperDelegate,
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
+
+  void AttachDetachedTab(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);

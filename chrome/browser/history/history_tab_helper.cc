@@ -20,9 +20,15 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/background_tab_manager.h"
+#else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#endif
+
+#if defined(OS_ANDROID)
+using chrome::android::BackgroundTabManager;
 #endif
 
 using content::NavigationEntry;
@@ -137,7 +143,15 @@ void HistoryTabHelper::DidFinishNavigation(
     }
   }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  auto* background_tab_manager = BackgroundTabManager::GetInstance();
+  if (background_tab_manager->IsBackgroundTab(web_contents())) {
+    // No history insertion is done for now since this is a tab that speculates
+    // future navigations. Just caching and returning for now.
+    background_tab_manager->CacheHistory(add_page_args);
+    return;
+  }
+#else
   // Don't update history if this web contents isn't associatd with a tab.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->is_app())
