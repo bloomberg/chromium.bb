@@ -138,13 +138,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   wm::WorkspaceWindowState GetWorkspaceWindowState();
 
   WmShelf* wm_shelf() const { return wm_shelf_.get(); }
+  // TODO(jamescook): Eliminate in favor of wm_shelf().
+  WmShelf* GetShelf() const { return wm_shelf_.get(); }
 
-  bool HasShelf();
-
-  WmShelf* GetShelf();
-
-  // Creates the shelf view for this root window and notifies observers.
-  void CreateShelfView();
+  // Initializes the shelf for this root window and notifies observers.
+  void InitializeShelf();
 
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
@@ -351,6 +349,10 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // of the RootWindowController so that it is safe for observers to be added
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<WmShelf> wm_shelf_;
+
+  // TODO(jamescook): Eliminate this. It is left over from legacy shelf code and
+  // doesn't mean anything in particular.
+  bool shelf_initialized_ = false;
 
   std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 

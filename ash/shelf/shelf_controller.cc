@@ -6,6 +6,7 @@
 
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
@@ -40,11 +41,11 @@ void ShelfController::BindRequest(mojom::ShelfControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void ShelfController::NotifyShelfCreated(WmShelf* shelf) {
+void ShelfController::NotifyShelfInitialized(WmShelf* shelf) {
   // Notify observers, Chrome will set alignment and auto-hide from prefs.
   int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
   observers_.ForAllPtrs([display_id](mojom::ShelfObserver* observer) {
-    observer->OnShelfCreated(display_id);
+    observer->OnShelfInitialized(display_id);
   });
 }
 
@@ -75,20 +76,20 @@ void ShelfController::AddObserver(
 void ShelfController::SetAlignment(ShelfAlignment alignment,
                                    int64_t display_id) {
   WmShelf* shelf = GetShelfForDisplay(display_id);
-  // TODO(jamescook): The initialization check should not be necessary, but
+  // TODO(jamescook): The session state check should not be necessary, but
   // otherwise this wrongly tries to set the alignment on a secondary display
-  // during login before the ShelfLockingManager and ShelfView are created.
-  if (shelf && shelf->IsShelfInitialized())
+  // during login before the ShelfLockingManager is created.
+  if (shelf && Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     shelf->SetAlignment(alignment);
 }
 
 void ShelfController::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide,
                                           int64_t display_id) {
   WmShelf* shelf = GetShelfForDisplay(display_id);
-  // TODO(jamescook): The initialization check should not be necessary, but
+  // TODO(jamescook): The session state check should not be necessary, but
   // otherwise this wrongly tries to set auto-hide state on a secondary display
-  // during login before the ShelfView is created.
-  if (shelf && shelf->IsShelfInitialized())
+  // during login.
+  if (shelf && Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     shelf->SetAutoHideBehavior(auto_hide);
 }
 

@@ -1240,7 +1240,7 @@ void ChromeLauncherController::ReleaseProfile() {
 ///////////////////////////////////////////////////////////////////////////////
 // ash::mojom::ShelfObserver:
 
-void ChromeLauncherController::OnShelfCreated(int64_t display_id) {
+void ChromeLauncherController::OnShelfInitialized(int64_t display_id) {
   if (!ConnectToShelfController())
     return;
 

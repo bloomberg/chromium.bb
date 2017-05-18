@@ -54,7 +54,7 @@ WorkspaceController::~WorkspaceController() {
 }
 
 wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
-  if (!viewport_ || !RootWindowController::ForWindow(viewport_)->HasShelf())
+  if (!viewport_)
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 
   const aura::Window* fullscreen = wm::GetWindowForFullscreenMode(viewport_);

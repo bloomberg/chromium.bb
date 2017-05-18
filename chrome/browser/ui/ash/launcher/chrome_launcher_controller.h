@@ -354,7 +354,7 @@ class ChromeLauncherController
   void ReleaseProfile();
 
   // ash::mojom::ShelfObserver:
-  void OnShelfCreated(int64_t display_id) override;
+  void OnShelfInitialized(int64_t display_id) override;
   void OnAlignmentChanged(ash::ShelfAlignment alignment,
                           int64_t display_id) override;
   void OnAutoHideBehaviorChanged(ash::ShelfAutoHideBehavior auto_hide,

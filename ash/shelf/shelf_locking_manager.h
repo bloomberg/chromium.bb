@@ -14,7 +14,8 @@ namespace ash {
 
 class WmShelf;
 
-// ShelfLockingManager observes screen and session events to [un]lock the shelf.
+// ShelfLockingManager observes screen and session events to align the shelf at
+// the bottom of the screen when the screen is locked.
 class ASH_EXPORT ShelfLockingManager : public SessionObserver,
                                        public LockStateObserver {
  public:

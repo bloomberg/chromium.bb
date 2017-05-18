@@ -126,14 +126,13 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
     : wm_shelf_(wm_shelf),
       status_area_widget_(nullptr),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(nullptr),
+      shelf_view_(new ShelfView(Shell::Get()->shelf_model(), wm_shelf_, this)),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            wm_shelf_,
                            Shell::Get()->wallpaper_controller()),
       activating_as_fallback_(false) {
+  DCHECK(shelf_container);
   DCHECK(wm_shelf_);
-  background_animator_.AddObserver(this);
-  background_animator_.AddObserver(delegate_view_);
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -151,6 +150,11 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
   SetContentsView(delegate_view_);
   delegate_view_->SetParentLayer(GetLayer());
 
+  // The shelf view observes the shelf model and creates icons as items are
+  // added to the model.
+  shelf_view_->Init();
+  GetContentsView()->AddChildView(shelf_view_);
+
   shelf_layout_manager_ = new ShelfLayoutManager(this, wm_shelf_);
   shelf_layout_manager_->AddObserver(this);
   shelf_container->aura_window()->SetLayoutManager(shelf_layout_manager_);
@@ -159,26 +163,29 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
       AnimationChangeType::IMMEDIATE);
 
   views::Widget::AddObserver(this);
+
+  // Calls back into |this| and depends on |shelf_view_|.
+  background_animator_.AddObserver(this);
+  background_animator_.AddObserver(delegate_view_);
 }
 
 ShelfWidget::~ShelfWidget() {
   // Must call Shutdown() before destruction.
   DCHECK(!status_area_widget_);
+  background_animator_.RemoveObserver(delegate_view_);
+  background_animator_.RemoveObserver(this);
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
   RemoveObserver(this);
-  background_animator_.RemoveObserver(delegate_view_);
-  background_animator_.RemoveObserver(this);
 }
 
 void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
   DCHECK(status_container);
   DCHECK(!status_area_widget_);
-  // TODO(jamescook): Move ownership to RootWindowController.
   status_area_widget_ = new StatusAreaWidget(status_container, wm_shelf_);
   status_area_widget_->CreateTrayViews();
-  if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
-    status_area_widget_->Show();
+  // NOTE: Container may be hidden depending on login/display state.
+  status_area_widget_->Show();
   Shell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
   status_container->aura_window()->SetLayoutManager(
@@ -221,38 +228,15 @@ void ShelfWidget::OnShelfAlignmentChanged() {
   delegate_view_->SchedulePaint();
 }
 
-ShelfView* ShelfWidget::CreateShelfView() {
-  DCHECK(!shelf_view_);
-  shelf_view_ = new ShelfView(Shell::Get()->shelf_model(), wm_shelf_, this);
-  shelf_view_->Init();
-  GetContentsView()->AddChildView(shelf_view_);
-  return shelf_view_;
-}
-
 void ShelfWidget::PostCreateShelf() {
   SetFocusCycler(Shell::Get()->focus_cycler());
 
   // Ensure the newly created |shelf_| gets current values.
   background_animator_.NotifyObserver(this);
 
-  // TODO(jamescook): The IsActiveUserSessionStarted() check may not be needed
-  // because the shelf is only created after the first user session is active.
-  // The ShelfView seems to always be visible after login. At the lock screen
-  // the shelf is hidden because its container is hidden. During auto-hide it is
-  // hidden because ShelfWidget is transparent. Some of the ShelfView visibility
-  // code could be simplified. http://crbug.com/674773
-  // TODO(jdufualt|jamescook): Remove CHECK and shelf_view_->SetVisible call in
-  // m60 or beyond (see above TODO).
-  CHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
-  shelf_view_->SetVisible(
-      Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
   Show();
-}
-
-bool ShelfWidget::IsShelfVisible() const {
-  return shelf_view_ && shelf_view_->visible();
 }
 
 bool ShelfWidget::IsShowingAppList() const {
@@ -260,11 +244,11 @@ bool ShelfWidget::IsShowingAppList() const {
 }
 
 bool ShelfWidget::IsShowingContextMenu() const {
-  return shelf_view_ && shelf_view_->IsShowingMenu();
+  return shelf_view_->IsShowingMenu();
 }
 
 bool ShelfWidget::IsShowingOverflowBubble() const {
-  return shelf_view_ && shelf_view_->IsShowingOverflowBubble();
+  return shelf_view_->IsShowingOverflowBubble();
 }
 
 void ShelfWidget::SetFocusCycler(FocusCycler* focus_cycler) {
@@ -298,7 +282,7 @@ void ShelfWidget::Shutdown() {
 void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
   ShelfID id =
       ShelfID::Deserialize(panel->aura_window()->GetProperty(kShelfIDKey));
-  if (!shelf_view_ || id.IsNull())
+  if (id.IsNull())
     return;
 
   WmWindow* shelf_window = WmWindow::Get(this->GetNativeWindow());
@@ -310,9 +294,7 @@ void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
 gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   ShelfID id =
       ShelfID::Deserialize(window->aura_window()->GetProperty(kShelfIDKey));
-  // Window animations can be triggered during session restore before the shelf
-  // view is created. In that case, return default empty bounds.
-  if (!shelf_view_ || id.IsNull())
+  if (id.IsNull())
     return gfx::Rect();
 
   gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
@@ -324,7 +306,7 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
 }
 
 AppListButton* ShelfWidget::GetAppListButton() const {
-  return shelf_view_ ? shelf_view_->GetAppListButton() : nullptr;
+  return shelf_view_->GetAppListButton();
 }
 
 app_list::ApplicationDragAndDropHost*
@@ -342,8 +324,7 @@ void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void ShelfWidget::UpdateShelfItemBackground(SkColor color) {
-  if (shelf_view_)
-    shelf_view_->UpdateShelfItemBackground(color);
+  shelf_view_->UpdateShelfItemBackground(color);
 }
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {

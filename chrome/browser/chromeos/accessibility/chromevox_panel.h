@@ -33,6 +33,7 @@ class ChromeVoxPanel : public views::WidgetDelegate,
   void Close();
   void DidFirstVisuallyNonEmptyPaint();
   void UpdatePanelHeight();
+  void ResetPanelHeight();
   void EnterFullscreen();
   void ExitFullscreen();
   void DisableSpokenFeedback();
@@ -54,6 +55,10 @@ class ChromeVoxPanel : public views::WidgetDelegate,
   bool for_blocked_user_session() const { return for_blocked_user_session_; }
 
  private:
+  // Sends the height of the ChromeVox panel, which takes away space from the
+  // available window manager work area at the top of the screen.
+  void SendPanelHeightToAsh(int panel_height);
+
   views::Widget* widget_;
   std::unique_ptr<ChromeVoxPanelWebContentsObserver> web_contents_observer_;
   views::View* web_view_;

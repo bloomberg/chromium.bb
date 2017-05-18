@@ -1512,18 +1512,9 @@ void AccessibilityManager::ReloadChromeVoxPanel() {
 }
 
 void AccessibilityManager::OnChromeVoxPanelClosing() {
-  aura::Window* root_window = chromevox_panel_->GetRootWindow();
-  chromevox_panel_widget_observer_.reset(nullptr);
+  chromevox_panel_->ResetPanelHeight();
+  chromevox_panel_widget_observer_.reset();
   chromevox_panel_ = nullptr;
-
-  ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::WmWindow::Get(root_window));
-  if (!shelf->IsShelfInitialized())
-    return;
-
-  ash::ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
-  if (shelf_layout_manager)
-    shelf_layout_manager->SetChromeVoxPanelHeight(0);
 }
 
 void AccessibilityManager::OnChromeVoxPanelDestroying() {
