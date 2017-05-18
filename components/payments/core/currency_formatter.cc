@@ -104,18 +104,22 @@ base::string16 CurrencyFormatter::Format(const std::string& amount) {
   if (output.isEmpty())
     return base::UTF8ToUTF16(amount);
 
-  // Explicitly removes the currency code (truncated to its 3-letter and
-  // 2-letter versions) from the output, because callers are expected to
+  // Explicitly removes the currency code (truncated to its 3-letter, 2-letter
+  // and 1-letter versions) from the output, because callers are expected to
   // display the currency code alongside this result.
   //
   // 3+ letters: If currency code is "ABCDEF" or "BTX", this code will
   // transform "ABC55.00"/"BTX55.00" to "55.00".
   // 2 letters: If currency code is "CAD", this code will transform "CA$55.00"
   // to "$55.00" (en_US) or "55,00 $ CA" to "55,00 $" (fr_FR).
+  // 1 letter: If currency code is "AUD", this code will transform "A$55.00"
+  // to "$55.00" (en_US).
   icu::UnicodeString tmp_currency_code(*currency_code_);
   tmp_currency_code.truncate(3);
   output.findAndReplace(tmp_currency_code, "");
   tmp_currency_code.truncate(2);
+  output.findAndReplace(tmp_currency_code, "");
+  tmp_currency_code.truncate(1);
   output.findAndReplace(tmp_currency_code, "");
   // Trims any unicode whitespace (including non-breaking space).
   if (u_isUWhiteSpace(output[0])) {
