@@ -41,7 +41,7 @@ namespace tether {
 // for the OnSecureChannelStatusChanged() callback to be invoked. If the
 // status for a device changes from |DISCONNECTED| to |CONNECTING| then back to
 // |DISCONNECTED|, a connection attempt has failed. Clients should set a retry
-// limit and unregister a device via |UnregsterRemoteDevice()| if multiple
+// limit and unregister a device via |UnregisterRemoteDevice()| if multiple
 // connection attempts have failed. If, instead, a connection succeeds the
 // status changes to |AUTHENTICATED|, the device can safely send and receive
 // messages. To send a message, call SendMessage(), and to listen for received
