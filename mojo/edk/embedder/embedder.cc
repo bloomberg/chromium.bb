@@ -134,22 +134,5 @@ void SetMachPortProvider(base::PortProvider* port_provider) {
 }
 #endif
 
-// Legacy IPC Helpers ----------------------------------------------------------
-
-ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe) {
-  return ConnectToPeerProcess(std::move(pipe), GenerateRandomToken());
-}
-
-ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe,
-                                             const std::string& peer_token) {
-  DCHECK(pipe.is_valid());
-  DCHECK(!peer_token.empty());
-  return internal::g_core->ConnectToPeerProcess(std::move(pipe), peer_token);
-}
-
-void ClosePeerConnection(const std::string& peer_token) {
-  return internal::g_core->ClosePeerConnection(peer_token);
-}
-
 }  // namespace edk
 }  // namespace mojo
