@@ -85,8 +85,10 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::
     if (new_parent != current_parent) {
       if (current_parent)
         current_parent->RemoveChild(child);
-      if (new_parent)
-        new_parent->AddChild(child);
+      if (new_parent) {
+        DCHECK(child != new_parent && !child->Parent());
+        child->SetParent(new_parent);
+      }
       if (current_parent && !new_parent)
         child->Dispose();
     }
@@ -126,7 +128,8 @@ void TemporarilyRemoveFrameOrPluginFromParentSoon(FrameOrPlugin* child) {
 void MoveFrameOrPluginToParentSoon(FrameOrPlugin* child, FrameView* parent) {
   if (!g_update_suspend_count) {
     if (parent) {
-      parent->AddChild(child);
+      DCHECK(child != parent && !child->Parent());
+      child->SetParent(parent);
     } else if (child->Parent()) {
       child->Parent()->RemoveChild(child);
       child->Dispose();
