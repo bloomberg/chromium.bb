@@ -392,6 +392,9 @@ extern const char kIconNtpDescription[];
 extern const char kIgnoreGpuBlacklistName[];
 extern const char kIgnoreGpuBlacklistDescription[];
 
+extern const char kImportantSitesInCbdName[];
+extern const char kImportantSitesInCbdDescription[];
+
 extern const char kInertVisualViewportName[];
 extern const char kInertVisualViewportDescription[];
 
@@ -945,9 +948,6 @@ extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 extern const char kHerbPrototypeChoicesName[];
 extern const char kHerbPrototypeChoicesDescription[];
 extern const char kHerbPrototypeFlavorElderberry[];
-
-extern const char kImportantSitesInCbdName[];
-extern const char kImportantSitesInCbdDescription[];
 
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];

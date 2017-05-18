@@ -36,6 +36,7 @@
 namespace {
 using bookmarks::BookmarkModel;
 using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
+using ImportantReason = ImportantSitesUtil::ImportantReason;
 
 // Note: These values are stored on both the per-site content settings
 // dictionary and the dialog preference dictionary.
@@ -50,16 +51,6 @@ static const int kTimesIgnoredForBlacklist = 3;
 // <= kMaxBookmarks, then we just use those bookmarks. Otherwise we filter all
 // bookmarks on site engagement > 0, sort, and trim to kMaxBookmarks.
 static const int kMaxBookmarks = 5;
-
-// Do not change the values here, as they are used for UMA histograms.
-enum ImportantReason {
-  ENGAGEMENT = 0,
-  DURABLE = 1,
-  BOOKMARKS = 2,
-  HOME_SCREEN = 3,
-  NOTIFICATIONS = 4,
-  REASON_BOUNDARY
-};
 
 // We need this to be a macro, as the histogram macros cache their pointers
 // after the first call, so when we change the uma name we check fail if we're

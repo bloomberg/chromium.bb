@@ -6,6 +6,7 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="clear_browsing_data_browser_proxy.html">
 <link rel="import" href="history_deletion_dialog.html">
+<link rel="import" href="../controls/important_site_checkbox.html">
 <link rel="import" href="../controls/settings_checkbox.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../icons.html">
@@ -14,11 +15,11 @@
 <dom-module id="settings-clear-browsing-data-dialog">
   <template>
     <style include="settings-shared">
-      #dialog:not(.fully-rendered) {
+      #clearBrowsingDataDialog:not(.fully-rendered) {
         visibility: hidden;
       }
 
-      #dialog .footer {
+      #clearBrowsingDataDialog .footer {
         color: var(--paper-grey-600);
       }
 
@@ -86,21 +87,27 @@
         -webkit-margin-start: 0.5em;
       }
 
+      .title .secondary {
+        font-size: calc(13 / 15 * 100%);
+        padding-top: 8px;
+      }
+
       /* Cap the height on smaller screens to avoid unfavorable clipping.
        * Replace the bottom margin with padding to avoid the gap between
        * the scrollbar and the bottom separator. */
       @media all and (max-height: 724px) {
-        #dialog {
+        #clearBrowsingDataDialog {
           /* crbug.com/652027: Show four and a *half* items in the list. */
           --cr-dialog-body-container: {
-            max-height: 280px; 
+            max-height: 280px;
           };
         }
       }
     </style>
 
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
-        ignore-popstate>
+    <dialog is="cr-dialog" id="clearBrowsingDataDialog"
+        on-close="onClearBrowsingDataDialogClose_"
+        close-text="$i18n{close}" ignore-popstate>
       <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
         <div class="row">
@@ -129,13 +136,13 @@
             disabled="[[clearingInProgress_]]"
             hidden="[[isSupervised_]]">
         </settings-checkbox>
-        <settings-checkbox
+        <settings-checkbox id="cacheCheckbox"
             pref="{{prefs.browser.clear_data.cache}}"
             label="$i18n{clearCache}"
             sub-label="[[counters_.cache]]"
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
-        <settings-checkbox
+        <settings-checkbox id="cookiesCheckbox"
             pref="{{prefs.browser.clear_data.cookies}}"
             label="$i18n{clearCookies}"
             sub-label="$i18n{clearCookiesCounter}"
@@ -170,9 +177,10 @@
         <paper-spinner active="[[clearingInProgress_]]"></paper-spinner>
         <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
             on-tap="onCancelTap_">$i18n{cancel}</paper-button>
-        <paper-button class="action-button" disabled="[[clearingInProgress_]]"
+        <paper-button id="clearBrowsingDataConfirm"
+            class="action-button" disabled="[[clearingInProgress_]]"
             on-tap="onClearBrowsingDataTap_">
-          $i18n{clearBrowsingData}
+            $i18n{clearBrowsingData}
         </paper-button>
       </div>
       <div class="footer">
@@ -192,6 +200,38 @@
         </div>
       </div>
     </dialog>
+
+    <template is="dom-if" if="[[showImportantSitesDialog_]]">
+      <dialog is="cr-dialog" id="importantSitesDialog" close-text="$i18n{close}"
+          show-scroll-borders ignore-popstate>
+        <div class="title">
+          $i18n{clearBrowsingData}
+          <div class="secondary">
+            $i18n{importantSitesSubtitle}
+          </div>
+        </div>
+        <div class="body">
+          <template is="dom-repeat" items="[[importantSites_]]">
+            <div class="row">
+              <important-site-checkbox
+                  site="[[item]]"
+                  disabled="[[clearingInProgress_]]">
+              </important-site-checkbox>
+            </div>
+          </template>
+        </div>
+        <div class="button-container">
+          <paper-spinner active="[[clearingInProgress_]]"></paper-spinner>
+          <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
+              on-tap="onImportantSitesCancelTap_">$i18n{cancel}</paper-button>
+          <paper-button id="importantSitesConfirm"
+              class="action-button" disabled="[[clearingInProgress_]]"
+              on-tap="onImportantSitesConfirmTap_">
+            $i18n{importantSitesConfirm}
+          </paper-button>
+        </div>
+      </dialog>
+    </template>
 
     <template is="dom-if" if="[[showHistoryDeletionDialog_]]" restamp>
       <settings-history-deletion-dialog id="notice"

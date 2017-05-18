@@ -28,8 +28,9 @@ Polymer({
      */
     counters_: {
       type: Object,
-      value: {
-        // Will be filled as results are reported.
+      // Will be filled as results are reported.
+      value: function() {
+        return {};
       }
     },
 
@@ -68,6 +69,28 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {!Array<ImportantSite>} */
+    importantSites_: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
+
+    /** @private */
+    importantSitesFlagEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('importantSitesInCbd');
+      },
+    },
+
+    /** @private */
+    showImportantSitesDialog_: {
+      type: Boolean,
+      value: false
+    },
   },
 
   /** @private {settings.ClearBrowsingDataBrowserProxy} */
@@ -89,8 +112,14 @@ Polymer({
     this.browserProxy_ =
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
     this.browserProxy_.initialize().then(function() {
-      this.$.dialog.showModal();
+      this.$.clearBrowsingDataDialog.showModal();
     }.bind(this));
+
+    if (this.importantSitesFlagEnabled_) {
+      this.browserProxy_.getImportantSites().then(function(sites) {
+        this.importantSites_ = sites;
+      }.bind(this));
+    }
   },
 
   /**
@@ -104,7 +133,7 @@ Polymer({
   updateFooter_: function(syncing, otherFormsOfBrowsingHistory) {
     this.$.googleFooter.hidden = !otherFormsOfBrowsingHistory;
     this.$.syncedDataSentence.hidden = !syncing;
-    this.$.dialog.classList.add('fully-rendered');
+    this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
   },
 
   /**
@@ -122,29 +151,99 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether the ImportantSites dialog should be shown.
+   * @private
+   */
+  shouldShowImportantSites_: function() {
+    if (!this.importantSitesFlagEnabled_)
+      return false;
+    if (!this.$.cookiesCheckbox.checked && !this.$.cacheCheckbox.checked)
+      return false;
+
+    var haveImportantSites = this.importantSites_.length > 0;
+    chrome.send(
+        'metricsHandler:recordBooleanHistogram',
+        ['History.ClearBrowsingData.ImportantDialogShown', haveImportantSites]);
+    return haveImportantSites;
+  },
+
+  /**
    * Handles the tap on the Clear Data button.
    * @private
    */
   onClearBrowsingDataTap_: function() {
+    if (this.shouldShowImportantSites_()) {
+      this.showImportantSitesDialog_ = true;
+      this.$.clearBrowsingDataDialog.close();
+      // Show important sites dialog after dom-if is applied.
+      this.async(function() {
+        this.$$('#importantSitesDialog').showModal();
+      });
+    } else {
+      this.clearBrowsingData_();
+    }
+  },
+
+  /**
+   * Handles closing of the clear browsing data dialog. Stops the close
+   * event from propagating if another dialog is shown to prevent the
+   * privacy-page from closing this dialog.
+   * @private
+   */
+  onClearBrowsingDataDialogClose_: function(event) {
+    if (this.showImportantSitesDialog_)
+      event.stopPropagation();
+  },
+
+  /**
+   * Clears browsing data and maybe shows a history notice.
+   * @private
+   */
+  clearBrowsingData_: function() {
     this.clearingInProgress_ = true;
 
-    this.browserProxy_.clearBrowsingData().then(
-      /**
-       * @param {boolean} shouldShowNotice Whether we should show the notice
-       *     about other forms of browsing history before closing the dialog.
-       */
-      function(shouldShowNotice) {
-        this.clearingInProgress_ = false;
-        this.showHistoryDeletionDialog_ = shouldShowNotice;
+    this.browserProxy_.clearBrowsingData(this.importantSites_)
+        .then(
+            /**
+             * @param {boolean} shouldShowNotice Whether we should show the
+             * notice about other forms of browsing history before closing the
+             * dialog.
+             */
+            function(shouldShowNotice) {
+              this.clearingInProgress_ = false;
+              this.showHistoryDeletionDialog_ = shouldShowNotice;
+              if (!shouldShowNotice)
+                this.closeDialogs_();
+            }.bind(this));
+  },
 
-        if (!shouldShowNotice)
-          this.$.dialog.close();
-      }.bind(this));
+  /**
+   * Closes the clear browsing data or important site dialog if they are open.
+   * @private
+   */
+  closeDialogs_: function() {
+    if (this.$.clearBrowsingDataDialog.open)
+      this.$.clearBrowsingDataDialog.close();
+    if (this.showImportantSitesDialog_)
+      this.$$('#importantSitesDialog').close();
   },
 
   /** @private */
   onCancelTap_: function() {
-    this.$.dialog.cancel();
+    this.$.clearBrowsingDataDialog.cancel();
+  },
+
+  /**
+   * Handles the tap confirm button in important sites.
+   * @private
+   */
+  onImportantSitesConfirmTap_: function() {
+    this.clearBrowsingData_();
+  },
+
+  /** @private */
+  onImportantSitesCancelTap_: function() {
+    this.$$('#importantSitesDialog').cancel();
   },
 
   /**
@@ -153,6 +252,6 @@ Polymer({
    */
   onHistoryDeletionDialogClose_: function() {
     this.showHistoryDeletionDialog_ = false;
-    this.$.dialog.close();
-  }
+    this.closeDialogs_();
+  },
 });

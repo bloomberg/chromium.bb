@@ -26,6 +26,16 @@ class ImportantSitesUtil {
     int32_t reason_bitfield = 0;
   };
 
+  // Do not change the values here, as they are used for UMA histograms.
+  enum ImportantReason {
+    ENGAGEMENT = 0,
+    DURABLE = 1,
+    BOOKMARKS = 2,
+    HOME_SCREEN = 3,
+    NOTIFICATIONS = 4,
+    REASON_BOUNDARY
+  };
+
   static bool IsDialogDisabled(Profile* profile);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

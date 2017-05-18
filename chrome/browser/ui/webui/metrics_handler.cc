@@ -32,6 +32,10 @@ void MetricsHandler::RegisterMessages() {
       base::Bind(&MetricsHandler::HandleRecordInHistogram,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "metricsHandler:recordBooleanHistogram",
+      base::Bind(&MetricsHandler::HandleRecordBooleanHistogram,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "metricsHandler:recordTime",
       base::Bind(&MetricsHandler::HandleRecordTime, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -76,6 +80,19 @@ void MetricsHandler::HandleRecordInHistogram(const base::ListValue* args) {
           histogram_name, 1, int_boundary_value, bucket_count + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(int_value);
+}
+
+void MetricsHandler::HandleRecordBooleanHistogram(const base::ListValue* args) {
+  std::string histogram_name;
+  bool value;
+  if (!args->GetString(0, &histogram_name) || !args->GetBoolean(1, &value)) {
+    NOTREACHED();
+    return;
+  }
+
+  base::HistogramBase* counter = base::BooleanHistogram::FactoryGet(
+      histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
+  counter->AddBoolean(value);
 }
 
 void MetricsHandler::HandleRecordTime(const base::ListValue* args) {

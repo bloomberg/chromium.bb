@@ -5,27 +5,39 @@
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 
 #include <stddef.h>
+#include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/text/bytes_formatting.h"
+
+using ImportantReason = ImportantSitesUtil::ImportantReason;
 
 namespace {
 
 const int kMaxTimesHistoryNoticeShown = 1;
+
+const int kMaxImportantSites = 10;
 
 // TODO(msramek): Get the list of deletion preferences from the JS side.
 const char* kCounterPrefs[] = {
@@ -38,43 +50,16 @@ const char* kCounterPrefs[] = {
   browsing_data::prefs::kDeletePasswords,
 };
 
+const char kRegisterableDomainField[] = "registerableDomain";
+const char kReasonBitField[] = "reasonBitfield";
+const char kExampleOriginField[] = "exampleOrigin";
+const char kIsCheckedField[] = "isChecked";
+const char kStorageSizeField[] = "storageSize";
+const char kHasNotificationsField[] = "hasNotifications";
+
 } // namespace
 
 namespace settings {
-
-// TaskObserver ----------------------------------------------------------------
-
-class ClearBrowsingDataHandler::TaskObserver
-    : public content::BrowsingDataRemover::Observer {
- public:
-  TaskObserver(content::BrowsingDataRemover* remover,
-               const base::Closure& callback);
-  ~TaskObserver() override;
-
-  void OnBrowsingDataRemoverDone() override;
-
- private:
-  base::Closure callback_;
-  ScopedObserver<content::BrowsingDataRemover,
-                 content::BrowsingDataRemover::Observer>
-      remover_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskObserver);
-};
-
-ClearBrowsingDataHandler::TaskObserver::TaskObserver(
-    content::BrowsingDataRemover* remover,
-    const base::Closure& callback)
-    : callback_(callback), remover_observer_(this) {
-  remover_observer_.Add(remover);
-}
-
-ClearBrowsingDataHandler::TaskObserver::~TaskObserver() {}
-
-void ClearBrowsingDataHandler::TaskObserver::OnBrowsingDataRemoverDone() {
-  remover_observer_.RemoveAll();
-  callback_.Run();
-}
 
 // ClearBrowsingDataHandler ----------------------------------------------------
 
@@ -96,6 +81,11 @@ void ClearBrowsingDataHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "getImportantSites",
+      base::Bind(&ClearBrowsingDataHandler::HandleGetImportantSites,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "initializeClearBrowsingData",
       base::Bind(&ClearBrowsingDataHandler::HandleInitialize,
                  base::Unretained(this)));
@@ -114,14 +104,12 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
   sync_service_observer_.RemoveAll();
-  task_observer_.reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
   counters_.clear();
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
-  DCHECK(!task_observer_);
-
   PrefService* prefs = profile_->GetPrefs();
 
   int site_data_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
@@ -199,22 +187,66 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
 
   std::string webui_callback_id;
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(2U, args->GetSize());
   CHECK(args->GetString(0, &webui_callback_id));
+
+  const base::ListValue* important_sites = nullptr;
+  CHECK(args->GetList(1, &important_sites));
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder =
+      ProcessImportantSites(important_sites);
 
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile_);
-  task_observer_ = base::MakeUnique<TaskObserver>(
-      remover,
-      base::Bind(&ClearBrowsingDataHandler::OnClearingTaskFinished,
-                 base::Unretained(this), webui_callback_id));
+
+  base::OnceClosure callback =
+      base::BindOnce(&ClearBrowsingDataHandler::OnClearingTaskFinished,
+                     weak_ptr_factory_.GetWeakPtr(), webui_callback_id);
   browsing_data::TimePeriod time_period =
       static_cast<browsing_data::TimePeriod>(period_selected);
-  browsing_data::RecordDeletionForPeriod(time_period);
-  remover->RemoveAndReply(
-      browsing_data::CalculateBeginDeleteTime(time_period),
-      browsing_data::CalculateEndDeleteTime(time_period),
-      remove_mask, origin_mask, task_observer_.get());
+
+  browsing_data_important_sites_util::Remove(
+      remove_mask, origin_mask, time_period, std::move(filter_builder), remover,
+      std::move(callback));
+}
+
+std::unique_ptr<content::BrowsingDataFilterBuilder>
+ClearBrowsingDataHandler::ProcessImportantSites(
+    const base::ListValue* important_sites) {
+  std::vector<std::string> excluding_domains;
+  std::vector<int32_t> excluding_domain_reasons;
+  std::vector<std::string> ignoring_domains;
+  std::vector<int32_t> ignoring_domain_reasons;
+  for (const auto& item : *important_sites) {
+    const base::DictionaryValue* site = nullptr;
+    CHECK(item.GetAsDictionary(&site));
+    bool is_checked = false;
+    CHECK(site->GetBoolean(kIsCheckedField, &is_checked));
+    std::string domain;
+    CHECK(site->GetString(kRegisterableDomainField, &domain));
+    int domain_reason = -1;
+    CHECK(site->GetInteger(kReasonBitField, &domain_reason));
+    if (is_checked) {  // Selected important sites should be deleted.
+      ignoring_domains.push_back(domain);
+      ignoring_domain_reasons.push_back(domain_reason);
+    } else {  // Unselected sites should be kept.
+      excluding_domains.push_back(domain);
+      excluding_domain_reasons.push_back(domain_reason);
+    }
+  }
+
+  if (!excluding_domains.empty() || !ignoring_domains.empty()) {
+    ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
+        profile_->GetOriginalProfile(), excluding_domains,
+        excluding_domain_reasons, ignoring_domains, ignoring_domain_reasons);
+  }
+
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder(
+      content::BrowsingDataFilterBuilder::Create(
+          content::BrowsingDataFilterBuilder::BLACKLIST));
+  for (const std::string& domain : excluding_domains) {
+    filter_builder->AddRegisterableDomain(domain);
+  }
+  return filter_builder;
 }
 
 void ClearBrowsingDataHandler::OnClearingTaskFinished(
@@ -245,7 +277,43 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
 
   ResolveJavascriptCallback(base::Value(webui_callback_id),
                             base::Value(show_notice));
-  task_observer_.reset();
+}
+
+void ClearBrowsingDataHandler::HandleGetImportantSites(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  DCHECK(base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
+
+  Profile* profile = profile_->GetOriginalProfile();
+  bool important_sites_dialog_disabled =
+      ImportantSitesUtil::IsDialogDisabled(profile);
+  base::ListValue important_sites_list;
+
+  if (!important_sites_dialog_disabled) {
+    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
+        ImportantSitesUtil::GetImportantRegisterableDomains(profile,
+                                                            kMaxImportantSites);
+    for (const auto& info : important_sites) {
+      auto entry = base::MakeUnique<base::DictionaryValue>();
+      entry->SetString(kRegisterableDomainField, info.registerable_domain);
+      // The |reason_bitfield| is only passed to Javascript to be logged
+      // from |HandleClearBrowsingData|.
+      entry->SetInteger(kReasonBitField, info.reason_bitfield);
+      entry->SetString(kExampleOriginField, info.example_origin.spec());
+      // Initially all sites are selected for deletion.
+      entry->SetBoolean(kIsCheckedField, true);
+      // TODO(dullweber): Get size.
+      entry->SetString(kStorageSizeField, ui::FormatBytes(0));
+      bool has_notifications =
+          (info.reason_bitfield & (1 << ImportantReason::NOTIFICATIONS)) != 0;
+      entry->SetBoolean(kHasNotificationsField, has_notifications);
+      important_sites_list.Append(std::move(entry));
+    }
+  }
+
+  ResolveJavascriptCallback(*callback_id, important_sites_list);
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
@@ -254,7 +322,7 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
 
   // Needed because WebUI doesn't handle renderer crashes. See crbug.com/610450.
-  task_observer_.reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   UpdateSyncState();
   RefreshHistoryNotice();
