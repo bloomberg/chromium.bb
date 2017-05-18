@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/native_notification_display_service.h"
@@ -53,7 +52,6 @@ const char kFreedesktopNotificationsPath[] = "/org/freedesktop/Notifications";
 const char kMethodCloseNotification[] = "CloseNotification";
 const char kMethodGetCapabilities[] = "GetCapabilities";
 const char kMethodNotify[] = "Notify";
-const char kMethodGetServerInformation[] = "GetServerInformation";
 
 // DBus signals.
 const char kSignalActionInvoked[] = "ActionInvoked";
@@ -88,7 +86,7 @@ enum class ConnectionInitializationStatusCode {
   NATIVE_NOTIFICATIONS_NOT_SUPPORTED = 1,
   MISSING_REQUIRED_CAPABILITIES = 2,
   COULD_NOT_CONNECT_TO_SIGNALS = 3,
-  INCOMPATIBLE_SPEC_VERSION = 4,
+  INCOMPATIBLE_SPEC_VERSION = 4,  // DEPRECATED
   NUM_ITEMS
 };
 
@@ -432,30 +430,6 @@ class NotificationPlatformBridgeLinuxImpl
         &NotificationPlatformBridgeLinuxImpl::SetBodyImagesSupported, this,
         base::ContainsKey(capabilities_, kCapabilityBodyImages)));
 
-    dbus::MethodCall get_server_information_call(kFreedesktopNotificationsName,
-                                                 kMethodGetServerInformation);
-    std::unique_ptr<dbus::Response> server_information_response =
-        notification_proxy_->CallMethodAndBlock(
-            &get_server_information_call,
-            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
-    if (server_information_response) {
-      dbus::MessageReader reader(server_information_response.get());
-      std::string spec_version;
-      reader.PopString(&spec_version);  // name
-      reader.PopString(&spec_version);  // vendor
-      reader.PopString(&spec_version);  // version
-      reader.PopString(&spec_version);  // spec_version
-      spec_version_ = base::Version(spec_version);
-    }
-    // The minimum supported spec version is 1.1, because this was the
-    // version that added image hints.
-    if (!spec_version_.IsValid() ||
-        spec_version_ < base::Version(std::vector<uint32_t>{1, 1})) {
-      OnConnectionInitializationFinishedOnTaskRunner(
-          ConnectionInitializationStatusCode::INCOMPATIBLE_SPEC_VERSION);
-      return;
-    }
-
     connected_signals_barrier_ = base::BarrierClosure(
         2, base::Bind(&NotificationPlatformBridgeLinuxImpl::
                           OnConnectionInitializationFinishedOnTaskRunner,
@@ -631,14 +605,13 @@ class NotificationPlatformBridgeLinuxImpl
     std::unique_ptr<ResourceFile> icon_file =
         WriteDataToTmpFile(notification->icon().As1xPNGBytes());
     if (icon_file) {
-      dbus::MessageWriter image_path_writer(nullptr);
-      hints_writer.OpenDictEntry(&image_path_writer);
-      image_path_writer.AppendString(
-          spec_version_ == base::Version(std::vector<uint32_t>{1, 1})
-              ? "image_path"
-              : "image-path");
-      image_path_writer.AppendVariantOfString(icon_file->file_path().value());
-      hints_writer.CloseContainer(&image_path_writer);
+      for (const std::string& hint_name : {"image_path", "image-path"}) {
+        dbus::MessageWriter image_path_writer(nullptr);
+        hints_writer.OpenDictEntry(&image_path_writer);
+        image_path_writer.AppendString(hint_name);
+        image_path_writer.AppendVariantOfString(icon_file->file_path().value());
+        hints_writer.CloseContainer(&image_path_writer);
+      }
       data->resource_files.push_back(std::move(icon_file));
     }
 
@@ -875,8 +848,6 @@ class NotificationPlatformBridgeLinuxImpl
   dbus::ObjectProxy* notification_proxy_ = nullptr;
 
   std::unordered_set<std::string> capabilities_;
-
-  base::Version spec_version_;
 
   base::Closure connected_signals_barrier_;
 
