@@ -2541,6 +2541,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   }
   std::vector<web::FaviconURL> urls;
+  BOOL hasFavicon = NO;
   for (size_t fav_idx = 0; fav_idx != favicons->GetSize(); ++fav_idx) {
     base::DictionaryValue* favicon = nullptr;
     if (!favicons->GetDictionary(fav_idx, &favicon))
@@ -2555,13 +2556,37 @@ registerLoadRequestForURL:(const GURL&)requestURL
       DLOG(WARNING) << "JS message parameter not found: rel";
       return NO;
     }
+    BOOL isAppleTouch = YES;
     web::FaviconURL::IconType icon_type = web::FaviconURL::FAVICON;
     if (rel == "apple-touch-icon")
       icon_type = web::FaviconURL::TOUCH_ICON;
     else if (rel == "apple-touch-icon-precomposed")
       icon_type = web::FaviconURL::TOUCH_PRECOMPOSED_ICON;
-    urls.push_back(
-        web::FaviconURL(GURL(href), icon_type, std::vector<gfx::Size>()));
+    else
+      isAppleTouch = NO;
+    GURL url = GURL(href);
+    if (url.is_valid()) {
+      urls.push_back(web::FaviconURL(url, icon_type, std::vector<gfx::Size>()));
+      hasFavicon = hasFavicon || !isAppleTouch;
+    }
+  }
+
+  if (!hasFavicon) {
+    // If an HTTP(S)? webpage does not reference a "favicon" of a type different
+    // from apple touch, then search for a file named "favicon.ico" at the root
+    // of the website (legacy). http://en.wikipedia.org/wiki/Favicon
+    id origin = context[kOriginURLKey];
+    if (origin) {
+      NSURL* originNSURL = base::mac::ObjCCastStrict<NSURL>(origin);
+      GURL originGURL = net::GURLWithNSURL(originNSURL);
+      if (originGURL.is_valid() && originGURL.SchemeIsHTTPOrHTTPS()) {
+        GURL::Replacements replacements;
+        replacements.SetPathStr("/favicon.ico");
+        urls.push_back(web::FaviconURL(
+            originGURL.ReplaceComponents(replacements),
+            web::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+      }
+    }
   }
   if (!urls.empty())
     _webStateImpl->OnFaviconUrlUpdated(urls);
