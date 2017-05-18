@@ -13,6 +13,7 @@
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "platform/image-encoders/ImageEncoder.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
@@ -20,8 +21,6 @@
 namespace blink {
 
 class Document;
-class JPEGImageEncoderState;
-class PNGImageEncoderState;
 
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
@@ -82,10 +81,8 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                          Document*,
                          ScriptPromiseResolver*);
   // Methods are virtual for unit testing
-  virtual void ScheduleInitiatePngEncoding();
-  virtual void ScheduleInitiateJpegEncoding(const double&);
-  virtual void IdleEncodeRowsPng(double deadline_seconds);
-  virtual void IdleEncodeRowsJpeg(double deadline_seconds);
+  virtual void ScheduleInitiateEncoding(double quality);
+  virtual void IdleEncodeRows(double deadline_seconds);
   virtual void PostDelayedTaskToCurrentThread(const WebTraceLocation&,
                                               std::unique_ptr<WTF::Closure>,
                                               double delay_ms);
@@ -93,8 +90,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   virtual void CreateBlobAndReturnResult();
   virtual void CreateNullAndReturnResult();
 
-  void InitiatePngEncoding(double deadline_seconds);
-  void InitiateJpegEncoding(const double& quality, double deadline_seconds);
+  void InitiateEncoding(double quality, double deadline_seconds);
   IdleTaskStatus idle_task_status_;
 
  private:
@@ -102,15 +98,13 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   void Dispose();
 
-  std::unique_ptr<PNGImageEncoderState> png_encoder_state_;
-  std::unique_ptr<JPEGImageEncoderState> jpeg_encoder_state_;
   Member<DOMUint8ClampedArray> data_;
-  std::unique_ptr<Vector<unsigned char>> encoded_image_;
+  std::unique_ptr<ImageEncoder> encoder_;
+  Vector<unsigned char> encoded_image_;
   int num_rows_completed_;
   Member<Document> document_;
 
-  const IntSize size_;
-  size_t pixel_row_stride_;
+  SkPixmap src_data_;
   const MimeType mime_type_;
   double start_time_;
   double schedule_initiate_start_time_;
@@ -127,16 +121,10 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
-  // PNG
-  bool InitializePngStruct();
-  void ForceEncodeRowsPngOnCurrentThread();  // Similar to idleEncodeRowsPng
-                                             // without deadline
-
-  // JPEG
-  bool InitializeJpegStruct(double quality);
-  void ForceEncodeRowsJpegOnCurrentThread();  // Similar to idleEncodeRowsJpeg
-                                              // without
-                                              // deadline
+  // PNG, JPEG
+  bool InitializeEncoder(double quality);
+  void ForceEncodeRowsOnCurrentThread();  // Similar to IdleEncodeRows
+                                          // without deadline
 
   // WEBP
   void EncodeImageOnEncoderThread(double quality);
