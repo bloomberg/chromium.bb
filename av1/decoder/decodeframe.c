@@ -590,10 +590,9 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     PLANE_TYPE plane_type = get_plane_type(plane);
     int block_idx = get_block_idx(xd, plane, blk_row, blk_col);
 #if CONFIG_LV_MAP
-    (void)segment_id;
     int16_t max_scan_line = 0;
     int eob;
-    av1_read_coeffs_txb_facade(cm, xd, r, row, col, block_idx, plane,
+    av1_read_coeffs_txb_facade(cm, xd, r, blk_row, blk_col, block_idx, plane,
                                pd->dqcoeff, &max_scan_line, &eob);
     // tx_type will be read out in av1_read_coeffs_txb_facade
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, plane_tx_size);

@@ -1132,7 +1132,7 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
 }
 #endif  // !CONFIG_PVG
 
-#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
+#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE && !CONFIG_LV_MAP
 static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                             const TOKENEXTRA *const tok_end,
 #if CONFIG_PVQ
@@ -2607,12 +2607,22 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         const int bkh = tx_size_high_unit[max_tx_size];
         for (row = 0; row < num_4x4_h; row += bkh) {
           for (col = 0; col < num_4x4_w; col += bkw) {
+#if CONFIG_LV_MAP
+            tran_low_t *tcoeff =
+                BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
+            uint16_t eob = x->mbmi_ext->eobs[plane][block];
+            TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
+                                x->mbmi_ext->dc_sign_ctx[plane][block] };
+            av1_write_coeffs_txb(cm, xd, w, block, plane, tcoeff, eob,
+                                 &txb_ctx);
+#else
             pack_txb_tokens(w, tok, tok_end,
 #if CONFIG_PVQ
                             x,
 #endif
                             xd, mbmi, plane, plane_bsize, cm->bit_depth, block,
                             row, col, max_tx_size, &token_stats);
+#endif  // CONFIG_LV_MAP
             block += step;
           }
         }
@@ -2624,6 +2634,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         }
 #endif  // CONFIG_RD_DEBUG
       } else {
+#if CONFIG_LV_MAP
+        av1_write_coeffs_mb(cm, x, w, plane);
+#else
         TX_SIZE tx = get_tx_size(plane, xd);
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
         tx = AOMMAX(TX_4X4, tx);
@@ -2639,6 +2652,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
           }
         }
+#endif  // CONFIG_LV_MAP
       }
 #else
       TX_SIZE tx = get_tx_size(plane, xd);
