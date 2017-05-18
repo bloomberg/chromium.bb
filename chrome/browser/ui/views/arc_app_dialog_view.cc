@@ -40,20 +40,6 @@ const int kIconSourceSize = 48;
 using ArcAppConfirmCallback =
     base::Callback<void(const std::string& app_id, Profile* profile)>;
 
-// Helper class to hold a smaller icon in a fixed-size view.
-class FixedBoundarySizeImageView : public views::ImageView {
- public:
-  FixedBoundarySizeImageView() {}
-  ~FixedBoundarySizeImageView() override {}
-  // Overriden from View:
-  gfx::Size GetPreferredSize() const override {
-    return gfx::Size(kIconSize, kIconSize);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FixedBoundarySizeImageView);
-};
-
 class ArcAppDialogView : public views::DialogDelegateView,
                          public AppIconLoaderDelegate {
  public:
@@ -148,7 +134,8 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       provider->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
-  icon_view_ = new FixedBoundarySizeImageView();
+  icon_view_ = new views::ImageView();
+  icon_view_->set_preferred_size(gfx::Size(kIconSize, kIconSize));
   AddChildView(icon_view_);
 
   views::View* text_container = new views::View();

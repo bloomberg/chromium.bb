@@ -87,26 +87,15 @@ class PaddingTrayItem : public SystemTrayItem {
 
   // SystemTrayItem:
   views::View* CreateTrayView(LoginStatus status) override {
-    return new PaddingView();
+    auto* padding = new views::View();
+    // The other tray items already have some padding baked in so we have to
+    // subtract that off.
+    constexpr int side = kTrayEdgePadding - kTrayImageItemPadding;
+    padding->set_preferred_size(gfx::Size(side, side));
+    return padding;
   }
 
  private:
-  class PaddingView : public views::View {
-   public:
-    PaddingView() {}
-    ~PaddingView() override {}
-
-   private:
-    gfx::Size GetPreferredSize() const override {
-      // The other tray items already have some padding baked in so we have to
-      // subtract that off.
-      const int side = kTrayEdgePadding - kTrayImageItemPadding;
-      return gfx::Size(side, side);
-    }
-
-    DISALLOW_COPY_AND_ASSIGN(PaddingView);
-  };
-
   DISALLOW_COPY_AND_ASSIGN(PaddingTrayItem);
 };
 

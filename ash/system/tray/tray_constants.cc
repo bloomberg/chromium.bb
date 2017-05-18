@@ -32,8 +32,6 @@ const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
 
-const int kTrayImageItemPadding = 3;
-
 const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
 
 // Vertical padding between status tray items when the shelf is vertical.
@@ -80,7 +78,6 @@ const int kTrayNotificationContentsWidth =
                           (kTrayPopupPaddingHorizontal / 2) * 3);
 
 const int kTrayIconSize = 16;
-const int kTrayEdgePadding = 6;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;

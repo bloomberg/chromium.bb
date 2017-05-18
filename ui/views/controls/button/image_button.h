@@ -74,9 +74,9 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   }
 
   // Overridden from View:
-  gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size CalculatePreferredSize() const override;
 
  protected:
   // Overridden from View:

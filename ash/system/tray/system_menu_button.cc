@@ -28,9 +28,10 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
   DCHECK_EQ(normal_icon.width(), disabled_icon.width());
   DCHECK_EQ(normal_icon.height(), disabled_icon.height());
 
-  SetImage(views::Button::STATE_NORMAL, &normal_icon);
-  SetImage(views::Button::STATE_DISABLED, &disabled_icon);
+  SetImage(STATE_NORMAL, &normal_icon);
+  SetImage(STATE_DISABLED, &disabled_icon);
 
+  SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   set_preferred_size(gfx::Size(kMenuButtonSize, kMenuButtonSize));
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
