@@ -249,8 +249,8 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleUserGestures) {
   // Sets up user_gesture_map() such that it includes fresh, stale and invalid
   // user gestures.
   base::Time now = base::Time::Now();  // Fresh
-  base::Time one_minute_ago =
-      base::Time::FromDoubleT(now.ToDoubleT() - 60.0);  // Stale
+  base::Time three_minutes_ago =
+      base::Time::FromDoubleT(now.ToDoubleT() - 60.0 * 3);  // Stale
   base::Time in_an_hour =
       base::Time::FromDoubleT(now.ToDoubleT() + 60.0 * 60.0);  // Invalid
   AddTab(browser(), GURL("http://foo/1"));
@@ -262,7 +262,7 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleUserGestures) {
   content::WebContents* content2 =
       browser()->tab_strip_model()->GetWebContentsAt(2);
   user_gesture_map()->insert(std::make_pair(content0, now));
-  user_gesture_map()->insert(std::make_pair(content1, one_minute_ago));
+  user_gesture_map()->insert(std::make_pair(content1, three_minutes_ago));
   user_gesture_map()->insert(std::make_pair(content2, in_an_hour));
   ASSERT_EQ(3U, user_gesture_map()->size());
 

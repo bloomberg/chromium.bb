@@ -219,7 +219,7 @@ class SafeBrowsingNavigationObserverManager
   void CleanUpNavigationEvents();
 
   // Remove stale entries from user_gesture_map_ if they are older than
-  // kUserGestureTTLInSecond (1 sec).
+  // kNavigationFootprintTTLInSecond (2 minutes).
   void CleanUpUserGestures();
 
   // Remove stale entries from host_to_ip_map_ if they are older than
