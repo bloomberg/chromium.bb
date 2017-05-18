@@ -89,6 +89,13 @@ fuzzer_test("pdf_jpx_fuzzer") {
   seed_corpus = "corpora/pdf_jpx"
 }
 
+fuzzer_test("pdf_font_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/libfuzzer:pdf_font_fuzzer",
+  ]
+}
+
 fuzzer_test("pdf_psengine_fuzzer") {
   sources = []
   deps = [
