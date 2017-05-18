@@ -4,10 +4,13 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -140,6 +143,44 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     case ContentSuggestionTypeEmpty:
       break;
   }
+}
+
+#pragma mark - UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView*)collectionView
+                    layout:(UICollectionViewLayout*)collectionViewLayout
+    sizeForItemAtIndexPath:(NSIndexPath*)indexPath {
+  if ([self.collectionUpdater isMostVisitedSection:indexPath.section]) {
+    return [ContentSuggestionsMostVisitedCell defaultSize];
+  }
+  return [super collectionView:collectionView
+                        layout:collectionViewLayout
+        sizeForItemAtIndexPath:indexPath];
+}
+
+- (UIEdgeInsets)collectionView:(UICollectionView*)collectionView
+                        layout:(UICollectionViewLayout*)collectionViewLayout
+        insetForSectionAtIndex:(NSInteger)section {
+  if ([self.collectionUpdater isMostVisitedSection:section]) {
+    CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
+        collectionView.frame.size.width);
+    return UIEdgeInsetsMake(0, margin, 0, margin);
+  }
+  return [super collectionView:collectionView
+                        layout:collectionViewLayout
+        insetForSectionAtIndex:section];
+}
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+                                 layout:(UICollectionViewLayout*)
+                                            collectionViewLayout
+    minimumLineSpacingForSectionAtIndex:(NSInteger)section {
+  if ([self.collectionUpdater isMostVisitedSection:section]) {
+    return content_suggestions::spacingBetweenTiles();
+  }
+  return [super collectionView:collectionView
+                                   layout:collectionViewLayout
+      minimumLineSpacingForSectionAtIndex:section];
 }
 
 #pragma mark - MDCCollectionViewStylingDelegate

@@ -342,6 +342,12 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   return [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
+- (BOOL)isMostVisitedSection:(NSInteger)section {
+  return
+      [self.collectionViewController.collectionViewModel
+          sectionIdentifierForSection:section] == SectionIdentifierMostVisited;
+}
+
 #pragma mark - SuggestedContentDelegate
 
 - (void)loadImageForSuggestedItem:(CSCollectionViewItem*)suggestedItem {

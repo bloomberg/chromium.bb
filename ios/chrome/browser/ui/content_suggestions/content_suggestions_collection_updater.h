@@ -62,6 +62,9 @@ addSuggestionsToModel:
 // does not do any check about the number of elements in the section.
 - (NSIndexPath*)addEmptyItemForSection:(NSInteger)section;
 
+// Returns whether |section| contains the Most Visited tiles.
+- (BOOL)isMostVisitedSection:(NSInteger)section;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_

@@ -45,8 +45,8 @@ const CGSize kCellSize = {73, 100};
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 
-    [self addSubview:_titleLabel];
-    [self addSubview:_faviconView];
+    [self.contentView addSubview:_titleLabel];
+    [self.contentView addSubview:_faviconView];
 
     [NSLayoutConstraint activateConstraints:@[
       [_faviconView.widthAnchor constraintEqualToConstant:kFaviconSize],
