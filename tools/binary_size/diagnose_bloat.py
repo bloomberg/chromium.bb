@@ -248,6 +248,8 @@ class _BuildHelper(object):
     else:
       self.extra_gn_args_str = (' exclude_unwind_tables=true '
           'ffmpeg_branding="Chrome" proprietary_codecs=true')
+    if self.IsLinux():
+      self.extra_gn_args_str += ' allow_posix_link_time_opt=false'
     self.target = self.target if self.IsAndroid() else 'chrome'
 
   def _GenGnCmd(self):
