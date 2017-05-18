@@ -426,6 +426,12 @@ class NotificationPlatformBridgeLinuxImpl
         capabilities_.insert(capability);
     }
     RecordMetricsForCapabilities();
+    if (!base::ContainsKey(capabilities_, kCapabilityBody) ||
+        !base::ContainsKey(capabilities_, kCapabilityActions)) {
+      OnConnectionInitializationFinishedOnTaskRunner(
+          ConnectionInitializationStatusCode::MISSING_REQUIRED_CAPABILITIES);
+      return;
+    }
     PostTaskToUiThread(base::BindOnce(
         &NotificationPlatformBridgeLinuxImpl::SetBodyImagesSupported, this,
         base::ContainsKey(capabilities_, kCapabilityBodyImages)));
