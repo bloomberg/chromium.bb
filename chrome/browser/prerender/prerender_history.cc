@@ -33,7 +33,7 @@ void PrerenderHistory::Clear() {
   entries_.clear();
 }
 
-std::unique_ptr<base::Value> PrerenderHistory::GetEntriesAsValue() const {
+std::unique_ptr<base::Value> PrerenderHistory::CopyEntriesAsValue() const {
   auto return_list = base::MakeUnique<base::ListValue>();
   // Javascript needs times in terms of milliseconds since Jan 1, 1970.
   base::Time epoch_start = base::Time::UnixEpoch();

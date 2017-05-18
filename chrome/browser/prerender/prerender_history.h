@@ -68,7 +68,7 @@ class PrerenderHistory : public base::NonThreadSafe {
   void Clear();
 
   // Retrieves the entries as a value which can be displayed.
-  std::unique_ptr<base::Value> GetEntriesAsValue() const;
+  std::unique_ptr<base::Value> CopyEntriesAsValue() const;
 
  private:
   std::list<Entry> entries_;
@@ -77,5 +77,5 @@ class PrerenderHistory : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(PrerenderHistory);
 };
 
-}
+}  // namespace prerender
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_HISTORY_H_

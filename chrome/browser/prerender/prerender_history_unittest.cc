@@ -59,7 +59,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   PrerenderHistory history(2);
 
   // Make sure an empty list exists when retrieving as value.
-  entry_value = history.GetEntriesAsValue();
+  entry_value = history.CopyEntriesAsValue();
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_TRUE(entry_list->empty());
@@ -75,7 +75,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   PrerenderHistory::Entry entry_first(
       GURL(kFirstUrl), kFirstFinalStatus, kFirstOrigin, epoch_start);
   history.AddEntry(entry_first);
-  entry_value = history.GetEntriesAsValue();
+  entry_value = history.CopyEntriesAsValue();
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_EQ(1u, entry_list->GetSize());
@@ -90,7 +90,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
       GURL(kSecondUrl), kSecondFinalStatus, kSecondOrigin,
       epoch_start + base::TimeDelta::FromMilliseconds(1));
   history.AddEntry(entry_second);
-  entry_value = history.GetEntriesAsValue();
+  entry_value = history.CopyEntriesAsValue();
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_EQ(2u, entry_list->GetSize());
@@ -107,7 +107,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
       GURL(kThirdUrl), kThirdFinalStatus, kThirdOrigin,
       epoch_start + base::TimeDelta::FromMilliseconds(2));
   history.AddEntry(entry_third);
-  entry_value = history.GetEntriesAsValue();
+  entry_value = history.CopyEntriesAsValue();
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_EQ(2u, entry_list->GetSize());
@@ -118,7 +118,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
 
   // Make sure clearing history acts as expected.
   history.Clear();
-  entry_value = history.GetEntriesAsValue();
+  entry_value = history.CopyEntriesAsValue();
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_TRUE(entry_list->empty());

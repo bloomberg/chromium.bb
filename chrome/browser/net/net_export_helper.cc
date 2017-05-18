@@ -35,7 +35,7 @@ std::unique_ptr<base::DictionaryValue> GetPrerenderInfo(Profile* profile) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
   if (prerender_manager) {
-    value = prerender_manager->GetAsValue();
+    value = prerender_manager->CopyAsValue();
   } else {
     value.reset(new base::DictionaryValue());
     value->SetBoolean("enabled", false);

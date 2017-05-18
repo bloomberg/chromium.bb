@@ -769,11 +769,11 @@ bool PrerenderManager::DoesSubresourceURLHaveValidScheme(const GURL& url) {
   return DoesURLHaveValidScheme(url) || url == url::kAboutBlankURL;
 }
 
-std::unique_ptr<base::DictionaryValue> PrerenderManager::GetAsValue() const {
+std::unique_ptr<base::DictionaryValue> PrerenderManager::CopyAsValue() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto dict_value = base::MakeUnique<base::DictionaryValue>();
-  dict_value->Set("history", prerender_history_->GetEntriesAsValue());
+  dict_value->Set("history", prerender_history_->CopyEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled",
       GetPredictionStatus() == NetworkPredictionStatus::ENABLED);

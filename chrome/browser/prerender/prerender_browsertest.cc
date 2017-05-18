@@ -832,7 +832,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   // Returns length of |prerender_manager_|'s history, or SIZE_MAX on failure.
   size_t GetHistoryLength() const {
     std::unique_ptr<base::DictionaryValue> prerender_dict =
-        GetPrerenderManager()->GetAsValue();
+        GetPrerenderManager()->CopyAsValue();
     if (!prerender_dict)
       return std::numeric_limits<size_t>::max();
     base::ListValue* history_list;
