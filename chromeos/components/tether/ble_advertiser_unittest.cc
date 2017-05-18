@@ -109,29 +109,6 @@ std::vector<cryptauth::BeaconSeed> CreateFakeBeaconSeedsForDevice(
 
 class BleAdvertiserTest : public testing::Test {
  protected:
-  class TestBleAdvertisementUnregisterHandler
-      : public BleAdvertiser::BleAdvertisementUnregisterHandler {
-   public:
-    TestBleAdvertisementUnregisterHandler()
-        : num_advertisements_unregistered_(0) {}
-    ~TestBleAdvertisementUnregisterHandler() {}
-
-    size_t num_advertisements_unregistered() {
-      return num_advertisements_unregistered_;
-    }
-
-    // BleAdvertiser::BleAdvertisementUnregisterHandler:
-    void OnAdvertisementUnregisterSuccess() override {
-      num_advertisements_unregistered_++;
-    }
-
-    void OnAdvertisementUnregisterFailure(
-        device::BluetoothAdvertisement::ErrorCode error_code) override {}
-
-   private:
-    size_t num_advertisements_unregistered_;
-  };
-
   BleAdvertiserTest()
       : fake_devices_(cryptauth::GenerateTestRemoteDevices(3)),
         fake_advertisements_(GenerateFakeAdvertisements()) {}
@@ -151,8 +128,6 @@ class BleAdvertiserTest : public testing::Test {
     ON_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_))
         .WillByDefault(
             Invoke(this, &BleAdvertiserTest::OnAdapterRegisterAdvertisement));
-
-    test_unregister_handler_ = new TestBleAdvertisementUnregisterHandler();
 
     std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
         base::MakeUnique<cryptauth::MockForegroundEidGenerator>();
@@ -178,8 +153,7 @@ class BleAdvertiserTest : public testing::Test {
         base::MakeUnique<std::string>(kFakePublicKey));
 
     ble_advertiser_ = base::WrapUnique(new BleAdvertiser(
-        mock_adapter_, base::WrapUnique(test_unregister_handler_),
-        std::move(eid_generator), mock_seed_fetcher_.get(),
+        mock_adapter_, std::move(eid_generator), mock_seed_fetcher_.get(),
         mock_local_data_provider_.get()));
   }
 
@@ -257,7 +231,6 @@ class BleAdvertiserTest : public testing::Test {
 
   scoped_refptr<StrictMock<MockBluetoothAdapterWithAdvertisements>>
       mock_adapter_;
-  TestBleAdvertisementUnregisterHandler* test_unregister_handler_;
   cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   std::unique_ptr<MockLocalDeviceDataProvider> mock_local_data_provider_;
@@ -370,7 +343,6 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
   // Now, unregister.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
   EXPECT_FALSE(individual_advertisements_.size());
-  EXPECT_EQ(1u, test_unregister_handler_->num_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
@@ -407,12 +379,10 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
 
   // Now, unregister.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
-  EXPECT_EQ(1u, test_unregister_handler_->num_advertisements_unregistered());
+  EXPECT_EQ(1u, individual_advertisements_.size());
 
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[1]));
-  EXPECT_EQ(2u, test_unregister_handler_->num_advertisements_unregistered());
-
-  EXPECT_FALSE(individual_advertisements_.size());
+  EXPECT_EQ(0u, individual_advertisements_.size());
 }
 
 TEST_F(BleAdvertiserTest, TooManyDevicesRegistered) {
@@ -436,11 +406,6 @@ TEST_F(BleAdvertiserTest, TooManyDevicesRegistered) {
   // Now, stop advertising to one; registering the third device should succeed
   // at this point.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
-
-  // Because the advertisement was never registered to begin with, it also
-  // should never have been unregistered.
-  EXPECT_EQ(0u, test_unregister_handler_->num_advertisements_unregistered());
-
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[2]));
 }
 
@@ -502,7 +467,6 @@ TEST_F(BleAdvertiserTest, AdvertisementReleased) {
 
   // Now, unregister.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
-  EXPECT_EQ(1u, test_unregister_handler_->num_advertisements_unregistered());
   EXPECT_FALSE(individual_advertisements_.size());
 }
 
