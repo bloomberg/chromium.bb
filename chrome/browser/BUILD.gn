@@ -376,6 +376,8 @@ split_static_library("browser") {
     "download/drag_download_item.h",
     "download/save_package_file_picker.cc",
     "download/save_package_file_picker.h",
+    "engagement/important_sites_usage_counter.cc",
+    "engagement/important_sites_usage_counter.h",
     "engagement/important_sites_util.cc",
     "engagement/important_sites_util.h",
     "engagement/site_engagement_helper.cc",
