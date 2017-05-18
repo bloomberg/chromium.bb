@@ -2152,6 +2152,7 @@ Bug(none) virtual/threaded/animations/3d/change-transform-in-end-event.html [ Fa
 Bug(none) virtual/threaded/animations/composited-pseudo-element-animation.html [ Failure ]
 Bug(none) virtual/threaded/animations/css-composite-animation-affects-use-elements.html [ Failure ]
 Bug(none) virtual/threaded/transitions/transition-end-event-rendering.html [ Failure ]
+Bug(none) virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
 
 # Compositor Worker logic has not yet been fully ported to SPv2.
 crbug.com/686897 virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [ Timeout ]

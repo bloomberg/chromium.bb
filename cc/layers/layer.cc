@@ -124,7 +124,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     layer_tree_host_->property_trees()->RemoveIdFromIdToIndexMaps(id());
     layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
-    if (inputs_.element_id) {
+    if (!layer_tree_host_->GetSettings().use_layer_lists &&
+        inputs_.element_id) {
       layer_tree_host_->UnregisterElement(inputs_.element_id,
                                           ElementListType::ACTIVE, this);
     }
@@ -132,7 +133,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (host) {
     host->property_trees()->needs_rebuild = true;
     host->RegisterLayer(this);
-    if (inputs_.element_id) {
+    if (!host->GetSettings().use_layer_lists && inputs_.element_id) {
       host->RegisterElement(inputs_.element_id, ElementListType::ACTIVE, this);
     }
   }
@@ -150,12 +151,10 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (inputs_.mask_layer.get())
     inputs_.mask_layer->SetLayerTreeHost(host);
 
-  const bool has_any_animation =
-      layer_tree_host_ ? GetMutatorHost()->HasAnyAnimation(element_id())
-                       : false;
-
-  if (host && has_any_animation)
+  if (host && !host->GetSettings().use_layer_lists &&
+      GetMutatorHost()->HasAnyAnimation(element_id())) {
     host->SetNeedsCommit();
+  }
 }
 
 void Layer::SetNeedsCommit() {

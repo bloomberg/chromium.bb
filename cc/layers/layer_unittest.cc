@@ -1431,5 +1431,62 @@ TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
   EXPECT_EQ(MutableProperty::kTransform, impl_layer->mutable_properties());
 }
 
+TEST_F(LayerTest, NotUsingLayerListsManagesElementId) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  ElementId element_id = ElementId(2);
+  test_layer->SetElementId(element_id);
+
+  // Expect additional call due to has-animation check.
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+  scoped_refptr<AnimationTimeline> timeline =
+      AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+  animation_host_->AddAnimationTimeline(timeline);
+
+  AddOpacityTransitionToElementWithPlayer(element_id, timeline, 10.0, 1.f, 0.f,
+                                          false);
+  EXPECT_TRUE(animation_host_->HasAnyAnimation(element_id));
+
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  // Layer should now be registered by element id.
+  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
+
+  test_layer->SetLayerTreeHost(nullptr);
+  // Layer should have been un-registered.
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+}
+
+class LayerTestWithLayerLists : public LayerTest {
+ protected:
+  void SetUp() override {
+    settings_.use_layer_lists = true;
+    LayerTest::SetUp();
+  }
+};
+
+TEST_F(LayerTestWithLayerLists, UsingLayerListsDoesNotManageElementId) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  ElementId element_id = ElementId(2);
+  test_layer->SetElementId(element_id);
+
+  // Only one call expected since we should skip the has-animation check.
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  scoped_refptr<AnimationTimeline> timeline =
+      AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+  animation_host_->AddAnimationTimeline(timeline);
+
+  AddOpacityTransitionToElementWithPlayer(element_id, timeline, 10.0, 1.f, 0.f,
+                                          false);
+  EXPECT_TRUE(animation_host_->HasAnyAnimation(element_id));
+
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  // Layer shouldn't have been registered by element id.
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+
+  test_layer->SetLayerTreeHost(nullptr);
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+}
+
 }  // namespace
 }  // namespace cc
