@@ -2647,15 +2647,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
         selected
       </message>
 
-      <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress.">
-        Accessing video input
-      </message>
-      <message name="IDS_AUDIO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC audio call is in progress">
-        Accessing audio input
-      </message>
-      <message name="IDS_VIDEO_AUDIO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress">
-        Accessing audio and video input
-      </message>
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>
