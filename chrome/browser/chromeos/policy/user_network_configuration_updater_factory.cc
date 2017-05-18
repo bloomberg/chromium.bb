@@ -72,18 +72,27 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   if (user != user_manager::UserManager::Get()->GetPrimaryUser())
     return NULL;
 
-  const bool allow_trusted_certs_from_policy = user->HasGaiaAccount();
-
   ProfilePolicyConnector* profile_connector =
       ProfilePolicyConnectorFactory::GetForBrowserContext(context);
 
   return UserNetworkConfigurationUpdater::CreateForUserPolicy(
-      profile,
-      allow_trusted_certs_from_policy,
-      *user,
-      profile_connector->policy_service(),
-      chromeos::NetworkHandler::Get()->managed_network_configuration_handler())
+             profile, AllowTrustedCertsFromPolicy(user), *user,
+             profile_connector->policy_service(),
+             chromeos::NetworkHandler::Get()
+                 ->managed_network_configuration_handler())
       .release();
+}
+
+// static
+bool UserNetworkConfigurationUpdaterFactory::AllowTrustedCertsFromPolicy(
+    const user_manager::User* user) {
+  user_manager::UserType user_type = user->GetType();
+
+  // Disallow trusted root certs for public sessions.
+  // Also, guest sessions don't get user policy, but a
+  // UserNetworkCofnigurationUpdater can be created for them anyway.
+  return user_type != user_manager::USER_TYPE_GUEST &&
+         user_type != user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
 }  // namespace policy
