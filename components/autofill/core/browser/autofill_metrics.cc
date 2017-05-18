@@ -1141,8 +1141,11 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
       source_id_, internal::kUKMFormSubmittedEntryName);
   builder->AddMetric(internal::kUKMAutofillFormSubmittedStateMetricName,
                      static_cast<int>(state));
-  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+  if (form_parsed_timestamp_.is_null())
+    DCHECK_EQ(state, NON_FILLABLE_FORM_OR_NEW_DATA);
+  else
+    builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                       MillisecondsSinceFormParsed());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::UpdateSourceURL(
