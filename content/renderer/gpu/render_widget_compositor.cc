@@ -386,6 +386,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
   settings.enable_color_correct_rasterization =
       cmd.HasSwitch(switches::kEnableColorCorrectRendering);
+  settings.renderer_settings.enable_color_correct_rendering =
+      cmd.HasSwitch(switches::kEnableColorCorrectRendering);
   settings.renderer_settings.buffer_to_texture_target_map =
       compositor_deps->GetBufferToTextureTargetMap();
 
