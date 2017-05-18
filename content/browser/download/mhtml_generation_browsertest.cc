@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/mhtml_extra_parts.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
@@ -124,7 +125,26 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     // Block until the MHTML is generated.
     run_loop.Run();
 
-    EXPECT_TRUE(has_mhtml_callback_run());
+    ASSERT_TRUE(has_mhtml_callback_run())
+        << "Unexpected error generating MHTML file";
+
+    // Skip well formedness check if there was an generation error.
+    if (file_size() == -1)
+      return;
+
+    // Loads the generated file to check if it is well formed.
+    WebContentsDelegate* old_delegate = shell()->web_contents()->GetDelegate();
+    ConsoleObserverDelegate console_delegate(shell()->web_contents(),
+                                             "Malformed multipart archive: *");
+    shell()->web_contents()->SetDelegate(&console_delegate);
+
+    EXPECT_TRUE(
+        NavigateToURL(shell(), net::FilePathToFileURL(params.file_path)))
+        << "Error navigating to the generated MHTML file";
+    EXPECT_EQ(0U, console_delegate.message().length())
+        << "The generated MHTML file is malformed";
+
+    shell()->web_contents()->SetDelegate(old_delegate);
   }
 
   int64_t ReadFileSizeFromDisk(base::FilePath path) {
@@ -153,7 +173,6 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     }
 
     GenerateMHTML(params, url);
-    ASSERT_FALSE(HasFailure());
 
     // Stop the test server (to make sure the locally saved page
     // is self-contained / won't try to open original resources).
@@ -223,7 +242,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GenerateMHTML(path, embedded_test_server()->GetURL("/simple_page.html"));
-  ASSERT_FALSE(HasFailure());
 
   // Make sure the actual generated file has some contents.
   EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
@@ -363,7 +381,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
 
   GenerateMHTML(path, embedded_test_server()->GetURL(
                           "/download/local-about-blank-subframes.html"));
-  ASSERT_FALSE(HasFailure());  // No failures with the invocation itself?
 
   EXPECT_EQ(file_size(), -1);  // Expecting that the callback reported failure.
 
@@ -382,7 +399,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateNonBinaryMHTMLWithImage) {
 
   GURL url(embedded_test_server()->GetURL("/page_with_image.html"));
   GenerateMHTML(path, url);
-  ASSERT_FALSE(HasFailure());
   EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
   EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
 
@@ -408,7 +424,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateBinaryMHTMLWithImage) {
   params.use_binary_encoding = true;
 
   GenerateMHTML(params, url);
-  ASSERT_FALSE(HasFailure());
   EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
   EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
 
@@ -430,9 +445,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLIgnoreNoStore) {
 
   // Generate MHTML without specifying the FailForNoStoreMainFrame policy.
   GenerateMHTML(path, url);
-
-  // We expect that there wasn't an error (file size -1 indicates an error.)
-  ASSERT_FALSE(HasFailure());
 
   std::string mhtml;
   {
@@ -630,7 +642,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest, GenerateMHTML) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_one_frame.html"));
   GenerateMHTML(path, url);
-  ASSERT_FALSE(HasFailure());
 
   std::string mhtml;
   {
@@ -660,7 +671,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, RemovePopupOverlay) {
   params.remove_popup_overlay = true;
 
   GenerateMHTML(params, url);
-  ASSERT_FALSE(HasFailure());
 
   std::string mhtml;
   {
