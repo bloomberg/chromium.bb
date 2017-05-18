@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import ConfigParser
 import json
-import mock
 import os
 
 from chromite.lib import config_lib
@@ -86,9 +85,6 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.PatchObject(cros_patch.GitRepoPatch, 'GetDiffStatus')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      side_effect=lambda x: x)
-    self.changes = [self.overlay_patch, self.chromite_patch,
-                    self.power_manager_patch, self.kernel_patch,
-                    self.secret_patch]
 
   @staticmethod
   def _GetBuildFailure(pkg):
@@ -301,44 +297,6 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     # 'Builders failed to report statuses' belong to infrastructure failures.
     self.assertTrue(
         triage_lib.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
-
-  def testFindSuspectsForFailuresWithMessages(self):
-    """Test FindSuspectsForFailures with not None messages."""
-    build_root = mock.Mock()
-    failed_hwtests = mock.Mock()
-    messages = []
-    for _ in range(0, 3):
-      m = mock.Mock()
-      m.FindSuspectedChanges.return_value = self.changes[0:1]
-      messages.append(m)
-
-    suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
-        self.changes, messages, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, self.changes[0:1])
-
-    suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
-        self.changes, messages, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, self.changes[0:1])
-
-    for index in range(0, 3):
-      messages[index].FindSuspectedChanges.called_once_with(
-          self.changes, build_root, failed_hwtests, True)
-      messages[index].FindSuspectedChanges.called_once_with(
-          self.changes, build_root, failed_hwtests, False)
-
-  def testFindSuspectsForFailuresWithNoneMessage(self):
-    """Test FindSuspectsForFailuresWith None message."""
-    build_root = mock.Mock()
-    failed_hwtests = mock.Mock()
-    messages = [None]
-
-    suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
-        self.changes, messages, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, set())
-
-    suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
-        self.changes, messages, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, self.changes)
 
 
 class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):

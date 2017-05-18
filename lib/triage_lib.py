@@ -482,30 +482,21 @@ class CalculateSuspects(object):
     return [x for x, y in zip(changes, reloaded_changes) if y.WasVetoed()]
 
   @classmethod
-  def FindSuspectsForFailures(cls, changes, messages, build_root,
-                              failed_hwtests, sanity):
-    """Find suspects for the given failure messages and hwtests.
+  def _FindPackageBuildFailureSuspects(cls, changes, messages, sanity):
+    """Figure out what CLs are at fault for a set of build failures.
 
     Args:
-      changes: A list of cros_patch.GerritPatch instances.
-      messages: A list of failure_message_lib.BuildFailureMessage or NoneType
-        instances from the failed slaves.
-      build_root: The path to the build root.
-      failed_hwtests: A list of names of failed hwtests got from CIDB (see the
-        return type of HWTestResultManager.GetFailedHWTestsFromCIDB) or a
-        NoneType instance.
-      sanity: The sanity checker builder passed and the tree was open when
-              the build started and ended.
-
-    Returns:
-      A set of cros_patch.GerritPatch instances as suspects. If messages contain
-      NoneType message and sanity is True, return all changes as suspects.
+        changes: A list of cros_patch.GerritPatch instances to consider.
+        messages: A list of failure messages. We will only look at the ones of
+                  type BuildFailureMessage.
+        sanity: The sanity checker builder passed and the tree was open when
+                the build started.
     """
     suspects = set()
     for message in messages:
       if message:
-        suspects.update(message.FindSuspectedChanges(
-            changes, build_root, failed_hwtests, sanity))
+        suspects.update(
+            message.FindPackageBuildFailureSuspects(changes, sanity))
       elif sanity:
         suspects.update(changes)
     return suspects
@@ -606,14 +597,13 @@ class CalculateSuspects(object):
 
   @classmethod
   def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False,
-                   build_root=None, failed_hwtests=None, sanity=True):
+                   sanity=True):
     """Find out what changes probably caused our failure.
 
-    1) if there're bad changes to blame, return the bad changes as the suspects;
-    2) else if there're only internal lab failures, return an empty suspects;
-    3) else if there're only internal infra failures, return infra changes as
-    the suspects;
-    4) else, find and return suspects by analyzing the failures.
+    In cases where there were no internal failures, we can assume that the
+    external failures are at fault. Otherwise, this function just defers to
+    _FindPackageBuildFailureSuspects and GetBlamedChanges as needed.
+    If the failures don't match either case, just fail everything.
 
     Args:
       changes: A list of cros_patch.GerritPatch instances to consider.
@@ -622,12 +612,8 @@ class CalculateSuspects(object):
       infra_fail: The build failed purely due to infrastructure failures.
       lab_fail: The build failed purely due to test lab infrastructure
         failures.
-      build_root: The path to the build root.
-      failed_hwtests: A list of names of failed hwtests got from CIDB (see the
-        return type of HWTestResultManager.GetFailedHWTestsFromCIDB) or a
-        NoneType instance.
       sanity: The sanity checker builder passed and the tree was open when
-        the build started and ended.
+              the build started.
 
     Returns:
        A set of changes as suspects.
@@ -653,8 +639,7 @@ class CalculateSuspects(object):
           'issue(s). Will only reject chromite changes')
       return set(cls.FilterChangesForInfraFail(changes))
 
-    return cls.FindSuspectsForFailures(
-        changes, messages, build_root, failed_hwtests, sanity)
+    return cls._FindPackageBuildFailureSuspects(changes, messages, sanity)
 
   @classmethod
   def CanIgnoreFailures(cls, messages, change, build_root,
