@@ -194,7 +194,10 @@ bool AudioDiscardHelper::ProcessBuffers(
     if (decoder_delay_) {
       // Delayed end discard only works if the decoder delay is less than a
       // single buffer.
-      DCHECK_LT(decoder_delay_, original_frame_count);
+      if (decoder_delay_ >= original_frame_count) {
+        DLOG(ERROR) << "Encountered invalid discard padding value.";
+        return false;
+      }
 
       // If the discard is >= the decoder delay, trim everything we can off the
       // end of this buffer and the rest from the start of the next.
