@@ -736,14 +736,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void OnStorePolicy(const std::string& method_name,
                      const StorePolicyCallback& callback,
                      dbus::Response* response) {
-    bool success = false;
-    if (!response) {
-      LOG(ERROR) << "Failed to call " << method_name;
-    } else {
-      dbus::MessageReader reader(response);
-      if (!reader.PopBool(&success))
-        LOG(ERROR) << "Invalid response: " << response->ToString();
-    }
+    bool success = response != nullptr;
+    LOG_IF(ERROR, !success) << "Failed to call " << method_name;
     callback.Run(success);
   }
 
