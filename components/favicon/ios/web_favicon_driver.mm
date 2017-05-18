@@ -102,6 +102,11 @@ int WebFaviconDriver::DownloadImage(const GURL& url,
   return downloaded_image_count;
 }
 
+void WebFaviconDriver::DownloadManifest(const GURL& url,
+                                        ManifestDownloadCallback callback) {
+  NOTREACHED();
+}
+
 bool WebFaviconDriver::IsOffTheRecord() {
   DCHECK(web_state());
   return web_state()->GetBrowserState()->IsOffTheRecord();
@@ -141,7 +146,8 @@ WebFaviconDriver::~WebFaviconDriver() {
 void WebFaviconDriver::FaviconUrlUpdated(
     const std::vector<web::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
-  OnUpdateCandidates(GetActiveURL(), FaviconURLsFromWebFaviconURLs(candidates));
+  OnUpdateCandidates(GetActiveURL(), FaviconURLsFromWebFaviconURLs(candidates),
+                     GURL());
 }
 
 }  // namespace favicon
