@@ -72,6 +72,9 @@ bool HasCreditCardAutocompleteAttributes(const blink::WebInputElement& element);
 // credit card verification field.
 bool IsCreditCardVerificationPasswordField(const blink::WebInputElement& field);
 
+// The "Realm" for the sign-on. This is scheme, host, port.
+std::string GetSignOnRealm(const GURL& origin);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H__

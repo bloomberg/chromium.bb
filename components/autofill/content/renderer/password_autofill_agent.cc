@@ -229,7 +229,8 @@ void FindFormElements(content::RenderFrame* render_frame,
 
   blink::WebDocument doc = render_frame->GetWebFrame()->GetDocument();
 
-  if (data.origin != form_util::GetCanonicalOriginForDocument(doc))
+  if (GetSignOnRealm(data.origin) !=
+      GetSignOnRealm(form_util::GetCanonicalOriginForDocument(doc)))
     return;
 
   blink::WebVector<blink::WebFormElement> forms;
@@ -1201,10 +1202,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
       password_forms.back().scheme = PasswordForm::SCHEME_HTML;
       password_forms.back().origin =
           form_util::GetCanonicalOriginForDocument(frame->GetDocument());
-      GURL::Replacements rep;
-      rep.SetPathStr("");
       password_forms.back().signon_realm =
-          password_forms.back().origin.ReplaceComponents(rep).spec();
+          GetSignOnRealm(password_forms.back().origin);
     }
     if (!password_forms.empty()) {
       sent_request_to_store_ = true;
