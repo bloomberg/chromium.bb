@@ -112,9 +112,8 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
   [[_viewController collectionView] reloadData];
 
   [_delegate paymentRequestCoordinator:self
-             didCompletePaymentRequest:_paymentRequest
-                                  card:card
-                      verificationCode:verificationCode];
+      didCompletePaymentRequestWithCard:card
+                       verificationCode:verificationCode];
 }
 
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
