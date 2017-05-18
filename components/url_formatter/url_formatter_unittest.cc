@@ -38,6 +38,19 @@ struct IDNTestCase {
   const bool unicode_allowed;
 };
 
+// These cases can be generated with the script
+// tools/security/idn_test_case_generator.py.
+// See documentation there: you can either run it from the command line or call
+// the make_case function directly from the Python shell (which may be easier
+// for entering Unicode text).
+//
+// Q: Why not just do this conversion right here in the test, rather than having
+//    a Python script to generate it?
+// A: Because then we would have to rely on complex logic (IDNA encoding) in the
+//    test itself; the same code we are trying to test. By using Python's IDN
+//    encoder to generate the test data, we independently verify that our
+//    algorithm is correct.
+
 // TODO(jshin): Replace L"..." with "..." in UTF-8 when it's easier to read.
 const IDNTestCase idn_cases[] = {
   // No IDN
