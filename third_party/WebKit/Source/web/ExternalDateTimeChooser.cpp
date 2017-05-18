@@ -27,12 +27,12 @@
 
 #include "core/InputTypeNames.h"
 #include "core/html/forms/DateTimeChooserClient.h"
+#include "core/page/ChromeClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDateTimeChooserParams.h"
 #include "public/web/WebViewClient.h"
-#include "web/ChromeClientImpl.h"
 
 namespace blink {
 
@@ -69,7 +69,7 @@ ExternalDateTimeChooser::ExternalDateTimeChooser(DateTimeChooserClient* client)
 }
 
 ExternalDateTimeChooser* ExternalDateTimeChooser::Create(
-    ChromeClientImpl* chrome_client,
+    ChromeClient* chrome_client,
     WebViewClient* web_view_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
@@ -97,7 +97,7 @@ static WebDateTimeInputType ToWebDateTimeInputType(const AtomicString& source) {
 }
 
 bool ExternalDateTimeChooser::OpenDateTimeChooser(
-    ChromeClientImpl* chrome_client,
+    ChromeClient* chrome_client,
     WebViewClient* web_view_client,
     const DateTimeChooserParameters& parameters) {
   if (!web_view_client)
