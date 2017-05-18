@@ -70,8 +70,8 @@ HashAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
   const HashAlgorithm kWeakerThanSha512[] = {kHashAlgorithmSha256,
                                              kHashAlgorithmSha384};
 
-  ASSERT(algorithm1 != kHashAlgorithmSha1);
-  ASSERT(algorithm2 != kHashAlgorithmSha1);
+  DCHECK_NE(algorithm1, kHashAlgorithmSha1);
+  DCHECK_NE(algorithm2, kHashAlgorithmSha1);
 
   if (algorithm1 == algorithm2)
     return algorithm1;

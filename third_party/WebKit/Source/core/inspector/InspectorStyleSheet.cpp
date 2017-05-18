@@ -262,20 +262,20 @@ void StyleSheetHandler::ObserveProperty(unsigned start_offset,
       !current_rule_data_stack_.back()->HasProperties())
     return;
 
-  ASSERT(end_offset <= parsed_text_.length());
+  DCHECK_LE(end_offset, parsed_text_.length());
   if (end_offset < parsed_text_.length() &&
       parsed_text_[end_offset] ==
           ';')  // Include semicolon into the property text.
     ++end_offset;
 
-  ASSERT(start_offset < end_offset);
+  DCHECK_LT(start_offset, end_offset);
   String property_string =
       parsed_text_.Substring(start_offset, end_offset - start_offset)
           .StripWhiteSpace();
   if (property_string.EndsWith(';'))
     property_string = property_string.Left(property_string.length() - 1);
   size_t colon_index = property_string.find(':');
-  ASSERT(colon_index != kNotFound);
+  DCHECK_NE(colon_index, kNotFound);
 
   String name = property_string.Left(colon_index).StripWhiteSpace();
   String value =
@@ -288,7 +288,7 @@ void StyleSheetHandler::ObserveProperty(unsigned start_offset,
 
 void StyleSheetHandler::ObserveComment(unsigned start_offset,
                                        unsigned end_offset) {
-  ASSERT(end_offset <= parsed_text_.length());
+  DCHECK_LE(end_offset, parsed_text_.length());
 
   if (current_rule_data_stack_.IsEmpty() ||
       !current_rule_data_stack_.back()->rule_header_range.end ||
@@ -760,9 +760,9 @@ bool InspectorStyle::TextForRange(const SourceRange& range, String* result) {
   if (!success)
     return false;
 
-  ASSERT(0 <= range.start);
-  ASSERT(range.start <= range.end);
-  ASSERT(range.end <= style_sheet_text.length());
+  DCHECK(0 <= range.start);
+  DCHECK_LE(range.start, range.end);
+  DCHECK_LE(range.end, style_sheet_text.length());
   *result = style_sheet_text.Substring(range.start, range.end - range.start);
   return true;
 }
@@ -1340,13 +1340,13 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
     while (index < parent_media_rule->length() &&
            parent_media_rule->Item(index) != rule)
       ++index;
-    ASSERT(index < parent_media_rule->length());
+    DCHECK_LT(index, parent_media_rule->length());
     parent_media_rule->deleteRule(index, exception_state);
   } else {
     size_t index = 0;
     while (index < style_sheet->length() && style_sheet->item(index) != rule)
       ++index;
-    ASSERT(index < style_sheet->length());
+    DCHECK_LT(index, style_sheet->length());
     style_sheet->deleteRule(index, exception_state);
   }
   // |rule| MAY NOT be addressed after this line!
@@ -1736,7 +1736,7 @@ CSSRule* InspectorStyleSheet::RuleForSourceData(
   if (it == source_data_to_rule_.end())
     return nullptr;
 
-  ASSERT(it->value < cssom_flat_rules_.size());
+  DCHECK_LT(it->value, cssom_flat_rules_.size());
 
   // Check that CSSOM did not mutate this rule.
   CSSRule* result = cssom_flat_rules_.at(it->value);
@@ -1759,7 +1759,7 @@ CSSRuleSourceData* InspectorStyleSheet::SourceDataForRule(CSSRule* rule) {
   if (it == rule_to_source_data_.end())
     return nullptr;
 
-  ASSERT(it->value < source_data_->size());
+  DCHECK_LT(it->value, source_data_->size());
 
   // Check that CSSOM did not mutate this rule.
   CSSRule* parsed_rule = parsed_flat_rules_.at(it->value);

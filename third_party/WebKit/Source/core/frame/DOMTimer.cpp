@@ -81,7 +81,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {
-  ASSERT(timeout_id > 0);
+  DCHECK_GT(timeout_id, 0);
   if (ShouldForwardUserGesture(interval, nesting_level_)) {
     // Thread safe because shouldForwardUserGesture will only return true if
     // execution is on the the main thread.

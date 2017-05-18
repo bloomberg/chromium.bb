@@ -62,7 +62,7 @@ void SuspendableTimer::Suspend() {
 #endif
   if (IsActive()) {
     next_fire_interval_ = NextFireInterval();
-    ASSERT(next_fire_interval_ >= 0.0);
+    DCHECK_GE(next_fire_interval_, 0.0);
     repeat_interval_ = RepeatInterval();
     TimerBase::Stop();
   }

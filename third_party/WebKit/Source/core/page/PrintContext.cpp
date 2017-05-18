@@ -151,8 +151,8 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
 }
 
 void PrintContext::BeginPrintMode(float width, float height) {
-  ASSERT(width > 0);
-  ASSERT(height > 0);
+  DCHECK_GT(width, 0);
+  DCHECK_GT(height, 0);
 
   // This function can be called multiple times to adjust printing parameters
   // without going back to screen mode.

@@ -643,7 +643,8 @@ FloatSize LocalFrame::ResizePageRectsKeepingRatio(
     return FloatSize();
 
   if (ContentLayoutItem().Style()->IsHorizontalWritingMode()) {
-    ASSERT(fabs(original_size.Width()) > std::numeric_limits<float>::epsilon());
+    DCHECK_GT(fabs(original_size.Width()),
+              std::numeric_limits<float>::epsilon());
     float ratio = original_size.Height() / original_size.Width();
     result_size.SetWidth(floorf(expected_size.Width()));
     result_size.SetHeight(floorf(result_size.Width() * ratio));

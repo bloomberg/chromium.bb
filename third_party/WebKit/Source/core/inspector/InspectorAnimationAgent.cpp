@@ -465,7 +465,7 @@ static void AddStringToDigestor(WebCryptoDigestor* digestor,
 String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
   String type =
       id_to_animation_type_.at(String::Number(animation.SequenceNumber()));
-  ASSERT(type != AnimationType::WebAnimation);
+  DCHECK_NE(type, AnimationType::WebAnimation);
 
   KeyframeEffectReadOnly* effect = ToKeyframeEffectReadOnly(animation.effect());
   Vector<CSSPropertyID> css_properties;

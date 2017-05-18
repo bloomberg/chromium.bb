@@ -25,8 +25,8 @@ DEFINE_TRACE(FrameViewAutoSizeInfo) {
 void FrameViewAutoSizeInfo::ConfigureAutoSizeMode(const IntSize& min_size,
                                                   const IntSize& max_size) {
   DCHECK(!min_size.IsEmpty());
-  ASSERT(min_size.Width() <= max_size.Width());
-  ASSERT(min_size.Height() <= max_size.Height());
+  DCHECK_LE(min_size.Width(), max_size.Width());
+  DCHECK_LE(min_size.Height(), max_size.Height());
 
   if (min_auto_size_ == min_size && max_auto_size_ == max_size)
     return;

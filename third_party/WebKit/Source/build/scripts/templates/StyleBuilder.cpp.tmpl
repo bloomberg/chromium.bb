@@ -41,7 +41,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
     {% endfor %}
     {
       CSSPropertyID resolvedProperty = CSSProperty::ResolveDirectionAwareProperty(property, state.Style()->Direction(), state.Style()->GetWritingMode());
-      ASSERT(resolvedProperty != property);
+      DCHECK_NE(resolvedProperty, property);
       ApplyProperty(resolvedProperty, state, value);
       return;
     }
