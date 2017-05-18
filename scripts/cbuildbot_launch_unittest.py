@@ -20,6 +20,10 @@ from chromite.scripts import cbuildbot_launch
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
 
+class FakeException(Exception):
+  """Test exception to raise during tests."""
+
+
 class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
   """Tests for cbuildbot_launch script."""
 
@@ -77,6 +81,28 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
                   branch='release-R56-9000.B', git_cache_dir='/git-cache'),
         mock.call().BuildRootGitCleanup(prune_all=True),
         mock.call().Sync(detach=True),
+    ])
+
+  def testInitialCheckoutCleanupError(self):
+    """Test we wipe buildroot when cleanup fails."""
+    mock_clean = self.PatchObject(
+        repository.RepoRepository, 'BuildRootGitCleanup', autospec=True,
+        side_effect=FakeException)
+    mock_sync = self.PatchObject(
+        repository.RepoRepository, 'Sync', autospec=True)
+    mock_remove = self.PatchObject(
+        repository, 'ClearBuildRoot', autospec=True)
+
+    cbuildbot_launch.InitialCheckout('master', '/buildroot', None)
+
+    self.assertEqual(mock_clean.mock_calls, [
+        mock.call(mock.ANY, prune_all=True),
+    ])
+    self.assertEqual(mock_sync.mock_calls, [
+        mock.call(mock.ANY, detach=True),
+    ])
+    self.assertEqual(mock_remove.mock_calls, [
+        mock.call('/buildroot'),
     ])
 
   def testConfigureGlobalEnvironment(self):

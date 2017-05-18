@@ -351,11 +351,10 @@ class RepoRepository(object):
 
     Args:
       prune_all: If True, prune all loose objects regardless of gc.pruneExpire.
-    """
-    if not IsARepoRoot(self.directory):
-      # If it's not yet a repo checkout, we can't clean it.
-      return
 
+    Raises:
+      A variety of exceptions if the buildroot is missing/corrupt.
+    """
     lock_path = os.path.join(self.directory, '.clean_lock')
     deleted_objdirs = multiprocessing.Event()
 

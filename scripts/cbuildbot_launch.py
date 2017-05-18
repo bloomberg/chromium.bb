@@ -157,7 +157,13 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
   repo = repository.RepoRepository(manifest_url, buildroot,
                                    branch=branchname,
                                    git_cache_dir=git_cache_dir)
-  repo.BuildRootGitCleanup(prune_all=True)
+  try:
+    # If there is any failure doing the cleanup, wipe everything.
+    repo.BuildRootGitCleanup(prune_all=True)
+  except Exception:
+    logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
+    repository.ClearBuildRoot(buildroot)
+
   repo.Sync(detach=True)
 
 
