@@ -933,14 +933,16 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  int sub8x8_inter = bsize < BLOCK_8X8 && plane > 0;
+  int sub8x8_inter = (bw < 4) || (bh < 4);
   const int row_start = (block_size_high[bsize] == 4) ? -1 : 0;
   const int col_start = (block_size_wide[bsize] == 4) ? -1 : 0;
 
-  for (int row = row_start; row <= 0 && sub8x8_inter; ++row)
-    for (int col = col_start; col <= 0; ++col)
-      if (!is_inter_block(&xd->mi[row * xd->mi_stride + col]->mbmi))
-        sub8x8_inter = 0;
+  if (sub8x8_inter) {
+    for (int row = row_start; row <= 0 && sub8x8_inter; ++row)
+      for (int col = col_start; col <= 0; ++col)
+        if (!is_inter_block(&xd->mi[row * xd->mi_stride + col]->mbmi))
+          sub8x8_inter = 0;
+  }
 
 #if CONFIG_MOTION_VAR
   if (!build_for_obmc && sub8x8_inter) {
@@ -1851,7 +1853,7 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_col_offset = i;
       const MB_MODE_INFO *const above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
+      const BLOCK_SIZE a_bsize = AOMMAX(BLOCK_8X8, above_mbmi->sb_type);
       const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
 
       if (is_neighbor_overlappable(above_mbmi)) {
@@ -1900,7 +1902,7 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_row_offset = i;
       const MB_MODE_INFO *const left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
+      const BLOCK_SIZE l_bsize = AOMMAX(BLOCK_8X8, left_mbmi->sb_type);
       const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
 
       if (is_neighbor_overlappable(left_mbmi)) {
@@ -1973,7 +1975,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     int mi_x, mi_y, bw, bh;
     MODE_INFO *above_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
-    const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
+    const BLOCK_SIZE a_bsize = AOMMAX(BLOCK_8X8, above_mbmi->sb_type);
     MB_MODE_INFO backup_mbmi;
 
     mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
@@ -1988,8 +1990,8 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     for (j = 0; j < MAX_MB_PLANE; ++j) {
       struct macroblockd_plane *const pd = &xd->plane[j];
-      setup_pred_plane(&pd->dst, AOMMAX(a_bsize, BLOCK_8X8), tmp_buf[j],
-                       tmp_width[j], tmp_height[j], tmp_stride[j], 0, i, NULL,
+      setup_pred_plane(&pd->dst, a_bsize, tmp_buf[j], tmp_width[j],
+                       tmp_height[j], tmp_stride[j], 0, i, NULL,
                        pd->subsampling_x, pd->subsampling_y);
     }
     for (ref = 0; ref < 1 + has_second_ref(above_mbmi); ++ref) {
@@ -2054,7 +2056,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     int mi_x, mi_y, bw, bh;
     MODE_INFO *left_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
-    const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
+    const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
     MB_MODE_INFO backup_mbmi;
 
     mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
@@ -2069,8 +2071,8 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     for (j = 0; j < MAX_MB_PLANE; ++j) {
       struct macroblockd_plane *const pd = &xd->plane[j];
-      setup_pred_plane(&pd->dst, AOMMAX(l_bsize, BLOCK_8X8), tmp_buf[j],
-                       tmp_width[j], tmp_height[j], tmp_stride[j], i, 0, NULL,
+      setup_pred_plane(&pd->dst, l_bsize, tmp_buf[j], tmp_width[j],
+                       tmp_height[j], tmp_stride[j], i, 0, NULL,
                        pd->subsampling_x, pd->subsampling_y);
     }
     for (ref = 0; ref < 1 + has_second_ref(left_mbmi); ++ref) {
