@@ -35,6 +35,7 @@
 
 #include <memory>
 #include "platform/heap/Handle.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebEmbeddedWorker.h"
@@ -78,6 +79,10 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   void AddMessageToConsole(const WebConsoleMessage&) override;
 
   void PostMessageToPageInspector(const WTF::String&);
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
+    // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
+    return Platform::Current()->CreateURLLoader();
+  }
 
  private:
   void PrepareShadowPageForLoader();

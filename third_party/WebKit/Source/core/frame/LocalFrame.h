@@ -81,6 +81,7 @@ class PluginData;
 class ScriptController;
 class SpellChecker;
 class WebFrameScheduler;
+class WebURLLoader;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
@@ -233,6 +234,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // either the flag in Settings() for using image placeholders is set, or if
   // the embedder decides that Client Lo-Fi should be used for this request.
   void MaybeAllowImagePlaceholder(FetchParameters&) const;
+
+  std::unique_ptr<WebURLLoader> CreateURLLoader();
 
   using FrameInitCallback = void (*)(LocalFrame*);
   // Allows for the registration of a callback that is invoked whenever a new

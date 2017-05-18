@@ -970,4 +970,8 @@ void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
   }
 }
 
+std::unique_ptr<WebURLLoader> LocalFrame::CreateURLLoader() {
+  return Client()->CreateURLLoader();
+}
+
 }  // namespace blink

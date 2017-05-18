@@ -86,6 +86,7 @@ class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
+class WebURLLoader;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
@@ -335,6 +336,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void AbortClientNavigation() {}
 
   virtual TextCheckerClient& GetTextCheckerClient() const = 0;
+
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
 };
 
 }  // namespace blink

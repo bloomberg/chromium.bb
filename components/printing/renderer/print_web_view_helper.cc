@@ -36,6 +36,7 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebDoubleSize.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -679,6 +680,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       blink::WebSandboxFlags sandbox_flags,
       const blink::WebParsedFeaturePolicy& container_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override;
 
   void CallOnReady();
   void ResizeForPrinting();
@@ -841,6 +843,12 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
       blink::WebLocalFrame::Create(scope, this, nullptr, nullptr);
   parent->AppendChild(frame);
   return frame;
+}
+
+std::unique_ptr<blink::WebURLLoader>
+PrepareFrameAndViewForPrint::CreateURLLoader() {
+  // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
+  return blink::Platform::Current()->CreateURLLoader();
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {

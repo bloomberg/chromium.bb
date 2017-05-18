@@ -38,6 +38,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
@@ -103,6 +104,11 @@ class WebSharedWorkerImpl final : public WebFrameClient,
                                int call_id,
                                const WebString& method,
                                const WebString& message) override;
+
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
+    // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
+    return Platform::Current()->CreateURLLoader();
+  }
 
   // Callback methods for WebSharedWorkerReportingProxyImpl.
   void CountFeature(UseCounter::Feature);

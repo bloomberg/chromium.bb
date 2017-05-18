@@ -31,6 +31,8 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
+#include <memory>
+
 #include "WebAXObject.h"
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
@@ -65,6 +67,7 @@
 #include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
+#include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
@@ -789,6 +792,12 @@ class BLINK_EXPORT WebFrameClient {
   // An empty URL is returned if the URL is not overriden.
   virtual WebURL OverrideFlashEmbedWithHTML(const WebURL& url) {
     return WebURL();
+  }
+
+  // Loading --------------------------------------------------------------
+  virtual std::unique_ptr<blink::WebURLLoader> CreateURLLoader() {
+    NOTREACHED();
+    return nullptr;
   }
 };
 
