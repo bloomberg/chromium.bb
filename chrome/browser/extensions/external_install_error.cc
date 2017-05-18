@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -312,6 +313,12 @@ ExternalInstallError::ExternalInstallError(
 }
 
 ExternalInstallError::~ExternalInstallError() {
+#if DCHECK_IS_ON()
+  // Errors should only be removed while the profile is valid, since removing
+  // the error can trigger other subsystems listening for changes.
+  BrowserContextDependencyManager::GetInstance()
+      ->AssertBrowserContextWasntDestroyed(browser_context_);
+#endif
   if (global_error_.get())
     error_service_->RemoveUnownedGlobalError(global_error_.get());
 }
