@@ -646,7 +646,7 @@ shared_library("chrome") {
     "../browser/android/chrome_entry_point.cc",
   ]
   deps = [
-    "//build/config/sanitizers:deps",
+    "//build/config:exe_and_shlib_deps",
     "//chrome:chrome_android_core",
   ]
 
@@ -773,7 +773,7 @@ shared_library("chrome_sync_shell") {
     "../browser/android/chrome_sync_shell_main_delegate_initializer.cc",
   ]
   deps = [
-    "//build/config/sanitizers:deps",
+    "//build/config:exe_and_shlib_deps",
     "//chrome:chrome_android_core",
     "//components/sync",
     "//components/sync:test_support_fake_server_android",

@@ -192,7 +192,7 @@ target(link_target_type, "protobuf_lite") {
   ]
 
   deps = [
-    "//build/config/sanitizers:deps",
+    "//build/config:exe_and_shlib_deps",
   ]
 
   cflags = protobuf_lite_cflags
@@ -357,7 +357,7 @@ static_library("protobuf_full") {
   ]
 
   deps = [
-    "//build/config/sanitizers:deps",
+    "//build/config:exe_and_shlib_deps",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

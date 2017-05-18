@@ -2196,7 +2196,7 @@ if (!is_ios) {
       ":net",
       ":test_support",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2727,7 +2727,7 @@ if (!is_ios && !is_android) {
       ":net",
       ":test_support",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
 
@@ -2748,7 +2748,7 @@ if (!is_ios && !is_android) {
       ":net",
       ":test_support",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2764,7 +2764,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2780,7 +2780,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2795,7 +2795,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2812,7 +2812,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//base:i18n",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//url",
     ]
@@ -2829,7 +2829,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2844,7 +2844,7 @@ if (!is_ios && !is_android) {
         ":net",
         ":net_with_v8",
         "//base",
-        "//build/config/sanitizers:deps",
+        "//build/config:exe_and_shlib_deps",
         "//build/win:default_exe_manifest",
       ]
     }
@@ -2859,7 +2859,7 @@ if (!is_ios && !is_android) {
       ":test_support",
       "//base",
       "//base/test:test_support",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//testing/gtest",
     ]
@@ -2877,7 +2877,7 @@ if (!is_ios && !is_android) {
       ":net",
       ":test_support",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2892,7 +2892,7 @@ if (!is_ios && !is_android) {
     deps = [
       "//base",
       "//base:i18n",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//net/tools/tld_cleanup",
     ]
@@ -2983,7 +2983,7 @@ if (is_linux) {
       ":net",
       ":simple_quic_tools",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//third_party/boringssl",
     ]
   }
@@ -2998,7 +2998,7 @@ if (is_linux) {
       ":net",
       ":simple_quic_tools",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//third_party/boringssl",
     ]
   }
@@ -3042,7 +3042,7 @@ if (is_android || is_linux) {
     deps = [
       ":net",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
     ]
   }
 }
@@ -3115,7 +3115,7 @@ if (!is_ios) {
       ":net",
       ":simple_quic_tools",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//url",
     ]
@@ -3128,7 +3128,7 @@ if (!is_ios) {
       ":net",
       ":simple_quic_tools",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//third_party/boringssl",
       "//third_party/protobuf:protobuf_lite",
@@ -3142,7 +3142,7 @@ if (!is_ios) {
       ":net",
       ":simple_quic_tools",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//third_party/boringssl",
       "//third_party/protobuf:protobuf_lite",
@@ -3156,7 +3156,7 @@ if (!is_ios) {
       ":net",
       ":simple_quic_tools",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//third_party/boringssl",
       "//third_party/protobuf:protobuf_lite",
@@ -3169,7 +3169,7 @@ if (!is_ios) {
     deps = [
       ":net",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -5374,7 +5374,7 @@ if (!is_ios && !is_proto_quic) {
       "//base",
       "//base:i18n",
       "//base/test:test_support_perf",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//testing/gtest",
       "//url",
