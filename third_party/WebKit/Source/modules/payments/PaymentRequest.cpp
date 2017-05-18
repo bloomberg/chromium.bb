@@ -1067,6 +1067,13 @@ void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
   can_make_payment_resolver_.Clear();
 }
 
+void PaymentRequest::WarnNoFavicon() {
+  GetExecutionContext()->AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                             "Favicon not found for PaymentRequest UI. User "
+                             "may not recognize the website."));
+}
+
 void PaymentRequest::OnCompleteTimeout(TimerBase*) {
   GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
       kJSMessageSource, kErrorMessageLevel,
