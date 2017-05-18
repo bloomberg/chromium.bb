@@ -20,6 +20,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -196,8 +197,33 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   std::string serialized_request =
       AddTimeAndSerializeRequest(&metrics_request_, CurrentTime());
   metrics_request_.Clear();
-  current_fetcher_ =
-      net::URLFetcher::Create(pingback_url_, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("data_reduction_proxy_pingback", R"(
+        semantics {
+          sender: "Data Reduction Proxy"
+          description:
+            "Sends page performance and data efficiency metrics to the data "
+            "reduction proxy."
+          trigger:
+            "Sent after a page load, if the page was loaded via the data "
+            "reduction proxy."
+          data:
+            "URL, request time, response time, page size, connection type, and "
+            "performance measures. See the following for details: "
+            "components/data_reduction_proxy/proto/pageload_metrics.proto"
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can control Data Saver on Android via 'Data Saver' setting. "
+            "Data Saver is not available on iOS, and on desktop it is enabled "
+            "by insalling the Data Saver extension. While Data Saver is "
+            "enabled, this feature cannot be disabled by settings."
+          policy_exception_justification: "Not implemented."
+        })");
+  current_fetcher_ = net::URLFetcher::Create(
+      pingback_url_, net::URLFetcher::POST, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       current_fetcher_.get(),
       data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);

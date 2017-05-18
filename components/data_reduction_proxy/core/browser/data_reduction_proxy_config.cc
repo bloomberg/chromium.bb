@@ -38,6 +38,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/proxy/proxy_server.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
@@ -247,8 +248,32 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
 
   void CheckIfSecureProxyIsAllowed(const GURL& secure_proxy_check_url,
                                    FetcherResponseCallback fetcher_callback) {
-    fetcher_ = net::URLFetcher::Create(secure_proxy_check_url,
-                                       net::URLFetcher::GET, this);
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation(
+            "data_reduction_proxy_secure_proxy_check", R"(
+            semantics {
+              sender: "Data Reduction Proxy"
+              description:
+                "Sends a request to the Data Reduction Proxy server. Proceeds "
+                "with using a secure connection to the proxy only if the "
+                "response is not blocked or modified by an intermediary."
+              trigger:
+                "A request can be sent whenever the browser is determining how "
+                "to configure its connection to the data reduction proxy. This "
+                "happens on startup and network changes."
+              data: "A specific URL, not related to user data."
+              destination: GOOGLE_OWNED_SERVICE
+            }
+            policy {
+              cookies_allowed: false
+              setting:
+                "Users can control Data Saver on Android via the 'Data Saver' "
+                "setting. Data Saver is not available on iOS, and on desktop "
+                "it is enabled by installing the Data Saver extension."
+              policy_exception_justification: "Not implemented."
+            })");
+    fetcher_ = net::URLFetcher::Create(
+        secure_proxy_check_url, net::URLFetcher::GET, this, traffic_annotation);
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(),
         data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
@@ -303,9 +328,29 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
   void FetchWarmupURL() {
     UMA_HISTOGRAM_EXACT_LINEAR("DataReductionProxy.WarmupURL.FetchInitiated", 1,
                                2);
-
-    fetcher_ = net::URLFetcher::Create(params::GetWarmupURL(),
-                                       net::URLFetcher::GET, this);
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("data_reduction_proxy_warmup", R"(
+          semantics {
+            sender: "Data Reduction Proxy"
+            description:
+              "Sends a request to the Data Reduction Proxy server to warm up "
+              "the connection to the proxy."
+            trigger:
+              "A network change while the data reduction proxy is enabled will "
+              "trigger this request."
+            data: "A specific URL, not related to user data."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "Users can control Data Saver on Android via the 'Data Saver' "
+              "setting. Data Saver is not available on iOS, and on desktop it "
+              "is enabled by installing the Data Saver extension."
+            policy_exception_justification: "Not implemented."
+          })");
+    fetcher_ = net::URLFetcher::Create(
+        params::GetWarmupURL(), net::URLFetcher::GET, this, traffic_annotation);
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(),
         data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
