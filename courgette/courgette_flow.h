@@ -16,6 +16,7 @@
 namespace courgette {
 
 class AssemblyProgram;
+class Disassembler;
 class EncodedProgram;
 
 // An adaptor for Region as BasicBuffer.
@@ -47,6 +48,7 @@ class CourgetteFlow {
     Data();
     ~Data();
 
+    std::unique_ptr<Disassembler> disassembler;
     std::unique_ptr<AssemblyProgram> program;
     std::unique_ptr<EncodedProgram> encoded;
     SinkStreamSet sinks;
@@ -78,12 +80,8 @@ class CourgetteFlow {
   // Reads |buffer| to initialize |data(group)->sources|.
   void ReadSourceStreamSetFromBuffer(Group group, const BasicBuffer& buffer);
 
-  // Reads |buffer| to initialize |data(group)->program|, passing |annotate| as
-  // initialization parameter (true if AdjustNewAssemblyProgramToMatchOld() gets
-  // called later).
-  void ReadAssemblyProgramFromBuffer(Group group,
-                                     const BasicBuffer& buffer,
-                                     bool annotate);
+  // Reads |buffer| to initialize |data(group)->disassembler|.
+  void ReadDisassemblerFromBuffer(Group group, const BasicBuffer& buffer);
 
   // Reads |opt_sources| if given, or else |data(group)->sources| to initialize
   // |data(group).encoded|.
@@ -91,8 +89,14 @@ class CourgetteFlow {
       Group group,
       SourceStreamSet* opt_sources = nullptr);
 
-  // Uses |data(group)->program| to initialize |data(group)->encoded|.
-  void CreateEncodedProgramFromAssemblyProgram(Group group);
+  // Uses |data(group)->disassembler| to initialize |data(group)->program|,
+  // passing |annotate| as initialization parameter (should be true if
+  // AdjustNewAssemblyProgramToMatchOld() gets called later).
+  void CreateAssemblyProgramFromDisassembler(Group group, bool annotate);
+
+  // Uses |data(group)->disassembler| and |data(group)->program| to initialize
+  // |data(group)->encoded|.
+  void CreateEncodedProgramFromDisassemblerAndAssemblyProgram(Group group);
 
   // Serializese |data(group)->sinks| to |sink|.
   void WriteSinkStreamFromSinkStreamSet(Group group, SinkStream* sink);
@@ -110,6 +114,8 @@ class CourgetteFlow {
   void AdjustNewAssemblyProgramToMatchOld();
 
   // Destructor commands to reduce memory usage.
+
+  void DestroyDisassembler(Group group);
 
   void DestroyAssemblyProgram(Group group);
 
