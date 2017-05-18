@@ -757,22 +757,22 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
     // In the collapsing border model, 'hidden' suppresses other borders, while
     // 'none' does not, so these style differences can be width differences.
     if ((BorderCollapse() == EBorderCollapse::kCollapse) &&
-        ((BorderTopStyle() == kBorderStyleHidden &&
-          other.BorderTopStyle() == kBorderStyleNone) ||
-         (BorderTopStyle() == kBorderStyleNone &&
-          other.BorderTopStyle() == kBorderStyleHidden) ||
-         (BorderBottomStyle() == kBorderStyleHidden &&
-          other.BorderBottomStyle() == kBorderStyleNone) ||
-         (BorderBottomStyle() == kBorderStyleNone &&
-          other.BorderBottomStyle() == kBorderStyleHidden) ||
-         (BorderLeftStyle() == kBorderStyleHidden &&
-          other.BorderLeftStyle() == kBorderStyleNone) ||
-         (BorderLeftStyle() == kBorderStyleNone &&
-          other.BorderLeftStyle() == kBorderStyleHidden) ||
-         (BorderRightStyle() == kBorderStyleHidden &&
-          other.BorderRightStyle() == kBorderStyleNone) ||
-         (BorderRightStyle() == kBorderStyleNone &&
-          other.BorderRightStyle() == kBorderStyleHidden)))
+        ((BorderTopStyle() == EBorderStyle::kHidden &&
+          other.BorderTopStyle() == EBorderStyle::kNone) ||
+         (BorderTopStyle() == EBorderStyle::kNone &&
+          other.BorderTopStyle() == EBorderStyle::kHidden) ||
+         (BorderBottomStyle() == EBorderStyle::kHidden &&
+          other.BorderBottomStyle() == EBorderStyle::kNone) ||
+         (BorderBottomStyle() == EBorderStyle::kNone &&
+          other.BorderBottomStyle() == EBorderStyle::kHidden) ||
+         (BorderLeftStyle() == EBorderStyle::kHidden &&
+          other.BorderLeftStyle() == EBorderStyle::kNone) ||
+         (BorderLeftStyle() == EBorderStyle::kNone &&
+          other.BorderLeftStyle() == EBorderStyle::kHidden) ||
+         (BorderRightStyle() == EBorderStyle::kHidden &&
+          other.BorderRightStyle() == EBorderStyle::kNone) ||
+         (BorderRightStyle() == EBorderStyle::kNone &&
+          other.BorderRightStyle() == EBorderStyle::kHidden)))
       return true;
   } else if (Display() == EDisplay::kListItem) {
     if (ListStyleType() != other.ListStyleType() ||
@@ -2089,7 +2089,7 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
 Color ComputedStyle::ColorIncludingFallback(int color_property,
                                             bool visited_link) const {
   StyleColor result(StyleColor::CurrentColor());
-  EBorderStyle border_style = kBorderStyleNone;
+  EBorderStyle border_style = EBorderStyle::kNone;
   switch (color_property) {
     case CSSPropertyBackgroundColor:
       result = visited_link ? VisitedLinkBackgroundColor() : BackgroundColor();
@@ -2165,10 +2165,10 @@ Color ComputedStyle::ColorIncludingFallback(int color_property,
 
   // FIXME: Treating styled borders with initial color differently causes
   // problems, see crbug.com/316559, crbug.com/276231
-  if (!visited_link &&
-      (border_style == kBorderStyleInset ||
-       border_style == kBorderStyleOutset ||
-       border_style == kBorderStyleRidge || border_style == kBorderStyleGroove))
+  if (!visited_link && (border_style == EBorderStyle::kInset ||
+                        border_style == EBorderStyle::kOutset ||
+                        border_style == EBorderStyle::kRidge ||
+                        border_style == EBorderStyle::kGroove))
     return Color(238, 238, 238);
   return visited_link ? VisitedLinkColor() : GetColor();
 }

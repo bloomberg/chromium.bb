@@ -563,16 +563,16 @@ static bool CompareBorders(const CollapsedBorderValue& border1,
     return true;
 
   // Rule #1 above.
-  if (border1.Style() == kBorderStyleHidden)
+  if (border1.Style() == EBorderStyle::kHidden)
     return false;
-  if (border2.Style() == kBorderStyleHidden)
+  if (border2.Style() == EBorderStyle::kHidden)
     return true;
 
   // Rule #2 above.  A style of 'none' has lowest priority and always loses to
   // any other border.
-  if (border2.Style() == kBorderStyleNone)
+  if (border2.Style() == EBorderStyle::kNone)
     return false;
-  if (border1.Style() == kBorderStyleNone)
+  if (border1.Style() == EBorderStyle::kNone)
     return true;
 
   // The first part of rule #3 above. Wider borders win.

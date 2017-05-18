@@ -1190,9 +1190,9 @@ int LayoutTable::CalcBorderStart() const {
   int border_width = 0;
 
   const BorderValue& table_start_border = Style()->BorderStart();
-  if (table_start_border.Style() == kBorderStyleHidden)
+  if (table_start_border.Style() == EBorderStyle::kHidden)
     return 0;
-  if (table_start_border.Style() > kBorderStyleHidden)
+  if (table_start_border.Style() > EBorderStyle::kHidden)
     border_width = table_start_border.Width();
 
   // TODO(dgrogan): This logic doesn't properly account for the first column in
@@ -1201,9 +1201,9 @@ int LayoutTable::CalcBorderStart() const {
           ColElementAtAbsoluteColumn(0).InnermostColOrColGroup()) {
     // FIXME: We don't account for direction on columns and column groups.
     const BorderValue& column_adjoining_border = column->Style()->BorderStart();
-    if (column_adjoining_border.Style() == kBorderStyleHidden)
+    if (column_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
-    if (column_adjoining_border.Style() > kBorderStyleHidden)
+    if (column_adjoining_border.Style() > EBorderStyle::kHidden)
       border_width =
           std::max<int>(border_width, column_adjoining_border.Width());
   }
@@ -1212,10 +1212,10 @@ int LayoutTable::CalcBorderStart() const {
           this->TopNonEmptySection()) {
     const BorderValue& section_adjoining_border =
         top_non_empty_section->BorderAdjoiningTableStart();
-    if (section_adjoining_border.Style() == kBorderStyleHidden)
+    if (section_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
 
-    if (section_adjoining_border.Style() > kBorderStyleHidden)
+    if (section_adjoining_border.Style() > EBorderStyle::kHidden)
       border_width =
           std::max<int>(border_width, section_adjoining_border.Width());
 
@@ -1224,19 +1224,19 @@ int LayoutTable::CalcBorderStart() const {
       // FIXME: Make this work with perpendicular and flipped cells.
       const BorderValue& start_cell_adjoining_border =
           adjoining_start_cell->BorderAdjoiningTableStart();
-      if (start_cell_adjoining_border.Style() == kBorderStyleHidden)
+      if (start_cell_adjoining_border.Style() == EBorderStyle::kHidden)
         return 0;
 
       const BorderValue& first_row_adjoining_border =
           adjoining_start_cell->Row()->BorderAdjoiningTableStart();
-      if (first_row_adjoining_border.Style() == kBorderStyleHidden)
+      if (first_row_adjoining_border.Style() == EBorderStyle::kHidden)
         return 0;
 
-      if (start_cell_adjoining_border.Style() > kBorderStyleHidden) {
+      if (start_cell_adjoining_border.Style() > EBorderStyle::kHidden) {
         border_width =
             std::max<int>(border_width, start_cell_adjoining_border.Width());
       }
-      if (first_row_adjoining_border.Style() > kBorderStyleHidden) {
+      if (first_row_adjoining_border.Style() > EBorderStyle::kHidden) {
         border_width =
             std::max<int>(border_width, first_row_adjoining_border.Width());
       }
@@ -1257,9 +1257,9 @@ int LayoutTable::CalcBorderEnd() const {
   int border_width = 0;
 
   const BorderValue& table_end_border = Style()->BorderEnd();
-  if (table_end_border.Style() == kBorderStyleHidden)
+  if (table_end_border.Style() == EBorderStyle::kHidden)
     return 0;
-  if (table_end_border.Style() > kBorderStyleHidden)
+  if (table_end_border.Style() > EBorderStyle::kHidden)
     border_width = table_end_border.Width();
 
   unsigned end_column = NumEffectiveColumns() - 1;
@@ -1270,9 +1270,9 @@ int LayoutTable::CalcBorderEnd() const {
           ColElementAtAbsoluteColumn(end_column).InnermostColOrColGroup()) {
     // FIXME: We don't account for direction on columns and column groups.
     const BorderValue& column_adjoining_border = column->Style()->BorderEnd();
-    if (column_adjoining_border.Style() == kBorderStyleHidden)
+    if (column_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
-    if (column_adjoining_border.Style() > kBorderStyleHidden)
+    if (column_adjoining_border.Style() > EBorderStyle::kHidden)
       border_width =
           std::max<int>(border_width, column_adjoining_border.Width());
   }
@@ -1281,10 +1281,10 @@ int LayoutTable::CalcBorderEnd() const {
           this->TopNonEmptySection()) {
     const BorderValue& section_adjoining_border =
         top_non_empty_section->BorderAdjoiningTableEnd();
-    if (section_adjoining_border.Style() == kBorderStyleHidden)
+    if (section_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
 
-    if (section_adjoining_border.Style() > kBorderStyleHidden)
+    if (section_adjoining_border.Style() > EBorderStyle::kHidden)
       border_width =
           std::max<int>(border_width, section_adjoining_border.Width());
 
@@ -1293,19 +1293,19 @@ int LayoutTable::CalcBorderEnd() const {
       // FIXME: Make this work with perpendicular and flipped cells.
       const BorderValue& end_cell_adjoining_border =
           adjoining_end_cell->BorderAdjoiningTableEnd();
-      if (end_cell_adjoining_border.Style() == kBorderStyleHidden)
+      if (end_cell_adjoining_border.Style() == EBorderStyle::kHidden)
         return 0;
 
       const BorderValue& first_row_adjoining_border =
           adjoining_end_cell->Row()->BorderAdjoiningTableEnd();
-      if (first_row_adjoining_border.Style() == kBorderStyleHidden)
+      if (first_row_adjoining_border.Style() == EBorderStyle::kHidden)
         return 0;
 
-      if (end_cell_adjoining_border.Style() > kBorderStyleHidden) {
+      if (end_cell_adjoining_border.Style() > EBorderStyle::kHidden) {
         border_width =
             std::max<int>(border_width, end_cell_adjoining_border.Width());
       }
-      if (first_row_adjoining_border.Style() > kBorderStyleHidden) {
+      if (first_row_adjoining_border.Style() > EBorderStyle::kHidden) {
         border_width =
             std::max<int>(border_width, first_row_adjoining_border.Width());
       }
@@ -1347,9 +1347,9 @@ int LayoutTable::OuterBorderBefore() const {
       return 0;  // Overridden by hidden
   }
   const BorderValue& tb = Style()->BorderBefore();
-  if (tb.Style() == kBorderStyleHidden)
+  if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > kBorderStyleHidden)
+  if (tb.Style() > EBorderStyle::kHidden)
     border_width = std::max<int>(border_width, tb.Width() / 2);
   return border_width;
 }
@@ -1365,9 +1365,9 @@ int LayoutTable::OuterBorderAfter() const {
       return 0;  // Overridden by hidden
   }
   const BorderValue& tb = Style()->BorderAfter();
-  if (tb.Style() == kBorderStyleHidden)
+  if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > kBorderStyleHidden)
+  if (tb.Style() > EBorderStyle::kHidden)
     border_width = std::max<int>(border_width, (tb.Width() + 1) / 2);
   return border_width;
 }
@@ -1379,9 +1379,9 @@ int LayoutTable::OuterBorderStart() const {
   int border_width = 0;
 
   const BorderValue& tb = Style()->BorderStart();
-  if (tb.Style() == kBorderStyleHidden)
+  if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > kBorderStyleHidden)
+  if (tb.Style() > EBorderStyle::kHidden)
     border_width =
         (tb.Width() + (Style()->IsLeftToRightDirection() ? 0 : 1)) / 2;
 
@@ -1407,9 +1407,9 @@ int LayoutTable::OuterBorderEnd() const {
   int border_width = 0;
 
   const BorderValue& tb = Style()->BorderEnd();
-  if (tb.Style() == kBorderStyleHidden)
+  if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > kBorderStyleHidden)
+  if (tb.Style() > EBorderStyle::kHidden)
     border_width =
         (tb.Width() + (Style()->IsLeftToRightDirection() ? 1 : 0)) / 2;
 

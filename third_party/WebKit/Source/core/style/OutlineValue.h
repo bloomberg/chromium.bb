@@ -45,7 +45,8 @@ class OutlineValue final : public BorderValue {
   bool operator!=(const OutlineValue& o) const { return !(*this == o); }
 
   bool VisuallyEqual(const OutlineValue& o) const {
-    if (style_ == kBorderStyleNone && o.style_ == kBorderStyleNone)
+    if (style_ == static_cast<unsigned>(EBorderStyle::kNone) &&
+        o.style_ == static_cast<unsigned>(EBorderStyle::kNone))
       return true;
     return *this == o;
   }

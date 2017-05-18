@@ -17,7 +17,7 @@ TEST(OutlineValueTest, VisuallyEqualStyle) {
   outline2.SetOffset(10);
   EXPECT_TRUE(outline1.VisuallyEqual(outline2));
 
-  outline2.SetStyle(kBorderStyleDotted);
+  outline2.SetStyle(EBorderStyle::kDotted);
   outline1.SetOffset(10);
   EXPECT_FALSE(outline1.VisuallyEqual(outline2));
 }
@@ -26,8 +26,8 @@ TEST(OutlineValueTest, VisuallyEqualOffset) {
   OutlineValue outline1;
   OutlineValue outline2;
 
-  outline1.SetStyle(kBorderStyleDotted);
-  outline2.SetStyle(kBorderStyleDotted);
+  outline1.SetStyle(EBorderStyle::kDotted);
+  outline2.SetStyle(EBorderStyle::kDotted);
   EXPECT_TRUE(outline1.VisuallyEqual(outline2));
 
   outline1.SetOffset(10);
@@ -41,8 +41,8 @@ TEST(OutlineValueTest, VisuallyEqualIsAuto) {
   OutlineValue outline1;
   OutlineValue outline2;
 
-  outline1.SetStyle(kBorderStyleDotted);
-  outline2.SetStyle(kBorderStyleDotted);
+  outline1.SetStyle(EBorderStyle::kDotted);
+  outline2.SetStyle(EBorderStyle::kDotted);
   EXPECT_TRUE(outline1.VisuallyEqual(outline2));
 
   outline1.SetIsAuto(kOutlineIsAutoOn);

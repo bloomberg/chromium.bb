@@ -48,15 +48,15 @@ class CollapsedBorderValue {
   CollapsedBorderValue()
       : color_(0),
         width_(0),
-        style_(kBorderStyleNone),
+        style_(static_cast<unsigned>(EBorderStyle::kNone)),
         precedence_(kBorderPrecedenceOff) {}
 
   CollapsedBorderValue(const BorderValue& border,
                        const Color& color,
                        EBorderPrecedence precedence)
       : color_(color),
-        width_(border.Style() > kBorderStyleHidden ? border.Width() : 0),
-        style_(border.Style()),
+        width_(border.Style() > EBorderStyle::kNone ? border.Width() : 0),
+        style_(static_cast<unsigned>(border.Style())),
         precedence_(precedence) {
     DCHECK(precedence != kBorderPrecedenceOff);
   }

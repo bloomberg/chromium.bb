@@ -63,10 +63,10 @@ void TableCellPainter::Paint(const PaintInfo& paint_info,
 }
 
 static EBorderStyle CollapsedBorderStyle(EBorderStyle style) {
-  if (style == kBorderStyleOutset)
-    return kBorderStyleGroove;
-  if (style == kBorderStyleInset)
-    return kBorderStyleRidge;
+  if (style == EBorderStyle::kOutset)
+    return EBorderStyle::kGroove;
+  if (style == EBorderStyle::kInset)
+    return EBorderStyle::kRidge;
   return style;
 }
 

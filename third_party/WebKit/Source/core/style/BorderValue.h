@@ -41,7 +41,7 @@ class BorderValue {
   BorderValue()
       : color_(0),
         color_is_current_color_(true),
-        style_(kBorderStyleNone),
+        style_(static_cast<unsigned>(EBorderStyle::kNone)),
         is_auto_(kOutlineIsAutoOff) {
     SetWidth(3);
   }
@@ -53,7 +53,9 @@ class BorderValue {
     SetWidth(width);
   }
 
-  bool NonZero() const { return Width() && (style_ != kBorderStyleNone); }
+  bool NonZero() const {
+    return Width() && (style_ != static_cast<unsigned>(EBorderStyle::kNone));
+  }
 
   bool IsTransparent() const {
     return !color_is_current_color_ && !color_.Alpha();
@@ -67,9 +69,11 @@ class BorderValue {
   // The default width is 3px, but if the style is none we compute a value of 0
   // (in ComputedStyle itself)
   bool VisuallyEqual(const BorderValue& o) const {
-    if (style_ == kBorderStyleNone && o.style_ == kBorderStyleNone)
+    if (style_ == static_cast<unsigned>(EBorderStyle::kNone) &&
+        o.style_ == static_cast<unsigned>(EBorderStyle::kNone))
       return true;
-    if (style_ == kBorderStyleHidden && o.style_ == kBorderStyleHidden)
+    if (style_ == static_cast<unsigned>(EBorderStyle::kHidden) &&
+        o.style_ == static_cast<unsigned>(EBorderStyle::kHidden))
       return true;
     return *this == o;
   }
@@ -98,7 +102,7 @@ class BorderValue {
   }
 
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
-  void SetStyle(EBorderStyle style) { style_ = style; }
+  void SetStyle(EBorderStyle style) { style_ = static_cast<unsigned>(style); }
 
   OutlineIsAuto IsAuto() const { return static_cast<OutlineIsAuto>(is_auto_); }
   void SetIsAuto(OutlineIsAuto is_auto) { is_auto_ = is_auto; }

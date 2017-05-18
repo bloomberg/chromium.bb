@@ -367,40 +367,40 @@ void ObjectPainter::DrawLineForBoxSide(GraphicsContext& graphics_context,
   if (length <= 0 || thickness <= 0)
     return;
 
-  if (style == kBorderStyleDouble && thickness < 3)
-    style = kBorderStyleSolid;
+  if (style == EBorderStyle::kDouble && thickness < 3)
+    style = EBorderStyle::kSolid;
 
   switch (style) {
-    case kBorderStyleNone:
-    case kBorderStyleHidden:
+    case EBorderStyle::kNone:
+    case EBorderStyle::kHidden:
       return;
-    case kBorderStyleDotted:
-    case kBorderStyleDashed:
+    case EBorderStyle::kDotted:
+    case EBorderStyle::kDashed:
       DrawDashedOrDottedBoxSide(graphics_context, x1, y1, x2, y2, side, color,
                                 thickness, style, antialias);
       break;
-    case kBorderStyleDouble:
+    case EBorderStyle::kDouble:
       DrawDoubleBoxSide(graphics_context, x1, y1, x2, y2, length, side, color,
                         thickness, adjacent_width1, adjacent_width2, antialias);
       break;
-    case kBorderStyleRidge:
-    case kBorderStyleGroove:
+    case EBorderStyle::kRidge:
+    case EBorderStyle::kGroove:
       DrawRidgeOrGrooveBoxSide(graphics_context, x1, y1, x2, y2, side, color,
                                style, adjacent_width1, adjacent_width2,
                                antialias);
       break;
-    case kBorderStyleInset:
+    case EBorderStyle::kInset:
       // FIXME: Maybe we should lighten the colors on one side like Firefox.
       // https://bugs.webkit.org/show_bug.cgi?id=58608
       if (side == kBSTop || side == kBSLeft)
         color = color.Dark();
     // fall through
-    case kBorderStyleOutset:
-      if (style == kBorderStyleOutset &&
+    case EBorderStyle::kOutset:
+      if (style == EBorderStyle::kOutset &&
           (side == kBSBottom || side == kBSRight))
         color = color.Dark();
     // fall through
-    case kBorderStyleSolid:
+    case EBorderStyle::kSolid:
       DrawSolidBoxSide(graphics_context, x1, y1, x2, y2, side, color,
                        adjacent_width1, adjacent_width2, antialias);
       break;
@@ -423,8 +423,8 @@ void ObjectPainter::DrawDashedOrDottedBoxSide(GraphicsContext& graphics_context,
   graphics_context.SetShouldAntialias(antialias);
   graphics_context.SetStrokeColor(color);
   graphics_context.SetStrokeThickness(thickness);
-  graphics_context.SetStrokeStyle(style == kBorderStyleDashed ? kDashedStroke
-                                                              : kDottedStroke);
+  graphics_context.SetStrokeStyle(
+      style == EBorderStyle::kDashed ? kDashedStroke : kDottedStroke);
 
   switch (side) {
     case kBSBottom:
@@ -495,13 +495,13 @@ void ObjectPainter::DrawDoubleBoxSide(GraphicsContext& graphics_context,
       DrawLineForBoxSide(
           graphics_context, x1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
           y1, x2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0),
-          y1 + third_of_thickness, side, color, kBorderStyleSolid,
+          y1 + third_of_thickness, side, color, EBorderStyle::kSolid,
           adjacent1_big_third, adjacent2_big_third, antialias);
       DrawLineForBoxSide(graphics_context,
                          x1 + std::max((adjacent_width1 * 2 + 1) / 3, 0),
                          y2 - third_of_thickness,
                          x2 - std::max((adjacent_width2 * 2 + 1) / 3, 0), y2,
-                         side, color, kBorderStyleSolid, adjacent1_big_third,
+                         side, color, EBorderStyle::kSolid, adjacent1_big_third,
                          adjacent2_big_third, antialias);
       break;
     case kBSLeft:
@@ -509,25 +509,25 @@ void ObjectPainter::DrawDoubleBoxSide(GraphicsContext& graphics_context,
                          y1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
                          x1 + third_of_thickness,
                          y2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0), side,
-                         color, kBorderStyleSolid, adjacent1_big_third,
+                         color, EBorderStyle::kSolid, adjacent1_big_third,
                          adjacent2_big_third, antialias);
       DrawLineForBoxSide(graphics_context, x2 - third_of_thickness,
                          y1 + std::max((adjacent_width1 * 2 + 1) / 3, 0), x2,
                          y2 - std::max((adjacent_width2 * 2 + 1) / 3, 0), side,
-                         color, kBorderStyleSolid, adjacent1_big_third,
+                         color, EBorderStyle::kSolid, adjacent1_big_third,
                          adjacent2_big_third, antialias);
       break;
     case kBSBottom:
       DrawLineForBoxSide(
           graphics_context, x1 + std::max((adjacent_width1 * 2 + 1) / 3, 0), y1,
           x2 - std::max((adjacent_width2 * 2 + 1) / 3, 0),
-          y1 + third_of_thickness, side, color, kBorderStyleSolid,
+          y1 + third_of_thickness, side, color, EBorderStyle::kSolid,
           adjacent1_big_third, adjacent2_big_third, antialias);
       DrawLineForBoxSide(graphics_context,
                          x1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
                          y2 - third_of_thickness,
                          x2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0), y2,
-                         side, color, kBorderStyleSolid, adjacent1_big_third,
+                         side, color, EBorderStyle::kSolid, adjacent1_big_third,
                          adjacent2_big_third, antialias);
       break;
     case kBSRight:
@@ -535,12 +535,12 @@ void ObjectPainter::DrawDoubleBoxSide(GraphicsContext& graphics_context,
                          y1 + std::max((adjacent_width1 * 2 + 1) / 3, 0),
                          x1 + third_of_thickness,
                          y2 - std::max((adjacent_width2 * 2 + 1) / 3, 0), side,
-                         color, kBorderStyleSolid, adjacent1_big_third,
+                         color, EBorderStyle::kSolid, adjacent1_big_third,
                          adjacent2_big_third, antialias);
       DrawLineForBoxSide(graphics_context, x2 - third_of_thickness,
                          y1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0), x2,
                          y2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0), side,
-                         color, kBorderStyleSolid, adjacent1_big_third,
+                         color, EBorderStyle::kSolid, adjacent1_big_third,
                          adjacent2_big_third, antialias);
       break;
     default:
@@ -561,12 +561,12 @@ void ObjectPainter::DrawRidgeOrGrooveBoxSide(GraphicsContext& graphics_context,
                                              bool antialias) {
   EBorderStyle s1;
   EBorderStyle s2;
-  if (style == kBorderStyleGroove) {
-    s1 = kBorderStyleInset;
-    s2 = kBorderStyleOutset;
+  if (style == EBorderStyle::kGroove) {
+    s1 = EBorderStyle::kInset;
+    s2 = EBorderStyle::kOutset;
   } else {
-    s1 = kBorderStyleOutset;
-    s2 = kBorderStyleInset;
+    s1 = EBorderStyle::kOutset;
+    s2 = EBorderStyle::kInset;
   }
 
   int adjacent1_big_half =

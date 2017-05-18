@@ -472,8 +472,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // TODO(nainar): Move all fixed point logic to a separate class.
   // border-top-width
   float BorderTopWidth() const {
-    if (surround_data_->border_.top_.Style() == kBorderStyleNone ||
-        surround_data_->border_.top_.Style() == kBorderStyleHidden)
+    if (surround_data_->border_.top_.Style() == EBorderStyle::kNone ||
+        surround_data_->border_.top_.Style() == EBorderStyle::kHidden)
       return 0;
     return static_cast<float>(BorderTopWidthInternal()) /
            kBorderWidthDenominator;
@@ -484,8 +484,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // border-bottom-width
   float BorderBottomWidth() const {
-    if (surround_data_->border_.bottom_.Style() == kBorderStyleNone ||
-        surround_data_->border_.bottom_.Style() == kBorderStyleHidden)
+    if (surround_data_->border_.bottom_.Style() == EBorderStyle::kNone ||
+        surround_data_->border_.bottom_.Style() == EBorderStyle::kHidden)
       return 0;
     return static_cast<float>(BorderBottomWidthInternal()) /
            kBorderWidthDenominator;
@@ -496,8 +496,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // border-left-width
   float BorderLeftWidth() const {
-    if (surround_data_->border_.left_.Style() == kBorderStyleNone ||
-        surround_data_->border_.left_.Style() == kBorderStyleHidden)
+    if (surround_data_->border_.left_.Style() == EBorderStyle::kNone ||
+        surround_data_->border_.left_.Style() == EBorderStyle::kHidden)
       return 0;
     return static_cast<float>(BorderLeftWidthInternal()) /
            kBorderWidthDenominator;
@@ -508,8 +508,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // border-right-width
   float BorderRightWidth() const {
-    if (surround_data_->border_.right_.Style() == kBorderStyleNone ||
-        surround_data_->border_.right_.Style() == kBorderStyleHidden)
+    if (surround_data_->border_.right_.Style() == EBorderStyle::kNone ||
+        surround_data_->border_.right_.Style() == EBorderStyle::kHidden)
       return 0;
     return static_cast<float>(BorderRightWidthInternal()) /
            kBorderWidthDenominator;
@@ -519,14 +519,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Border style properties.
-  static EBorderStyle InitialBorderStyle() { return kBorderStyleNone; }
+  static EBorderStyle InitialBorderStyle() { return EBorderStyle::kNone; }
 
   // border-top-style
   EBorderStyle BorderTopStyle() const {
     return surround_data_->border_.Top().Style();
   }
   void SetBorderTopStyle(EBorderStyle v) {
-    SET_VAR(surround_data_, border_.top_.style_, v);
+    SET_VAR(surround_data_, border_.top_.style_, static_cast<unsigned>(v));
   }
 
   // border-right-style
@@ -534,7 +534,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return surround_data_->border_.Right().Style();
   }
   void SetBorderRightStyle(EBorderStyle v) {
-    SET_VAR(surround_data_, border_.right_.style_, v);
+    SET_VAR(surround_data_, border_.right_.style_, static_cast<unsigned>(v));
   }
 
   // border-left-style
@@ -542,7 +542,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return surround_data_->border_.Left().Style();
   }
   void SetBorderLeftStyle(EBorderStyle v) {
-    SET_VAR(surround_data_, border_.left_.style_, v);
+    SET_VAR(surround_data_, border_.left_.style_, static_cast<unsigned>(v));
   }
 
   // border-bottom-style
@@ -550,7 +550,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return surround_data_->border_.Bottom().Style();
   }
   void SetBorderBottomStyle(EBorderStyle v) {
-    SET_VAR(surround_data_, border_.bottom_.style_, v);
+    SET_VAR(surround_data_, border_.bottom_.style_, static_cast<unsigned>(v));
   }
 
   // Border color properties.
@@ -659,7 +659,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return rare_non_inherited_data_->multi_col_->rule_.Style();
   }
   void SetColumnRuleStyle(EBorderStyle b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, rule_.style_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, rule_.style_,
+                   static_cast<unsigned>(b));
   }
 
   // column-rule-width (aka -webkit-column-rule-width)
@@ -1149,7 +1150,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return rare_non_inherited_data_->outline_.Style();
   }
   void SetOutlineStyle(EBorderStyle v) {
-    SET_VAR(rare_non_inherited_data_, outline_.style_, v);
+    SET_VAR(rare_non_inherited_data_, outline_.style_,
+            static_cast<unsigned>(v));
   }
   static OutlineIsAuto InitialOutlineStyleIsAuto() { return kOutlineIsAutoOff; }
   OutlineIsAuto OutlineStyleIsAuto() const {
@@ -1163,7 +1165,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // outline-width
   static unsigned short InitialOutlineWidth() { return 3; }
   unsigned short OutlineWidth() const {
-    if (rare_non_inherited_data_->outline_.Style() == kBorderStyleNone)
+    if (rare_non_inherited_data_->outline_.Style() == EBorderStyle::kNone)
       return 0;
     return rare_non_inherited_data_->outline_.Width();
   }
@@ -1174,7 +1176,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // outline-offset
   static int InitialOutlineOffset() { return 0; }
   int OutlineOffset() const {
-    if (rare_non_inherited_data_->outline_.Style() == kBorderStyleNone)
+    if (rare_non_inherited_data_->outline_.Style() == EBorderStyle::kNone)
       return 0;
     return rare_non_inherited_data_->outline_.Offset();
   }
@@ -2893,23 +2895,23 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   bool BorderColorVisuallyEquals(const ComputedStyle& o) const {
-    if ((BorderLeftStyle() == kBorderStyleNone &&
-         o.BorderLeftStyle() == kBorderStyleNone) &&
-        (BorderRightStyle() == kBorderStyleNone &&
-         o.BorderRightStyle() == kBorderStyleNone) &&
-        (BorderTopStyle() == kBorderStyleNone &&
-         o.BorderTopStyle() == kBorderStyleNone) &&
-        (BorderBottomStyle() == kBorderStyleNone &&
-         o.BorderBottomStyle() == kBorderStyleNone))
+    if ((BorderLeftStyle() == EBorderStyle::kNone &&
+         o.BorderLeftStyle() == EBorderStyle::kNone) &&
+        (BorderRightStyle() == EBorderStyle::kNone &&
+         o.BorderRightStyle() == EBorderStyle::kNone) &&
+        (BorderTopStyle() == EBorderStyle::kNone &&
+         o.BorderTopStyle() == EBorderStyle::kNone) &&
+        (BorderBottomStyle() == EBorderStyle::kNone &&
+         o.BorderBottomStyle() == EBorderStyle::kNone))
       return true;
-    if ((BorderLeftStyle() == kBorderStyleHidden &&
-         o.BorderLeftStyle() == kBorderStyleHidden) &&
-        (BorderRightStyle() == kBorderStyleHidden &&
-         o.BorderRightStyle() == kBorderStyleHidden) &&
-        (BorderTopStyle() == kBorderStyleHidden &&
-         o.BorderTopStyle() == kBorderStyleHidden) &&
-        (BorderBottomStyle() == kBorderStyleHidden &&
-         o.BorderBottomStyle() == kBorderStyleHidden))
+    if ((BorderLeftStyle() == EBorderStyle::kHidden &&
+         o.BorderLeftStyle() == EBorderStyle::kHidden) &&
+        (BorderRightStyle() == EBorderStyle::kHidden &&
+         o.BorderRightStyle() == EBorderStyle::kHidden) &&
+        (BorderTopStyle() == EBorderStyle::kHidden &&
+         o.BorderTopStyle() == EBorderStyle::kHidden) &&
+        (BorderBottomStyle() == EBorderStyle::kHidden &&
+         o.BorderBottomStyle() == EBorderStyle::kHidden))
       return true;
     return BorderColorEquals(o);
   }
@@ -3007,7 +3009,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Outline utility functions.
   bool HasOutline() const {
-    return OutlineWidth() > 0 && OutlineStyle() > kBorderStyleHidden;
+    return OutlineWidth() > 0 && OutlineStyle() > EBorderStyle::kHidden;
   }
   int OutlineOutsetExtent() const;
   float GetOutlineStrokeWidthForFocusRing() const;

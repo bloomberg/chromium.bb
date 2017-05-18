@@ -12,7 +12,7 @@ namespace blink {
 TEST(CollapsedBorderValueTest, Default) {
   CollapsedBorderValue v;
   EXPECT_EQ(0u, v.Width());
-  EXPECT_EQ(kBorderStyleNone, v.Style());
+  EXPECT_EQ(EBorderStyle::kNone, v.Style());
   EXPECT_FALSE(v.Exists());
   EXPECT_EQ(kBorderPrecedenceOff, v.Precedence());
   EXPECT_FALSE(v.IsVisible());
@@ -26,7 +26,7 @@ TEST(CollapsedBorderValueTest, Default) {
 TEST(CollapsedBorderValueTest, SolidZeroWidth) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(0);
-  style->SetBorderLeftStyle(kBorderStyleSolid);
+  style->SetBorderLeftStyle(EBorderStyle::kSolid);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
@@ -46,7 +46,7 @@ TEST(CollapsedBorderValueTest, SolidZeroWidth) {
 TEST(CollapsedBorderValueTest, SolidNonZeroWidthTransparent) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(kBorderStyleSolid);
+  style->SetBorderLeftStyle(EBorderStyle::kSolid);
   CollapsedBorderValue v(style->BorderLeft(), Color(), kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
   EXPECT_EQ(5u, v.Width());
@@ -64,7 +64,7 @@ TEST(CollapsedBorderValueTest, SolidNonZeroWidthTransparent) {
 TEST(CollapsedBorderValueTest, None) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(kBorderStyleNone);
+  style->SetBorderLeftStyle(EBorderStyle::kNone);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
@@ -84,7 +84,7 @@ TEST(CollapsedBorderValueTest, None) {
 TEST(CollapsedBorderValueTest, Hidden) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(kBorderStyleHidden);
+  style->SetBorderLeftStyle(EBorderStyle::kHidden);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
@@ -104,7 +104,7 @@ TEST(CollapsedBorderValueTest, Hidden) {
 TEST(CollapsedBorderValueTest, SolidNonZeroWidthNonTransparent) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(kBorderStyleSolid);
+  style->SetBorderLeftStyle(EBorderStyle::kSolid);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());

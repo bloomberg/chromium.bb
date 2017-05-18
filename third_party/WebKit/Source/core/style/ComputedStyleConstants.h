@@ -98,17 +98,17 @@ enum ColumnSpan { kColumnSpanNone = 0, kColumnSpanAll };
 // These have been defined in the order of their precedence for
 // border-collapsing. Do not change this order! This order also must match the
 // order in CSSValueKeywords.in.
-enum EBorderStyle {
-  kBorderStyleNone,
-  kBorderStyleHidden,
-  kBorderStyleInset,
-  kBorderStyleGroove,
-  kBorderStyleOutset,
-  kBorderStyleRidge,
-  kBorderStyleDotted,
-  kBorderStyleDashed,
-  kBorderStyleSolid,
-  kBorderStyleDouble
+enum class EBorderStyle {
+  kNone,
+  kHidden,
+  kInset,
+  kGroove,
+  kOutset,
+  kRidge,
+  kDotted,
+  kDashed,
+  kSolid,
+  kDouble
 };
 
 enum OutlineIsAuto { kOutlineIsAutoOff = 0, kOutlineIsAutoOn };
