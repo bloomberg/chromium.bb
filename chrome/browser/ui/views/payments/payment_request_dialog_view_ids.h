@@ -71,6 +71,7 @@ enum class DialogViewID : int {
 
   // The CVC text field in the unmask sheet.
   CVC_PROMPT_TEXT_FIELD,
+  CVC_ERROR_LABEL,
 
   // The following are the ids for the individual sheets.
   CONTACT_INFO_EDITOR_SHEET,
