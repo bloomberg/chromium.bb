@@ -534,27 +534,6 @@
           }
         ]
     },
-    "toplevel-server-and-ca-cert-dropped": {
-      "Type": "UnencryptedConfiguration",
-      "Certificates":
-      [ { "GUID": "3",
-          "PKCS12": "abc" ,
-          "Type": "Client" } ]
-    },
-    "toplevel-with-server-and-ca-cert": {
-      "Type": "UnencryptedConfiguration",
-      "Certificates":
-      [ { "TrustBits": ["Web"],
-          "GUID": "1",
-          "Type": "Authority",
-          "X509": "abc" },
-        { "GUID": "2",
-          "Type": "Server",
-          "X509": "abc" },
-        { "GUID": "3",
-          "PKCS12": "abc" ,
-          "Type": "Client" } ]
-    },
     "toplevel-with-repaired-networks": {
       "NetworkConfigurations":
       [ { "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",

@@ -163,6 +163,9 @@ INSTANTIATE_TEST_CASE_P(
         OncParams("managed_toplevel_l2tpipsec.onc",
                   &kToplevelConfigurationSignature,
                   true),
+        OncParams("managed_toplevel_with_server_and_ca_cert.onc",
+                  &kToplevelConfigurationSignature,
+                  true),
         OncParams("toplevel_wifi_hexssid.onc",
                   &kToplevelConfigurationSignature,
                   false),
@@ -462,14 +465,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &kNetworkConfigurationSignature,
                                  false),
                        ExpectBothNotValid("wifi-ssid-and-hexssid-repaired",
-                                          "wifi-ssid-and-hexssid-repaired")),
-        std::make_pair(
-            OncParams("toplevel-with-server-and-ca-cert",
-                      &kToplevelConfigurationSignature,
-                      true,
-                      ::onc::ONC_SOURCE_DEVICE_POLICY),
-            ExpectBothNotValid("toplevel-server-and-ca-cert-dropped",
-                               "toplevel-server-and-ca-cert-dropped"))));
+                                          "wifi-ssid-and-hexssid-repaired"))));
 
 // Strict and liberal validator both repair, but with different results.
 INSTANTIATE_TEST_CASE_P(

@@ -102,10 +102,8 @@ void CertificateImporterImpl::ParseAndStoreCertificates(
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
 
-    if (!ParseAndStoreCertificate(allow_trust_imports,
-                                  *certificate,
-                                  nssdb,
-                                  &onc_trusted_certificates)) {
+    if (!ParseAndStoreCertificate(source, allow_trust_imports, *certificate,
+                                  nssdb, &onc_trusted_certificates)) {
       success = false;
       LOG(ERROR) << "Cannot parse certificate at index " << i;
     } else {
@@ -126,6 +124,7 @@ void CertificateImporterImpl::RunDoneCallback(
 }
 
 bool CertificateImporterImpl::ParseAndStoreCertificate(
+    ::onc::ONCSource source,
     bool allow_trust_imports,
     const base::DictionaryValue& certificate,
     net::NSSCertDatabase* nssdb,
@@ -139,11 +138,8 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
                                             &cert_type);
   if (cert_type == ::onc::certificate::kServer ||
       cert_type == ::onc::certificate::kAuthority) {
-    return ParseServerOrCaCertificate(allow_trust_imports,
-                                      cert_type,
-                                      guid,
-                                      certificate,
-                                      nssdb,
+    return ParseServerOrCaCertificate(source, allow_trust_imports, cert_type,
+                                      guid, certificate, nssdb,
                                       onc_trusted_certificates);
   } else if (cert_type == ::onc::certificate::kClient) {
     return ParseClientCertificate(guid, certificate, nssdb);
@@ -154,12 +150,21 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
 }
 
 bool CertificateImporterImpl::ParseServerOrCaCertificate(
+    ::onc::ONCSource source,
     bool allow_trust_imports,
     const std::string& cert_type,
     const std::string& guid,
     const base::DictionaryValue& certificate,
     net::NSSCertDatabase* nssdb,
     net::CertificateList* onc_trusted_certificates) {
+  // Device policy can't import certificates.
+  if (source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
+    // This isn't a parsing error.
+    LOG(WARNING) << "Refusing to import certificate from device policy:"
+                 << guid;
+    return true;
+  }
+
   bool web_trust_flag = false;
   const base::ListValue* trust_list = NULL;
   if (certificate.GetListWithoutPathExpansion(::onc::certificate::kTrustBits,

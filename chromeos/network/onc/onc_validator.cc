@@ -973,13 +973,6 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
 
   std::string type;
   result->GetStringWithoutPathExpansion(kType, &type);
-  if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY &&
-      (type == kServer || type == kAuthority)) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << "Server and authority certificates are "
-               << "prohibited in ONC device policies.";
-    return false;
-  }
 
   if (!CheckGuidIsUniqueAndAddToSet(*result, kGUID, &certificate_guids_))
     return false;
