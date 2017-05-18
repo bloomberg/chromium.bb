@@ -96,6 +96,7 @@ interface PaymentRequestClient {
   OnComplete();
   OnAbort(bool aborted_successfully);
   OnCanMakePayment(CanMakePaymentQueryResult result);
+  WarnNoFavicon();
 };
 
 struct PaymentItem {

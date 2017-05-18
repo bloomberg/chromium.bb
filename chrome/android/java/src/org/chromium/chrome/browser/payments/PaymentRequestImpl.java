@@ -534,6 +534,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 new FaviconHelper.FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
+                        if (mClient != null && bitmap == null) mClient.warnNoFavicon();
                         if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
                         faviconHelper.destroy();
                     }
