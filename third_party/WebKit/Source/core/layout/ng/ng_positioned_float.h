@@ -6,20 +6,21 @@
 #define NGPositionedFloat_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_physical_fragment.h"
 
 namespace blink {
 
+class NGPhysicalBoxFragment;
+
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
-  NGPositionedFloat(RefPtr<NGPhysicalFragment> fragment,
+  NGPositionedFloat(RefPtr<NGPhysicalBoxFragment> fragment,
                     const NGLogicalOffset& logical_offset,
                     const NGPhysicalOffset& paint_offset)
       : fragment(fragment),
         logical_offset(logical_offset),
         paint_offset(paint_offset) {}
 
-  RefPtr<NGPhysicalFragment> fragment;
+  RefPtr<NGPhysicalBoxFragment> fragment;
   NGLogicalOffset logical_offset;
 
   // In the case where a legacy FloatingObject is attached to not its own

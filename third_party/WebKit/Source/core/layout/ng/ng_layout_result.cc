@@ -11,7 +11,7 @@ NGLayoutResult::NGLayoutResult(
     PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
         out_of_flow_descendants,
     Vector<NGStaticPosition> out_of_flow_positions,
-    Vector<RefPtr<NGFloatingObject>>& unpositioned_floats)
+    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats)
     : physical_fragment_(std::move(physical_fragment)),
       out_of_flow_descendants_(out_of_flow_descendants),
       out_of_flow_positions_(out_of_flow_positions) {

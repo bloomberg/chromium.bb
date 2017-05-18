@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_physical_box_fragment.h"
 
-#include "core/layout/ng/ng_floating_object.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
 

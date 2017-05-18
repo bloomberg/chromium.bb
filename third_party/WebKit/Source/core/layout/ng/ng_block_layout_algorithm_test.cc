@@ -13,10 +13,11 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_floating_object.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -31,6 +32,7 @@ RefPtr<NGConstraintSpace> ConstructConstraintSpace(
     TextDirection direction,
     NGLogicalSize size,
     bool shrink_to_fit = false,
+    bool is_new_formatting_context = false,
     LayoutUnit fragmentainer_space_available = LayoutUnit()) {
   NGFragmentationType block_fragmentation =
       fragmentainer_space_available != LayoutUnit()
@@ -43,6 +45,7 @@ RefPtr<NGConstraintSpace> ConstructConstraintSpace(
       .SetInitialContainingBlockSize(size.ConvertToPhysical(writing_mode))
       .SetTextDirection(direction)
       .SetIsShrinkToFit(shrink_to_fit)
+      .SetIsNewFormattingContext(is_new_formatting_context)
       .SetFragmentainerSpaceAvailable(fragmentainer_space_available)
       .SetFragmentationType(block_fragmentation)
       .ToConstraintSpace(writing_mode);
@@ -1975,7 +1978,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, NoFragmentation) {
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
       kFragmentainerSpaceAvailable);
 
   // We should only have one 150x200 fragment with no fragmentation.
@@ -2004,7 +2007,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, SimpleFragmentation) {
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
       kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
@@ -2051,7 +2054,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentation) {
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
       kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
@@ -2119,7 +2122,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
       kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
@@ -2185,7 +2188,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
       kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
@@ -2217,6 +2220,211 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(40)), child->Offset());
 
   EXPECT_FALSE(iterator.NextChild());
+}
+
+// Tests that float children fragment correctly inside a parallel flow.
+TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationParallelFlows) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        width: 150px;
+        height: 50px;
+      }
+      #float1 {
+        width: 50px;
+        height: 200px;
+        float: left;
+      }
+      #float2 {
+        width: 75px;
+        height: 250px;
+        float: right;
+        margin: 10px;
+      }
+    </style>
+    <div id='container'>
+      <div id='float1'></div>
+      <div id='float2'></div>
+    </div>
+  )HTML");
+
+  LayoutUnit kFragmentainerSpaceAvailable(150);
+
+  NGBlockNode* node = new NGBlockNode(
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+      kFragmentainerSpaceAvailable);
+
+  RefPtr<const NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(50)), fragment->Size());
+  ASSERT_FALSE(fragment->BreakToken()->IsFinished());
+
+  const auto& float_fragments =
+      ToNGPhysicalBoxFragment(fragment.Get())->PositionedFloats();
+  EXPECT_EQ(2ul, float_fragments.size());
+
+  // First fragment of float1.
+  const NGPhysicalBoxFragment* child = float_fragments[0].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(50), LayoutUnit(150)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(0)), child->Offset());
+
+  // First fragment of float2.
+  child = float_fragments[1].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(150)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(65), LayoutUnit(10)), child->Offset());
+
+  space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+      kFragmentainerSpaceAvailable);
+  fragment = NGBlockLayoutAlgorithm(node, space.Get(),
+                                    ToNGBlockBreakToken(fragment->BreakToken()))
+                 .Layout()
+                 ->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(0)), fragment->Size());
+  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+
+  const auto& float_fragments2 =
+      ToNGPhysicalBoxFragment(fragment.Get())->PositionedFloats();
+  EXPECT_EQ(2ul, float_fragments2.size());
+
+  // Second fragment of float1.
+  child = float_fragments2[0].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(50), LayoutUnit(50)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(0)), child->Offset());
+
+  // Second fragment of float2.
+  child = float_fragments2[1].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(100)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(65), LayoutUnit(10)), child->Offset());
+}
+
+// Tests that float children don't fragment if they aren't in the same writing
+// mode as their parent.
+TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        width: 150px;
+        height: 60px;
+        overflow: hidden;
+      }
+      #float1 {
+        width: 100px;
+        height: 50px;
+        float: left;
+      }
+      #float2 {
+        width: 60px;
+        height: 200px;
+        float: right;
+        writing-mode: vertical-rl;
+      }
+    </style>
+    <div id='container'>
+      <div id='float1'></div>
+      <div id='float2'></div>
+    </div>
+  )HTML");
+
+  LayoutUnit kFragmentainerSpaceAvailable(150);
+
+  NGBlockNode* node = new NGBlockNode(
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+      kFragmentainerSpaceAvailable);
+
+  RefPtr<const NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(60)), fragment->Size());
+  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+
+  const auto& float_fragments =
+      ToNGPhysicalBoxFragment(fragment.Get())->PositionedFloats();
+  EXPECT_EQ(2ul, float_fragments.size());
+
+  // float2 should only have one fragment.
+  const NGPhysicalBoxFragment* child = float_fragments[1].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(60), LayoutUnit(200)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(90), LayoutUnit(50)), child->Offset());
+  ASSERT_TRUE(child->BreakToken()->IsFinished());
+}
+
+// Tests that a float child inside a zero height block fragments correctly.
+//
+// TODO(ikilpatrick): There is a bug with child break tokens and
+// NGBlockChildIterator which means this won't pass at the moment.
+TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatFragmentationZeroHeight) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        width: 150px;
+        height: 50px;
+      }
+      #float {
+        width: 75px;
+        height: 200px;
+        float: left;
+        margin: 10px;
+      }
+    </style>
+    <div id='container'>
+      <div id='zero'>
+        <div id='float'></div>
+      </div>
+    </div>
+  )HTML");
+
+  LayoutUnit kFragmentainerSpaceAvailable(150);
+
+  NGBlockNode* node = new NGBlockNode(
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+      kFragmentainerSpaceAvailable);
+
+  RefPtr<const NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(50)), fragment->Size());
+  ASSERT_FALSE(fragment->BreakToken()->IsFinished());
+
+  const auto& float_fragments =
+      ToNGPhysicalBoxFragment(fragment.Get())->PositionedFloats();
+  EXPECT_EQ(1ul, float_fragments.size());
+
+  // First fragment of float.
+  const NGPhysicalBoxFragment* child = float_fragments[0].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(150)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(10), LayoutUnit(10)), child->Offset());
+
+  space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+      kFragmentainerSpaceAvailable);
+  fragment = NGBlockLayoutAlgorithm(node, space.Get(),
+                                    ToNGBlockBreakToken(fragment->BreakToken()))
+                 .Layout()
+                 ->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(0)), fragment->Size());
+  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+
+  const auto& float_fragments2 =
+      ToNGPhysicalBoxFragment(fragment.Get())->PositionedFloats();
+  EXPECT_EQ(1ul, float_fragments2.size());
+
+  // Second fragment of float.
+  child = float_fragments2[0].fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(50)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(0)), child->Offset());
 }
 
 // Verifies that we correctly position a new FC block with the Layout

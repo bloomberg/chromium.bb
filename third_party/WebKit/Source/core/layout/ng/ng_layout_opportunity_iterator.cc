@@ -264,15 +264,15 @@ NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const NGLogicalSize& available_size,
     const NGLogicalOffset& origin_point,
     const NGBoxStrut& margins,
-    const NGFragment& fragment) {
+    const NGLogicalSize& fragment_size) {
   NGLayoutOpportunityIterator opportunity_iter(exclusions, available_size,
                                                origin_point);
   NGLayoutOpportunity opportunity;
   NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
   while (!opportunity_candidate.IsEmpty()) {
     opportunity = opportunity_candidate;
-    auto fragment_inline_size = fragment.InlineSize() + margins.InlineSum();
-    auto fragment_block_size = fragment.BlockSize() + margins.BlockSum();
+    auto fragment_inline_size = fragment_size.inline_size + margins.InlineSum();
+    auto fragment_block_size = fragment_size.block_size + margins.BlockSum();
     if (opportunity.size.inline_size >= fragment_inline_size &&
         opportunity.size.block_size >= fragment_block_size)
       break;

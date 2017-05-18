@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_box_fragment.h"
 
+#include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_macros.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 

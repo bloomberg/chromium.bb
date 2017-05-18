@@ -17,31 +17,17 @@
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_space_utils.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/BidiRunList.h"
 
 namespace blink {
 namespace {
-
-RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
-    const ComputedStyle& parent_style,
-    const NGBlockNode& child,
-    NGConstraintSpaceBuilder* space_builder) {
-  DCHECK(space_builder) << "space_builder cannot be null here";
-  const ComputedStyle& style = child.Style();
-
-  bool is_new_bfc =
-      IsNewFormattingContextForBlockLevelChild(parent_style, child);
-  return space_builder->SetIsNewFormattingContext(is_new_bfc)
-      .SetTextDirection(style.Direction())
-      .SetIsShrinkToFit(ShouldShrinkToFit(parent_style, style))
-      .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
-}
 
 NGLogicalOffset GetOriginPointForFloats(
     const NGLogicalOffset& container_bfc_offset,
@@ -193,41 +179,35 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
     LayoutObject* layout_object) {
   NGBlockNode* node = new NGBlockNode(layout_object);
 
-  RefPtr<NGConstraintSpace> float_space =
-      CreateConstraintSpaceForFloat(Node()->Style(), *node, &space_builder_);
-  // TODO(glebl): add the fragmentation support:
-  // same writing mode - get the inline size ComputeInlineSizeForFragment to
-  // determine if it fits on this line, then perform layout with the correct
-  // fragmentation line.
-  // diff writing mode - get the inline size from performing layout.
-  RefPtr<NGLayoutResult> layout_result = node->Layout(float_space.Get());
-
-  NGBoxFragment float_fragment(
-      float_space->WritingMode(),
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get()));
-
   NGLogicalOffset origin_offset =
       GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
   const ComputedStyle& float_style = node->Style();
   NGBoxStrut margins = ComputeMargins(ConstraintSpace(), float_style,
                                       ConstraintSpace().WritingMode(),
                                       ConstraintSpace().Direction());
-  RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
-      float_style, float_space->WritingMode(), current_opportunity_.size,
-      origin_offset, ContainerBfcOffset(), margins,
-      layout_result->PhysicalFragment().Get());
-  floating_object->parent_bfc_block_offset = ContainerBfcOffset().block_offset;
 
-  bool float_does_not_fit = end_position + float_fragment.InlineSize() >
+  // TODO(ikilpatrick): Add support for float break tokens inside an inline
+  // layout context.
+  RefPtr<NGUnpositionedFloat> unpositioned_float = NGUnpositionedFloat::Create(
+      current_opportunity_.size, ConstraintSpace().PercentageResolutionSize(),
+      origin_offset, ContainerBfcOffset(), margins, node,
+      /* break_token */ nullptr);
+  unpositioned_float->parent_bfc_block_offset =
+      ContainerBfcOffset().block_offset;
+
+  LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
+      MutableConstraintSpace(), unpositioned_float.Get());
+
+  bool float_does_not_fit = end_position + inline_size + margins.InlineSum() >
                             current_opportunity_.InlineSize();
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
   if (!container_builder_.UnpositionedFloats().IsEmpty() ||
       float_does_not_fit) {
-    container_builder_.AddUnpositionedFloat(floating_object);
+    container_builder_.AddUnpositionedFloat(unpositioned_float);
   } else {
-    container_builder_.MutablePositionedFloats().push_back(
-        PositionFloat(floating_object.Get(), MutableConstraintSpace()));
+    container_builder_.AddPositionedFloat(
+        PositionFloat(unpositioned_float.Get(), MutableConstraintSpace()));
     FindNextLayoutOpportunity();
   }
 }

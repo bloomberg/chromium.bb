@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_layout_input_node.h"
-#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/heap/Handle.h"
 

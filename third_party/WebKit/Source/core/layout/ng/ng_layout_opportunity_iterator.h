@@ -19,10 +19,10 @@ typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
 
 NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const NGExclusions* exclusions,
-    const NGLogicalSize& size,
+    const NGLogicalSize& available_size,
     const NGLogicalOffset& origin_point,
     const NGBoxStrut& margins,
-    const NGFragment& fragment);
+    const NGLogicalSize& size);
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
  public:

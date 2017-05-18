@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/geometry/ng_margin_strut.h"
-#include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_positioned_float.h"
 #include "platform/wtf/Optional.h"

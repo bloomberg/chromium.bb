@@ -67,8 +67,7 @@ void FragmentPositionUpdated(const NGPhysicalFragment& fragment) {
 // - Creates legacy FloatingObject and attached it to the provided parent.
 void FloatingObjectPositionedUpdated(const NGPositionedFloat& positioned_float,
                                      LayoutBox* parent) {
-  NGPhysicalBoxFragment* box_fragment =
-      ToNGPhysicalBoxFragment(positioned_float.fragment.Get());
+  NGPhysicalBoxFragment* box_fragment = positioned_float.fragment.Get();
   FragmentPositionUpdated(*box_fragment);
 
   LayoutBox* layout_box = ToLayoutBox(box_fragment->GetLayoutObject());

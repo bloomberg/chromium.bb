@@ -7,24 +7,31 @@
 
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_positioned_float.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
 
-// Positions {@code floating_object} into {@code new_parent_space}.
+// Returns the inline size (relative to {@code parent_space}) of the
+// unpositioned float. If the float is in a different writing mode, this will
+// perform a layout.
+CORE_EXPORT LayoutUnit
+ComputeInlineSizeForUnpositionedFloat(NGConstraintSpace* parent_space,
+                                      NGUnpositionedFloat* unpositioned_float);
+
+// Positions {@code unpositioned_float} into {@code new_parent_space}.
 // @returns A positioned float.
 CORE_EXPORT NGPositionedFloat
-PositionFloat(NGFloatingObject*, NGConstraintSpace* new_parent_space);
+PositionFloat(NGUnpositionedFloat*, NGConstraintSpace* new_parent_space);
 
-// Positions the list of {@code floating_objects}. Adds them as exclusions to
+// Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
 // {@code space}.
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit from_block_offset,
     LayoutUnit container_block_offset,
-    const Vector<RefPtr<NGFloatingObject>>& floating_objects,
+    const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     NGConstraintSpace* space);
 
 }  // namespace blink

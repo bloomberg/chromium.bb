@@ -2,44 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGFloatingObject_h
-#define NGFloatingObject_h
+#ifndef NGUnpositionedFloat_h
+#define NGUnpositionedFloat_h
 
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
+#include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_exclusion.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
+class NGPhysicalBoxFragment;
+
 // Struct that keeps all information needed to position floats in LayoutNG.
-struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
+struct CORE_EXPORT NGUnpositionedFloat
+    : public RefCounted<NGUnpositionedFloat> {
  public:
-  static RefPtr<NGFloatingObject> Create(const ComputedStyle& style,
-                                         NGWritingMode writing_mode,
-                                         NGLogicalSize available_size,
-                                         NGLogicalOffset origin_offset,
-                                         NGLogicalOffset from_offset,
-                                         NGBoxStrut margins,
-                                         NGPhysicalFragment* fragment) {
-    return AdoptRef(new NGFloatingObject(style, margins, available_size,
-                                         origin_offset, from_offset,
-                                         writing_mode, fragment));
+  static RefPtr<NGUnpositionedFloat> Create(NGLogicalSize available_size,
+                                            NGLogicalSize percentage_size,
+                                            NGLogicalOffset origin_offset,
+                                            NGLogicalOffset from_offset,
+                                            NGBoxStrut margins,
+                                            NGBlockNode* node,
+                                            NGBlockBreakToken* token) {
+    return AdoptRef(new NGUnpositionedFloat(margins, available_size,
+                                            percentage_size, origin_offset,
+                                            from_offset, node, token));
   }
 
-  NGExclusion::Type exclusion_type;
-  EClear clear_type;
-  NGBoxStrut margins;
+  Persistent<NGBlockNode> node;
+  RefPtr<NGBlockBreakToken> token;
+
   // Available size of the constraint space that will be used by
   // NGLayoutOpportunityIterator to position this floating object.
   NGLogicalSize available_size;
+  NGLogicalSize percentage_size;
 
-  // To correctly **position** a float we need 2 offsets:
+  // To correctly position a float we need 2 offsets:
   // - origin_offset which represents the layout point for this float.
   // - from_offset which represents the point from where we need to calculate
   //   the relative logical offset for this float.
@@ -76,40 +78,35 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   // placement event.
   WTF::Optional<LayoutUnit> parent_bfc_block_offset;
 
-  // Writing mode of the float's constraint space.
-  NGWritingMode writing_mode;
+  // The margins are relative to the writing mode of the block formatting
+  // context. They are stored for convinence and could be recomputed with other
+  // data on this object.
+  NGBoxStrut margins;
 
-  RefPtr<NGPhysicalFragment> fragment;
+  // The fragment for this unpositioned float. This is only present if it's in
+  // a different writing mode than the BFC.
+  WTF::Optional<RefPtr<NGPhysicalBoxFragment>> fragment;
 
-  bool IsLeft() const { return exclusion_type == NGExclusion::kFloatLeft; }
-
-  bool IsRight() const { return exclusion_type == NGExclusion::kFloatRight; }
-
-  String ToString() const {
-    return String::Format("Type: '%d'", exclusion_type);
-  }
+  bool IsLeft() const;
+  bool IsRight() const;
 
  private:
-  NGFloatingObject(const ComputedStyle& style,
-                   const NGBoxStrut& margins,
-                   const NGLogicalSize& available_size,
-                   const NGLogicalOffset& origin_offset,
-                   const NGLogicalOffset& from_offset,
-                   NGWritingMode writing_mode,
-                   NGPhysicalFragment* fragment)
-      : margins(margins),
+  NGUnpositionedFloat(const NGBoxStrut& margins,
+                      const NGLogicalSize& available_size,
+                      const NGLogicalSize& percentage_size,
+                      const NGLogicalOffset& origin_offset,
+                      const NGLogicalOffset& from_offset,
+                      NGBlockNode* node,
+                      NGBlockBreakToken* token)
+      : node(node),
+        token(token),
         available_size(available_size),
+        percentage_size(percentage_size),
         origin_offset(origin_offset),
         from_offset(from_offset),
-        writing_mode(writing_mode),
-        fragment(fragment) {
-    exclusion_type = NGExclusion::kFloatLeft;
-    if (style.Floating() == EFloat::kRight)
-      exclusion_type = NGExclusion::kFloatRight;
-    clear_type = style.Clear();
-  }
+        margins(margins) {}
 };
 
 }  // namespace blink
 
-#endif  // NGFloatingObject_h
+#endif  // NGUnpositionedFloat_h

@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 namespace {
