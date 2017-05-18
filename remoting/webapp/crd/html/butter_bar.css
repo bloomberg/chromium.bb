@@ -33,6 +33,11 @@
   margin: auto;
 }
 
+#butter-bar.red > p {
+  background-color: #f9bebe;
+  border: 1px solid #f06d6d;
+}
+
 #butter-bar a {
   color: inherit;
   text-decoration: underline;

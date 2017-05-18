@@ -83,8 +83,8 @@ remoting.initHomeScreenUi = function() {
   remoting.updateLocalHostState();
   remoting.hostList.refresh().then(remoting.updateLocalHostState);
 
-  // Butter bar is temporarily disabled. crbug.com/714244
-  // remoting.butterBar = new remoting.ButterBar();
+  remoting.butterBar = new remoting.ButterBar();
+  remoting.butterBar.init();
 };
 
 /**

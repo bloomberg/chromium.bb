@@ -326,9 +326,6 @@
         <message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDS_HOST_NEEDS_UPDATE_TITLE">
           Chrome Remote Desktop on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
         </message>
-        <message name="IDS_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chrome Remote Desktop">
-          Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://goo.gl/njH2q&gt;</ex></ph>Take the survey.<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>
-        </message>
         <message name="IDS_COMPANY_NAME" desc="The company name specified in the version information of each Chrome Remote Desktop Host executable.">
           Google Inc.
         </message>
@@ -430,9 +427,6 @@
         </message>
         <message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDS_HOST_NEEDS_UPDATE_TITLE">
           Chromoting on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
-        </message>
-        <message  name="IDS_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chromoting">
-          Want to help improve Chromoting? <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://goo.gl/njH2q&gt;</ex></ph>Take the survey.<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>
         </message>
         <message name="IDS_COMPANY_NAME" desc="The company name specified in the version information of each Chromoting Host executable.">
           The Chromium Authors
@@ -1213,6 +1207,18 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message desc="Text for the button the user clicks to indicate that they agree to the terms of service and want to proceed with downloading the installer." name="IDS_ACCEPT_AND_INSTALL">
         Accept and Install
+      </message>
+      <message  name="IDS_WEBSITE_INVITE_BETA" desc="Invitation to early adopters to try the new version">
+        Get a sneak peek at the new <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>Chrome Remote Desktop web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>. We'd love to hear your feedback.
+      </message>
+      <message  name="IDS_WEBSITE_INVITE_STABLE" desc="Invitation to all users to try the new version">
+        Chrome Remote Desktop is now on the web! Check out our <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>free web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
+      </message>
+      <message  name="IDS_WEBSITE_INVITE_DEPRECATION_1" desc="Invitation to all users to try the new version">
+        Chrome Remote Desktop is moving to a new home on the web. Try our <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>—it's fast and free, with all the same features as before.
+      </message>
+      <message  name="IDS_WEBSITE_INVITE_DEPRECATION_2" desc="Requirement all users to try the new version">
+        This app is no longer supported. To ensure you're getting the latest features and security updates, please use the <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>Chrome Remote Desktop web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
       </message>
 
     </messages>
