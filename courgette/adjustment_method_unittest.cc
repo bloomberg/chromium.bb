@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
 #include "courgette/encoded_program.h"
@@ -65,7 +67,7 @@ class AdjustmentMethodTest : public testing::Test {
         },
         labelA, labelB);
 
-    EXPECT_TRUE(prog->GenerateInstructions(gen, true));
+    EXPECT_TRUE(prog->AnnotateLabels(gen));
     EXPECT_EQ(6U, prog->abs32_label_annotations().size());
     EXPECT_EQ(0U, prog->rel32_label_annotations().size());
 
@@ -88,36 +90,25 @@ class AdjustmentMethodTest : public testing::Test {
     return MakeProgram(1);
   }
 
-  // Returns a string that is the serialized version of |program|.
-  // Deletes |program|.
-  std::string Serialize(std::unique_ptr<AssemblyProgram> program) const {
-    std::unique_ptr<EncodedProgram> encoded;
+  // Returns a string that is the serialized version of |program| annotations.
+  std::string Serialize(AssemblyProgram* program) const {
+    std::ostringstream oss;
+    for (const Label* label : program->abs32_label_annotations())
+      oss << "(" << label->rva_ << "," << label->index_ << ")";
+    oss << ";";
+    for (const Label* label : program->rel32_label_annotations())
+      oss << "(" << label->rva_ << "," << label->index_ << ")";
 
-    const Status encode_status = Encode(*program, &encoded);
-    EXPECT_EQ(C_OK, encode_status);
-
-    program.reset();
-
-    SinkStreamSet sinks;
-    const Status write_status = WriteEncodedProgram(encoded.get(), &sinks);
-    EXPECT_EQ(C_OK, write_status);
-
-    encoded.reset();
-
-    SinkStream sink;
-    bool can_collect = sinks.CopyTo(&sink);
-    EXPECT_TRUE(can_collect);
-
-    return std::string(reinterpret_cast<const char *>(sink.Buffer()),
-                       sink.Length());
+    EXPECT_GT(oss.str().length(), 1U);  // Ensure results are non-trivial.
+    return oss.str();
   }
 };
 
 void AdjustmentMethodTest::Test1() const {
   std::unique_ptr<AssemblyProgram> prog1 = MakeProgramA();
   std::unique_ptr<AssemblyProgram> prog2 = MakeProgramB();
-  std::string s1 = Serialize(std::move(prog1));
-  std::string s2 = Serialize(std::move(prog2));
+  std::string s1 = Serialize(prog1.get());
+  std::string s2 = Serialize(prog2.get());
 
   // Don't use EXPECT_EQ because strings are unprintable.
   EXPECT_FALSE(s1 == s2);  // Unadjusted A and B differ.
@@ -126,8 +117,8 @@ void AdjustmentMethodTest::Test1() const {
   std::unique_ptr<AssemblyProgram> prog6 = MakeProgramB();
   Status can_adjust = Adjust(*prog5, prog6.get());
   EXPECT_EQ(C_OK, can_adjust);
-  std::string s5 = Serialize(std::move(prog5));
-  std::string s6 = Serialize(std::move(prog6));
+  std::string s5 = Serialize(prog5.get());
+  std::string s6 = Serialize(prog6.get());
 
   EXPECT_TRUE(s1 == s5);  // Adjustment did not change A (prog5)
   EXPECT_TRUE(s5 == s6);  // Adjustment did change B into A

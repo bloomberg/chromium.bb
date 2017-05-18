@@ -18,6 +18,7 @@
 namespace courgette {
 
 class AssemblyProgram;
+class EncodedProgram;
 
 class Disassembler : public AddressTranslator {
  public:
@@ -91,9 +92,13 @@ class Disassembler : public AddressTranslator {
   virtual bool ParseHeader() = 0;
 
   // Extracts and stores references from the main image. Returns a new
-  // AssemblyProgram initialized using data parsed from the main image and
-  // |annotate_labels|, or null on failure.
-  std::unique_ptr<AssemblyProgram> Disassemble(bool annotate_labels);
+  // AssemblyProgram with initialized Labels, or null on failure.
+  std::unique_ptr<AssemblyProgram> CreateProgram(bool annotate);
+
+  // Goes through the entire program (with the help of |program|), computes all
+  // instructions, and stores them into |encoded|.
+  Status DisassembleAndEncode(AssemblyProgram* program,
+                              EncodedProgram* encoded);
 
   // ok() may always be called but returns true only after ParseHeader()
   // succeeds.

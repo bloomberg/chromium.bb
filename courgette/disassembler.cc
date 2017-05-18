@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "courgette/assembly_program.h"
+#include "courgette/encoded_program.h"
 
 namespace courgette {
 
@@ -54,8 +55,7 @@ const uint8_t* Disassembler::RVAToPointer(RVA rva) const {
   return FileOffsetToPointer(file_offset);
 }
 
-std::unique_ptr<AssemblyProgram> Disassembler::Disassemble(
-    bool annotate_labels) {
+std::unique_ptr<AssemblyProgram> Disassembler::CreateProgram(bool annotate) {
   if (!ok() || !ExtractAbs32Locations() || !ExtractRel32Locations())
     return nullptr;
 
@@ -64,14 +64,23 @@ std::unique_ptr<AssemblyProgram> Disassembler::Disassemble(
 
   PrecomputeLabels(program.get());
   RemoveUnusedRel32Locations(program.get());
+  program->DefaultAssignIndexes();
 
-  if (!program->GenerateInstructions(GetInstructionGenerator(program.get()),
-                                     annotate_labels)) {
-    return nullptr;
+  if (annotate) {
+    if (!program->AnnotateLabels(GetInstructionGenerator(program.get())))
+      return nullptr;
   }
 
-  program->DefaultAssignIndexes();
   return program;
+}
+
+Status Disassembler::DisassembleAndEncode(AssemblyProgram* program,
+                                          EncodedProgram* encoded) {
+  program->PrepareEncodedProgram(encoded);
+  return encoded->GenerateInstructions(program->kind(),
+                                       GetInstructionGenerator(program))
+             ? C_OK
+             : C_DISASSEMBLY_FAILED;
 }
 
 bool Disassembler::Good() {

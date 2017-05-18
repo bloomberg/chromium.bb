@@ -155,8 +155,10 @@ void Disassemble(const base::FilePath& input_file,
                  const base::FilePath& output_file) {
   CourgetteFlow flow;
   BufferedFileReader input_buffer(input_file, flow.name(flow.ONLY));
-  flow.ReadAssemblyProgramFromBuffer(flow.ONLY, input_buffer, false);
-  flow.CreateEncodedProgramFromAssemblyProgram(flow.ONLY);
+  flow.ReadDisassemblerFromBuffer(flow.ONLY, input_buffer);
+  flow.CreateAssemblyProgramFromDisassembler(flow.ONLY, false);
+  flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.ONLY);
+  flow.DestroyDisassembler(flow.ONLY);
   flow.DestroyAssemblyProgram(flow.ONLY);
   flow.WriteSinkStreamSetFromEncodedProgram(flow.ONLY);
   flow.DestroyEncodedProgram(flow.ONLY);
@@ -171,16 +173,27 @@ void Disassemble(const base::FilePath& input_file,
 void DisassembleAndAdjust(const base::FilePath& old_file,
                           const base::FilePath& new_file,
                           const base::FilePath& output_file) {
+  // Flow graph and process sequence (DA = Disassembler, AP = AssemblyProgram,
+  // EP = EncodedProgram, Adj = Adjusted):
+  //   [1 Old DA] --> [2 Old AP]    [4 New AP] <-- [3 New DA]
+  //                      |             |              |
+  //                      |             v (move)       v
+  //                      +---> [5 Adj New AP] --> [6 New EP]
+  //                                               (7 Write)
   CourgetteFlow flow;
   BufferedFileReader old_buffer(old_file, flow.name(flow.OLD));
   BufferedFileReader new_buffer(new_file, flow.name(flow.NEW));
-  flow.ReadAssemblyProgramFromBuffer(flow.OLD, old_buffer, true);
-  flow.ReadAssemblyProgramFromBuffer(flow.NEW, new_buffer, true);
-  flow.AdjustNewAssemblyProgramToMatchOld();
+  flow.ReadDisassemblerFromBuffer(flow.OLD, old_buffer);       // 1
+  flow.CreateAssemblyProgramFromDisassembler(flow.OLD, true);  // 2
+  flow.DestroyDisassembler(flow.OLD);
+  flow.ReadDisassemblerFromBuffer(flow.NEW, new_buffer);       // 3
+  flow.CreateAssemblyProgramFromDisassembler(flow.NEW, true);  // 4
+  flow.AdjustNewAssemblyProgramToMatchOld();                   // 5
   flow.DestroyAssemblyProgram(flow.OLD);
-  flow.CreateEncodedProgramFromAssemblyProgram(flow.NEW);
+  flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.NEW);  // 6
   flow.DestroyAssemblyProgram(flow.NEW);
-  flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW);
+  flow.DestroyDisassembler(flow.NEW);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW);  // 7
   flow.DestroyEncodedProgram(flow.NEW);
   courgette::SinkStream sink;
   flow.WriteSinkStreamFromSinkStreamSet(flow.NEW, &sink);
@@ -199,20 +212,33 @@ void DisassembleAdjustDiff(const base::FilePath& old_file,
                            const base::FilePath& new_file,
                            const base::FilePath& output_file_root,
                            bool adjust) {
+  // Same as PatchGeneratorX86_32::Transform(), except Adjust is optional, and
+  // |flow|'s internal SinkStreamSet get used.
+  // Flow graph and process sequence (DA = Disassembler, AP = AssemblyProgram,
+  // EP = EncodedProgram, Adj = Adjusted):
+  //   [1 Old DA] --> [2 Old AP]   [6 New AP] <-- [5 New DA]
+  //       |            |   |          |              |
+  //       v            |   |          v (move)       v
+  //   [3 Old EP] <-----+   +->[7 Adj New AP] --> [8 New EP]
+  //   (4 Write)                                  (9 Write)
   CourgetteFlow flow;
   BufferedFileReader old_buffer(old_file, flow.name(flow.OLD));
   BufferedFileReader new_buffer(new_file, flow.name(flow.NEW));
-  flow.ReadAssemblyProgramFromBuffer(flow.OLD, old_buffer, adjust);
-  flow.ReadAssemblyProgramFromBuffer(flow.NEW, new_buffer, adjust);
-  if (adjust)
-    flow.AdjustNewAssemblyProgramToMatchOld();
-  flow.CreateEncodedProgramFromAssemblyProgram(flow.OLD);
-  flow.DestroyAssemblyProgram(flow.OLD);
-  flow.CreateEncodedProgramFromAssemblyProgram(flow.NEW);
-  flow.DestroyAssemblyProgram(flow.NEW);
-  flow.WriteSinkStreamSetFromEncodedProgram(flow.OLD);
+  flow.ReadDisassemblerFromBuffer(flow.OLD, old_buffer);                  // 1
+  flow.CreateAssemblyProgramFromDisassembler(flow.OLD, adjust);           // 2
+  flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.OLD);  // 3
+  flow.DestroyDisassembler(flow.OLD);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.OLD);  // 4
   flow.DestroyEncodedProgram(flow.OLD);
-  flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW);
+  flow.ReadDisassemblerFromBuffer(flow.NEW, new_buffer);         // 5
+  flow.CreateAssemblyProgramFromDisassembler(flow.NEW, adjust);  // 6
+  if (adjust)
+    flow.AdjustNewAssemblyProgramToMatchOld();  // 7, optional
+  flow.DestroyAssemblyProgram(flow.OLD);
+  flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.NEW);  // 8
+  flow.DestroyAssemblyProgram(flow.NEW);
+  flow.DestroyDisassembler(flow.NEW);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW);  // 9
   flow.DestroyEncodedProgram(flow.NEW);
   if (flow.failed())
     Problem(flow.message().c_str());

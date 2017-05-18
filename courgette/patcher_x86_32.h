@@ -7,14 +7,12 @@
 
 #include <stdint.h>
 
-#include <memory>
-
+#include "base/logging.h"
 #include "base/macros.h"
-#include "courgette/assembly_program.h"
 #include "courgette/courgette_flow.h"
-#include "courgette/encoded_program.h"
 #include "courgette/ensemble.h"
-#include "courgette/program_detector.h"
+#include "courgette/region.h"
+#include "courgette/streams.h"
 
 namespace courgette {
 
@@ -49,12 +47,17 @@ class PatcherX86_32 : public TransformationPatcher {
 
   Status Transform(SourceStreamSet* corrected_parameters,
                    SinkStreamSet* transformed_element) {
+    if (!corrected_parameters->Empty())
+      return C_GENERAL_ERROR;  // Don't expect any corrected parameters.
+
     CourgetteFlow flow;
     RegionBuffer only_buffer(
         Region(ensemble_region_.start() + base_offset_, base_length_));
-    flow.ReadAssemblyProgramFromBuffer(flow.ONLY, only_buffer, false);
-    flow.CreateEncodedProgramFromAssemblyProgram(flow.ONLY);
+    flow.ReadDisassemblerFromBuffer(flow.ONLY, only_buffer);
+    flow.CreateAssemblyProgramFromDisassembler(flow.ONLY, false);
+    flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.ONLY);
     flow.DestroyAssemblyProgram(flow.ONLY);
+    flow.DestroyDisassembler(flow.ONLY);
     flow.WriteSinkStreamSetFromEncodedProgram(flow.ONLY, transformed_element);
     if (flow.failed())
       LOG(ERROR) << flow.message();

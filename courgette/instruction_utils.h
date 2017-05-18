@@ -61,6 +61,20 @@ class InstructionReceptor {
 // true on success, and false otherwise.
 using InstructionGenerator = base::Callback<CheckBool(InstructionReceptor*)>;
 
+// A counter that increments via .push_back(), so it can be passed via template
+// to substitute std::vector<T>, to count elements instead of storing them.
+template <typename T>
+class CountingVector {
+ public:
+  CountingVector() {}
+
+  void push_back(const T& /* unused */) { ++size_; }
+  size_t size() const { return size_; }
+
+ private:
+  size_t size_ = 0;
+};
+
 }  // namespace courgette
 
 #endif  // COURGETTE_INSTRUCTION_UTILS_H_

@@ -4,9 +4,6 @@
 
 #include "courgette/program_detector.h"
 
-#include <utility>
-
-#include "courgette/assembly_program.h"
 #include "courgette/disassembler.h"
 #include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/disassembler_elf_32_x86.h"
@@ -15,10 +12,6 @@
 
 namespace courgette {
 
-namespace {
-
-// Returns a new instance of Disassembler subclass if binary data given in
-// |buffer| and |length| matches a known binary format, otherwise null.
 std::unique_ptr<Disassembler> DetectDisassembler(const uint8_t* buffer,
                                                  size_t length) {
   std::unique_ptr<Disassembler> disassembler;
@@ -46,29 +39,6 @@ std::unique_ptr<Disassembler> DetectDisassembler(const uint8_t* buffer,
   return nullptr;
 }
 
-Status ParseDetectedExecutableInternal(
-    const uint8_t* buffer,
-    size_t length,
-    bool annotate_labels,
-    std::unique_ptr<AssemblyProgram>* output) {
-  output->reset();
-
-  std::unique_ptr<Disassembler> disassembler(
-      DetectDisassembler(buffer, length));
-  if (!disassembler)
-    return C_INPUT_NOT_RECOGNIZED;
-
-  std::unique_ptr<AssemblyProgram> program =
-      disassembler->Disassemble(annotate_labels);
-  if (!program.get())
-    return C_DISASSEMBLY_FAILED;
-
-  *output = std::move(program);
-  return C_OK;
-}
-
-}  // namespace
-
 Status DetectExecutableType(const uint8_t* buffer,
                             size_t length,
                             ExecutableType* type,
@@ -85,19 +55,6 @@ Status DetectExecutableType(const uint8_t* buffer,
   *type = disassembler->kind();
   *detected_length = disassembler->length();
   return C_OK;
-}
-
-Status ParseDetectedExecutable(const uint8_t* buffer,
-                               size_t length,
-                               std::unique_ptr<AssemblyProgram>* output) {
-  return ParseDetectedExecutableInternal(buffer, length, false, output);
-}
-
-Status ParseDetectedExecutableWithAnnotation(
-    const uint8_t* buffer,
-    size_t length,
-    std::unique_ptr<AssemblyProgram>* output) {
-  return ParseDetectedExecutableInternal(buffer, length, true, output);
 }
 
 }  // namespace courgette

@@ -6,12 +6,9 @@
 
 #include <memory>
 
-#include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
 #include "courgette/courgette_flow.h"
-#include "courgette/encoded_program.h"
-#include "courgette/program_detector.h"
 #include "courgette/streams.h"
 
 namespace courgette {
@@ -31,17 +28,25 @@ void EncodeDecodeTest::TestAssembleToStreamDisassemble(
 
   // Convert executable to encoded assembly.
   RegionBuffer original_buffer(Region(original_data, original_length));
-  flow.ReadAssemblyProgramFromBuffer(flow.ONLY, original_buffer, false);
+  flow.ReadDisassemblerFromBuffer(flow.ONLY, original_buffer);
+  EXPECT_EQ(C_OK, flow.status());
+  EXPECT_TRUE(nullptr != flow.data(flow.ONLY)->disassembler.get());
+
+  flow.CreateAssemblyProgramFromDisassembler(flow.ONLY, false);
   EXPECT_EQ(C_OK, flow.status());
   EXPECT_TRUE(nullptr != flow.data(flow.ONLY)->program.get());
 
-  flow.CreateEncodedProgramFromAssemblyProgram(flow.ONLY);
+  flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.ONLY);
   EXPECT_EQ(C_OK, flow.status());
   EXPECT_TRUE(nullptr != flow.data(flow.ONLY)->encoded.get());
 
   flow.DestroyAssemblyProgram(flow.ONLY);
   EXPECT_EQ(C_OK, flow.status());
   EXPECT_TRUE(nullptr == flow.data(flow.ONLY)->program.get());
+
+  flow.DestroyDisassembler(flow.ONLY);
+  EXPECT_EQ(C_OK, flow.status());
+  EXPECT_TRUE(nullptr == flow.data(flow.ONLY)->disassembler.get());
 
   flow.WriteSinkStreamSetFromEncodedProgram(flow.ONLY);
   EXPECT_EQ(C_OK, flow.status());

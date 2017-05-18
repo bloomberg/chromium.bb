@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
+#include "courgette/instruction_utils.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
 
@@ -79,6 +80,10 @@ class EncodedProgram {
 
   // (5) Assembles the 'binary assembly language' into final file.
   CheckBool AssembleTo(SinkStream* buffer) WARN_UNUSED_RESULT;
+
+  // Calls |gen| to extract all instructions, which are then encoded and stored.
+  CheckBool GenerateInstructions(ExecutableType exe_type,
+                                 const InstructionGenerator& gen);
 
  private:
   // Binary assembly language operations.

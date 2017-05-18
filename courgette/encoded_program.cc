@@ -127,6 +127,56 @@ bool ReadVectorU8(V* items, SourceStream* buffer) {
   return ok;
 }
 
+/******** InstructionStoreReceptor ********/
+
+// An InstructionReceptor that stores emitted instructions.
+class InstructionStoreReceptor : public InstructionReceptor {
+ public:
+  explicit InstructionStoreReceptor(ExecutableType exe_type,
+                                    EncodedProgram* encoded)
+      : exe_type_(exe_type), encoded_(encoded) {
+    CHECK(encoded_);
+  }
+
+  CheckBool EmitPeRelocs() override {
+    return encoded_->AddPeMakeRelocs(exe_type_);
+  }
+  CheckBool EmitElfRelocation() override {
+    return encoded_->AddElfMakeRelocs();
+  }
+  CheckBool EmitElfARMRelocation() override {
+    return encoded_->AddElfARMMakeRelocs();
+  }
+  CheckBool EmitOrigin(RVA rva) override { return encoded_->AddOrigin(rva); }
+  CheckBool EmitSingleByte(uint8_t byte) override {
+    return encoded_->AddCopy(1, &byte);
+  }
+  CheckBool EmitMultipleBytes(const uint8_t* bytes, size_t len) override {
+    return encoded_->AddCopy(len, bytes);
+  }
+  CheckBool EmitRel32(Label* label) override {
+    return encoded_->AddRel32(label->index_);
+  }
+  CheckBool EmitRel32ARM(uint16_t op,
+                         Label* label,
+                         const uint8_t* arm_op,
+                         uint16_t op_size) override {
+    return encoded_->AddRel32ARM(op, label->index_);
+  }
+  CheckBool EmitAbs32(Label* label) override {
+    return encoded_->AddAbs32(label->index_);
+  }
+  CheckBool EmitAbs64(Label* label) override {
+    return encoded_->AddAbs64(label->index_);
+  }
+
+ private:
+  ExecutableType exe_type_;
+  EncodedProgram* encoded_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstructionStoreReceptor);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -671,6 +721,13 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
     return false;
 
   return true;
+}
+
+CheckBool EncodedProgram::GenerateInstructions(
+    ExecutableType exe_type,
+    const InstructionGenerator& gen) {
+  InstructionStoreReceptor store_receptor(exe_type, this);
+  return gen.Run(&store_receptor);
 }
 
 // RelocBlock has the layout of a block of relocations in the base relocation

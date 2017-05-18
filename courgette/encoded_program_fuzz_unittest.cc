@@ -46,17 +46,25 @@ void DecodeFuzzTest::FuzzExe(const char* file_name) const {
 
   courgette::RegionBuffer original_buffer(
       courgette::Region(original_data, original_length));
-  flow.ReadAssemblyProgramFromBuffer(flow.ONLY, original_buffer, false);
+  flow.ReadDisassemblerFromBuffer(flow.ONLY, original_buffer);
+  EXPECT_EQ(courgette::C_OK, flow.status());
+  EXPECT_TRUE(nullptr != flow.data(flow.ONLY)->disassembler.get());
+
+  flow.CreateAssemblyProgramFromDisassembler(flow.ONLY, false);
   EXPECT_EQ(courgette::C_OK, flow.status());
   EXPECT_TRUE(nullptr != flow.data(flow.ONLY)->program.get());
 
-  flow.CreateEncodedProgramFromAssemblyProgram(flow.ONLY);
+  flow.CreateEncodedProgramFromDisassemblerAndAssemblyProgram(flow.ONLY);
   EXPECT_EQ(courgette::C_OK, flow.status());
   EXPECT_TRUE(nullptr != flow.data(flow.ONLY)->encoded.get());
 
   flow.DestroyAssemblyProgram(flow.ONLY);
   EXPECT_EQ(courgette::C_OK, flow.status());
   EXPECT_TRUE(nullptr == flow.data(flow.ONLY)->program.get());
+
+  flow.DestroyDisassembler(flow.ONLY);
+  EXPECT_EQ(courgette::C_OK, flow.status());
+  EXPECT_TRUE(nullptr == flow.data(flow.ONLY)->disassembler.get());
 
   flow.WriteSinkStreamSetFromEncodedProgram(flow.ONLY);
   EXPECT_EQ(courgette::C_OK, flow.status());

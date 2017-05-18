@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "courgette/assembly_program.h"
+#include "courgette/disassembler.h"
 #include "courgette/encoded_program.h"
 #include "courgette/program_detector.h"
 
@@ -86,16 +87,14 @@ void CourgetteFlow::ReadSourceStreamSetFromBuffer(Group group,
   }
 }
 
-void CourgetteFlow::ReadAssemblyProgramFromBuffer(Group group,
-                                                  const BasicBuffer& buffer,
-                                                  bool annotate) {
+void CourgetteFlow::ReadDisassemblerFromBuffer(Group group,
+                                               const BasicBuffer& buffer) {
   if (failed())
     return;
   Data* d = data(group);
-  auto parser = annotate ? ParseDetectedExecutableWithAnnotation
-                         : ParseDetectedExecutable;
-  if (!check(parser(buffer.data(), buffer.length(), &d->program)))
-    setMessage("Cannot parse %s (code = %d).", name(group), status_);
+  d->disassembler = DetectDisassembler(buffer.data(), buffer.length());
+  if (!check(d->disassembler.get() != nullptr, C_INPUT_NOT_RECOGNIZED))
+    setMessage("Cannot detect program for %s.", name(group));
 }
 
 void CourgetteFlow::ReadEncodedProgramFromSourceStreamSet(
@@ -109,12 +108,27 @@ void CourgetteFlow::ReadEncodedProgramFromSourceStreamSet(
     setMessage("Cannot read %s as encoded program.", name(group));
 }
 
-void CourgetteFlow::CreateEncodedProgramFromAssemblyProgram(Group group) {
+void CourgetteFlow::CreateAssemblyProgramFromDisassembler(Group group,
+                                                          bool annotate) {
   if (failed())
     return;
   Data* d = data(group);
-  if (!check(Encode(*d->program, &d->encoded)))
-    setMessage("Cannot encode %s (code = %d).", name(group), status_);
+  d->program = d->disassembler->CreateProgram(annotate);
+  if (!check(d->program.get() != nullptr, C_DISASSEMBLY_FAILED))
+    setMessage("Cannot create AssemblyProgram for %s.", name(group));
+}
+
+void CourgetteFlow::CreateEncodedProgramFromDisassemblerAndAssemblyProgram(
+    Group group) {
+  if (failed())
+    return;
+  Data* d = data(group);
+  d->encoded.reset(new EncodedProgram());
+  if (!check(d->disassembler->DisassembleAndEncode(d->program.get(),
+                                                   d->encoded.get()))) {
+    setMessage("Cannot disassemble to form EncodedProgram for %s.",
+               name(group));
+  }
 }
 
 void CourgetteFlow::WriteSinkStreamFromSinkStreamSet(Group group,
@@ -151,6 +165,12 @@ void CourgetteFlow::AdjustNewAssemblyProgramToMatchOld() {
     return;
   if (!check(Adjust(*data_old_.program, data_new_.program.get())))
     setMessage("Cannot adjust %s to match %s.", name(OLD), name(NEW));
+}
+
+void CourgetteFlow::DestroyDisassembler(Group group) {
+  if (failed())
+    return;
+  data(group)->disassembler.reset();
 }
 
 void CourgetteFlow::DestroyAssemblyProgram(Group group) {
