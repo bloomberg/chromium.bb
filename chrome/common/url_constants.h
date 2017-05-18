@@ -382,6 +382,9 @@ extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];
 extern const char kChromeHelpViaWebUIURL[];
 
+// Link to the forum for Chrome Beta.
+extern const char kChromeBetaForumURL[];
+
 #if defined(OS_CHROMEOS)
 // Accessibility help link for Chrome.
 extern const char kChromeAccessibilityHelpURL[];

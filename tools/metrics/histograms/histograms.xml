@@ -93187,6 +93187,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     </obsolete>
   </suffix>
   <suffix name="Cast"/>
+  <suffix name="BetaForum"/>
   <affected-histogram name="WrenchMenu.TimeToAction"/>
 </histogram_suffixes>
 

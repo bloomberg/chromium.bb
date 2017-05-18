@@ -1049,6 +1049,9 @@ Subsequent notifications, windows and dialogs may be split between desktops.
         <message name="IDS_HELP_PAGE" desc="The text label of the Help Center menu item">
           H&amp;elp center
         </message>
+        <message name="IDS_BETA_FORUM" desc="The text label of the menu item that takes the user to the forum for Beta Chrome.">
+          Beta forum
+        </message>
         <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
           Get H&amp;elp
         </message>
@@ -1083,6 +1086,9 @@ Subsequent notifications, windows and dialogs may be split between desktops.
         </message>
         <message name="IDS_HELP_PAGE" desc="The text label of the Help Center menu item">
           H&amp;elp Center
+        </message>
+        <message name="IDS_BETA_FORUM" desc="The text label of the menu item that takes the user to the forum for Beta Chrome.">
+          Beta Forum
         </message>
         <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
           Get H&amp;elp
