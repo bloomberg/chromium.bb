@@ -49,7 +49,7 @@
 #include "platform/graphics/paint/PaintImage.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-encoders/JPEGImageEncoder.h"
+#include "platform/image-encoders/ImageEncoder.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "platform/image-encoders/WEBPImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
@@ -64,6 +64,7 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
+#include "third_party/skia/include/encode/SkJpegEncoder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
@@ -546,21 +547,32 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {
   if (mime_type == "image/jpeg") {
-    if (!JPEGImageEncoder::Encode(*this, quality, encoded_image))
-      return false;
-  } else if (mime_type == "image/webp") {
+    SkImageInfo info =
+        SkImageInfo::Make(Width(), Height(), kRGBA_8888_SkColorType,
+                          kUnpremul_SkAlphaType, nullptr);
+    size_t rowBytes =
+        Width() * SkColorTypeBytesPerPixel(kRGBA_8888_SkColorType);
+    SkPixmap src(info, Pixels(), rowBytes);
+
+    SkJpegEncoder::Options options;
+    options.fQuality = ImageEncoder::ComputeJpegQuality(quality);
+    options.fAlphaOption = SkJpegEncoder::AlphaOption::kBlendOnBlack;
+    options.fBlendBehavior = SkTransferFunctionBehavior::kIgnore;
+    if (options.fQuality == 100) {
+      options.fDownsample = SkJpegEncoder::Downsample::k444;
+    }
+    return ImageEncoder::Encode(encoded_image, src, options);
+  }
+
+  if (mime_type == "image/webp") {
     int compression_quality = WEBPImageEncoder::kDefaultCompressionQuality;
     if (quality >= 0.0 && quality <= 1.0)
       compression_quality = static_cast<int>(quality * 100 + 0.5);
-    if (!WEBPImageEncoder::Encode(*this, compression_quality, encoded_image))
-      return false;
-  } else {
-    if (!PNGImageEncoder::Encode(*this, encoded_image))
-      return false;
-    DCHECK_EQ(mime_type, "image/png");
+    return WEBPImageEncoder::Encode(*this, compression_quality, encoded_image);
   }
 
-  return true;
+  DCHECK_EQ(mime_type, "image/png");
+  return PNGImageEncoder::Encode(*this, encoded_image);
 }
 
 String ImageDataBuffer::ToDataURL(const String& mime_type,
