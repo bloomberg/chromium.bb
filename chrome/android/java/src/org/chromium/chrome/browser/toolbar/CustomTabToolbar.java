@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -643,9 +644,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public boolean onLongClick(View v) {
         if (v == mCloseButton) {
-            return showAccessibilityToast(v, getResources().getString(R.string.close_tab));
+            return AccessibilityUtil.showAccessibilityToast(
+                    getContext(), v, getResources().getString(R.string.close_tab));
         } else if (v == mCustomActionButton) {
-            return showAccessibilityToast(v, mCustomActionButton.getContentDescription());
+            return AccessibilityUtil.showAccessibilityToast(
+                    getContext(), v, mCustomActionButton.getContentDescription());
         } else if (v == mTitleUrlContainer) {
             ClipboardManager clipboard = (ClipboardManager) getContext()
                     .getSystemService(Context.CLIPBOARD_SERVICE);

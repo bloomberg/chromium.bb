@@ -15,7 +15,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -39,7 +38,6 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.widget.Toast;
 
 import javax.annotation.Nullable;
 
@@ -284,29 +282,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 controlContainer, mProgressBar, (View) getParent());
         assert progressBarPosition >= 0;
         mProgressBar.setProgressBarContainer(controlContainer);
-    }
-
-    /**
-     * Shows the content description toast for items on the toolbar.
-     * @param view The view to anchor the toast.
-     * @param description The string shown in the toast.
-     * @return Whether a toast has been shown successfully.
-     */
-    protected boolean showAccessibilityToast(View view, CharSequence description) {
-        if (description == null) return false;
-
-        final int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        final int[] screenPos = new int[2];
-        view.getLocationOnScreen(screenPos);
-        final int width = view.getWidth();
-
-        Toast toast = Toast.makeText(getContext(), description, Toast.LENGTH_SHORT);
-        toast.setGravity(
-                Gravity.TOP | Gravity.END,
-                screenWidth - screenPos[0] - width / 2,
-                screenPos[1] + getHeight() / 2);
-        toast.show();
-        return true;
     }
 
     /**

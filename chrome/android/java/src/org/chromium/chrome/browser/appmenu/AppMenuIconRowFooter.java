@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,12 +16,14 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 
 /**
  * A {@link LinearLayout} that displays a horizontal row of icons for page actions.
  */
-public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickListener {
+public class AppMenuIconRowFooter
+        extends LinearLayout implements View.OnClickListener, View.OnLongClickListener {
     private ChromeActivity mActivity;
     private AppMenu mAppMenu;
 
@@ -37,21 +40,25 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
         mForwardButton = (TintedImageButton) findViewById(R.id.forward_menu_id);
         mForwardButton.setOnClickListener(this);
+        mForwardButton.setOnLongClickListener(this);
 
         mBookmarkButton = (TintedImageButton) findViewById(R.id.bookmark_this_page_id);
         mBookmarkButton.setOnClickListener(this);
+        mBookmarkButton.setOnLongClickListener(this);
 
         mDownloadButton = (TintedImageButton) findViewById(R.id.offline_page_id);
         mDownloadButton.setOnClickListener(this);
+        mDownloadButton.setOnLongClickListener(this);
 
         mPageInfoButton = (TintedImageButton) findViewById(R.id.info_menu_id);
         mPageInfoButton.setOnClickListener(this);
+        mPageInfoButton.setOnLongClickListener(this);
 
         mReloadButton = (TintedImageButton) findViewById(R.id.reload_menu_id);
         mReloadButton.setOnClickListener(this);
+        mReloadButton.setOnLongClickListener(this);
     }
 
     /**
@@ -81,6 +88,27 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     public void onClick(View v) {
         mActivity.onMenuOrKeyboardAction(v.getId(), true);
         mAppMenu.dismiss();
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        String description = null;
+        Context context = getContext();
+        Resources resources = context.getResources();
+        final int itemId = v.getId();
+
+        if (itemId == R.id.forward_menu_id) {
+            description = resources.getString(R.string.menu_forward);
+        } else if (itemId == R.id.bookmark_this_page_id) {
+            description = resources.getString(R.string.menu_bookmark);
+        } else if (itemId == R.id.offline_page_id) {
+            description = resources.getString(R.string.menu_download);
+        } else if (itemId == R.id.info_menu_id) {
+            description = resources.getString(R.string.menu_page_info);
+        } else if (itemId == R.id.reload_menu_id) {
+            description = resources.getString(R.string.menu_refresh);
+        }
+        return AccessibilityUtil.showAccessibilityToast(context, v, description);
     }
 
     /**
