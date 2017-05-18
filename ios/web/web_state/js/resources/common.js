@@ -634,19 +634,6 @@ __gCrWeb['common'] = __gCrWeb.common;
         }
       }
     }
-    if (!hasFavicon) {
-      // If an HTTP(S)? webpage does not reference a "favicon" then search
-      // for a file named "favicon.ico" at the root of the website (legacy).
-      // http://en.wikipedia.org/wiki/Favicon
-      var location = document.location;
-      if (location.protocol == 'http:' || location.protocol == 'https:') {
-        var favicon = {
-          rel: 'icon',
-          href: location.origin + '/favicon.ico'
-        };
-        favicons.push(favicon);
-      }
-    }
     return favicons;
   };
 

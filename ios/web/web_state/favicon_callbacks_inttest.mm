@@ -120,7 +120,7 @@ TEST_F(FaviconCallbackTest, AppleTouchIconPrecomposedFavicon) {
 // Tests page without favicon link.
 TEST_F(FaviconCallbackTest, NoFavicon) {
   ASSERT_TRUE(observer_->favicon_url_candidates().empty());
-  LoadHtml(@"<html></html>", GURL("https://chromium.test"));
+  LoadHtml(@"<html></html>", GURL("https://chromium.test/test/test.html"));
 
   WaitForCondition(^{
     return observer_->favicon_url_updated();
@@ -164,7 +164,8 @@ TEST_F(FaviconCallbackTest, MultipleFavicons) {
 // Tests page with invalid favicon url.
 TEST_F(FaviconCallbackTest, InvalidFaviconUrl) {
   ASSERT_TRUE(observer_->favicon_url_candidates().empty());
-  LoadHtml(@"<head><link rel='icon' href='http://'></head>");
+  LoadHtml(@"<html><head><link rel='icon' href='http://'></head></html>",
+           GURL("https://chromium.test"));
 
   WaitForCondition(^{
     return observer_->favicon_url_updated();
@@ -172,7 +173,7 @@ TEST_F(FaviconCallbackTest, InvalidFaviconUrl) {
 
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(1U, favicons.size());
-  EXPECT_EQ("http:", favicons[0].icon_url.possibly_invalid_spec());
+  EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
