@@ -48,7 +48,7 @@ $.widget('mobmonitor.healthDisplay', {
 
     function _removeService(service) {
       // Remove the UI elements.
-      var id = '#' + SERVICE_CONTAINER_PREFIX + service;
+      var id = 'div[id=' + SERVICE_CONTAINER_PREFIX + service + ']';
       $(id).empty();
       $(id).remove();
 
