@@ -285,12 +285,12 @@ build/android/adb_gdb_chrome_public
 build/android/adb_gdb_android_webview_shell http://example.com
 ```
 
-See [Debugging Chromium on Android](https://www.chromium.org/developers/how-tos/debugging-on-android)
+See [Android Debugging Instructions](android_debugging_instructions.md)
 for more on debugging, including how to debug Java code.
 
 ### Testing
 
-For information on running tests, see [android\_test\_instructions.md](https://chromium.googlesource.com/chromium/src/+/master/docs/android_test_instructions.md).
+For information on running tests, see [Android Test Instructions](android_test_instructions.md).
 
 ### Faster Edit/Deploy (GN only)
 
