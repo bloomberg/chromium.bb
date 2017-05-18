@@ -31,9 +31,8 @@ extra_cq_trybots = [
   },
   {
     "mastername": "master.tryserver.chromium.win",
-    "buildernames": ["win_clang_dbg"]
+    "buildernames": ["win_clang"]
   }
-
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
