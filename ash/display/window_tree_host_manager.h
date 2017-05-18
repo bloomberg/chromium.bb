@@ -39,7 +39,6 @@ class AshWindowTreeHost;
 struct AshWindowTreeHostInitParams;
 class CursorWindowController;
 class FocusActivationStore;
-class InputMethodEventHandler;
 class MirrorWindowController;
 class RootWindowController;
 
@@ -160,10 +159,6 @@ class ASH_EXPORT WindowTreeHostManager
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event) override;
 
-  InputMethodEventHandler* input_method_event_handler() {
-    return input_method_event_handler_.get();
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, BoundsUpdated);
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, SecondaryDisplayLayout);
@@ -195,7 +190,6 @@ class ASH_EXPORT WindowTreeHostManager
   std::unique_ptr<MirrorWindowController> mirror_window_controller_;
 
   std::unique_ptr<ui::InputMethod> input_method_;
-  std::unique_ptr<InputMethodEventHandler> input_method_event_handler_;
 
   // Stores the current cursor location (in native coordinates and screen
   // coordinates respectively). The locations are used to restore the cursor

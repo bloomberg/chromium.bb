@@ -8,7 +8,6 @@
 
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
-#include "ash/ime/input_method_event_handler.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -113,15 +112,6 @@ void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
   if (event->IsLocatedEvent())
     TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
   SendEventToSink(event);
-}
-
-ui::EventDispatchDetails AshWindowTreeHostPlatform::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
-  input_method_handler()->SetPostIME(true);
-  ui::EventDispatchDetails details = event_sink()->OnEventFromSource(event);
-  if (!details.dispatcher_destroyed)
-    input_method_handler()->SetPostIME(false);
-  return details;
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {

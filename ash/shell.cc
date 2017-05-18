@@ -41,7 +41,6 @@
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/ime/input_method_event_handler.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login_status.h"
@@ -614,10 +613,6 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
-  if (config != Config::MASH) {
-    RemovePreTargetHandler(
-        window_tree_host_manager_->input_method_event_handler());
-  }
 
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
@@ -947,13 +942,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
   maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
-
-  if (!ShouldUseIMEService()) {
-    // Not applicable when using IME service as events are already routed to
-    // InputMethod first.
-    AddPreTargetHandler(
-        window_tree_host_manager_->input_method_event_handler());
-  }
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());

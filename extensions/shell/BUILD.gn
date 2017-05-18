@@ -173,8 +173,6 @@ source_set("app_shell_lib") {
 
   if (use_aura) {
     sources += [
-      "browser/input_method_event_handler.cc",
-      "browser/input_method_event_handler.h",
       "browser/shell_app_window_client_aura.cc",
       "browser/shell_desktop_controller_aura.cc",
       "browser/shell_desktop_controller_aura.h",

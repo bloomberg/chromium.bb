@@ -25,6 +25,8 @@ class WindowTreeHostTestApi {
     host_->dispatcher_ = std::move(dispatcher);
   }
 
+  void disable_ime() { host_->dispatcher_->set_skip_ime(true); }
+
  private:
   WindowTreeHost* host_;
 
@@ -40,6 +42,10 @@ void SetHostDispatcher(WindowTreeHost* host,
                        std::unique_ptr<WindowEventDispatcher> dispatcher) {
   WindowTreeHostTestApi host_test_api(host);
   host_test_api.set_dispatcher(std::move(dispatcher));
+}
+
+void DisableIME(WindowTreeHost* host) {
+  WindowTreeHostTestApi(host).disable_ime();
 }
 
 }  // namespace test

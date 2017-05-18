@@ -11,7 +11,6 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/ime/input_method_event_handler.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
@@ -37,6 +36,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -447,13 +447,7 @@ void AshTestBase::UnblockUserSession() {
 }
 
 void AshTestBase::DisableIME() {
-  // WindowTreeHostManager isn't applicable to mash and IME is routed
-  // differently in mash.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
-  Shell::Get()->RemovePreTargetHandler(
-      Shell::Get()->window_tree_host_manager()->input_method_event_handler());
+  aura::test::DisableIME(Shell::GetPrimaryRootWindow()->GetHost());
 }
 
 display::DisplayManager* AshTestBase::display_manager() {

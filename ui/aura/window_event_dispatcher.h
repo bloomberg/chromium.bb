@@ -120,6 +120,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   //             observer.
   void OnPostNotifiedWindowDestroying(Window* window);
 
+  // True to skip sending event to the InputMethod.
+  void set_skip_ime(bool skip_ime) { skip_ime_ = skip_ime; }
+  bool should_skip_ime() const { return skip_ime_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowEventDispatcherTest,
                            KeepTranslatedEventInRoot);
@@ -238,6 +242,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                                  ui::MouseEvent* event);
   ui::EventDispatchDetails PreDispatchTouchEvent(Window* target,
                                                  ui::TouchEvent* event);
+  ui::EventDispatchDetails PreDispatchKeyEvent(ui::KeyEvent* event);
 
   WindowTreeHost* host_;
 
@@ -269,6 +274,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // The default EventTargeter for WindowEventDispatcher generated events.
   std::unique_ptr<WindowTargeter> event_targeter_;
+
+  bool skip_ime_;
 
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;

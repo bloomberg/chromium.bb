@@ -25,6 +25,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -92,6 +93,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       dispatching_held_event_(nullptr),
       observer_manager_(this),
       event_targeter_(new WindowTargeter),
+      skip_ime_(false),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
@@ -519,6 +521,8 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
     details = PreDispatchLocatedEvent(target_window, event->AsScrollEvent());
   } else if (event->IsTouchEvent()) {
     details = PreDispatchTouchEvent(target_window, event->AsTouchEvent());
+  } else if (event->IsKeyEvent()) {
+    details = PreDispatchKeyEvent(event->AsKeyEvent());
   }
   if (details.dispatcher_destroyed || details.target_destroyed)
     return details;
@@ -927,6 +931,16 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
   event->set_may_cause_scrolling(orig_event.may_cause_scrolling());
 
   return PreDispatchLocatedEvent(target, event);
+}
+
+ui::EventDispatchDetails WindowEventDispatcher::PreDispatchKeyEvent(
+    ui::KeyEvent* event) {
+  if (skip_ime_ || !host_->has_input_method() ||
+      (event->flags() & ui::EF_IS_SYNTHESIZED))
+    return ui::EventDispatchDetails();
+  host_->GetInputMethod()->DispatchKeyEvent(event);
+  event->StopPropagation();
+  return ui::EventDispatchDetails();
 }
 
 }  // namespace aura

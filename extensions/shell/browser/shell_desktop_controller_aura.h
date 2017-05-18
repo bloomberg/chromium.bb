@@ -53,7 +53,6 @@ class CursorManager;
 namespace extensions {
 class AppWindowClient;
 class Extension;
-class InputMethodEventHandler;
 class ShellScreen;
 
 // Simple desktop controller for app_shell. Sets up a root Aura window for the
@@ -127,8 +126,6 @@ class ShellDesktopControllerAura
   std::unique_ptr<aura::WindowTreeHost> host_;
 
   std::unique_ptr<wm::CompoundEventFilter> root_window_event_filter_;
-
-  std::unique_ptr<InputMethodEventHandler> input_method_event_handler_;
 
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
 

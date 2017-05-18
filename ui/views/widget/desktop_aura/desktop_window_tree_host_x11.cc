@@ -1813,7 +1813,7 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
 
 void DesktopWindowTreeHostX11::DispatchKeyEvent(ui::KeyEvent* event) {
   if (native_widget_delegate_->AsWidget()->IsActive())
-    GetInputMethod()->DispatchKeyEvent(event);
+    SendEventToSink(event);
 }
 
 void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(

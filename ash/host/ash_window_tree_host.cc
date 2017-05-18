@@ -21,7 +21,7 @@
 
 namespace ash {
 
-AshWindowTreeHost::AshWindowTreeHost() : input_method_handler_(nullptr) {}
+AshWindowTreeHost::AshWindowTreeHost() {}
 
 AshWindowTreeHost::~AshWindowTreeHost() = default;
 

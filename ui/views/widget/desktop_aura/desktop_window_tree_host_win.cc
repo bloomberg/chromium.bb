@@ -837,7 +837,7 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 void DesktopWindowTreeHostWin::HandleKeyEvent(ui::KeyEvent* event) {
-  GetInputMethod()->DispatchKeyEvent(event);
+  SendEventToSink(event);
 }
 
 void DesktopWindowTreeHostWin::HandleTouchEvent(
