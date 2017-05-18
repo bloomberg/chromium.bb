@@ -15,7 +15,6 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/host/root_window_transformer.h"
-#include "ash/ime/input_method_event_handler.h"
 #include "base/sys_info.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -211,15 +210,6 @@ void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
     ui::LocatedEvent* event) {
   TranslateLocatedEvent(event);
   SendEventToSink(event);
-}
-
-ui::EventDispatchDetails AshWindowTreeHostX11::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
-  input_method_handler()->SetPostIME(true);
-  ui::EventDispatchDetails details = event_sink()->OnEventFromSource(event);
-  if (!details.dispatcher_destroyed)
-    input_method_handler()->SetPostIME(false);
-  return details;
 }
 
 void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {

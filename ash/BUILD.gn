@@ -177,8 +177,6 @@ component("ash") {
     "host/root_window_transformer.h",
     "host/transformer_helper.cc",
     "host/transformer_helper.h",
-    "ime/input_method_event_handler.cc",
-    "ime/input_method_event_handler.h",
     "ime_control_delegate.h",
     "key_event_watcher.cc",
     "key_event_watcher.h",

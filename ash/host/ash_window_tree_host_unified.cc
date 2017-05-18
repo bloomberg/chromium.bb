@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/host/root_window_transformer.h"
-#include "ash/ime/input_method_event_handler.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"

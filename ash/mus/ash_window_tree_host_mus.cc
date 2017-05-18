@@ -6,7 +6,6 @@
 
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
-#include "ash/ime/input_method_event_handler.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
@@ -84,17 +83,6 @@ gfx::Transform AshWindowTreeHostMus::GetInverseRootTransform() const {
 void AshWindowTreeHostMus::UpdateRootWindowSizeInPixels(
     const gfx::Size& host_size_in_pixels) {
   transformer_helper_->UpdateWindowSize(host_size_in_pixels);
-}
-
-ui::EventDispatchDetails AshWindowTreeHostMus::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
-  // input_method_handler() can be null when using IME service with --mus.
-  if (input_method_handler())
-    input_method_handler()->SetPostIME(true);
-  ui::EventDispatchDetails details = SendEventToSink(event);
-  if (input_method_handler() && !details.dispatcher_destroyed)
-    input_method_handler()->SetPostIME(false);
-  return details;
 }
 
 }  // namespace ash

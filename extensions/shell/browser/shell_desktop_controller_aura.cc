@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
-#include "extensions/shell/browser/input_method_event_handler.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
 #include "extensions/shell/browser/shell_screen.h"
@@ -275,19 +274,7 @@ void ShellDesktopControllerAura::OnHostCloseRequested(
 
 ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
     ui::KeyEvent* key_event) {
-  // The input method has processed this event, so prevent the handler from
-  // dispatching it again.
-  input_method_event_handler_->set_post_ime(true);
-
-  // Send the event on to the host.
-  ui::EventDispatchDetails details =
-      host_->event_sink()->OnEventFromSource(key_event);
-
-  // Clear the handler's PostIME flag for the next event.
-  if (!details.dispatcher_destroyed)
-    input_method_event_handler_->set_post_ime(false);
-
-  return details;
+  return host_->DispatchKeyEventPostIME(key_event);
 }
 
 void ShellDesktopControllerAura::InitWindowManager() {
@@ -346,8 +333,6 @@ void ShellDesktopControllerAura::CreateRootWindow() {
   // Trigger creation of an input method and become its delegate.
   ui::InputMethod* input_method = host_->GetInputMethod();
   input_method->SetDelegate(this);
-  input_method_event_handler_.reset(new InputMethodEventHandler(input_method));
-  host_->window()->AddPreTargetHandler(input_method_event_handler_.get());
 
   InitWindowManager();
 
@@ -365,9 +350,6 @@ void ShellDesktopControllerAura::DestroyRootWindow() {
     host_->window()->RemovePreTargetHandler(focus_controller);
     aura::client::SetActivationClient(host_->window(), NULL);
   }
-
-  host_->window()->RemovePreTargetHandler(input_method_event_handler_.get());
-  input_method_event_handler_.reset();
 
   host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
   root_window_event_filter_.reset();

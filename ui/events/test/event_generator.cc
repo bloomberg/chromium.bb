@@ -688,8 +688,6 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     }
     pending_events_.push_back(std::move(pending_event));
   } else {
-    if (event->IsKeyEvent())
-      delegate()->DispatchKeyEventToIME(current_target_, event->AsKeyEvent());
     MaybeDispatchToPointerWatchers(*event);
     if (!event->handled()) {
       ui::EventSource* event_source =

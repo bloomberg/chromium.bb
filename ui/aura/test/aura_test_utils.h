@@ -22,6 +22,7 @@ namespace test {
 const gfx::Point& QueryLatestMousePositionRequestInHost(WindowTreeHost* host);
 void SetHostDispatcher(WindowTreeHost* host,
                        std::unique_ptr<WindowEventDispatcher> dispatcher);
+void DisableIME(WindowTreeHost* host);
 
 }  // namespace test
 }  // namespace aura
