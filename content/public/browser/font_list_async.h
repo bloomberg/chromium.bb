@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -20,11 +20,10 @@ namespace content {
 // a non-blocking interface to GetFontList_SlowBlocking in common/.
 //
 // This function will run asynchronously on a background thread since getting
-// the font list from the system can be slow. This function may be called from
-// any thread that has a BrowserThread::ID. The callback will be executed on
-// the calling thread.
+// the font list from the system can be slow. The callback will be executed on
+// the calling sequence.
 CONTENT_EXPORT void GetFontListAsync(
-    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback);
+    base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback);
 
 }  // namespace content
 
