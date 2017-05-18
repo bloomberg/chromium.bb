@@ -111,6 +111,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [super viewWillDisappear:animated];
 
   _clientGestures = nil;
+  _client = nil;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
