@@ -33,7 +33,20 @@ namespace content {
 class CONTENT_EXPORT AudioOutputDelegateImpl
     : public media::AudioOutputDelegate {
  public:
-  AudioOutputDelegateImpl(EventHandler* handler,
+  static std::unique_ptr<AudioOutputDelegate> Create(
+      EventHandler* handler,
+      media::AudioManager* audio_manager,
+      std::unique_ptr<media::AudioLog> audio_log,
+      AudioMirroringManager* mirroring_manager,
+      MediaObserver* media_observer,
+      int stream_id,
+      int render_frame_id,
+      int render_process_id,
+      const media::AudioParameters& params,
+      const std::string& output_device_id);
+
+  AudioOutputDelegateImpl(std::unique_ptr<AudioSyncReader> reader,
+                          EventHandler* handler,
                           media::AudioManager* audio_manager,
                           std::unique_ptr<media::AudioLog> audio_log,
                           AudioMirroringManager* mirroring_manager,

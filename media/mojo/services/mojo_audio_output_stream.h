@@ -61,6 +61,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStream
   mojo::Binding<AudioOutputStream> binding_;
   base::ThreadChecker thread_checker_;
   std::unique_ptr<AudioOutputDelegate> delegate_;
+  base::WeakPtrFactory<MojoAudioOutputStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioOutputStream);
 };

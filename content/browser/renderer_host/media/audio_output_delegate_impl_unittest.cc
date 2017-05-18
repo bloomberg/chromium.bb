@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
+#include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -33,6 +34,10 @@ using ::testing::NotNull;
 using ::testing::StrictMock;
 
 namespace content {
+
+media::AudioParameters Params() {
+  return media::AudioParameters::UnavailableDeviceParams();
+}
 
 namespace {
 
@@ -126,12 +131,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       SyncWithAllThreads();
 
@@ -150,12 +155,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.OnPlayStream();
 
@@ -176,12 +181,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.OnPauseStream();
 
@@ -202,12 +207,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.OnPlayStream();
       delegate.OnPauseStream();
@@ -230,12 +235,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.OnPlayStream();
       delegate.OnPlayStream();
@@ -258,12 +263,12 @@ class AudioOutputDelegateTest : public testing::Test {
     DummyAudioOutputStream stream;
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.GetControllerForTesting()->StartDiverting(&stream);
 
@@ -285,12 +290,12 @@ class AudioOutputDelegateTest : public testing::Test {
     DummyAudioOutputStream stream;
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.GetControllerForTesting()->StartDiverting(&stream);
 
@@ -315,12 +320,12 @@ class AudioOutputDelegateTest : public testing::Test {
     DummyAudioOutputStream stream;
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.OnPlayStream();
       delegate.GetControllerForTesting()->StartDiverting(&stream);
@@ -343,12 +348,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       delegate.GetControllerForTesting()->OnError(nullptr);
 
@@ -369,12 +374,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
     }
     SyncWithAllThreads();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
@@ -390,12 +395,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
 
       SyncWithAllThreads();
 
@@ -415,12 +420,12 @@ class AudioOutputDelegateTest : public testing::Test {
 
     {
       AudioOutputDelegateImpl delegate(
-          &event_handler_, audio_manager_.get(),
+          AudioSyncReader::Create(Params()), &event_handler_,
+          audio_manager_.get(),
           log_factory_.CreateAudioLog(
               media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER),
           &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
-          kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
-          kDefaultDeviceId);
+          kRenderProcessId, Params(), kDefaultDeviceId);
       SyncWithAllThreads();
 
       delegate.GetControllerForTesting()->OnError(nullptr);

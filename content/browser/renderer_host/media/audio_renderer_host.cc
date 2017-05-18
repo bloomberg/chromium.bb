@@ -292,11 +292,14 @@ void AudioRendererHost::OnCreateStream(int stream_id,
       media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER);
   media_internals->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log.get());
-  delegates_.push_back(
-      base::WrapUnique<media::AudioOutputDelegate>(new AudioOutputDelegateImpl(
-          this, audio_manager_, std::move(audio_log), mirroring_manager_,
-          media_observer, stream_id, render_frame_id, render_process_id_,
-          params, device_unique_id)));
+  auto delegate = AudioOutputDelegateImpl::Create(
+      this, audio_manager_, std::move(audio_log), mirroring_manager_,
+      media_observer, stream_id, render_frame_id, render_process_id_, params,
+      device_unique_id);
+  if (delegate)
+    delegates_.push_back(std::move(delegate));
+  else
+    SendErrorMessage(stream_id);
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

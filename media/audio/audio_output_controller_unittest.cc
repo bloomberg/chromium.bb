@@ -279,10 +279,6 @@ TEST_F(AudioOutputControllerTest, CreateAndClose) {
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, HardwareBufferTooLarge) {
-  Create(kSamplesPerPacket * 1000);
-}
-
 TEST_F(AudioOutputControllerTest, PlayAndClose) {
   Create(kSamplesPerPacket);
   Play();

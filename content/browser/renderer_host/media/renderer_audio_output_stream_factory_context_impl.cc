@@ -92,7 +92,7 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
   media_internals->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log.get());
 
-  return base::MakeUnique<AudioOutputDelegateImpl>(
+  return AudioOutputDelegateImpl::Create(
       handler, audio_manager_, std::move(audio_log),
       AudioMirroringManager::GetInstance(), media_observer, stream_id,
       render_frame_id, render_process_id_, params, unique_device_id);
