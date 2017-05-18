@@ -29,7 +29,6 @@ class ValidationMessageBubbleView
   ~ValidationMessageBubbleView() override;
 
   // BubbleDialogDelegateView overrides:
-  gfx::Size GetPreferredSize() const override;
   int GetDialogButtons() const override;
 
   // ValidationMessageBubble overrides:
@@ -42,8 +41,6 @@ class ValidationMessageBubbleView
   gfx::Rect RootViewToScreenRect(
       const gfx::Rect& rect_in_root_view,
       const content::RenderWidgetHostView* render_widget_host_view) const;
-
-  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidationMessageBubbleView);
 };

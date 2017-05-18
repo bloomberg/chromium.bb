@@ -37,7 +37,6 @@ class KeywordHintView : public views::CustomButton {
                   Profile* profile,
                   const gfx::FontList& font_list,
                   const gfx::FontList& chip_font_list,
-                  int chip_height,
                   SkColor text_color,
                   SkColor background_color);
   ~KeywordHintView() override;
@@ -60,10 +59,9 @@ class KeywordHintView : public views::CustomButton {
   Profile* profile_;
 
   views::Label* leading_label_;
-  views::Label* chip_view_;
+  views::View* chip_container_;
+  views::Label* chip_label_;
   views::Label* trailing_label_;
-
-  int chip_view_height_;
 
   base::string16 keyword_;
 
