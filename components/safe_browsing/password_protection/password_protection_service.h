@@ -75,10 +75,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     return weak_factory_.GetWeakPtr();
   }
 
-  // Checks if |url| matches CSD whitelist and record UMA metric accordingly.
-  // Currently called by PasswordReuseDetectionManager on UI thread.
-  void RecordPasswordReuse(const GURL& url);
-
   // Looks up |settings| to find the cached verdict response. If verdict is not
   // available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
   // any thread.
@@ -101,12 +97,17 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void StartRequest(const GURL& main_frame_url,
                     const GURL& password_form_action,
                     const GURL& password_form_frame_url,
+                    const std::string& saved_domain,
                     LoginReputationClientRequest::TriggerType type);
 
   virtual void MaybeStartPasswordFieldOnFocusRequest(
       const GURL& main_frame_url,
       const GURL& password_form_action,
       const GURL& password_form_frame_url);
+
+  virtual void MaybeStartProtectedPasswordEntryRequest(
+      const GURL& main_frame_url,
+      const std::string& saved_domain);
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
@@ -158,10 +159,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsHistorySyncEnabled() = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
-
-  // Increases "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist" UMA
-  // metric based on input.
-  void OnMatchCsdWhiteListResult(const bool* match_whitelist);
 
   HostContentSettingsMap* content_settings() const { return content_settings_; }
 

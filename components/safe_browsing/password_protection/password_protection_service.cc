@@ -98,18 +98,6 @@ PasswordProtectionService::~PasswordProtectionService() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void PasswordProtectionService::RecordPasswordReuse(const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(database_manager_);
-  bool* match_whitelist = new bool(false);
-  tracker_.PostTaskAndReply(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
-      base::Bind(&PasswordProtectionService::CheckCsdWhitelistOnIOThread,
-                 base::Unretained(this), url, match_whitelist),
-      base::Bind(&PasswordProtectionService::OnMatchCsdWhiteListResult,
-                 base::Unretained(this), base::Owned(match_whitelist)));
-}
-
 void PasswordProtectionService::CheckCsdWhitelistOnIOThread(
     const GURL& url,
     bool* check_result) {
@@ -266,12 +254,13 @@ void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
+    const std::string& saved_domain,
     LoginReputationClientRequest::TriggerType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<PasswordProtectionRequest> request(
       new PasswordProtectionRequest(main_frame_url, password_form_action,
-                                    password_form_frame_url, type, this,
-                                    GetRequestTimeoutInMS()));
+                                    password_form_frame_url, saved_domain, type,
+                                    this, GetRequestTimeoutInMS()));
   DCHECK(request);
   request->Start();
   requests_.insert(std::move(request));
@@ -294,7 +283,28 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
   }
 
   StartRequest(main_frame_url, password_form_action, password_form_frame_url,
+               std::string(), /* saved_domain: not used for this type */
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+}
+
+void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
+    const GURL& main_frame_url,
+    const std::string& saved_domain) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RequestOutcome request_outcome;
+  if (!IsPingingEnabled(kProtectedPasswordEntryPinging, &request_outcome)) {
+    RecordPingingDisabledReason(kProtectedPasswordEntryPinging,
+                                request_outcome);
+    return;
+  }
+
+  // Skip URLs that we can't get a reliable reputation for.
+  if (!main_frame_url.is_valid() || !main_frame_url.SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+
+  StartRequest(main_frame_url, GURL(), GURL(), saved_domain,
+               LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 }
 
 void PasswordProtectionService::RequestFinished(
@@ -396,19 +406,15 @@ void PasswordProtectionService::FillUserPopulation(
   }
 }
 
-void PasswordProtectionService::OnMatchCsdWhiteListResult(
-    const bool* match_whitelist) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist",
-      *match_whitelist);
-}
-
 void PasswordProtectionService::OnURLsDeleted(
     history::HistoryService* history_service,
     bool all_history,
     bool expired,
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
+  if (stored_verdict_count_ <= 0)
+    return;
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PasswordProtectionService::RemoveContentSettingsOnURLsDeleted,

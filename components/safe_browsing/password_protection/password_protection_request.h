@@ -43,6 +43,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   PasswordProtectionRequest(const GURL& main_frame_url,
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
+                            const std::string& saved_domain,
                             LoginReputationClientRequest::TriggerType type,
                             PasswordProtectionService* pps,
                             int request_timeout_in_ms);
@@ -64,6 +65,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   GURL main_frame_url() const { return main_frame_url_; }
+
+  LoginReputationClientRequest* request_proto() { return request_proto_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<PasswordProtectionRequest>;
@@ -108,6 +111,9 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   // Frame url of the detected password form.
   const GURL password_form_frame_url_;
+
+  // Domain on which a password is saved and gets reused.
+  const std::string saved_domain_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
   const LoginReputationClientRequest::TriggerType request_type_;

@@ -66,9 +66,7 @@ void PasswordReuseDetectionManager::OnReuseFound(
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // TODO(jialiul): After CSD whitelist being added to Android, we should gate
   // this by either SAFE_BROWSING_DB_LOCAL or SAFE_BROWSING_DB_REMOTE.
-  safe_browsing::PasswordProtectionService* password_protection_service =
-      client_->GetPasswordProtectionService();
-  password_protection_service->RecordPasswordReuse(main_frame_url_);
+  client_->CheckProtectedPasswordEntry(legitimate_domain);
 #endif
 }
 

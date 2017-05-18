@@ -49838,6 +49838,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist"
     enum="Boolean">
+  <obsolete>
+    Deprecated as of May 17 2017. Replaced by
+    PasswordProtection.RequestOutcome.ProtectedPasswordEntry.
+  </obsolete>
   <owner>dvadym@chromium.org</owner>
   <owner>jialiul@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
