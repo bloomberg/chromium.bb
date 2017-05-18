@@ -1096,11 +1096,11 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
 
 static INLINE int tx_size_to_depth(TX_SIZE tx_size) {
-  return (int)(tx_size - TX_4X4);
+  return (int)(tx_size - TX_SIZE_LUMA_MIN);
 }
 
 static INLINE TX_SIZE depth_to_tx_size(int depth) {
-  return (TX_SIZE)(depth + TX_4X4);
+  return (TX_SIZE)(depth + TX_SIZE_LUMA_MIN);
 }
 
 static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,

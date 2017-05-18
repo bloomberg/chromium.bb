@@ -231,7 +231,9 @@ static void update_tx_counts(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   if (tx_size == plane_tx_size) {
-    ++xd->counts->tx_size[max_tx_size - TX_8X8][ctx][tx_size];
+    int depth;
+    depth = tx_size_to_depth(tx_size);
+    ++xd->counts->tx_size[max_tx_size - TX_SIZE_CTX_MIN][ctx][depth];
     mbmi->tx_size = tx_size;
   } else {
     int bsl = b_width_log2_lookup[bsize];

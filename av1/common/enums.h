@@ -175,7 +175,12 @@ typedef enum ATTRIBUTE_PACKED {
   TX_INVALID = 255    // Invalid transform size
 } TX_SIZE;
 
-#define MAX_TX_DEPTH (TX_SIZES - 1 - TX_4X4)
+#define TX_SIZE_LUMA_MIN (TX_4X4)
+/* We don't need to code a transform size unless the allowed size is at least
+   one more than the minimum. */
+#define TX_SIZE_CTX_MIN (TX_SIZE_LUMA_MIN + 1)
+
+#define MAX_TX_DEPTH (TX_SIZES - TX_SIZE_CTX_MIN)
 
 #define MAX_TX_SIZE_LOG2 (5 + CONFIG_TX64X64)
 #define MAX_TX_SIZE (1 << MAX_TX_SIZE_LOG2)

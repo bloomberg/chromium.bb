@@ -401,7 +401,7 @@ typedef struct FRAME_COUNTS {
   // to use forward updates for the coeff probs, and as such it does not really
   // belong into this structure.
   unsigned int tx_size_totals[TX_SIZES];
-  unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][TX_SIZES];
+  unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
 #if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
   unsigned int quarter_tx_size[2];
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
