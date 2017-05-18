@@ -22,6 +22,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -683,10 +684,10 @@ bool IsChromeRegisteredForProtocol(const base::string16& suffix,
 // show the user the standard elevation prompt. If the user accepts it the new
 // process will make the necessary changes and return SUCCESS that we capture
 // and return. If protocol is non-empty we will also register Chrome as being
-// capable of handling the protocol. This is most commonly used on per-user
-// installs on Windows 7 where setup.exe did not have permission to register
-// Chrome during install. It may also be used on all OSs for system-level
-// installs in case Chrome's registration is somehow broken or missing.
+// capable of handling the protocol. This is used for general browser
+// registration on Windows 7 for per-user installs where setup.exe did not have
+// permission to register Chrome during install. It may also be used on Windows
+// 7 for system-level installs to register Chrome for a specific protocol.
 bool ElevateAndRegisterChrome(BrowserDistribution* dist,
                               const base::FilePath& chrome_exe,
                               const base::string16& suffix,
@@ -2093,10 +2094,14 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   if (IsChromeRegistered(dist, chrome_exe, suffix, look_for_in))
     return true;
 
-  bool result = true;
+  // Ensure that the shell is notified of the mutations below. Specific exit
+  // points may disable this if no mutations are made.
+  base::ScopedClosureRunner notify_on_exit(base::Bind([] {
+    SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
+  }));
+
+  // Do the full registration at user-level or if the user is an admin.
   if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
-    // Do the full registration if we can do it at user-level or if the user is
-    // an admin.
     std::vector<std::unique_ptr<RegistryEntry>> progid_and_appreg_entries;
     std::vector<std::unique_ptr<RegistryEntry>> shell_entries;
     GetChromeProgIdEntries(dist, chrome_exe, suffix,
@@ -2104,44 +2109,46 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     GetChromeAppRegistrationEntries(chrome_exe, suffix,
                                     &progid_and_appreg_entries);
     GetShellIntegrationEntries(dist, chrome_exe, suffix, &shell_entries);
-    result = (AddRegistryEntries(root, progid_and_appreg_entries) &&
-              AddRegistryEntries(root, shell_entries));
-  } else if (elevate_if_not_admin &&
-      base::win::GetVersion() >= base::win::VERSION_VISTA &&
-      ElevateAndRegisterChrome(dist, chrome_exe, suffix, base::string16())) {
-    // If the user is not an admin and OS is between Vista and Windows 7
-    // inclusively, try to elevate and register. This is only intended for
-    // user-level installs as system-level installs should always be run with
-    // admin rights.
-    result = true;
-  } else {
-    // If we got to this point then all we can do is create ProgId and basic app
-    // registrations under HKCU.
-    std::vector<std::unique_ptr<RegistryEntry>> entries;
-    GetChromeProgIdEntries(dist, chrome_exe, base::string16(), &entries);
-    // Prefer to use |suffix|; unless Chrome's ProgIds are already registered
-    // with no suffix (as per the old registration style): in which case some
-    // other registry entries could refer to them and since we were not able to
-    // set our HKLM entries above, we are better off not altering these here.
-    if (!AreEntriesAsDesired(entries, RegistryEntry::LOOK_IN_HKCU)) {
-      if (!suffix.empty()) {
-        entries.clear();
-        GetChromeProgIdEntries(dist, chrome_exe, suffix, &entries);
-        GetChromeAppRegistrationEntries(chrome_exe, suffix, &entries);
-      }
-      result = AddRegistryEntries(HKEY_CURRENT_USER, entries);
-    } else {
-      // The ProgId is registered unsuffixed in HKCU, also register the app with
-      // Windows in HKCU (this was not done in the old registration style and
-      // thus needs to be done after the above check for the unsuffixed
-      // registration).
-      entries.clear();
-      GetChromeAppRegistrationEntries(chrome_exe, base::string16(), &entries);
-      result = AddRegistryEntries(HKEY_CURRENT_USER, entries);
-    }
+    return AddRegistryEntries(root, progid_and_appreg_entries) &&
+           AddRegistryEntries(root, shell_entries);
   }
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
-  return result;
+  // The installer is responsible for registration for system-level installs, so
+  // never try to do it here. Getting to this point for a system-level install
+  // likely means that IsChromeRegistered thinks registration is broken due to
+  // localization issues (see https://crbug.com/717913#c18). It likely is not,
+  // so return success to allow Chrome to be made default.
+  if (!user_level) {
+    notify_on_exit.Release().Reset();
+    return true;
+  }
+  // Try to elevate and register if requested for per-user installs if the user
+  // is not an admin.
+  if (elevate_if_not_admin &&
+      ElevateAndRegisterChrome(dist, chrome_exe, suffix, base::string16())) {
+    return true;
+  }
+  // If we got to this point then all we can do is create ProgId and basic app
+  // registrations under HKCU.
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
+  GetChromeProgIdEntries(dist, chrome_exe, base::string16(), &entries);
+  // Prefer to use |suffix|; unless Chrome's ProgIds are already registered with
+  // no suffix (as per the old registration style): in which case some other
+  // registry entries could refer to them and since we were not able to set our
+  // HKLM entries above, we are better off not altering these here.
+  if (!AreEntriesAsDesired(entries, RegistryEntry::LOOK_IN_HKCU)) {
+    if (!suffix.empty()) {
+      entries.clear();
+      GetChromeProgIdEntries(dist, chrome_exe, suffix, &entries);
+      GetChromeAppRegistrationEntries(chrome_exe, suffix, &entries);
+    }
+    return AddRegistryEntries(HKEY_CURRENT_USER, entries);
+  }
+  // The ProgId is registered unsuffixed in HKCU, also register the app with
+  // Windows in HKCU (this was not done in the old registration style and thus
+  // needs to be done after the above check for the unsuffixed registration).
+  entries.clear();
+  GetChromeAppRegistrationEntries(chrome_exe, base::string16(), &entries);
+  return AddRegistryEntries(HKEY_CURRENT_USER, entries);
 }
 
 bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
