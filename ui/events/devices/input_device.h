@@ -46,7 +46,7 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
   std::string name;
 
   // If the device is enabled, and whether events should be dispatched to UI.
-  bool enabled = false;
+  bool enabled = true;
 
   // The path to the input device in the sysfs filesystem.
   base::FilePath sys_path;
