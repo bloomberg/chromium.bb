@@ -1008,9 +1008,9 @@ viral concept: if `gfx::mojom::Rect` is mapped to `gfx::Rect` anywhere, the
 mapping needs to apply *everywhere*.
 
 For this reason we have a few global typemap configurations defined in
-[chromium_bindings_configuration.gni](https://cs.chromium.com/chromium/src/mojo/public/tools/bindings/chromium_bindings_configuration.gni)
+[chromium_bindings_configuration.gni](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/chromium_bindings_configuration.gni)
 and
-[blink_bindings_configuration.gni](https://cs.chromium.com/chromium/src/mojo/public/tools/bindings/blink_bindings_configuration.gni). These configure the two supported [variants](#Variants) of Mojom generated
+[blink_bindings_configuration.gni](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/blink_bindings_configuration.gni). These configure the two supported [variants](#Variants) of Mojom generated
 bindings in the repository. Read more on this in the sections that follow.
 
 For now, let's take a look at how to express the mapping from `gfx::mojom::Rect`
@@ -1166,7 +1166,7 @@ typemaps = [
 
 And finally we can reference this file in the global default (Chromium) bindings
 configuration by adding it to `_typemap_imports` in
-[chromium_bindings_configuration.gni](https://cs.chromium.com/chromium/src/mojo/public/tools/bindings/chromium_bindings_configuration.gni):
+[chromium_bindings_configuration.gni](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/chromium_bindings_configuration.gni):
 
 ```
 _typemap_imports = [
