@@ -21,6 +21,7 @@ class SandboxMacCompilerTest : public base::MultiProcessTest {};
 MULTIPROCESS_TEST_MAIN(BasicProfileProcess) {
   std::string profile =
       "(version 1)"
+      "(deny default (with no-log))"
       "(allow file-read* file-write* (literal \"/\"))";
 
   SandboxCompiler compiler(profile);
@@ -43,6 +44,7 @@ TEST_F(SandboxMacCompilerTest, BasicProfileTest) {
 MULTIPROCESS_TEST_MAIN(BasicProfileWithParamProcess) {
   std::string profile =
       "(version 1)"
+      "(deny default (with no-log))"
       "(allow file-read* file-write* (literal (param \"DIR\")))";
 
   SandboxCompiler compiler(profile);
@@ -67,7 +69,7 @@ TEST_F(SandboxMacCompilerTest, BasicProfileTestWithParam) {
 MULTIPROCESS_TEST_MAIN(ProfileFunctionalProcess) {
   std::string profile =
       "(version 1)"
-      "(debug deny)"
+      "(deny default (with no-log))"
       "(allow file-read-data file-read-metadata (literal \"/dev/urandom\"))";
 
   SandboxCompiler compiler(profile);
@@ -98,7 +100,7 @@ TEST_F(SandboxMacCompilerTest, ProfileFunctionalityTest) {
 MULTIPROCESS_TEST_MAIN(ProfileFunctionalTestWithParamsProcess) {
   std::string profile =
       "(version 1)"
-      "(debug deny)"
+      "(deny default (with no-log))"
       "(if (string=? (param \"ALLOW_FILE\") \"TRUE\")"
       "    (allow file-read-data file-read-metadata (literal (param "
       "\"URANDOM\"))))";
