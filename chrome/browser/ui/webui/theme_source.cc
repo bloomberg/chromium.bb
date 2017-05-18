@@ -62,14 +62,6 @@ void ProcessResourceOnUiThread(int resource_id,
       scale, data);
 }
 
-base::RefCountedMemory* GetNewTabCSSOnUiThread(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  NTPResourceCache::WindowType type =
-      NTPResourceCache::GetWindowType(profile, nullptr);
-  return NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(type);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,8 +69,7 @@ base::RefCountedMemory* GetNewTabCSSOnUiThread(Profile* profile) {
 
 ThemeSource::ThemeSource(Profile* profile) : profile_(profile) {}
 
-ThemeSource::~ThemeSource() {
-}
+ThemeSource::~ThemeSource() = default;
 
 std::string ThemeSource::GetSource() const {
   return chrome::kChromeUIThemeHost;
@@ -94,11 +85,11 @@ void ThemeSource::StartDataRequest(
   webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, &scale);
 
   if (IsNewTabCssPath(parsed_path)) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    // NB: it's important that this is |profile_| and not |original_profile_|.
-    content::BrowserThread::PostTaskAndReplyWithResult(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&GetNewTabCSSOnUiThread, profile_), callback);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    NTPResourceCache::WindowType type =
+        NTPResourceCache::GetWindowType(profile_, /*render_host=*/nullptr);
+    NTPResourceCache* cache = NTPResourceCacheFactory::GetForProfile(profile_);
+    callback.Run(cache->GetNewTabCSS(type));
     return;
   }
 
@@ -167,9 +158,9 @@ ThemeSource::TaskRunnerForRequestPath(const std::string& path) const {
   webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
 
   if (IsNewTabCssPath(parsed_path)) {
-    // We generated and cached this when we initialized the object.  We don't
-    // have to go back to the UI thread to send the data.
-    return nullptr;
+    // We'll get this data from the NTPResourceCache, which must be accessed on
+    // the UI thread.
+    return content::URLDataSource::TaskRunnerForRequestPath(path);
   }
 
   // If it's not a themeable image, we don't need to go to the UI thread.
