@@ -106,7 +106,7 @@ void BluetoothTestMac::InitWithDefaultAdapter() {
 
 void BluetoothTestMac::InitWithoutDefaultAdapter() {
   adapter_mac_ = BluetoothAdapterMac::CreateAdapterForTest(
-                     "", "", message_loop_.task_runner())
+                     "", "", scoped_task_environment_.GetMainThreadTaskRunner())
                      .get();
   adapter_ = adapter_mac_;
 
@@ -120,10 +120,10 @@ void BluetoothTestMac::InitWithoutDefaultAdapter() {
 }
 
 void BluetoothTestMac::InitWithFakeAdapter() {
-  adapter_mac_ =
-      BluetoothAdapterMac::CreateAdapterForTest(
-          kTestAdapterName, kTestAdapterAddress, message_loop_.task_runner())
-          .get();
+  adapter_mac_ = BluetoothAdapterMac::CreateAdapterForTest(
+                     kTestAdapterName, kTestAdapterAddress,
+                     scoped_task_environment_.GetMainThreadTaskRunner())
+                     .get();
   adapter_ = adapter_mac_;
 
   if (BluetoothAdapterMac::IsLowEnergyAvailable()) {

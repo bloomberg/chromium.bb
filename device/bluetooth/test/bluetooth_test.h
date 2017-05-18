@@ -13,7 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -505,9 +505,9 @@ class BluetoothTestBase : public testing::Test {
 
   void RemoveTimedOutDevices();
 
-  // A Message loop is required by some implementations that will PostTasks and
-  // by base::RunLoop().RunUntilIdle() use in this fixture.
-  base::MessageLoop message_loop_;
+  // A ScopedTaskEnvironment is required by some implementations that will
+  // PostTasks and by base::RunLoop().RunUntilIdle() use in this fixture.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
   std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;

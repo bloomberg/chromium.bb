@@ -68,7 +68,7 @@ void BluetoothTestAndroid::PostTaskFromJava(
   // use it across threads. |RunJavaRunnable| will acquire a new JNIEnv before
   // running the Runnable.
   runnable_ref.Reset(env, runnable);
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&RunJavaRunnable, runnable_ref));
 }
 
