@@ -187,6 +187,11 @@ PageLoadMetricsObserverTestHarness::histogram_tester() const {
   return histogram_tester_;
 }
 
+MetricsWebContentsObserver* PageLoadMetricsObserverTestHarness::observer()
+    const {
+  return observer_;
+}
+
 const PageLoadExtraInfo
 PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
   return observer_->GetPageLoadExtraInfoForCommittedLoad();

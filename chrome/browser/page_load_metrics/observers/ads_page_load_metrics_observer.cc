@@ -85,6 +85,8 @@ AdsPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   DCHECK(ad_frames_data_.empty());
 
+  committed_ = true;
+
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] = nullptr;
   ProcessOngoingNavigationResource(navigation_handle->GetFrameTreeNodeId());
@@ -204,9 +206,11 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
       // 2. possibly a resource from a document.written frame whose frame
       //    failure message has yet to arrive. (uncertain of this)
     }
-    UMA_HISTOGRAM_ENUMERATION(
-        "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound",
-        extra_request_info.resource_type, content::RESOURCE_TYPE_LAST_TYPE);
+    if (committed_) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound",
+          extra_request_info.resource_type, content::RESOURCE_TYPE_LAST_TYPE);
+    }
 
     return;
   }

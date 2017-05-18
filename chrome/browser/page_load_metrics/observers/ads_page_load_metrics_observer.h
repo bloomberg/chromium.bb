@@ -73,6 +73,7 @@ class AdsPageLoadMetricsObserver
 
   size_t page_bytes_ = 0u;
   size_t uncached_page_bytes_ = 0u;
+  bool committed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };
