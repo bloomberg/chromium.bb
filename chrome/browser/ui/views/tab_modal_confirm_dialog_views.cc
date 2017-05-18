@@ -8,12 +8,12 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/message_box_view.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -33,7 +33,8 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     : delegate_(delegate) {
   views::MessageBoxView::InitParams init_params(delegate->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
-      views::kUnrelatedControlVerticalSpacing;
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_UNRELATED_CONTROL_VERTICAL);
   message_box_view_ = new views::MessageBoxView(init_params);
 
   base::string16 link_text(delegate->GetLinkText());

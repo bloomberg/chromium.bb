@@ -19,7 +19,6 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
@@ -124,7 +123,8 @@ void CreateChromeApplicationShortcutView::InitControls() {
   layout->StartRow(0, kHeaderColumnSetId);
   layout->AddView(create_shortcuts_label_);
 
-  layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL));
   layout->StartRow(0, kTableColumnSetId);
   layout->AddView(desktop_check_box_);
 

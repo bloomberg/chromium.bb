@@ -7,12 +7,12 @@
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -39,9 +39,15 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
     : browser_(nullptr), controller_(controller) {
   DCHECK(controller_);
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        views::kButtonHEdgeMarginNew,
-                                        views::kPanelVertMargin, 0));
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           provider->GetDistanceMetric(
+                              DISTANCE_DIALOG_BUTTON_MARGIN),
+                           provider->GetDistanceMetric(
+                              DISTANCE_PANEL_CONTENT_MARGIN),
+                           0));
 
   views::StyledLabel* dialog_label =
       new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);
