@@ -65,6 +65,9 @@ addSuggestionsToModel:
 // Returns whether |section| contains the Most Visited tiles.
 - (BOOL)isMostVisitedSection:(NSInteger)section;
 
+// Updates the number of Most Visited tiles shown for the |size|.
+- (void)updateMostVisitedForSize:(CGSize)size;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_

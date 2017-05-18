@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
@@ -101,6 +102,8 @@ SectionIdentifier SectionIdentifierForInfo(
   }
 }
 
+const CGFloat kNumberOfMostVisitedLines = 2;
+
 }  // namespace
 
 @interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink,
@@ -110,6 +113,8 @@ SectionIdentifier SectionIdentifierForInfo(
 @property(nonatomic, strong)
     NSMutableDictionary<NSNumber*, ContentSuggestionsSectionInformation*>*
         sectionInfoBySectionIdentifier;
+// Width of the collection. Upon size change, it reflects the new size.
+@property(nonatomic, assign) CGFloat collectionWidth;
 
 @end
 
@@ -118,6 +123,7 @@ SectionIdentifier SectionIdentifierForInfo(
 @synthesize collectionViewController = _collectionViewController;
 @synthesize dataSource = _dataSource;
 @synthesize sectionInfoBySectionIdentifier = _sectionInfoBySectionIdentifier;
+@synthesize collectionWidth = _collectionWidth;
 
 - (instancetype)initWithDataSource:
     (id<ContentSuggestionsDataSource>)dataSource {
@@ -134,6 +140,8 @@ SectionIdentifier SectionIdentifierForInfo(
 - (void)setCollectionViewController:
     (ContentSuggestionsViewController*)collectionViewController {
   _collectionViewController = collectionViewController;
+  self.collectionWidth =
+      collectionViewController.collectionView.bounds.size.width;
 
   [self reloadAllData];
 }
@@ -270,6 +278,12 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
   [suggestions enumerateObjectsUsingBlock:^(CSCollectionViewItem* item,
                                             NSUInteger index, BOOL* stop) {
+    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+    if ([self isMostVisitedSection:section] &&
+        [model numberOfItemsInSection:section] >=
+            [self mostVisitedPlaceCount]) {
+      return;
+    }
     ItemType type = ItemTypeForInfo(sectionInfo);
     item.type = type;
     NSIndexPath* addedIndexPath =
@@ -346,6 +360,47 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   return
       [self.collectionViewController.collectionViewModel
           sectionIdentifierForSection:section] == SectionIdentifierMostVisited;
+}
+
+- (void)updateMostVisitedForSize:(CGSize)size {
+  self.collectionWidth = size.width;
+
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  if (![model hasSectionForSectionIdentifier:SectionIdentifierMostVisited])
+    return;
+
+  NSInteger mostVisitedSection =
+      [model sectionForSectionIdentifier:SectionIdentifierMostVisited];
+  ContentSuggestionsSectionInformation* mostVisitedSectionInfo =
+      self.sectionInfoBySectionIdentifier[@(SectionIdentifierMostVisited)];
+  NSArray<CSCollectionViewItem*>* mostVisited =
+      [self.dataSource itemsForSectionInfo:mostVisitedSectionInfo];
+  NSInteger newCount = MIN([self mostVisitedPlaceCount],
+                           static_cast<NSInteger>(mostVisited.count));
+  NSInteger currentCount = [model numberOfItemsInSection:mostVisitedSection];
+
+  if (currentCount == newCount)
+    return;
+
+  // If the animations are enabled, the items are added then the rotation
+  // animation is triggered, creating a weird sequenced animation.
+  [UIView setAnimationsEnabled:NO];
+  if (currentCount > newCount) {
+    for (NSInteger i = newCount; i < currentCount; i++) {
+      NSIndexPath* itemToRemove =
+          [NSIndexPath indexPathForItem:newCount inSection:mostVisitedSection];
+      [self.collectionViewController dismissEntryAtIndexPath:itemToRemove];
+    }
+  } else {
+    NSMutableArray* itemsToBeAdded = [NSMutableArray array];
+    for (NSInteger i = currentCount; i < newCount; i++) {
+      [itemsToBeAdded addObject:mostVisited[i]];
+    }
+    [self.collectionViewController addSuggestions:itemsToBeAdded
+                                    toSectionInfo:mostVisitedSectionInfo];
+  }
+  [UIView setAnimationsEnabled:YES];
 }
 
 #pragma mark - SuggestedContentDelegate
@@ -531,6 +586,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   [model addItem:item toSectionWithIdentifier:sectionIdentifier];
 
   return [NSIndexPath indexPathForItem:itemNumber inSection:section];
+}
+
+// Returns the maximum number of Most Visited tiles to be displayed in the
+// collection.
+- (NSInteger)mostVisitedPlaceCount {
+  return content_suggestions::numberOfTilesForWidth(self.collectionWidth) *
+         kNumberOfMostVisitedLines;
 }
 
 @end
