@@ -33,7 +33,6 @@ Sensor::Sensor(ExecutionContext* execution_context,
       sensor_options_(sensor_options),
       type_(type),
       state_(SensorState::kIdle),
-      last_update_timestamp_(0.0),
       pending_reading_update_(false) {
   // Check secure context.
   String error_message;
@@ -170,19 +169,19 @@ void Sensor::OnSensorInitialized() {
   RequestAddConfiguration();
 }
 
-void Sensor::OnSensorReadingChanged(double timestamp) {
+void Sensor::OnSensorReadingChanged() {
   if (state_ != Sensor::SensorState::kActivated)
     return;
 
   // Return if reading update is already scheduled or the cached
   // reading is up-to-date.
-  if (pending_reading_update_ ||
-      sensor_proxy_->reading().timestamp == reading_.timestamp)
+  if (pending_reading_update_)
     return;
 
   pending_reading_update_ = true;
 
-  double elapsedTime = timestamp - last_update_timestamp_;
+  double elapsedTime = sensor_proxy_->reading().timestamp - reading_.timestamp;
+  DCHECK_GT(elapsedTime, 0.0);
 
   DCHECK_GT(configuration_->frequency, 0.0);
   double waitingTime = 1 / configuration_->frequency - elapsedTime;
@@ -219,11 +218,6 @@ void Sensor::OnAddConfigurationRequestCompleted(bool result) {
     HandleError(kNotReadableError, "start() call has failed.");
     return;
   }
-
-  // The initial value for m_lastUpdateTimestamp is set to current time,
-  // so that the first reading update will be notified considering the given
-  // frequency hint.
-  last_update_timestamp_ = WTF::MonotonicallyIncreasingTime();
 
   UpdateState(Sensor::SensorState::kActivated);
 
@@ -304,7 +298,6 @@ void Sensor::HandleError(ExceptionCode code,
 }
 
 void Sensor::UpdateReading() {
-  last_update_timestamp_ = WTF::MonotonicallyIncreasingTime();
   reading_ = sensor_proxy_->reading();
   pending_reading_update_ = false;
   DispatchEvent(Event::Create(EventTypeNames::change));

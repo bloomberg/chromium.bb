@@ -30,7 +30,7 @@ class OrientationSensor : public Sensor {
 
  private:
   // SensorProxy override.
-  void OnSensorReadingChanged(double timestamp) override;
+  void OnSensorReadingChanged() override;
   template <typename Matrix>
   void PopulateMatrixInternal(Matrix*, ExceptionState&);
 

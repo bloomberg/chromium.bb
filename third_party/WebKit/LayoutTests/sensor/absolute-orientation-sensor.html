@@ -19,7 +19,6 @@ const kRotationMatrix = [1,  0,  0,  0,
 const kRotationDOMMatrix = new DOMMatrix(kRotationMatrix);
 
 function update_sensor_reading(buffer) {
-  buffer[1] = window.performance.now();
   buffer[2] = 1;
   buffer[3] = 0;
   buffer[4] = 0;

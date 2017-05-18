@@ -198,6 +198,9 @@ function sensor_mocks(mojo) {
           this.sensor_reading_timer_id_ = window.setInterval(() => {
             if (this.update_reading_function_) {
               this.update_reading_function_(this.buffer_);
+              // For all tests sensor reading should have monotonically
+              // increasing timestamp in seconds.
+              this.buffer_[1] = window.performance.now() * 0.001;
               this.reading_updates_count_++;
             }
             if (this.reporting_mode_ === sensor.ReportingMode.ON_CHANGE) {
