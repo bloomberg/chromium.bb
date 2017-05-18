@@ -26512,6 +26512,13 @@ from previous Chrome versions.
   <int value="5" label="Successful first layout (backgrounded)"/>
 </enum>
 
+<enum name="PageLoadMetricsAMPViewType" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="AMP Cache"/>
+  <int value="2" label="Google Search AMP Viewer"/>
+  <int value="3" label="Google News AMP Viewer"/>
+</enum>
+
 <enum name="PageLoadTimingStatus" type="int">
   <summary>Status of PageLoadTimings received from the render process</summary>
   <int value="0" label="Valid"/>

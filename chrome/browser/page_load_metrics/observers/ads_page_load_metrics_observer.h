@@ -27,7 +27,7 @@ class AdsPageLoadMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
-  ObservePolicy OnDidFinishSubFrameNavigation(
+  void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::PageLoadTiming& timing,

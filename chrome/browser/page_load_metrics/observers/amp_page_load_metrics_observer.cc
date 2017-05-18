@@ -58,9 +58,21 @@ const char kAmpCacheHostSuffix[] = "cdn.ampproject.org";
         break;                                                                \
       case AMPViewType::NONE:                                                 \
         NOTREACHED();                                                         \
+      case AMPViewType::AMP_VIEW_TYPE_LAST:                                   \
         break;                                                                \
     }                                                                         \
   } while (false)
+
+GURL GetCanonicalizedSameDocumentUrl(const GURL& url) {
+  if (!url.has_ref())
+    return url;
+
+  // We're only interested in same document navigations where the full URL
+  // changes, so we ignore the 'ref' or '#fragment' portion of the URL.
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
 
 }  // namespace
 
@@ -71,14 +83,39 @@ AMPPageLoadMetricsObserver::~AMPPageLoadMetricsObserver() {}
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AMPPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
-  view_type_ = GetAMPViewType(navigation_handle->GetURL());
-  return (view_type_ != AMPViewType::NONE) ? CONTINUE_OBSERVING
-                                           : STOP_OBSERVING;
+  current_url_ = navigation_handle->GetURL();
+  view_type_ = GetAMPViewType(current_url_);
+  return CONTINUE_OBSERVING;
+}
+
+void AMPPageLoadMetricsObserver::OnCommitSameDocumentNavigation(
+    content::NavigationHandle* navigation_handle) {
+  const GURL url = GetCanonicalizedSameDocumentUrl(navigation_handle->GetURL());
+
+  // Ignore same document navigations where the URL doesn't change.
+  if (url == current_url_)
+    return;
+  current_url_ = url;
+
+  AMPViewType same_document_view_type = GetAMPViewType(url);
+  if (same_document_view_type == AMPViewType::NONE)
+    return;
+
+  // Though we're not currently able to track page load metrics such as FCP for
+  // same-document navigations, we can count how often they happen, to better
+  // understand the relative frequency of same-document vs new-document AMP
+  // navigations.
+  UMA_HISTOGRAM_ENUMERATION(
+      std::string(kHistogramPrefix).append("SameDocumentView"),
+      same_document_view_type, AMPViewType::AMP_VIEW_TYPE_LAST);
 }
 
 void AMPPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  if (view_type_ == AMPViewType::NONE)
+    return;
+
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing.dom_content_loaded_event_start, info)) {
     return;
@@ -91,6 +128,9 @@ void AMPPageLoadMetricsObserver::OnDomContentLoadedEventStart(
 void AMPPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  if (view_type_ == AMPViewType::NONE)
+    return;
+
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing.load_event_start, info)) {
     return;
@@ -102,6 +142,9 @@ void AMPPageLoadMetricsObserver::OnLoadEventStart(
 void AMPPageLoadMetricsObserver::OnFirstLayout(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  if (view_type_ == AMPViewType::NONE)
+    return;
+
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing.first_layout, info)) {
     return;
@@ -113,6 +156,9 @@ void AMPPageLoadMetricsObserver::OnFirstLayout(
 void AMPPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  if (view_type_ == AMPViewType::NONE)
+    return;
+
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing.first_contentful_paint, info)) {
     return;
@@ -124,6 +170,9 @@ void AMPPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 void AMPPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  if (view_type_ == AMPViewType::NONE)
+    return;
+
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing.parse_start, info)) {
     return;
@@ -135,6 +184,8 @@ void AMPPageLoadMetricsObserver::OnParseStart(
 // static
 AMPPageLoadMetricsObserver::AMPViewType
 AMPPageLoadMetricsObserver::GetAMPViewType(const GURL& url) {
+  const char kAmpViewerUrlPrefix[] = "/amp/";
+
   if (base::EndsWith(url.host(), kAmpCacheHostSuffix,
                      base::CompareCase::INSENSITIVE_ASCII)) {
     return AMPViewType::AMP_CACHE;
@@ -146,13 +197,14 @@ AMPPageLoadMetricsObserver::GetAMPViewType(const GURL& url) {
     return AMPViewType::NONE;
 
   if (google_hostname_prefix.value() == "www" &&
-      base::StartsWith(url.path_piece(), "/amp/",
-                       base::CompareCase::SENSITIVE)) {
+      base::StartsWith(url.path_piece(), kAmpViewerUrlPrefix,
+                       base::CompareCase::SENSITIVE) &&
+      url.path_piece().length() > strlen(kAmpViewerUrlPrefix)) {
     return AMPViewType::GOOGLE_SEARCH_AMP_VIEWER;
   }
 
   if (google_hostname_prefix.value() == "news" &&
-      url.path_piece() == "/news/amp") {
+      url.path_piece() == "/news/amp" && !url.query_piece().empty()) {
     return AMPViewType::GOOGLE_NEWS_AMP_VIEWER;
   }
   return AMPViewType::NONE;

@@ -544,10 +544,18 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   LogAbortChainHistograms(navigation_handle);
 }
 
+void PageLoadTracker::DidCommitSameDocumentNavigation(
+    content::NavigationHandle* navigation_handle) {
+  for (const auto& observer : observers_) {
+    observer->OnCommitSameDocumentNavigation(navigation_handle);
+  }
+}
+
 void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
-  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnDidFinishSubFrameNavigation,
-                             navigation_handle);
+  for (const auto& observer : observers_) {
+    observer->OnDidFinishSubFrameNavigation(navigation_handle);
+  }
 
   if (!navigation_handle->HasCommitted())
     return;

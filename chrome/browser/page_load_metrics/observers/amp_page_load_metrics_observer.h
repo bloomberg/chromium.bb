@@ -26,11 +26,17 @@ struct PageLoadTiming;
 class AMPPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
+  // If you add elements to this enum, make sure you update the enum value in
+  // enums.xml. Only add elements to the end to prevent inconsistencies between
+  // versions.
   enum class AMPViewType {
     NONE,
     AMP_CACHE,
     GOOGLE_SEARCH_AMP_VIEWER,
     GOOGLE_NEWS_AMP_VIEWER,
+
+    // New values should be added before this final entry.
+    AMP_VIEW_TYPE_LAST
   };
 
   static AMPViewType GetAMPViewType(const GURL& url);
@@ -40,6 +46,8 @@ class AMPPageLoadMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+  void OnCommitSameDocumentNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void OnDomContentLoadedEventStart(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -55,6 +63,7 @@ class AMPPageLoadMetricsObserver
                     const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
+  GURL current_url_;
   AMPViewType view_type_ = AMPViewType::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserver);

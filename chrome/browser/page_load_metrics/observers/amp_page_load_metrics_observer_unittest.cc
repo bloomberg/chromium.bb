@@ -11,12 +11,21 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "content/public/test/navigation_simulator.h"
 #include "url/gurl.h"
+
+using content::NavigationSimulator;
+using AMPViewType = AMPPageLoadMetricsObserver::AMPViewType;
 
 class AMPPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
   AMPPageLoadMetricsObserverTest() {}
+
+  void SetUp() override {
+    PageLoadMetricsObserverTestHarness::SetUp();
+    ResetTest();
+  }
 
   void ResetTest() {
     // Reset to the default testing state. Does not reset histogram state.
@@ -127,25 +136,70 @@ TEST_F(AMPPageLoadMetricsObserverTest, AMPViewType) {
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, AMPCachePage) {
-  ResetTest();
   RunTest(GURL("https://cdn.ampproject.org/page"));
   ValidateHistograms(true, "AmpCache.");
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePage) {
-  ResetTest();
   RunTest(GURL("https://www.google.com/amp/page"));
   ValidateHistograms(true, "GoogleSearch.");
 }
 
+TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePageBaseURL) {
+  RunTest(GURL("https://www.google.com/amp/"));
+  ValidateHistograms(false, "");
+}
+
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePage) {
-  ResetTest();
   RunTest(GURL("https://news.google.com/news/amp?page"));
   ValidateHistograms(true, "GoogleNews.");
 }
 
+TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePageBaseURL) {
+  RunTest(GURL("https://news.google.com/news/amp"));
+  ValidateHistograms(false, "");
+}
+
 TEST_F(AMPPageLoadMetricsObserverTest, NonAMPPage) {
-  ResetTest();
   RunTest(GURL("https://www.google.com/not-amp/page"));
   ValidateHistograms(false, "");
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.AMP.SameDocumentView",
+      static_cast<base::HistogramBase::Sample>(
+          AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
+      1);
+
+  // Verify that additional same-document navigations to the same URL don't
+  // result in additional views being counted.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page#fragment"), main_rfh())
+      ->CommitSameDocument();
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.AMP.SameDocumentView",
+      static_cast<base::HistogramBase::Sample>(
+          AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
+      1);
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page2"), main_rfh())
+      ->CommitSameDocument();
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.AMP.SameDocumentView",
+      static_cast<base::HistogramBase::Sample>(
+          AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
+      2);
 }

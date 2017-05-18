@@ -106,12 +106,6 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-PageLoadMetricsObserver::ObservePolicy
-PageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  return CONTINUE_OBSERVING;
-}
-
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnHidden(
     const PageLoadTiming& timing,
     const PageLoadExtraInfo& extra_info) {
