@@ -665,7 +665,7 @@ bool WebPluginContainerImpl::WantsWheelEvents() {
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element,
                                                WebPlugin* web_plugin)
-    : WebPluginContainerBase(element->GetDocument().GetFrame()),
+    : ContextClient(element->GetDocument().GetFrame()),
       element_(element),
       web_plugin_(web_plugin),
       web_layer_(nullptr),
@@ -701,7 +701,8 @@ void WebPluginContainerImpl::Dispose() {
 DEFINE_TRACE(WebPluginContainerImpl) {
   visitor->Trace(parent_);
   visitor->Trace(element_);
-  WebPluginContainerBase::Trace(visitor);
+  ContextClient::Trace(visitor);
+  PluginView::Trace(visitor);
 }
 
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {

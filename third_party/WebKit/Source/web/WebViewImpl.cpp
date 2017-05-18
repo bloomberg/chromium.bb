@@ -51,7 +51,6 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
-#include "core/exported/WebPluginContainerBase.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
@@ -172,6 +171,7 @@
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 
@@ -1176,8 +1176,8 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
           PluginView* plugin_view =
               ToLayoutPart(element->GetLayoutObject())->Plugin();
           if (plugin_view && plugin_view->IsPluginContainer()) {
-            WebPluginContainerBase* plugin =
-                ToWebPluginContainerBase(plugin_view);
+            WebPluginContainerImpl* plugin =
+                ToWebPluginContainerImpl(plugin_view);
             if (plugin && plugin->SupportsKeyboardFocus())
               suppress_next_keypress_event_ = true;
           }
@@ -2419,7 +2419,7 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor, WebRect& focus) const {
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
 WebPlugin* WebViewImpl::FocusedPluginIfInputMethodSupported(LocalFrame* frame) {
-  WebPluginContainerBase* container =
+  WebPluginContainerImpl* container =
       WebLocalFrameImpl::CurrentPluginContainer(frame);
   if (container && container->SupportsInputMethod())
     return container->Plugin();
@@ -3379,7 +3379,7 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
   if (object && object->IsLayoutPart()) {
     PluginView* plugin_view = ToLayoutPart(object)->Plugin();
     if (plugin_view && plugin_view->IsPluginContainer()) {
-      WebPluginContainerBase* plugin = ToWebPluginContainerBase(plugin_view);
+      WebPluginContainerImpl* plugin = ToWebPluginContainerImpl(plugin_view);
       switch (action.type) {
         case WebPluginAction::kRotate90Clockwise:
           plugin->Plugin()->RotateView(WebPlugin::kRotationType90Clockwise);

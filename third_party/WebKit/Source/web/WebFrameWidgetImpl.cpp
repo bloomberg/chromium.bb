@@ -40,7 +40,6 @@
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/events/WebInputEventConversion.h"
-#include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
@@ -74,6 +73,7 @@
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPagePopupImpl.h"
+#include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewFrameWidget.h"
 
@@ -1199,7 +1199,7 @@ LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameInWidget() const {
 
 WebPlugin* WebFrameWidgetImpl::FocusedPluginIfInputMethodSupported(
     LocalFrame* frame) const {
-  WebPluginContainerBase* container =
+  WebPluginContainerImpl* container =
       WebLocalFrameImpl::CurrentPluginContainer(frame);
   if (container && container->SupportsInputMethod())
     return container->Plugin();
