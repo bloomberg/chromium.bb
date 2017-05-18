@@ -31,7 +31,7 @@
 #ifndef WebSubstringUtil_h
 #define WebSubstringUtil_h
 
-#include "../../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 #if __OBJC__
 @class NSAttributedString;

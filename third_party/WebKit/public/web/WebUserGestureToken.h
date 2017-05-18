@@ -31,7 +31,7 @@
 #ifndef WebUserGestureToken_h
 #define WebUserGestureToken_h
 
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace blink {
 

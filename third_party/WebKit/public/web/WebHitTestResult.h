@@ -26,7 +26,7 @@
 #ifndef WebHitTestResult_h
 #define WebHitTestResult_h
 
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #ifndef WebPerformance_h
 #define WebPerformance_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
 #include "WebNavigationType.h"
 
 #if BLINK_IMPLEMENTATION

@@ -31,12 +31,12 @@
 #ifndef WebContextMenuData_h
 #define WebContextMenuData_h
 
-#include "../platform/WebPoint.h"
-#include "../platform/WebReferrerPolicy.h"
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
-#include "../platform/WebURLResponse.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebReferrerPolicy.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebVector.h"
 #include "WebHistoryItem.h"
 #include "WebMenuItemInfo.h"
 #include "public/platform/WebRect.h"

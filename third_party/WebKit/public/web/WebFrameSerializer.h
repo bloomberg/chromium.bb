@@ -31,11 +31,11 @@
 #ifndef WebFrameSerializer_h
 #define WebFrameSerializer_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
-#include "../platform/WebThreadSafeData.h"
-#include "../platform/WebURL.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebThreadSafeData.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 #include "WebFrameSerializerCacheControlPolicy.h"
 
 namespace blink {

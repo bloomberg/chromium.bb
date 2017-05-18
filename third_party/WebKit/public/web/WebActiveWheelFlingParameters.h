@@ -26,11 +26,11 @@
 #ifndef WebActiveWheelFlingParameters_h
 #define WebActiveWheelFlingParameters_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebFloatPoint.h"
-#include "../platform/WebGestureDevice.h"
-#include "../platform/WebPoint.h"
-#include "../platform/WebSize.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebGestureDevice.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebSize.h"
 
 namespace blink {
 

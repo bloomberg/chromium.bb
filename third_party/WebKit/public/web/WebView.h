@@ -31,13 +31,13 @@
 #ifndef WebView_h
 #define WebView_h
 
-#include "../platform/WebColor.h"
-#include "../platform/WebDisplayMode.h"
-#include "../platform/WebDragOperation.h"
-#include "../platform/WebFocusType.h"
-#include "../platform/WebPageVisibilityState.h"
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebColor.h"
+#include "public/platform/WebDisplayMode.h"
+#include "public/platform/WebDragOperation.h"
+#include "public/platform/WebFocusType.h"
+#include "public/platform/WebPageVisibilityState.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "WebWidget.h"
 
 namespace gfx {

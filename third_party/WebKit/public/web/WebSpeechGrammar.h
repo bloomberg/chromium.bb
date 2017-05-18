@@ -26,9 +26,9 @@
 #ifndef WebSpeechGrammar_h
 #define WebSpeechGrammar_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebURL.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 

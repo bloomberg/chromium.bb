@@ -30,11 +30,11 @@
 #ifndef WebDOMFileSystem_h
 #define WebDOMFileSystem_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebFileSystem.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "WebFrame.h"
 
 #if BLINK_IMPLEMENTATION

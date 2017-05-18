@@ -5,8 +5,8 @@
 #ifndef WebSelection_h
 #define WebSelection_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebSelectionBound.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebSelectionBound.h"
 
 namespace blink {
 

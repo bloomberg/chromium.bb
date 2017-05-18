@@ -5,7 +5,7 @@
 #ifndef WebSandboxFlags_h
 #define WebSandboxFlags_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

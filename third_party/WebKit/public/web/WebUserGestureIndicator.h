@@ -31,7 +31,7 @@
 #ifndef WebUserGestureIndicator_h
 #define WebUserGestureIndicator_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

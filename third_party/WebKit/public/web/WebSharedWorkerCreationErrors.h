@@ -5,7 +5,7 @@
 #ifndef WebSharedWorkerCreationErrors_h
 #define WebSharedWorkerCreationErrors_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

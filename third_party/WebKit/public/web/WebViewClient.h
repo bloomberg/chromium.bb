@@ -31,8 +31,8 @@
 #ifndef WebViewClient_h
 #define WebViewClient_h
 
-#include "../platform/WebPageVisibilityState.h"
-#include "../platform/WebString.h"
+#include "public/platform/WebPageVisibilityState.h"
+#include "public/platform/WebString.h"
 #include "WebAXEnums.h"
 #include "WebFrame.h"
 #include "WebPopupType.h"

@@ -31,9 +31,9 @@
 #ifndef WebSharedWorker_h
 #define WebSharedWorker_h
 
-#include "../platform/WebAddressSpace.h"
-#include "../platform/WebCommon.h"
-#include "../platform/WebContentSecurityPolicy.h"
+#include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebContentSecurityPolicy.h"
 
 namespace blink {
 

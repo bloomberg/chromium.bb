@@ -5,11 +5,11 @@
 #ifndef WebDeviceEmulationParams_h
 #define WebDeviceEmulationParams_h
 
-#include "../platform/WebFloatPoint.h"
-#include "../platform/WebPoint.h"
-#include "../platform/WebRect.h"
-#include "../platform/WebSize.h"
-#include "../platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 namespace blink {
 

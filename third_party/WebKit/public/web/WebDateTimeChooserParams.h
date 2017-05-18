@@ -26,9 +26,9 @@
 #ifndef WebDateTimeChooserParams_h
 #define WebDateTimeChooserParams_h
 
-#include "../platform/WebRect.h"
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "WebDateTimeInputType.h"
 #include "WebDateTimeSuggestion.h"
 

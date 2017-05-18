@@ -31,8 +31,8 @@
 #ifndef WebRuntimeFeatures_h
 #define WebRuntimeFeatures_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 #include <string>
 

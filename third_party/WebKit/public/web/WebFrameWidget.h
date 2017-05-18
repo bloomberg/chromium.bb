@@ -31,9 +31,9 @@
 #ifndef WebFrameWidget_h
 #define WebFrameWidget_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebDragOperation.h"
-#include "../platform/WebPageVisibilityState.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebDragOperation.h"
+#include "public/platform/WebPageVisibilityState.h"
 #include "public/web/WebWidget.h"
 
 namespace blink {

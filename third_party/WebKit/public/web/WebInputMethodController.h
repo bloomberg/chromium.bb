@@ -5,7 +5,7 @@
 #ifndef WebInputMethodController_h
 #define WebInputMethodController_h
 
-#include "../platform/WebTextInputInfo.h"
+#include "public/platform/WebTextInputInfo.h"
 #include "WebCompositionUnderline.h"
 #include "WebTextInputType.h"
 #include "WebWidget.h"
