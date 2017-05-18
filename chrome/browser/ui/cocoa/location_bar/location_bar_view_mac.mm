@@ -221,11 +221,6 @@ void LocationBarViewMac::UpdateBookmarkStarVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
 }
 
-void LocationBarViewMac::UpdateZoomViewVisibility() {
-  UpdateZoomDecoration(/*default_zoom_changed=*/false);
-  OnChanged();
-}
-
 void LocationBarViewMac::UpdateLocationBarVisibility(bool visible,
                                                      bool animate) {
   // Track the target location bar visibility to avoid redundant transitions

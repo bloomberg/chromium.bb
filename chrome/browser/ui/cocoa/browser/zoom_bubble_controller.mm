@@ -239,7 +239,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 
   // Reset zoom button.
   NSButton* resetButton =
-      [self addButtonWithTitleID:IDS_ZOOM_SET_DEFAULT
+      [self addButtonWithTitleID:IDS_ZOOM_SET_DEFAULT_SHORT
                         fontSize:kTextFontSize
                           action:@selector(resetToDefault:)];
   rect.origin.x += NSWidth(rect);

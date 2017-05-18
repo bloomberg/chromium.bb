@@ -310,7 +310,6 @@ class LocationBarView : public LocationBar,
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdateSaveCreditCardIcon() override;
   void UpdateBookmarkStarVisibility() override;
-  void UpdateZoomViewVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
