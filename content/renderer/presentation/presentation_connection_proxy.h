@@ -86,6 +86,8 @@ class CONTENT_EXPORT PresentationConnectionProxy
 
   // blink::WebPresentationConnectionProxy implementation.
   void Close() const override;
+  void NotifyTargetConnection(
+      blink::WebPresentationConnectionState state) override;
 
  protected:
   explicit PresentationConnectionProxy(

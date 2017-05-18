@@ -95,6 +95,8 @@ class PresentationConnection final : public EventTargetWithInlineData,
   WebPresentationConnectionState GetState();
   void DidChangeState(WebPresentationConnectionState,
                       bool should_dispatch_event);
+  // Notify target connection about connection state change.
+  void NotifyTargetConnection(WebPresentationConnectionState);
 
  protected:
   // EventTarget implementation.

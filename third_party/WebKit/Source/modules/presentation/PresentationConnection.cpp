@@ -462,11 +462,19 @@ void PresentationConnection::DidChangeState(
   NOTREACHED();
 }
 
+void PresentationConnection::NotifyTargetConnection(
+    WebPresentationConnectionState state) {
+  if (proxy_)
+    proxy_->NotifyTargetConnection(state);
+}
+
 void PresentationConnection::DidClose(
     WebPresentationConnectionCloseReason reason,
     const String& message) {
-  if (state_ == WebPresentationConnectionState::kClosed)
+  if (state_ == WebPresentationConnectionState::kClosed ||
+      state_ == WebPresentationConnectionState::kTerminated) {
     return;
+  }
 
   state_ = WebPresentationConnectionState::kClosed;
   DispatchStateChangeEvent(PresentationConnectionCloseEvent::Create(

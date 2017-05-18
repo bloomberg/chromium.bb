@@ -56,6 +56,9 @@ void PresentationConnectionProxy::DidChangeState(
         blink::WebPresentationConnectionState::kConnected);
   } else if (state == content::PRESENTATION_CONNECTION_STATE_CLOSED) {
     source_connection_->DidClose();
+  } else if (state == content::PRESENTATION_CONNECTION_STATE_TERMINATED) {
+    source_connection_->DidChangeState(
+        blink::WebPresentationConnectionState::kTerminated);
   } else {
     NOTREACHED();
   }
@@ -71,6 +74,17 @@ void PresentationConnectionProxy::OnClose() {
 void PresentationConnectionProxy::Close() const {
   DCHECK(target_connection_ptr_);
   target_connection_ptr_->OnClose();
+}
+
+void PresentationConnectionProxy::NotifyTargetConnection(
+    blink::WebPresentationConnectionState state) {
+  if (!target_connection_ptr_)
+    return;
+
+  if (state == blink::WebPresentationConnectionState::kTerminated) {
+    target_connection_ptr_->DidChangeState(
+        content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+  }
 }
 
 ControllerConnectionProxy::ControllerConnectionProxy(
