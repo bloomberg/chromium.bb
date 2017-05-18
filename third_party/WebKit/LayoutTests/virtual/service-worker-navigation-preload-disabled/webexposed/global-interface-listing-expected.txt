@@ -5027,6 +5027,7 @@ interface PushManager
 interface PushSubscription
     attribute @@toStringTag
     getter endpoint
+    getter expirationTime
     getter options
     method constructor
     method getKey

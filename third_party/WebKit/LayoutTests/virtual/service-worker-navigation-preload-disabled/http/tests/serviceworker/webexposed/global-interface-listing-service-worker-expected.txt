@@ -806,6 +806,7 @@ interface PushMessageData
     method text
 interface PushSubscription
     getter endpoint
+    getter expirationTime
     getter options
     method constructor
     method getKey
