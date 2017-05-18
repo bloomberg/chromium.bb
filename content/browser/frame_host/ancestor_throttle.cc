@@ -132,25 +132,24 @@ AncestorThrottle::WillProcessResponse() {
       return NavigationThrottle::BLOCK_RESPONSE;
 
     case HeaderDisposition::SAMEORIGIN: {
-      url::Origin current_origin(navigation_handle()->GetURL());
-      url::Origin top_origin =
-          handle->frame_tree_node()->frame_tree()->root()->current_origin();
-
-      // Block the request when the top-frame has not the same origin.
-      if (!top_origin.IsSameOriginWith(current_origin)) {
-        RecordXFrameOptionsUsage(SAMEORIGIN_BLOCKED);
-        ConsoleError(disposition);
-        RecordXFrameOptionsUsage(SAMEORIGIN_BLOCKED);
-        return NavigationThrottle::BLOCK_RESPONSE;
-      }
-
-      // Do not block the request when one of the ancestor has not the same
-      // origin, but count how many times it happens for statistics.
+      // Block the request when any ancestor is not same-origin.
       FrameTreeNode* parent = handle->frame_tree_node()->parent();
+      url::Origin current_origin(navigation_handle()->GetURL());
       while (parent) {
         if (!parent->current_origin().IsSameOriginWith(current_origin)) {
-          RecordXFrameOptionsUsage(SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
-          return NavigationThrottle::PROCEED;
+          RecordXFrameOptionsUsage(SAMEORIGIN_BLOCKED);
+          ConsoleError(disposition);
+
+          // TODO(mkwst): Stop recording this metric once we convince other
+          // vendors to follow our lead with XFO: SAMEORIGIN processing.
+          //
+          // https://crbug.com/250309
+          if (parent->frame_tree()->root()->current_origin().IsSameOriginWith(
+                  current_origin)) {
+            RecordXFrameOptionsUsage(SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
+          }
+
+          return NavigationThrottle::BLOCK_RESPONSE;
         }
         parent = parent->parent();
       }
