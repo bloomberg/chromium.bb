@@ -19,9 +19,11 @@ static_library("doodle") {
     "//base",
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
+    "//components/image_fetcher/core",
     "//components/keyed_service/core",
     "//components/prefs",
     "//net",
+    "//ui/gfx",
   ]
 }
 
@@ -36,8 +38,10 @@ source_set("unit_tests") {
   deps = [
     ":doodle",
     "//components/google/core/browser",
+    "//components/image_fetcher/core",
     "//components/prefs:test_support",
     "//net:test_support",
     "//ui/base",
+    "//ui/gfx:test_support",
   ]
 }

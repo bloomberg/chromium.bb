@@ -6,7 +6,9 @@
 #define COMPONENTS_DOODLE_DOODLE_SERVICE_H_
 
 #include <memory>
+#include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -21,6 +23,15 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace gfx {
+class Image;
+}
+
+namespace image_fetcher {
+class ImageFetcher;
+struct RequestMetadata;
+}
+
 namespace doodle {
 
 class DoodleService : public KeyedService {
@@ -31,6 +42,8 @@ class DoodleService : public KeyedService {
     virtual void OnDoodleConfigUpdated(const base::Optional<DoodleConfig>&) = 0;
   };
 
+  using ImageCallback = base::Callback<void(const gfx::Image& image)>;
+
   static void RegisterProfilePrefs(PrefRegistrySimple* pref_registry);
 
   // All pointer parameters must be non-null. If |min_refresh_interval| doesn't
@@ -40,7 +53,8 @@ class DoodleService : public KeyedService {
                 std::unique_ptr<base::OneShotTimer> expiry_timer,
                 std::unique_ptr<base::Clock> clock,
                 std::unique_ptr<base::TickClock> tick_clock,
-                base::Optional<base::TimeDelta> override_min_refresh_interval);
+                base::Optional<base::TimeDelta> override_min_refresh_interval,
+                std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
   ~DoodleService() override;
 
   // KeyedService implementation.
@@ -48,6 +62,11 @@ class DoodleService : public KeyedService {
 
   // Returns the current (cached) config, if any.
   const base::Optional<DoodleConfig>& config() const { return cached_config_; }
+
+  // Returns the image for the currently-cached doodle config via |callback|,
+  // which may be run synchronously or asynchronously. If the doodle is
+  // animated, this returns the static CTA image.
+  void GetImage(const ImageCallback& callback);
 
   // Adds a new observer to the service. It'll only be called when the config
   // changes; to get the current (cached) config, call |config()|.
@@ -105,6 +124,11 @@ class DoodleService : public KeyedService {
   // Callback for the expiry timer.
   void DoodleExpired();
 
+  void ImageFetched(const ImageCallback& callback,
+                    const std::string& id,
+                    const gfx::Image& image,
+                    const image_fetcher::RequestMetadata& metadata);
+
   PrefService* pref_service_;
 
   // The fetcher for getting fresh DoodleConfigs from the network.
@@ -117,6 +141,8 @@ class DoodleService : public KeyedService {
   // The minimum interval between server fetches. After a successful fetch,
   // refresh requests are ignored for this period.
   const base::TimeDelta min_refresh_interval_;
+
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   // The result of the last network fetch.
   base::Optional<DoodleConfig> cached_config_;

@@ -66,6 +66,8 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
                               base::Unretained(this), image_url));
   } else {
     // Request in progress. Register as an interested callback.
+    // TODO(treib,markusheintz): We're not guaranteed that the ID also matches.
+    //                           We probably have to store them all.
     it->second.callbacks.push_back(callback);
   }
 }

@@ -26,11 +26,6 @@ namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace image_fetcher {
-class ImageFetcher;
-struct RequestMetadata;
-}  // namespace image_fetcher
-
 // The C++ counterpart to LogoBridge.java. Enables Java code to access the
 // default search provider's logo.
 class LogoBridge : public doodle::DoodleService::Observer {
@@ -76,16 +71,13 @@ class LogoBridge : public doodle::DoodleService::Observer {
                           const GURL& on_click_url,
                           const std::string& alt_text,
                           const GURL& animated_image_url,
-                          const std::string& image_fetch_id,
-                          const gfx::Image& image,
-                          const image_fetcher::RequestMetadata& metadata);
+                          const gfx::Image& image);
 
   // Only valid if UseNewDoodleApi is disabled.
   LogoService* logo_service_;
 
   // Only valid if UseNewDoodleApi is enabled.
   doodle::DoodleService* doodle_service_;
-  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
   base::android::ScopedJavaGlobalRef<jobject> j_logo_observer_;
   ScopedObserver<doodle::DoodleService, doodle::DoodleService::Observer>
       doodle_observer_;
