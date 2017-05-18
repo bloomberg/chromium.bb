@@ -2259,6 +2259,7 @@ test("browser_tests") {
         "../browser/chromeos/policy/user_affiliation_browsertest.cc",
         "../browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc",
         "../browser/chromeos/policy/user_cloud_policy_manager_chromeos_browsertest.cc",
+        "../browser/chromeos/policy/user_network_configuration_updater_factory_browsertest.cc",
         "../browser/chromeos/policy/user_policy_test_helper.cc",
         "../browser/chromeos/policy/user_policy_test_helper.h",
         "../browser/chromeos/policy/variations_service_policy_browsertest.cc",
