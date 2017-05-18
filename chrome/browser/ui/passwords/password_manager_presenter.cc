@@ -46,6 +46,10 @@
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
+#endif
+
 using base::StringPiece;
 using password_manager::PasswordStore;
 
@@ -241,8 +245,8 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
   }
 
   // Call back the front end to reveal the password.
-  std::string origin_url = password_manager::GetHumanReadableOrigin(
-      *password_list_[index]);
+  std::string origin_url =
+      extensions::CreateUrlCollectionFromForm(*password_list_[index]).origin;
   password_view_->ShowPassword(
       index,
       origin_url,

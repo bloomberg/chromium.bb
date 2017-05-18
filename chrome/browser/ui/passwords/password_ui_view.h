@@ -33,7 +33,7 @@ class PasswordUIView {
   // Reveals the password for the saved password entry.
   // |index| the index of the saved password entry.
   // |origin_url| the URL of the saved password entry; obtained via
-  //     GetHumanReadableOrigin().
+  //     CreateUrlCollectionFromForm().origin.
   // |username| the username of the saved password entry.
   // |password_value| the value of saved password entry at |index|.
   virtual void ShowPassword(size_t index,
