@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 5
+// Next MinVersion: 6
 
 module arc.mojom;
 
@@ -24,12 +24,23 @@ enum TextInputType {
   DATETIME,
 };
 
+// TODO(yhanada): Switch to use gfx.mojom.Rect. See crbug.com/723224.
 // Represents the text insertion points in the container screen coordinates.
 struct CursorRect {
   int32 left;
   int32 top;
   int32 right;
   int32 bottom;
+};
+
+// TODO(yhanada): Switch to use gfx.mojom.Range. See crbug.com/723224.
+// Represents the range in the text. It is an open interval [start, end).
+[MinVersion=5]
+struct TextRange {
+  // Start offset in UTF-16 index.
+  uint32 start;
+  // End offset in UTF-16 index.
+  uint32 end;
 };
 
 // Represents a single segment of text currently composed by IME.
@@ -55,6 +66,21 @@ interface ImeHost {
 
   // Show virtual keyboard of Chrome OS if needed.
   [MinVersion=2] ShowImeIfNeeded@3();
+
+  // Notifies Chrome that the cursor position has changed and
+  // also sends surrounding text.
+  //
+  // |text_range|, |text_in_range| and |selection_range| are piggy-backed
+  // into this method because Chrome OS IME tries to retrieve these information
+  // synchronously, so we need to update them all at once to keep consistency.
+  [MinVersion=5] OnCursorRectChangedWithSurroundingText@4(
+      CursorRect rect,           // The cursor position.
+      TextRange text_range,      // The range of |text_in_range| in the current
+                                 // text in the editor.
+      string text_in_range,      // The text around the cursor.
+      TextRange selection_range  // The range of the selected text
+                                 // in the current text in the editor.
+      );
 };
 
 // Next method ID: 6

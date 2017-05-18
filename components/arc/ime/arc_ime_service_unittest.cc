@@ -265,4 +265,29 @@ TEST_F(ArcImeServiceTest, WindowFocusTracking) {
   EXPECT_EQ(2, fake_input_method_->count_set_focused_text_input_client());
 }
 
+TEST_F(ArcImeServiceTest, GetTextFromRange) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
+  const base::string16 text = base::ASCIIToUTF16("abcdefghijklmn");
+  // Assume the cursor is between 'c' and 'd'.
+  const uint32_t cursor_pos = 3;
+  const gfx::Range text_range(cursor_pos - 1, cursor_pos + 1);
+  const base::string16 text_in_range = text.substr(cursor_pos - 1, 2);
+  const gfx::Range selection_range(cursor_pos, cursor_pos);
+
+  instance_->OnCursorRectChangedWithSurroundingText(
+      gfx::Rect(0, 0, 1, 1), text_range, text_in_range, selection_range);
+
+  gfx::Range temp;
+  instance_->GetTextRange(&temp);
+  EXPECT_EQ(text_range, temp);
+
+  base::string16 temp_str;
+  instance_->GetTextFromRange(text_range, &temp_str);
+  EXPECT_EQ(text_in_range, temp_str);
+
+  instance_->GetSelectionRange(&temp);
+  EXPECT_EQ(selection_range, temp);
+}
+
 }  // namespace arc
