@@ -338,10 +338,10 @@ public class Tab
     private float mPreviousContentOffsetY = Float.NaN;
 
     /**
-     * Indicates whether this tab has been detached from its activity and the corresponding
-     * {@link WindowAndroid} for reparenting to a new activity.
+     * Indicates whether this tab is detached from any activity and its corresponding
+     * {@link WindowAndroid}.
      */
-    private boolean mIsDetachedForReparenting;
+    private boolean mIsDetached;
 
     /**
      * The UMA object used to report stats for this tab. Note that this may be null under certain
@@ -475,6 +475,7 @@ public class Tab
                 context.getApplicationContext(), ChromeActivity.getThemeId()) : null;
         mWindowAndroid = window;
         mLaunchType = type;
+        if (mLaunchType == TabLaunchType.FROM_DETACHED) mIsDetached = true;
         if (mThemedApplicationContext != null) {
             Resources resources = mThemedApplicationContext.getResources();
             mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
@@ -1350,7 +1351,7 @@ public class Tab
      * Detaches a tab from its current activity if any.
      *
      * In details, this function:
-     * - Tags the tab using mIsDetachedForReparenting.
+     * - Tags the tab using mIsDetached.
      * - Registers some information for later reparenting in {@link AsyncTabParamsManager}.
      * - Removes the tab from its current {@link TabModelSelector}, effectively severing
      *   the {@link Activity} to {@link Tab} link.
@@ -1359,7 +1360,7 @@ public class Tab
      * @param finalizeCallback to be stored within a {@link TabReparentingParams}
      */
     private void detach(Intent intent, Runnable finalizeCallback) {
-        mIsDetachedForReparenting = true;
+        mIsDetached = true;
         // Add the tab to AsyncTabParamsManager before removing it from the current model to
         // ensure the global count of tabs is correct. See crbug.com/611806.
         if (intent == null) intent = new Intent();
@@ -1408,7 +1409,8 @@ public class Tab
         getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
 
         reparentingParams.finalizeTabReparenting();
-        mIsDetachedForReparenting = false;
+        mIsDetached = false;
+        nativeAttachDetachedTab(mNativeTabAndroid);
 
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.
@@ -1433,13 +1435,13 @@ public class Tab
     }
 
     /**
-     * @return Whether the tab is detached from its Activity and {@link WindowAndroid} for
-     * reparenting. Certain functionalities will not work until it is attached to a new activity
+     * @return Whether the tab is detached from any Activity and its {@link WindowAndroid}.
+     * Certain functionalities will not work until it is attached to an activity
      * with {@link Tab#attachAndFinishReparenting(
      * ChromeActivity, TabDelegateFactory, TabReparentingParams)}.
      */
-    public boolean isDetachedForReparenting() {
-        return mIsDetachedForReparenting;
+    public boolean isDetached() {
+        return mIsDetached;
     }
 
     /**
@@ -1604,8 +1606,8 @@ public class Tab
             mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
 
             assert mNativeTabAndroid != 0;
-            nativeInitWebContents(mNativeTabAndroid, mIncognito, mContentViewCore.getWebContents(),
-                    mWebContentsDelegate,
+            nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached,
+                    mContentViewCore.getWebContents(), mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
@@ -1657,7 +1659,7 @@ public class Tab
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
-        if (mIsDetachedForReparenting) return false;
+        if (mIsDetached) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
                 this, getTabModelSelector(), getActivity());
@@ -3041,8 +3043,8 @@ public class Tab
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
-            WebContents webContents, TabWebContentsDelegateAndroid delegate,
-            ContextMenuPopulator contextMenuPopulator);
+            boolean isBackgroundTab, WebContents webContents,
+            TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
@@ -3069,4 +3071,5 @@ public class Tab
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
     private native void nativeSetWebappManifestScope(long nativeTabAndroid, String scope);
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
+    private native void nativeAttachDetachedTab(long nativeTabAndroid);
 }

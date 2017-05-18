@@ -13,6 +13,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
+#include "chrome/browser/android/background_tab_manager.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -88,6 +90,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using chrome::android::BackgroundTabManager;
 using content::BrowserThread;
 using content::GlobalRequestID;
 using content::NavigationController;
@@ -326,6 +329,7 @@ void TabAndroid::InitWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean incognito,
+    jboolean is_background_tab,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobject>& jweb_contents_delegate,
     const JavaParamRef<jobject>& jcontext_menu_populator) {
@@ -371,6 +375,10 @@ void TabAndroid::InitWebContents(
   // off the record state.
   CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
 
+  if (is_background_tab) {
+    BackgroundTabManager::GetInstance()->RegisterBackgroundTab(web_contents(),
+                                                               GetProfile());
+  }
   content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
 }
 
@@ -722,6 +730,19 @@ void TabAndroid::EnableEmbeddedMediaExperience(
 
 bool TabAndroid::ShouldEnableEmbeddedMediaExperience() const {
   return embedded_media_experience_enabled_;
+}
+
+void TabAndroid::AttachDetachedTab(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  BackgroundTabManager* background_tab_manager =
+      BackgroundTabManager::GetInstance();
+  if (background_tab_manager->IsBackgroundTab(web_contents())) {
+    Profile* profile = background_tab_manager->GetProfile();
+    background_tab_manager->CommitHistory(HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::IMPLICIT_ACCESS));
+    background_tab_manager->UnregisterBackgroundTab();
+  }
 }
 
 namespace {

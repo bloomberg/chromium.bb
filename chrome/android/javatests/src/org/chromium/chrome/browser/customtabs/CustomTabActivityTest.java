@@ -1757,6 +1757,7 @@ public class CustomTabActivityTest {
                 return mTestPage.equals(currentTab.getUrl());
             }
         });
+
         Assert.assertFalse(mCustomTabActivityTestRule.getActivity().getActivityTab().canGoBack());
         Assert.assertFalse(
                 mCustomTabActivityTestRule.getActivity().getActivityTab().canGoForward());
@@ -2009,6 +2010,7 @@ public class CustomTabActivityTest {
             CriteriaHelper.pollInstrumentationThread(new ElementContentCriteria(
                     tab, "initial-fragment", fragment), 2000, 200);
         }
+
         Assert.assertFalse(tab.canGoForward());
         Assert.assertFalse(tab.canGoBack());
 
@@ -2613,6 +2615,66 @@ public class CustomTabActivityTest {
         Assert.assertEquals(2, history.size());
         Assert.assertEquals(mTestPage2, history.get(0).getUrl());
         Assert.assertEquals(mTestPage, history.get(1).getUrl());
+    }
+
+    /**
+     * The following test that history only has a single final page after speculation,
+     * whether it was a hit or a miss.
+     */
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testHistoryAfterPrerenderHit() throws Exception {
+        verifyHistoryAfterSpeculation(CustomTabsConnection.SpeculationParams.PRERENDER, true);
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testHistoryAfterPrerenderMiss() throws Exception {
+        verifyHistoryAfterSpeculation(CustomTabsConnection.SpeculationParams.PRERENDER, false);
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
+    public void testHistoryAfterHiddenTabHit() throws Exception {
+        verifyHistoryAfterSpeculation(CustomTabsConnection.SpeculationParams.HIDDEN_TAB, true);
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
+    public void testHistoryAfterHiddenTabMiss() throws Exception {
+        verifyHistoryAfterSpeculation(CustomTabsConnection.SpeculationParams.HIDDEN_TAB, false);
+    }
+
+    private void verifyHistoryAfterSpeculation(int speculationMode, boolean speculationWasAHit)
+            throws Exception {
+        String speculationUrl = mTestPage;
+        String navigationUrl = speculationWasAHit ? mTestPage : mTestPage2;
+        final CustomTabsConnection connection = warmUpAndWait();
+        Context context = InstrumentationRegistry.getInstrumentation()
+                                  .getTargetContext()
+                                  .getApplicationContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, navigationUrl);
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        connection.newSession(token);
+        connection.setSpeculationModeForSession(token, speculationMode);
+
+        Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(speculationUrl), null, null));
+        ensureCompletedSpeculationForUrl(connection, speculationUrl, speculationMode);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        Tab tab = getActivity().getActivityTab();
+        Assert.assertFalse(tab.canGoBack());
+        Assert.assertFalse(tab.canGoForward());
+
+        List<HistoryItem> history = getHistory();
+        Assert.assertEquals(1, history.size());
+        Assert.assertEquals(navigationUrl, history.get(0).getUrl());
     }
 
     private void mayLaunchUrlWithoutWarmup(int speculationMode) {
