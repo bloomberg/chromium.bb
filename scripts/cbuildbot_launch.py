@@ -192,6 +192,18 @@ def ConfigureGlobalEnvironment():
   # Set umask to 022 so files created by buildbot are readable.
   os.umask(0o22)
 
+  # These variables can interfere with LANG / locale behavior.
+  unwanted_local_vars = [
+      'LC_ALL', 'LC_CTYPE', 'LC_COLLATE', 'LC_TIME', 'LC_NUMERIC',
+      'LC_MONETARY', 'LC_MESSAGES', 'LC_PAPER', 'LC_NAME', 'LC_ADDRESS',
+      'LC_TELEPHONE', 'LC_MEASUREMENT', 'LC_IDENTIFICATION',
+  ]
+  for v in unwanted_local_vars:
+    os.environ.pop(v, None)
+
+  # This variable is required for repo sync's to work in all cases.
+  os.environ['LANG'] = 'en_US.UTF-8'
+
 
 def main(argv):
   """main method of script.

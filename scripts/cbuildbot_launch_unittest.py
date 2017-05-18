@@ -107,10 +107,18 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
 
   def testConfigureGlobalEnvironment(self):
     """Ensure that we can setup our global runtime environment correctly."""
+
+    os.environ.pop('LANG', None)
+    os.environ['LC_MONETARY'] = 'bad'
+
     cbuildbot_launch.ConfigureGlobalEnvironment()
 
-    # So far, we only have to modify the umask to ensure safety.
+    # Verify umask is updated.
     self.assertEqual(os.umask(0), 0o22)
+
+    # Verify ENVs are cleaned up.
+    self.assertEqual(os.environ['LANG'], 'en_US.UTF-8')
+    self.assertNotIn('LC_MONETARY', os.environ)
 
 
 class RunTests(cros_build_lib_unittest.RunCommandTestCase):
