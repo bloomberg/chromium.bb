@@ -90,7 +90,7 @@ def _get_hostname(server):
 
     >>> server = {'hostname': 'foo.example.com'}  # from atest
     >>> _get_hostname(server)
-    u'foo'
+    'foo'
     """
     return server['hostname'].partition('.')[0]
 
@@ -98,10 +98,9 @@ def _get_hostname(server):
 def _get_data_center(server):
     """Get server data center from an atest dict.
 
-
     >>> server = {'hostname': 'foo.mtv.example.com'}  # from atest
     >>> _get_data_center(server)
-    u'mtv'
+    'mtv'
     """
     try:
       return server['hostname'].split('.')[1]

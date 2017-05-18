@@ -7,12 +7,19 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import doctest
 import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import prod_metrics
 
 # pylint: disable=protected-access
+
+
+def load_tests(loader, standard_tests, pattern):
+  del loader, pattern
+  standard_tests.addTests(doctest.DocTestSuite(prod_metrics))
+  return standard_tests
 
 
 class TestModuleFunctions(cros_test_lib.TestCase):
