@@ -125,35 +125,9 @@ base::string16 FieldName(const FormFieldData& field,
              : field.name;
 }
 
-bool IsUnownedPasswordFormVisible(blink::WebFrame* frame,
-                                  const blink::WebInputElement& input_element,
-                                  const GURL& action,
-                                  const GURL& origin,
-                                  const FormData& form_data,
-                                  const FormsPredictionsMap& form_predictions) {
-  if (!input_element.IsNull() && form_util::IsWebElementVisible(input_element))
-    return true;
-
-  std::unique_ptr<PasswordForm> unowned_password_form(
-      CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
-                                                 &form_predictions));
-  if (!unowned_password_form)
-    return false;
-  std::vector<blink::WebFormControlElement> control_elements =
-      form_util::GetUnownedAutofillableFormFieldElements(
-          frame->GetDocument().All(), nullptr);
-  if (!form_util::IsSomeControlElementVisible(control_elements))
-    return false;
-
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  const bool action_is_empty = action == origin;
-  bool forms_are_same =
-      action_is_empty ? form_data.SameFormAs(unowned_password_form->form_data)
-                      : action == unowned_password_form->action;
-  return forms_are_same;
-#else  // OS_MACOSX or OS_ANDROID
-  return action == unowned_password_form->action;
-#endif
+bool IsUnownedPasswordFormVisible(const blink::WebInputElement& input_element) {
+  return !input_element.IsNull() &&
+         form_util::IsWebElementVisible(input_element);
 }
 
 // Utility function to find the unique entry of |control_elements| for the
@@ -1079,27 +1053,27 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
   const auto& password_form = provisionally_saved_form_.password_form();
   // TODO(crbug.com/720347): This method could be called often and checking form
   // visibility could be expesive. Add performance metrics for this.
-  if (event != PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR &&
-      (form_util::IsFormVisible(frame, provisionally_saved_form_.form_element(),
-                                password_form.action, password_form.origin,
-                                password_form.form_data) ||
-       (provisionally_saved_form_.form_element().IsNull() &&
-        IsUnownedPasswordFormVisible(
-            frame, provisionally_saved_form_.input_element(),
-            password_form.action, password_form.origin, password_form.form_data,
-            form_predictions_)))) {
-    if (!form_element_observer_) {
-      std::unique_ptr<FormElementObserverCallback> callback(
-          new FormElementObserverCallback(this));
-      if (!provisionally_saved_form_.form_element().IsNull()) {
-        form_element_observer_ = blink::WebFormElementObserver::Create(
-            provisionally_saved_form_.form_element(), std::move(callback));
-      } else if (!provisionally_saved_form_.input_element().IsNull()) {
-        form_element_observer_ = blink::WebFormElementObserver::Create(
-            provisionally_saved_form_.input_element(), std::move(callback));
+  if (event != PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
+    if (form_util::IsFormVisible(frame,
+                                 provisionally_saved_form_.form_element(),
+                                 password_form.action, password_form.origin,
+                                 password_form.form_data) ||
+        (provisionally_saved_form_.form_element().IsNull() &&
+         IsUnownedPasswordFormVisible(
+             provisionally_saved_form_.input_element()))) {
+      if (!form_element_observer_) {
+        std::unique_ptr<FormElementObserverCallback> callback(
+            new FormElementObserverCallback(this));
+        if (!provisionally_saved_form_.form_element().IsNull()) {
+          form_element_observer_ = blink::WebFormElementObserver::Create(
+              provisionally_saved_form_.form_element(), std::move(callback));
+        } else if (!provisionally_saved_form_.input_element().IsNull()) {
+          form_element_observer_ = blink::WebFormElementObserver::Create(
+              provisionally_saved_form_.input_element(), std::move(callback));
+        }
+        return;
       }
     }
-    return;
   }
 
   provisionally_saved_form_.SetSubmissionIndicatorEvent(event);
