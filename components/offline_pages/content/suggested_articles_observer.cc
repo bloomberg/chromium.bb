@@ -12,7 +12,8 @@
 #include "components/offline_pages/content/prefetch_service_factory.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 
 using ntp_snippets::Category;
 using ntp_snippets::ContentSuggestion;
@@ -100,7 +101,7 @@ void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
   if (suggestions.empty())
     return;
 
-  std::vector<PrefetchService::PrefetchURL> prefetch_urls;
+  std::vector<PrefetchDispatcher::PrefetchURL> prefetch_urls;
   for (const ContentSuggestion& suggestion : suggestions) {
     prefetch_urls.push_back(
         {CreateClientIDFromSuggestionId(suggestion.id()), suggestion.url()});
@@ -112,7 +113,7 @@ void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
                 "SuggestedArticlesObserver.";
     return;
   }
-  service->AddCandidatePrefetchURLs(prefetch_urls);
+  service->GetDispatcher()->AddCandidatePrefetchURLs(prefetch_urls);
 }
 
 void SuggestedArticlesObserver::OnCategoryStatusChanged(
@@ -133,7 +134,8 @@ void SuggestedArticlesObserver::OnCategoryStatusChanged(
                   "SuggestedArticlesObserver.";
       return;
     }
-    service->RemoveAllUnprocessedPrefetchURLs(kSuggestedArticlesNamespace);
+    service->GetDispatcher()->RemoveAllUnprocessedPrefetchURLs(
+        kSuggestedArticlesNamespace);
   }
 }
 
@@ -145,7 +147,7 @@ void SuggestedArticlesObserver::OnSuggestionInvalidated(
                 "SuggestedArticlesObserver.";
     return;
   }
-  service->RemovePrefetchURLsByClientId(
+  service->GetDispatcher()->RemovePrefetchURLsByClientId(
       CreateClientIDFromSuggestionId(suggestion_id));
 }
 
@@ -156,7 +158,8 @@ void SuggestedArticlesObserver::OnFullRefreshRequired() {
                 "SuggestedArticlesObserver.";
     return;
   }
-  service->RemoveAllUnprocessedPrefetchURLs(kSuggestedArticlesNamespace);
+  service->GetDispatcher()->RemoveAllUnprocessedPrefetchURLs(
+      kSuggestedArticlesNamespace);
   OnNewSuggestions(ArticlesCategory());
 }
 

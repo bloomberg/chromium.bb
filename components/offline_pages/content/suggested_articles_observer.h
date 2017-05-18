@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/offline_pages/core/prefetch/prefetch_service.h"
 
 namespace content {
 class BrowserContext;
@@ -21,6 +20,7 @@ class Category;
 }
 
 namespace offline_pages {
+class PrefetchService;
 
 // Observes the ContentSuggestionsService, listening for new suggestions in the
 // ARTICLES category.  When those suggestions arrive, it then forwards them to
