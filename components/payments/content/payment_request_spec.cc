@@ -187,14 +187,27 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
   if (details().shipping_options.empty()) {
     // No options are provided by the merchant.
     if (after_update) {
-      // This is after an update, which means that the selected address is no
+      // This is after an update, which means that the selected address is not
       // supported. The merchant may have customized the error string, or a
       // generic one is used.
       if (!details().error.empty()) {
         selected_shipping_option_error_ = base::UTF8ToUTF16(details().error);
       } else {
-        selected_shipping_option_error_ = l10n_util::GetStringUTF16(
-            IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS);
+        // The generic error string depends on the shipping type.
+        switch (shipping_type()) {
+          case PaymentShippingType::DELIVERY:
+            selected_shipping_option_error_ = l10n_util::GetStringUTF16(
+                IDS_PAYMENTS_UNSUPPORTED_DELIVERY_ADDRESS);
+            break;
+          case PaymentShippingType::PICKUP:
+            selected_shipping_option_error_ = l10n_util::GetStringUTF16(
+                IDS_PAYMENTS_UNSUPPORTED_PICKUP_ADDRESS);
+            break;
+          case PaymentShippingType::SHIPPING:
+            selected_shipping_option_error_ = l10n_util::GetStringUTF16(
+                IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS);
+            break;
+        }
       }
     }
     return;
