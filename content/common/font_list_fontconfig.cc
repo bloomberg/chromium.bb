@@ -26,6 +26,8 @@ std::unique_ptr<FcPattern, decltype(&FcPatternDestroy)> CreateFormatPattern(
 }
 
 std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
+  DCHECK(GetFontListTaskRunner()->RunsTasksInCurrentSequence());
+
   std::unique_ptr<base::ListValue> font_list(new base::ListValue);
 
   std::unique_ptr<FcObjectSet, decltype(&FcObjectSetDestroy)> object_set(
