@@ -569,6 +569,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreAllAttributes() const override;
 
   QueryManager* GetQueryManager() override { return query_manager_.get(); }
+  FramebufferManager* GetFramebufferManager() override {
+    return framebuffer_manager_.get();
+  }
   TransformFeedbackManager* GetTransformFeedbackManager() override {
     return transform_feedback_manager_.get();
   }
@@ -723,7 +726,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   }
 
   FramebufferManager* framebuffer_manager() {
-    return group_->framebuffer_manager();
+    return framebuffer_manager_.get();
   }
 
   ProgramManager* program_manager() {
@@ -2322,6 +2325,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Whether the client requested an offscreen buffer with an alpha channel.
   bool offscreen_buffer_should_have_alpha_;
 
+  std::unique_ptr<FramebufferManager> framebuffer_manager_;
+
   std::unique_ptr<QueryManager> query_manager_;
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
@@ -3249,6 +3254,11 @@ bool GLES2DecoderImpl::Initialize(
 
   // vertex_attrib_manager is set to default_vertex_attrib_manager by this call
   DoBindVertexArrayOES(0);
+
+  framebuffer_manager_.reset(new FramebufferManager(
+      group_->max_draw_buffers(), group_->max_color_attachments(),
+      group_->framebuffer_completeness_cache()));
+  group_->texture_manager()->AddFramebufferManager(framebuffer_manager_.get());
 
   query_manager_.reset(new QueryManager(this, feature_info_.get()));
 
@@ -4855,6 +4865,14 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   copy_texture_CHROMIUM_.reset();
   srgb_converter_.reset();
   clear_framebuffer_blit_.reset();
+
+  if (framebuffer_manager_.get()) {
+    framebuffer_manager_->Destroy(have_context);
+    if (group_->texture_manager())
+      group_->texture_manager()->RemoveFramebufferManager(
+          framebuffer_manager_.get());
+    framebuffer_manager_.reset();
+  }
 
   if (query_manager_.get()) {
     query_manager_->Destroy(have_context);

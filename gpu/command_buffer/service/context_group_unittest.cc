@@ -62,7 +62,6 @@ TEST_F(ContextGroupTest, Basic) {
   EXPECT_EQ(0u, group_->max_varying_vectors());
   EXPECT_EQ(0u, group_->max_vertex_uniform_vectors());
   EXPECT_TRUE(group_->buffer_manager() == NULL);
-  EXPECT_TRUE(group_->framebuffer_manager() == NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
   EXPECT_TRUE(group_->texture_manager() == NULL);
   EXPECT_TRUE(group_->program_manager() == NULL);
@@ -90,7 +89,6 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
   EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxVertexUniformVectors),
             group_->max_vertex_uniform_vectors());
   EXPECT_TRUE(group_->buffer_manager() != NULL);
-  EXPECT_TRUE(group_->framebuffer_manager() != NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
   EXPECT_TRUE(group_->texture_manager() != NULL);
   EXPECT_TRUE(group_->program_manager() != NULL);
@@ -98,7 +96,6 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
 
   group_->Destroy(decoder_.get(), false);
   EXPECT_TRUE(group_->buffer_manager() == NULL);
-  EXPECT_TRUE(group_->framebuffer_manager() == NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
   EXPECT_TRUE(group_->texture_manager() == NULL);
   EXPECT_TRUE(group_->program_manager() == NULL);
@@ -122,7 +119,6 @@ TEST_F(ContextGroupTest, MultipleContexts) {
                                  DisallowedFeatures()));
 
   EXPECT_TRUE(group_->buffer_manager() != NULL);
-  EXPECT_TRUE(group_->framebuffer_manager() != NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
   EXPECT_TRUE(group_->texture_manager() != NULL);
   EXPECT_TRUE(group_->program_manager() != NULL);
@@ -131,7 +127,6 @@ TEST_F(ContextGroupTest, MultipleContexts) {
   group_->Destroy(decoder_.get(), false);
 
   EXPECT_TRUE(group_->buffer_manager() != NULL);
-  EXPECT_TRUE(group_->framebuffer_manager() != NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
   EXPECT_TRUE(group_->texture_manager() != NULL);
   EXPECT_TRUE(group_->program_manager() != NULL);
@@ -140,7 +135,6 @@ TEST_F(ContextGroupTest, MultipleContexts) {
   group_->Destroy(decoder2_.get(), false);
 
   EXPECT_TRUE(group_->buffer_manager() == NULL);
-  EXPECT_TRUE(group_->framebuffer_manager() == NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
   EXPECT_TRUE(group_->texture_manager() == NULL);
   EXPECT_TRUE(group_->program_manager() == NULL);

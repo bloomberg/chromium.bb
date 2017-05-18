@@ -343,20 +343,6 @@ class GenBuffersAPI {
   }
 };
 
-// API wrapper for Framebuffers.
-class GenFramebuffersAPI {
- public:
-  static void Gen(GLES2Implementation* gl_impl, GLsizei n, GLuint* ids) {
-    gl_impl->GenFramebuffers(n, ids);
-  }
-
-  static void Delete(GLES2Implementation* gl_impl,
-                     GLsizei n,
-                     const GLuint* ids) {
-    gl_impl->DeleteFramebuffers(n, ids);
-  }
-};
-
 // API wrapper for Renderbuffers.
 class GenRenderbuffersAPI {
  public:
@@ -3148,9 +3134,6 @@ TEST_F(GLES2ImplementationTest, TexSubImage3D4Writes) {
 TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestBuffers) {
   FlushGenerationTest<GenBuffersAPI>();
 }
-TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestFramebuffers) {
-  FlushGenerationTest<GenFramebuffersAPI>();
-}
 TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestRenderbuffers) {
   FlushGenerationTest<GenRenderbuffersAPI>();
 }
@@ -3162,10 +3145,6 @@ TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestTextures) {
 // flushed by glFlush, and the Ids are lazily freed after.
 TEST_F(GLES2ImplementationStrictSharedTest, CrossContextGenerationTestBuffers) {
   CrossContextGenerationTest<GenBuffersAPI>();
-}
-TEST_F(GLES2ImplementationStrictSharedTest,
-       CrossContextGenerationTestFramebuffers) {
-  CrossContextGenerationTest<GenFramebuffersAPI>();
 }
 TEST_F(GLES2ImplementationStrictSharedTest,
        CrossContextGenerationTestRenderbuffers) {
@@ -3181,10 +3160,6 @@ TEST_F(GLES2ImplementationStrictSharedTest,
 TEST_F(GLES2ImplementationStrictSharedTest,
        CrossContextGenerationAutoFlushTestBuffers) {
   CrossContextGenerationAutoFlushTest<GenBuffersAPI>();
-}
-TEST_F(GLES2ImplementationStrictSharedTest,
-       CrossContextGenerationAutoFlushTestFramebuffers) {
-  CrossContextGenerationAutoFlushTest<GenFramebuffersAPI>();
 }
 TEST_F(GLES2ImplementationStrictSharedTest,
        CrossContextGenerationAutoFlushTestRenderbuffers) {

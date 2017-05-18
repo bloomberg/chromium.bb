@@ -217,9 +217,6 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
 
   buffer_manager_.reset(
       new BufferManager(memory_tracker_.get(), feature_info_.get()));
-  framebuffer_manager_.reset(
-      new FramebufferManager(max_draw_buffers_, max_color_attachments_,
-                             framebuffer_completeness_cache_));
   renderbuffer_manager_.reset(new RenderbufferManager(
       memory_tracker_.get(), max_renderbuffer_size, max_samples,
       feature_info_.get()));
@@ -315,7 +312,6 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
       max_cube_map_texture_size, max_rectangle_texture_size,
       max_3d_texture_size, max_array_texture_layers, bind_generates_resource_,
       progress_reporter_));
-  texture_manager_->set_framebuffer_manager(framebuffer_manager_.get());
 
   const GLint kMinTextureImageUnits = 8;
   const GLint kMinVertexTextureImageUnits = 0;
@@ -505,14 +501,6 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
     }
     buffer_manager_->Destroy();
     buffer_manager_.reset();
-    ReportProgress();
-  }
-
-  if (framebuffer_manager_ != NULL) {
-    framebuffer_manager_->Destroy(have_context);
-    if (texture_manager_)
-      texture_manager_->set_framebuffer_manager(NULL);
-    framebuffer_manager_.reset();
     ReportProgress();
   }
 

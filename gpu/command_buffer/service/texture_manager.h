@@ -758,9 +758,8 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                  ProgressReporter* progress_reporter);
   ~TextureManager() override;
 
-  void set_framebuffer_manager(FramebufferManager* manager) {
-    framebuffer_manager_ = manager;
-  }
+  void AddFramebufferManager(FramebufferManager* framebuffer_manager);
+  void RemoveFramebufferManager(FramebufferManager* framebuffer_manager);
 
   // Init the texture manager.
   bool Initialize();
@@ -1192,7 +1191,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
 
   scoped_refptr<FeatureInfo> feature_info_;
 
-  FramebufferManager* framebuffer_manager_;
+  std::vector<FramebufferManager*> framebuffer_managers_;
 
   // Info for each texture in the system.
   typedef base::hash_map<GLuint, scoped_refptr<TextureRef> > TextureMap;

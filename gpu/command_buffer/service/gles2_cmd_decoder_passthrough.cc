@@ -456,6 +456,11 @@ gpu::gles2::QueryManager* GLES2DecoderPassthroughImpl::GetQueryManager() {
   return nullptr;
 }
 
+gpu::gles2::FramebufferManager*
+GLES2DecoderPassthroughImpl::GetFramebufferManager() {
+  return nullptr;
+}
+
 gpu::gles2::TransformFeedbackManager*
 GLES2DecoderPassthroughImpl::GetTransformFeedbackManager() {
   return nullptr;

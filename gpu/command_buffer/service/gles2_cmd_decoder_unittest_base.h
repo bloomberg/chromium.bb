@@ -109,7 +109,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   }
 
   Framebuffer* GetFramebuffer(GLuint client_id) {
-    return group_->framebuffer_manager()->GetFramebuffer(client_id);
+    return decoder_->GetFramebufferManager()->GetFramebuffer(client_id);
   }
 
   Renderbuffer* GetRenderbuffer(GLuint client_id) {
@@ -161,6 +161,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   FramebufferCompletenessCache* framebuffer_completeness_cache() const {
     return group_->framebuffer_completeness_cache();
+  }
+
+  FramebufferManager* GetFramebufferManager() {
+    return decoder_->GetFramebufferManager();
   }
 
   ImageManager* GetImageManager() { return decoder_->GetImageManager(); }

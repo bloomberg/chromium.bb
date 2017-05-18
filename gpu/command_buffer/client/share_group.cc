@@ -352,16 +352,20 @@ ShareGroup::ShareGroup(bool bind_generates_resource, uint64_t tracing_guid)
     : bind_generates_resource_(bind_generates_resource),
       tracing_guid_(tracing_guid) {
   if (bind_generates_resource) {
-    for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
-      if (i == id_namespaces::kProgramsAndShaders) {
+    for (int i = 0;
+         i < static_cast<int>(SharedIdNamespaces::kNumSharedIdNamespaces);
+         ++i) {
+      if (i == static_cast<int>(SharedIdNamespaces::kProgramsAndShaders)) {
         id_handlers_[i].reset(new NonReusedIdHandler());
       } else {
         id_handlers_[i].reset(new IdHandler());
       }
     }
   } else {
-    for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
-      if (i == id_namespaces::kProgramsAndShaders) {
+    for (int i = 0;
+         i < static_cast<int>(SharedIdNamespaces::kNumSharedIdNamespaces);
+         ++i) {
+      if (i == static_cast<int>(SharedIdNamespaces::kProgramsAndShaders)) {
         id_handlers_[i].reset(new NonReusedIdHandler());
       } else {
         id_handlers_[i].reset(new StrictIdHandler(i));

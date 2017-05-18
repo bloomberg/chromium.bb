@@ -1893,7 +1893,6 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
     : memory_type_tracker_(new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
       feature_info_(feature_info),
-      framebuffer_manager_(NULL),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_rectangle_texture_size_(max_rectangle_texture_size),
@@ -1922,6 +1921,23 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     black_texture_ids_[ii] = 0;
   }
+}
+
+void TextureManager::AddFramebufferManager(
+    FramebufferManager* framebuffer_manager) {
+  framebuffer_managers_.push_back(framebuffer_manager);
+}
+
+void TextureManager::RemoveFramebufferManager(
+    FramebufferManager* framebuffer_manager) {
+  for (unsigned int i = 0; i < framebuffer_managers_.size(); ++i) {
+    if (framebuffer_managers_[i] == framebuffer_manager) {
+      std::swap(framebuffer_managers_[i], framebuffer_managers_.back());
+      framebuffer_managers_.pop_back();
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 bool TextureManager::Initialize() {
@@ -2332,8 +2348,9 @@ void TextureManager::UpdateNumImages(int delta) {
 }
 
 void TextureManager::IncFramebufferStateChangeCount() {
-  if (framebuffer_manager_)
-    framebuffer_manager_->IncFramebufferStateChangeCount();
+  for (unsigned int i = 0; i < framebuffer_managers_.size(); ++i) {
+    framebuffer_managers_[i]->IncFramebufferStateChangeCount();
+  }
 }
 
 bool TextureManager::ValidateTextureParameters(

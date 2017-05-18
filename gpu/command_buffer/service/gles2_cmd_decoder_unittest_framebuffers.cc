@@ -2121,8 +2121,7 @@ TEST_P(GLES3DecoderTest, ClearBufferivImmediateValidArgs) {
 
   // TODO(zmo): Set up expectations for the path where the attachment isn't
   // marked as cleared.
-  Framebuffer* framebuffer =
-      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
   framebuffer->MarkAttachmentAsCleared(
       group().renderbuffer_manager(), nullptr, GL_COLOR_ATTACHMENT0, true);
 
@@ -2153,8 +2152,7 @@ TEST_P(GLES3DecoderTest, ClearBufferuivImmediateValidArgs) {
 
   // TODO(zmo): Set up expectations for the path where the attachment isn't
   // marked as cleared.
-  Framebuffer* framebuffer =
-      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
   framebuffer->MarkAttachmentAsCleared(
       group().renderbuffer_manager(), nullptr, GL_COLOR_ATTACHMENT0, true);
 
@@ -2186,8 +2184,7 @@ TEST_P(GLES3DecoderTest, ClearBufferfvImmediateValidArgs) {
 
   // TODO(zmo): Set up expectations for the path where the attachment isn't
   // marked as cleared.
-  Framebuffer* framebuffer =
-      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
   framebuffer->MarkAttachmentAsCleared(
       group().renderbuffer_manager(), nullptr, GL_DEPTH_ATTACHMENT, true);
 
@@ -2224,8 +2221,7 @@ TEST_P(GLES3DecoderTest, ClearBufferfiValidArgs) {
 
   // TODO(zmo): Set up expectations for the path where the attachment isn't
   // marked as cleared.
-  Framebuffer* framebuffer =
-      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
   framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
                                        GL_DEPTH_ATTACHMENT, true);
   framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
@@ -3129,7 +3125,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
 
 void GLES2DecoderWithShaderTest::CheckRenderbufferChangesMarkFBOAsNotComplete(
     bool bound_fbo) {
-  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  FramebufferManager* framebuffer_manager = GetFramebufferManager();
   SetupTexture();
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
@@ -3189,7 +3185,7 @@ TEST_P(GLES2DecoderWithShaderTest,
 
 void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
     bool bound_fbo) {
-  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  FramebufferManager* framebuffer_manager = GetFramebufferManager();
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
 
@@ -3465,7 +3461,7 @@ TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
                          kServiceTextureId,
                          0,
                          GL_NO_ERROR);
-  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  FramebufferManager* framebuffer_manager = GetFramebufferManager();
   Framebuffer* framebuffer =
       framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
   EXPECT_TRUE(framebuffer->IsCleared());
@@ -3571,7 +3567,7 @@ TEST_P(GLES3DecoderTest, DiscardFramebufferEXTInvalidTarget) {
                          kServiceTextureId,
                          0,
                          GL_NO_ERROR);
-  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  FramebufferManager* framebuffer_manager = GetFramebufferManager();
   Framebuffer* framebuffer =
       framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
   EXPECT_TRUE(framebuffer->IsCleared());
@@ -3621,7 +3617,7 @@ TEST_P(GLES3DecoderTest, DiscardFramebufferEXTUseCorrectTarget) {
                          0,
                          GL_NO_ERROR);
 
-  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  FramebufferManager* framebuffer_manager = GetFramebufferManager();
   Framebuffer* framebuffer =
       framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
   EXPECT_TRUE(framebuffer->IsCleared());
@@ -3705,7 +3701,7 @@ TEST_P(GLES2DecoderManualInitTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Check that framebuffer is cleared and complete.
-  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  FramebufferManager* framebuffer_manager = GetFramebufferManager();
   Framebuffer* framebuffer =
       framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
   EXPECT_TRUE(framebuffer->IsCleared());
@@ -3849,8 +3845,7 @@ TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
       GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
       client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
 
-  Framebuffer* framebuffer =
-      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
   ASSERT_TRUE(framebuffer);
   ASSERT_FALSE(framebuffer->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
   ASSERT_TRUE(framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT));
