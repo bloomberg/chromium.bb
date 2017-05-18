@@ -420,4 +420,20 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   EXPECT_EQ(20, boring_view->width());
 }
 
+TEST_F(DialogClientViewTest, ButtonPosition) {
+  constexpr int button_row_inset = 13;
+  client_view()->SetButtonRowInsets(gfx::Insets(button_row_inset));
+  constexpr int contents_height = 37;
+  constexpr int contents_width = 222;
+  SetSizeConstraints(gfx::Size(), gfx::Size(contents_width, contents_height),
+                     gfx::Size(666, 666));
+  SetDialogButtons(ui::DIALOG_BUTTON_OK);
+  client_view()->SizeToPreferredSize();
+  client_view()->Layout();
+  EXPECT_EQ(contents_width - button_row_inset,
+            client_view()->ok_button()->bounds().right());
+  EXPECT_EQ(contents_height + button_row_inset,
+            height() + client_view()->ok_button()->y());
+}
+
 }  // namespace views
