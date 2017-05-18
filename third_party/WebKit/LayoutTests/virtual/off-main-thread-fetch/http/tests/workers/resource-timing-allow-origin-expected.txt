@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL No timing-allow-origin promise_test: Unhandled rejection with value: "no performance entry for http://localhost:8000/workers/resources/timing-allow-origin.php"
-FAIL timing-allow-origin: * promise_test: Unhandled rejection with value: "no performance entry for http://localhost:8000/workers/resources/timing-allow-origin.php?origin=*"
-FAIL timing-allow-origin: page origin promise_test: Unhandled rejection with value: "no performance entry for http://localhost:8000/workers/resources/timing-allow-origin.php?origin=http://127.0.0.1:8000"
-FAIL timing-allow-origin: other origin promise_test: Unhandled rejection with value: "no performance entry for http://localhost:8000/workers/resources/timing-allow-origin.php?origin=http://localhost:8000"
-Harness: the test ran to completion.
-

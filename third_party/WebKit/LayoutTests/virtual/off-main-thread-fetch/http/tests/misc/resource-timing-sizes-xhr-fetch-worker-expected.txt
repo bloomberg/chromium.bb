@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL PerformanceResourceTiming sizes XHR and Fetch test assert_equals: seenResources expected 3 but got 1
-Harness: the test ran to completion.
-

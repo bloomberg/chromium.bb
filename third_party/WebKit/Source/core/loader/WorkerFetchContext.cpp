@@ -6,6 +6,7 @@
 
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
+#include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
@@ -183,6 +184,11 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 
   if (web_context_->IsDataSaverEnabled())
     request.SetHTTPHeaderField("Save-Data", "on");
+}
+
+void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
+  WorkerGlobalScopePerformance::performance(*worker_global_scope_)
+      ->AddResourceTiming(info);
 }
 
 DEFINE_TRACE(WorkerFetchContext) {
