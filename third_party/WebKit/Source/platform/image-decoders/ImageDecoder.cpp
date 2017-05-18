@@ -450,6 +450,18 @@ size_t ImageDecoder::FindRequiredPreviousFrame(size_t frame_index,
   size_t prev_frame = frame_index - 1;
   const ImageFrame* prev_buffer = &frame_buffer_cache_[prev_frame];
 
+  // Frames that use the DisposeOverwritePrevious method are effectively
+  // no-ops in terms of changing the starting state of a frame compared to
+  // the starting state of the previous frame, so skip over them.
+  while (prev_buffer->GetDisposalMethod() ==
+         ImageFrame::kDisposeOverwritePrevious) {
+    if (prev_frame == 0) {
+      return kNotFound;
+    }
+    prev_frame--;
+    prev_buffer = &frame_buffer_cache_[prev_frame];
+  }
+
   switch (prev_buffer->GetDisposalMethod()) {
     case ImageFrame::kDisposeNotSpecified:
     case ImageFrame::kDisposeKeep:
@@ -457,12 +469,6 @@ size_t ImageDecoder::FindRequiredPreviousFrame(size_t frame_index,
       // FIXME: Be even smarter by checking the frame sizes and/or
       // alpha-containing regions.
       return prev_frame;
-    case ImageFrame::kDisposeOverwritePrevious:
-      // Frames that use the DisposeOverwritePrevious method are effectively
-      // no-ops in terms of changing the starting state of a frame compared to
-      // the starting state of the previous frame, so skip over them and
-      // return the required previous frame of it.
-      return prev_buffer->RequiredPreviousFrameIndex();
     case ImageFrame::kDisposeOverwriteBgcolor:
       // If the previous frame fills the whole image, then the current frame
       // can be decoded alone. Likewise, if the previous frame could be
@@ -474,6 +480,7 @@ size_t ImageDecoder::FindRequiredPreviousFrame(size_t frame_index,
               (prev_buffer->RequiredPreviousFrameIndex() == kNotFound))
                  ? kNotFound
                  : prev_frame;
+    case ImageFrame::kDisposeOverwritePrevious:
     default:
       NOTREACHED();
       return kNotFound;
