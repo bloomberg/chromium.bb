@@ -235,8 +235,6 @@ void CloudPolicyClient::FetchPolicy() {
 
     // These fields are included only in requests for chrome policy.
     if (IsChromePolicy(type_to_fetch.first)) {
-      if (submit_machine_id_ && !machine_id_.empty())
-        fetch_request->set_machine_id(machine_id_);
       if (!last_policy_timestamp_.is_null())
         fetch_request->set_timestamp(last_policy_timestamp_.ToJavaTime());
       if (!invalidation_payload_.empty()) {
