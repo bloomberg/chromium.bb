@@ -517,7 +517,6 @@ by a child template that "extends" this file.
         <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity"
             android:theme="@style/WebappTheme"
             android:label="@string/webapp_activity_title"
-            android:launchMode="singleTop"
             android:documentLaunchMode="intoExisting"
             android:persistableMode="persistNever"
             {{ self.supports_video_persistence() }}
