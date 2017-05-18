@@ -30,6 +30,12 @@ class PLATFORM_EXPORT IIRFilter final {
                             float* mag_response,
                             float* phase_response);
 
+  // Compute the tail time of the IIR filter
+  double TailTime(double sample_rate);
+
+  // Reset the internal state of the IIR filter to the initial state.
+  void ResetState();
+
  private:
   // Filter memory
   //
