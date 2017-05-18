@@ -90461,7 +90461,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PasswordProtectionTrigger">
+<histogram_suffixes name="PasswordProtectionTrigger" separator=".">
   <suffix name="PasswordFieldOnFocus"
       label="Password protection triggered by password field on focus event."/>
   <suffix name="ProtectedPasswordEntry"
