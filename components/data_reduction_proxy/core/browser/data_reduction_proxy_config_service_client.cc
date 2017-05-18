@@ -38,6 +38,7 @@
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_source_type.h"
 #include "net/proxy/proxy_server.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -407,8 +408,30 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
     const GURL& secure_proxy_check_url,
     const std::string& request_body) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("data_reduction_proxy_config", R"(
+        semantics {
+          sender: "Data Reduction Proxy"
+          description:
+            "Requests a configuration that specifies how to connect to the "
+            "data reduction proxy."
+          trigger:
+            "Requested when Data Saver is enabled and the browser does not "
+            "have a configuration that is not older than a threshold set by "
+            "the server."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can control Data Saver on Android via 'Data Saver' setting. "
+            "Data Saver is not available on iOS, and on desktop it is enabled "
+            "by insalling the Data Saver extension."
+          policy_exception_justification: "Not implemented."
+        })");
   std::unique_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
-      secure_proxy_check_url, net::URLFetcher::POST, this));
+      secure_proxy_check_url, net::URLFetcher::POST, this, traffic_annotation));
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(),
       data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
