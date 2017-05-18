@@ -23,11 +23,11 @@ namespace device {
 struct ReaderInitParams {
   // ISensorDataReport::GetSensorValue is not const, therefore, report
   // cannot be passed as const ref.
-  // ISensorDataReport& report - report that contains new sensor data.
-  // SensorReading& reading    - out parameter that must be populated.
+  // ISensorDataReport* report - report that contains new sensor data.
+  // SensorReading* reading    - out parameter that must be populated.
   // Returns HRESULT           - S_OK on success, otherwise error code.
-  using ReaderFunctor = base::Callback<HRESULT(ISensorDataReport& report,
-                                               SensorReading& reading)>;
+  using ReaderFunctor = base::Callback<HRESULT(ISensorDataReport* report,
+                                               SensorReading* reading)>;
   SENSOR_TYPE_ID sensor_type_id;
   ReaderFunctor reader_func;
   unsigned long min_reporting_interval_ms = 0;
@@ -37,11 +37,11 @@ namespace {
 
 // Gets value from  the report for provided key.
 bool GetReadingValueForProperty(REFPROPERTYKEY key,
-                                ISensorDataReport& report,
+                                ISensorDataReport* report,
                                 double* value) {
   DCHECK(value);
   base::win::ScopedPropVariant variant_value;
-  if (SUCCEEDED(report.GetSensorValue(key, variant_value.Receive()))) {
+  if (SUCCEEDED(report->GetSensorValue(key, variant_value.Receive()))) {
     if (variant_value.get().vt == VT_R8)
       *value = variant_value.get().dblVal;
     else if (variant_value.get().vt == VT_R4)
@@ -60,13 +60,13 @@ std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AMBIENT_LIGHT;
   params->reader_func =
-      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
         double lux = 0.0;
         if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX,
                                         report, &lux)) {
           return E_FAIL;
         }
-        reading.values[0] = lux;
+        reading->values[0] = lux;
         return S_OK;
       });
   return params;
@@ -77,7 +77,7 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_ACCELEROMETER_3D;
   params->reader_func =
-      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
@@ -93,9 +93,9 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
         // Windows uses coordinate system where Z axis points down from device
         // screen, therefore, using right hand notation, we have to reverse
         // sign for each axis. Values are converted from G/s^2 to m/s^2.
-        reading.values[0] = -x * kMeanGravity;
-        reading.values[1] = -y * kMeanGravity;
-        reading.values[2] = -z * kMeanGravity;
+        reading->values[0] = -x * kMeanGravity;
+        reading->values[1] = -y * kMeanGravity;
+        reading->values[2] = -z * kMeanGravity;
         return S_OK;
       });
   return params;
@@ -105,8 +105,8 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
 std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_GYROMETER_3D;
-  params->reader_func = base::Bind([](ISensorDataReport& report,
-                                      SensorReading& reading) {
+  params->reader_func = base::Bind([](ISensorDataReport* report,
+                                      SensorReading* reading) {
     double x = 0.0;
     double y = 0.0;
     double z = 0.0;
@@ -125,9 +125,9 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
     // Windows uses coordinate system where Z axis points down from device
     // screen, therefore, using right hand notation, we have to reverse
     // sign for each axis. Values are converted from deg to rad.
-    reading.values[0] = -x * kRadiansInDegrees;
-    reading.values[1] = -y * kRadiansInDegrees;
-    reading.values[2] = -z * kRadiansInDegrees;
+    reading->values[0] = -x * kRadiansInDegrees;
+    reading->values[1] = -y * kRadiansInDegrees;
+    reading->values[2] = -z * kRadiansInDegrees;
     return S_OK;
   });
   return params;
@@ -138,7 +138,7 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_COMPASS_3D;
   params->reader_func =
-      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
@@ -158,9 +158,9 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
         // screen, therefore, using right hand notation, we have to reverse
         // sign for each axis. Values are converted from Milligaus to
         // Microtesla.
-        reading.values[0] = -x * kMicroteslaInMilligauss;
-        reading.values[1] = -y * kMicroteslaInMilligauss;
-        reading.values[2] = -z * kMicroteslaInMilligauss;
+        reading->values[0] = -x * kMicroteslaInMilligauss;
+        reading->values[1] = -y * kMicroteslaInMilligauss;
+        reading->values[2] = -z * kMicroteslaInMilligauss;
         return S_OK;
       });
   return params;
@@ -171,10 +171,10 @@ std::unique_ptr<ReaderInitParams> CreateAbsoluteOrientationReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION;
   params->reader_func =
-      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
         base::win::ScopedPropVariant quat_variant;
-        HRESULT hr = report.GetSensorValue(SENSOR_DATA_TYPE_QUATERNION,
-                                           quat_variant.Receive());
+        HRESULT hr = report->GetSensorValue(SENSOR_DATA_TYPE_QUATERNION,
+                                            quat_variant.Receive());
         if (FAILED(hr) || quat_variant.get().vt != (VT_VECTOR | VT_UI1) ||
             quat_variant.get().caub.cElems < 16) {
           return E_FAIL;
@@ -185,10 +185,10 @@ std::unique_ptr<ReaderInitParams> CreateAbsoluteOrientationReaderInitParams() {
         // Windows uses coordinate system where Z axis points down from device
         // screen, therefore, using right hand notation, we have to reverse
         // sign for each quaternion component.
-        reading.values[0] = -quat[0];  // x*sin(Theta/2)
-        reading.values[1] = -quat[1];  // y*sin(Theta/2)
-        reading.values[2] = -quat[2];  // z*sin(Theta/2)
-        reading.values[3] = quat[3];   // cos(Theta/2)
+        reading->values[0] = -quat[0];  // x*sin(Theta/2)
+        reading->values[1] = -quat[1];  // y*sin(Theta/2)
+        reading->values[2] = -quat[2];  // z*sin(Theta/2)
+        reading->values[3] = quat[3];   // cos(Theta/2)
         return S_OK;
       });
   return params;
@@ -310,7 +310,7 @@ class EventListener : public ISensorEvents, public base::win::IUnknownImpl {
     if (last_sensor_reading_.timestamp > reading.timestamp)
       return E_FAIL;
 
-    hr = platform_sensor_reader_->SensorReadingChanged(*report, reading);
+    hr = platform_sensor_reader_->SensorReadingChanged(report, &reading);
     if (SUCCEEDED(hr))
       last_sensor_reading_ = reading;
     return hr;
@@ -449,14 +449,14 @@ bool PlatformSensorReaderWin::SetReportingInterval(
 }
 
 HRESULT PlatformSensorReaderWin::SensorReadingChanged(
-    ISensorDataReport& report,
-    SensorReading& reading) const {
+    ISensorDataReport* report,
+    SensorReading* reading) const {
   if (!client_)
     return E_FAIL;
 
   HRESULT hr = init_params_->reader_func.Run(report, reading);
   if (SUCCEEDED(hr))
-    client_->OnReadingUpdated(reading);
+    client_->OnReadingUpdated(*reading);
   return hr;
 }
 
