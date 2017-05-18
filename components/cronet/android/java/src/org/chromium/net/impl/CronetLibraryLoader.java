@@ -46,6 +46,7 @@ public class CronetLibraryLoader {
             final Context applicationContext, final CronetEngineBuilderImpl builder) {
         synchronized (sLoadLock) {
             if (!sInitThreadInitDone) {
+                ContextUtils.initApplicationContext(applicationContext);
                 if (!sInitThread.isAlive()) {
                     sInitThread.start();
                 }
@@ -57,7 +58,6 @@ public class CronetLibraryLoader {
                 });
             }
             if (!sLibraryLoaded) {
-                ContextUtils.initApplicationContext(applicationContext);
                 if (builder.libraryLoader() != null) {
                     builder.libraryLoader().loadLibrary(LIBRARY_NAME);
                 } else {
