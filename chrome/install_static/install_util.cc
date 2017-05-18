@@ -24,6 +24,18 @@
 
 namespace install_static {
 
+enum class ProcessType {
+  UNINITIALIZED,
+  OTHER_PROCESS,
+  BROWSER_PROCESS,
+  CLOUD_PRINT_SERVICE_PROCESS,
+#if !defined(DISABLE_NACL)
+  NACL_BROKER_PROCESS,
+  NACL_LOADER_PROCESS,
+#endif
+};
+
+// Caches the |ProcessType| of the current process.
 ProcessType g_process_type = ProcessType::UNINITIALIZED;
 
 const wchar_t kRegValueChromeStatsSample[] = L"UsageStatsInSample";
@@ -63,6 +75,12 @@ constexpr wchar_t kRegValueAp[] = L"ap";
 constexpr wchar_t kRegValueName[] = L"name";
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
+
+constexpr wchar_t kCloudPrintServiceProcess[] = L"cloud-print-service";
+#if !defined(DISABLE_NACL)
+constexpr wchar_t kNaClBrokerProcess[] = L"nacl-broker";
+constexpr wchar_t kNaClLoaderProcess[] = L"nacl-loader";
+#endif
 
 void Trace(const wchar_t* format_string, ...) {
   static const int kMaxLogBufferSize = 1024;
@@ -288,6 +306,44 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   return std::wstring();
 }
 
+// Converts a process type specified as a string to the ProcessType enum.
+ProcessType GetProcessType(const std::wstring& process_type) {
+  if (process_type.empty())
+    return ProcessType::BROWSER_PROCESS;
+  if (process_type == kCloudPrintServiceProcess)
+    return ProcessType::CLOUD_PRINT_SERVICE_PROCESS;
+#if !defined(DISABLE_NACL)
+  if (process_type == kNaClBrokerProcess)
+    return ProcessType::NACL_BROKER_PROCESS;
+  if (process_type == kNaClLoaderProcess)
+    return ProcessType::NACL_LOADER_PROCESS;
+#endif
+  return ProcessType::OTHER_PROCESS;
+}
+
+// Returns whether |process_type| needs the profile directory.
+bool ProcessNeedsProfileDir(ProcessType process_type) {
+  // On Windows we don't want subprocesses other than the browser process and
+  // service processes to be able to use the profile directory because if it
+  // lies on a network share the sandbox will prevent us from accessing it.
+  switch (process_type) {
+    case ProcessType::BROWSER_PROCESS:
+    case ProcessType::CLOUD_PRINT_SERVICE_PROCESS:
+#if !defined(DISABLE_NACL)
+    case ProcessType::NACL_BROKER_PROCESS:
+    case ProcessType::NACL_LOADER_PROCESS:
+#endif
+      return true;
+    case ProcessType::OTHER_PROCESS:
+      return false;
+    case ProcessType::UNINITIALIZED:
+      assert(false);
+      return false;
+  }
+  assert(false);
+  return false;
+}
+
 }  // namespace
 
 bool IsSystemInstall() {
@@ -454,29 +510,22 @@ bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled) {
 
 void InitializeProcessType() {
   assert(g_process_type == ProcessType::UNINITIALIZED);
-  typedef bool (*IsSandboxedProcessFunc)();
-  IsSandboxedProcessFunc is_sandboxed_process_func =
-      reinterpret_cast<IsSandboxedProcessFunc>(
-          ::GetProcAddress(::GetModuleHandle(nullptr), "IsSandboxedProcess"));
-  if (is_sandboxed_process_func && is_sandboxed_process_func()) {
-    g_process_type = ProcessType::NON_BROWSER_PROCESS;
-    return;
-  }
+  std::wstring process_type =
+      GetSwitchValueFromCommandLine(::GetCommandLine(), kProcessType);
+  g_process_type = GetProcessType(process_type);
+}
 
-  // TODO(robertshield): Drop the command line check when we drop support for
-  // enabling chrome_elf in unsandboxed processes.
-  const wchar_t* command_line = GetCommandLine();
-  if (command_line && ::wcsstr(command_line, L"--type")) {
-    g_process_type = ProcessType::NON_BROWSER_PROCESS;
-    return;
-  }
-
-  g_process_type = ProcessType::BROWSER_PROCESS;
+bool IsProcessTypeInitialized() {
+  return g_process_type != ProcessType::UNINITIALIZED;
 }
 
 bool IsNonBrowserProcess() {
   assert(g_process_type != ProcessType::UNINITIALIZED);
-  return g_process_type == ProcessType::NON_BROWSER_PROCESS;
+  return g_process_type != ProcessType::BROWSER_PROCESS;
+}
+
+bool ProcessNeedsProfileDir(const std::string& process_type) {
+  return ProcessNeedsProfileDir(GetProcessType(UTF8ToUTF16(process_type)));
 }
 
 std::wstring GetCrashDumpLocation() {

@@ -261,7 +261,7 @@ TEST(InstallStaticTest, SpacesAndQuotesWindowsInspired) {
 }
 
 TEST(InstallStaticTest, BrowserProcessTest) {
-  EXPECT_EQ(ProcessType::UNINITIALIZED, g_process_type);
+  EXPECT_FALSE(IsProcessTypeInitialized());
   InitializeProcessType();
   EXPECT_FALSE(IsNonBrowserProcess());
 }
