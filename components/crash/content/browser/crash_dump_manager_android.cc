@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "jni/CrashDumpManager_jni.h"
 
 using content::BrowserThread;
 
@@ -153,8 +156,15 @@ void CrashDumpManager::ProcessMinidump(
     base::DeleteFile(minidump_path, false);
     return;
   }
-  VLOG(1) << "Crash minidump successfully generated: "
-          << crash_dump_dir.Append(filename).value();
+  VLOG(1) << "Crash minidump successfully generated: " << dest_path.value();
+
+  // Hop over to Java to attempt to attach the logcat to the crash. This may
+  // fail, which is ok -- if it does, the crash will still be uploaded on the
+  // next browser start.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> j_dest_path =
+      base::android::ConvertUTF8ToJavaString(env, dest_path.value());
+  Java_CrashDumpManager_tryToUploadMinidump(env, j_dest_path);
 }
 
 void CrashDumpManager::OnChildExit(int child_process_id,

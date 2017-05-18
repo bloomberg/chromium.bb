@@ -42,4 +42,8 @@ source_set("browser") {
     configs += [ "//breakpad:client_config" ]
     public_configs = [ "//breakpad:client_config" ]
   }
+
+  if (is_android) {
+    deps += [ "//components/crash/android:jni_headers" ]
+  }
 }
