@@ -34,6 +34,7 @@ class TestCustomView : public views::View {
   TestCustomView() {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+    set_preferred_size(gfx::Size(100, 100));
   }
   ~TestCustomView() override {}
 
@@ -42,10 +43,7 @@ class TestCustomView : public views::View {
     keyboard_event_count_ = 0;
   }
 
-  void set_preferred_size(gfx::Size size) { preferred_size_ = size; }
-
   // views::View
-  gfx::Size GetPreferredSize() const override { return preferred_size_; }
   bool OnMousePressed(const ui::MouseEvent& event) override {
     ++mouse_event_count_;
     return true;
@@ -67,7 +65,6 @@ class TestCustomView : public views::View {
  private:
   int mouse_event_count_ = 0;
   int keyboard_event_count_ = 0;
-  gfx::Size preferred_size_ = gfx::Size(100, 100);
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomView);
 };

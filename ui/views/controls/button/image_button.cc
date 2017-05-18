@@ -98,20 +98,6 @@ void ImageButton::SetMinimumImageSize(const gfx::Size& size) {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, View overrides:
 
-gfx::Size ImageButton::GetPreferredSize() const {
-  gfx::Size size(kDefaultWidth, kDefaultHeight);
-  if (!images_[STATE_NORMAL].isNull()) {
-    size = gfx::Size(images_[STATE_NORMAL].width(),
-                     images_[STATE_NORMAL].height());
-  }
-
-  size.SetToMax(minimum_image_size_);
-
-  gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-  return size;
-}
-
 const char* ImageButton::GetClassName() const {
   return kViewClassName;
 }
@@ -140,6 +126,20 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   }
 
   Painter::PaintFocusPainter(this, canvas, focus_painter());
+}
+
+gfx::Size ImageButton::CalculatePreferredSize() const {
+  gfx::Size size(kDefaultWidth, kDefaultHeight);
+  if (!images_[STATE_NORMAL].isNull()) {
+    size = gfx::Size(images_[STATE_NORMAL].width(),
+                     images_[STATE_NORMAL].height());
+  }
+
+  size.SetToMax(minimum_image_size_);
+
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
