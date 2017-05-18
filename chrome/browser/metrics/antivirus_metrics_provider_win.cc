@@ -26,7 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "base/win/scoped_bstr.h"
@@ -146,11 +146,10 @@ bool GetProductVersion(std::wstring* path, std::string* product_version) {
 
 constexpr base::Feature AntiVirusMetricsProvider::kReportNamesFeature;
 
-AntiVirusMetricsProvider::AntiVirusMetricsProvider(
-    scoped_refptr<base::TaskRunner> task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {}
+AntiVirusMetricsProvider::AntiVirusMetricsProvider()
+    : weak_ptr_factory_(this) {}
 
-AntiVirusMetricsProvider::~AntiVirusMetricsProvider() {}
+AntiVirusMetricsProvider::~AntiVirusMetricsProvider() = default;
 
 void AntiVirusMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
@@ -163,8 +162,10 @@ void AntiVirusMetricsProvider::ProvideSystemProfileMetrics(
 
 void AntiVirusMetricsProvider::GetAntiVirusMetrics(
     const base::Closure& done_callback) {
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&AntiVirusMetricsProvider::GetAntiVirusProductsOnFileThread),
       base::Bind(&AntiVirusMetricsProvider::GotAntiVirusProducts,
                  weak_ptr_factory_.GetWeakPtr(), done_callback));
@@ -221,7 +222,7 @@ std::string AntiVirusMetricsProvider::TrimVersionOfAvProductName(
 void AntiVirusMetricsProvider::GotAntiVirusProducts(
     const base::Closure& done_callback,
     const std::vector<AvProduct>& av_products) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   av_products_ = av_products;
   done_callback.Run();
 }

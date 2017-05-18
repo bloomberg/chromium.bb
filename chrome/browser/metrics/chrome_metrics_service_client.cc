@@ -698,10 +698,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(watcher_metrics_provider_));
 
-  antivirus_metrics_provider_ = new AntiVirusMetricsProvider(
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN));
+  antivirus_metrics_provider_ = new AntiVirusMetricsProvider();
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(antivirus_metrics_provider_));
