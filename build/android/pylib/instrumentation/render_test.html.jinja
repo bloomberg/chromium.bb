@@ -15,16 +15,20 @@
 </head>
 <body>
   <table>
-    <tr>
-      <th>Failure</th>
-      <th>Golden</th>
-      <th>Diff</th>
-    </tr>
-    <tr onclick="toggleZoom()">
-      <td><img src="{{ failure_link }}" style="width: 100%" /></td>
-      <td><img src="{{ golden_link }}" style="width: 100%" /></td>
-      <td><img src="{{ diff_link }}" style="width: 100%" /></td>
-    </tr>
+    <thead>
+      <tr>
+        <th>Failure</th>
+        <th>Golden</th>
+        <th>Diff</th>
+      </tr>
+    </thead>
+    <tbody style="vertical-align: top">
+      <tr onclick="toggleZoom()">
+        <td><img src="{{ failure_link }}" style="width: 100%" /></td>
+        <td><img src="{{ golden_link }}" style="width: 100%" /></td>
+        <td><img src="{{ diff_link }}" style="width: 100%" /></td>
+      </tr>
+    </tbody>
   </table>
 </body>
 </html>
