@@ -28,6 +28,7 @@ class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
   bool InitializeNativeWindow() override;
   gfx::SwapResult SwapBuffers() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  void WaitForSnapshotRendering() override;
 
  protected:
   ~ChildWindowSurfaceWin() override;

@@ -220,6 +220,11 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // offset.
   virtual gfx::Vector2d GetDrawOffset() const;
 
+  // This waits until rendering work is complete enough that an OS snapshot
+  // will capture the last swapped contents. A GL context must be current when
+  // calling this.
+  virtual void WaitForSnapshotRendering();
+
   static GLSurface* GetCurrent();
 
  protected:
@@ -292,6 +297,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
+  void WaitForSnapshotRendering() override;
 
   GLSurface* surface() const { return surface_.get(); }
 

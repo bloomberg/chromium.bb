@@ -202,11 +202,16 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
     std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info,
     gfx::SwapResult result) {
   base::TimeTicks swap_ack_time = base::TimeTicks::Now();
+  bool has_browser_snapshot_request = false;
   for (auto& latency : *latency_info) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
         swap_ack_time, 1);
+    has_browser_snapshot_request |= latency.FindLatency(
+        ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT, nullptr);
   }
+  if (has_browser_snapshot_request)
+    WaitForSnapshotRendering();
 
   if (delegate_) {
     SwapBuffersCompleteParams params;

@@ -190,6 +190,10 @@ gfx::Vector2d GLSurface::GetDrawOffset() const {
   return gfx::Vector2d();
 }
 
+void GLSurface::WaitForSnapshotRendering() {
+  // By default, just executing the SwapBuffers is normally enough.
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -387,6 +391,10 @@ bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {
 
 gfx::Vector2d GLSurfaceAdapter::GetDrawOffset() const {
   return surface_->GetDrawOffset();
+}
+
+void GLSurfaceAdapter::WaitForSnapshotRendering() {
+  surface_->WaitForSnapshotRendering();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

@@ -165,6 +165,11 @@ gfx::SwapResult ChildWindowSurfaceWin::PostSubBuffer(int x,
   return result;
 }
 
+void ChildWindowSurfaceWin::WaitForSnapshotRendering() {
+  DCHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
+  glFinish();
+}
+
 ChildWindowSurfaceWin::~ChildWindowSurfaceWin() {
 }
 

@@ -1316,6 +1316,11 @@ gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
   return draw_offset_;
 }
 
+void DirectCompositionSurfaceWin::WaitForSnapshotRendering() {
+  DCHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
+  glFinish();
+}
+
 scoped_refptr<base::TaskRunner>
 DirectCompositionSurfaceWin::GetWindowTaskRunnerForTesting() {
   return child_window_.GetTaskRunnerForTesting();
