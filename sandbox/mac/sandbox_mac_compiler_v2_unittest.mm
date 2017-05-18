@@ -35,7 +35,7 @@ MULTIPROCESS_TEST_MAIN(V2ProfileProcess) {
   // print the profile out for debugging purposes.
   std::string profile =
       "(version 1)\n"
-      "(deny default)\n"
+      "(deny default (with no-log))\n"
       "(define allowed-dir \"ALLOWED_READ_DIR\")\n"
       "(define temp-file \"ALLOWED_TEMP_FILE\")\n"
       "(define is-pre-10_10 \"IS_PRE_10_10\")\n"

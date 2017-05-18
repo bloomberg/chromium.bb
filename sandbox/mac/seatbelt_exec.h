@@ -1,0 +1,88 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef SANDBOX_MAC_SEATBELT_EXEC_H_
+#define SANDBOX_MAC_SEATBELT_EXEC_H_
+
+#include <string>
+
+#include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
+#include "base/strings/string_piece.h"
+#include "sandbox/mac/seatbelt.pb.h"
+#include "sandbox/mac/seatbelt_export.h"
+
+namespace sandbox {
+
+// SeatbeltExecClient is used by the process that is launching another sandboxed
+// process. The API allows the launcher process to supply a sandbox profile and
+// parameters, which will be communicated to the sandboxed process over IPC.
+class SEATBELT_EXPORT SeatbeltExecClient {
+ public:
+  SeatbeltExecClient();
+  ~SeatbeltExecClient();
+
+  // The Set*Parameter functions return true if the parameter was successfully
+  // inserted. Check the return value, which indicates if the parameter was
+  // added successfully.
+
+  // Set a boolean parameter in the sandbox profile.
+  bool SetBooleanParameter(const base::StringPiece key,
+                           bool value) WARN_UNUSED_RESULT;
+
+  // Set a string parameter in the sandbox profile.
+  bool SetParameter(const base::StringPiece key,
+                    const base::StringPiece value) WARN_UNUSED_RESULT;
+
+  // Set the actual sandbox profile, using the scheme-like SBPL.
+  void SetProfile(const base::StringPiece policy);
+
+  // Sends the policy to the SeatbeltExecServer and returns the communication
+  // FD. The FD should be mapped into the sandboxed child process.
+  int SendProfileAndGetFD();
+
+  // Returns the underlying protobuf for testing purposes.
+  const mac::SandboxPolicy& GetPolicyForTesting() { return policy_; }
+
+ private:
+  // This writes a string (the serialized protobuf) to the |pipe_|.
+  bool WriteString(std::string* str);
+
+  // This is the protobuf which contains the sandbox profile and parameters,
+  // and is serialized and sent to the other process.
+  mac::SandboxPolicy policy_;
+
+  // A file descriptor pair used for interprocess communication.
+  int pipe_[2];
+};
+
+// SeatbeltExecServer is used by the process that will be sandboxed to receive
+// the profile and parameters from the launcher process. It can then initialize
+// the profile, sandboxing the process.
+class SEATBELT_EXPORT SeatbeltExecServer {
+ public:
+  // |sandbox_fd| should be the result of SendProfileAndGetFD().
+  explicit SeatbeltExecServer(int sandbox_fd);
+  ~SeatbeltExecServer();
+
+  // Reads the policy from the client, applies the profile, and returns whether
+  // or not the operation succeeds.
+  bool InitializeSandbox();
+
+  // Applies the given sandbox policy, and returns whether or not the operation
+  // succeeds.
+  bool ApplySandboxProfile(const mac::SandboxPolicy& sandbox_policy);
+
+ private:
+  // Reads from the |fd_| and stores the data into a string. This does
+  // not append a NUL terminator as protobuf does not expect one.
+  bool ReadString(std::string* string);
+
+  // The file descriptor used to communicate with the launcher process.
+  base::ScopedFD fd_;
+};
+
+}  // namespace sandbox
+
+#endif  // SANDBOX_MAC_SEATBELT_EXEC_H_
