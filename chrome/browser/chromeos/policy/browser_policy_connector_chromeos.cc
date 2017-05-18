@@ -88,12 +88,14 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
     g_testing_install_attributes = nullptr;
   }
 
-  // SystemSaltGetter or DBusThreadManager may be uninitialized on unit tests.
+  // SystemSaltGetter, DBusThreadManager or DeviceSettingsService may be
+  // uninitialized on unit tests.
 
   // TODO(satorux): Remove SystemSaltGetter::IsInitialized() when it's ready
   // (removing it now breaks tests). crbug.com/141016.
   if (chromeos::SystemSaltGetter::IsInitialized() &&
-      chromeos::DBusThreadManager::IsInitialized()) {
+      chromeos::DBusThreadManager::IsInitialized() &&
+      chromeos::DeviceSettingsService::IsInitialized()) {
     // Don't initialize install attributes if g_testing_install_attributes have
     // been injected.
     if (!install_attributes_) {
