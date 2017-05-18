@@ -103,6 +103,12 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // the zoom change.
   void SetExtensionInfo(const extensions::Extension* extension);
 
+  // Updates |label_| with the up to date zoom.
+  void UpdateZoomPercent();
+
+  // Updates visibility of the zoom icon in location bar.
+  void UpdateZoomIconVisibility();
+
   // Starts a timer which will close the bubble if |auto_close_| is true.
   void StartTimerIfNecessary();
 
@@ -119,6 +125,9 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Timer used to auto close the bubble.
   base::OneShotTimer timer_;
 
+  // Timer duration that is made longer if a user presses + or - buttons.
+  base::TimeDelta auto_close_duration_;
+
   // Image button in the zoom bubble that will show the |extension_icon_| image
   // if an extension initiated the zoom change, and links to that extension at
   // "chrome://extensions".
@@ -127,11 +136,21 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Label displaying the zoom percentage.
   views::Label* label_;
 
+  // Action buttons that can change zoom.
+  views::Button* zoom_out_button_;
+  views::Button* zoom_in_button_;
+  views::Button* reset_button_;
+
   // The WebContents for the page whose zoom has changed.
   content::WebContents* web_contents_;
 
   // Whether the currently displayed bubble will automatically close.
   bool auto_close_;
+
+  // Used to ignore close requests generated automatically in response to
+  // button presses, since pressing a button in the bubble should not trigger
+  // closing.
+  bool ignore_close_bubble_;
 
   // The immersive mode controller for the BrowserView containing
   // |web_contents_|.

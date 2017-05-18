@@ -27,7 +27,9 @@ ZoomView::~ZoomView() {
 }
 
 void ZoomView::Update(zoom::ZoomController* zoom_controller) {
-  if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
+  if (!zoom_controller ||
+      (!ZoomBubbleView::GetZoomBubble() &&
+       zoom_controller->IsAtDefaultZoom()) ||
       location_bar_delegate_->GetToolbarModel()->input_in_progress()) {
     SetVisible(false);
     ZoomBubbleView::CloseCurrentBubble();

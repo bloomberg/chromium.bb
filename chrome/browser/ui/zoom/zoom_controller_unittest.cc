@@ -66,12 +66,10 @@ TEST_F(ZoomControllerTest, Observe_ZoomController) {
 
   NavigateAndCommit(GURL("about:blank"));
 
+  // Changing from default to default so the bubble should not be shown.
   ZoomController::ZoomChangedEventData zoom_change_data1(
-      web_contents(),
-      old_zoom_level,
-      old_zoom_level,
-      ZoomController::ZOOM_MODE_ISOLATED,
-      true /* can_show_bubble */);
+      web_contents(), old_zoom_level, old_zoom_level,
+      ZoomController::ZOOM_MODE_ISOLATED, false /* can_show_bubble */);
 
   {
     ZoomChangedWatcher zoom_change_watcher1(zoom_controller_.get(),
