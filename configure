@@ -251,7 +251,6 @@ EXPERIMENT_LIST="
     compound_round
     ext_tx
     tx64x64
-    sub8x8_mc
     ext_intra
     intra_interp
     filter_intra
