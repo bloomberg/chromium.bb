@@ -41,6 +41,8 @@ class WebFaviconDriver : public web::WebStateObserver,
   int DownloadImage(const GURL& url,
                     int max_image_size,
                     ImageDownloadCallback callback) override;
+  void DownloadManifest(const GURL& url,
+                        ManifestDownloadCallback callback) override;
   bool IsOffTheRecord() override;
   void OnFaviconUpdated(
       const GURL& page_url,

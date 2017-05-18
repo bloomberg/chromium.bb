@@ -60,7 +60,8 @@ class FaviconDriverImpl : public FaviconDriver,
 
   // Broadcasts new favicon URL candidates to FaviconHandlers.
   void OnUpdateCandidates(const GURL& page_url,
-                          const std::vector<FaviconURL>& candidates);
+                          const std::vector<FaviconURL>& candidates,
+                          const GURL& manifest_url);
 
  protected:
   history::HistoryService* history_service() { return history_service_; }
