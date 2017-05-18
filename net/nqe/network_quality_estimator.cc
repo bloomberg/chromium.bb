@@ -1191,8 +1191,22 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
   *transport_rtt = nqe::internal::InvalidRTT();
   *downstream_throughput_kbps = nqe::internal::kInvalidThroughput;
 
-  if (params_.forced_effective_connection_type())
+  if (params_.forced_effective_connection_type()) {
+    *http_rtt = params_
+                    .TypicalNetworkQuality(
+                        params_.forced_effective_connection_type().value())
+                    .http_rtt();
+    *transport_rtt = params_
+                         .TypicalNetworkQuality(
+                             params_.forced_effective_connection_type().value())
+                         .transport_rtt();
+    *downstream_throughput_kbps =
+        params_
+            .TypicalNetworkQuality(
+                params_.forced_effective_connection_type().value())
+            .downstream_throughput_kbps();
     return params_.forced_effective_connection_type().value();
+  }
 
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.

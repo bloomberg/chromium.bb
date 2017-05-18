@@ -2757,14 +2757,17 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
 TEST(NetworkQualityEstimatorTest,
      ForceEffectiveConnectionTypeThroughFieldTrial) {
   for (int i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    EffectiveConnectionType ect_type = static_cast<EffectiveConnectionType>(i);
     std::map<std::string, std::string> variation_params;
     variation_params[kForceEffectiveConnectionType] =
         GetNameForEffectiveConnectionType(
             static_cast<EffectiveConnectionType>(i));
     TestNetworkQualityEstimator estimator(variation_params);
 
-    TestEffectiveConnectionTypeObserver observer;
-    estimator.AddEffectiveConnectionTypeObserver(&observer);
+    TestEffectiveConnectionTypeObserver ect_observer;
+    estimator.AddEffectiveConnectionTypeObserver(&ect_observer);
+    TestRTTAndThroughputEstimatesObserver rtt_throughput_observer;
+    estimator.AddRTTAndThroughputEstimatesObserver(&rtt_throughput_observer);
     // |observer| may be notified as soon as it is added. Run the loop to so
     // that the notification to |observer| is finished.
     base::RunLoop().RunUntilIdle();
@@ -2774,7 +2777,7 @@ TEST(NetworkQualityEstimatorTest,
     context.set_network_quality_estimator(&estimator);
     context.Init();
 
-    EXPECT_EQ(0U, observer.effective_connection_types().size());
+    EXPECT_EQ(0U, ect_observer.effective_connection_types().size());
 
     std::unique_ptr<URLRequest> request(
         context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
@@ -2785,16 +2788,33 @@ TEST(NetworkQualityEstimatorTest,
 
     EXPECT_EQ(i, estimator.GetEffectiveConnectionType());
 
-    size_t expected_count = static_cast<EffectiveConnectionType>(i) ==
-                                    EFFECTIVE_CONNECTION_TYPE_UNKNOWN
-                                ? 0
-                                : 1;
-    ASSERT_EQ(expected_count, observer.effective_connection_types().size());
+    size_t expected_count =
+        ect_type == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ? 0 : 1;
+    ASSERT_EQ(expected_count, ect_observer.effective_connection_types().size());
     if (expected_count == 1) {
       EffectiveConnectionType last_notified_type =
-          observer.effective_connection_types().at(
-              observer.effective_connection_types().size() - 1);
+          ect_observer.effective_connection_types().at(
+              ect_observer.effective_connection_types().size() - 1);
       EXPECT_EQ(i, last_notified_type);
+
+      if (ect_type == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+          ect_type == EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+        EXPECT_EQ(nqe::internal::InvalidRTT(),
+                  rtt_throughput_observer.http_rtt());
+        EXPECT_EQ(nqe::internal::InvalidRTT(),
+                  rtt_throughput_observer.transport_rtt());
+        EXPECT_EQ(nqe::internal::kInvalidThroughput,
+                  rtt_throughput_observer.downstream_throughput_kbps());
+      } else {
+        EXPECT_EQ(estimator.params_.TypicalNetworkQuality(ect_type).http_rtt(),
+                  rtt_throughput_observer.http_rtt());
+        EXPECT_EQ(
+            estimator.params_.TypicalNetworkQuality(ect_type).transport_rtt(),
+            rtt_throughput_observer.transport_rtt());
+        EXPECT_EQ(estimator.params_.TypicalNetworkQuality(ect_type)
+                      .downstream_throughput_kbps(),
+                  rtt_throughput_observer.downstream_throughput_kbps());
+      }
     }
   }
 }
