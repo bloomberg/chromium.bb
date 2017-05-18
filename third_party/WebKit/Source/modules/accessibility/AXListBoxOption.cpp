@@ -28,6 +28,7 @@
 
 #include "modules/accessibility/AXListBoxOption.h"
 
+#include "core/dom/AccessibleNode.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutObject.h"
@@ -82,7 +83,7 @@ bool AXListBoxOption::IsEnabled() const {
   if (!GetNode())
     return false;
 
-  if (EqualIgnoringASCIICase(GetAttribute(aria_disabledAttr), "true"))
+  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kDisabled))
     return false;
 
   if (ToElement(GetNode())->hasAttribute(disabledAttr))

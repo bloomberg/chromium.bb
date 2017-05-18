@@ -16,33 +16,55 @@ interface Accelerometer : Sensor
     method constructor
 interface AccessibleNode
     attribute @@toStringTag
+    getter atomic
     getter autocomplete
+    getter busy
     getter checked
     getter current
+    getter disabled
+    getter expanded
+    getter hidden
     getter invalid
     getter keyShortcuts
     getter label
     getter live
+    getter modal
+    getter multiline
+    getter multiselectable
     getter orientation
     getter placeholder
+    getter readOnly
     getter relevant
+    getter required
     getter role
     getter roleDescription
+    getter selected
     getter sort
     getter valueText
     method constructor
+    setter atomic
     setter autocomplete
+    setter busy
     setter checked
     setter current
+    setter disabled
+    setter expanded
+    setter hidden
     setter invalid
     setter keyShortcuts
     setter label
     setter live
+    setter modal
+    setter multiline
+    setter multiselectable
     setter orientation
     setter placeholder
+    setter readOnly
     setter relevant
+    setter required
     setter role
     setter roleDescription
+    setter selected
     setter sort
     setter valueText
 interface AmbientLightSensor : Sensor

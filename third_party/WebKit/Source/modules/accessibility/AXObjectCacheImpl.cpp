@@ -30,6 +30,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
+#include "core/dom/AccessibleNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
@@ -1099,8 +1100,10 @@ bool IsNodeAriaVisible(Node* node) {
   if (!node->IsElementNode())
     return false;
 
-  return EqualIgnoringASCIICase(ToElement(node)->getAttribute(aria_hiddenAttr),
-                                "false");
+  bool is_null = true;
+  bool hidden = AccessibleNode::GetPropertyOrARIAAttribute(
+      ToElement(node), AOMBooleanProperty::kHidden, is_null);
+  return !is_null && !hidden;
 }
 
 void AXObjectCacheImpl::PostPlatformNotification(AXObjectImpl* obj,

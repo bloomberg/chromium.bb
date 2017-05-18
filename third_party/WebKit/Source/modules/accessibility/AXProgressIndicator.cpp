@@ -54,8 +54,8 @@ float AXProgressIndicator::ValueForRange() const {
   if (HasAttribute(aria_valuenowAttr))
     return GetAttribute(aria_valuenowAttr).ToFloat();
 
-  if (GetElement()->position() >= 0)
-    return clampTo<float>(GetElement()->value());
+  if (GetProgressElement()->position() >= 0)
+    return clampTo<float>(GetProgressElement()->value());
   // Indeterminate progress bar should return 0.
   return 0.0f;
 }
@@ -64,7 +64,7 @@ float AXProgressIndicator::MaxValueForRange() const {
   if (HasAttribute(aria_valuemaxAttr))
     return GetAttribute(aria_valuemaxAttr).ToFloat();
 
-  return clampTo<float>(GetElement()->max());
+  return clampTo<float>(GetProgressElement()->max());
 }
 
 float AXProgressIndicator::MinValueForRange() const {
@@ -74,7 +74,7 @@ float AXProgressIndicator::MinValueForRange() const {
   return 0.0f;
 }
 
-HTMLProgressElement* AXProgressIndicator::GetElement() const {
+HTMLProgressElement* AXProgressIndicator::GetProgressElement() const {
   return ToLayoutProgress(layout_object_)->ProgressElement();
 }
 

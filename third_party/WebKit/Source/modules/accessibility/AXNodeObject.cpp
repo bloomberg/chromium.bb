@@ -300,7 +300,7 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   Element* element = GetNode()->IsElementNode() ? ToElement(GetNode())
                                                 : GetNode()->parentElement();
   if (!GetLayoutObject() && (!element || !element->IsInCanvasSubtree()) &&
-      !EqualIgnoringASCIICase(GetAttribute(aria_hiddenAttr), "false")) {
+      !AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden)) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
     return true;
@@ -825,7 +825,8 @@ static Element* SiblingWithAriaRole(String role, Node* node) {
   for (Element* sibling = ElementTraversal::FirstChild(*parent); sibling;
        sibling = ElementTraversal::NextSibling(*sibling)) {
     const AtomicString& sibling_aria_role =
-        AccessibleNode::GetProperty(sibling, AOMStringProperty::kRole);
+        AccessibleNode::GetPropertyOrARIAAttribute(sibling,
+                                                   AOMStringProperty::kRole);
     if (EqualIgnoringASCIICase(sibling_aria_role, role))
       return sibling;
   }
@@ -1046,12 +1047,11 @@ bool AXNodeObject::IsMeter() const {
 }
 
 bool AXNodeObject::IsMultiSelectable() const {
-  const AtomicString& aria_multi_selectable =
-      GetAttribute(aria_multiselectableAttr);
-  if (EqualIgnoringASCIICase(aria_multi_selectable, "true"))
-    return true;
-  if (EqualIgnoringASCIICase(aria_multi_selectable, "false"))
-    return false;
+  bool multiselectable = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kMultiselectable,
+                                    multiselectable)) {
+    return multiselectable;
+  }
 
   return isHTMLSelectElement(GetNode()) &&
          toHTMLSelectElement(*GetNode()).IsMultiple();
@@ -1184,11 +1184,10 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
                  : kExpandedCollapsed;
   }
 
-  const AtomicString& expanded = GetAttribute(aria_expandedAttr);
-  if (EqualIgnoringASCIICase(expanded, "true"))
-    return kExpandedExpanded;
-  if (EqualIgnoringASCIICase(expanded, "false"))
-    return kExpandedCollapsed;
+  bool expanded = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kExpanded, expanded)) {
+    return expanded ? kExpandedExpanded : kExpandedCollapsed;
+  }
 
   return kExpandedUndefined;
 }
@@ -1197,13 +1196,9 @@ bool AXNodeObject::IsModal() const {
   if (RoleValue() != kDialogRole && RoleValue() != kAlertDialogRole)
     return false;
 
-  if (HasAttribute(aria_modalAttr)) {
-    const AtomicString& modal = GetAttribute(aria_modalAttr);
-    if (EqualIgnoringASCIICase(modal, "true"))
-      return true;
-    if (EqualIgnoringASCIICase(modal, "false"))
-      return false;
-  }
+  bool modal = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kModal, modal))
+    return modal;
 
   if (GetNode() && isHTMLDialogElement(*GetNode()))
     return ToElement(GetNode())->IsInTopLayer();
@@ -1254,7 +1249,7 @@ bool AXNodeObject::IsRequired() const {
       HasAttribute(requiredAttr))
     return ToHTMLFormControlElement(n)->IsRequired();
 
-  if (EqualIgnoringASCIICase(GetAttribute(aria_requiredAttr), "true"))
+  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kRequired))
     return true;
 
   return false;
@@ -1284,7 +1279,7 @@ bool AXNodeObject::CanSetFocusAttribute() const {
 }
 
 bool AXNodeObject::CanSetValueAttribute() const {
-  if (EqualIgnoringASCIICase(GetAttribute(aria_readonlyAttr), "true"))
+  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kReadOnly))
     return false;
 
   if (IsProgressIndicator() || IsSlider())
@@ -1956,7 +1951,7 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     // true if any ancestor is hidden, but we need to be able to compute the
     // accessible name of object inside hidden subtrees (for example, if
     // aria-labelledby points to an object that's hidden).
-    if (EqualIgnoringASCIICase(child->GetAttribute(aria_hiddenAttr), "true"))
+    if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       continue;
 
     // If we're going between two layoutObjects that are in separate
@@ -2948,8 +2943,9 @@ String AXNodeObject::NativeTextAlternative(
         name_sources->back().type = name_from;
       }
       if (Element* document_element = document->documentElement()) {
-        const AtomicString& aria_label = AccessibleNode::GetProperty(
-            document_element, AOMStringProperty::kLabel);
+        const AtomicString& aria_label =
+            AccessibleNode::GetPropertyOrARIAAttribute(
+                document_element, AOMStringProperty::kLabel);
         if (!aria_label.IsEmpty()) {
           text_alternative = aria_label;
 

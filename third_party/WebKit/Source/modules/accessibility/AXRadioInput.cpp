@@ -38,9 +38,9 @@ void AXRadioInput::UpdatePosAndSetSize(int position) {
 
 void AXRadioInput::RequestUpdateToNextNode(bool forward) {
   HTMLInputElement* next_element =
-      RadioInputType::NextRadioButtonInGroup(GetElement(), forward);
-  AXObjectImpl* next_a_xobject = AxObjectCache().Get(next_element);
-  if (!next_a_xobject || !next_a_xobject->IsAXRadioInput())
+      RadioInputType::NextRadioButtonInGroup(GetInputElement(), forward);
+  AXObjectImpl* next_axobject = AxObjectCache().Get(next_element);
+  if (!next_axobject || !next_axobject->IsAXRadioInput())
     return;
 
   int position = 0;
@@ -50,10 +50,10 @@ void AXRadioInput::RequestUpdateToNextNode(bool forward) {
   // previous objects.  updatePosAndSetSize() is called with '0' and it doesn't
   // modify m_posInSet and updates m_setSize as size is increased.
 
-  ToAXRadioInput(next_a_xobject)->UpdatePosAndSetSize(position);
-  AxObjectCache().PostNotification(next_a_xobject,
+  ToAXRadioInput(next_axobject)->UpdatePosAndSetSize(position);
+  AxObjectCache().PostNotification(next_axobject,
                                    AXObjectCacheImpl::kAXAriaAttributeChanged);
-  ToAXRadioInput(next_a_xobject)->RequestUpdateToNextNode(forward);
+  ToAXRadioInput(next_axobject)->RequestUpdateToNextNode(forward);
 }
 
 HTMLInputElement* AXRadioInput::FindFirstRadioButtonInGroup(
@@ -83,7 +83,7 @@ bool AXRadioInput::CalculatePosInSet() {
   bool need_to_update_prev = false;
   int position = 1;
   HTMLInputElement* prev_element =
-      RadioInputType::NextRadioButtonInGroup(GetElement(), false);
+      RadioInputType::NextRadioButtonInGroup(GetInputElement(), false);
   if (prev_element) {
     AXObjectImpl* object = AxObjectCache().Get(prev_element);
     // If the previous element doesn't have AXObjectImpl yet, caculate position
@@ -111,7 +111,7 @@ bool AXRadioInput::CalculatePosInSet() {
 
 int AXRadioInput::CountFromFirstElement() const {
   int count = 1;
-  HTMLInputElement* current = GetElement();
+  HTMLInputElement* current = GetInputElement();
   while (HTMLInputElement* prev_element =
              RadioInputType::NextRadioButtonInGroup(current, false)) {
     current = prev_element;
@@ -120,12 +120,12 @@ int AXRadioInput::CountFromFirstElement() const {
   return count;
 }
 
-HTMLInputElement* AXRadioInput::GetElement() const {
+HTMLInputElement* AXRadioInput::GetInputElement() const {
   return toHTMLInputElement(layout_object_->GetNode());
 }
 
 int AXRadioInput::SizeOfRadioGroup() const {
-  int size = GetElement()->SizeOfRadioGroup();
+  int size = GetInputElement()->SizeOfRadioGroup();
   // If it has no size in Group, it means that there is only itself.
   if (!size)
     return 1;
