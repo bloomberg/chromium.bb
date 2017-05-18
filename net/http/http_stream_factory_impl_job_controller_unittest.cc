@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
@@ -140,6 +141,12 @@ class HttpStreamFactoryImplJobPeer {
   // Returns |num_streams_| of |job|. It should be 0 for non-preconnect Jobs.
   static int GetNumStreams(const HttpStreamFactoryImpl::Job* job) {
     return job->num_streams_;
+  }
+
+  // Return SpdySessionKey of |job|.
+  static const SpdySessionKey GetSpdySessionKey(
+      const HttpStreamFactoryImpl::Job* job) {
+    return job->GetSpdySessionKey();
   }
 };
 
@@ -730,6 +737,45 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   VerifyBrokenAlternateProtocolMapping(request_info, false);
   // This fails without the fix for crbug.com/678768.
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
+TEST_F(HttpStreamFactoryImplJobControllerTest,
+       SpdySessionKeyHasOriginHostPortPair) {
+  session_deps_.enable_http2_alternative_service = true;
+
+  const char origin_host[] = "www.example.org";
+  const uint16_t origin_port = 443;
+  const char alternative_host[] = "mail.example.org";
+  const uint16_t alternative_port = 123;
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url =
+      GURL(base::StringPrintf("https://%s:%u", origin_host, origin_port));
+  Initialize(request_info);
+
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoHTTP2, alternative_host,
+                                         alternative_port);
+  SetAlternativeService(request_info, alternative_service);
+
+  request_.reset(
+      job_controller_->Start(&request_delegate_, nullptr, NetLogWithSource(),
+                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY));
+
+  HostPortPair main_host_port_pair =
+      HttpStreamFactoryImplJobPeer::GetSpdySessionKey(
+          job_controller_->main_job())
+          .host_port_pair();
+  EXPECT_EQ(origin_host, main_host_port_pair.host());
+  EXPECT_EQ(origin_port, main_host_port_pair.port());
+
+  HostPortPair alternative_host_port_pair =
+      HttpStreamFactoryImplJobPeer::GetSpdySessionKey(
+          job_controller_->alternative_job())
+          .host_port_pair();
+  EXPECT_EQ(origin_host, alternative_host_port_pair.host());
+  EXPECT_EQ(origin_port, alternative_host_port_pair.port());
 }
 
 // Tests that if an orphaned job completes after |request_| is gone,
