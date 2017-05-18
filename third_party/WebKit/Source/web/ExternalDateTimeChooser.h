@@ -30,14 +30,14 @@
 
 namespace blink {
 
-class ChromeClientImpl;
+class ChromeClient;
 class DateTimeChooserClient;
 class WebString;
 class WebViewClient;
 
 class ExternalDateTimeChooser final : public DateTimeChooser {
  public:
-  static ExternalDateTimeChooser* Create(ChromeClientImpl*,
+  static ExternalDateTimeChooser* Create(ChromeClient*,
                                          WebViewClient*,
                                          DateTimeChooserClient*,
                                          const DateTimeChooserParameters&);
@@ -51,7 +51,7 @@ class ExternalDateTimeChooser final : public DateTimeChooser {
 
  private:
   ExternalDateTimeChooser(DateTimeChooserClient*);
-  bool OpenDateTimeChooser(ChromeClientImpl*,
+  bool OpenDateTimeChooser(ChromeClient*,
                            WebViewClient*,
                            const DateTimeChooserParameters&);
 
