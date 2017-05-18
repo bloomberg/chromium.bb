@@ -525,6 +525,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   ResetEventObserver(DialogEvent::BACK_NAVIGATION);
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
 
+  // The billing address must be properly selected and valid.
+  views::Combobox* billing_combobox = static_cast<views::Combobox*>(
+      dialog_view()->GetViewByID(autofill::ADDRESS_BILLING_LINE1));
+  ASSERT_NE(nullptr, billing_combobox);
+  EXPECT_FALSE(billing_combobox->invalid());
+
   // And then save credit card state and come back to payment sheet.
   ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
