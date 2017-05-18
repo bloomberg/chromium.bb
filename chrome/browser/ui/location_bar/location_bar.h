@@ -58,6 +58,9 @@ class LocationBar {
   // Updates the visibility of the bookmark star.
   virtual void UpdateBookmarkStarVisibility() = 0;
 
+  // Updates the visibility of the zoom icon.
+  virtual void UpdateZoomViewVisibility() = 0;
+
   // Updates the visibility of the location bar. Animates the transition if
   // |animate| is true.
   virtual void UpdateLocationBarVisibility(bool visible, bool animate) = 0;
