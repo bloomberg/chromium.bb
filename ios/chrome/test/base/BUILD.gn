@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("base") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "scoped_block_swizzler.h",

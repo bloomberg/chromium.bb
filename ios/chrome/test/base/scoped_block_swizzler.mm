@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 ScopedBlockSwizzler::ScopedBlockSwizzler(Class target, SEL selector, id block) {
   method_ = class_getInstanceMethod(target, selector);
   if (!method_) {
