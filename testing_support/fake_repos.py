@@ -298,7 +298,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 5
+  NB_GIT_REPOS = 6
 
   def populateGit(self):
     # Testing:
@@ -447,6 +447,33 @@ pre_deps_hooks = [
          'hash2': self.git_hashes['repo_2'][1][0][:7],
       },
     'origin': 'git/repo_5@3\n',
+    })
+
+    self._commit_git('repo_6', {
+      'DEPS': """
+deps = {
+  'src/repo2': '%(git_base)srepo_2@%(hash)s',
+}
+hooks = [
+  {
+    'pattern': '.',
+    'action': ['python', '-c',
+               'open(\\'src/git_hooked1\\', \\'w\\').write(\\'git_hooked1\\')'],
+  },
+  {
+    # Should not be run.
+    'pattern': 'nonexistent',
+    'action': ['python', '-c',
+               'open(\\'src/git_hooked2\\', \\'w\\').write(\\'git_hooked2\\')'],
+  },
+]
+recursedeps = [
+  'src/repo2',
+]""" % {
+        'git_base': self.git_base,
+        'hash': self.git_hashes['repo_2'][1][0][:7]
+      },
+      'origin': 'git/repo_6@1\n',
     })
 
 

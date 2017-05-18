@@ -772,7 +772,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # When running runhooks, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
-    run_scm = command not in ('runhooks', 'recurse', 'validate', None)
+    run_scm = command not in (
+        'flatten', 'runhooks', 'recurse', 'validate', None)
     parsed_url = self.LateOverride(self.url)
     file_list = [] if not options.nohooks else None
     revision_override = revision_overrides.pop(self.name, None)
@@ -1090,12 +1091,16 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def __repr__(self):
     return '%s: %s' % (self.name, self.url)
 
-  def hierarchy(self):
+  def hierarchy(self, include_url=True):
     """Returns a human-readable hierarchical reference to a Dependency."""
-    out = '%s(%s)' % (self.name, self.url)
+    def format_name(d):
+      if include_url:
+        return '%s(%s)' % (d.name, d.url)
+      return d.name
+    out = format_name(self)
     i = self.parent
     while i and i.name:
-      out = '%s(%s) -> %s' % (i.name, i.url, out)
+      out = '%s -> %s' % (format_name(i), out)
       i = i.parent
     return out
 
@@ -1630,6 +1635,177 @@ def CMDfetch(parser, args):
   (options, args) = parser.parse_args(args)
   return CMDrecurse(OptionParser(), [
       '--jobs=%d' % options.jobs, '--scm=git', 'git', 'fetch'] + args)
+
+
+def CMDflatten(parser, args):
+  """Flattens the solutions into a single DEPS file."""
+  parser.add_option('--output-deps', help='Path to the output DEPS file')
+  parser.add_option(
+      '--require-pinned-revisions', action='store_true',
+      help='Fail if any of the dependencies uses unpinned revision.')
+  options, args = parser.parse_args(args)
+
+  options.nohooks = True
+  client = GClient.LoadCurrentConfig(options)
+
+  # Only print progress if we're writing to a file. Otherwise, progress updates
+  # could obscure intended output.
+  code = client.RunOnDeps('flatten', args, progress=options.output_deps)
+  if code != 0:
+    return code
+
+  deps = {}
+  hooks = []
+  pre_deps_hooks = []
+  unpinned_deps = {}
+
+  for solution in client.dependencies:
+    _FlattenSolution(solution, deps, hooks, pre_deps_hooks, unpinned_deps)
+
+  if options.require_pinned_revisions and unpinned_deps:
+    sys.stderr.write('The following dependencies are not pinned:\n')
+    sys.stderr.write('\n'.join(sorted(unpinned_deps)))
+    return 1
+
+  flattened_deps = '\n'.join(
+    _DepsToLines(deps) +
+    _HooksToLines('hooks', hooks) +
+    _HooksToLines('pre_deps_hooks', pre_deps_hooks) +
+    ['']  # Ensure newline at end of file.
+  )
+
+  if options.output_deps:
+    with open(options.output_deps, 'w') as f:
+      f.write(flattened_deps)
+  else:
+    print(flattened_deps)
+
+  return 0
+
+
+def _FlattenSolution(solution, deps, hooks, pre_deps_hooks, unpinned_deps):
+  """Visits a solution in order to flatten it (see CMDflatten).
+
+  Arguments:
+    solution (Dependency): one of top-level solutions in .gclient
+
+  Out-parameters:
+    deps (dict of name -> Dependency): will be filled with all Dependency
+        objects indexed by their name
+    hooks (list of (Dependency, hook)): will be filled with flattened hooks
+    pre_deps_hooks (list of (Dependency, hook)): will be filled with flattened
+        pre_deps_hooks
+    unpinned_deps (dict of name -> Dependency): will be filled with unpinned
+        deps
+  """
+  logging.debug('_FlattenSolution(%r)', solution)
+
+  _FlattenDep(solution, deps, hooks, pre_deps_hooks, unpinned_deps)
+  _FlattenRecurse(solution, deps, hooks, pre_deps_hooks, unpinned_deps)
+
+
+def _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
+  """Visits a dependency in order to flatten it (see CMDflatten).
+
+  Arguments:
+    dep (Dependency): dependency to process
+
+  Out-parameters:
+    deps (dict): will be filled with flattened deps
+    hooks (list): will be filled with flattened hooks
+    pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
+    unpinned_deps (dict): will be filled with unpinned deps
+  """
+  logging.debug('_FlattenDep(%r)', dep)
+
+  _AddDep(dep, deps, unpinned_deps)
+
+  deps_by_name = dict((d.name, d) for d in dep.dependencies)
+  for recurse_dep_name in (dep.recursedeps or []):
+    _FlattenRecurse(
+        deps_by_name[recurse_dep_name], deps, hooks, pre_deps_hooks,
+        unpinned_deps)
+
+  # TODO(phajdan.jr): also handle hooks_os.
+  hooks.extend([(dep, hook) for hook in dep.deps_hooks])
+  pre_deps_hooks.extend(
+      [(dep, {'action': hook}) for hook in dep.pre_deps_hooks])
+
+
+def _FlattenRecurse(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
+  """Helper for flatten that recurses into |dep|'s dependencies.
+
+  Arguments:
+    dep (Dependency): dependency to process
+
+  Out-parameters:
+    deps (dict): will be filled with flattened deps
+    hooks (list): will be filled with flattened hooks
+    pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
+    unpinned_deps (dict): will be filled with unpinned deps
+  """
+  logging.debug('_FlattenRecurse(%r)', dep)
+
+  # TODO(phajdan.jr): also handle deps_os.
+  for dep in dep.dependencies:
+    _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps)
+
+
+def _AddDep(dep, deps, unpinned_deps):
+  """Helper to add a dependency to flattened lists.
+
+  Arguments:
+    dep (Dependency): dependency to process
+
+  Out-parameters:
+    deps (dict): will be filled with flattened deps
+    unpinned_deps (dict): will be filled with unpinned deps
+  """
+  logging.debug('_AddDep(%r)', dep)
+
+  assert dep.name not in deps
+  deps[dep.name] = dep
+
+  # Detect unpinned deps.
+  _, revision = gclient_utils.SplitUrlRevision(dep.url)
+  if not revision or not gclient_utils.IsGitSha(revision):
+    unpinned_deps[dep.name] = dep
+
+
+def _DepsToLines(deps):
+  """Converts |deps| dict to list of lines for output."""
+  s = ['deps = {']
+  for name, dep in sorted(deps.iteritems()):
+    s.extend([
+        '  # %s' % dep.hierarchy(include_url=False),
+        '  "%s": "%s",' % (name, dep.url),
+        '',
+    ])
+  s.extend(['}', ''])
+  return s
+
+
+def _HooksToLines(name, hooks):
+  """Converts |hooks| list to list of lines for output."""
+  s = ['%s = [' % name]
+  for dep, hook in hooks:
+    s.extend([
+        '  # %s' % dep.hierarchy(include_url=False),
+        '  {',
+    ])
+    if 'name' in hook:
+      s.append('    "name": "%s",' % hook['name'])
+    if 'pattern' in hook:
+      s.append('    "pattern": "%s",' % hook['pattern'])
+    # TODO(phajdan.jr): actions may contain paths that need to be adjusted,
+    # i.e. they may be relative to the dependency path, not solution root.
+    s.extend(
+        ['    "action": ['] +
+        ['        "%s",' % arg for arg in hook['action']] +
+        ['    ]', '  },', '']
+    )
+  s.extend([']', ''])
+  return s
 
 
 def CMDgrep(parser, args):
