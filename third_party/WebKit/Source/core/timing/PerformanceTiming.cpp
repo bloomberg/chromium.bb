@@ -49,7 +49,7 @@
 namespace blink {
 
 static unsigned long long ToIntegerMilliseconds(double seconds) {
-  ASSERT(seconds >= 0);
+  DCHECK_GE(seconds, 0);
   double clamped_seconds = PerformanceBase::ClampTimeResolution(seconds);
   return static_cast<unsigned long long>(clamped_seconds * 1000.0);
 }
@@ -518,7 +518,7 @@ ScriptValue PerformanceTiming::toJSONForBinding(
 
 unsigned long long PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
     double monotonic_seconds) const {
-  ASSERT(monotonic_seconds >= 0);
+  DCHECK_GE(monotonic_seconds, 0);
   const DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0;

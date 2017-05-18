@@ -380,7 +380,7 @@ bool DataTransfer::CanSetDragImage() const {
 
 DragOperation DataTransfer::SourceOperation() const {
   DragOperation op = ConvertEffectAllowedToDragOperation(effect_allowed_);
-  ASSERT(op != kDragOperationPrivate);
+  DCHECK_NE(op, kDragOperationPrivate);
   return op;
 }
 

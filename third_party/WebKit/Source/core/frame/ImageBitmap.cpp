@@ -1071,14 +1071,14 @@ PassRefPtr<Uint8Array> ImageBitmap::CopyBitmapData(AlphaDisposition alpha_op,
 unsigned long ImageBitmap::width() const {
   if (!image_)
     return 0;
-  ASSERT(image_->width() > 0);
+  DCHECK_GT(image_->width(), 0);
   return image_->width();
 }
 
 unsigned long ImageBitmap::height() const {
   if (!image_)
     return 0;
-  ASSERT(image_->height() > 0);
+  DCHECK_GT(image_->height(), 0);
   return image_->height();
 }
 

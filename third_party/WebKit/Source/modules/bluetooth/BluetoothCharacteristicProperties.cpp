@@ -49,7 +49,7 @@ bool BluetoothCharacteristicProperties::writableAuxiliaries() const {
 
 BluetoothCharacteristicProperties::BluetoothCharacteristicProperties(
     uint32_t device_properties) {
-  ASSERT(device_properties != Property::kNone);
+  DCHECK(device_properties != Property::kNone);
   properties = device_properties;
 }
 

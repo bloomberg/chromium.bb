@@ -200,7 +200,7 @@ OffscreenCanvas::RenderingContextFactories() {
 
 CanvasRenderingContextFactory* OffscreenCanvas::GetRenderingContextFactory(
     int type) {
-  ASSERT(type < CanvasRenderingContext::kContextTypeCount);
+  DCHECK_LT(type, CanvasRenderingContext::kContextTypeCount);
   return RenderingContextFactories()[type].get();
 }
 
@@ -208,7 +208,7 @@ void OffscreenCanvas::RegisterRenderingContextFactory(
     std::unique_ptr<CanvasRenderingContextFactory> rendering_context_factory) {
   CanvasRenderingContext::ContextType type =
       rendering_context_factory->GetContextType();
-  ASSERT(type < CanvasRenderingContext::kContextTypeCount);
+  DCHECK_LT(type, CanvasRenderingContext::kContextTypeCount);
   DCHECK(!RenderingContextFactories()[type]);
   RenderingContextFactories()[type] = std::move(rendering_context_factory);
 }
