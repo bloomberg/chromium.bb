@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GenericDocumentMarkerListImpl_h
-#define GenericDocumentMarkerListImpl_h
+#ifndef TextMatchMarkerListImpl_h
+#define TextMatchMarkerListImpl_h
 
 #include "core/editing/markers/DocumentMarkerList.h"
 
 namespace blink {
 
-class RenderedDocumentMarker;
-
-// Temporary implementation of DocumentMarkerList that can handle
-// DocumentMarkers of all MarkerTypes. This will be removed once we have
-// specialized implementations for every MarkerType.
-class GenericDocumentMarkerListImpl final : public DocumentMarkerList {
+// Implementation of DocumentMarkerList for TextMatch markers.
+// Markers are kept sorted by start offset, under the assumption that
+// TextMatch markers are typically inserted in an order.
+class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
  public:
-  GenericDocumentMarkerListImpl(DocumentMarker::MarkerType);
+  TextMatchMarkerListImpl() = default;
 
   // DocumentMarkerList implementations
   DocumentMarker::MarkerType MarkerType() const final;
@@ -33,16 +31,14 @@ class GenericDocumentMarkerListImpl final : public DocumentMarkerList {
   bool ShiftMarkers(unsigned offset,
                     unsigned old_length,
                     unsigned new_length) final;
-
-  DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
  private:
-  const DocumentMarker::MarkerType marker_type_;
   HeapVector<Member<RenderedDocumentMarker>> markers_;
 
-  DISALLOW_COPY_AND_ASSIGN(GenericDocumentMarkerListImpl);
+  DISALLOW_COPY_AND_ASSIGN(TextMatchMarkerListImpl);
 };
 
 }  // namespace blink
 
-#endif  // GenericDocumentMarkerListImpl_h
+#endif  // TextMatchMarkerListImpl_h
