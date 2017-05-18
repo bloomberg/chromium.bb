@@ -230,17 +230,18 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
                 String source = mOptions.sourceLanguageName();
                 switch (item.mId) {
                     case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
-                        return mContextWrapper.getString(R.string.translate_always_text, source);
+                        return mContextWrapper.getString(
+                                R.string.translate_option_always_translate, source);
                     case TranslateMenu.ID_OVERFLOW_MORE_LANGUAGE:
-                        return mContextWrapper.getString(R.string.translate_infobar_more_language);
+                        return mContextWrapper.getString(R.string.translate_option_more_language);
                     case TranslateMenu.ID_OVERFLOW_NEVER_SITE:
                         return mContextWrapper.getString(R.string.translate_never_translate_site);
                     case TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE:
                         return mContextWrapper.getString(
-                                R.string.translate_never_translate_language, source);
+                                R.string.translate_option_never_translate, source);
                     case TranslateMenu.ID_OVERFLOW_NOT_THIS_LANGUAGE:
                         return mContextWrapper.getString(
-                                R.string.translate_infobar_not_source_language, source);
+                                R.string.translate_option_not_source_language, source);
                     default:
                         assert false : "Unexpected Overflow Item Id";
                 }
