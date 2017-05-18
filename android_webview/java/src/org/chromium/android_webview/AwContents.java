@@ -2294,30 +2294,10 @@ public class AwContents implements SmartClipProvider {
         mWebContents.evaluateJavaScriptForTests(script, jsCallback);
     }
 
-    /**
-     * Post a message to a frame.
-     *
-     * @param frameName The name of the frame. If the name is null the message is posted
-     *                  to the main frame.
-     * @param message   The message
-     * @param targetOrigin  The target origin
-     * @param sentPorts The sent message ports, if any. Pass null if there is no
-     *                  message ports to pass.
-     */
     public void postMessageToFrame(
             String frameName, String message, String targetOrigin, MessagePort[] sentPorts) {
         if (isDestroyedOrNoOperation(WARN)) return;
-        if (sentPorts != null) {
-            for (MessagePort port : sentPorts) {
-                if (port.isClosed() || port.isTransferred()) {
-                    throw new IllegalStateException("Port is already closed or transferred");
-                }
-                if (port.isStarted()) {
-                    throw new IllegalStateException("Port is already started");
-                }
-            }
-        }
-        nativePostMessageToFrame(mNativeAwContents, frameName, message, targetOrigin, sentPorts);
+        mWebContents.postMessageToFrame(frameName, message, null, targetOrigin, sentPorts);
     }
 
     /**
@@ -3542,9 +3522,6 @@ public class AwContents implements SmartClipProvider {
 
     private native void nativePreauthorizePermission(long nativeAwContents, String origin,
             long resources);
-
-    private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
-            String message, String targetOrigin, MessagePort[] ports);
 
     private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
     private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);

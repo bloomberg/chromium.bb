@@ -177,12 +177,27 @@ public class PostMessageTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrame() throws Throwable {
+        verifyPostMessageToMainFrame(mWebServer.getBaseUrl());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostMessageToMainFrameUsingWildcard() throws Throwable {
+        verifyPostMessageToMainFrame("*");
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostMessageToMainFrameUsingEmptyStringAsWildcard() throws Throwable {
+        verifyPostMessageToMainFrame("");
+    }
+
+    private void verifyPostMessageToMainFrame(final String targetOrigin) throws Throwable {
         loadPage(TEST_PAGE);
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
-                        null);
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, targetOrigin, null);
             }
         });
         mMessageObject.waitForMessage();
