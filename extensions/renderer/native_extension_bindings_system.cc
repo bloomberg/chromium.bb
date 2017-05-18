@@ -106,8 +106,19 @@ v8::Local<v8::Object> GetOrCreateChrome(v8::Local<v8::Context> context) {
     if (!success.IsJust() || !success.FromJust())
       return v8::Local<v8::Object>();
   } else if (chrome_value->IsObject()) {
-    chrome_object = chrome_value.As<v8::Object>();
-    DCHECK(chrome_object->CreationContext() == context);
+    v8::Local<v8::Object> obj = chrome_value.As<v8::Object>();
+    // The creation context of the `chrome` property could be different if a
+    // different context (such as the parent of an about:blank iframe) assigned
+    // it. Since in this case we know that the chrome object is not the one we
+    // created, do not use it for bindings. This also avoids weirdness of having
+    // bindings created in one context stored on a chrome object from another.
+    // TODO(devlin): There might be a way of detecting if the browser created
+    // the chrome object. For instance, we could add a v8::Private to the
+    // chrome object we construct, and check if it's present. Unfortunately, we
+    // need to a) track down each place we create the chrome object (it's not
+    // just in extensions) and also see how much that would break.
+    if (obj->CreationContext() == context)
+      chrome_object = obj;
   }
 
   return chrome_object;

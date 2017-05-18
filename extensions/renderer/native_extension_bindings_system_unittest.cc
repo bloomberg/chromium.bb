@@ -77,6 +77,15 @@ class EventChangeHandler {
                     bool was_manual));
 };
 
+// Returns true if the value specified by |property| exists in the given
+// context.
+bool PropertyExists(v8::Local<v8::Context> context,
+                    base::StringPiece property) {
+  v8::Local<v8::Value> value = V8ValueFromScriptSource(context, property);
+  EXPECT_FALSE(value.IsEmpty());
+  return !value->IsUndefined();
+};
+
 }  // namespace
 
 class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
@@ -833,25 +842,87 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   webpage_script_context->set_url(GURL("http://example.com"));
   bindings_system()->UpdateBindingsForContext(webpage_script_context);
 
-  auto property_exists = [](v8::Local<v8::Context> context,
-                            base::StringPiece property) {
-    v8::Local<v8::Value> value = V8ValueFromScriptSource(context, property);
-    EXPECT_FALSE(value.IsEmpty());
-    return !value->IsUndefined();
-  };
-
   // Check that properties are correctly restricted. The blessed context should
   // have access to the whole runtime API, but the webpage should only have
   // access to sendMessage.
   const char kSendMessage[] = "chrome.runtime.sendMessage";
   const char kGetUrl[] = "chrome.runtime.getURL";
   const char kOnMessage[] = "chrome.runtime.onMessage";
-  EXPECT_TRUE(property_exists(blessed_context, kSendMessage));
-  EXPECT_TRUE(property_exists(blessed_context, kGetUrl));
-  EXPECT_TRUE(property_exists(blessed_context, kOnMessage));
-  EXPECT_TRUE(property_exists(webpage_context, kSendMessage));
-  EXPECT_FALSE(property_exists(webpage_context, kGetUrl));
-  EXPECT_FALSE(property_exists(webpage_context, kOnMessage));
+  EXPECT_TRUE(PropertyExists(blessed_context, kSendMessage));
+  EXPECT_TRUE(PropertyExists(blessed_context, kGetUrl));
+  EXPECT_TRUE(PropertyExists(blessed_context, kOnMessage));
+  EXPECT_TRUE(PropertyExists(webpage_context, kSendMessage));
+  EXPECT_FALSE(PropertyExists(webpage_context, kGetUrl));
+  EXPECT_FALSE(PropertyExists(webpage_context, kOnMessage));
+}
+
+// Tests behavior when script sets window.chrome to be various things.
+TEST_F(NativeExtensionBindingsSystemUnittest, TestUsingOtherChromeObjects) {
+  scoped_refptr<Extension> extension = CreateExtension(
+      "extension", ItemType::EXTENSION, std::vector<std::string>());
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context_a = MainContext();
+  v8::Local<v8::Context> context_b = AddContext();
+
+  ScriptContext* script_context_a = CreateScriptContext(
+      context_a, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context_a->set_url(extension->url());
+  ScriptContext* script_context_b = CreateScriptContext(
+      context_b, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context_b->set_url(extension->url());
+
+  auto check_runtime = [this, context_a, context_b, script_context_a,
+                        script_context_b](bool expect_b_has_runtime) {
+    bindings_system()->UpdateBindingsForContext(script_context_a);
+    bindings_system()->UpdateBindingsForContext(script_context_b);
+
+    const char kRuntime[] = "chrome.runtime";
+    // chrome.runtime should always exist in context a - we only mess with
+    // context b.
+    EXPECT_TRUE(PropertyExists(context_a, kRuntime));
+    EXPECT_EQ(expect_b_has_runtime, PropertyExists(context_b, kRuntime));
+  };
+
+  // By default, runtime should exist in both contexts (since both have access
+  // to the API).
+  check_runtime(true);
+
+  {
+    v8::Context::Scope scope(context_a);
+    v8::Local<v8::Object> fake_chrome = v8::Object::New(isolate());
+    EXPECT_EQ(context_a, fake_chrome->CreationContext());
+    context_b->Global()
+        ->Set(context_b, gin::StringToSymbol(isolate(), "chrome"), fake_chrome)
+        .ToChecked();
+  }
+  // context_b has a chrome object that was created in a different context
+  // (context_a), so we shouldn't have used it. This can legitimately happen in
+  // the case of a parent frame modifying a child frame's window.chrome.
+  check_runtime(false);
+
+  {
+    v8::Context::Scope scope(context_b);
+    v8::Local<v8::Object> fake_chrome = v8::Object::New(isolate());
+    EXPECT_EQ(context_b, fake_chrome->CreationContext());
+    context_b->Global()
+        ->Set(context_b, gin::StringToSymbol(isolate(), "chrome"), fake_chrome)
+        .ToChecked();
+  }
+  // When the chrome object is created in the same context (context_b), that
+  // object will be used.
+  check_runtime(true);
+
+  {
+    v8::Context::Scope scope(context_b);
+    v8::Local<v8::Boolean> fake_chrome = v8::Boolean::New(isolate(), true);
+    context_b->Global()
+        ->Set(context_b, gin::StringToSymbol(isolate(), "chrome"), fake_chrome)
+        .ToChecked();
+  }
+  // A non-object chrome shouldn't be used.
+  check_runtime(false);
 }
 
 }  // namespace extensions
