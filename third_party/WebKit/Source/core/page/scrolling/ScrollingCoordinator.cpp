@@ -1020,13 +1020,10 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     }
   }
 
-  for (const auto& child : frame_view->Children()) {
-    if (child->IsPluginView()) {
-      PluginView* plugin = ToPluginView(child);
-      if (plugin->WantsWheelEvents()) {
-        IntRect box = frame_view->ConvertToRootFrame(plugin->FrameRect());
-        should_handle_scroll_gesture_on_main_thread_region.Unite(box);
-      }
+  for (const auto& plugin : frame_view->Plugins()) {
+    if (plugin->WantsWheelEvents()) {
+      IntRect box = frame_view->ConvertToRootFrame(plugin->FrameRect());
+      should_handle_scroll_gesture_on_main_thread_region.Unite(box);
     }
   }
 

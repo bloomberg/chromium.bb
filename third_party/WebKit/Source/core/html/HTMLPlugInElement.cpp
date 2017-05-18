@@ -563,10 +563,12 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
       return false;
     }
 
-    if (!layout_item.IsNull())
+    if (!layout_item.IsNull()) {
       SetWidget(plugin);
-    else
+      layout_item.GetFrameView()->AddPlugin(plugin);
+    } else {
       SetPersistedPlugin(plugin);
+    }
   }
 
   GetDocument().SetContainsPlugins();

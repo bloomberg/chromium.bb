@@ -244,7 +244,7 @@ DEFINE_TRACE(FrameView) {
   visitor->Trace(scrollable_areas_);
   visitor->Trace(animating_scrollable_areas_);
   visitor->Trace(auto_size_info_);
-  visitor->Trace(children_);
+  visitor->Trace(plugins_);
   visitor->Trace(scrollbars_);
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(visibility_observer_);
@@ -286,6 +286,39 @@ void FrameView::Reset() {
   viewport_constrained_objects_.reset();
   layout_subtree_root_list_.Clear();
   orthogonal_writing_mode_root_list_.Clear();
+}
+
+template <typename Function>
+void FrameView::ForAllChildViewsAndPlugins(const Function& function) {
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    // TODO(https://crbug.com/719439) This code would be simpler if
+    // Frame::View() returned a common base class for FrameView and
+    // RemoteFrameView.
+    FrameOrPlugin* child_view = nullptr;
+    if (child->IsLocalFrame())
+      child_view = ToLocalFrame(child)->View();
+    else if (child->IsRemoteFrame())
+      child_view = ToRemoteFrame(child)->View();
+
+    if (child_view)
+      function(*child_view);
+  }
+
+  for (const auto& plugin : plugins_) {
+    function(*plugin);
+  }
+}
+
+template <typename Function>
+void FrameView::ForAllChildFrameViews(const Function& function) {
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (!child->IsLocalFrame())
+      continue;
+    if (FrameView* child_view = ToLocalFrame(child)->View())
+      function(*child_view);
+  }
 }
 
 // Call function for each non-throttled frame view in pre tree order.
@@ -498,10 +531,9 @@ void FrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
   bool uses_window_inactive_selector =
       frame_->GetDocument()->GetStyleEngine().UsesWindowInactiveSelector();
 
-  for (const auto& child : children_) {
-    if (child->IsFrameView())
-      ToFrameView(child)->InvalidateAllCustomScrollbarsOnActiveChanged();
-  }
+  ForAllChildFrameViews([](FrameView& frame_view) {
+    frame_view.InvalidateAllCustomScrollbarsOnActiveChanged();
+  });
 
   for (const auto& scrollbar : scrollbars_) {
     if (uses_window_inactive_selector && scrollbar->IsCustomScrollbar())
@@ -3379,9 +3411,8 @@ void FrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
   // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews.
   // We should have a way to only run these other Documents to the same
   // lifecycle stage as this frame.
-  for (const auto& child : children_) {
-    if (child->IsPluginView())
-      ToPluginView(child)->UpdateAllLifecyclePhases();
+  for (const auto& plugin : plugins_) {
+    plugin->UpdateAllLifecyclePhases();
   }
   CheckDoesNotNeedLayout();
 
@@ -3854,21 +3885,24 @@ void FrameView::SetParent(FrameView* parent) {
     subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
 }
 
-void FrameView::AddChild(FrameOrPlugin* child) {
-  DCHECK(child != this && !child->Parent());
-  child->SetParent(this);
-  children_.insert(child);
-}
-
 void FrameView::RemoveChild(FrameOrPlugin* child) {
   DCHECK(child->Parent() == this);
 
-  if (child->IsFrameView() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-    RemoveScrollableArea(ToFrameView(child));
+  if (child->IsFrameView()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+      RemoveScrollableArea(ToFrameView(child));
+  } else if (child->IsPluginView()) {
+    PluginView* plugin = ToPluginView(child);
+    DCHECK(plugins_.Contains(plugin));
+    plugins_.erase(plugin);
+  }
 
   child->SetParent(nullptr);
-  children_.erase(child);
+}
+
+void FrameView::AddPlugin(PluginView* plugin) {
+  DCHECK(!plugins_.Contains(plugin));
+  plugins_.insert(plugin);
 }
 
 void FrameView::RemoveScrollbar(Scrollbar* scrollbar) {
@@ -3915,8 +3949,9 @@ void FrameView::FrameRectsChanged() {
   if (LayoutSizeFixedToFrameSize())
     SetLayoutSizeInternal(FrameRect().Size());
 
-  for (const auto& child : children_)
-    child->FrameRectsChanged();
+  ForAllChildViewsAndPlugins([](FrameOrPlugin& frame_or_plugin) {
+    frame_or_plugin.FrameRectsChanged();
+  });
 }
 
 void FrameView::SetLayoutSizeInternal(const IntSize& size) {
@@ -4799,8 +4834,9 @@ void FrameView::SetParentVisible(bool visible) {
   if (!IsSelfVisible())
     return;
 
-  for (const auto& child : children_)
-    child->SetParentVisible(visible);
+  ForAllChildViewsAndPlugins([visible](FrameOrPlugin& frame_or_plugin) {
+    frame_or_plugin.SetParentVisible(visible);
+  });
 }
 
 void FrameView::Show() {
@@ -4819,8 +4855,9 @@ void FrameView::Show() {
       SetNeedsPaintPropertyUpdate();
     }
     if (IsParentVisible()) {
-      for (const auto& child : children_)
-        child->SetParentVisible(true);
+      ForAllChildViewsAndPlugins([](FrameOrPlugin& frame_or_plugin) {
+        frame_or_plugin.SetParentVisible(true);
+      });
     }
   }
 }
@@ -4828,8 +4865,9 @@ void FrameView::Show() {
 void FrameView::Hide() {
   if (IsSelfVisible()) {
     if (IsParentVisible()) {
-      for (const auto& child : children_)
-        child->SetParentVisible(false);
+      ForAllChildViewsAndPlugins([](FrameOrPlugin& frame_or_plugin) {
+        frame_or_plugin.SetParentVisible(false);
+      });
     }
     SetSelfVisible(false);
     if (ScrollingCoordinator* scrolling_coordinator =
@@ -4981,12 +5019,10 @@ void FrameView::UpdateRenderThrottlingStatus(
       (was_throttled != is_throttled ||
        force_throttling_invalidation_behavior ==
            kForceThrottlingInvalidation)) {
-    for (const auto& child : children_) {
-      if (child->IsFrameView()) {
-        ToFrameView(child)->UpdateRenderThrottlingStatus(
-            ToFrameView(child)->hidden_for_throttling_, is_throttled);
-      }
-    }
+    ForAllChildFrameViews([is_throttled](FrameView& frame_view) {
+      frame_view.UpdateRenderThrottlingStatus(frame_view.hidden_for_throttling_,
+                                              is_throttled);
+    });
   }
 
   ScrollingCoordinator* scrolling_coordinator = this->GetScrollingCoordinator();
