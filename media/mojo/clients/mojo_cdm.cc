@@ -321,7 +321,8 @@ void MojoCdm::OnSessionKeysChange(
   CdmKeysInfo key_data;
   key_data.reserve(keys_info.size());
   for (size_t i = 0; i < keys_info.size(); ++i) {
-    key_data.push_back(keys_info[i].To<std::unique_ptr<CdmKeyInformation>>());
+    key_data.push_back(
+        keys_info[i].To<std::unique_ptr<CdmKeyInformation>>().release());
   }
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
                               std::move(key_data));

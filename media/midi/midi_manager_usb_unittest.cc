@@ -265,7 +265,7 @@ TEST_F(MidiManagerUsbTest, Initialize) {
   device->SetDeviceVersion("1.02");
 
   Initialize();
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
@@ -325,7 +325,7 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
   device2->SetDeviceVersion("98.76");
 
   Initialize();
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   devices.push_back(std::move(device1));
   devices.push_back(std::move(device2));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
@@ -388,7 +388,7 @@ TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
   device->SetDescriptors(ToVector(descriptors));
 
   Initialize();
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
@@ -419,7 +419,7 @@ TEST_F(MidiManagerUsbTest, Send) {
       0x90, 0x45, 0x7f, 0xf0, 0x00, 0x01, 0xf7,
   };
 
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
@@ -463,7 +463,7 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
   };
 
   Initialize();
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
@@ -505,7 +505,7 @@ TEST_F(MidiManagerUsbTest, Receive) {
   };
 
   Initialize();
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   UsbMidiDevice* device_raw = device.get();
   devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
@@ -543,7 +543,7 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
   };
 
   Initialize();
-  UsbMidiDevice::Devices devices;
+  ScopedVector<UsbMidiDevice> devices;
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());

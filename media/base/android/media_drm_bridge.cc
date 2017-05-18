@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -741,8 +740,7 @@ void MediaDrmBridge::OnSessionKeysChange(
              << base::HexEncode(&key_id[0], key_id.size()) << ", "
              << key_status;
 
-    cdm_keys_info.push_back(
-        base::MakeUnique<CdmKeyInformation>(key_id, key_status, 0));
+    cdm_keys_info.push_back(new CdmKeyInformation(key_id, key_status, 0));
   }
 
   task_runner_->PostTask(
