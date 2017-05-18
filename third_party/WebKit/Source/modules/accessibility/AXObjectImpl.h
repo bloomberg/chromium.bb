@@ -54,6 +54,7 @@ class Node;
 class LayoutObject;
 class ScrollableArea;
 
+enum class AOMBooleanProperty;
 enum class AOMStringProperty;
 
 typedef unsigned AXID;
@@ -608,9 +609,10 @@ class MODULES_EXPORT AXObjectImpl
 
   // Wrappers that retrieve either an Accessibility Object Model property,
   // or the equivalent ARIA attribute, in that order.
-  // TODO(dmazzoni): Add equivalents for other types of properties besides
-  // just strings.
   const AtomicString& GetAOMPropertyOrARIAAttribute(AOMStringProperty) const;
+  bool HasAOMPropertyOrARIAAttribute(AOMBooleanProperty, bool& result) const;
+  bool AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty) const;
+  bool AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty) const;
 
   virtual void GetSparseAXAttributes(AXSparseAttributeClient&) const {}
 
@@ -984,12 +986,13 @@ class MODULES_EXPORT AXObjectImpl
   virtual double EstimatedLoadingProgress() const { return 0; }
 
   // DOM and layout tree access.
-  virtual Node* GetNode() const { return 0; }
-  virtual LayoutObject* GetLayoutObject() const { return 0; }
+  virtual Node* GetNode() const { return nullptr; }
+  virtual Element* GetElement() const;  // Same as GetNode, if it's an Element.
+  virtual LayoutObject* GetLayoutObject() const { return nullptr; }
   virtual Document* GetDocument() const;
   virtual FrameView* DocumentFrameView() const;
-  virtual Element* AnchorElement() const { return 0; }
-  virtual Element* ActionElement() const { return 0; }
+  virtual Element* AnchorElement() const { return nullptr; }
+  virtual Element* ActionElement() const { return nullptr; }
   String Language() const;
   bool HasAttribute(const QualifiedName&) const;
   const AtomicString& GetAttribute(const QualifiedName&) const;

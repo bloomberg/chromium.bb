@@ -32,7 +32,7 @@ class AXRadioInput final : public AXLayoutObject {
   AXRadioInput(LayoutObject*, AXObjectCacheImpl&);
   bool CalculatePosInSet();
   int CountFromFirstElement() const;
-  HTMLInputElement* GetElement() const;
+  HTMLInputElement* GetInputElement() const;
   int SizeOfRadioGroup() const;
 
   int pos_in_set_;

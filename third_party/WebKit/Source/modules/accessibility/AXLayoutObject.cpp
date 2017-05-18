@@ -459,8 +459,7 @@ bool AXLayoutObject::IsSelected() const {
   if (!GetLayoutObject() || !GetNode())
     return false;
 
-  const AtomicString& aria_selected = GetAttribute(aria_selectedAttr);
-  if (EqualIgnoringASCIICase(aria_selected, "true"))
+  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kSelected))
     return true;
 
   AXObjectImpl* focused_object = AxObjectCache().FocusedObject();
@@ -493,7 +492,7 @@ AXObjectInclusion AXLayoutObject::DefaultObjectInclusion(
   if (layout_object_->Style()->Visibility() != EVisibility::kVisible) {
     // aria-hidden is meant to override visibility as the determinant in AX
     // hierarchy inclusion.
-    if (EqualIgnoringASCIICase(GetAttribute(aria_hiddenAttr), "false"))
+    if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
       return kDefaultBehavior;
 
     if (ignored_reasons)
@@ -1381,17 +1380,17 @@ const AtomicString& AXLayoutObject::LiveRegionRelevant() const {
 }
 
 bool AXLayoutObject::LiveRegionAtomic() const {
+  bool atomic = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kAtomic, atomic))
+    return atomic;
+
   // ARIA roles "alert" and "status" should have an implicit aria-atomic value
   // of true.
-  if (GetAttribute(aria_atomicAttr).IsEmpty() &&
-      (RoleValue() == kAlertRole || RoleValue() == kStatusRole)) {
-    return true;
-  }
-  return ElementAttributeValue(aria_atomicAttr);
+  return RoleValue() == kAlertRole || RoleValue() == kStatusRole;
 }
 
 bool AXLayoutObject::LiveRegionBusy() const {
-  return ElementAttributeValue(aria_busyAttr);
+  return AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kBusy);
 }
 
 //

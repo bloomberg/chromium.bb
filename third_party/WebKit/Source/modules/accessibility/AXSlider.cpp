@@ -112,7 +112,7 @@ AXObjectImpl* AXSlider::ElementAccessibilityHitTest(
 }
 
 void AXSlider::SetValue(const String& value) {
-  HTMLInputElement* input = GetElement();
+  HTMLInputElement* input = GetInputElement();
 
   if (input->value() == value)
     return;
@@ -123,7 +123,7 @@ void AXSlider::SetValue(const String& value) {
   input->DispatchFormControlChangeEvent();
 }
 
-HTMLInputElement* AXSlider::GetElement() const {
+HTMLInputElement* AXSlider::GetInputElement() const {
   return toHTMLInputElement(layout_object_->GetNode());
 }
 

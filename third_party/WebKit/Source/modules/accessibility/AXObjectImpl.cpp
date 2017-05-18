@@ -388,11 +388,37 @@ bool AXObjectImpl::IsDetached() const {
 
 const AtomicString& AXObjectImpl::GetAOMPropertyOrARIAAttribute(
     AOMStringProperty property) const {
-  Node* node = this->GetNode();
-  if (!node || !node->IsElementNode())
-    return g_null_atom;
+  if (Element* element = this->GetElement())
+    return AccessibleNode::GetPropertyOrARIAAttribute(element, property);
+  return g_null_atom;
+}
 
-  return AccessibleNode::GetPropertyOrARIAAttribute(ToElement(node), property);
+bool AXObjectImpl::HasAOMPropertyOrARIAAttribute(AOMBooleanProperty property,
+                                                 bool& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  bool is_null = true;
+  result =
+      AccessibleNode::GetPropertyOrARIAAttribute(element, property, is_null);
+  return !is_null;
+}
+
+bool AXObjectImpl::AOMPropertyOrARIAAttributeIsTrue(
+    AOMBooleanProperty property) const {
+  bool result;
+  if (HasAOMPropertyOrARIAAttribute(property, result))
+    return result;
+  return false;
+}
+
+bool AXObjectImpl::AOMPropertyOrARIAAttributeIsFalse(
+    AOMBooleanProperty property) const {
+  bool result;
+  if (HasAOMPropertyOrARIAAttribute(property, result))
+    return !result;
+  return false;
 }
 
 bool AXObjectImpl::IsARIATextControl() const {
@@ -671,7 +697,7 @@ AXObjectImpl* AXObjectImpl::LeafNodeAncestor() const {
 const AXObjectImpl* AXObjectImpl::AriaHiddenRoot() const {
   for (const AXObjectImpl* object = this; object;
        object = object->ParentObject()) {
-    if (EqualIgnoringASCIICase(object->GetAttribute(aria_hiddenAttr), "true"))
+    if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       return object;
   }
 
@@ -684,16 +710,17 @@ bool AXObjectImpl::IsDescendantOfDisabledNode() const {
 }
 
 const AXObjectImpl* AXObjectImpl::DisabledAncestor() const {
-  const AtomicString& disabled = GetAttribute(aria_disabledAttr);
-  if (EqualIgnoringASCIICase(disabled, "true"))
-    return this;
-  if (EqualIgnoringASCIICase(disabled, "false"))
-    return 0;
+  bool disabled = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kDisabled, disabled)) {
+    if (disabled)
+      return this;
+    return nullptr;
+  }
 
   if (AXObjectImpl* parent = ParentObject())
     return parent->DisabledAncestor();
 
-  return 0;
+  return nullptr;
 }
 
 bool AXObjectImpl::LastKnownIsIgnoredValue() {
@@ -800,7 +827,7 @@ String AXObjectImpl::RecursiveTextAlternative(
 }
 
 bool AXObjectImpl::IsHiddenForTextAlternativeCalculation() const {
-  if (EqualIgnoringASCIICase(GetAttribute(aria_hiddenAttr), "false"))
+  if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
     return false;
 
   if (GetLayoutObject())
@@ -1047,7 +1074,7 @@ bool AXObjectImpl::IsMultiline() const {
   if (!IsNativeTextControl() && !IsNonNativeTextControl())
     return false;
 
-  return EqualIgnoringASCIICase(GetAttribute(aria_multilineAttr), "true");
+  return AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kMultiline);
 }
 
 bool AXObjectImpl::AriaPressedIsPresent() const {
@@ -1225,6 +1252,11 @@ void AXObjectImpl::ClearChildren() {
   have_children_ = false;
 }
 
+Element* AXObjectImpl::GetElement() const {
+  Node* node = GetNode();
+  return node && node->IsElementNode() ? ToElement(node) : nullptr;
+}
+
 Document* AXObjectImpl::GetDocument() const {
   FrameView* frame_view = DocumentFrameView();
   if (!frame_view)
@@ -1264,28 +1296,16 @@ String AXObjectImpl::Language() const {
 }
 
 bool AXObjectImpl::HasAttribute(const QualifiedName& attribute) const {
-  Node* element_node = GetNode();
-  if (!element_node)
-    return false;
-
-  if (!element_node->IsElementNode())
-    return false;
-
-  Element* element = ToElement(element_node);
-  return element->FastHasAttribute(attribute);
+  if (Element* element = GetElement())
+    return element->FastHasAttribute(attribute);
+  return false;
 }
 
 const AtomicString& AXObjectImpl::GetAttribute(
     const QualifiedName& attribute) const {
-  Node* element_node = GetNode();
-  if (!element_node)
-    return g_null_atom;
-
-  if (!element_node->IsElementNode())
-    return g_null_atom;
-
-  Element* element = ToElement(element_node);
-  return element->FastGetAttribute(attribute);
+  if (Element* element = GetElement())
+    return element->FastGetAttribute(attribute);
+  return g_null_atom;
 }
 
 //
@@ -1840,8 +1860,8 @@ bool AXObjectImpl::NameFromContents() const {
       if (AncestorExposesActiveDescendant()) {
         return true;
       }
-      const Node* node = this->GetNode();
-      return node && node->IsElementNode() && ToElement(node)->IsFocusable();
+      const Element* element = this->GetElement();
+      return element && element->IsFocusable();
     }
     default:
       return false;

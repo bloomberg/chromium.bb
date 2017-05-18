@@ -589,6 +589,8 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
                    &WebAXObjectProxy::SelectionStartLineNumber)
       .SetProperty("selectionEndLineNumber",
                    &WebAXObjectProxy::SelectionEndLineNumber)
+      .SetProperty("isAtomic", &WebAXObjectProxy::IsAtomic)
+      .SetProperty("isBusy", &WebAXObjectProxy::IsBusy)
       .SetProperty("isEnabled", &WebAXObjectProxy::IsEnabled)
       .SetProperty("isRequired", &WebAXObjectProxy::IsRequired)
       .SetProperty("isEditable", &WebAXObjectProxy::IsEditable)
@@ -598,6 +600,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("isModal", &WebAXObjectProxy::IsModal)
       .SetProperty("isSelected", &WebAXObjectProxy::IsSelected)
       .SetProperty("isSelectable", &WebAXObjectProxy::IsSelectable)
+      .SetProperty("isMultiLine", &WebAXObjectProxy::IsMultiLine)
       .SetProperty("isMultiSelectable", &WebAXObjectProxy::IsMultiSelectable)
       .SetProperty("isSelectedOptionActive",
                    &WebAXObjectProxy::IsSelectedOptionActive)
@@ -958,6 +961,16 @@ int WebAXObjectProxy::SelectionEndLineNumber() {
   return accessibility_object_.SelectionEndLineNumber();
 }
 
+bool WebAXObjectProxy::IsAtomic() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.LiveRegionAtomic();
+}
+
+bool WebAXObjectProxy::IsBusy() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.LiveRegionBusy();
+}
+
 bool WebAXObjectProxy::IsEnabled() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.IsEnabled();
@@ -1001,6 +1014,11 @@ bool WebAXObjectProxy::IsSelected() {
 bool WebAXObjectProxy::IsSelectable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.CanSetSelectedAttribute();
+}
+
+bool WebAXObjectProxy::IsMultiLine() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.IsMultiline();
 }
 
 bool WebAXObjectProxy::IsMultiSelectable() {

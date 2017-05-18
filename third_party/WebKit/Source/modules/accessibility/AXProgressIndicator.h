@@ -46,7 +46,7 @@ class AXProgressIndicator final : public AXLayoutObject {
 
   AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
 
-  HTMLProgressElement* GetElement() const;
+  HTMLProgressElement* GetProgressElement() const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
