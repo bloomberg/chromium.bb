@@ -30,7 +30,7 @@ class SearchGeolocationDisclosureTabHelper
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
-  void MaybeShowDisclosure(const GURL& gurl);
+  void MaybeShowDisclosureForAPIAccess(const GURL& gurl);
 
   static void ResetDisclosure(Profile* profile);
 
@@ -44,7 +44,18 @@ class SearchGeolocationDisclosureTabHelper
   friend class content::WebContentsUserData<
       SearchGeolocationDisclosureTabHelper>;
 
-  bool ShouldShowDisclosureForUrl(const GURL& gurl);
+  void MaybeShowDisclosureForNavigation(const GURL& gurl);
+  void MaybeShowDisclosureForValidUrl(const GURL& gurl);
+
+  // Determines if the disclosure should be shown for the URL when a navigation
+  // to the URL occurs. This is the case whenever the URL is a result of an
+  // omnibox search, as it will result in X-Geo headers being sent.
+  bool ShouldShowDisclosureForNavigation(const GURL& gurl);
+
+  // Determine if the disclosure should be shown for the URL when a page on the
+  // URL uses the geolocation API. This is the case if the url's access to the
+  // geolocation API is allowed due to the geolocation DSE setting.
+  bool ShouldShowDisclosureForAPIAccess(const GURL& gurl);
 
   // Record metrics, once per client, of the permission state before and after
   // the disclosure has been shown.

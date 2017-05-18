@@ -502,7 +502,7 @@ void GeolocationPermissionContextAndroid::FinishNotifyPermissionSet(
 
     // The tab helper can be null in tests.
     if (disclosure_helper)
-      disclosure_helper->MaybeShowDisclosure(requesting_origin);
+      disclosure_helper->MaybeShowDisclosureForAPIAccess(requesting_origin);
   }
 }
 
