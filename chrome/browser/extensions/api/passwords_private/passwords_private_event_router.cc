@@ -74,8 +74,7 @@ void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
         const std::string& username,
         const std::string& plaintext_password) {
   api::passwords_private::PlaintextPasswordEventParameters params;
-  // TODO(crbug.com/715866): use origins and URLs more consistently.
-  params.login_pair.urls.origin = GURL(origin_url).GetOrigin().spec();
+  params.login_pair.urls.origin = origin_url;
   params.login_pair.username = username;
   params.plaintext_password = plaintext_password;
 

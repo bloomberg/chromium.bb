@@ -9,8 +9,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
@@ -21,55 +23,10 @@
 
 namespace {
 
-const char kAndroidAppScheme[] = "android://";
-const char kPlayStoreAppPrefix[] =
-    "https://play.google.com/store/apps/details?id=";
-
 std::string LoginPairToMapKey(const std::string& origin_url,
                               const std::string& username) {
   // Concatenate origin URL and username to form a unique key.
   return origin_url + ',' + username;
-}
-
-// Conveniece struct that mirrors the UrlCollection dictionary in
-// passwords_private.idl.
-struct URLs {
-  std::string origin;
-  std::string shown;
-  std::string link;
-};
-
-// Obtains origin and link URL from the passed in form. In case the origin
-// corresponds to the identifier of an Android app, it tries to create a human
-// readable version of the origin URL.
-URLs CreateURLFromForm(const autofill::PasswordForm& form) {
-  bool is_android_uri = false;
-  GURL link_url;
-  bool origin_is_clickable = false;
-  std::string shown_url = password_manager::GetShownOriginAndLinkUrl(
-      form, &is_android_uri, &link_url, &origin_is_clickable);
-  std::string link_str = link_url.spec();
-
-  if (is_android_uri) {
-    if (!origin_is_clickable) {
-      // e.g. android://com.example.r => r.example.com.
-      shown_url = password_manager::StripAndroidAndReverse(shown_url);
-      // Turn human unfriendly string into a clickable link to the PlayStore.
-      base::ReplaceFirstSubstringAfterOffset(&link_str, 0, kAndroidAppScheme,
-                                             kPlayStoreAppPrefix);
-    }
-
-    // Currently we use "direction=rtl" in CSS to elide long origins from the
-    // left. This does not play nice with appending strings that end in
-    // punctuation symbols, which is why the bidirectional override tag is
-    // necessary.
-    // TODO(crbug.com/679434): Clean this up.
-    shown_url += "\u202D" +  // equivalent to <bdo dir = "ltr">
-                 l10n_util::GetStringUTF8(IDS_PASSWORDS_ANDROID_URI_SUFFIX) +
-                 "\u202C";  // equivalent to </bdo>
-  }
-
-  return {form.signon_realm, shown_url, link_str};
 }
 
 }  // namespace
@@ -219,15 +176,14 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
 
   for (size_t i = 0; i < password_list.size(); i++) {
     const auto& form = password_list[i];
-    URLs urls = CreateURLFromForm(*form);
+    api::passwords_private::UrlCollection urls =
+        CreateUrlCollectionFromForm(*form);
     std::string key =
         LoginPairToMapKey(urls.origin, base::UTF16ToUTF8(form->username_value));
     login_pair_to_index_map_[key] = i;
 
     api::passwords_private::PasswordUiEntry entry;
-    entry.login_pair.urls.origin = std::move(urls.origin);
-    entry.login_pair.urls.shown = std::move(urls.shown);
-    entry.login_pair.urls.link = std::move(urls.link);
+    entry.login_pair.urls = std::move(urls);
     entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
     entry.num_characters_in_password = form->password_value.length();
 
@@ -264,13 +220,12 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 
   for (size_t i = 0; i < password_exception_list.size(); i++) {
     const auto& form = password_exception_list[i];
-    URLs urls = CreateURLFromForm(*form);
+    api::passwords_private::UrlCollection urls =
+        CreateUrlCollectionFromForm(*form);
     exception_url_to_index_map_[urls.origin] = i;
 
     api::passwords_private::ExceptionEntry current_exception_entry;
-    current_exception_entry.urls.origin = std::move(urls.origin);
-    current_exception_entry.urls.shown = std::move(urls.shown);
-    current_exception_entry.urls.link = std::move(urls.link);
+    current_exception_entry.urls = std::move(urls);
     current_exceptions_.push_back(std::move(current_exception_entry));
   }
 

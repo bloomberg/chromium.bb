@@ -319,6 +319,8 @@ static_library("extensions") {
     "api/passwords_private/passwords_private_event_router.h",
     "api/passwords_private/passwords_private_event_router_factory.cc",
     "api/passwords_private/passwords_private_event_router_factory.h",
+    "api/passwords_private/passwords_private_utils.cc",
+    "api/passwords_private/passwords_private_utils.h",
     "api/permissions/permissions_api.cc",
     "api/permissions/permissions_api.h",
     "api/permissions/permissions_api_helpers.cc",

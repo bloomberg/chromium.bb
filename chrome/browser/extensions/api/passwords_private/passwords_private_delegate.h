@@ -52,8 +52,8 @@ class PasswordsPrivateDelegate : public KeyedService {
 
   // Removes the saved password entry corresponding to |origin_url| and
   // |username|.
-  // |origin_url| The human-readable origin for the URL where the password is
-  //     used/ should be obtained using GetHumanReadableOrigin().
+  // |origin_url| The origin for the URL where the password is used; should be
+  //     obtained using CreateUrlCollectionFromForm().origin.
   // |username| The username used in conjunction with the saved password.
   virtual void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) = 0;
@@ -61,13 +61,13 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Removes the saved password exception entry corresponding to
   // |exception_url|.
   // |exception_url| The URL corresponding to the exception to remove; should
-  //     be obtained using GetHumanReadableOrigin().
+  //     be obtained using CreateUrlCollectionFromForm().origin.
   virtual void RemovePasswordException(const std::string& exception_url) = 0;
 
   // Requests the plain text password for entry corresponding to |origin_url|
   // and |username|.
-  // |origin_url| The human-readable origin for the URL where the password is
-  //     used; should be obtained using GetHumanReadableOrigin().
+  // |origin_url| The origin for the URL where the password is used; should be
+  //     obtained using CreateUrlCollectionFromForm().origin.
   // |username| The username used in conjunction with the saved password.
   // |native_window| The Chrome host window; will be used to show an OS-level
   //     authentication dialog if necessary.
