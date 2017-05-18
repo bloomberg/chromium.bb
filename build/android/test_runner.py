@@ -377,6 +377,10 @@ def AddInstrumentationTestOptions(parser):
            'fails or the golden image is missing but to render'
            'the view and carry on.')
   parser.add_argument(
+      '--render-results-directory',
+      dest='render_results_dir',
+      help='Directory to pull render test result images off of the device to.')
+  parser.add_argument(
       '--runtime-deps-path',
       dest='runtime_deps_path', type=os.path.realpath,
       help='Runtime data dependency file from GN.')
