@@ -131,4 +131,4 @@ self.addEventListener('install', function(event) {
 
 // Import testharness after install handler to make sure our install handler
 // runs first. Otherwise only one test will run.
-importScripts('../../resources/testharness.js');
+importScripts('/resources/testharness.js');
