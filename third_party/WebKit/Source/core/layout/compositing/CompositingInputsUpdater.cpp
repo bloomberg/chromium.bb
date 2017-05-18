@@ -52,7 +52,8 @@ static const PaintLayer* FindParentLayerOnClippingContainerChain(
     // SVG (other than LayoutSVGRoot) cannot have PaintLayers.
     DCHECK(!current->HasClipRelatedProperty() ||
            current->StyleRef().ContainsPaint() ||
-           (current->IsBox() && ToLayoutBox(current)->HasControlClip()));
+           (current->IsBox() && ToLayoutBox(current)->HasControlClip()) ||
+           current->IsSVGChild());
   }
   NOTREACHED();
   return nullptr;
