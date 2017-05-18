@@ -114,7 +114,7 @@ HttpIceConfigRequest::HttpIceConfigRequest(
             "24 hours and it needs to renegotiate the ICE connection. The 24 "
             "hour period is controlled by the server and may change. In some "
             "cases, e.g. if direct connection is used, it will not trigger "
-            "periodically.
+            "periodically."
           data: "None."
           destination: GOOGLE_OWNED_SERVICE
         }
