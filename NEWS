@@ -19,6 +19,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   tables. Thanks to Paul Wood and James Bowden.
 - Fixes to UEB grade 2 (en-ueb-g2.ctb) thanks to Mike Gray.
 - Vastly improved Danish tables thanks to Bue Vester-Andersen.
+- New Braille tables for Sinhala script thanks to Ashoka Bandula
+  Weerawardhana.
 ** License changes
 ** Backwards incompatible changes
 

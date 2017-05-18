@@ -312,6 +312,8 @@ table_files = \
 	se-se.dis \
 	Se-Se-g1.utb \
 	si-in-g1.utb \
+	sin.cti \
+	sin.utb \
 	sk-chardefs.cti \
 	sk-g1.ctb \
 	sk-sk-g1.utb \
