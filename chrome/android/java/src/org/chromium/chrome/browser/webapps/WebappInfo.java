@@ -76,8 +76,12 @@ public class WebappInfo {
     }
 
     protected static int sourceFromIntent(Intent intent) {
-        return IntentUtils.safeGetIntExtra(
+        int source = IntentUtils.safeGetIntExtra(
                 intent, ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
+        if (source >= ShortcutSource.COUNT) {
+            source = ShortcutSource.UNKNOWN;
+        }
+        return source;
     }
 
     private static String titleFromIntent(Intent intent) {
