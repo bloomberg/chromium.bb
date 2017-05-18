@@ -1,4 +1,5 @@
 {% import 'fields/base.tmpl' as base %}
+{% from 'fields/field.tmpl' import getter_expression, setter_expression %}
 
 {% macro decl_public_methods(field) -%}
 // Getters and setters not generated
@@ -8,6 +9,14 @@
 {{base.decl_internal_getter_method(field)}}
 {{base.decl_internal_setter_method(field)}}
 {% if not field.is_bit_field -%}
+void {{field.internal_setter_method_name}}({{field.type_name}}&& v) {
+{% if field.group_member_name %}
+  if (!({{getter_expression(field)}} == v))
+    {{setter_expression(field)}} = std::move(v);
+{% else %}
+  {{field.name}} = std::move(v);
+{% endif %}
+}
 {{base.decl_mutable_method(field)}}
 {%- endif %}
 {%- endmacro %}
