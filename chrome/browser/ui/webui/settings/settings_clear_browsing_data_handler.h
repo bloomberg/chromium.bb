@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -54,6 +55,10 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
 
   // Get important sites, called by Javascript.
   void HandleGetImportantSites(const base::ListValue* value);
+
+  void OnFetchImportantSitesFinished(
+      const std::string& callback_id,
+      std::vector<ImportantSitesUtil::ImportantDomainInfo> sites);
 
   // Initializes the dialog UI. Called by JavaScript when the DOM is ready.
   void HandleInitialize(const base::ListValue* args);

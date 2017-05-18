@@ -43,8 +43,6 @@ using content::BrowsingDataRemover;
 
 namespace {
 
-const size_t kMaxImportantSites = 5;
-
 Profile* GetOriginalProfile() {
   return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
 }
@@ -194,8 +192,8 @@ static void FetchImportantSites(JNIEnv* env,
                                 const JavaParamRef<jobject>& java_callback) {
   Profile* profile = GetOriginalProfile();
   std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-      ImportantSitesUtil::GetImportantRegisterableDomains(profile,
-                                                          kMaxImportantSites);
+      ImportantSitesUtil::GetImportantRegisterableDomains(
+          profile, ImportantSitesUtil::kMaxImportantSites);
   bool dialog_disabled = ImportantSitesUtil::IsDialogDisabled(profile);
 
   std::vector<std::string> important_domains;
@@ -222,7 +220,7 @@ static void FetchImportantSites(JNIEnv* env,
 // This value should not change during a sessions, as it's used for UMA metrics.
 static jint GetMaxImportantSites(JNIEnv* env,
                                  const JavaParamRef<jclass>& clazz) {
-  return kMaxImportantSites;
+  return ImportantSitesUtil::kMaxImportantSites;
 }
 
 static void MarkOriginAsImportantForTesting(

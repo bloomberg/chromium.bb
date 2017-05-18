@@ -18,6 +18,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/engagement/important_sites_usage_counter.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -28,6 +29,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -36,8 +38,6 @@ using ImportantReason = ImportantSitesUtil::ImportantReason;
 namespace {
 
 const int kMaxTimesHistoryNoticeShown = 1;
-
-const int kMaxImportantSites = 10;
 
 // TODO(msramek): Get the list of deletion preferences from the JS side.
 const char* kCounterPrefs[] = {
@@ -282,38 +282,54 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
 void ClearBrowsingDataHandler::HandleGetImportantSites(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
   DCHECK(base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
 
   Profile* profile = profile_->GetOriginalProfile();
   bool important_sites_dialog_disabled =
       ImportantSitesUtil::IsDialogDisabled(profile);
-  base::ListValue important_sites_list;
 
-  if (!important_sites_dialog_disabled) {
-    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-        ImportantSitesUtil::GetImportantRegisterableDomains(profile,
-                                                            kMaxImportantSites);
-    for (const auto& info : important_sites) {
-      auto entry = base::MakeUnique<base::DictionaryValue>();
-      entry->SetString(kRegisterableDomainField, info.registerable_domain);
-      // The |reason_bitfield| is only passed to Javascript to be logged
-      // from |HandleClearBrowsingData|.
-      entry->SetInteger(kReasonBitField, info.reason_bitfield);
-      entry->SetString(kExampleOriginField, info.example_origin.spec());
-      // Initially all sites are selected for deletion.
-      entry->SetBoolean(kIsCheckedField, true);
-      // TODO(dullweber): Get size.
-      entry->SetString(kStorageSizeField, ui::FormatBytes(0));
-      bool has_notifications =
-          (info.reason_bitfield & (1 << ImportantReason::NOTIFICATIONS)) != 0;
-      entry->SetBoolean(kHasNotificationsField, has_notifications);
-      important_sites_list.Append(std::move(entry));
-    }
+  if (important_sites_dialog_disabled) {
+    ResolveJavascriptCallback(base::Value(callback_id), base::ListValue());
+    return;
   }
 
-  ResolveJavascriptCallback(*callback_id, important_sites_list);
+  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
+      ImportantSitesUtil::GetImportantRegisterableDomains(
+          profile, ImportantSitesUtil::kMaxImportantSites);
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+  storage::QuotaManager* quota_manager = partition->GetQuotaManager();
+  content::DOMStorageContext* dom_storage = partition->GetDOMStorageContext();
+
+  ImportantSitesUsageCounter::GetUsage(
+      std::move(important_sites), quota_manager, dom_storage,
+      base::BindOnce(&ClearBrowsingDataHandler::OnFetchImportantSitesFinished,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
+}
+
+void ClearBrowsingDataHandler::OnFetchImportantSitesFinished(
+    const std::string& callback_id,
+    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites) {
+  base::ListValue important_sites_list;
+
+  for (const auto& info : important_sites) {
+    auto entry = base::MakeUnique<base::DictionaryValue>();
+    entry->SetString(kRegisterableDomainField, info.registerable_domain);
+    // The |reason_bitfield| is only passed to Javascript to be logged
+    // from |HandleClearBrowsingData|.
+    entry->SetInteger(kReasonBitField, info.reason_bitfield);
+    entry->SetString(kExampleOriginField, info.example_origin.spec());
+    // Initially all sites are selected for deletion.
+    entry->SetBoolean(kIsCheckedField, true);
+    entry->SetString(kStorageSizeField, ui::FormatBytes(info.usage));
+    bool has_notifications =
+        (info.reason_bitfield & (1 << ImportantReason::NOTIFICATIONS)) != 0;
+    entry->SetBoolean(kHasNotificationsField, has_notifications);
+    important_sites_list.Append(std::move(entry));
+  }
+  ResolveJavascriptCallback(base::Value(callback_id), important_sites_list);
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
