@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::ElementsAre;
+using testing::ElementsAreArray;
 using testing::SizeIs;
 
 namespace sync_sessions {
@@ -193,6 +194,75 @@ TEST(TaskTrackerTest, CreateSubTaskFromExcludedAncestorTask) {
   EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(0), ElementsAre());
   EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(1),
               ElementsAre((kMaxNumTasksPerTab + 2) * 100));
+}
+
+TEST(TaskTrackerTest, CreateTabTasksFromSourceTab) {
+  TaskTracker task_tracker;
+  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1);
+  source_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
+  source_tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
+  source_tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_TYPED, 300);
+  source_tab_tasks->UpdateWithNavigation(4, ui::PAGE_TRANSITION_LINK, 400);
+  source_tab_tasks->UpdateWithNavigation(5, ui::PAGE_TRANSITION_LINK, 500);
+
+  TabTasks* target_tab_tasks = task_tracker.GetTabTasks(kTab2, kTab1);
+  target_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 600);
+  target_tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 700);
+  target_tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_TYPED, 800);
+
+  EXPECT_THAT(target_tab_tasks->GetTaskIdsForNavigation(1),
+              ElementsAre(300, 400, 500, 600));
+  EXPECT_THAT(target_tab_tasks->GetTaskIdsForNavigation(2),
+              ElementsAre(300, 400, 500, 600, 700));
+  EXPECT_THAT(target_tab_tasks->GetTaskIdsForNavigation(3), ElementsAre(800));
+}
+
+TEST(TaskTrackerTest, CreateTabTasksFromSourceTabAfterGoingBack) {
+  TaskTracker task_tracker;
+  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1);
+  source_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
+  source_tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
+  source_tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_TYPED, 300);
+  source_tab_tasks->UpdateWithNavigation(4, ui::PAGE_TRANSITION_LINK, 400);
+  source_tab_tasks->UpdateWithNavigation(5, ui::PAGE_TRANSITION_LINK, 500);
+  source_tab_tasks->UpdateWithNavigation(
+      2,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FORWARD_BACK),
+      600);
+  ASSERT_THAT(source_tab_tasks->GetTaskIdsForNavigation(2),
+              ElementsAre(100, 200));
+
+  TabTasks* target_tab_tasks = task_tracker.GetTabTasks(kTab2, kTab1);
+  target_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 700);
+
+  EXPECT_THAT(target_tab_tasks->GetTaskIdsForNavigation(1),
+              ElementsAre(100, 200, 700));
+}
+
+TEST(TaskTrackerTest, CreateTabTasksFromSourceTabWithLimitedTaskNum) {
+  const int kMaxNumTasksPerTab = 100;
+  TaskTracker task_tracker;
+
+  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1);
+  // Adding max number of tasks to tab1.
+  for (int i = 0; i < kMaxNumTasksPerTab; i++) {
+    source_tab_tasks->UpdateWithNavigation(i, ui::PAGE_TRANSITION_LINK,
+                                           i * 100);
+  }
+
+  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab2, kTab1);
+  tab_tasks->UpdateWithNavigation(0, ui::PAGE_TRANSITION_LINK,
+                                  kMaxNumTasksPerTab * 100);
+
+  std::vector<int64_t> task_ids = tab_tasks->GetTaskIdsForNavigation(0);
+  // The first task from source tab is excluded because of max task number
+  // limit.
+  int expected_task_ids[kMaxNumTasksPerTab];
+  for (int i = 0; i < kMaxNumTasksPerTab; i++)
+    expected_task_ids[i] = (i + 1) * 100;
+  EXPECT_THAT(task_ids,
+              ElementsAreArray(expected_task_ids, kMaxNumTasksPerTab));
 }
 
 }  // namespace sync_sessions

@@ -29,10 +29,10 @@ namespace sync_sessions {
 // TODO(shenchao): If the tab is restored, then the input navigation is not
 // necessarily the first navigation in this case. Need to fix it by initalizing
 // the object with restored data.
-// TODO(shenchao): Support to track tasks cross tabs.
 class TabTasks {
  public:
   TabTasks();
+  explicit TabTasks(const TabTasks* source_tab);
   virtual ~TabTasks();
 
   // Gets top-down task id list of ancestors and itself for
@@ -64,6 +64,14 @@ class TabTasks {
     int64_t task_id;
   };
 
+  // Get position within task_ids_ for the navigation at |navigation_index| of
+  // the tab.
+  int GetTaskIdPositionFromNavigationIndex(int navigation_index) const;
+
+  // Get index of corresponding navigation of the tab at |task_id_position|
+  // within task_ids_.
+  int GetNavigationIndexFromTaskIdPosition(int task_id_position) const;
+
   // Task ids (with root task) for the navigations of the tab. The vector is
   // corresponding to the sequence of navigations of the tab.
   std::vector<TaskIdAndRoot> task_ids_;
@@ -72,6 +80,8 @@ class TabTasks {
   // Number of oldest ancestors which have been excluded from being tracked in
   // task_ids_;
   int excluded_navigation_num_ = 0;
+  // Number of tasks from source tab.
+  int source_tab_task_num_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TabTasks);
 };
@@ -86,6 +96,11 @@ class TaskTracker {
   // Returns a TabTasks pointer, which is owned by this object, for the tab of
   // given |tab_id|.
   TabTasks* GetTabTasks(SessionID::id_type tab_id);
+
+  // Returns a TabTasks pointer, which is owned by this object, for the tab of
+  // given |tab_id|, which is created from a source tab |source_tab_id|.
+  TabTasks* GetTabTasks(SessionID::id_type tab_id,
+                        SessionID::id_type source_tab_id);
 
   // Cleans tracked task ids of navigations in the tab of |tab_id|.
   void CleanTabTasks(SessionID::id_type tab_id);
