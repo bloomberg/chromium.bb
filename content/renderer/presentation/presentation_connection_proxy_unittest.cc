@@ -118,4 +118,14 @@ TEST_F(PresentationConnectionProxyTest, TestReceiverConnectionCallsClose) {
   run_loop.RunUntilIdle();
 }
 
+TEST_F(PresentationConnectionProxyTest, TestReceiverNotifyTargetConnection) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *controller_connection_,
+      DidChangeState(blink::WebPresentationConnectionState::kTerminated));
+  receiver_connection_proxy_->NotifyTargetConnection(
+      blink::WebPresentationConnectionState::kTerminated);
+  run_loop.RunUntilIdle();
+}
+
 }  // namespace content

@@ -84,8 +84,10 @@ void PresentationReceiver::DidChangeConnectionState(
   // connection state change.
   DCHECK(state == WebPresentationConnectionState::kTerminated);
 
-  for (auto connection : connection_list_->connections())
+  for (auto connection : connection_list_->connections()) {
+    connection->NotifyTargetConnection(state);
     connection->DidChangeState(state, false /* shouldDispatchEvent */);
+  }
 }
 
 void PresentationReceiver::TerminateConnection() {
