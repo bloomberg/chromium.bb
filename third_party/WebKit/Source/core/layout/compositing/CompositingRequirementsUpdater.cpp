@@ -272,9 +272,19 @@ void CompositingRequirementsUpdater::UpdateRecursive(
                                                 false) &
        kCompositingReasonOverflowScrollingTouch);
 
+  // We have to promote the sticky element to work around the bug
+  // (https://crbug.com/698358) of not being able to invalidate the ancestor
+  // after updating the sticky layer position.
+  // TODO(yigu): We should check if we have already lost lcd text. This
+  // would require tracking if we think the current compositing ancestor
+  // layer meets the requirements (i.e. opaque, integer transform, etc).
+  const bool moves_with_respect_to_compositing_ancestor =
+      layer->SticksToScroller() &&
+      !current_recursion_data.compositing_ancestor_->IsRootLayer();
   // TODO(chrishtr): use |hasCompositedScrollingAncestor| instead.
   const bool ignore_lcd_text =
-      current_recursion_data.has_composited_scrolling_ancestor_;
+      current_recursion_data.has_composited_scrolling_ancestor_ ||
+      moves_with_respect_to_compositing_ancestor;
   direct_reasons |=
       compositing_reason_finder_.DirectReasons(layer, ignore_lcd_text);
 
