@@ -1367,8 +1367,6 @@ split_static_library("ui") {
       "ash/launcher/launcher_controller_helper.h",
       "ash/launcher/launcher_extension_app_updater.cc",
       "ash/launcher/launcher_extension_app_updater.h",
-      "ash/launcher/launcher_favicon_loader.cc",
-      "ash/launcher/launcher_favicon_loader.h",
       "ash/launcher/multi_profile_app_window_launcher_controller.cc",
       "ash/launcher/multi_profile_app_window_launcher_controller.h",
       "ash/launcher/multi_profile_browser_status_monitor.cc",
