@@ -5,7 +5,6 @@
 #include "components/update_client/utils.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <algorithm>
 #include <cmath>
@@ -17,22 +16,15 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
-#include "build/build_config.h"
 #include "components/crx_file/id_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
-#include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
-#include "components/update_client/update_query_params.h"
-#include "components/update_client/updater_state.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "net/base/load_flags.h"
@@ -41,20 +33,9 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace update_client {
 
 namespace {
-
-// Returns the amount of physical memory in GB, rounded to the nearest GB.
-int GetPhysicalMemoryGB() {
-  const double kOneGB = 1024 * 1024 * 1024;
-  const int64_t phys_mem = base::SysInfo::AmountOfPhysicalMemory();
-  return static_cast<int>(std::floor(0.5 + phys_mem / kOneGB));
-}
 
 // Produces an extension-like friendly id.
 std::string HexStringToID(const std::string& hexstr) {
@@ -75,116 +56,8 @@ std::string HexStringToID(const std::string& hexstr) {
   return id;
 }
 
-std::string GetOSVersion() {
-#if defined(OS_WIN)
-  const auto ver = base::win::OSInfo::GetInstance()->version_number();
-  return base::StringPrintf("%d.%d.%d.%d", ver.major, ver.minor, ver.build,
-                            ver.patch);
-#else
-  return base::SysInfo().OperatingSystemVersion();
-#endif
-}
-
-std::string GetServicePack() {
-#if defined(OS_WIN)
-  return base::win::OSInfo::GetInstance()->service_pack_str();
-#else
-  return std::string();
-#endif
-}
-
 }  // namespace
 
-// Builds a protocol message.
-std::string BuildProtocolRequest(
-    const std::string& prod_id,
-    const std::string& browser_version,
-    const std::string& channel,
-    const std::string& lang,
-    const std::string& os_long_name,
-    const std::string& download_preference,
-    const std::string& request_body,
-    const std::string& additional_attributes,
-    const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
-  std::string request = base::StringPrintf(
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-      "<request protocol=\"%s\" ",
-      kProtocolVersion);
-
-  if (!additional_attributes.empty())
-    base::StringAppendF(&request, "%s ", additional_attributes.c_str());
-
-  // Chrome version and platform information.
-  base::StringAppendF(
-      &request,
-      "version=\"%s-%s\" prodversion=\"%s\" "
-      "requestid=\"{%s}\" lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
-      "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
-      prod_id.c_str(),                    // "version" is prefixed by prod_id.
-      browser_version.c_str(),
-      browser_version.c_str(),            // "prodversion"
-      base::GenerateGUID().c_str(),       // "requestid"
-      lang.c_str(),                       // "lang"
-      channel.c_str(),                    // "updaterchannel"
-      channel.c_str(),                    // "prodchannel"
-      UpdateQueryParams::GetOS(),         // "os"
-      UpdateQueryParams::GetArch(),       // "arch"
-      UpdateQueryParams::GetNaclArch());  // "nacl_arch"
-#if defined(OS_WIN)
-  const bool is_wow64(base::win::OSInfo::GetInstance()->wow64_status() ==
-                      base::win::OSInfo::WOW64_ENABLED);
-  if (is_wow64)
-    base::StringAppendF(&request, " wow64=\"1\"");
-#endif
-  if (!download_preference.empty())
-    base::StringAppendF(&request, " dlpref=\"%s\"",
-                        download_preference.c_str());
-  if (updater_state_attributes &&
-      updater_state_attributes->count(UpdaterState::kIsEnterpriseManaged)) {
-    base::StringAppendF(
-        &request, " %s=\"%s\"",  // domainjoined
-        UpdaterState::kIsEnterpriseManaged,
-        (*updater_state_attributes)[UpdaterState::kIsEnterpriseManaged]
-            .c_str());
-  }
-  base::StringAppendF(&request, ">");
-
-  // HW platform information.
-  base::StringAppendF(&request, "<hw physmemory=\"%d\"/>",
-                      GetPhysicalMemoryGB());  // "physmem" in GB.
-
-  // OS version and platform information.
-  const std::string os_version = GetOSVersion();
-  const std::string os_sp = GetServicePack();
-  base::StringAppendF(
-      &request, "<os platform=\"%s\" arch=\"%s\"",
-      os_long_name.c_str(),                                    // "platform"
-      base::SysInfo().OperatingSystemArchitecture().c_str());  // "arch"
-  if (!os_version.empty())
-    base::StringAppendF(&request, " version=\"%s\"", os_version.c_str());
-  if (!os_sp.empty())
-    base::StringAppendF(&request, " sp=\"%s\"", os_sp.c_str());
-  base::StringAppendF(&request, "/>");
-
-#if defined(GOOGLE_CHROME_BUILD)
-  // Updater state.
-  if (updater_state_attributes) {
-    base::StringAppendF(&request, "<updater");
-    for (const auto& attr : *updater_state_attributes) {
-      if (attr.first != UpdaterState::kIsEnterpriseManaged) {
-        base::StringAppendF(&request, " %s=\"%s\"", attr.first.c_str(),
-                          attr.second.c_str());
-      }
-    }
-    base::StringAppendF(&request, "/>");
-  }
-#endif  // GOOGLE_CHROME_BUILD
-
-  // The actual payload of the request.
-  base::StringAppendF(&request, "%s</request>", request_body.c_str());
-
-  return request;
-}
 
 std::unique_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,

@@ -22,6 +22,7 @@
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/persisted_data.h"
+#include "components/update_client/protocol_builder.h"
 #include "components/update_client/protocol_parser.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/update_client.h"
@@ -33,22 +34,6 @@ namespace update_client {
 
 namespace {
 
-// Returns a sanitized version of the brand or an empty string otherwise.
-std::string SanitizeBrand(const std::string& brand) {
-  return IsValidBrand(brand) ? brand : std::string("");
-}
-
-// Filters invalid attributes from |installer_attributes|.
-update_client::InstallerAttributes SanitizeInstallerAttributes(
-    const update_client::InstallerAttributes& installer_attributes) {
-  update_client::InstallerAttributes sanitized_attrs;
-  for (const auto& attr : installer_attributes) {
-    if (IsValidInstallerAttribute(attr))
-      sanitized_attrs.insert(attr);
-  }
-  return sanitized_attrs;
-}
-
 // Returns true if at least one item requires network encryption.
 bool IsEncryptionRequired(const IdToComponentPtrMap& components) {
   for (const auto& item : components) {
@@ -59,90 +44,6 @@ bool IsEncryptionRequired(const IdToComponentPtrMap& components) {
   return false;
 }
 
-// Builds an update check request for |components|. |additional_attributes| is
-// serialized as part of the <request> element of the request to customize it
-// with data that is not platform or component specific. For each |item|, a
-// corresponding <app> element is created and inserted as a child node of
-// the <request>.
-//
-// An app element looks like this:
-//    <app appid="hnimpnehoodheedghdeeijklkeaacbdc"
-//         version="0.1.2.3" installsource="ondemand">
-//      <updatecheck/>
-//      <packages>
-//        <package fp="abcd"/>
-//      </packages>
-//    </app>
-std::string BuildUpdateCheckRequest(
-    const Configurator& config,
-    const std::vector<std::string>& ids_checked,
-    const IdToComponentPtrMap& components,
-    PersistedData* metadata,
-    const std::string& additional_attributes,
-    bool enabled_component_updates,
-    const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
-  const std::string brand(SanitizeBrand(config.GetBrand()));
-  std::string app_elements;
-  for (const auto& id : ids_checked) {
-    DCHECK_EQ(1u, components.count(id));
-    const Component& component = *components.at(id);
-
-    const update_client::InstallerAttributes installer_attributes(
-        SanitizeInstallerAttributes(
-            component.crx_component().installer_attributes));
-    std::string app("<app ");
-    base::StringAppendF(&app, "appid=\"%s\" version=\"%s\"",
-                        component.id().c_str(),
-                        component.crx_component().version.GetString().c_str());
-    if (!brand.empty())
-      base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
-    if (component.on_demand())
-      base::StringAppendF(&app, " installsource=\"ondemand\"");
-    for (const auto& attr : installer_attributes) {
-      base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
-                          attr.second.c_str());
-    }
-    const std::string cohort = metadata->GetCohort(component.id());
-    const std::string cohort_name = metadata->GetCohortName(component.id());
-    const std::string cohort_hint = metadata->GetCohortHint(component.id());
-    if (!cohort.empty())
-      base::StringAppendF(&app, " cohort=\"%s\"", cohort.c_str());
-    if (!cohort_name.empty())
-      base::StringAppendF(&app, " cohortname=\"%s\"", cohort_name.c_str());
-    if (!cohort_hint.empty())
-      base::StringAppendF(&app, " cohorthint=\"%s\"", cohort_hint.c_str());
-    base::StringAppendF(&app, ">");
-
-    base::StringAppendF(&app, "<updatecheck");
-    if (component.crx_component()
-            .supports_group_policy_enable_component_updates &&
-        !enabled_component_updates) {
-      base::StringAppendF(&app, " updatedisabled=\"true\"");
-    }
-    base::StringAppendF(&app, "/>");
-
-    base::StringAppendF(&app, "<ping rd=\"%d\" ping_freshness=\"%s\"/>",
-                        metadata->GetDateLastRollCall(component.id()),
-                        metadata->GetPingFreshness(component.id()).c_str());
-    if (!component.crx_component().fingerprint.empty()) {
-      base::StringAppendF(&app,
-                          "<packages>"
-                          "<package fp=\"%s\"/>"
-                          "</packages>",
-                          component.crx_component().fingerprint.c_str());
-    }
-    base::StringAppendF(&app, "</app>");
-    app_elements.append(app);
-    VLOG(1) << "Appending to update request: " << app;
-  }
-
-  // Include the updater state in the update check request.
-  return BuildProtocolRequest(
-      config.GetProdId(), config.GetBrowserVersion().GetString(),
-      config.GetChannel(), config.GetLang(), config.GetOSLongName(),
-      config.GetDownloadPreference(), app_elements, additional_attributes,
-      updater_state_attributes);
-}
 
 class UpdateCheckerImpl : public UpdateChecker {
  public:
