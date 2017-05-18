@@ -131,16 +131,14 @@ void BaseDateTimeView::OnLocaleChanged() {
 DateView::DateView(SystemTrayItem* owner)
     : BaseDateTimeView(owner), action_(DateAction::NONE) {
   // TODO(tdanderson): Tweak spacing and layout for material design.
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  box_layout->set_inside_border_insets(gfx::Insets(0, 12, 0, 0));
+  views::BoxLayout* box_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kTrayPopupLabelHorizontalPadding, 0, 0);
   box_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(box_layout);
   date_label_ = TrayPopupUtils::CreateDefaultLabel();
-  date_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   UpdateTextInternal(base::Time::Now());
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
   style.SetupLabel(date_label_);

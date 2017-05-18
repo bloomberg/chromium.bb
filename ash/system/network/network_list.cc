@@ -814,6 +814,9 @@ TriView* NetworkListView::CreateConnectionWarning() {
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
   style.SetupLabel(label);
   connection_warning->AddView(TriView::Container::CENTER, label);
+  connection_warning->SetContainerBorder(
+      TriView::Container::CENTER, views::CreateEmptyBorder(gfx::Insets(
+                                      0, 0, 0, kTrayPopupLabelRightPadding)));
 
   // Nothing to the right of the text.
   connection_warning->SetContainerVisible(TriView::Container::END, false);

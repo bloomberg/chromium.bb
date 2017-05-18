@@ -104,7 +104,8 @@ class CapsLockDefaultView : public ActionableView {
     tri_view->AddView(TriView::Container::END, shortcut_label_);
     tri_view->SetContainerBorder(
         TriView::Container::END,
-        views::CreateEmptyBorder(0, 0, 0, kCaptionRightPadding));
+        views::CreateEmptyBorder(
+            0, 0, 0, kCaptionRightPadding + kTrayPopupLabelRightPadding));
   }
 
   ~CapsLockDefaultView() override {}
