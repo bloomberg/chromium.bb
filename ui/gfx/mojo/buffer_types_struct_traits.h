@@ -269,7 +269,7 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   static gfx::GpuMemoryBufferId id(const gfx::GpuMemoryBufferHandle& handle) {
     return handle.id;
   }
-  static mojo::ScopedHandle shared_memory_handle(
+  static mojo::ScopedSharedBufferHandle shared_memory_handle(
       const gfx::GpuMemoryBufferHandle& handle);
   static uint32_t offset(const gfx::GpuMemoryBufferHandle& handle) {
     return handle.offset;

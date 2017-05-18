@@ -60,24 +60,14 @@ bool StructTraits<
 #endif
 }
 
-mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
-                                gfx::GpuMemoryBufferHandle>::
+mojo::ScopedSharedBufferHandle
+StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
+             gfx::GpuMemoryBufferHandle>::
     shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
   if (handle.type != gfx::SHARED_MEMORY_BUFFER)
-    return mojo::ScopedHandle();
-#if defined(OS_MACOSX)
-  base::SharedMemoryHandle shm_handle = handle.handle;
-  size_t num_bytes = 0;
-  if (!shm_handle.GetSize(&num_bytes))
-    return mojo::ScopedHandle();
-  mojo::ScopedSharedBufferHandle scoped_handle =
-      mojo::WrapSharedMemoryHandle(shm_handle, num_bytes, false);
-  mojo::Handle mojo_handle = scoped_handle.release();
-  return mojo::MakeScopedHandle(mojo_handle);
-#else  // defined(OS_MACOSX)
-  base::PlatformFile platform_file = handle.handle.GetHandle();
-  return mojo::WrapPlatformFile(platform_file);
-#endif  // defined(OS_MACOSX)
+    return mojo::ScopedSharedBufferHandle();
+  return mojo::WrapSharedMemoryHandle(handle.handle, handle.handle.GetSize(),
+                                      false);
 }
 
 const gfx::NativePixmapHandle&
@@ -112,35 +102,12 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     return false;
 
   if (out->type == gfx::SHARED_MEMORY_BUFFER) {
-    mojo::ScopedHandle handle = data.TakeSharedMemoryHandle();
+    mojo::ScopedSharedBufferHandle handle = data.TakeSharedMemoryHandle();
     if (handle.is_valid()) {
-#if defined(OS_MACOSX)
-      mojo::Handle mojo_handle = handle.release();
-      mojo::ScopedSharedBufferHandle buffer_handle =
-          mojo::MakeScopedHandle(mojo::SharedBufferHandle(mojo_handle.value()));
       MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
-          std::move(buffer_handle), &out->handle, nullptr, nullptr);
+          std::move(handle), &out->handle, nullptr, nullptr);
       if (unwrap_result != MOJO_RESULT_OK)
         return false;
-#else  // defined(OS_MACOSX)
-      base::PlatformFile platform_file;
-      MojoResult unwrap_result =
-          mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
-      if (unwrap_result != MOJO_RESULT_OK)
-        return false;
-      // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
-      // TODO(erikchen): During serialization, the SharedMemoryHandle is
-      // decomposed on Linux into a file_descriptor. The serialization path
-      // should be changed to serialize a Mojo shared buffer instead.
-      // https://crbug.com/713763.
-      base::UnguessableToken guid = base::UnguessableToken::Create();
-#if defined(OS_WIN)
-      out->handle = base::SharedMemoryHandle(platform_file, guid);
-#else
-      out->handle = base::SharedMemoryHandle(
-          base::FileDescriptor(platform_file, true), guid);
-#endif
-#endif  // defined(OS_MACOSX)
     }
 
     out->offset = data.offset();

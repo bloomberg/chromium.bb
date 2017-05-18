@@ -170,11 +170,12 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      base::FileDescriptor(static_cast<int>(os_buffer.value), false), guid);
+      base::FileDescriptor(static_cast<int>(os_buffer.value), false), size,
+      guid);
 #elif defined(OS_WIN)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      reinterpret_cast<HANDLE>(os_buffer.value), guid);
+      reinterpret_cast<HANDLE>(os_buffer.value), size, guid);
 #endif
 
   base::SharedMemory memory(memory_handle, read_only);
