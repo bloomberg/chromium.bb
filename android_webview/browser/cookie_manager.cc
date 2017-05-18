@@ -307,7 +307,7 @@ base::SingleThreadTaskRunner* CookieManager::GetCookieStoreTaskRunner() {
 }
 
 net::CookieStore* CookieManager::GetCookieStore() {
-  DCHECK(cookie_store_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
 
   if (!cookie_store_) {
     FilePath user_data_dir;
