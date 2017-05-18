@@ -50,7 +50,6 @@ class MockTranslateInfoBarDelegate
                 ->GetWeakPtr(),
             false,
             step,
-            NULL,
             "en",
             "es",
             error,
