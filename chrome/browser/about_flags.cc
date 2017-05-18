@@ -2943,6 +2943,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMacRTL)},
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_CHROMEOS)
+    {"disable-new-virtual-keyboard-behavior",
+     flag_descriptions::kDisableNewVirtualKeyboardBehaviorName,
+     flag_descriptions::kDisableNewVirtualKeyboardBehaviorDescription, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableNewVirtualKeyboardBehavior)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

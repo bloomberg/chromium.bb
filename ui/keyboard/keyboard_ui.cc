@@ -42,8 +42,8 @@ void KeyboardUI::EnsureCaretInWorkArea() {
   // Use new virtual keyboard behavior only if the flag enabled and in
   // non-sticky mode.
   const bool new_vk_behavior =
-      (base::CommandLine::ForCurrentProcess()->HasSwitch(
-           ::switches::kUseNewVirtualKeyboardBehavior) &&
+      (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+           ::switches::kDisableNewVirtualKeyboardBehavior) &&
        !keyboard_controller_->keyboard_locked());
 
   if (new_vk_behavior) {

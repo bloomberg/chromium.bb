@@ -241,9 +241,10 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
     controller_.reset(new KeyboardController(ui_, layout_delegate_.get()));
     controller()->AddObserver(this);
 
-    if (GetParam()) {
+    if (!GetParam()) {
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
+      command_line->AppendSwitch(
+          ::switches::kDisableNewVirtualKeyboardBehavior);
     }
   }
 

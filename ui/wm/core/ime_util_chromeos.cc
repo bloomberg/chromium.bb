@@ -51,8 +51,8 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    nullptr);
 
 void RestoreWindowBoundsOnClientFocusLost(aura::Window* window) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kUseNewVirtualKeyboardBehavior))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableNewVirtualKeyboardBehavior))
     return;
 
   // Get restore bounds of the window
@@ -75,8 +75,8 @@ void RestoreWindowBoundsOnClientFocusLost(aura::Window* window) {
 
 void EnsureWindowNotInRect(aura::Window* window,
                            const gfx::Rect& rect_in_screen) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kUseNewVirtualKeyboardBehavior))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableNewVirtualKeyboardBehavior))
     return;
 
   gfx::Rect original_window_bounds = window->GetBoundsInScreen();

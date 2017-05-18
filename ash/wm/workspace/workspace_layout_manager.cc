@@ -138,12 +138,13 @@ void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
 
 void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  // If new window behavior flag enabled and in non-sticky mode, do not change
+  // If new window behavior is disable or the keyboard is in sticky mode, change
   // the work area.
-  bool change_work_area =
-      (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-           ::switches::kUseNewVirtualKeyboardBehavior) ||
-       keyboard::KeyboardController::GetInstance()->keyboard_locked());
+  const bool change_work_area =
+      (base::CommandLine::ForCurrentProcess()->HasSwitch(
+           ::switches::kDisableNewVirtualKeyboardBehavior) ||
+       (keyboard::KeyboardController::GetInstance() &&
+        keyboard::KeyboardController::GetInstance()->keyboard_locked()));
   if (!change_work_area)
     return;
 

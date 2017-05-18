@@ -1207,6 +1207,9 @@ extern const char kCrosRegionsModeHide[];
 extern const char kDisableNativeCupsName[];
 extern const char kDisableNativeCupsDescription[];
 
+extern const char kDisableNewVirtualKeyboardBehaviorName[];
+extern const char kDisableNewVirtualKeyboardBehaviorDescription[];
+
 extern const char kDisableSystemTimezoneAutomaticDetectionName[];
 extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 

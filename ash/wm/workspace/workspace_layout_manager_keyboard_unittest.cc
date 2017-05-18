@@ -83,10 +83,13 @@ class WorkspaceLayoutManagerKeyboardTest2 : public test::AshTestBase {
                              work_area.width(), work_area.height() / 2);
   }
 
-  void EnableNewVKMode() {
+  void DisableNewVKMode() {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
-      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
+    if (!command_line->HasSwitch(
+            ::switches::kDisableNewVirtualKeyboardBehavior)) {
+      command_line->AppendSwitch(
+          ::switches::kDisableNewVirtualKeyboardBehavior);
+    }
   }
 
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }
@@ -100,6 +103,9 @@ class WorkspaceLayoutManagerKeyboardTest2 : public test::AshTestBase {
 };
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest2, ChangeWorkAreaInNonStickyMode) {
+  // Append the flag to cause work area change in non-sticky mode.
+  DisableNewVKMode();
+
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
   Shell::Get()->CreateKeyboard();
@@ -149,9 +155,6 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest2, ChangeWorkAreaInNonStickyMode) {
 // keyboard work area in non-sticky mode.
 TEST_F(WorkspaceLayoutManagerKeyboardTest2,
        IgnoreWorkAreaChangeinNonStickyMode) {
-  // Append flag to ignore work area change in non-sticky mode.
-  EnableNewVKMode();
-
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
   Shell::Get()->CreateKeyboard();

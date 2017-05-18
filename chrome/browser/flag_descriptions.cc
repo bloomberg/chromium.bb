@@ -3150,4 +3150,14 @@ extern const char kMacRTLDescription[] =
     "Mirrors the UI for RTL language users";
 #endif
 
+#if defined(OS_CHROMEOS)
+
+const char kDisableNewVirtualKeyboardBehaviorName[] =
+    "New window behavior for the accessibility keyboard";
+const char kDisableNewVirtualKeyboardBehaviorDescription[] =
+    "Disable new window behavior for the accessibility keyboard "
+    "in non-sticky mode (do not change work area in non-sticky mode).";
+
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace flag_descriptions
