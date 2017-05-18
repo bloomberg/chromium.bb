@@ -41,17 +41,17 @@
 namespace blink {
 
 class DevToolsHost;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 
 class WebDevToolsFrontendImpl final : public WebDevToolsFrontend,
                                       public InspectorFrontendClient {
   WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 
  public:
-  WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
+  WebDevToolsFrontendImpl(WebLocalFrameBase*, WebDevToolsFrontendClient*);
   ~WebDevToolsFrontendImpl() override;
 
-  void DidClearWindowObject(WebLocalFrameImpl*);
+  void DidClearWindowObject(WebLocalFrameBase*);
 
   void SendMessageToEmbedder(const WTF::String&) override;
 
@@ -66,7 +66,7 @@ class WebDevToolsFrontendImpl final : public WebDevToolsFrontend,
                                   const String& source) override;
 
  private:
-  Persistent<WebLocalFrameImpl> web_frame_;
+  Persistent<WebLocalFrameBase> web_frame_;
   WebDevToolsFrontendClient* client_;
   Persistent<DevToolsHost> devtools_host_;
   typedef HashMap<String, String> InjectedScriptForOriginMap;

@@ -7,21 +7,28 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/WebFrameWidgetBase.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "public/web/WebLocalFrame.h"
 
 namespace blink {
 
+class ContentSettingsClient;
 class FrameOwner;
 class FrameView;
 class LocalFrame;
 class Node;
 class Page;
+class SharedWorkerRepositoryClientImpl;
+class TextCheckerClient;
 class TextFinder;
 class WebDevToolsAgentImpl;
+class WebDevToolsFrontendImpl;
 class WebFrameClient;
 class WebFrameWidgetBase;
 class WebTextCheckClient;
 class WebViewBase;
+
+struct FrameLoadRequest;
 
 // WebLocalFrameBase is a temporary class the provides a layer of abstraction
 // for WebLocalFrameImpl. Mehtods that are declared public in WebLocalFrameImpl
@@ -52,6 +59,23 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
   virtual WebFrameWidgetBase* FrameWidget() const = 0;
   virtual void SetFrameWidget(WebFrameWidgetBase*) = 0;
   virtual WebDevToolsAgentImpl* DevToolsAgentImpl() const = 0;
+  virtual void SetDevToolsFrontend(WebDevToolsFrontendImpl*) = 0;
+  virtual WebDevToolsFrontendImpl* DevToolsFrontend() = 0;
+  virtual void WillBeDetached() = 0;
+  virtual void WillDetachParent() = 0;
+  virtual void SetCoreFrame(LocalFrame*) = 0;
+  virtual void DidFail(const ResourceError&,
+                       bool was_provisional,
+                       HistoryCommitType) = 0;
+  virtual void DidFinish() = 0;
+  virtual void CreateFrameView() = 0;
+  virtual LocalFrame* CreateChildFrame(const FrameLoadRequest&,
+                                       const AtomicString& name,
+                                       HTMLFrameOwnerElement*) = 0;
+  virtual ContentSettingsClient& GetContentSettingsClient() = 0;
+  virtual SharedWorkerRepositoryClientImpl* SharedWorkerRepositoryClient()
+      const = 0;
+  virtual TextCheckerClient& GetTextCheckerClient() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

@@ -43,17 +43,17 @@
 namespace blink {
 
 class WebDevToolsAgentImpl;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
  public:
-  static LocalFrameClientImpl* Create(WebLocalFrameImpl*);
+  static LocalFrameClientImpl* Create(WebLocalFrameBase*);
 
   ~LocalFrameClientImpl() override;
 
   DECLARE_VIRTUAL_TRACE();
 
-  WebLocalFrameImpl* GetWebFrame() const { return web_frame_.Get(); }
+  WebLocalFrameBase* GetWebFrame() const { return web_frame_.Get(); }
 
   // LocalFrameClient ----------------------------------------------
 
@@ -227,14 +227,14 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   TextCheckerClient& GetTextCheckerClient() const override;
 
  private:
-  explicit LocalFrameClientImpl(WebLocalFrameImpl*);
+  explicit LocalFrameClientImpl(WebLocalFrameBase*);
 
   bool IsLocalFrameClientImpl() const override { return true; }
   WebDevToolsAgentImpl* DevToolsAgent();
 
   // The WebFrame that owns this object and manages its lifetime. Therefore,
   // the web frame object is guaranteed to exist.
-  Member<WebLocalFrameImpl> web_frame_;
+  Member<WebLocalFrameBase> web_frame_;
 
   String user_agent_;
 };

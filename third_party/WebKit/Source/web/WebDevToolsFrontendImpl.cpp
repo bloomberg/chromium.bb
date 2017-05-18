@@ -35,23 +35,23 @@
 #include "bindings/core/v8/V8DevToolsHost.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/inspector/DevToolsHost.h"
 #include "core/page/Page.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsFrontendClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
 WebDevToolsFrontend* WebDevToolsFrontend::Create(
     WebLocalFrame* frame,
     WebDevToolsFrontendClient* client) {
-  return new WebDevToolsFrontendImpl(ToWebLocalFrameImpl(frame), client);
+  return new WebDevToolsFrontendImpl(ToWebLocalFrameBase(frame), client);
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
-    WebLocalFrameImpl* web_frame,
+    WebLocalFrameBase* web_frame,
     WebDevToolsFrontendClient* client)
     : web_frame_(web_frame), client_(client) {
   web_frame_->SetDevToolsFrontend(this);
@@ -63,7 +63,7 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
     devtools_host_->DisconnectClient();
 }
 
-void WebDevToolsFrontendImpl::DidClearWindowObject(WebLocalFrameImpl* frame) {
+void WebDevToolsFrontendImpl::DidClearWindowObject(WebLocalFrameBase* frame) {
   if (web_frame_ == frame) {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Use higher limit for DevTools isolate so that it does not OOM when
@@ -115,7 +115,7 @@ void WebDevToolsFrontendImpl::ShowContextMenu(
     float x,
     float y,
     ContextMenuProvider* menu_provider) {
-  WebLocalFrameImpl::FromFrame(target_frame)
+  WebLocalFrameBase::FromFrame(target_frame)
       ->ViewImpl()
       ->ShowContextMenuAtPoint(x, y, menu_provider);
 }
