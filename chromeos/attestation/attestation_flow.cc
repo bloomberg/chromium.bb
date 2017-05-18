@@ -33,7 +33,7 @@ constexpr uint16_t kRetryDelayInMilliseconds = 300;
 // status.
 //
 // Parameters
-//   on_true - Called when status=succes and value=true.
+//   on_true - Called when status=success and value=true.
 //   on_false - Called when status=success and value=false.
 //   on_fail - Called when status=failure.
 //   status - The D-Bus operation status.

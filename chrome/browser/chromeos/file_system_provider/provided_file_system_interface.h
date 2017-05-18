@@ -158,7 +158,7 @@ class ProvidedFileSystemInterface {
                                  const OpenFileCallback& callback) = 0;
 
   // Requests closing a file, previously opened with OpenFile() as a file with
-  // |file_handle|. For either succes or error |callback| must be called.
+  // |file_handle|. The |callback| must be called.
   virtual AbortCallback CloseFile(
       int file_handle,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;

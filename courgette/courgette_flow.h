@@ -124,7 +124,7 @@ class CourgetteFlow {
   // Reassigns |status_|, and returns true if |C_OK|.
   bool check(Status new_status);
 
-  // check() alternative for functions that return true on succes. On failure
+  // check() alternative for functions that return true on success. On failure
   // assigns |status_| to |failure_mode|.
   bool check(bool success, Status failure_mode);
 

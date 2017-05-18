@@ -315,8 +315,8 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
                                 manifest,
                                 icon_url,
                                 profile_->GetRequestContext());
-  // The helper will call us back via OnWebstoreParseSucces or
-  // OnWebstoreParseFailure.
+  // The helper will call us back via OnWebstoreParseSuccess() or
+  // OnWebstoreParseFailure().
   helper->Start();
 }
 

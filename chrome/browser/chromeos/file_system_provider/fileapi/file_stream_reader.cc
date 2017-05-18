@@ -61,10 +61,10 @@ class FileStreamReader::OperationRunner
                    callback)));
   }
 
-  // Requests reading contents of a file. In case of either success or a failure
-  // |callback| is executed. It can be called many times, until |has_more| is
-  // set to false. This function guarantees that it will succeed only if the
-  // file has not been changed while reading. Must be called on UI thread.
+  // Requests reading contents of a file. |callback| will always run eventually.
+  // It can be called many times, until |has_more| is set to false. This
+  // function guarantees that it will succeed only if the file has not been
+  // changed while reading. Must be called on UI thread.
   void ReadFileOnUIThread(
       scoped_refptr<net::IOBuffer> buffer,
       int64_t offset,
@@ -92,8 +92,8 @@ class FileStreamReader::OperationRunner
             &OperationRunner::OnReadFileCompletedOnUIThread, this, callback));
   }
 
-  // Requests metadata of a file. In case of either succes or a failure,
-  // |callback| is executed. Must be called on UI thread.
+  // Requests metadata of a file. |callback| will always run eventually.
+  // Must be called on UI thread.
   void GetMetadataOnUIThread(
       const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
