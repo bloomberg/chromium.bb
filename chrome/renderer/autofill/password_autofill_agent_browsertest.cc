@@ -97,8 +97,8 @@ const char kEmptyFormHTML[] =
 
 const char kFormWithoutPasswordsHTML[] =
     "<FORM>"
-    "  <INPUT type='text' id='random_field'/>"
     "  <INPUT type='text' id='username'/>"
+    "  <INPUT type='text' id='random_field'/>"
     "</FORM>";
 
 const char kNonVisibleFormHTML[] =
@@ -897,6 +897,25 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_FormWithoutPasswords) {
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
   ASSERT_TRUE(fake_driver_.password_forms_rendered());
   EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       SendPasswordFormsTest_UndetectedPasswordField) {
+  fake_driver_.reset_password_forms_calls();
+  LoadHTML(kFormWithoutPasswordsHTML);
+  // Emulate that a password field appears but we don't detect that.
+  std::string script =
+      "document.getElementById('random_field').type = 'password';";
+  ExecuteJavaScriptForTests(script.c_str());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
+
+  // When the user clicks on the field, a request to the store will be sent.
+  EXPECT_TRUE(SimulateElementClick("random_field"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonDisplayedForm) {
