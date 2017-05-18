@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/android/download/android_download_manager_duplicate_infobar_delegate.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -49,26 +48,6 @@ bool ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
 
   return Java_ChromeDownloadDelegate_enqueueDownloadManagerRequestFromNative(
       env, chrome_download_delegate, overwrite, download_info);
-}
-
-// Called when we need to interrupt download and ask user whether to proceed
-// as there is already an existing file.
-static void LaunchDuplicateDownloadInfoBar(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jobject>& delegate,
-    const JavaParamRef<jobject>& tab,
-    const JavaParamRef<jobject>& download_info,
-    const JavaParamRef<jstring>& jfile_path,
-    jboolean is_incognito) {
-  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
-
-  std::string file_path =
-      base::android::ConvertJavaStringToUTF8(env, jfile_path);
-
-  chrome::android::AndroidDownloadManagerDuplicateInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(tab_android->web_contents()), file_path,
-      delegate, download_info, is_incognito);
 }
 
 ChromeDownloadDelegate::ChromeDownloadDelegate(

@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 
@@ -72,22 +73,19 @@ public class ChromeDownloadDelegate {
         assert !TextUtils.isEmpty(fileName);
         final String newMimeType =
                 remapGenericMimeType(downloadInfo.getMimeType(), downloadInfo.getUrl(), fileName);
-        new AsyncTask<Void, Void, Object[]>() {
+        new AsyncTask<Void, Void, Pair<String, File>>() {
             @Override
-            protected Object[] doInBackground(Void... params) {
+            protected Pair<String, File> doInBackground(Void... params) {
                 // Check to see if we have an SDCard.
                 String status = Environment.getExternalStorageState();
                 File fullDirPath = getDownloadDirectoryFullPath();
-                boolean fileExists = checkFileExists(fullDirPath, fileName);
-
-                return new Object[] {status, fullDirPath, fileExists};
+                return new Pair(status, fullDirPath);
             }
 
             @Override
-            protected void onPostExecute(Object[] result) {
-                String externalStorageState = (String) result[0];
-                File fullDirPath = (File) result[1];
-                Boolean fileExists = (Boolean) result[2];
+            protected void onPostExecute(Pair<String, File> result) {
+                String externalStorageState = result.first;
+                File fullDirPath = result.second;
                 if (!checkExternalStorageAndNotify(
                         fileName, fullDirPath, externalStorageState)) {
                     return;
@@ -101,19 +99,8 @@ public class ChromeDownloadDelegate {
                                                .setFileName(fileName)
                                                .setIsGETRequest(true)
                                                .build();
-
-                // TODO(acleung): This is a temp fix to disable auto downloading if flash files.
-                // We want to avoid downloading flash files when it is linked as an iframe.
-                // The proper fix would be to let chrome knows which frame originated the request.
-                if ("application/x-shockwave-flash".equals(newInfo.getMimeType())) return;
-
-                // Not a dangerous file, proceed.
-                if (fileExists) {
-                    launchDownloadInfoBar(newInfo, fullDirPath);
-                } else {
-                    DownloadController.enqueueDownloadManagerRequest(newInfo);
-                    DownloadController.closeTabIfBlank(mTab);
-                }
+                DownloadController.enqueueDownloadManagerRequest(newInfo);
+                DownloadController.closeTabIfBlank(mTab);
             }
         }.execute();
     }
@@ -185,12 +172,6 @@ public class ChromeDownloadDelegate {
             DownloadController.enqueueDownloadManagerRequest(downloadInfo);
         }
         return DownloadController.closeTabIfBlank(mTab);
-    }
-
-    private void launchDownloadInfoBar(DownloadInfo info, File fullDirPath) {
-        if (mTab == null) return;
-        nativeLaunchDuplicateDownloadInfoBar(ChromeDownloadDelegate.this, mTab, info,
-                new File(fullDirPath, info.getFileName()).toString(), mTab.isIncognito());
     }
 
     /**
@@ -334,6 +315,4 @@ public class ChromeDownloadDelegate {
 
     private native void nativeInit(WebContents webContents);
     private static native String nativeGetDownloadWarningText(String filename);
-    private static native void nativeLaunchDuplicateDownloadInfoBar(ChromeDownloadDelegate delegate,
-            Tab tab, DownloadInfo downloadInfo, String filePath, boolean isIncognito);
 }
