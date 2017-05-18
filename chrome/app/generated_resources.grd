@@ -9740,6 +9740,9 @@ Tell us what happened exactly before you got the profile error message:
             Language Settings
           </message>
         </if>
+        <message name="IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE" desc="Text to show for the translate bubble link label when the page source language cannot be determined. Used in place of a language name, so should be capitalized as such (e.g. &quot;Unknown&quot; for English, &quot;sconosciuto&quot; for Italian)" meaning="Noun to use in place of a language name in part of a translate bubble message.">
+          Unknown
+        </message>
       </if>
 
       <!-- Web and message center notifications -->

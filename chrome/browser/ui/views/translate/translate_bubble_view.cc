@@ -524,8 +524,13 @@ void TranslateBubbleView::UpdateChildVisibilities() {
 
 views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   const int kQuestionWidth = 200;
+
   base::string16 original_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
+  if (original_language_name.empty()) {
+    original_language_name =
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE);
+  }
 
   views::View* view = new views::View();
   views::GridLayout* layout = new views::GridLayout(view);
