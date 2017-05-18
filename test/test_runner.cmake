@@ -8,13 +8,13 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_ROOT OR NOT AOM_CONFIG_DIR OR NOT AOM_TEST_TARGET
-    OR NOT GTEST_TOTAL_SHARDS OR "${GTEST_SHARD_INDEX}" STREQUAL "")
+if (NOT GTEST_TOTAL_SHARDS OR "${GTEST_SHARD_INDEX}" STREQUAL ""
+    OR NOT TEST_LIBAOM)
   message(FATAL_ERROR
-          "The variables AOM_ROOT AOM_CONFIG_DIR AOM_TEST_TARGET
-          GTEST_SHARD_INDEX and GTEST_TOTAL_SHARDS must be defined.")
+          "The variables GTEST_SHARD_INDEX, GTEST_TOTAL_SHARDS and TEST_LIBAOM
+          must be defined.")
 endif ()
 
 set($ENV{GTEST_SHARD_INDEX} ${GTEST_SHARD_INDEX})
 set($ENV{GTEST_TOTAL_SHARDS} ${GTEST_TOTAL_SHARDS})
-execute_process(COMMAND ${AOM_CONFIG_DIR}/${AOM_TEST_TARGET})
+execute_process(COMMAND ${TEST_LIBAOM})
