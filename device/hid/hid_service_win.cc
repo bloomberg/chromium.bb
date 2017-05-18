@@ -67,7 +67,7 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback, base::MakeShared<HidConnectionWin>(
+      FROM_HERE, base::Bind(callback, base::MakeRefCounted<HidConnectionWin>(
                                           device_info, std::move(file))));
 }
 

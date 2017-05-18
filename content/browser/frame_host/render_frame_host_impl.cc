@@ -2610,7 +2610,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   DOMStorageContextWrapper* dom_storage_context =
       static_cast<DOMStorageContextWrapper*>(
           storage_partition->GetDOMStorageContext());
-  auto cloned_namespace = base::MakeShared<SessionStorageNamespaceImpl>(
+  auto cloned_namespace = base::MakeRefCounted<SessionStorageNamespaceImpl>(
       dom_storage_context, params->session_storage_namespace_id);
   reply->cloned_session_storage_namespace_id = cloned_namespace->id();
 

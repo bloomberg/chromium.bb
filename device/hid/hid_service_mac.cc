@@ -187,8 +187,8 @@ void HidServiceMac::DeviceOpened(
     const ConnectCallback& callback,
     base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device) {
   if (hid_device) {
-    callback.Run(base::MakeShared<HidConnectionMac>(std::move(hid_device),
-                                                    std::move(device_info)));
+    callback.Run(base::MakeRefCounted<HidConnectionMac>(
+        std::move(hid_device), std::move(device_info)));
   } else {
     callback.Run(nullptr);
   }

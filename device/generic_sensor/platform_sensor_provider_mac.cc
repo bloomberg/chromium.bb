@@ -34,7 +34,7 @@ void PlatformSensorProviderMac::CreateSensorInternal(
       break;
     }
     case mojom::SensorType::ACCELEROMETER: {
-      callback.Run(base::MakeShared<PlatformSensorAccelerometerMac>(
+      callback.Run(base::MakeRefCounted<PlatformSensorAccelerometerMac>(
           std::move(mapping), this));
       break;
     }

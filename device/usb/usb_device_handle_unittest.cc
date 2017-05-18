@@ -439,7 +439,7 @@ TEST_F(UsbDeviceHandleTest, CloseReentrancy) {
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   base::RunLoop run_loop;
-  auto buffer = base::MakeShared<net::IOBufferWithSize>(512);
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(512);
   handle->GenericTransfer(
       UsbTransferDirection::INBOUND, 0x82, buffer.get(), buffer->size(),
       10,  // 10 millisecond timeout

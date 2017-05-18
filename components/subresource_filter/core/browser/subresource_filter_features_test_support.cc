@@ -31,7 +31,7 @@ ScopedSubresourceFilterConfigurator::ScopedSubresourceFilterConfigurator(
 ScopedSubresourceFilterConfigurator::ScopedSubresourceFilterConfigurator(
     std::vector<Configuration> configs)
     : ScopedSubresourceFilterConfigurator(
-          base::MakeShared<ConfigurationList>(std::move(configs))) {}
+          base::MakeRefCounted<ConfigurationList>(std::move(configs))) {}
 
 ScopedSubresourceFilterConfigurator::~ScopedSubresourceFilterConfigurator() {
   GetAndSetActivateConfigurations(std::move(original_config_));
@@ -49,7 +49,8 @@ void ScopedSubresourceFilterConfigurator::ResetConfiguration(
 
 void ScopedSubresourceFilterConfigurator::ResetConfiguration(
     std::vector<Configuration> config) {
-  ResetConfiguration(base::MakeShared<ConfigurationList>(std::move(config)));
+  ResetConfiguration(
+      base::MakeRefCounted<ConfigurationList>(std::move(config)));
 }
 
 // ScopedSubresourceFilterFeatureToggle ---------------------------------------

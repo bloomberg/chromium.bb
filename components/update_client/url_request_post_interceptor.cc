@@ -38,7 +38,7 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     const std::string headers =
         base::StringPrintf("HTTP/1.1 %i OK\r\n\r\n", response_code_);
-    info->headers = base::MakeShared<net::HttpResponseHeaders>(
+    info->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
   }
 

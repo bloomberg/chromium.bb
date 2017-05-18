@@ -313,7 +313,7 @@ void HidServiceLinux::FinishOpen(std::unique_ptr<ConnectParams> params) {
 // static
 void HidServiceLinux::CreateConnection(std::unique_ptr<ConnectParams> params) {
   DCHECK(params->fd.is_valid());
-  params->callback.Run(base::MakeShared<HidConnectionLinux>(
+  params->callback.Run(base::MakeRefCounted<HidConnectionLinux>(
       std::move(params->device_info), std::move(params->fd),
       std::move(params->blocking_task_runner)));
 }

@@ -525,7 +525,8 @@ class TestSpellCheckMessageFilter : public content::BrowserMessageFilter {
       : content::BrowserMessageFilter(SpellCheckMsgStart),
         process_host_(process_host),
         text_received_(false),
-        message_loop_runner_(base::MakeShared<content::MessageLoopRunner>()) {}
+        message_loop_runner_(
+            base::MakeRefCounted<content::MessageLoopRunner>()) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(TestSpellCheckMessageFilter, message)

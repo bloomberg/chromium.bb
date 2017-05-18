@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   int count = 3;
   for (int i = 0; i < count; ++i) {
     // Only the last emitter should stop the run loop.
-    auto emitter = base::MakeShared<ProcessMemoryMetricsEmitterFake>(
+    auto emitter = base::MakeRefCounted<ProcessMemoryMetricsEmitterFake>(
         (i == count - 1) ? &run_loop : nullptr);
     emitter->FetchAndEmitProcessMemoryMetrics();
   }

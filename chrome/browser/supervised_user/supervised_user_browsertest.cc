@@ -452,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
   dict->SetBooleanWithoutPathExpansion(test_url.host(), false);
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(browser()->profile());
-  auto message_loop_runner = base::MakeShared<content::MessageLoopRunner>();
+  auto message_loop_runner = base::MakeRefCounted<content::MessageLoopRunner>();
   InterstitialPageObserver interstitial_observer(
       web_contents, message_loop_runner->QuitClosure());
   supervised_user_settings_service->SetLocalSetting(

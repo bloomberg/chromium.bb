@@ -36,7 +36,7 @@ class MediaRouteControllerTest : public ::testing::Test {
     mock_media_controller_.Bind(std::move(media_controller_request));
 
     observer_ = base::MakeUnique<MockMediaRouteControllerObserver>(
-        base::MakeShared<MediaRouteController>(
+        base::MakeRefCounted<MediaRouteController>(
             kRouteId, std::move(media_controller_ptr), &router_));
   }
 

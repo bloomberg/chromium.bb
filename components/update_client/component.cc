@@ -143,7 +143,7 @@ void StartInstallOnBlockingTaskRunner(
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   DCHECK(blocking_task_runner->RunsTasksOnCurrentThread());
 
-  auto unpacker = base::MakeShared<ComponentUnpacker>(
+  auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
       pk_hash, crx_path, installer, oop_patcher, blocking_task_runner);
 
   unpacker->Unpack(base::Bind(&UnpackCompleteOnBlockingTaskRunner,

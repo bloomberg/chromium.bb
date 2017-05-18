@@ -354,7 +354,7 @@ scoped_refptr<ConfigurationList> GetEnabledConfigurations() {
   base::AutoLock lock(g_active_configurations_lock.Get());
   if (!g_active_configurations.Get()) {
     g_active_configurations.Get() =
-        base::MakeShared<ConfigurationList>(ParseEnabledConfigurations());
+        base::MakeRefCounted<ConfigurationList>(ParseEnabledConfigurations());
   }
   return g_active_configurations.Get();
 }
