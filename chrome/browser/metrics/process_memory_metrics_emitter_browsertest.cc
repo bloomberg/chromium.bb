@@ -124,7 +124,7 @@ class ProcessMemoryMetricsEmitterTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterTest);
 };
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
 #else
 #define MAYBE_FetchAndEmitMetrics FetchAndEmitMetrics
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllMemoryMetrics(histogram_tester, 1);
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
 #else
 #define MAYBE_FetchDuringTrace FetchDuringTrace
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllMemoryMetrics(histogram_tester, 1);
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
 #else
 #define MAYBE_FetchThreeTimes FetchThreeTimes
