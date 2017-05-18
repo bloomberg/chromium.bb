@@ -13,7 +13,6 @@
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_converter.h"
-#include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/bind_to_current_loop.h"
@@ -127,13 +126,15 @@ class AudioTrackRecorder::AudioEncoder
 
   // Sampling rate adapter between an OpusEncoder supported and the provided.
   std::unique_ptr<media::AudioConverter> converter_;
-  std::unique_ptr<media::AudioFifo> fifo_;
+  std::deque<std::unique_ptr<media::AudioBus>> audio_bus_queue_;
 
   // Buffer for passing AudioBus data to OpusEncoder.
   std::unique_ptr<float[]> buffer_;
 
   // While |paused_|, AudioBuses are not encoded.
   bool paused_;
+
+  int frames_queued_;
 
   OpusEncoder* opus_encoder_;
 
@@ -146,6 +147,7 @@ AudioTrackRecorder::AudioEncoder::AudioEncoder(
     : on_encoded_audio_cb_(on_encoded_audio_cb),
       bits_per_second_(bits_per_second),
       paused_(false),
+      frames_queued_(0),
       opus_encoder_(nullptr) {
   // AudioEncoder is constructed on the thread that ATR lives on, but should
   // operate only on the encoder thread after that. Reset
@@ -173,6 +175,7 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
     DLOG(ERROR) << "Invalid params: " << input_params.AsHumanReadableString();
     return;
   }
+
   input_params_ = input_params;
   input_params_.set_frames_per_buffer(input_params_.sample_rate() *
                                       kOpusPreferredBufferDurationMs /
@@ -194,9 +197,8 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
   converter_->AddInput(this);
   converter_->PrimeWithSilence();
 
-  fifo_.reset(new media::AudioFifo(
-      input_params_.channels(),
-      kMaxNumberOfFifoBuffers * input_params_.frames_per_buffer()));
+  frames_queued_ = 0;
+  audio_bus_queue_.clear();
 
   buffer_.reset(new float[output_params_.channels() *
                           output_params_.frames_per_buffer()]);
@@ -237,14 +239,19 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
 
   if (!is_initialized() || paused_)
     return;
-  // TODO(mcasas): Consider using a std::deque<std::unique_ptr<AudioBus>>
-  // instead of
-  // an AudioFifo, to avoid copying data needlessly since we know the sizes of
-  // both input and output and they are multiples.
-  fifo_->Push(input_bus.get());
+
+  frames_queued_ += input_bus->frames();
+  audio_bus_queue_.push_back(std::move(input_bus));
+
+  const int max_frame_limit =
+      kMaxNumberOfFifoBuffers * input_params_.frames_per_buffer();
+  while (frames_queued_ > max_frame_limit) {
+    frames_queued_ -= audio_bus_queue_.front()->frames();
+    audio_bus_queue_.pop_front();
+  }
 
   // Wait to have enough |input_bus|s to guarantee a satisfactory conversion.
-  while (fifo_->frames() >= input_params_.frames_per_buffer()) {
+  while (frames_queued_ >= input_params_.frames_per_buffer()) {
     std::unique_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
         output_params_.channels(), kOpusPreferredFramesPerBuffer);
     converter_->Convert(audio_bus.get());
@@ -256,7 +263,7 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
                  encoded_data.get())) {
       const base::TimeTicks capture_time_of_first_sample =
           capture_time -
-          base::TimeDelta::FromMicroseconds(fifo_->frames() *
+          base::TimeDelta::FromMicroseconds(frames_queued_ *
                                             base::Time::kMicrosecondsPerSecond /
                                             input_params_.sample_rate());
       on_encoded_audio_cb_.Run(output_params_, std::move(encoded_data),
@@ -268,7 +275,14 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
 double AudioTrackRecorder::AudioEncoder::ProvideInput(
     media::AudioBus* audio_bus,
     uint32_t frames_delayed) {
-  fifo_->Consume(audio_bus, 0, audio_bus->frames());
+  if (audio_bus_queue_.empty()) {
+    audio_bus->Zero();
+    return 0.0;
+  }
+
+  frames_queued_ -= audio_bus->frames();
+  audio_bus_queue_.front()->CopyTo(audio_bus);
+  audio_bus_queue_.pop_front();
   return 1.0;  // Return volume greater than zero to indicate we have more data.
 }
 
