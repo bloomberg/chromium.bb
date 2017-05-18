@@ -76,68 +76,6 @@ class PowerToughAdCases(perf_benchmark.PerfBenchmark):
        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'))
 
 
-@benchmark.Enabled('android')
-@benchmark.Disabled('all')
-class PowerTypical10MobileReload(perf_benchmark.PerfBenchmark):
-  """Android typical 10 mobile power reload test."""
-  test = power.LoadPower
-  page_set = page_sets.Typical10MobileReloadPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    options.full_performance_mode = False
-
-  @classmethod
-  def Name(cls):
-    return 'power.typical_10_mobile_reload'
-
-
-@benchmark.Enabled('mac')
-class PowerTop10(perf_benchmark.PerfBenchmark):
-  """Top 10 quiescent power test."""
-  test = power.QuiescentPower
-  page_set = page_sets.Top10QuiescentPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    options.full_performance_mode = False
-
-  @classmethod
-  def Name(cls):
-    return 'power.top_10'
-
-
-@benchmark.Enabled('mac')
-class PowerTop25(perf_benchmark.PerfBenchmark):
-  """Top 25 quiescent power test."""
-  test = power.QuiescentPower
-  page_set = page_sets.Top25PageSet
-
-  def SetExtraBrowserOptions(self, options):
-    options.full_performance_mode = False
-
-  @classmethod
-  def Name(cls):
-    return 'power.top_25'
-
-  def CreateStorySet(self, _):
-    stories = self.page_set()
-    to_remove = [x for x in stories if self.IsPageNotQuiescent(x.url)]
-    for story in to_remove:
-      stories.RemoveStory(story)
-    return stories
-
-  @staticmethod
-  def IsPageNotQuiescent(page_url):
-    # Exclude sites not suitable for this benchmark because they do not
-    # consistently become quiescent within 60 seconds.
-    non_quiescent_urls = [
-      'techcrunch.com',
-      'docs.google.com',
-      'plus.google.com'
-    ]
-
-    return any(url in page_url for url in non_quiescent_urls)
-
-
 @benchmark.Enabled('mac')
 @benchmark.Owner(emails=['erikchen@chromium.org'])
 class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
