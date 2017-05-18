@@ -5,12 +5,13 @@
 #ifndef NGFragmentBuilder_h
 #define NGFragmentBuilder_h
 
+#include "core/layout/ng/geometry/ng_static_position.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_positioned_float.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -39,10 +40,12 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
+  NGFragmentBuilder& AddPositionedFloat(NGPositionedFloat);
+
   NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
 
   NGFragmentBuilder& AddUnpositionedFloat(
-      RefPtr<NGFloatingObject> floating_object);
+      RefPtr<NGUnpositionedFloat> unpositioned_float);
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -103,18 +106,13 @@ class CORE_EXPORT NGFragmentBuilder final {
   Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
   // Mutable list of floats that need to be positioned.
-  Vector<RefPtr<NGFloatingObject>>& MutableUnpositionedFloats() {
+  Vector<RefPtr<NGUnpositionedFloat>>& MutableUnpositionedFloats() {
     return unpositioned_floats_;
   }
 
   // List of floats that need to be positioned.
-  const Vector<RefPtr<NGFloatingObject>>& UnpositionedFloats() const {
+  const Vector<RefPtr<NGUnpositionedFloat>>& UnpositionedFloats() const {
     return unpositioned_floats_;
-  }
-
-  // Mutable list of positioned floats, i.e. floats with logical_offset set.
-  Vector<NGPositionedFloat>& MutablePositionedFloats() {
-    return positioned_floats_;
   }
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
@@ -172,7 +170,7 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.
-  Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
+  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 
   Vector<NGPositionedFloat> positioned_floats_;
 

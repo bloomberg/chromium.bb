@@ -100,8 +100,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space);
 
   void FinishFloatChildLayout(const ComputedStyle&,
-                              const NGConstraintSpace&,
-                              const NGLayoutResult*);
+                              NGBlockNode*,
+                              NGBlockBreakToken*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break

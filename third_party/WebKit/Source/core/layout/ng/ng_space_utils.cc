@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_space_utils.h"
 
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_exclusion.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "core/layout/ng/ng_writing_mode.h"
 

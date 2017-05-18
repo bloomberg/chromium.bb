@@ -5,7 +5,11 @@
 #include "core/layout/ng/ng_floats_utils.h"
 
 #include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
+#include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_min_max_content_size.h"
 
 namespace blink {
 namespace {
@@ -30,23 +34,24 @@ NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
 }
 
 NGLayoutOpportunity FindLayoutOpportunityForFloat(
-    const NGConstraintSpace* space,
-    const NGFragment& fragment,
-    const NGFloatingObject* floating_object) {
+    const NGConstraintSpace& space,
+    const NGUnpositionedFloat& unpositioned_float,
+    LayoutUnit inline_size) {
   NGLogicalOffset adjusted_origin_point =
-      AdjustToTopEdgeAlignmentRule(*space, floating_object->origin_offset);
+      AdjustToTopEdgeAlignmentRule(space, unpositioned_float.origin_offset);
   return FindLayoutOpportunityForFragment(
-      space->Exclusions().get(), floating_object->available_size,
-      adjusted_origin_point, floating_object->margins, fragment);
+      space.Exclusions().get(), unpositioned_float.available_size,
+      adjusted_origin_point, unpositioned_float.margins,
+      {inline_size, LayoutUnit()});
 }
 
 // Calculates the logical offset for opportunity.
 NGLogicalOffset CalculateLogicalOffsetForOpportunity(
     const NGLayoutOpportunity& opportunity,
     const LayoutUnit float_offset,
-    const NGFloatingObject* floating_object) {
-  DCHECK(floating_object);
-  auto margins = floating_object->margins;
+    const NGUnpositionedFloat* unpositioned_float) {
+  DCHECK(unpositioned_float);
+  auto margins = unpositioned_float->margins;
   // Adjust to child's margin.
   NGLogicalOffset result = margins.InlineBlockStartOffset();
 
@@ -56,7 +61,7 @@ NGLogicalOffset CalculateLogicalOffsetForOpportunity(
   // Adjust to float: right offset if needed.
   result.inline_offset += float_offset;
 
-  result -= floating_object->from_offset;
+  result -= unpositioned_float->from_offset;
   return result;
 }
 
@@ -82,32 +87,154 @@ NGExclusion CreateExclusion(const NGFragment& fragment,
 NGPhysicalOffset CalculateFloatingObjectPaintOffset(
     const NGConstraintSpace& new_parent_space,
     const NGLogicalOffset& float_logical_offset,
-    const NGFloatingObject& floating_object) {
+    const NGUnpositionedFloat& unpositioned_float) {
   // TODO(glebl): We should use physical offset here.
-  LayoutUnit left_offset = floating_object.from_offset.inline_offset -
+  LayoutUnit left_offset = unpositioned_float.from_offset.inline_offset -
                            new_parent_space.BfcOffset().inline_offset +
                            float_logical_offset.inline_offset;
-  DCHECK(floating_object.parent_bfc_block_offset);
-  LayoutUnit top_offset = floating_object.from_offset.block_offset -
-                          floating_object.parent_bfc_block_offset.value() +
+  DCHECK(unpositioned_float.parent_bfc_block_offset);
+  LayoutUnit top_offset = unpositioned_float.from_offset.block_offset -
+                          unpositioned_float.parent_bfc_block_offset.value() +
                           float_logical_offset.block_offset;
   return {left_offset, top_offset};
 }
+
+WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
+    const NGUnpositionedFloat& unpositioned_float,
+    const NGConstraintSpace& parent_space) {
+  const ComputedStyle& style = unpositioned_float.node->Style();
+  DCHECK(FromPlatformWritingMode(style.GetWritingMode()) ==
+         parent_space.WritingMode());
+
+  if (parent_space.HasBlockFragmentation()) {
+    return parent_space.FragmentainerSpaceAvailable() -
+           unpositioned_float.origin_offset.block_offset;
+  }
+
+  return WTF::nullopt;
+}
+
+// Creates a constraint space for an unpositioned float.
+RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
+    const NGUnpositionedFloat& unpositioned_float,
+    NGConstraintSpace* parent_space,
+    WTF::Optional<LayoutUnit> fragmentation_offset = WTF::nullopt) {
+  const ComputedStyle& style = unpositioned_float.node->Style();
+
+  NGConstraintSpaceBuilder builder(parent_space);
+
+  if (fragmentation_offset) {
+    builder.SetFragmentainerSpaceAvailable(fragmentation_offset.value())
+        .SetFragmentationType(parent_space->BlockFragmentationType());
+  } else {
+    builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
+  }
+
+  return builder.SetPercentageResolutionSize(unpositioned_float.percentage_size)
+      .SetAvailableSize(unpositioned_float.available_size)
+      .SetIsNewFormattingContext(true)
+      .SetIsShrinkToFit(true)
+      .SetTextDirection(style.Direction())
+      .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
+}
+
 }  // namespace
 
-NGPositionedFloat PositionFloat(NGFloatingObject* floating_object,
-                                NGConstraintSpace* new_parent_space) {
-  DCHECK(floating_object);
-  DCHECK(floating_object->fragment) << "Fragment cannot be null here";
+LayoutUnit ComputeInlineSizeForUnpositionedFloat(
+    NGConstraintSpace* parent_space,
+    NGUnpositionedFloat* unpositioned_float) {
+  DCHECK(unpositioned_float);
 
-  // TODO(ikilpatrick): The writing mode switching here looks wrong.
-  NGBoxFragment float_fragment(
-      floating_object->writing_mode,
-      ToNGPhysicalBoxFragment(floating_object->fragment.Get()));
+  const ComputedStyle& style = unpositioned_float->node->Style();
+
+  bool is_same_writing_mode = FromPlatformWritingMode(style.GetWritingMode()) ==
+                              parent_space->WritingMode();
+
+  // If we've already performed layout on the unpositioned float, just return
+  // the cached value.
+  if (unpositioned_float->fragment) {
+    DCHECK(!is_same_writing_mode);
+    return NGBoxFragment(parent_space->WritingMode(),
+                         unpositioned_float->fragment.value().Get())
+        .InlineSize();
+  }
+
+  const RefPtr<NGConstraintSpace> space =
+      CreateConstraintSpaceForFloat(*unpositioned_float, parent_space);
+
+  // If the float has the same writing mode as the block formatting context we
+  // shouldn't perform a full layout just yet. Our position may determine where
+  // we fragment.
+  if (is_same_writing_mode) {
+    WTF::Optional<MinMaxContentSize> min_max_size;
+    if (NeedMinMaxContentSize(*space.Get(), style))
+      min_max_size = unpositioned_float->node->ComputeMinMaxContentSize();
+    return ComputeInlineSizeForFragment(*space.Get(), style, min_max_size);
+  }
+
+  // If we are performing layout on a float to determine its inline size it
+  // should never have fragmented.
+  DCHECK(!unpositioned_float->token);
+
+  // A float which has a different writing mode can't fragment, and we
+  // (probably) need to perform a full layout in order to correctly determine
+  // its inline size. We are able to cache this result on the
+  // unpositioned_float at this stage.
+  RefPtr<NGLayoutResult> layout_result =
+      unpositioned_float->node->Layout(space.Get());
+
+  RefPtr<NGPhysicalBoxFragment> fragment =
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+  unpositioned_float->fragment = fragment;
+
+  DCHECK(fragment->BreakToken()->IsFinished());
+
+  return NGBoxFragment(parent_space->WritingMode(), fragment.Get())
+      .InlineSize();
+}
+
+NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
+                                NGConstraintSpace* new_parent_space) {
+  DCHECK(unpositioned_float);
+  LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
+      new_parent_space, unpositioned_float);
 
   // Find a layout opportunity that will fit our float.
   NGLayoutOpportunity opportunity = FindLayoutOpportunityForFloat(
-      new_parent_space, float_fragment, floating_object);
+      *new_parent_space, *unpositioned_float, inline_size);
+
+#if DCHECK_IS_ON()
+  bool is_same_writing_mode =
+      FromPlatformWritingMode(
+          unpositioned_float->node->Style().GetWritingMode()) ==
+      new_parent_space->WritingMode();
+#endif
+
+  RefPtr<NGPhysicalBoxFragment> physical_fragment;
+  // We should only have a fragment if its writing mode is different, i.e. it
+  // can't fragment.
+  if (unpositioned_float->fragment) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_same_writing_mode);
+#endif
+    physical_fragment = unpositioned_float->fragment.value();
+  } else {
+#if DCHECK_IS_ON()
+    DCHECK(is_same_writing_mode);
+#endif
+    WTF::Optional<LayoutUnit> fragmentation_offset =
+        CalculateFragmentationOffset(*unpositioned_float, *new_parent_space);
+
+    RefPtr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
+        *unpositioned_float, new_parent_space, fragmentation_offset);
+    RefPtr<NGLayoutResult> layout_result = unpositioned_float->node->Layout(
+        space.Get(), unpositioned_float->token.Get());
+    physical_fragment =
+        ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+  }
+
+  NGBoxFragment float_fragment(new_parent_space->WritingMode(),
+                               physical_fragment.Get());
 
   // TODO(glebl): This should check for infinite opportunity instead.
   if (opportunity.IsEmpty()) {
@@ -122,24 +249,25 @@ NGPositionedFloat PositionFloat(NGFloatingObject* floating_object,
 
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
-  if (floating_object->exclusion_type == NGExclusion::kFloatRight) {
+  if (unpositioned_float->IsRight()) {
     LayoutUnit float_margin_box_inline_size =
-        float_fragment.InlineSize() + floating_object->margins.InlineSum();
+        float_fragment.InlineSize() + unpositioned_float->margins.InlineSum();
     float_offset = opportunity.size.inline_size - float_margin_box_inline_size;
   }
 
   // Add the float as an exclusion.
   const NGExclusion exclusion = CreateExclusion(
-      float_fragment, opportunity, float_offset, floating_object->margins,
-      floating_object->exclusion_type);
+      float_fragment, opportunity, float_offset, unpositioned_float->margins,
+      unpositioned_float->IsRight() ? NGExclusion::Type::kFloatRight
+                                    : NGExclusion::Type::kFloatLeft);
   new_parent_space->AddExclusion(exclusion);
 
   NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
-      opportunity, float_offset, floating_object);
+      opportunity, float_offset, unpositioned_float);
   NGPhysicalOffset paint_offset = CalculateFloatingObjectPaintOffset(
-      *new_parent_space, logical_offset, *floating_object);
+      *new_parent_space, logical_offset, *unpositioned_float);
 
-  return NGPositionedFloat(floating_object->fragment, logical_offset,
+  return NGPositionedFloat(std::move(physical_fragment), logical_offset,
                            paint_offset);
 }
 
@@ -147,16 +275,16 @@ const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit from_block_offset,
     LayoutUnit parent_bfc_offset,
-    const Vector<RefPtr<NGFloatingObject>>& floating_objects,
+    const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     NGConstraintSpace* space) {
   Vector<NGPositionedFloat> positioned_floats;
-  positioned_floats.ReserveCapacity(floating_objects.size());
+  positioned_floats.ReserveCapacity(unpositioned_floats.size());
 
-  for (auto& floating_object : floating_objects) {
-    floating_object->origin_offset.block_offset = origin_block_offset;
-    floating_object->from_offset.block_offset = from_block_offset;
-    floating_object->parent_bfc_block_offset = parent_bfc_offset;
-    positioned_floats.push_back(PositionFloat(floating_object.Get(), space));
+  for (auto& unpositioned_float : unpositioned_floats) {
+    unpositioned_float->origin_offset.block_offset = origin_block_offset;
+    unpositioned_float->from_offset.block_offset = from_block_offset;
+    unpositioned_float->parent_bfc_block_offset = parent_bfc_offset;
+    positioned_floats.push_back(PositionFloat(unpositioned_float.Get(), space));
   }
 
   return positioned_floats;

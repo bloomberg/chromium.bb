@@ -13,6 +13,8 @@
 
 namespace blink {
 
+struct NGLogicalSize;
+
 class CORE_EXPORT NGFragment {
   STACK_ALLOCATED();
 
@@ -24,6 +26,7 @@ class CORE_EXPORT NGFragment {
   // Returns the border-box size.
   LayoutUnit InlineSize() const;
   LayoutUnit BlockSize() const;
+  NGLogicalSize Size() const;
 
   // Returns the offset relative to the parent fragment's content-box.
   LayoutUnit InlineOffset() const;

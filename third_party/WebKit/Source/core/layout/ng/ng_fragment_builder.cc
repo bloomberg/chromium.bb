@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/heap/Handle.h"
 
@@ -109,6 +110,14 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::AddPositionedFloat(
+    NGPositionedFloat positioned_float) {
+  did_break_ |= !positioned_float.fragment->BreakToken()->IsFinished();
+  child_break_tokens_.push_back(positioned_float.fragment->BreakToken());
+  positioned_floats_.push_back(positioned_float);
+  return *this;
+}
+
 NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
     const NGLogicalOffset& offset) {
   bfc_offset_ = offset;
@@ -128,8 +137,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddUnpositionedFloat(
-    RefPtr<NGFloatingObject> floating_object) {
-  unpositioned_floats_.push_back(std::move(floating_object));
+    RefPtr<NGUnpositionedFloat> unpositioned_float) {
+  unpositioned_floats_.push_back(std::move(unpositioned_float));
   return *this;
 }
 

@@ -29,7 +29,7 @@ NGConstraintSpace::NGConstraintSpace(
     const NGMarginStrut& margin_strut,
     const NGLogicalOffset& bfc_offset,
     const std::shared_ptr<NGExclusions>& exclusions,
-    Vector<RefPtr<NGFloatingObject>>& unpositioned_floats,
+    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),

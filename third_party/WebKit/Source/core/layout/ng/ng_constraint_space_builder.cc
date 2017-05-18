@@ -138,7 +138,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsAnonymous(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUnpositionedFloats(
-    Vector<RefPtr<NGFloatingObject>>& unpositioned_floats) {
+    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats) {
   unpositioned_floats_.swap(unpositioned_floats);
   return *this;
 }
