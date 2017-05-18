@@ -60,28 +60,47 @@ static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,
 namespace id_namespaces {
 
 // These are used when contexts share resources.
-enum IdNamespaces {
+enum class SharedIdNamespaces {
   kBuffers,
-  kFramebuffers,
   kProgramsAndShaders,
   kRenderbuffers,
   kTextures,
+  kSamplers,
+  kSyncs,
+  kNumSharedIdNamespaces
+};
+
+enum class IdNamespaces {
+  kFramebuffers,
   kQueries,
   kVertexArrays,
-  kSamplers,
   kTransformFeedbacks,
-  kSyncs,
   kNumIdNamespaces
 };
 
 enum RangeIdNamespaces { kPaths, kNumRangeIdNamespaces };
 
 // These numbers must not change
-static_assert(kBuffers == 0, "kBuffers should equal 0");
-static_assert(kFramebuffers == 1, "kFramebuffers should equal 1");
-static_assert(kProgramsAndShaders == 2, "kProgramsAndShaders should equal 2");
-static_assert(kRenderbuffers == 3, "kRenderbuffers should equal 3");
-static_assert(kTextures == 4, "kTextures should equal 4");
+static_assert(static_cast<int>(SharedIdNamespaces::kBuffers) == 0,
+              "kBuffers should equal 0");
+static_assert(static_cast<int>(SharedIdNamespaces::kProgramsAndShaders) == 1,
+              "kProgramsAndShaders should equal 1");
+static_assert(static_cast<int>(SharedIdNamespaces::kRenderbuffers) == 2,
+              "kRenderbuffers should equal 2");
+static_assert(static_cast<int>(SharedIdNamespaces::kTextures) == 3,
+              "kTextures should equal 3");
+static_assert(static_cast<int>(SharedIdNamespaces::kSamplers) == 4,
+              "kSamplers should equal 4");
+static_assert(static_cast<int>(SharedIdNamespaces::kSyncs) == 5,
+              "kProgramsAndShaders should equal 5");
+static_assert(static_cast<int>(IdNamespaces::kFramebuffers) == 0,
+              "kFramebuffers should equal 0");
+static_assert(static_cast<int>(IdNamespaces::kQueries) == 1,
+              "kQueries should equal 1");
+static_assert(static_cast<int>(IdNamespaces::kVertexArrays) == 2,
+              "kVertexArrays should equal 2");
+static_assert(static_cast<int>(IdNamespaces::kTransformFeedbacks) == 3,
+              "kTransformFeedbacks should equal 3");
 static_assert(kPaths == 0, "kPaths should equal 0");
 
 }  // namespace id_namespaces

@@ -43,6 +43,7 @@ namespace gles2 {
 class ContextGroup;
 class ErrorState;
 class FeatureInfo;
+class FramebufferManager;
 class GLES2Util;
 class ImageManager;
 class Logger;
@@ -203,6 +204,9 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
+
+  // Gets the FramebufferManager for this context.
+  virtual FramebufferManager* GetFramebufferManager() = 0;
 
   // Gets the TransformFeedbackManager for this context.
   virtual TransformFeedbackManager* GetTransformFeedbackManager() = 0;

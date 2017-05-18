@@ -2917,6 +2917,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGenFramebuffersEXT',
     'resource_type': 'Framebuffer',
     'resource_types': 'Framebuffers',
+    'not_shared': 'True',
   },
   'GenRenderbuffers': {
     'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT',
@@ -2942,6 +2943,7 @@ _FUNCTION_INFO = {
     'resource_type': 'TransformFeedback',
     'resource_types': 'TransformFeedbacks',
     'es3': True,
+    'not_shared': 'True',
   },
   'GetActiveAttrib': {
     'type': 'Custom',
@@ -4245,6 +4247,7 @@ _FUNCTION_INFO = {
     'resource_types': 'VertexArrays',
     'unit_test': False,
     'pepper_interface': 'VertexArrayObject',
+    'not_shared': 'True',
   },
   'BindVertexArrayOES': {
     'type': 'Bind',
@@ -6037,28 +6040,34 @@ class GENnHandler(TypeHandler):
       arg.WriteClientSideValidationCode(f, func)
     not_shared = func.GetInfo('not_shared')
     if not_shared:
-      alloc_code = (
-
-"""  IdAllocator* id_allocator = GetIdAllocator(id_namespaces::k%s);
-  for (GLsizei ii = 0; ii < n; ++ii)
-    %s[ii] = id_allocator->AllocateID();""" %
-  (func.GetInfo('resource_types'), func.GetOriginalArgs()[1].name))
+      alloc_code = ("""\
+      IdAllocator* id_allocator = GetIdAllocator(IdNamespaces::k%s);
+      for (GLsizei ii = 0; ii < n; ++ii)
+      %s[ii] = id_allocator->AllocateID();""" %
+      (func.GetInfo('resource_types'), func.GetOriginalArgs()[1].name))
     else:
-      alloc_code = ("""  GetIdHandler(id_namespaces::k%(resource_types)s)->
+      alloc_code = ("""\
+      GetIdHandler(SharedIdNamespaces::k%(resource_types)s)->
       MakeIds(this, 0, %(args)s);""" % args)
     args['alloc_code'] = alloc_code
 
-    code = """ GPU_CLIENT_SINGLE_THREAD_CHECK();
-%(alloc_code)s
-  %(name)sHelper(%(args)s);
-  helper_->%(name)sImmediate(%(args)s);
-  if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::Flush();
-%(log_code)s
-  CheckGLError();
-}
+    code = """\
+    GPU_CLIENT_SINGLE_THREAD_CHECK();
+    %(alloc_code)s
+    %(name)sHelper(%(args)s);
+    helper_->%(name)sImmediate(%(args)s);
+    """
+    if not not_shared:
+      code += """\
+      if (share_group_->bind_generates_resource())
+      helper_->CommandBufferHelper::Flush();
+      """
+    code += """\
+    %(log_code)s
+    CheckGLError();
+    }
 
-"""
+    """
     f.write(code % args)
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
@@ -6348,10 +6357,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     f.write("  GLuint client_id;\n")
     if func.return_type == "GLsync":
       f.write(
-          "  GetIdHandler(id_namespaces::kSyncs)->\n")
+          "  GetIdHandler(SharedIdNamespaces::kSyncs)->\n")
     else:
       f.write(
-          "  GetIdHandler(id_namespaces::kProgramsAndShaders)->\n")
+          "  GetIdHandler(SharedIdNamespaces::kProgramsAndShaders)->\n")
     f.write("      MakeIds(this, 0, 1, &client_id);\n")
     f.write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))

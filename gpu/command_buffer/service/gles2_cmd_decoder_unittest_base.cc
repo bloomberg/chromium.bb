@@ -542,6 +542,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   if (!decoder_->WasContextLost()) {
     EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(2).RetiresOnSaturation();
+    EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, _)).Times(AnyNumber());
     if (group_->feature_info()->feature_flags().native_vertex_array_object) {
       EXPECT_CALL(*gl_,
                   DeleteVertexArraysOES(1, Pointee(kServiceVertexArrayId)))

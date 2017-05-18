@@ -35,7 +35,6 @@ namespace gles2 {
 class ProgramCache;
 class BufferManager;
 class GLES2Decoder;
-class FramebufferManager;
 class MailboxManager;
 class RenderbufferManager;
 class PathManager;
@@ -166,10 +165,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return buffer_manager_.get();
   }
 
-  FramebufferManager* framebuffer_manager() const {
-    return framebuffer_manager_.get();
-  }
-
   RenderbufferManager* renderbuffer_manager() const {
     return renderbuffer_manager_.get();
   }
@@ -279,8 +274,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   ProgramCache* program_cache_;
 
   std::unique_ptr<BufferManager> buffer_manager_;
-
-  std::unique_ptr<FramebufferManager> framebuffer_manager_;
 
   std::unique_ptr<RenderbufferManager> renderbuffer_manager_;
 

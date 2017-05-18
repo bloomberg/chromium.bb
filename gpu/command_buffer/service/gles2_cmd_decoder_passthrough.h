@@ -158,6 +158,9 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Gets the QueryManager for this context.
   QueryManager* GetQueryManager() override;
 
+  // Gets the FramebufferManager for this context.
+  FramebufferManager* GetFramebufferManager() override;
+
   // Gets the TransformFeedbackManager for this context.
   TransformFeedbackManager* GetTransformFeedbackManager() override;
 

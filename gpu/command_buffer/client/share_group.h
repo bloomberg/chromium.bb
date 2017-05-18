@@ -32,6 +32,8 @@ typedef void (GLES2Implementation::*BindIndexedFn)( \
 typedef void (GLES2Implementation::*BindIndexedRangeFn)( \
     GLenum target, GLuint index, GLuint id, GLintptr offset, GLsizeiptr size);
 
+using SharedIdNamespaces = id_namespaces::SharedIdNamespaces;
+
 class ShareGroupContextData {
  public:
   struct IdHandlerData {
@@ -47,7 +49,8 @@ class ShareGroupContextData {
   }
 
  private:
-  IdHandlerData id_handler_data_[id_namespaces::kNumIdNamespaces];
+  IdHandlerData id_handler_data_[static_cast<int>(
+      SharedIdNamespaces::kNumSharedIdNamespaces)];
 };
 
 // Base class for IdHandlers
@@ -124,8 +127,8 @@ class GLES2_IMPL_EXPORT ShareGroup
     return bind_generates_resource_;
   }
 
-  IdHandlerInterface* GetIdHandler(int namespace_id) const {
-    return id_handlers_[namespace_id].get();
+  IdHandlerInterface* GetIdHandler(SharedIdNamespaces namespace_id) const {
+    return id_handlers_[static_cast<int>(namespace_id)].get();
   }
 
   RangeIdHandlerInterface* GetRangeIdHandler(int range_namespace_id) const {
@@ -137,7 +140,9 @@ class GLES2_IMPL_EXPORT ShareGroup
   }
 
   void FreeContext(GLES2Implementation* gl_impl) {
-    for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
+    for (int i = 0;
+         i < static_cast<int>(SharedIdNamespaces::kNumSharedIdNamespaces);
+         ++i) {
       id_handlers_[i]->FreeContext(gl_impl);
     }
     for (auto& range_id_handler : range_id_handlers_) {
@@ -162,8 +167,8 @@ class GLES2_IMPL_EXPORT ShareGroup
   // Install a new program info manager. Used for testing only;
   void SetProgramInfoManagerForTesting(ProgramInfoManager* manager);
 
-  std::unique_ptr<IdHandlerInterface>
-      id_handlers_[id_namespaces::kNumIdNamespaces];
+  std::unique_ptr<IdHandlerInterface> id_handlers_[static_cast<int>(
+      SharedIdNamespaces::kNumSharedIdNamespaces)];
   std::unique_ptr<RangeIdHandlerInterface>
       range_id_handlers_[id_namespaces::kNumRangeIdNamespaces];
   std::unique_ptr<ProgramInfoManager> program_info_manager_;
