@@ -402,8 +402,8 @@ SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
     return SpdySessionKey(proxy_info_.proxy_server().host_port_pair(),
                           ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   }
-  return SpdySessionKey(destination_, proxy_info_.proxy_server(),
-                        request_info_.privacy_mode);
+  return SpdySessionKey(HostPortPair::FromURL(origin_url_),
+                        proxy_info_.proxy_server(), request_info_.privacy_mode);
 }
 
 bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
