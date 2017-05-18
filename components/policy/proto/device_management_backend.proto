@@ -381,9 +381,8 @@ message PolicyData {
     // The device is enterprise-managed. The policies come from the enterprise
     // server. See the comment above for backward compatibility.
     ENTERPRISE_MANAGED = 1;
-    // The device is consumer-managed. The policies currently can only be set
-    // by the local owner of the device.
-    CONSUMER_MANAGED = 2;
+    // Obsolete. Don't use.
+    OBSOLETE_CONSUMER_MANAGED = 2;
   }
   optional ManagementMode management_mode = 16;
 
