@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "media/midi/usb_midi_export.h"
 
@@ -43,7 +44,7 @@ class USB_MIDI_EXPORT UsbMidiDeviceDelegate {
 // will be a derived class.
 class USB_MIDI_EXPORT UsbMidiDevice {
  public:
-  typedef std::vector<std::unique_ptr<UsbMidiDevice>> Devices;
+  typedef ScopedVector<UsbMidiDevice> Devices;
 
   // Factory class for USB-MIDI devices.
   // Each concrete implementation will find and create devices

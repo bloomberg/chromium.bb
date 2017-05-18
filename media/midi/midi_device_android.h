@@ -6,11 +6,10 @@
 #define MEDIA_MIDI_MIDI_DEVICE_ANDROID_H_
 
 #include <jni.h>
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/scoped_vector.h"
 #include "media/midi/midi_input_port_android.h"
 
 namespace midi {
@@ -28,12 +27,10 @@ class MidiDeviceAndroid final {
   std::string GetProductName();
   std::string GetDeviceVersion();
 
-  const std::vector<std::unique_ptr<MidiInputPortAndroid>>& input_ports()
-      const {
+  const ScopedVector<MidiInputPortAndroid>& input_ports() const {
     return input_ports_;
   }
-  const std::vector<std::unique_ptr<MidiOutputPortAndroid>>& output_ports()
-      const {
+  const ScopedVector<MidiOutputPortAndroid>& output_ports() const {
     return output_ports_;
   }
   bool HasRawDevice(JNIEnv* env, jobject raw_device) const {
@@ -42,8 +39,8 @@ class MidiDeviceAndroid final {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> raw_device_;
-  std::vector<std::unique_ptr<MidiInputPortAndroid>> input_ports_;
-  std::vector<std::unique_ptr<MidiOutputPortAndroid>> output_ports_;
+  ScopedVector<MidiInputPortAndroid> input_ports_;
+  ScopedVector<MidiOutputPortAndroid> output_ports_;
 };
 
 }  // namespace midi

@@ -19,8 +19,8 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
@@ -380,9 +380,8 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
 
 // Parse |data| into its constituent parts, set the various output fields
 // accordingly, read in video stream, and store them to |test_streams|.
-static void ParseAndReadTestStreamData(
-    const base::FilePath::StringType& data,
-    std::vector<std::unique_ptr<TestStream>>* test_streams) {
+static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
+                                       ScopedVector<TestStream>* test_streams) {
   // Split the string to individual test stream data.
   std::vector<base::FilePath::StringType> test_streams_data =
       base::SplitString(data, base::FilePath::StringType(1, ';'),
@@ -402,7 +401,7 @@ static void ParseAndReadTestStreamData(
     }
     LOG_ASSERT(fields.size() >= 4U) << data;
     LOG_ASSERT(fields.size() <= 9U) << data;
-    auto test_stream = base::MakeUnique<TestStream>();
+    TestStream* test_stream = new TestStream();
 
     test_stream->in_filename = FilePathStringTypeToString(fields[0]);
     int width, height;
@@ -439,7 +438,7 @@ static void ParseAndReadTestStreamData(
       LOG_ASSERT(base::StringToUint(
           fields[8], &test_stream->requested_subsequent_framerate));
     }
-    test_streams->push_back(std::move(test_stream));
+    test_streams->push_back(test_stream);
   }
 }
 
@@ -546,7 +545,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   // switch "--verify_all_output".
   bool verify_all_output() const { return verify_all_output_; }
 
-  std::vector<std::unique_ptr<TestStream>> test_streams_;
+  ScopedVector<TestStream> test_streams_;
 
  private:
   std::unique_ptr<base::FilePath::StringType> test_stream_data_;
@@ -924,7 +923,7 @@ class VEAClientBase : public VideoEncodeAccelerator::Client {
   // All methods of this class should be run on the same thread.
   base::ThreadChecker thread_checker_;
 
-  std::vector<std::unique_ptr<base::SharedMemory>> output_shms_;
+  ScopedVector<base::SharedMemory> output_shms_;
   int32_t next_output_buffer_id_;
 };
 
@@ -1406,10 +1405,10 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   ASSERT_GT(output_buffer_size_, 0UL);
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
-    auto shm = base::MakeUnique<base::SharedMemory>();
+    base::SharedMemory* shm = new base::SharedMemory();
     LOG_ASSERT(shm->CreateAndMapAnonymous(output_buffer_size_));
-    FeedEncoderWithOutput(shm.get());
-    output_shms_.push_back(std::move(shm));
+    output_shms_.push_back(shm);
+    FeedEncoderWithOutput(shm);
   }
 
   if (g_env->run_at_fps()) {
@@ -1902,10 +1901,10 @@ void SimpleVEAClientBase::RequireBitstreamBuffers(
   ASSERT_GT(output_size, 0UL);
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
-    auto shm = base::MakeUnique<base::SharedMemory>();
+    base::SharedMemory* shm = new base::SharedMemory();
     LOG_ASSERT(shm->CreateAndMapAnonymous(output_size));
-    FeedEncoderWithOutput(shm.get(), output_size);
-    output_shms_.push_back(std::move(shm));
+    output_shms_.push_back(shm);
+    FeedEncoderWithOutput(shm, output_size);
   }
 }
 
@@ -2085,8 +2084,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
       std::get<7>(GetParam()) || g_env->verify_all_output();
   const bool verify_output_timestamp = std::get<8>(GetParam());
 
-  std::vector<std::unique_ptr<ClientStateNotification<ClientState>>> notes;
-  std::vector<std::unique_ptr<VEAClient>> clients;
+  ScopedVector<ClientStateNotification<ClientState>> notes;
+  ScopedVector<VEAClient> clients;
   base::Thread vea_client_thread("EncoderClientThread");
   ASSERT_TRUE(vea_client_thread.Start());
 
@@ -2101,16 +2100,16 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         (save_to_file &&
          !g_env->test_streams_[test_stream_index]->out_filename.empty());
 
-    notes.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
-    clients.push_back(base::MakeUnique<VEAClient>(
-        g_env->test_streams_[test_stream_index].get(), notes.back().get(),
+    notes.push_back(new ClientStateNotification<ClientState>());
+    clients.push_back(new VEAClient(
+        g_env->test_streams_[test_stream_index], notes.back(),
         encoder_save_to_file, keyframe_period, force_bitrate, test_perf,
         mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output,
         verify_output_timestamp));
 
     vea_client_thread.task_runner()->PostTask(
         FROM_HERE, base::Bind(&VEAClient::CreateEncoder,
-                              base::Unretained(clients.back().get())));
+                              base::Unretained(clients.back())));
   }
 
   // All encoders must pass through states in this order.
@@ -2135,8 +2134,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
     vea_client_thread.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VEAClient::DestroyEncoder,
-                              base::Unretained(clients[i].get())));
+        FROM_HERE,
+        base::Bind(&VEAClient::DestroyEncoder, base::Unretained(clients[i])));
   }
 
   // This ensures all tasks have finished.
