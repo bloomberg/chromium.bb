@@ -57,7 +57,7 @@ class MappedMemoryTestBase : public testing::Test {
     command_buffer_->SetGetBufferChangeCallback(base::Bind(
         &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
 
-    api_mock_->set_engine(executor_.get());
+    api_mock_->set_command_buffer_service(command_buffer_.get());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kBufferSize);
