@@ -164,13 +164,10 @@ public class WebappLauncherActivity extends Activity {
         // Activity.
         launchIntent.setAction(Intent.ACTION_VIEW);
         launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + info.id()));
+        launchIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
 
         if (!isWebApk) {
-            // For WebAPK, we don't start a new task for WebApkActivity, it is just on top
-            // of the WebAPK's main activity and in the same task.
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | ApiCompatibilityUtils.getActivityNewDocumentFlag());
-
             // If this is launching from a notification, we want to ensure that the URL being
             // launched is the URL in the intent. If a paused WebappActivity exists for this id,
             // then by default it will be focused and we have no way of sending the desired URL to
