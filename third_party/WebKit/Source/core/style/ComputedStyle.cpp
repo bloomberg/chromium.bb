@@ -414,7 +414,7 @@ ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
 }
 
 ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
-    PassRefPtr<ComputedStyle> pseudo) {
+    RefPtr<ComputedStyle> pseudo) {
   if (!pseudo)
     return 0;
 
@@ -1091,7 +1091,7 @@ void ComputedStyle::SetCursorList(CursorList* other) {
   rare_inherited_data_.Access()->cursor_data_ = other;
 }
 
-void ComputedStyle::SetQuotes(PassRefPtr<QuotesData> q) {
+void ComputedStyle::SetQuotes(RefPtr<QuotesData> q) {
   rare_inherited_data_.Access()->quotes_ = std::move(q);
 }
 
@@ -1371,7 +1371,7 @@ void ComputedStyle::ApplyMotionPathTransform(
     transform.Translate(-origin_shift_x, -origin_shift_y);
 }
 
-void ComputedStyle::SetTextShadow(PassRefPtr<ShadowList> s) {
+void ComputedStyle::SetTextShadow(RefPtr<ShadowList> s) {
   rare_inherited_data_.Access()->text_shadow_ = std::move(s);
 }
 
@@ -1379,7 +1379,7 @@ bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
   return DataEquivalent(TextShadow(), other.TextShadow());
 }
 
-void ComputedStyle::SetBoxShadow(PassRefPtr<ShadowList> s) {
+void ComputedStyle::SetBoxShadow(RefPtr<ShadowList> s) {
   rare_non_inherited_data_.Access()->box_shadow_ = std::move(s);
 }
 
@@ -1766,29 +1766,28 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
 
 void ComputedStyle::SetUnresolvedInheritedVariable(
     const AtomicString& name,
-    PassRefPtr<CSSVariableData> value) {
+    RefPtr<CSSVariableData> value) {
   DCHECK(value && value->NeedsVariableResolution());
   MutableInheritedVariables().SetVariable(name, std::move(value));
 }
 
 void ComputedStyle::SetUnresolvedNonInheritedVariable(
     const AtomicString& name,
-    PassRefPtr<CSSVariableData> value) {
+    RefPtr<CSSVariableData> value) {
   DCHECK(value && value->NeedsVariableResolution());
   MutableNonInheritedVariables().SetVariable(name, std::move(value));
 }
 
 void ComputedStyle::SetResolvedUnregisteredVariable(
     const AtomicString& name,
-    PassRefPtr<CSSVariableData> value) {
+    RefPtr<CSSVariableData> value) {
   DCHECK(value && !value->NeedsVariableResolution());
   MutableInheritedVariables().SetVariable(name, std::move(value));
 }
 
-void ComputedStyle::SetResolvedInheritedVariable(
-    const AtomicString& name,
-    PassRefPtr<CSSVariableData> value,
-    const CSSValue* parsed_value) {
+void ComputedStyle::SetResolvedInheritedVariable(const AtomicString& name,
+                                                 RefPtr<CSSVariableData> value,
+                                                 const CSSValue* parsed_value) {
   DCHECK(!!value == !!parsed_value);
   DCHECK(!(value && value->NeedsVariableResolution()));
 
@@ -1799,7 +1798,7 @@ void ComputedStyle::SetResolvedInheritedVariable(
 
 void ComputedStyle::SetResolvedNonInheritedVariable(
     const AtomicString& name,
-    PassRefPtr<CSSVariableData> value,
+    RefPtr<CSSVariableData> value,
     const CSSValue* parsed_value) {
   DCHECK(!!value == !!parsed_value);
   DCHECK(!(value && value->NeedsVariableResolution()));
@@ -2309,7 +2308,7 @@ void ComputedStyle::SetMarginEnd(const Length& margin) {
   }
 }
 
-void ComputedStyle::SetOffsetPath(PassRefPtr<BasicShape> path) {
+void ComputedStyle::SetOffsetPath(RefPtr<BasicShape> path) {
   rare_non_inherited_data_.Access()->transform_.Access()->motion_.path_ =
       std::move(path);
 }

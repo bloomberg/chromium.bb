@@ -252,7 +252,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  ComputedStyle* AddCachedPseudoStyle(PassRefPtr<ComputedStyle>);
+  ComputedStyle* AddCachedPseudoStyle(RefPtr<ComputedStyle>);
   void RemoveCachedPseudoStyle(PseudoId);
 
   const PseudoStyleCache* CachedPseudoStyles() const {
@@ -591,7 +591,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   ShadowList* BoxShadow() const {
     return rare_non_inherited_data_->box_shadow_.Get();
   }
-  void SetBoxShadow(PassRefPtr<ShadowList>);
+  void SetBoxShadow(RefPtr<ShadowList>);
 
   // clip
   static LengthBox InitialClip() { return LengthBox(); }
@@ -844,7 +844,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   StyleReflection* BoxReflect() const {
     return rare_non_inherited_data_->box_reflect_.Get();
   }
-  void SetBoxReflect(PassRefPtr<StyleReflection> reflect) {
+  void SetBoxReflect(RefPtr<StyleReflection> reflect) {
     if (rare_non_inherited_data_->box_reflect_ != reflect)
       rare_non_inherited_data_.Access()->box_reflect_ = std::move(reflect);
   }
@@ -1095,7 +1095,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   BasicShape* OffsetPath() const {
     return rare_non_inherited_data_->transform_->motion_.path_.Get();
   }
-  void SetOffsetPath(PassRefPtr<BasicShape>);
+  void SetOffsetPath(RefPtr<BasicShape>);
 
   // offset-position
   static LengthPoint InitialOffsetPosition() {
@@ -1290,7 +1290,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   TranslateTransformOperation* Translate() const {
     return rare_non_inherited_data_->transform_->translate_.Get();
   }
-  void SetTranslate(PassRefPtr<TranslateTransformOperation> v) {
+  void SetTranslate(RefPtr<TranslateTransformOperation> v) {
     rare_non_inherited_data_.Access()->transform_.Access()->translate_ =
         std::move(v);
   }
@@ -1302,7 +1302,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   RotateTransformOperation* Rotate() const {
     return rare_non_inherited_data_->transform_->rotate_.Get();
   }
-  void SetRotate(PassRefPtr<RotateTransformOperation> v) {
+  void SetRotate(RefPtr<RotateTransformOperation> v) {
     rare_non_inherited_data_.Access()->transform_.Access()->rotate_ =
         std::move(v);
   }
@@ -1312,7 +1312,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   ScaleTransformOperation* Scale() const {
     return rare_non_inherited_data_->transform_->scale_.Get();
   }
-  void SetScale(PassRefPtr<ScaleTransformOperation> v) {
+  void SetScale(RefPtr<ScaleTransformOperation> v) {
     rare_non_inherited_data_.Access()->transform_.Access()->scale_ =
         std::move(v);
   }
@@ -1589,7 +1589,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   ClipPathOperation* ClipPath() const {
     return rare_non_inherited_data_->clip_path_.Get();
   }
-  void SetClipPath(PassRefPtr<ClipPathOperation> operation) {
+  void SetClipPath(RefPtr<ClipPathOperation> operation) {
     if (rare_non_inherited_data_->clip_path_ != operation)
       rare_non_inherited_data_.Access()->clip_path_ = std::move(operation);
   }
@@ -1683,7 +1683,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // quotes
   static QuotesData* InitialQuotes() { return 0; }
   QuotesData* Quotes() const { return rare_inherited_data_->quotes_.Get(); }
-  void SetQuotes(PassRefPtr<QuotesData>);
+  void SetQuotes(RefPtr<QuotesData>);
 
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
@@ -1777,7 +1777,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   ShadowList* TextShadow() const {
     return rare_inherited_data_->text_shadow_.Get();
   }
-  void SetTextShadow(PassRefPtr<ShadowList>);
+  void SetTextShadow(RefPtr<ShadowList>);
 
   bool TextShadowDataEquivalent(const ComputedStyle&) const;
 
@@ -2023,7 +2023,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   void SetCy(const Length& cy) { AccessSVGStyle().SetCy(cy); }
 
   // d
-  void SetD(PassRefPtr<StylePath> d) { AccessSVGStyle().SetD(std::move(d)); }
+  void SetD(RefPtr<StylePath> d) { AccessSVGStyle().SetD(std::move(d)); }
 
   // x
   void SetX(const Length& x) { AccessSVGStyle().SetX(x); }
@@ -2077,7 +2077,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // stroke-dasharray
   SVGDashArray* StrokeDashArray() const { return SvgStyle().StrokeDashArray(); }
-  void SetStrokeDashArray(PassRefPtr<SVGDashArray> array) {
+  void SetStrokeDashArray(RefPtr<SVGDashArray> array) {
     AccessSVGStyle().SetStrokeDashArray(std::move(array));
   }
 
@@ -2143,17 +2143,17 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   StyleNonInheritedVariables* NonInheritedVariables() const;
 
   void SetUnresolvedInheritedVariable(const AtomicString&,
-                                      PassRefPtr<CSSVariableData>);
+                                      RefPtr<CSSVariableData>);
   void SetUnresolvedNonInheritedVariable(const AtomicString&,
-                                         PassRefPtr<CSSVariableData>);
+                                         RefPtr<CSSVariableData>);
 
   void SetResolvedUnregisteredVariable(const AtomicString&,
-                                       PassRefPtr<CSSVariableData>);
+                                       RefPtr<CSSVariableData>);
   void SetResolvedInheritedVariable(const AtomicString&,
-                                    PassRefPtr<CSSVariableData>,
+                                    RefPtr<CSSVariableData>,
                                     const CSSValue*);
   void SetResolvedNonInheritedVariable(const AtomicString&,
-                                       PassRefPtr<CSSVariableData>,
+                                       RefPtr<CSSVariableData>,
                                        const CSSValue*);
 
   void RemoveVariable(const AtomicString&, bool is_inherited_property);
