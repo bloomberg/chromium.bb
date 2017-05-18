@@ -9,46 +9,22 @@ function sendXHRRequest() {
     xhr.send();
 }
 
-function test() {
+async function test() {
     var columnsToTest = ["name", "method", "status", "protocol", "scheme", "domain", "remoteaddress", "type", "initiator", "cookies", "setcookies", "priority", "cache-control", "connection", "content-encoding", "content-length", "vary"];
 
-    var xhrRequestFinished = false;
-    var xhrNode = null;
-
-    function onNodeInserted(node)
-    {
-        if (node.dataGrid !== UI.panels.network._networkLogView._dataGrid)
-            return;
-        if (node.request().name() !== "empty.html?xhr")
-            return;
-        xhrNode = node;
-        checkComplete();
-    }
-
-    function onRequestFinished(data)
-    {
-        var request = data.data;
-        if (request.name() !== "empty.html?xhr")
-            return;
-        xhrRequestFinished = true;
-        UI.panels.network._networkLogView._refresh();
-        checkComplete();
-    }
-
-    // Nodes may be inserted or updated in different orders. We must have both to continue to prevent flakeyness.
-    function checkComplete()
-    {
-        if (!xhrNode || !xhrRequestFinished)
-            return;
-        for (var columnName of columnsToTest)
-            InspectorTest.addResult(columnName + ": " + xhrNode.createCell(columnName).textContent);
-        InspectorTest.completeTest();
-    }
-
+    // Setup
     InspectorTest.recordNetwork();
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
-    InspectorTest.addSniffer(DataGrid.SortableDataGridNode.prototype, "insertChild", onNodeInserted, true);
-    InspectorTest.NetworkAgent.setCacheDisabled(true, InspectorTest.evaluateInPage.bind(null, "sendXHRRequest()"));
+    await InspectorTest.clearNetworkCache();
+
+    InspectorTest.evaluateInPage("sendXHRRequest()");
+    var request = await InspectorTest.waitForEvent(SDK.NetworkManager.Events.RequestFinished, InspectorTest.networkManager,
+        request => request.name() === "empty.html?xhr");
+    var xhrNode = await InspectorTest.waitForNetworkLogViewNodeForRequest(request);
+
+    UI.panels.network._networkLogView._refresh();
+    for (var columnName of columnsToTest)
+        InspectorTest.addResult(columnName + ": " + xhrNode.createCell(columnName).textContent);
+    InspectorTest.completeTest();
 }
 </script>
 </head>
