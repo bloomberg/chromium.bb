@@ -36,7 +36,7 @@ void FakeBluetooth::SetLESupported(bool supported,
 void FakeBluetooth::SimulateCentral(mojom::CentralState state,
                                     SimulateCentralCallback callback) {
   mojom::FakeCentralPtr fake_central_ptr;
-  fake_central_ = base::MakeShared<FakeCentral>(
+  fake_central_ = base::MakeRefCounted<FakeCentral>(
       state, mojo::MakeRequest(&fake_central_ptr));
   device::BluetoothAdapterFactory::SetAdapterForTesting(fake_central_);
   std::move(callback).Run(std::move(fake_central_ptr));

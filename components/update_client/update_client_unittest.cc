@@ -176,7 +176,7 @@ UpdateClientTest::UpdateClientTest()
       pref_(base::MakeUnique<TestingPrefServiceSimple>()) {
   quit_closure_ = runloop_.QuitClosure();
 
-  config_ = base::MakeShared<TestConfigurator>(
+  config_ = base::MakeRefCounted<TestConfigurator>(
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
       base::ThreadTaskRunnerHandle::Get());
   PersistedData::RegisterPrefs(pref_->registry());
@@ -211,7 +211,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx.version = base::Version("0.9");
-      crx.installer = base::MakeShared<TestInstaller>();
+      crx.installer = base::MakeRefCounted<TestInstaller>();
       components->push_back(crx);
     }
   };
@@ -284,7 +284,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -318,13 +318,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeShared<TestInstaller>();
+      crx1.installer = base::MakeRefCounted<TestInstaller>();
 
       CrxComponent crx2;
       crx2.name = "test_abag";
       crx2.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
       crx2.version = base::Version("2.2");
-      crx2.installer = base::MakeShared<TestInstaller>();
+      crx2.installer = base::MakeRefCounted<TestInstaller>();
 
       components->push_back(crx1);
       components->push_back(crx2);
@@ -482,7 +482,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -532,13 +532,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeShared<TestInstaller>();
+      crx1.installer = base::MakeRefCounted<TestInstaller>();
 
       CrxComponent crx2;
       crx2.name = "test_ihfo";
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
       crx2.version = base::Version("0.8");
-      crx2.installer = base::MakeShared<TestInstaller>();
+      crx2.installer = base::MakeRefCounted<TestInstaller>();
 
       components->push_back(crx1);
       components->push_back(crx2);
@@ -743,7 +743,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -804,13 +804,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeShared<TestInstaller>();
+      crx1.installer = base::MakeRefCounted<TestInstaller>();
 
       CrxComponent crx2;
       crx2.name = "test_ihfo";
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
       crx2.version = base::Version("0.8");
-      crx2.installer = base::MakeShared<TestInstaller>();
+      crx2.installer = base::MakeRefCounted<TestInstaller>();
 
       components->push_back(crx1);
       components->push_back(crx2);
@@ -1012,7 +1012,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -1070,7 +1070,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
       // Must use the same stateful installer object.
       static scoped_refptr<CrxInstaller> installer =
-          base::MakeShared<VersionedTestInstaller>();
+          base::MakeRefCounted<VersionedTestInstaller>();
 
       ++num_calls;
 
@@ -1304,7 +1304,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -1384,7 +1384,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     static void Callback(const std::vector<std::string>& ids,
                          std::vector<CrxComponent>* components) {
       scoped_refptr<MockInstaller> installer =
-          base::MakeShared<MockInstaller>();
+          base::MakeRefCounted<MockInstaller>();
 
       EXPECT_CALL(*installer, OnUpdateError(_)).Times(0);
       EXPECT_CALL(*installer, Install(_, _))
@@ -1531,7 +1531,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -1573,7 +1573,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
       // Must use the same stateful installer object.
       static scoped_refptr<CrxInstaller> installer =
-          base::MakeShared<VersionedTestInstaller>();
+          base::MakeRefCounted<VersionedTestInstaller>();
 
       ++num_calls;
 
@@ -1824,7 +1824,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -1891,7 +1891,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx.version = base::Version("0.9");
-      crx.installer = base::MakeShared<TestInstaller>();
+      crx.installer = base::MakeRefCounted<TestInstaller>();
       components->push_back(crx);
     }
   };
@@ -1970,7 +1970,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
   std::unique_ptr<PingManager> ping_manager =
       base::MakeUnique<FakePingManager>(config());
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2010,7 +2010,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx.version = base::Version("0.0");
-      crx.installer = base::MakeShared<TestInstaller>();
+      crx.installer = base::MakeRefCounted<TestInstaller>();
 
       components->push_back(crx);
     }
@@ -2154,7 +2154,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2194,7 +2194,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx.version = base::Version("0.0");
-      crx.installer = base::MakeShared<TestInstaller>();
+      crx.installer = base::MakeRefCounted<TestInstaller>();
 
       components->push_back(crx);
     }
@@ -2281,7 +2281,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
   std::unique_ptr<FakePingManager> ping_manager =
       base::MakeUnique<FakePingManager>(config());
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2362,7 +2362,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManagerImpl>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2431,7 +2431,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2451,7 +2451,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx.version = base::Version("0.9");
-      crx.installer = base::MakeShared<TestInstaller>();
+      crx.installer = base::MakeRefCounted<TestInstaller>();
       components->push_back(crx);
     }
   };
@@ -2551,7 +2551,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2638,14 +2638,14 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeShared<TestInstaller>();
+      crx1.installer = base::MakeRefCounted<TestInstaller>();
       crx1.supports_group_policy_enable_component_updates = true;
 
       CrxComponent crx2;
       crx2.name = "test_ihfo";
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
       crx2.version = base::Version("0.8");
-      crx2.installer = base::MakeShared<TestInstaller>();
+      crx2.installer = base::MakeRefCounted<TestInstaller>();
 
       components->push_back(crx1);
       components->push_back(crx2);
@@ -2838,7 +2838,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   // Disables updates for the components declaring support for the group policy.
   config()->SetEnabledComponentUpdates(false);
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
@@ -2897,7 +2897,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
       crx.version = base::Version("0.9");
-      crx.installer = base::MakeShared<TestInstaller>();
+      crx.installer = base::MakeRefCounted<TestInstaller>();
       components->push_back(crx);
     }
   };
@@ -2961,7 +2961,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
   };
 
   scoped_refptr<UpdateClient> update_client =
-      base::MakeShared<UpdateClientImpl>(
+      base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeUnique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 

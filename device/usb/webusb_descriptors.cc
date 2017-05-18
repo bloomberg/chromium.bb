@@ -63,7 +63,7 @@ void ReadLandingPage(uint8_t vendor_code,
                      uint8_t landing_page_id,
                      scoped_refptr<UsbDeviceHandle> device_handle,
                      const ReadWebUsbDescriptorsCallback& callback) {
-  auto buffer = base::MakeShared<IOBufferWithSize>(255);
+  auto buffer = base::MakeRefCounted<IOBufferWithSize>(255);
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::VENDOR,
       UsbControlTransferRecipient::DEVICE, vendor_code, landing_page_id,
@@ -250,7 +250,7 @@ bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output) {
 
 void ReadWebUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
                            const ReadWebUsbDescriptorsCallback& callback) {
-  auto buffer = base::MakeShared<IOBufferWithSize>(5);
+  auto buffer = base::MakeRefCounted<IOBufferWithSize>(5);
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,

@@ -84,7 +84,7 @@ RequestSenderTest::RequestSenderTest() : scoped_task_scheduler_(&loop_) {}
 RequestSenderTest::~RequestSenderTest() {}
 
 void RequestSenderTest::SetUp() {
-  config_ = base::MakeShared<TestConfigurator>(
+  config_ = base::MakeRefCounted<TestConfigurator>(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
   interceptor_factory_ =
       base::MakeUnique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());

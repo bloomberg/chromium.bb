@@ -239,7 +239,7 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 
 scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
-  return base::MakeShared<UpdateClientImpl>(
+  return base::MakeRefCounted<UpdateClientImpl>(
       config, base::MakeUnique<PingManager>(config), &UpdateChecker::Create,
       &CrxDownloader::Create);
 }

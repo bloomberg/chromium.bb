@@ -552,8 +552,8 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
                          const IndexedDBDataFormatVersion& version) {
     base::AutoReset<IndexedDBDataFormatVersion> override_version(
         &IndexedDBDataFormatVersion::GetMutableCurrentForTesting(), version);
-    auto db_callbacks = base::MakeShared<MockIndexedDBDatabaseCallbacks>();
-    auto callbacks = base::MakeShared<DataLossCallbacks>();
+    auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+    auto callbacks = base::MakeRefCounted<DataLossCallbacks>();
     const int64_t transaction_id = 1;
     factory()->Open(ASCIIToUTF16("test_db"),
                     base::MakeUnique<IndexedDBPendingConnection>(

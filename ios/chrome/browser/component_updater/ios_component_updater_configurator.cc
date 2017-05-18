@@ -175,7 +175,7 @@ bool IOSConfigurator::IsPerUserInstall() const {
 scoped_refptr<update_client::Configurator> MakeIOSComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter) {
-  return base::MakeShared<IOSConfigurator>(cmdline, context_getter);
+  return base::MakeRefCounted<IOSConfigurator>(cmdline, context_getter);
 }
 
 }  // namespace component_updater
