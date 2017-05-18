@@ -573,6 +573,8 @@ split_static_library("browser") {
     "media/media_access_handler.h",
     "media/media_device_id_salt.cc",
     "media/media_device_id_salt.h",
+    "media/media_engagement_contents_observer.cc",
+    "media/media_engagement_contents_observer.h",
     "media/media_engagement_service.cc",
     "media/media_engagement_service.h",
     "media/media_engagement_service_factory.cc",
