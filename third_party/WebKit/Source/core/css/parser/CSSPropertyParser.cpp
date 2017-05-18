@@ -761,13 +761,12 @@ static CSSValue* ConsumeNoneOrURI(CSSParserTokenRange& range,
 
 static CSSValue* ConsumePerspective(CSSParserTokenRange& range,
                                     const CSSParserContext* context,
-                                    CSSPropertyID unresolved_property) {
+                                    bool use_legacy_parsing) {
   if (range.Peek().Id() == CSSValueNone)
     return ConsumeIdent(range);
   CSSPrimitiveValue* parsed_value =
       ConsumeLength(range, context->Mode(), kValueRangeAll);
-  if (!parsed_value &&
-      (unresolved_property == CSSPropertyAliasWebkitPerspective)) {
+  if (!parsed_value && use_legacy_parsing) {
     double perspective;
     if (!ConsumeNumberRaw(range, perspective))
       return nullptr;
@@ -1765,7 +1764,9 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeLengthOrPercent(range_, kSVGAttributeMode, kValueRangeAll,
                                     UnitlessQuirk::kForbid);
     case CSSPropertyPerspective:
-      return ConsumePerspective(range_, context_, unresolved_property);
+      return ConsumePerspective(
+          range_, context_,
+          unresolved_property == CSSPropertyAliasWebkitPerspective);
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
       return ConsumeScrollSnapPoints(range_, context_->Mode());
