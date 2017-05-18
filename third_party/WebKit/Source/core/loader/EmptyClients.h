@@ -238,6 +238,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
   void NotifyPopupOpeningObservers() const {}
 
+  void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
+
   std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext*) override;
 };

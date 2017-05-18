@@ -67,6 +67,7 @@
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -105,7 +106,6 @@
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebPrintPresetOptions.h"
 #include "public/web/WebViewClient.h"
-#include "web/ChromeClientImpl.h"
 
 namespace blink {
 
@@ -732,9 +732,8 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
   Page* page = parent_view->GetFrame().GetPage();
   if (!page)
     return;
-  ToChromeClientImpl(page->GetChromeClient())
-      .SetCursorForPlugin(cursor_info,
-                          &parent_view->GetFrame().LocalFrameRoot());
+  page->GetChromeClient().SetCursorForPlugin(
+      cursor_info, &parent_view->GetFrame().LocalFrameRoot());
 }
 
 void WebPluginContainerImpl::HandleDragEvent(MouseEvent* event) {
