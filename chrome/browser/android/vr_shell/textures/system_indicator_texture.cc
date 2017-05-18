@@ -21,11 +21,13 @@ namespace {
 
 const SkColor kBackgroundColor = SK_ColorWHITE;
 const SkColor kForegroundColor = 0xFF444444;
+constexpr int kHeightWidthRatio = 8.0;
 constexpr float kBorderFactor = 0.1;
 constexpr float kIconSizeFactor = 0.7;
 constexpr float kFontSizeFactor = 0.40;
 constexpr float kTextHeightFactor = 1.0 - 2 * kBorderFactor;
-constexpr float kTextWidthFactor = 4.0 - 3 * kBorderFactor - kIconSizeFactor;
+constexpr float kTextWidthFactor =
+    kHeightWidthRatio - 3 * kBorderFactor - kIconSizeFactor;
 
 }  // namespace
 
@@ -41,18 +43,12 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
   gfx::Canvas* canvas = &gfx_canvas;
 
-  DCHECK(texture_size.height() * 4 == texture_size.width());
+  DCHECK(texture_size.height() * kHeightWidthRatio == texture_size.width());
   size_.set_height(texture_size.height());
   SkPaint paint;
   paint.setColor(kBackgroundColor);
 
-  base::string16 text;
-
-  // TODO(acondor): Set proper strings in resources files.
-  if (message_id_)
-    text = l10n_util::GetStringUTF16(message_id_);
-  else
-    text = base::UTF8ToUTF16("<message>");
+  base::string16 text = l10n_util::GetStringUTF16(message_id_);
 
   auto fonts = GetFontList(size_.height() * kFontSizeFactor, text);
   gfx::Rect text_size(0, kTextHeightFactor * size_.height());
@@ -63,7 +59,8 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
 
   DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
   // Setting background size giving some extra lateral padding to the text.
-  size_.set_width((5 * kBorderFactor + kIconSizeFactor) * size_.height() +
+  size_.set_width((kHeightWidthRatio * kBorderFactor + kIconSizeFactor) *
+                      size_.height() +
                   text_size.width());
   float radius = size_.height() * kBorderFactor;
   sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
@@ -91,8 +88,8 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
 gfx::Size SystemIndicatorTexture::GetPreferredTextureSize(
     int maximum_width) const {
   // Ensuring height is a quarter of the width.
-  int height = maximum_width / 4;
-  return gfx::Size(height * 4, height);
+  int height = maximum_width / kHeightWidthRatio;
+  return gfx::Size(height * kHeightWidthRatio, height);
 }
 
 gfx::SizeF SystemIndicatorTexture::GetDrawnSize() const {

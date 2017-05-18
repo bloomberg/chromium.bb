@@ -6,16 +6,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/textures/system_indicator_texture.h"
-#include "components/strings/grit/components_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/vector_icons/vector_icons.h"
 
 namespace vr_shell {
 
-// TODO(acondor): Set a proper string.
 VideoCaptureIndicator::VideoCaptureIndicator(int preferred_width)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<SystemIndicatorTexture>(ui::kVideocamIcon, 0)) {
-}
+      texture_(base::MakeUnique<SystemIndicatorTexture>(
+          ui::kVideocamIcon,
+          IDS_VIDEO_CALL_NOTIFICATION_TEXT_2)) {}
 
 VideoCaptureIndicator::~VideoCaptureIndicator() = default;
 
