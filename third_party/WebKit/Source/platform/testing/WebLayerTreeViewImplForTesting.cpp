@@ -149,6 +149,8 @@ void WebLayerTreeViewImplForTesting::DidFailToInitializeCompositorFrameSink() {
 void WebLayerTreeViewImplForTesting::RegisterViewportLayers(
     const blink::WebLayer* overscroll_elasticity_layer,
     const blink::WebLayer* page_scale_layer,
+    const blink::WebLayer* inner_viewport_container_layer,
+    const blink::WebLayer* outer_viewport_container_layer,
     const blink::WebLayer* inner_viewport_scroll_layer,
     const blink::WebLayer* outer_viewport_scroll_layer) {
   layer_tree_host_->RegisterViewportLayers(
@@ -157,6 +159,16 @@ void WebLayerTreeViewImplForTesting::RegisterViewportLayers(
                                         ->layer()
                                   : nullptr,
       static_cast<const cc_blink::WebLayerImpl*>(page_scale_layer)->layer(),
+      inner_viewport_container_layer
+          ? static_cast<const cc_blink::WebLayerImpl*>(
+                inner_viewport_container_layer)
+                ->layer()
+          : nullptr,
+      outer_viewport_container_layer
+          ? static_cast<const cc_blink::WebLayerImpl*>(
+                outer_viewport_container_layer)
+                ->layer()
+          : nullptr,
       static_cast<const cc_blink::WebLayerImpl*>(inner_viewport_scroll_layer)
           ->layer(),
       outer_viewport_scroll_layer ? static_cast<const cc_blink::WebLayerImpl*>(
@@ -167,6 +179,7 @@ void WebLayerTreeViewImplForTesting::RegisterViewportLayers(
 
 void WebLayerTreeViewImplForTesting::ClearViewportLayers() {
   layer_tree_host_->RegisterViewportLayers(
+      scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>(),
       scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>(),
       scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>());
 }

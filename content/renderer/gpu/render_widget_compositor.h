@@ -148,6 +148,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void RegisterViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayer,
+      const blink::WebLayer* innerViewportContainerLayer,
+      const blink::WebLayer* outerViewportContainerLayer,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;
   void ClearViewportLayers() override;

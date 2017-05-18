@@ -81,6 +81,8 @@ LayerTreeImpl::LayerTreeImpl(
       last_scrolled_scroll_node_index_(ScrollTree::kInvalidNodeId),
       overscroll_elasticity_layer_id_(Layer::INVALID_ID),
       page_scale_layer_id_(Layer::INVALID_ID),
+      inner_viewport_container_layer_id_(Layer::INVALID_ID),
+      outer_viewport_container_layer_id_(Layer::INVALID_ID),
       inner_viewport_scroll_layer_id_(Layer::INVALID_ID),
       outer_viewport_scroll_layer_id_(Layer::INVALID_ID),
       page_scale_factor_(page_scale_factor),
@@ -157,18 +159,14 @@ bool LayerTreeImpl::IsViewportLayerId(int id) const {
 #if DCHECK_IS_ON()
   // Ensure the LayerImpl viewport layer types correspond to the LayerTreeImpl's
   // viewport layers.
+  if (id == inner_viewport_container_layer_id_)
+    DCHECK(LayerById(id)->viewport_layer_type() == INNER_VIEWPORT_CONTAINER);
+  if (id == outer_viewport_container_layer_id_)
+    DCHECK(LayerById(id)->viewport_layer_type() == OUTER_VIEWPORT_CONTAINER);
   if (id == inner_viewport_scroll_layer_id_)
     DCHECK(LayerById(id)->viewport_layer_type() == INNER_VIEWPORT_SCROLL);
   if (id == outer_viewport_scroll_layer_id_)
     DCHECK(LayerById(id)->viewport_layer_type() == OUTER_VIEWPORT_SCROLL);
-  if (InnerViewportContainerLayer() &&
-      id == InnerViewportContainerLayer()->id())
-    DCHECK(InnerViewportContainerLayer()->viewport_layer_type() ==
-           INNER_VIEWPORT_CONTAINER);
-  if (OuterViewportContainerLayer() &&
-      id == OuterViewportContainerLayer()->id())
-    DCHECK(OuterViewportContainerLayer()->viewport_layer_type() ==
-           OUTER_VIEWPORT_CONTAINER);
 #endif
   if (auto* layer = LayerById(id))
     return layer->viewport_layer_type() != NOT_VIEWPORT_LAYER;
@@ -455,6 +453,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // these ids are set, so this must be before PushPageScaleFactorAndLimits.
   target_tree->SetViewportLayersFromIds(
       overscroll_elasticity_layer_id_, page_scale_layer_id_,
+      inner_viewport_container_layer_id_, outer_viewport_container_layer_id_,
       inner_viewport_scroll_layer_id_, outer_viewport_scroll_layer_id_);
 
   // Active tree already shares the page_scale_factor object with pending
@@ -650,15 +649,11 @@ void LayerTreeImpl::SetFilterMutated(ElementId element_id,
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
-  return InnerViewportScrollLayer()
-             ? InnerViewportScrollLayer()->scroll_clip_layer()
-             : NULL;
+  return LayerById(inner_viewport_container_layer_id_);
 }
 
 LayerImpl* LayerTreeImpl::OuterViewportContainerLayer() const {
-  return OuterViewportScrollLayer()
-             ? OuterViewportScrollLayer()->scroll_clip_layer()
-             : NULL;
+  return LayerById(outer_viewport_container_layer_id_);
 }
 
 ScrollNode* LayerTreeImpl::CurrentlyScrollingNode() {
@@ -1008,29 +1003,30 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
 void LayerTreeImpl::SetViewportLayersFromIds(
     int overscroll_elasticity_layer_id,
     int page_scale_layer_id,
+    int inner_viewport_container_layer_id,
+    int outer_viewport_container_layer_id,
     int inner_viewport_scroll_layer_id,
     int outer_viewport_scroll_layer_id) {
   overscroll_elasticity_layer_id_ = overscroll_elasticity_layer_id;
   page_scale_layer_id_ = page_scale_layer_id;
+  inner_viewport_container_layer_id_ = inner_viewport_container_layer_id;
+  outer_viewport_container_layer_id_ = outer_viewport_container_layer_id;
   inner_viewport_scroll_layer_id_ = inner_viewport_scroll_layer_id;
   outer_viewport_scroll_layer_id_ = outer_viewport_scroll_layer_id;
 
-  // The scroll_clip_layer Layer properties should be up-to-date.
-  DCHECK(lifecycle().AllowsLayerPropertyAccess());
-  if (auto* inner_scroll = LayerById(inner_viewport_scroll_layer_id_)) {
+  if (auto* inner_container = LayerById(inner_viewport_container_layer_id_))
+    inner_container->SetViewportLayerType(INNER_VIEWPORT_CONTAINER);
+  if (auto* inner_scroll = LayerById(inner_viewport_scroll_layer_id_))
     inner_scroll->SetViewportLayerType(INNER_VIEWPORT_SCROLL);
-    if (auto* inner_container = inner_scroll->scroll_clip_layer())
-      inner_container->SetViewportLayerType(INNER_VIEWPORT_CONTAINER);
-  }
-  if (auto* outer_scroll = LayerById(outer_viewport_scroll_layer_id_)) {
+  if (auto* outer_container = LayerById(outer_viewport_container_layer_id_))
+    outer_container->SetViewportLayerType(OUTER_VIEWPORT_CONTAINER);
+  if (auto* outer_scroll = LayerById(outer_viewport_scroll_layer_id_))
     outer_scroll->SetViewportLayerType(OUTER_VIEWPORT_SCROLL);
-    if (auto* outer_container = outer_scroll->scroll_clip_layer())
-      outer_container->SetViewportLayerType(OUTER_VIEWPORT_CONTAINER);
-  }
 }
 
 void LayerTreeImpl::ClearViewportLayers() {
   SetViewportLayersFromIds(Layer::INVALID_ID, Layer::INVALID_ID,
+                           Layer::INVALID_ID, Layer::INVALID_ID,
                            Layer::INVALID_ID, Layer::INVALID_ID);
 }
 

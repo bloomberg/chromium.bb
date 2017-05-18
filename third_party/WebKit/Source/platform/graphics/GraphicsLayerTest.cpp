@@ -69,7 +69,8 @@ class GraphicsLayerTest : public testing::Test {
     layer_tree_view_->SetRootLayer(*clip_layer_->PlatformLayer());
     layer_tree_view_->RegisterViewportLayers(
         scroll_elasticity_layer_->PlatformLayer(), clip_layer_->PlatformLayer(),
-        graphics_layer_->PlatformLayer(), 0);
+        clip_layer_->PlatformLayer(), nullptr, graphics_layer_->PlatformLayer(),
+        nullptr);
     layer_tree_view_->SetViewportSize(WebSize(1, 1));
   }
 

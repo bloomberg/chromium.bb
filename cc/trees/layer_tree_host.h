@@ -241,15 +241,24 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   Layer* root_layer() { return root_layer_.get(); }
   const Layer* root_layer() const { return root_layer_.get(); }
 
-  void RegisterViewportLayers(scoped_refptr<Layer> overscroll_elasticity_layer,
-                              scoped_refptr<Layer> page_scale_layer,
-                              scoped_refptr<Layer> inner_viewport_scroll_layer,
-                              scoped_refptr<Layer> outer_viewport_scroll_layer);
+  void RegisterViewportLayers(
+      scoped_refptr<Layer> overscroll_elasticity_layer,
+      scoped_refptr<Layer> page_scale_layer,
+      scoped_refptr<Layer> inner_viewport_container_layer,
+      scoped_refptr<Layer> outer_viewport_container_layer,
+      scoped_refptr<Layer> inner_viewport_scroll_layer,
+      scoped_refptr<Layer> outer_viewport_scroll_layer);
 
   Layer* overscroll_elasticity_layer() const {
     return overscroll_elasticity_layer_.get();
   }
   Layer* page_scale_layer() const { return page_scale_layer_.get(); }
+  Layer* inner_viewport_container_layer() const {
+    return inner_viewport_container_layer_.get();
+  }
+  Layer* outer_viewport_container_layer() const {
+    return outer_viewport_container_layer_.get();
+  }
   Layer* inner_viewport_scroll_layer() const {
     return inner_viewport_scroll_layer_.get();
   }
@@ -564,6 +573,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   scoped_refptr<Layer> overscroll_elasticity_layer_;
   scoped_refptr<Layer> page_scale_layer_;
+  scoped_refptr<Layer> inner_viewport_container_layer_;
+  scoped_refptr<Layer> outer_viewport_container_layer_;
   scoped_refptr<Layer> inner_viewport_scroll_layer_;
   scoped_refptr<Layer> outer_viewport_scroll_layer_;
 

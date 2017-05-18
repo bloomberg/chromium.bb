@@ -141,7 +141,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // Make root the inner viewport scroll layer. This ensures the later call to
   // |SetViewportBoundsDelta| will be on a viewport layer.
   host_impl.active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
+      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
+      Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
 
   root->test_properties()->force_render_surface = true;
   root->SetMasksToBounds(true);
