@@ -403,6 +403,10 @@ import java.util.UUID;
                 }
             }
         }
+        // Treat "*" as a wildcard. Internally, a wildcard is a empty string.
+        if (targetOrigin.equals("*")) {
+            targetOrigin = "";
+        }
         nativePostMessageToFrame(
                 mNativeWebContentsAndroid, frameName, message, sourceOrigin, targetOrigin, ports);
     }

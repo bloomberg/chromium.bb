@@ -62,7 +62,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -1333,19 +1332,6 @@ void AwContents::TrimMemory(JNIEnv* env,
     return;
 
   browser_view_renderer_.TrimMemory();
-}
-
-// TODO(sgurun) add support for posting a frame whose name is known (only
-//               main frame is supported at this time, see crbug.com/389721)
-void AwContents::PostMessageToFrame(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj,
-                                    const JavaParamRef<jstring>& frame_name,
-                                    const JavaParamRef<jstring>& message,
-                                    const JavaParamRef<jstring>& target_origin,
-                                    const JavaParamRef<jobjectArray>& ports) {
-  // Use an empty source origin for android webview.
-  content::MessagePortProvider::PostMessageToFrame(
-      web_contents_.get(), env, nullptr, target_origin, message, ports);
 }
 
 void AwContents::GrantFileSchemeAccesstoChildProcess(
