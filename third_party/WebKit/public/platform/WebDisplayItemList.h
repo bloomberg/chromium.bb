@@ -37,7 +37,8 @@ class WebDisplayItemList {
   virtual ~WebDisplayItemList() {}
 
   virtual void AppendDrawingItem(const WebRect& visual_rect,
-                                 sk_sp<const cc::PaintRecord>) {}
+                                 sk_sp<const cc::PaintRecord>,
+                                 const WebRect& record_bounds) {}
 
   virtual void AppendClipItem(const WebRect& clip_rect,
                               const WebVector<SkRRect>& rounded_clip_rects) {}

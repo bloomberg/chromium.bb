@@ -59,6 +59,7 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
                                                 RepeatMode = kRepeatModeXY);
   static PassRefPtr<Pattern> CreatePaintRecordPattern(
       sk_sp<PaintRecord>,
+      const FloatRect& record_bounds,
       RepeatMode = kRepeatModeXY);
   virtual ~Pattern();
 

@@ -150,7 +150,7 @@ void SVGFilterPainter::FinishEffect(
     DCHECK(filter->GetSourceGraphic());
     sk_sp<PaintRecord> content = recording_context.EndContent(bounds);
     SkiaImageFilterBuilder::BuildSourceGraphic(filter->GetSourceGraphic(),
-                                               std::move(content));
+                                               std::move(content), bounds);
     filter_data->state_ = FilterData::kReadyToPaint;
   }
 

@@ -676,13 +676,14 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
 void PaintController::AppendDebugDrawingAfterCommit(
     const DisplayItemClient& display_item_client,
     sk_sp<PaintRecord> record,
+    const FloatRect& record_bounds,
     const LayoutSize& offset_from_layout_object) {
   DCHECK(new_display_item_list_.IsEmpty());
   DrawingDisplayItem& display_item =
       current_paint_artifact_.GetDisplayItemList()
-          .AllocateAndConstruct<DrawingDisplayItem>(display_item_client,
-                                                    DisplayItem::kDebugDrawing,
-                                                    std::move(record));
+          .AllocateAndConstruct<DrawingDisplayItem>(
+              display_item_client, DisplayItem::kDebugDrawing,
+              std::move(record), record_bounds);
   display_item.SetSkippedCache();
   // TODO(wkorman): Only compute and append visual rect for drawings.
   current_paint_artifact_.GetDisplayItemList().AppendVisualRect(
@@ -859,20 +860,28 @@ void PaintController::ShowUnderInvalidationError(
 
 #ifndef NDEBUG
   const PaintRecord* new_record = nullptr;
+  SkRect new_bounds;
   if (new_item.IsDrawing()) {
     new_record =
         static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecord().get();
+    new_bounds =
+        static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecordBounds();
   }
   const PaintRecord* old_record = nullptr;
+  SkRect old_bounds;
   if (old_item->IsDrawing()) {
     old_record = static_cast<const DrawingDisplayItem*>(old_item)
                      ->GetPaintRecord()
                      .get();
+    old_bounds =
+        static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecordBounds();
   }
   LOG(INFO) << "new record:\n"
-            << (new_record ? RecordAsDebugString(new_record) : "None");
+            << (new_record ? RecordAsDebugString(new_record, new_bounds)
+                           : "None");
   LOG(INFO) << "old record:\n"
-            << (old_record ? RecordAsDebugString(old_record) : "None");
+            << (old_record ? RecordAsDebugString(old_record, old_bounds)
+                           : "None");
 
   ShowDebugData();
 #endif  // NDEBUG
