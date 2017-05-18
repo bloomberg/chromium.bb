@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -29,9 +30,16 @@ struct MenuItem;
 
 class PopupMenuHelper : public NotificationObserver {
  public:
+  class Delegate {
+   public:
+    virtual void OnMenuClosed() = 0;
+  };
+
   // Creates a PopupMenuHelper that will notify |render_frame_host| when a user
-  // selects or cancels the popup.
-  explicit PopupMenuHelper(RenderFrameHost* render_frame_host);
+  // selects or cancels the popup. |delegate| is notified when the menu is
+  // closed.
+  PopupMenuHelper(Delegate* delegate, RenderFrameHost* render_frame_host);
+  ~PopupMenuHelper() override;
   void Hide();
 
   // Shows the popup menu and notifies the RenderFrameHost of the selection/
@@ -50,15 +58,20 @@ class PopupMenuHelper : public NotificationObserver {
  protected:
   virtual RenderWidgetHostViewMac* GetRenderWidgetHostView() const;
 
+ private:
   // NotificationObserver implementation:
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) override;
 
+  Delegate* delegate_;  // Weak. Owns |this|.
+
   NotificationRegistrar notification_registrar_;
   RenderFrameHostImpl* render_frame_host_;
   WebMenuRunner* menu_runner_;
   bool popup_was_hidden_;
+
+  base::WeakPtrFactory<PopupMenuHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupMenuHelper);
 };
