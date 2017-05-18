@@ -9,6 +9,7 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
+#include "core/dom/Element.h"
 #include "core/page/scrolling/ScrollStateInit.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/scroll/ScrollStateData.h"
@@ -71,10 +72,8 @@ class CORE_EXPORT ScrollState final
     scroll_chain_ = scroll_chain;
   }
 
-  Element* CurrentNativeScrollingElement() const;
+  Element* CurrentNativeScrollingElement();
   void SetCurrentNativeScrollingElement(Element*);
-
-  void SetCurrentNativeScrollingElementById(int element_id);
 
   bool DeltaConsumedForScrollSequence() const {
     return data_->delta_consumed_for_scroll_sequence;
@@ -89,7 +88,7 @@ class CORE_EXPORT ScrollState final
 
   ScrollStateData* Data() const { return data_.get(); }
 
-  DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE() { visitor->Trace(element_); }
 
  private:
   ScrollState();
@@ -97,6 +96,7 @@ class CORE_EXPORT ScrollState final
 
   std::unique_ptr<ScrollStateData> data_;
   std::deque<int> scroll_chain_;
+  Member<Element> element_;
 };
 
 }  // namespace blink

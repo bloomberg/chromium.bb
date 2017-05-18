@@ -10,6 +10,10 @@ namespace blink {
 
 class CompositorElementIdTest : public ::testing::Test {};
 
+uint64_t IdFromCompositorElementId(CompositorElementId element_id) {
+  return element_id.id_ >> kCompositorNamespaceBitCount;
+}
+
 TEST_F(CompositorElementIdTest, EncodeDecode) {
   CompositorElementId element_id = CompositorElementIdFromDOMNodeId(
       1, CompositorElementIdNamespace::kPrimary);

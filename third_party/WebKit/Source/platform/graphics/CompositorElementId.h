@@ -51,7 +51,6 @@ struct CompositorElementIdHash {
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
-uint64_t PLATFORM_EXPORT IdFromCompositorElementId(CompositorElementId);
 CompositorElementIdNamespace PLATFORM_EXPORT
     NamespaceFromCompositorElementId(CompositorElementId);
 

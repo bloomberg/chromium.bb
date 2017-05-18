@@ -33,10 +33,6 @@ CompositorElementIdFromScrollbarId(ScrollbarId id,
   return CreateCompositorElementId(id, namespace_id);
 }
 
-uint64_t IdFromCompositorElementId(CompositorElementId element_id) {
-  return element_id.id_ >> kCompositorNamespaceBitCount;
-}
-
 CompositorElementIdNamespace NamespaceFromCompositorElementId(
     CompositorElementId element_id) {
   return static_cast<CompositorElementIdNamespace>(
