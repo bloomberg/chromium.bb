@@ -594,10 +594,6 @@ cr.define('bookmarks', function() {
 
       var nextElement = overElement.nextElementSibling;
 
-      // The template element sits past the end of the last bookmark element.
-      if (!isBookmarkItem(nextElement) && !isBookmarkFolderNode(nextElement))
-        nextElement = null;
-
       // Cannot drop below if the item below is already in the drag source.
       if (!nextElement || !dragInfo.isDraggingBookmark(nextElement.itemId))
         validDropPositions |= DropPosition.BELOW;
