@@ -52,25 +52,14 @@ catalog("service_unittests_catalog") {
 
 if (is_android) {
   junit_binary("service_junit_tests") {
-    java_files = [
-      "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
-      "shape_detection/android/junit/src/org/chromium/shape_detection/FaceDetectionImplTest.java",
-      "shape_detection/android/junit/src/org/chromium/shape_detection/SharedBufferUtilsTest.java",
-    ]
+    java_files = [ "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java" ]
     deps = [
-      "$google_play_services_package:google_play_services_base_java",
-      "$google_play_services_package:google_play_services_basement_java",
-      "$google_play_services_package:google_play_services_vision_java",
       "//base:base_java",
       "//base:base_java_test_support",
       "//device/generic_sensor:java",
       "//device/generic_sensor/public/interfaces:interfaces_java",
       "//mojo/public/java:bindings_java",
-      "//mojo/public/java:system_java",
-      "//services/shape_detection:shape_detection_java",
-      "//services/shape_detection/public/interfaces:interfaces_java",
       "//third_party/android_tools:android_support_annotations_java",
-      "//ui/gfx/geometry/mojo:mojo_java",
     ]
   }
 }
