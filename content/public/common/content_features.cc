@@ -268,6 +268,10 @@ const base::Feature kWebAssembly{"WebAssembly",
 const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable WebAssembly streamed compilation.
+const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
