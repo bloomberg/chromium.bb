@@ -645,57 +645,57 @@ static void SerializeNamespacePrefixIfNeeded(const AtomicString& prefix,
   builder.Append('|');
 }
 
-String CSSSelector::SelectorText(const String& right_side) const {
-  StringBuilder str;
-
+const CSSSelector* CSSSelector::SerializeCompound(
+    StringBuilder& builder) const {
   if (match_ == kTag && !tag_is_implicit_) {
-    SerializeNamespacePrefixIfNeeded(TagQName().Prefix(), str);
-    SerializeIdentifierOrAny(TagQName().LocalName(), str);
+    SerializeNamespacePrefixIfNeeded(TagQName().Prefix(), builder);
+    SerializeIdentifierOrAny(TagQName().LocalName(), builder);
   }
 
-  const CSSSelector* cs = this;
-  while (true) {
-    if (cs->match_ == kId) {
-      str.Append('#');
-      SerializeIdentifier(cs->SerializingValue(), str);
-    } else if (cs->match_ == kClass) {
-      str.Append('.');
-      SerializeIdentifier(cs->SerializingValue(), str);
-    } else if (cs->match_ == kPseudoClass || cs->match_ == kPagePseudoClass) {
-      str.Append(':');
-      str.Append(cs->SerializingValue());
+  for (const CSSSelector* simple_selector = this; simple_selector;
+       simple_selector = simple_selector->TagHistory()) {
+    if (simple_selector->match_ == kId) {
+      builder.Append('#');
+      SerializeIdentifier(simple_selector->SerializingValue(), builder);
+    } else if (simple_selector->match_ == kClass) {
+      builder.Append('.');
+      SerializeIdentifier(simple_selector->SerializingValue(), builder);
+    } else if (simple_selector->match_ == kPseudoClass ||
+               simple_selector->match_ == kPagePseudoClass) {
+      builder.Append(':');
+      builder.Append(simple_selector->SerializingValue());
 
-      switch (cs->GetPseudoType()) {
+      switch (simple_selector->GetPseudoType()) {
         case kPseudoNthChild:
         case kPseudoNthLastChild:
         case kPseudoNthOfType:
         case kPseudoNthLastOfType: {
-          str.Append('(');
+          builder.Append('(');
 
           // http://dev.w3.org/csswg/css-syntax/#serializing-anb
-          int a = cs->data_.rare_data_->NthAValue();
-          int b = cs->data_.rare_data_->NthBValue();
+          int a = simple_selector->data_.rare_data_->NthAValue();
+          int b = simple_selector->data_.rare_data_->NthBValue();
           if (a == 0 && b == 0)
-            str.Append('0');
+            builder.Append('0');
           else if (a == 0)
-            str.Append(String::Number(b));
+            builder.Append(String::Number(b));
           else if (b == 0)
-            str.Append(String::Format("%dn", a));
+            builder.Append(String::Format("%dn", a));
           else if (b < 0)
-            str.Append(String::Format("%dn%d", a, b));
+            builder.Append(String::Format("%dn%d", a, b));
           else
-            str.Append(String::Format("%dn+%d", a, b));
+            builder.Append(String::Format("%dn+%d", a, b));
 
-          str.Append(')');
+          builder.Append(')');
           break;
         }
         case kPseudoLang:
-          str.Append('(');
-          str.Append(cs->Argument());
-          str.Append(')');
+          builder.Append('(');
+          builder.Append(simple_selector->Argument());
+          builder.Append(')');
           break;
         case kPseudoNot:
-          DCHECK(cs->SelectorList());
+          DCHECK(simple_selector->SelectorList());
           break;
         case kPseudoHost:
         case kPseudoHostContext:
@@ -704,87 +704,106 @@ String CSSSelector::SelectorText(const String& right_side) const {
         default:
           break;
       }
-    } else if (cs->match_ == kPseudoElement) {
-      str.Append("::");
-      str.Append(cs->SerializingValue());
-    } else if (cs->IsAttributeSelector()) {
-      str.Append('[');
-      SerializeNamespacePrefixIfNeeded(cs->Attribute().Prefix(), str);
-      SerializeIdentifier(cs->Attribute().LocalName(), str);
-      switch (cs->match_) {
+    } else if (simple_selector->match_ == kPseudoElement) {
+      builder.Append("::");
+      builder.Append(simple_selector->SerializingValue());
+    } else if (simple_selector->IsAttributeSelector()) {
+      builder.Append('[');
+      SerializeNamespacePrefixIfNeeded(simple_selector->Attribute().Prefix(),
+                                       builder);
+      SerializeIdentifier(simple_selector->Attribute().LocalName(), builder);
+      switch (simple_selector->match_) {
         case kAttributeExact:
-          str.Append('=');
+          builder.Append('=');
           break;
         case kAttributeSet:
           // set has no operator or value, just the attrName
-          str.Append(']');
+          builder.Append(']');
           break;
         case kAttributeList:
-          str.Append("~=");
+          builder.Append("~=");
           break;
         case kAttributeHyphen:
-          str.Append("|=");
+          builder.Append("|=");
           break;
         case kAttributeBegin:
-          str.Append("^=");
+          builder.Append("^=");
           break;
         case kAttributeEnd:
-          str.Append("$=");
+          builder.Append("$=");
           break;
         case kAttributeContain:
-          str.Append("*=");
+          builder.Append("*=");
           break;
         default:
           break;
       }
-      if (cs->match_ != kAttributeSet) {
-        SerializeString(cs->SerializingValue(), str);
-        if (cs->AttributeMatch() == kCaseInsensitive)
-          str.Append(" i");
-        str.Append(']');
+      if (simple_selector->match_ != kAttributeSet) {
+        SerializeString(simple_selector->SerializingValue(), builder);
+        if (simple_selector->AttributeMatch() == kCaseInsensitive)
+          builder.Append(" i");
+        builder.Append(']');
       }
     }
 
-    if (cs->SelectorList()) {
-      str.Append('(');
-      const CSSSelector* first_sub_selector = cs->SelectorList()->First();
+    if (simple_selector->SelectorList()) {
+      builder.Append('(');
+      const CSSSelector* first_sub_selector =
+          simple_selector->SelectorList()->First();
       for (const CSSSelector* sub_selector = first_sub_selector; sub_selector;
            sub_selector = CSSSelectorList::Next(*sub_selector)) {
         if (sub_selector != first_sub_selector)
-          str.Append(',');
-        str.Append(sub_selector->SelectorText());
+          builder.Append(',');
+        builder.Append(sub_selector->SelectorText());
       }
-      str.Append(')');
+      builder.Append(')');
     }
 
-    if (cs->Relation() != kSubSelector || !cs->TagHistory())
-      break;
-    cs = cs->TagHistory();
+    if (simple_selector->Relation() != kSubSelector)
+      return simple_selector;
   }
+  return nullptr;
+}
 
-  if (const CSSSelector* tag_history = cs->TagHistory()) {
-    switch (cs->Relation()) {
+String CSSSelector::SelectorText() const {
+  String result;
+  for (const CSSSelector* compound = this; compound;
+       compound = compound->TagHistory()) {
+    StringBuilder builder;
+    compound = compound->SerializeCompound(builder);
+    if (!compound)
+      return builder.ToString() + result;
+
+    DCHECK(compound->Relation() != kSubSelector);
+    switch (compound->Relation()) {
       case kDescendant:
-        return tag_history->SelectorText(" " + str.ToString() + right_side);
+        result = " " + builder.ToString() + result;
+        break;
       case kChild:
-        return tag_history->SelectorText(" > " + str.ToString() + right_side);
+        result = " > " + builder.ToString() + result;
+        break;
       case kShadowDeep:
-        return tag_history->SelectorText(" /deep/ " + str.ToString() +
-                                         right_side);
+        result = " /deep/ " + builder.ToString() + result;
+        break;
       case kShadowPiercingDescendant:
-        return tag_history->SelectorText(" >>> " + str.ToString() + right_side);
+        result = " >>> " + builder.ToString() + result;
+        break;
       case kDirectAdjacent:
-        return tag_history->SelectorText(" + " + str.ToString() + right_side);
+        result = " + " + builder.ToString() + result;
+        break;
       case kIndirectAdjacent:
-        return tag_history->SelectorText(" ~ " + str.ToString() + right_side);
+        result = " ~ " + builder.ToString() + result;
+        break;
       case kSubSelector:
         NOTREACHED();
       case kShadowPseudo:
       case kShadowSlot:
-        return tag_history->SelectorText(str.ToString() + right_side);
+        result = builder.ToString() + result;
+        break;
     }
   }
-  return str.ToString() + right_side;
+  NOTREACHED();
+  return String();
 }
 
 void CSSSelector::SetAttribute(const QualifiedName& value,
