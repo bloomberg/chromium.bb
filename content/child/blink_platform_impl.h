@@ -115,6 +115,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   int DomEnumFromCodeString(const blink::WebString& codeString) override;
   blink::WebString DomKeyStringFromEnum(int dom_key) override;
   int DomKeyEnumFromString(const blink::WebString& key_string) override;
+  bool IsDomKeyForModifier(int dom_key) override;
 
   // This class does *not* own the compositor thread. It is the responsibility
   // of the caller to ensure that the compositor thread is cleared before it is

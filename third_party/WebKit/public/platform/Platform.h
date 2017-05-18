@@ -626,6 +626,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns 0 if DOM key enum is not found.
   virtual int DomKeyEnumFromString(const WebString& key_string) { return 0; }
 
+  // This method returns whether the specified |domKey| is a modifier key.
+  // |domKey| values are based on the value defined in
+  // ui/events/keycodes/dom3/dom_key_data.h.
+  virtual bool IsDomKeyForModifier(int dom_key) { return false; }
+
   // Quota -----------------------------------------------------------
 
   // Queries the storage partition's storage usage and quota information.
