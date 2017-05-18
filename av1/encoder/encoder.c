@@ -2743,6 +2743,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif
 
   av1_loop_filter_init(cm);
+#if CONFIG_FRAME_SUPERRES
+  cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
+#endif  // CONFIG_FRAME_SUPERRES
 #if CONFIG_LOOP_RESTORATION
   av1_loop_restoration_precal();
 #endif  // CONFIG_LOOP_RESTORATION
