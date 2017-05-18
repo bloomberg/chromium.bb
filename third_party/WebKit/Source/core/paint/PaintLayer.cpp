@@ -2784,8 +2784,9 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
   if (EnclosingPaginationLayer())
     return false;
 
-  // SVG paints atomically.
-  if (GetLayoutObject().IsSVGRoot())
+  // SVG documents paint atomically.
+  if (GetLayoutObject().IsSVGRoot() &&
+      GetLayoutObject().GetDocument().IsSVGDocument())
     return true;
 
   // Create subsequence for only stacking contexts whose painting are atomic.
