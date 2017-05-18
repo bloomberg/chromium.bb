@@ -7,10 +7,15 @@
 
 #include <set>
 #include <vector>
+
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/disk_cache/disk_cache.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace content {
 
