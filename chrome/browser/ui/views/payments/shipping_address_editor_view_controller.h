@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 
 namespace autofill {
 class AutofillProfile;
+class CountryComboboxModel;
 }  // namespace autofill
 
 namespace payments {
@@ -102,17 +104,25 @@ class ShippingAddressEditorViewController : public EditorViewController {
   // List of fields, reset everytime the current country changes.
   std::vector<EditorField> editor_fields_;
 
-  // The currently chosen country. Defaults to 0 as the first entry in the
-  // combobox, which is the generated default value received from
+  // The currently chosen country. Defaults to an invalid constant until
+  // |countries_| is properly initialized and then 0 as the first entry in
+  // |countries_|, which is the generated default value received from
   // autofill::CountryComboboxModel::countries() which is documented to always
-  // have the default country at the top as well as within the sorted list.
+  // have the default country at the top as well as within the sorted list. If
+  // |profile_to_edit_| is not null, then use the country from there to set
+  // |chosen_country_index_|.
   size_t chosen_country_index_;
 
-  // The list of country codes as ordered in the country combobox model.
-  std::vector<std::string> country_codes_;
+  // The list of country codes and names as ordered in the country combobox
+  // model.
+  std::vector<std::pair<std::string, base::string16>> countries_;
 
   // Identifies whether we tried and failed to load region data.
   bool failed_to_load_region_data_;
+
+  // Updates |countries_| with the content of |model| if it's not null,
+  // otherwise use a local model.
+  void UpdateCountries(autofill::CountryComboboxModel* model);
 
   // Updates |editor_fields_| based on the current country.
   void UpdateEditorFields();
