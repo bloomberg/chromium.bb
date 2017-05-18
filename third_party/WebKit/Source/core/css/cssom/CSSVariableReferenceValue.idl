@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Represents a CSS var() reference in a CSS value.
+// Spec: https://drafts.css-houdini.org/css-typed-om/#cssvariablereferencevalue
 [
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
-    // TODO(anthonyhkf): rename CSSStyleVariableReferenceValue
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
     readonly attribute DOMString variable;

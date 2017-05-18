@@ -12,6 +12,12 @@ import template_expander
 
 
 class CSSOMTypesWriter(css_properties.CSSProperties):
+    """
+    Generates CSSOMTypes.cpp and CSSOMKeywords.cpp. These classes provide
+    utility methods for determining whether a given CSSStyleValue or
+    CSSKeywordValue is valid for a given CSS property. The header files live in
+    core/css/cssom.
+    """
     def __init__(self, json5_file_path):
         super(CSSOMTypesWriter, self).__init__(json5_file_path)
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Represents image values that are specified using "url(...)".
+// Spec: https://drafts.css-houdini.org/css-typed-om/#cssurlimagevalue
 [
     Constructor(DOMString url),
     Exposed=(Window,PaintWorklet),

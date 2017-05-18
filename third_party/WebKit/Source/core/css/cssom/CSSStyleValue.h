@@ -17,6 +17,8 @@ class ExceptionState;
 class ScriptState;
 class ScriptValue;
 
+// The base class for all CSS values returned by the Typed OM.
+// See CSSStyleValue.idl for additional documentation about this class.
 class CORE_EXPORT CSSStyleValue
     : public GarbageCollectedFinalized<CSSStyleValue>,
       public ScriptWrappable {

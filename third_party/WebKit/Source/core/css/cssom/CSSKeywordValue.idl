@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// CSSKeywordValue represents CSS Values that are specified as keywords, for
+// example "initial".
+// https://drafts.css-houdini.org/css-typed-om/#keywordvalue-objects
 [
     Constructor(DOMString keyword),
     Exposed=(Window,PaintWorklet),
