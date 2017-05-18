@@ -121,7 +121,7 @@ public class UrlBarTest {
             public void run() {
                 if (action != null) action.run();
                 textWithoutAutocomplete.set(urlBar.getTextWithoutAutocomplete());
-                textWithAutocomplete.set(urlBar.getQueryText());
+                textWithAutocomplete.set(urlBar.getTextWithAutocomplete());
                 hasAutocomplete.set(urlBar.hasAutocomplete());
             }
         });
@@ -491,7 +491,7 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.commitText("y", 1);
+                urlBar.getInputConnection().commitText("y", 1);
             }
         });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -603,10 +603,10 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.beginBatchEdit();
-                urlBar.mInputConnection.commitText("l", 1);
-                urlBar.mInputConnection.setComposingText("", 1);
-                urlBar.mInputConnection.endBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
+                urlBar.getInputConnection().commitText("l", 1);
+                urlBar.getInputConnection().setComposingText("", 1);
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
 
@@ -651,11 +651,11 @@ public class UrlBarTest {
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
 
-        Assert.assertNotNull(urlBar.mInputConnection);
+        Assert.assertNotNull(urlBar.getInputConnection());
         AutocompleteState state = getAutocompleteState(urlBar, new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.setComposingText("ing compose", 4);
+                urlBar.getInputConnection().setComposingText("ing compose", 4);
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -681,7 +681,7 @@ public class UrlBarTest {
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
-        Assert.assertNotNull(urlBar.mInputConnection);
+        Assert.assertNotNull(urlBar.getInputConnection());
 
         // Test with a single autocomplete
 
@@ -691,8 +691,8 @@ public class UrlBarTest {
         AutocompleteState state = getAutocompleteState(urlBar, new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.setComposingRegion(13, 14);
-                urlBar.mInputConnection.setComposingText("f", 1);
+                urlBar.getInputConnection().setComposingRegion(13, 14);
+                urlBar.getInputConnection().setComposingText("f", 1);
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -710,8 +710,8 @@ public class UrlBarTest {
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.setComposingRegion(12, 14);
-                urlBar.mInputConnection.setComposingText("fl", 1);
+                urlBar.getInputConnection().setComposingRegion(12, 14);
+                urlBar.getInputConnection().setComposingText("fl", 1);
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -729,8 +729,8 @@ public class UrlBarTest {
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.setComposingRegion(13, 14);
-                urlBar.mInputConnection.setComposingText("g", 1);
+                urlBar.getInputConnection().setComposingRegion(13, 14);
+                urlBar.getInputConnection().setComposingText("g", 1);
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -748,8 +748,8 @@ public class UrlBarTest {
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.setComposingRegion(13, 14);
-                urlBar.mInputConnection.setComposingText("chrome://f", 1);
+                urlBar.getInputConnection().setComposingRegion(13, 14);
+                urlBar.getInputConnection().setComposingText("chrome://f", 1);
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -768,8 +768,8 @@ public class UrlBarTest {
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
             public void run() {
-                urlBar.mInputConnection.setComposingRegion(13, 14);
-                urlBar.mInputConnection.setComposingText("blahblahblah", 1);
+                urlBar.getInputConnection().setComposingRegion(13, 14);
+                urlBar.getInputConnection().setComposingText("blahblahblah", 1);
             }
         });
         Assert.assertFalse(state.hasAutocomplete);

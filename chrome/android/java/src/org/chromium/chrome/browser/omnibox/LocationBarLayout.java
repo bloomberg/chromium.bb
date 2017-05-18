@@ -334,7 +334,7 @@ public class LocationBarLayout extends FrameLayout
                     && LocationBarLayout.this.getVisibility() == VISIBLE) {
                 UiUtils.hideKeyboard(mUrlBar);
                 mSuggestionSelectionInProgress = true;
-                final String urlText = mUrlBar.getQueryText();
+                final String urlText = mUrlBar.getTextWithAutocomplete();
                 if (mNativeInitialized) {
                     findMatchAndLoadUrl(urlText);
                 } else {
@@ -1067,7 +1067,7 @@ public class LocationBarLayout extends FrameLayout
             mDeferredNativeRunnables.add(new Runnable() {
                 @Override
                 public void run() {
-                    if (TextUtils.isEmpty(mUrlBar.getQueryText())) {
+                    if (TextUtils.isEmpty(mUrlBar.getTextWithAutocomplete())) {
                         startZeroSuggest();
                     }
                 }
@@ -1115,8 +1115,9 @@ public class LocationBarLayout extends FrameLayout
         mNewOmniboxEditSessionTimestamp = -1;
         Tab currentTab = getCurrentTab();
         if (mNativeInitialized && mUrlHasFocus && currentTab != null) {
-            mAutocomplete.startZeroSuggest(currentTab.getProfile(), mUrlBar.getQueryText(),
-                    mToolbarDataProvider.getCurrentUrl(), mUrlFocusedFromFakebox);
+            mAutocomplete.startZeroSuggest(currentTab.getProfile(),
+                    mUrlBar.getTextWithAutocomplete(), mToolbarDataProvider.getCurrentUrl(),
+                    mUrlFocusedFromFakebox);
         }
     }
 
@@ -1893,7 +1894,7 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void onClick(View v) {
         if (v == mDeleteButton) {
-            if (!TextUtils.isEmpty(mUrlBar.getQueryText())) {
+            if (!TextUtils.isEmpty(mUrlBar.getTextWithAutocomplete())) {
                 setUrlBarText("", null);
                 hideSuggestions();
                 updateButtonVisibility();
