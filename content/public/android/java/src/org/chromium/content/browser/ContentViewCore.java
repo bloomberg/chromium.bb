@@ -2349,6 +2349,32 @@ public class ContentViewCore
         mSelectionPopupController.setSelectionClient(selectionClient);
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    /**
+     * Sets TextClassifier for Smart Text selection.
+     */
+    public void setTextClassifier(Object textClassifier) {
+        mSelectionPopupController.setTextClassifier(textClassifier);
+    }
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    /**
+     * Returns TextClassifier that is used for Smart Text selection. If the custom classifier
+     * has been set with setTextClassifier, returns that object, otherwise returns the system
+     * classifier.
+     */
+    public Object getTextClassifier() {
+        return mSelectionPopupController.getTextClassifier();
+    }
+
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    /**
+     * Returns the TextClassifier which has been set with setTextClassifier(), or null.
+     */
+    public Object getCustomTextClassifier() {
+        return mSelectionPopupController.getCustomTextClassifier();
+    }
+
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             long windowAndroidPtr, float dipScale, HashSet<Object> retainedObjectSet);
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
