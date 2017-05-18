@@ -76,7 +76,7 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
     content_bottom += kTextVerticalMargin + sub_label->height();
   }
 
-  size_ = gfx::Size(text_start_x + label_width, content_bottom);
+  set_preferred_size(gfx::Size(text_start_x + label_width, content_bottom));
 
   views::BubbleDialogDelegateView::CreateBubble(this)->ShowInactive();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::VALIDATION_MESSAGE);
@@ -92,10 +92,6 @@ gfx::Rect ValidationMessageBubbleView::RootViewToScreenRect(
   const float scale = ui::GetScaleFactorForNativeView(view);
   return gfx::ScaleToEnclosingRect(rect_in_root_view, 1 / scale) +
          render_widget_host_view->GetViewBounds().origin().OffsetFromOrigin();
-}
-
-gfx::Size ValidationMessageBubbleView::GetPreferredSize() const {
-  return size_;
 }
 
 int ValidationMessageBubbleView::GetDialogButtons() const {

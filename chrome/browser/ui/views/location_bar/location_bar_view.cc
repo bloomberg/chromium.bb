@@ -213,7 +213,7 @@ void LocationBarView::Init() {
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);
   keyword_hint_view_ = new KeywordHintView(
-      this, profile(), font_list, bubble_font_list, location_height,
+      this, profile(), font_list, bubble_font_list,
       GetColor(LocationBarView::DEEMPHASIZED_TEXT), background_color);
   AddChildView(keyword_hint_view_);
 
