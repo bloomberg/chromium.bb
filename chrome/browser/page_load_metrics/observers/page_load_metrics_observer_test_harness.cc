@@ -53,68 +53,69 @@ PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 
 // static
 void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
-    PageLoadTiming* inout_timing) {
-  if (inout_timing->paint_timing.first_meaningful_paint &&
-      !inout_timing->paint_timing.first_contentful_paint) {
-    inout_timing->paint_timing.first_contentful_paint =
-        inout_timing->paint_timing.first_meaningful_paint;
+    mojom::PageLoadTiming* inout_timing) {
+  if (inout_timing->paint_timing->first_meaningful_paint &&
+      !inout_timing->paint_timing->first_contentful_paint) {
+    inout_timing->paint_timing->first_contentful_paint =
+        inout_timing->paint_timing->first_meaningful_paint;
   }
-  if ((inout_timing->paint_timing.first_text_paint ||
-       inout_timing->paint_timing.first_image_paint ||
-       inout_timing->paint_timing.first_contentful_paint) &&
-      !inout_timing->paint_timing.first_paint) {
-    inout_timing->paint_timing.first_paint =
-        OptionalMin(OptionalMin(inout_timing->paint_timing.first_text_paint,
-                                inout_timing->paint_timing.first_image_paint),
-                    inout_timing->paint_timing.first_contentful_paint);
+  if ((inout_timing->paint_timing->first_text_paint ||
+       inout_timing->paint_timing->first_image_paint ||
+       inout_timing->paint_timing->first_contentful_paint) &&
+      !inout_timing->paint_timing->first_paint) {
+    inout_timing->paint_timing->first_paint =
+        OptionalMin(OptionalMin(inout_timing->paint_timing->first_text_paint,
+                                inout_timing->paint_timing->first_image_paint),
+                    inout_timing->paint_timing->first_contentful_paint);
   }
-  if (inout_timing->paint_timing.first_paint &&
-      !inout_timing->document_timing.first_layout) {
-    inout_timing->document_timing.first_layout =
-        inout_timing->paint_timing.first_paint;
+  if (inout_timing->paint_timing->first_paint &&
+      !inout_timing->document_timing->first_layout) {
+    inout_timing->document_timing->first_layout =
+        inout_timing->paint_timing->first_paint;
   }
-  if (inout_timing->document_timing.load_event_start &&
-      !inout_timing->document_timing.dom_content_loaded_event_start) {
-    inout_timing->document_timing.dom_content_loaded_event_start =
-        inout_timing->document_timing.load_event_start;
+  if (inout_timing->document_timing->load_event_start &&
+      !inout_timing->document_timing->dom_content_loaded_event_start) {
+    inout_timing->document_timing->dom_content_loaded_event_start =
+        inout_timing->document_timing->load_event_start;
   }
-  if (inout_timing->document_timing.first_layout &&
-      !inout_timing->parse_timing.parse_start) {
-    inout_timing->parse_timing.parse_start =
-        inout_timing->document_timing.first_layout;
+  if (inout_timing->document_timing->first_layout &&
+      !inout_timing->parse_timing->parse_start) {
+    inout_timing->parse_timing->parse_start =
+        inout_timing->document_timing->first_layout;
   }
-  if (inout_timing->document_timing.dom_content_loaded_event_start &&
-      !inout_timing->parse_timing.parse_stop) {
-    inout_timing->parse_timing.parse_stop =
-        inout_timing->document_timing.dom_content_loaded_event_start;
+  if (inout_timing->document_timing->dom_content_loaded_event_start &&
+      !inout_timing->parse_timing->parse_stop) {
+    inout_timing->parse_timing->parse_stop =
+        inout_timing->document_timing->dom_content_loaded_event_start;
   }
-  if (inout_timing->parse_timing.parse_stop &&
-      !inout_timing->parse_timing.parse_start) {
-    inout_timing->parse_timing.parse_start =
-        inout_timing->parse_timing.parse_stop;
+  if (inout_timing->parse_timing->parse_stop &&
+      !inout_timing->parse_timing->parse_start) {
+    inout_timing->parse_timing->parse_start =
+        inout_timing->parse_timing->parse_stop;
   }
-  if (inout_timing->parse_timing.parse_start && !inout_timing->response_start) {
-    inout_timing->response_start = inout_timing->parse_timing.parse_start;
+  if (inout_timing->parse_timing->parse_start &&
+      !inout_timing->response_start) {
+    inout_timing->response_start = inout_timing->parse_timing->parse_start;
   }
-  if (inout_timing->parse_timing.parse_start) {
-    if (!inout_timing->parse_timing.parse_blocked_on_script_load_duration)
-      inout_timing->parse_timing.parse_blocked_on_script_load_duration =
+  if (inout_timing->parse_timing->parse_start) {
+    if (!inout_timing->parse_timing->parse_blocked_on_script_load_duration)
+      inout_timing->parse_timing->parse_blocked_on_script_load_duration =
           base::TimeDelta();
     if (!inout_timing->parse_timing
-             .parse_blocked_on_script_execution_duration) {
-      inout_timing->parse_timing.parse_blocked_on_script_execution_duration =
-          base::TimeDelta();
-    }
-    if (!inout_timing->parse_timing
-             .parse_blocked_on_script_load_from_document_write_duration) {
-      inout_timing->parse_timing
-          .parse_blocked_on_script_load_from_document_write_duration =
+             ->parse_blocked_on_script_execution_duration) {
+      inout_timing->parse_timing->parse_blocked_on_script_execution_duration =
           base::TimeDelta();
     }
     if (!inout_timing->parse_timing
-             .parse_blocked_on_script_execution_from_document_write_duration) {
+             ->parse_blocked_on_script_load_from_document_write_duration) {
       inout_timing->parse_timing
-          .parse_blocked_on_script_execution_from_document_write_duration =
+          ->parse_blocked_on_script_load_from_document_write_duration =
+          base::TimeDelta();
+    }
+    if (!inout_timing->parse_timing
+             ->parse_blocked_on_script_execution_from_document_write_duration) {
+      inout_timing->parse_timing
+          ->parse_blocked_on_script_execution_from_document_write_duration =
           base::TimeDelta();
     }
   }
@@ -137,13 +138,13 @@ void PageLoadMetricsObserverTestHarness::StartNavigation(const GURL& gurl) {
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateTimingUpdate(
-    const PageLoadTiming& timing) {
-  SimulateTimingAndMetadataUpdate(timing, PageLoadMetadata());
+    const mojom::PageLoadTiming& timing) {
+  SimulateTimingAndMetadataUpdate(timing, mojom::PageLoadMetadata());
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
-    const PageLoadTiming& timing,
-    const PageLoadMetadata& metadata) {
+    const mojom::PageLoadTiming& timing,
+    const mojom::PageLoadMetadata& metadata) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing, metadata);
 }
 

@@ -132,8 +132,8 @@ bool EventsInOrder(const base::Optional<base::TimeDelta>& first,
 }
 
 internal::PageLoadTimingStatus IsValidPageLoadTiming(
-    const PageLoadTiming& timing) {
-  if (timing.IsEmpty())
+    const mojom::PageLoadTiming& timing) {
+  if (page_load_metrics::IsEmpty(timing))
     return internal::INVALID_EMPTY_TIMING;
 
   // If we have a non-empty timing, it should always have a navigation start.
@@ -144,11 +144,11 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
 
   // Verify proper ordering between the various timings.
 
-  if (!EventsInOrder(timing.response_start, timing.parse_timing.parse_start)) {
+  if (!EventsInOrder(timing.response_start, timing.parse_timing->parse_start)) {
     // We sometimes get a zero response_start with a non-zero parse start. See
     // crbug.com/590212.
     LOG(ERROR) << "Invalid response_start " << timing.response_start
-               << " for parse_start " << timing.parse_timing.parse_start;
+               << " for parse_start " << timing.parse_timing->parse_start;
     // When browser-side navigation is enabled, we sometimes encounter this
     // error case. For now, we disable reporting of this error, since most
     // PageLoadMetricsObservers don't care about response_start and we want to
@@ -159,122 +159,122 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     // return internal::INVALID_ORDER_RESPONSE_START_PARSE_START;
   }
 
-  if (!EventsInOrder(timing.parse_timing.parse_start,
-                     timing.parse_timing.parse_stop)) {
-    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing.parse_start
-               << " for parse_stop " << timing.parse_timing.parse_stop;
+  if (!EventsInOrder(timing.parse_timing->parse_start,
+                     timing.parse_timing->parse_stop)) {
+    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
+               << " for parse_stop " << timing.parse_timing->parse_stop;
     return internal::INVALID_ORDER_PARSE_START_PARSE_STOP;
   }
 
-  if (timing.parse_timing.parse_stop) {
+  if (timing.parse_timing->parse_stop) {
     const base::TimeDelta parse_duration =
-        timing.parse_timing.parse_stop.value() -
-        timing.parse_timing.parse_start.value();
-    if (timing.parse_timing.parse_blocked_on_script_load_duration >
+        timing.parse_timing->parse_stop.value() -
+        timing.parse_timing->parse_start.value();
+    if (timing.parse_timing->parse_blocked_on_script_load_duration >
         parse_duration) {
       LOG(ERROR) << "Invalid parse_blocked_on_script_load_duration "
-                 << timing.parse_timing.parse_blocked_on_script_load_duration
+                 << timing.parse_timing->parse_blocked_on_script_load_duration
                  << " for parse duration " << parse_duration;
       return internal::INVALID_SCRIPT_LOAD_LONGER_THAN_PARSE;
     }
-    if (timing.parse_timing.parse_blocked_on_script_execution_duration >
+    if (timing.parse_timing->parse_blocked_on_script_execution_duration >
         parse_duration) {
       LOG(ERROR)
           << "Invalid parse_blocked_on_script_execution_duration "
-          << timing.parse_timing.parse_blocked_on_script_execution_duration
+          << timing.parse_timing->parse_blocked_on_script_execution_duration
           << " for parse duration " << parse_duration;
       return internal::INVALID_SCRIPT_EXEC_LONGER_THAN_PARSE;
     }
   }
 
   if (timing.parse_timing
-          .parse_blocked_on_script_load_from_document_write_duration >
-      timing.parse_timing.parse_blocked_on_script_load_duration) {
+          ->parse_blocked_on_script_load_from_document_write_duration >
+      timing.parse_timing->parse_blocked_on_script_load_duration) {
     LOG(ERROR)
         << "Invalid parse_blocked_on_script_load_from_document_write_duration "
         << timing.parse_timing
-               .parse_blocked_on_script_load_from_document_write_duration
+               ->parse_blocked_on_script_load_from_document_write_duration
         << " for parse_blocked_on_script_load_duration "
-        << timing.parse_timing.parse_blocked_on_script_load_duration;
+        << timing.parse_timing->parse_blocked_on_script_load_duration;
     return internal::INVALID_SCRIPT_LOAD_DOC_WRITE_LONGER_THAN_SCRIPT_LOAD;
   }
 
   if (timing.parse_timing
-          .parse_blocked_on_script_execution_from_document_write_duration >
-      timing.parse_timing.parse_blocked_on_script_execution_duration) {
+          ->parse_blocked_on_script_execution_from_document_write_duration >
+      timing.parse_timing->parse_blocked_on_script_execution_duration) {
     LOG(ERROR)
         << "Invalid "
            "parse_blocked_on_script_execution_from_document_write_duration "
         << timing.parse_timing
-               .parse_blocked_on_script_execution_from_document_write_duration
+               ->parse_blocked_on_script_execution_from_document_write_duration
         << " for parse_blocked_on_script_execution_duration "
-        << timing.parse_timing.parse_blocked_on_script_execution_duration;
+        << timing.parse_timing->parse_blocked_on_script_execution_duration;
     return internal::INVALID_SCRIPT_EXEC_DOC_WRITE_LONGER_THAN_SCRIPT_EXEC;
   }
 
-  if (!EventsInOrder(timing.parse_timing.parse_stop,
-                     timing.document_timing.dom_content_loaded_event_start)) {
-    LOG(ERROR) << "Invalid parse_stop " << timing.parse_timing.parse_stop
+  if (!EventsInOrder(timing.parse_timing->parse_stop,
+                     timing.document_timing->dom_content_loaded_event_start)) {
+    LOG(ERROR) << "Invalid parse_stop " << timing.parse_timing->parse_stop
                << " for dom_content_loaded_event_start "
-               << timing.document_timing.dom_content_loaded_event_start;
+               << timing.document_timing->dom_content_loaded_event_start;
     return internal::INVALID_ORDER_PARSE_STOP_DOM_CONTENT_LOADED;
   }
 
-  if (!EventsInOrder(timing.document_timing.dom_content_loaded_event_start,
-                     timing.document_timing.load_event_start)) {
+  if (!EventsInOrder(timing.document_timing->dom_content_loaded_event_start,
+                     timing.document_timing->load_event_start)) {
     LOG(ERROR) << "Invalid dom_content_loaded_event_start "
-               << timing.document_timing.dom_content_loaded_event_start
+               << timing.document_timing->dom_content_loaded_event_start
                << " for load_event_start "
-               << timing.document_timing.load_event_start;
+               << timing.document_timing->load_event_start;
     return internal::INVALID_ORDER_DOM_CONTENT_LOADED_LOAD;
   }
 
-  if (!EventsInOrder(timing.parse_timing.parse_start,
-                     timing.document_timing.first_layout)) {
-    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing.parse_start
-               << " for first_layout " << timing.document_timing.first_layout;
+  if (!EventsInOrder(timing.parse_timing->parse_start,
+                     timing.document_timing->first_layout)) {
+    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
+               << " for first_layout " << timing.document_timing->first_layout;
     return internal::INVALID_ORDER_PARSE_START_FIRST_LAYOUT;
   }
 
-  if (!EventsInOrder(timing.document_timing.first_layout,
-                     timing.paint_timing.first_paint)) {
+  if (!EventsInOrder(timing.document_timing->first_layout,
+                     timing.paint_timing->first_paint)) {
     // This can happen when we process an XHTML document that doesn't contain
     // well formed XML. See crbug.com/627607.
     DLOG(ERROR) << "Invalid first_layout "
-                << timing.document_timing.first_layout << " for first_paint "
-                << timing.paint_timing.first_paint;
+                << timing.document_timing->first_layout << " for first_paint "
+                << timing.paint_timing->first_paint;
     return internal::INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT;
   }
 
-  if (!EventsInOrder(timing.paint_timing.first_paint,
-                     timing.paint_timing.first_text_paint)) {
-    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+  if (!EventsInOrder(timing.paint_timing->first_paint,
+                     timing.paint_timing->first_text_paint)) {
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
                << " for first_text_paint "
-               << timing.paint_timing.first_text_paint;
+               << timing.paint_timing->first_text_paint;
     return internal::INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT;
   }
 
-  if (!EventsInOrder(timing.paint_timing.first_paint,
-                     timing.paint_timing.first_image_paint)) {
-    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+  if (!EventsInOrder(timing.paint_timing->first_paint,
+                     timing.paint_timing->first_image_paint)) {
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
                << " for first_image_paint "
-               << timing.paint_timing.first_image_paint;
+               << timing.paint_timing->first_image_paint;
     return internal::INVALID_ORDER_FIRST_PAINT_FIRST_IMAGE_PAINT;
   }
 
-  if (!EventsInOrder(timing.paint_timing.first_paint,
-                     timing.paint_timing.first_contentful_paint)) {
-    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+  if (!EventsInOrder(timing.paint_timing->first_paint,
+                     timing.paint_timing->first_contentful_paint)) {
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
                << " for first_contentful_paint "
-               << timing.paint_timing.first_contentful_paint;
+               << timing.paint_timing->first_contentful_paint;
     return internal::INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT;
   }
 
-  if (!EventsInOrder(timing.paint_timing.first_paint,
-                     timing.paint_timing.first_meaningful_paint)) {
-    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+  if (!EventsInOrder(timing.paint_timing->first_paint,
+                     timing.paint_timing->first_meaningful_paint)) {
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
                << " for first_meaningful_paint "
-               << timing.paint_timing.first_meaningful_paint;
+               << timing.paint_timing->first_meaningful_paint;
     return internal::INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT;
   }
 
@@ -321,45 +321,46 @@ void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
                         completed_after_background);
 }
 
-void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
-                                     const PageLoadTiming& last_timing,
-                                     const PageLoadTiming& new_timing,
-                                     const PageLoadMetadata& last_metadata,
-                                     const PageLoadExtraInfo& extra_info) {
+void DispatchObserverTimingCallbacks(
+    PageLoadMetricsObserver* observer,
+    const mojom::PageLoadTiming& last_timing,
+    const mojom::PageLoadTiming& new_timing,
+    const mojom::PageLoadMetadata& last_metadata,
+    const PageLoadExtraInfo& extra_info) {
   if (extra_info.main_frame_metadata.behavior_flags !=
       last_metadata.behavior_flags)
     observer->OnLoadingBehaviorObserved(extra_info);
-  if (last_timing != new_timing)
+  if (!last_timing.Equals(new_timing))
     observer->OnTimingUpdate(new_timing, extra_info);
-  if (new_timing.document_timing.dom_content_loaded_event_start &&
-      !last_timing.document_timing.dom_content_loaded_event_start)
+  if (new_timing.document_timing->dom_content_loaded_event_start &&
+      !last_timing.document_timing->dom_content_loaded_event_start)
     observer->OnDomContentLoadedEventStart(new_timing, extra_info);
-  if (new_timing.document_timing.load_event_start &&
-      !last_timing.document_timing.load_event_start)
+  if (new_timing.document_timing->load_event_start &&
+      !last_timing.document_timing->load_event_start)
     observer->OnLoadEventStart(new_timing, extra_info);
-  if (new_timing.document_timing.first_layout &&
-      !last_timing.document_timing.first_layout)
+  if (new_timing.document_timing->first_layout &&
+      !last_timing.document_timing->first_layout)
     observer->OnFirstLayout(new_timing, extra_info);
-  if (new_timing.paint_timing.first_paint &&
-      !last_timing.paint_timing.first_paint)
+  if (new_timing.paint_timing->first_paint &&
+      !last_timing.paint_timing->first_paint)
     observer->OnFirstPaintInPage(new_timing, extra_info);
-  if (new_timing.paint_timing.first_text_paint &&
-      !last_timing.paint_timing.first_text_paint)
+  if (new_timing.paint_timing->first_text_paint &&
+      !last_timing.paint_timing->first_text_paint)
     observer->OnFirstTextPaintInPage(new_timing, extra_info);
-  if (new_timing.paint_timing.first_image_paint &&
-      !last_timing.paint_timing.first_image_paint)
+  if (new_timing.paint_timing->first_image_paint &&
+      !last_timing.paint_timing->first_image_paint)
     observer->OnFirstImagePaintInPage(new_timing, extra_info);
-  if (new_timing.paint_timing.first_contentful_paint &&
-      !last_timing.paint_timing.first_contentful_paint)
+  if (new_timing.paint_timing->first_contentful_paint &&
+      !last_timing.paint_timing->first_contentful_paint)
     observer->OnFirstContentfulPaintInPage(new_timing, extra_info);
-  if (new_timing.paint_timing.first_meaningful_paint &&
-      !last_timing.paint_timing.first_meaningful_paint)
+  if (new_timing.paint_timing->first_meaningful_paint &&
+      !last_timing.paint_timing->first_meaningful_paint)
     observer->OnFirstMeaningfulPaintInMainFrameDocument(new_timing, extra_info);
-  if (new_timing.parse_timing.parse_start &&
-      !last_timing.parse_timing.parse_start)
+  if (new_timing.parse_timing->parse_start &&
+      !last_timing.parse_timing->parse_start)
     observer->OnParseStart(new_timing, extra_info);
-  if (new_timing.parse_timing.parse_stop &&
-      !last_timing.parse_timing.parse_stop)
+  if (new_timing.parse_timing->parse_stop &&
+      !last_timing.parse_timing->parse_stop)
     observer->OnParseStop(new_timing, extra_info);
 }
 
@@ -382,6 +383,9 @@ PageLoadTracker::PageLoadTracker(
       page_end_reason_(END_NONE),
       page_end_user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
       started_in_foreground_(in_foreground),
+      merged_page_timing_(CreatePageLoadTiming()),
+      last_dispatched_merged_page_timing_(CreatePageLoadTiming()),
+      last_dispatched_main_frame_metadata_(mojom::PageLoadMetadata::New()),
       page_transition_(navigation_handle->GetPageTransition()),
       user_initiated_info_(user_initiated_info),
       aborted_chain_size_(aborted_chain_size),
@@ -429,7 +433,7 @@ PageLoadTracker::~PageLoadTracker() {
         page_end_reason_ != END_NEW_NAVIGATION) {
       LogAbortChainHistograms(nullptr);
     }
-  } else if (merged_page_timing_.IsEmpty()) {
+  } else if (page_load_metrics::IsEmpty(*merged_page_timing_)) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
   }
 
@@ -438,7 +442,7 @@ PageLoadTracker::~PageLoadTracker() {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
     } else if (did_commit_) {
-      observer->OnComplete(merged_page_timing_, info);
+      observer->OnComplete(*merged_page_timing_, info);
     }
   }
 }
@@ -505,7 +509,7 @@ void PageLoadTracker::WebContentsHidden() {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time_);
   }
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
-  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden, merged_page_timing_, info);
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden, *merged_page_timing_, info);
 }
 
 void PageLoadTracker::WebContentsShown() {
@@ -610,15 +614,15 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
 
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, FlushMetricsOnAppEnterBackground,
-                             merged_page_timing_, info);
+                             *merged_page_timing_, info);
 }
 
 void PageLoadTracker::NotifyClientRedirectTo(
     const PageLoadTracker& destination) {
-  if (merged_page_timing_.paint_timing.first_paint) {
+  if (merged_page_timing_->paint_timing->first_paint) {
     base::TimeTicks first_paint_time =
         navigation_start() +
-        merged_page_timing_.paint_timing.first_paint.value();
+        merged_page_timing_->paint_timing->first_paint.value();
     base::TimeDelta first_paint_to_navigation;
     if (destination.navigation_start() > first_paint_time)
       first_paint_to_navigation =
@@ -632,8 +636,8 @@ void PageLoadTracker::NotifyClientRedirectTo(
 
 void PageLoadTracker::UpdateSubFrameTiming(
     content::RenderFrameHost* render_frame_host,
-    const PageLoadTiming& new_timing,
-    const PageLoadMetadata& new_metadata) {
+    const mojom::PageLoadTiming& new_timing,
+    const mojom::PageLoadMetadata& new_metadata) {
   UpdateSubFrameMetadata(new_metadata);
   const auto it = subframe_navigation_start_offset_.find(
       render_frame_host->GetFrameTreeNodeId());
@@ -643,7 +647,7 @@ void PageLoadTracker::UpdateSubFrameTiming(
   }
 
   base::TimeDelta navigation_start_offset = it->second;
-  MergePaintTiming(navigation_start_offset, new_timing.paint_timing,
+  MergePaintTiming(navigation_start_offset, *(new_timing.paint_timing),
                    false /* is_main_frame */);
 
   DispatchTimingUpdates();
@@ -651,28 +655,28 @@ void PageLoadTracker::UpdateSubFrameTiming(
 
 void PageLoadTracker::MergePaintTiming(
     base::TimeDelta navigation_start_offset,
-    const page_load_metrics::PaintTiming& new_paint_timing,
+    const mojom::PaintTiming& new_paint_timing,
     bool is_main_frame) {
-  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_paint,
+  MaybeUpdateTimeDelta(&merged_page_timing_->paint_timing->first_paint,
                        navigation_start_offset, new_paint_timing.first_paint);
-  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_text_paint,
+  MaybeUpdateTimeDelta(&merged_page_timing_->paint_timing->first_text_paint,
                        navigation_start_offset,
                        new_paint_timing.first_text_paint);
-  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_image_paint,
+  MaybeUpdateTimeDelta(&merged_page_timing_->paint_timing->first_image_paint,
                        navigation_start_offset,
                        new_paint_timing.first_image_paint);
-  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_contentful_paint,
-                       navigation_start_offset,
-                       new_paint_timing.first_contentful_paint);
+  MaybeUpdateTimeDelta(
+      &merged_page_timing_->paint_timing->first_contentful_paint,
+      navigation_start_offset, new_paint_timing.first_contentful_paint);
   if (is_main_frame) {
     // first meaningful paint is only tracked in the main frame.
-    merged_page_timing_.paint_timing.first_meaningful_paint =
+    merged_page_timing_->paint_timing->first_meaningful_paint =
         new_paint_timing.first_meaningful_paint;
   }
 }
 
 void PageLoadTracker::UpdateSubFrameMetadata(
-    const PageLoadMetadata& subframe_metadata) {
+    const mojom::PageLoadMetadata& subframe_metadata) {
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
   const int last_subframe_loading_behavior_flags =
@@ -687,15 +691,16 @@ void PageLoadTracker::UpdateSubFrameMetadata(
   }
 }
 
-void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
-                                   const PageLoadMetadata& new_metadata) {
+void PageLoadTracker::UpdateTiming(
+    const mojom::PageLoadTiming& new_timing,
+    const mojom::PageLoadMetadata& new_metadata) {
   // Throw away IPCs that are not relevant to the current navigation.
   // Two timing structures cannot refer to the same navigation if they indicate
   // that a navigation started at different times, so a new timing struct with a
   // different start time from an earlier struct is considered invalid.
   const bool valid_timing_descendent =
-      merged_page_timing_.navigation_start.is_null() ||
-      merged_page_timing_.navigation_start == new_timing.navigation_start;
+      merged_page_timing_->navigation_start.is_null() ||
+      merged_page_timing_->navigation_start == new_timing.navigation_start;
   if (!valid_timing_descendent) {
     RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_TIMING_DESCENDENT);
     return;
@@ -722,16 +727,17 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   // must be called before DispatchObserverTimingCallbacks, but its
   // implementation depends on the state of main_frame_metadata_, so we need
   // to update main_frame_metadata_ before calling GetPageLoadMetricsInfo.
-  // Thus, we make a copy of timing here, update timing_ and
+  // Thus, we make a copy of timing here, update merged_page_timing_ and
   // main_frame_metadata_, and then proceed to dispatch the observer timing
   // callbacks.
-  const PaintTiming last_paint_timing = merged_page_timing_.paint_timing;
+  const mojom::PaintTimingPtr last_paint_timing =
+      std::move(merged_page_timing_->paint_timing);
 
   // Update the merged_page_timing_, making sure to merge the previously
   // observed |paint_timing|, which is tracked across all frames in the page.
-  merged_page_timing_ = new_timing;
-  merged_page_timing_.paint_timing = last_paint_timing;
-  MergePaintTiming(base::TimeDelta(), new_timing.paint_timing,
+  merged_page_timing_ = new_timing.Clone();
+  merged_page_timing_->paint_timing = last_paint_timing.Clone();
+  MergePaintTiming(base::TimeDelta(), *new_timing.paint_timing,
                    true /* is_main_frame */);
 
   main_frame_metadata_ = new_metadata;
@@ -740,14 +746,14 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
 }
 
 void PageLoadTracker::DispatchTimingUpdates() {
-  if (last_dispatched_merged_page_timing_ == merged_page_timing_ &&
-      last_dispatched_main_frame_metadata_ == main_frame_metadata_) {
+  if (last_dispatched_merged_page_timing_->Equals(*merged_page_timing_) &&
+      last_dispatched_main_frame_metadata_->Equals(main_frame_metadata_)) {
     return;
   }
 
-  if (merged_page_timing_.paint_timing.first_paint) {
-    if (!merged_page_timing_.parse_timing.parse_start ||
-        !merged_page_timing_.document_timing.first_layout) {
+  if (merged_page_timing_->paint_timing->first_paint) {
+    if (!merged_page_timing_->parse_timing->parse_start ||
+        !merged_page_timing_->document_timing->first_layout) {
       // When merging paint events across frames, we can sometimes encounter
       // cases where we've received a first paint event for a child frame before
       // receiving required earlier events in the main frame, due to buffering
@@ -763,18 +769,18 @@ void PageLoadTracker::DispatchTimingUpdates() {
   }
 
   internal::PageLoadTimingStatus status =
-      IsValidPageLoadTiming(merged_page_timing_);
+      IsValidPageLoadTiming(*merged_page_timing_);
   UMA_HISTOGRAM_ENUMERATION(internal::kPageLoadTimingDispatchStatus, status,
                             internal::LAST_PAGE_LOAD_TIMING_STATUS);
 
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
     DispatchObserverTimingCallbacks(
-        observer.get(), last_dispatched_merged_page_timing_,
-        merged_page_timing_, last_dispatched_main_frame_metadata_, info);
+        observer.get(), *last_dispatched_merged_page_timing_,
+        *merged_page_timing_, *last_dispatched_main_frame_metadata_, info);
   }
-  last_dispatched_merged_page_timing_ = merged_page_timing_;
-  last_dispatched_main_frame_metadata_ = main_frame_metadata_;
+  last_dispatched_merged_page_timing_ = merged_page_timing_->Clone();
+  last_dispatched_main_frame_metadata_ = main_frame_metadata_.Clone();
 }
 
 void PageLoadTracker::OnStartedResource(

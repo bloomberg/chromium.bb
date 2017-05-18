@@ -176,14 +176,15 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   // verify both that all metrics are logged, and that we don't log metrics that
   // aren't present in the PageLoadTiming struct. Logging of FMP is verified in
   // the FirstMeaningfulPaint test below.
-  page_load_metrics::PageLoadTiming timing;
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(100);
-  timing.document_timing.dom_content_loaded_event_start =
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(100);
+  timing.document_timing->dom_content_loaded_event_start =
       base::TimeDelta::FromMilliseconds(200);
-  timing.paint_timing.first_contentful_paint =
+  timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(300);
-  timing.document_timing.load_event_start =
+  timing.document_timing->load_event_start =
       base::TimeDelta::FromMilliseconds(500);
   PopulateRequiredTimingFields(&timing);
 
@@ -258,9 +259,10 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
-  page_load_metrics::PageLoadTiming timing;
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing.first_meaningful_paint =
+  timing.paint_timing->first_meaningful_paint =
       base::TimeDelta::FromMilliseconds(600);
   PopulateRequiredTimingFields(&timing);
 
@@ -287,14 +289,16 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
-  page_load_metrics::PageLoadTiming timing1;
+  page_load_metrics::mojom::PageLoadTiming timing1;
+  page_load_metrics::InitPageLoadTimingForTest(&timing1);
   timing1.navigation_start = base::Time::FromDoubleT(1);
-  timing1.paint_timing.first_contentful_paint =
+  timing1.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(200);
   PopulateRequiredTimingFields(&timing1);
 
   // Second navigation reports no timing metrics.
-  page_load_metrics::PageLoadTiming timing2;
+  page_load_metrics::mojom::PageLoadTiming timing2;
+  page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(1);
   PopulateRequiredTimingFields(&timing2);
 

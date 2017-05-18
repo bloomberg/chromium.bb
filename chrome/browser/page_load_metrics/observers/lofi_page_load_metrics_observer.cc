@@ -59,7 +59,7 @@ LoFiPageLoadMetricsObserver::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 LoFiPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
@@ -73,7 +73,7 @@ LoFiPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
 }
 
 void LoFiPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (num_network_lofi_resources_ == 0)
     return;
@@ -91,36 +91,36 @@ void LoFiPageLoadMetricsObserver::RecordPageSizeUMA() const {
 }
 
 void LoFiPageLoadMetricsObserver::RecordTimingMetrics(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.load_event_start, info)) {
+          timing.document_timing->load_event_start, info)) {
     PAGE_LOAD_HISTOGRAM(lofi_names::kNavigationToLoadEvent,
-                        timing.document_timing.load_event_start.value());
+                        timing.document_timing->load_event_start.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_contentful_paint, info)) {
+          timing.paint_timing->first_contentful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(lofi_names::kNavigationToFirstContentfulPaint,
-                        timing.paint_timing.first_contentful_paint.value());
+                        timing.paint_timing->first_contentful_paint.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_meaningful_paint, info)) {
+          timing.paint_timing->first_meaningful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(lofi_names::kNavigationToFirstMeaningfulPaint,
-                        timing.paint_timing.first_meaningful_paint.value());
+                        timing.paint_timing->first_meaningful_paint.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_image_paint, info)) {
+          timing.paint_timing->first_image_paint, info)) {
     PAGE_LOAD_HISTOGRAM(lofi_names::kNavigationToFirstImagePaint,
-                        timing.paint_timing.first_image_paint.value());
+                        timing.paint_timing->first_image_paint.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing.parse_stop, info)) {
+          timing.parse_timing->parse_stop, info)) {
     PAGE_LOAD_HISTOGRAM(
         lofi_names::kParseBlockedOnScriptLoad,
-        timing.parse_timing.parse_blocked_on_script_load_duration.value());
+        timing.parse_timing->parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(lofi_names::kParseDuration,
-                        timing.parse_timing.parse_stop.value() -
-                            timing.parse_timing.parse_start.value());
+                        timing.parse_timing->parse_stop.value() -
+                            timing.parse_timing->parse_start.value());
   }
 }
 

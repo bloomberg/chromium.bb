@@ -20,8 +20,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     PageEndReason page_end_reason,
     UserInitiatedInfo page_end_user_initiated_info,
     const base::Optional<base::TimeDelta>& page_end_time,
-    const PageLoadMetadata& main_frame_metadata,
-    const PageLoadMetadata& subframe_metadata)
+    const mojom::PageLoadMetadata& main_frame_metadata,
+    const mojom::PageLoadMetadata& subframe_metadata)
     : navigation_start(navigation_start),
       first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -52,8 +52,8 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
       UserInitiatedInfo::BrowserInitiated(), url, url, true /* did_commit */,
       page_load_metrics::END_NONE,
       page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
-      base::TimeDelta(), page_load_metrics::PageLoadMetadata(),
-      page_load_metrics::PageLoadMetadata());
+      base::TimeDelta(), page_load_metrics::mojom::PageLoadMetadata(),
+      page_load_metrics::mojom::PageLoadMetadata());
 }
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
@@ -107,7 +107,7 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
 }
 
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnHidden(
-    const PageLoadTiming& timing,
+    const mojom::PageLoadTiming& timing,
     const PageLoadExtraInfo& extra_info) {
   return CONTINUE_OBSERVING;
 }
@@ -118,7 +118,7 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnShown() {
 
 PageLoadMetricsObserver::ObservePolicy
 PageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const PageLoadTiming& timing,
+    const mojom::PageLoadTiming& timing,
     const PageLoadExtraInfo& extra_info) {
   return CONTINUE_OBSERVING;
 }

@@ -28,15 +28,16 @@ class AMPPageLoadMetricsObserverTest
   }
 
   void ResetTest() {
+    page_load_metrics::InitPageLoadTimingForTest(&timing_);
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.parse_timing.parse_start = base::TimeDelta::FromSeconds(3);
-    timing_.paint_timing.first_contentful_paint =
+    timing_.parse_timing->parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(4);
-    timing_.paint_timing.first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing.first_text_paint = base::TimeDelta::FromSeconds(6);
-    timing_.document_timing.load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
   }
 
@@ -53,23 +54,24 @@ class AMPPageLoadMetricsObserverTest
     ValidateHistogramsFor(
         "PageLoad.Clients.AMP.DocumentTiming."
         "NavigationToDOMContentLoadedEventFired",
-        view_type, timing_.document_timing.dom_content_loaded_event_start,
+        view_type, timing_.document_timing->dom_content_loaded_event_start,
         expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMP.DocumentTiming.NavigationToFirstLayout",
-        view_type, timing_.document_timing.first_layout, expect_histograms);
+        view_type, timing_.document_timing->first_layout, expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMP.DocumentTiming."
         "NavigationToLoadEventFired",
-        view_type, timing_.document_timing.load_event_start, expect_histograms);
+        view_type, timing_.document_timing->load_event_start,
+        expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMP.PaintTiming."
         "NavigationToFirstContentfulPaint",
-        view_type, timing_.paint_timing.first_contentful_paint,
+        view_type, timing_.paint_timing->first_contentful_paint,
         expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart", view_type,
-        timing_.parse_timing.parse_start, expect_histograms);
+        timing_.parse_timing->parse_start, expect_histograms);
   }
 
   void ValidateHistogramsFor(const std::string& histogram,
@@ -102,7 +104,7 @@ class AMPPageLoadMetricsObserverTest
   }
 
  private:
-  page_load_metrics::PageLoadTiming timing_;
+  page_load_metrics::mojom::PageLoadTiming timing_;
 
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserverTest);
 };

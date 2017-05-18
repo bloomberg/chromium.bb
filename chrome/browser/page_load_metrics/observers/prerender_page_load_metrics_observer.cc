@@ -62,17 +62,17 @@ PrerenderPageLoadMetricsObserver::OnCommit(
 }
 
 void PrerenderPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   DCHECK(!start_ticks_.is_null());
   prerender_manager_->RecordPrerenderFirstContentfulPaint(
       extra_info.start_url, web_contents_, is_no_store_, was_hidden_,
-      start_ticks_ + *timing.paint_timing.first_contentful_paint);
+      start_ticks_ + *timing.paint_timing->first_contentful_paint);
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PrerenderPageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   was_hidden_ = true;
   return CONTINUE_OBSERVING;

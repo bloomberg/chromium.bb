@@ -28,7 +28,7 @@ class PageLoadMetricsObserverTestHarness
 
   // Helper that fills in any timing fields that MWCO requires but that are
   // currently missing.
-  static void PopulateRequiredTimingFields(PageLoadTiming* inout_timing);
+  static void PopulateRequiredTimingFields(mojom::PageLoadTiming* inout_timing);
 
   void SetUp() override;
 
@@ -52,9 +52,9 @@ class PageLoadMetricsObserverTestHarness
   // Call this to simulate sending a PageLoadTiming IPC from the render process
   // to the browser process. These will update the timing information for the
   // most recently committed navigation.
-  void SimulateTimingUpdate(const PageLoadTiming& timing);
-  void SimulateTimingAndMetadataUpdate(const PageLoadTiming& timing,
-                                       const PageLoadMetadata& metadata);
+  void SimulateTimingUpdate(const mojom::PageLoadTiming& timing);
+  void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
+                                       const mojom::PageLoadMetadata& metadata);
 
   // Simulates a loaded resource.
   void SimulateStartedResource(const ExtraRequestStartInfo& info);

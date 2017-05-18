@@ -32,7 +32,7 @@ HttpsEngagementPageLoadMetricsObserver::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 HttpsEngagementPageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (currently_in_foreground_) {
     foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
@@ -49,7 +49,7 @@ HttpsEngagementPageLoadMetricsObserver::OnShown() {
 }
 
 void HttpsEngagementPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (!extra_info.did_commit || !extra_info.url.is_valid()) {
     return;

@@ -47,24 +47,25 @@ class FakePageTimingMetricsIPCSender : public IPC::Sender {
 
   // PageLoadTimings that are expected to be sent through Send() should be
   // passed to ExpectPageLoadTiming.
-  void ExpectPageLoadTiming(const PageLoadTiming& timing);
+  void ExpectPageLoadTiming(const mojom::PageLoadTiming& timing);
 
   // Forces verification that actual timings sent through Send match
   // expected timings provided via ExpectPageLoadTiming.
   void VerifyExpectedTimings() const;
 
-  const std::vector<PageLoadTiming>& expected_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& expected_timings() const {
     return expected_timings_;
   }
-  const std::vector<PageLoadTiming>& actual_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& actual_timings() const {
     return actual_timings_;
   }
 
  private:
-  void OnTimingUpdated(const PageLoadTiming& timing, PageLoadMetadata metadata);
+  void OnTimingUpdated(const mojom::PageLoadTiming& timing,
+                       mojom::PageLoadMetadata metadata);
 
-  std::vector<PageLoadTiming> expected_timings_;
-  std::vector<PageLoadTiming> actual_timings_;
+  std::vector<mojom::PageLoadTimingPtr> expected_timings_;
+  std::vector<mojom::PageLoadTimingPtr> actual_timings_;
 };
 
 }  // namespace page_load_metrics

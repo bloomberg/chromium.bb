@@ -57,24 +57,25 @@ class UkmPageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
 
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
   ObservePolicy OnHidden(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
-  void OnComplete(const page_load_metrics::PageLoadTiming& timing,
+  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   // Records page load timing related metrics available in PageLoadTiming, such
   // as first contentful paint.
-  void RecordTimingMetrics(const page_load_metrics::PageLoadTiming& timing);
+  void RecordTimingMetrics(
+      const page_load_metrics::mojom::PageLoadTiming& timing);
 
   // Records metrics based on the PageLoadExtraInfo struct, as well as updating
   // the URL. |app_background_time| should be set to a timestamp if the app was

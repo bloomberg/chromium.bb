@@ -27,20 +27,21 @@ class LoFiPageLoadMetricsObserverTest
   ~LoFiPageLoadMetricsObserverTest() override {}
 
   void ResetTest() {
+    page_load_metrics::InitPageLoadTimingForTest(&timing_);
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.parse_timing.parse_start = base::TimeDelta::FromSeconds(3);
-    timing_.paint_timing.first_contentful_paint =
+    timing_.parse_timing->parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(4);
-    timing_.paint_timing.first_paint = base::TimeDelta::FromSeconds(4);
-    timing_.paint_timing.first_meaningful_paint =
+    timing_.paint_timing->first_paint = base::TimeDelta::FromSeconds(4);
+    timing_.paint_timing->first_meaningful_paint =
         base::TimeDelta::FromSeconds(8);
-    timing_.paint_timing.first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing.first_text_paint = base::TimeDelta::FromSeconds(6);
-    timing_.document_timing.load_event_start = base::TimeDelta::FromSeconds(7);
-    timing_.parse_timing.parse_stop = base::TimeDelta::FromSeconds(4);
-    timing_.parse_timing.parse_blocked_on_script_load_duration =
+    timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.parse_timing->parse_stop = base::TimeDelta::FromSeconds(4);
+    timing_.parse_timing->parse_blocked_on_script_load_duration =
         base::TimeDelta::FromSeconds(1);
     PopulateRequiredTimingFields(&timing_);
   }
@@ -52,24 +53,24 @@ class LoFiPageLoadMetricsObserverTest
 
   void ValidateTimingHistograms(bool lofi_request_sent) {
     ValidateTimingHistogram(lofi_names::kNavigationToLoadEvent,
-                            timing_.document_timing.load_event_start,
+                            timing_.document_timing->load_event_start,
                             lofi_request_sent);
     ValidateTimingHistogram(lofi_names::kNavigationToFirstContentfulPaint,
-                            timing_.paint_timing.first_contentful_paint,
+                            timing_.paint_timing->first_contentful_paint,
                             lofi_request_sent);
     ValidateTimingHistogram(lofi_names::kNavigationToFirstMeaningfulPaint,
-                            timing_.paint_timing.first_meaningful_paint,
+                            timing_.paint_timing->first_meaningful_paint,
                             lofi_request_sent);
     ValidateTimingHistogram(lofi_names::kNavigationToFirstImagePaint,
-                            timing_.paint_timing.first_image_paint,
+                            timing_.paint_timing->first_image_paint,
                             lofi_request_sent);
     ValidateTimingHistogram(
         lofi_names::kParseBlockedOnScriptLoad,
-        timing_.parse_timing.parse_blocked_on_script_load_duration,
+        timing_.parse_timing->parse_blocked_on_script_load_duration,
         lofi_request_sent);
     ValidateTimingHistogram(lofi_names::kParseDuration,
-                            timing_.parse_timing.parse_stop.value() -
-                                timing_.parse_timing.parse_start.value(),
+                            timing_.parse_timing->parse_stop.value() -
+                                timing_.parse_timing->parse_start.value(),
                             lofi_request_sent);
   }
 
@@ -114,7 +115,7 @@ class LoFiPageLoadMetricsObserverTest
     tracker->AddObserver(base::MakeUnique<LoFiPageLoadMetricsObserver>());
   }
 
-  page_load_metrics::PageLoadTiming timing_;
+  page_load_metrics::mojom::PageLoadTiming timing_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoFiPageLoadMetricsObserverTest);

@@ -140,20 +140,21 @@ class DataReductionProxyMetricsObserverTest
         is_using_lofi_(false) {}
 
   void ResetTest() {
+    page_load_metrics::InitPageLoadTimingForTest(&timing_);
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.parse_timing.parse_start = base::TimeDelta::FromSeconds(3);
-    timing_.paint_timing.first_contentful_paint =
+    timing_.parse_timing->parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(4);
-    timing_.paint_timing.first_paint = base::TimeDelta::FromSeconds(4);
-    timing_.paint_timing.first_meaningful_paint =
+    timing_.paint_timing->first_paint = base::TimeDelta::FromSeconds(4);
+    timing_.paint_timing->first_meaningful_paint =
         base::TimeDelta::FromSeconds(8);
-    timing_.paint_timing.first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing.first_text_paint = base::TimeDelta::FromSeconds(6);
-    timing_.document_timing.load_event_start = base::TimeDelta::FromSeconds(7);
-    timing_.parse_timing.parse_stop = base::TimeDelta::FromSeconds(4);
-    timing_.parse_timing.parse_blocked_on_script_load_duration =
+    timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.parse_timing->parse_stop = base::TimeDelta::FromSeconds(4);
+    timing_.parse_timing->parse_blocked_on_script_load_duration =
         base::TimeDelta::FromSeconds(1);
     PopulateRequiredTimingFields(&timing_);
   }
@@ -188,16 +189,16 @@ class DataReductionProxyMetricsObserverTest
     EXPECT_TRUE(pingback_client_->send_pingback_called());
     EXPECT_EQ(timing_.navigation_start,
               pingback_client_->timing()->navigation_start);
-    ExpectEqualOrUnset(timing_.paint_timing.first_contentful_paint,
+    ExpectEqualOrUnset(timing_.paint_timing->first_contentful_paint,
                        pingback_client_->timing()->first_contentful_paint);
     ExpectEqualOrUnset(
-        timing_.paint_timing.first_meaningful_paint,
+        timing_.paint_timing->first_meaningful_paint,
         pingback_client_->timing()->experimental_first_meaningful_paint);
     ExpectEqualOrUnset(timing_.response_start,
               pingback_client_->timing()->response_start);
-    ExpectEqualOrUnset(timing_.document_timing.load_event_start,
+    ExpectEqualOrUnset(timing_.document_timing->load_event_start,
                        pingback_client_->timing()->load_event_start);
-    ExpectEqualOrUnset(timing_.paint_timing.first_image_paint,
+    ExpectEqualOrUnset(timing_.paint_timing->first_image_paint,
                        pingback_client_->timing()->first_image_paint);
   }
 
@@ -209,29 +210,29 @@ class DataReductionProxyMetricsObserverTest
   void ValidateHistograms() {
     ValidateHistogramsForSuffix(
         internal::kHistogramDOMContentLoadedEventFiredSuffix,
-        timing_.document_timing.dom_content_loaded_event_start);
+        timing_.document_timing->dom_content_loaded_event_start);
     ValidateHistogramsForSuffix(internal::kHistogramFirstLayoutSuffix,
-                                timing_.document_timing.first_layout);
+                                timing_.document_timing->first_layout);
     ValidateHistogramsForSuffix(internal::kHistogramLoadEventFiredSuffix,
-                                timing_.document_timing.load_event_start);
+                                timing_.document_timing->load_event_start);
     ValidateHistogramsForSuffix(internal::kHistogramFirstContentfulPaintSuffix,
-                                timing_.paint_timing.first_contentful_paint);
+                                timing_.paint_timing->first_contentful_paint);
     ValidateHistogramsForSuffix(internal::kHistogramFirstMeaningfulPaintSuffix,
-                                timing_.paint_timing.first_meaningful_paint);
+                                timing_.paint_timing->first_meaningful_paint);
     ValidateHistogramsForSuffix(internal::kHistogramFirstImagePaintSuffix,
-                                timing_.paint_timing.first_image_paint);
+                                timing_.paint_timing->first_image_paint);
     ValidateHistogramsForSuffix(internal::kHistogramFirstPaintSuffix,
-                                timing_.paint_timing.first_paint);
+                                timing_.paint_timing->first_paint);
     ValidateHistogramsForSuffix(internal::kHistogramFirstTextPaintSuffix,
-                                timing_.paint_timing.first_text_paint);
+                                timing_.paint_timing->first_text_paint);
     ValidateHistogramsForSuffix(internal::kHistogramParseStartSuffix,
-                                timing_.parse_timing.parse_start);
+                                timing_.parse_timing->parse_start);
     ValidateHistogramsForSuffix(
         internal::kHistogramParseBlockedOnScriptLoadSuffix,
-        timing_.parse_timing.parse_blocked_on_script_load_duration);
+        timing_.parse_timing->parse_blocked_on_script_load_duration);
     ValidateHistogramsForSuffix(internal::kHistogramParseDurationSuffix,
-                                timing_.parse_timing.parse_stop.value() -
-                                    timing_.parse_timing.parse_start.value());
+                                timing_.parse_timing->parse_stop.value() -
+                                    timing_.parse_timing->parse_start.value());
   }
 
   void ValidateHistogramsForSuffix(
@@ -342,7 +343,7 @@ class DataReductionProxyMetricsObserverTest
   }
 
   std::unique_ptr<TestPingbackClient> pingback_client_;
-  page_load_metrics::PageLoadTiming timing_;
+  page_load_metrics::mojom::PageLoadTiming timing_;
 
  private:
   bool data_reduction_proxy_used_;
@@ -384,28 +385,28 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   ResetTest();
   // Verify that when data reduction proxy was used but first image paint is
   // unset, the correct timing information is sent to SendPingback.
-  timing_.paint_timing.first_image_paint = base::nullopt;
+  timing_.paint_timing->first_image_paint = base::nullopt;
   RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first contentful paint
   // is unset, SendPingback is not called.
-  timing_.paint_timing.first_contentful_paint = base::nullopt;
+  timing_.paint_timing->first_contentful_paint = base::nullopt;
   RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first meaningful paint
   // is unset, SendPingback is not called.
-  timing_.paint_timing.first_meaningful_paint = base::nullopt;
+  timing_.paint_timing->first_meaningful_paint = base::nullopt;
   RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but load event start is
   // unset, SendPingback is not called.
-  timing_.document_timing.load_event_start = base::nullopt;
+  timing_.document_timing->load_event_start = base::nullopt;
   RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
   ValidateLoFiInPingback(false);

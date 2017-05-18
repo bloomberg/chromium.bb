@@ -14,11 +14,6 @@ namespace content {
 class NavigationHandle;
 }
 
-namespace page_load_metrics {
-struct PageLoadExtraInfo;
-struct PageLoadTiming;
-}
-
 // Observer responsible for recording core page load metrics relevant to
 // restored tabs.
 class TabRestorePageLoadMetricsObserver
@@ -28,7 +23,7 @@ class TabRestorePageLoadMetricsObserver
   ~TabRestorePageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnComplete(const page_load_metrics::PageLoadTiming& timing,
+  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy OnStart(
       content::NavigationHandle* navigation_handle,
@@ -38,7 +33,7 @@ class TabRestorePageLoadMetricsObserver
                             extra_request_complete_info) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy
   FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
  protected:

@@ -135,20 +135,20 @@ class PageLoadMetricsWaiter
   };
 
   static TimingFieldBitSet GetMatchedBits(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadMetadata& metadata) {
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadMetadata& metadata) {
     TimingFieldBitSet matched_bits;
-    if (timing.document_timing.first_layout)
+    if (timing.document_timing->first_layout)
       matched_bits.Set(TimingField::FIRST_LAYOUT);
-    if (timing.document_timing.load_event_start)
+    if (timing.document_timing->load_event_start)
       matched_bits.Set(TimingField::LOAD_EVENT);
-    if (timing.paint_timing.first_paint)
+    if (timing.paint_timing->first_paint)
       matched_bits.Set(TimingField::FIRST_PAINT);
-    if (timing.paint_timing.first_contentful_paint)
+    if (timing.paint_timing->first_contentful_paint)
       matched_bits.Set(TimingField::FIRST_CONTENTFUL_PAINT);
-    if (timing.paint_timing.first_meaningful_paint)
+    if (timing.paint_timing->first_meaningful_paint)
       matched_bits.Set(TimingField::FIRST_MEANINGFUL_PAINT);
-    if (timing.style_sheet_timing.update_style_duration_before_fcp)
+    if (timing.style_sheet_timing->update_style_duration_before_fcp)
       matched_bits.Set(TimingField::STYLE_UPDATE_BEFORE_FCP);
     if (metadata.behavior_flags &
         blink::WebLoadingBehaviorFlag::
@@ -160,8 +160,8 @@ class PageLoadMetricsWaiter
 
   void OnTimingUpdated(
       bool is_main_frame,
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadMetadata& metadata) override {
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadMetadata& metadata) override {
     if (expectations_satisfied())
       return;
 

@@ -226,17 +226,17 @@ class PageLoadTracker {
 
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
 
-  void UpdateTiming(const PageLoadTiming& timing,
-                    const PageLoadMetadata& metadata);
+  void UpdateTiming(const mojom::PageLoadTiming& timing,
+                    const mojom::PageLoadMetadata& metadata);
 
   void UpdateSubFrameTiming(content::RenderFrameHost* render_frame_host,
-                            const PageLoadTiming& new_timing,
-                            const PageLoadMetadata& new_metadata);
+                            const mojom::PageLoadTiming& new_timing,
+                            const mojom::PageLoadMetadata& new_metadata);
 
   // Update metadata for child frames. Updates for child frames arrive
   // separately from updates for the main frame, so aren't included in
   // UpdateTiming.
-  void UpdateSubFrameMetadata(const PageLoadMetadata& subframe_metadata);
+  void UpdateSubFrameMetadata(const mojom::PageLoadMetadata& subframe_metadata);
 
   void OnStartedResource(
       const ExtraRequestStartInfo& extra_request_started_info);
@@ -342,7 +342,7 @@ class PageLoadTracker {
   // Merge values from |new_paint_timing| into |merged_page_timing_|, offsetting
   // any new timings by the |navigation_start_offset|.
   void MergePaintTiming(base::TimeDelta navigation_start_offset,
-                        const page_load_metrics::PaintTiming& new_paint_timing,
+                        const mojom::PaintTiming& new_paint_timing,
                         bool is_main_frame);
 
   void DispatchTimingUpdates();
@@ -399,13 +399,13 @@ class PageLoadTracker {
   // PageLoadTiming for the currently tracked page. The fields in |paint_timing|
   // are merged across all frames in the document. All other fields are for the
   // main frame document.
-  PageLoadTiming merged_page_timing_;
-  PageLoadTiming last_dispatched_merged_page_timing_;
+  mojom::PageLoadTimingPtr merged_page_timing_;
+  mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;
 
-  PageLoadMetadata main_frame_metadata_;
-  PageLoadMetadata last_dispatched_main_frame_metadata_;
+  mojom::PageLoadMetadata main_frame_metadata_;
+  mojom::PageLoadMetadataPtr last_dispatched_main_frame_metadata_;
 
-  PageLoadMetadata subframe_metadata_;
+  mojom::PageLoadMetadata subframe_metadata_;
 
   ui::PageTransition page_transition_;
 
