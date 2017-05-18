@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL PerformanceResourceTiming sizes compressed content test assert_equals: Wrong number of entries expected 2 but got 0
-Harness: the test ran to completion.
-

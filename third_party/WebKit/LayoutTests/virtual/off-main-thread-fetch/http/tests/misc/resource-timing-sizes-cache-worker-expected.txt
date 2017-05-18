@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL PerformanceResourceTiming sizes caching test assert_equals: Wrong number of entries expected 3 but got 0
-Harness: the test ran to completion.
-

@@ -62,6 +62,7 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
+  void AddResourceTiming(const ResourceTimingInfo&) override;
 
   DECLARE_VIRTUAL_TRACE();
 
