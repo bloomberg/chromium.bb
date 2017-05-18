@@ -122,7 +122,6 @@
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
-#include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -232,6 +231,7 @@
 #include "web/TextFinder.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
+#include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
@@ -246,20 +246,20 @@ static HeapVector<ScriptSourceCode> CreateSourcesVector(
   return sources;
 }
 
-WebPluginContainerBase* WebLocalFrameImpl::PluginContainerFromFrame(
+WebPluginContainerImpl* WebLocalFrameImpl::PluginContainerFromFrame(
     LocalFrame* frame) {
   if (!frame)
     return 0;
   if (!frame->GetDocument() || !frame->GetDocument()->IsPluginDocument())
     return 0;
   PluginDocument* plugin_document = ToPluginDocument(frame->GetDocument());
-  return ToWebPluginContainerBase(plugin_document->GetPluginView());
+  return ToWebPluginContainerImpl(plugin_document->GetPluginView());
 }
 
-WebPluginContainerBase* WebLocalFrameImpl::CurrentPluginContainer(
+WebPluginContainerImpl* WebLocalFrameImpl::CurrentPluginContainer(
     LocalFrame* frame,
     Node* node) {
-  WebPluginContainerBase* plugin_container = PluginContainerFromFrame(frame);
+  WebPluginContainerImpl* plugin_container = PluginContainerFromFrame(frame);
   if (plugin_container)
     return plugin_container;
 
@@ -267,7 +267,7 @@ WebPluginContainerBase* WebLocalFrameImpl::CurrentPluginContainer(
     DCHECK(frame->GetDocument());
     node = frame->GetDocument()->FocusedElement();
   }
-  return ToWebPluginContainerBase(WebNode::PluginContainerFromNode(node));
+  return ToWebPluginContainerImpl(WebNode::PluginContainerFromNode(node));
 }
 
 // Simple class to override some of PrintContext behavior. Some of the methods
@@ -444,7 +444,7 @@ class ChromePrintContext : public PrintContext {
 class ChromePluginPrintContext final : public ChromePrintContext {
  public:
   ChromePluginPrintContext(LocalFrame* frame,
-                           WebPluginContainerBase* plugin,
+                           WebPluginContainerImpl* plugin,
                            const WebPrintParams& print_params)
       : ChromePrintContext(frame),
         plugin_(plugin),
@@ -502,7 +502,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 
  private:
   // Set when printing.
-  Member<WebPluginContainerBase> plugin_;
+  Member<WebPluginContainerImpl> plugin_;
   WebPrintParams print_params_;
 };
 
@@ -1068,7 +1068,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
 
   Node* plugin_lookup_context_node =
       context_menu_node_ && name == "Copy" ? context_menu_node_ : nullptr;
-  WebPluginContainerBase* plugin_container =
+  WebPluginContainerImpl* plugin_container =
       CurrentPluginContainer(GetFrame(), plugin_lookup_context_node);
   if (plugin_container && plugin_container->ExecuteEditCommand(name))
     return true;
@@ -1080,7 +1080,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
                                        const WebString& value) {
   DCHECK(GetFrame());
 
-  WebPluginContainerBase* plugin_container = CurrentPluginContainer(GetFrame());
+  WebPluginContainerImpl* plugin_container = CurrentPluginContainer(GetFrame());
   if (plugin_container && plugin_container->ExecuteEditCommand(name, value))
     return true;
 
@@ -1128,7 +1128,7 @@ void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
 }
 
 bool WebLocalFrameImpl::HasSelection() const {
-  WebPluginContainerBase* plugin_container =
+  WebPluginContainerImpl* plugin_container =
       PluginContainerFromFrame(GetFrame());
   if (plugin_container)
     return plugin_container->Plugin()->HasSelection();
@@ -1155,7 +1155,7 @@ WebRange WebLocalFrameImpl::SelectionRange() const {
 }
 
 WebString WebLocalFrameImpl::SelectionAsText() const {
-  WebPluginContainerBase* plugin_container =
+  WebPluginContainerImpl* plugin_container =
       PluginContainerFromFrame(GetFrame());
   if (plugin_container)
     return plugin_container->Plugin()->SelectionAsText();
@@ -1174,7 +1174,7 @@ WebString WebLocalFrameImpl::SelectionAsText() const {
 }
 
 WebString WebLocalFrameImpl::SelectionAsMarkup() const {
-  WebPluginContainerBase* plugin_container =
+  WebPluginContainerImpl* plugin_container =
       PluginContainerFromFrame(GetFrame());
   if (plugin_container)
     return plugin_container->Plugin()->SelectionAsMarkup();
@@ -1387,7 +1387,7 @@ VisiblePosition WebLocalFrameImpl::VisiblePositionForViewportPoint(
 }
 
 WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
-  WebPluginContainerBase* container =
+  WebPluginContainerImpl* container =
       WebLocalFrameImpl::CurrentPluginContainer(GetFrame());
   if (container && container->SupportsInputMethod())
     return container->Plugin();
@@ -1397,7 +1397,7 @@ WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
 int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
                                   const WebNode& constrain_to_node) {
   DCHECK(!GetFrame()->GetDocument()->IsFrameSet());
-  WebPluginContainerBase* plugin_container = nullptr;
+  WebPluginContainerImpl* plugin_container = nullptr;
   if (constrain_to_node.IsNull()) {
     // If this is a plugin document, check if the plugin supports its own
     // printing. If it does, we will delegate all printing to that.
@@ -1405,7 +1405,7 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
   } else {
     // We only support printing plugin nodes for now.
     plugin_container =
-        ToWebPluginContainerBase(constrain_to_node.PluginContainer());
+        ToWebPluginContainerImpl(constrain_to_node.PluginContainer());
   }
 
   if (plugin_container && plugin_container->SupportsPaginatedPrint())
@@ -1448,9 +1448,9 @@ void WebLocalFrameImpl::PrintEnd() {
 }
 
 bool WebLocalFrameImpl::IsPrintScalingDisabledForPlugin(const WebNode& node) {
-  WebPluginContainerBase* plugin_container =
+  WebPluginContainerImpl* plugin_container =
       node.IsNull() ? PluginContainerFromFrame(GetFrame())
-                    : ToWebPluginContainerBase(node.PluginContainer());
+                    : ToWebPluginContainerImpl(node.PluginContainer());
 
   if (!plugin_container || !plugin_container->SupportsPaginatedPrint())
     return false;
@@ -1461,9 +1461,9 @@ bool WebLocalFrameImpl::IsPrintScalingDisabledForPlugin(const WebNode& node) {
 bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
     const WebNode& node,
     WebPrintPresetOptions* preset_options) {
-  WebPluginContainerBase* plugin_container =
+  WebPluginContainerImpl* plugin_container =
       node.IsNull() ? PluginContainerFromFrame(GetFrame())
-                    : ToWebPluginContainerBase(node.PluginContainer());
+                    : ToWebPluginContainerImpl(node.PluginContainer());
 
   if (!plugin_container || !plugin_container->SupportsPaginatedPrint())
     return false;
@@ -1923,7 +1923,7 @@ void WebLocalFrameImpl::DidFail(const ResourceError& error,
   WebHistoryCommitType web_commit_type =
       static_cast<WebHistoryCommitType>(commit_type);
 
-  if (WebPluginContainerBase* plugin = PluginContainerFromFrame(GetFrame()))
+  if (WebPluginContainerImpl* plugin = PluginContainerFromFrame(GetFrame()))
     plugin->DidFailLoading(error);
 
   if (was_provisional)
@@ -1936,7 +1936,7 @@ void WebLocalFrameImpl::DidFinish() {
   if (!Client())
     return;
 
-  if (WebPluginContainerBase* plugin = PluginContainerFromFrame(GetFrame()))
+  if (WebPluginContainerImpl* plugin = PluginContainerFromFrame(GetFrame()))
     plugin->DidFinishLoading();
 
   Client()->DidFinishLoad();

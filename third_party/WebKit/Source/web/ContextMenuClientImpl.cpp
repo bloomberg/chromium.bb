@@ -40,7 +40,6 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/exported/WebDataSourceImpl.h"
-#include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -79,6 +78,7 @@
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/ContextMenuAllowedScope.h"
+#include "web/WebPluginContainerImpl.h"
 
 namespace blink {
 
@@ -296,7 +296,7 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
       PluginView* plugin_view = ToLayoutPart(object)->Plugin();
       if (plugin_view && plugin_view->IsPluginContainer()) {
         data.media_type = WebContextMenuData::kMediaTypePlugin;
-        WebPluginContainerBase* plugin = ToWebPluginContainerBase(plugin_view);
+        WebPluginContainerImpl* plugin = ToWebPluginContainerImpl(plugin_view);
         WebString text = plugin->Plugin()->SelectionAsText();
         if (!text.IsEmpty()) {
           data.selected_text = text;

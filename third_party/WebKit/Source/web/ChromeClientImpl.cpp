@@ -41,7 +41,6 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebFileChooserCompletionImpl.h"
-#include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -123,6 +122,7 @@
 #include "web/PopupMenuImpl.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 
@@ -658,8 +658,8 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
       if (object && object->IsLayoutPart()) {
         PluginView* plugin_view = ToLayoutPart(object)->Plugin();
         if (plugin_view && plugin_view->IsPluginContainer()) {
-          WebPluginContainerBase* plugin =
-              ToWebPluginContainerBase(plugin_view);
+          WebPluginContainerImpl* plugin =
+              ToWebPluginContainerImpl(plugin_view);
           url = plugin->Plugin()->LinkAtPosition(
               result.RoundedPointInInnerNodeFrame());
         }
