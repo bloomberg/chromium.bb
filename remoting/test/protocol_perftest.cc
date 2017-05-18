@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/test/test_data_directory.h"
@@ -113,6 +114,8 @@ class ProtocolPerfTest
     capture_thread_.Start();
     encode_thread_.Start();
     decode_thread_.Start();
+
+    base::TaskScheduler::CreateAndStartWithDefaultParams("ProtocolPerfTest");
 
     desktop_environment_factory_.reset(
         new FakeDesktopEnvironmentFactory(capture_thread_.task_runner()));
