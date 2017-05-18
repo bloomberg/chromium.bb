@@ -375,6 +375,9 @@ class CalculateSuspects(object):
                               failed_hwtests, sanity):
     """Find suspects for the given failure messages and hwtests.
 
+    If messages contain NoneType message and sanity is True, return all changes
+    as suspects.
+
     Args:
       changes: A list of cros_patch.GerritPatch instances.
       messages: A list of failure_message_lib.BuildFailureMessage or NoneType
@@ -387,17 +390,18 @@ class CalculateSuspects(object):
               the build started and ended.
 
     Returns:
-      A set of cros_patch.GerritPatch instances as suspects. If messages contain
-      NoneType message and sanity is True, return all changes as suspects.
+      An instance of SuspectChanges.
     """
-    suspects = set()
+    suspect_changes = SuspectChanges()
     for message in messages:
       if message:
-        suspects.update(message.FindSuspectedChanges(
-            changes, build_root, failed_hwtests, sanity))
+        new_suspect_changes = message.FindSuspectedChanges(
+            changes, build_root, failed_hwtests, sanity)
+        suspect_changes.update(new_suspect_changes)
       elif sanity:
-        suspects.update(changes)
-    return suspects
+        suspect_changes.update(
+            {x: constants.SUSPECT_REASON_UNKNOWN for x in changes})
+    return suspect_changes
 
   @classmethod
   def FilterChangesForInfraFail(cls, changes):
@@ -519,8 +523,9 @@ class CalculateSuspects(object):
         the build started and ended.
 
     Returns:
-       A set of changes as suspects.
+      An instance of SuspectChanges.
     """
+    suspect_changes = SuspectChanges()
     bad_changes = cls.GetBlamedChanges(changes)
     if bad_changes:
       # If there are changes that have been set verified=-1 or
@@ -529,21 +534,26 @@ class CalculateSuspects(object):
       logging.warning('Detected that some changes have been blamed for '
                       'the build failure. Only these CLs will be rejected: %s',
                       cros_patch.GetChangesAsString(bad_changes))
-      return set(bad_changes)
+
+      suspect_changes.update(
+          {x: constants.SUSPECT_REASON_BAD_CHANGE for x in bad_changes})
     elif lab_fail:
       logging.warning('Detected that the build failed purely due to HW '
                       'Test Lab failure(s). Will not reject any changes')
-      return set()
     elif infra_fail:
       # The non-lab infrastructure errors might have been caused
       # by chromite changes.
       logging.warning(
           'Detected that the build failed due to non-lab infrastructure '
           'issue(s). Will only reject chromite changes')
-      return set(cls.FilterChangesForInfraFail(changes))
+      infra_changes = cls.FilterChangesForInfraFail(changes)
+      suspect_changes.update(
+          {x: constants.SUSPECT_REASON_INFRA_FAIL for x in infra_changes})
+    else:
+      suspect_changes = cls.FindSuspectsForFailures(
+          changes, messages, build_root, failed_hwtests, sanity)
 
-    return cls.FindSuspectsForFailures(
-        changes, messages, build_root, failed_hwtests, sanity)
+    return suspect_changes
 
   @classmethod
   def CanIgnoreFailures(cls, messages, change, build_root,
@@ -688,3 +698,46 @@ class CalculateSuspects(object):
           fully_verified.update({change: ignore_result[1]})
 
     return fully_verified
+
+
+class SuspectChanges(dict):
+  """A dict mapping from suspected changes to their suspect reasons.
+
+  The suspect reason of a change can be updated in the dict only when the change
+  isn't in the dict, or the new suspect reason has a higher blame priority.
+  """
+
+  def __init__(self, suspect_dict=None):
+    """Initialize a SuspectChanges object."""
+    if suspect_dict is None:
+      suspect_dict = {}
+    super(SuspectChanges, self).__init__(suspect_dict)
+
+  def __setitem__(self, key, value):
+    """Overwrite __setitem__."""
+    if key not in self or value < self[key]:
+      super(SuspectChanges, self).__setitem__(key, value)
+
+  def setdefault(self, key, value):
+    """Overwrite setdefault."""
+    assert value in constants.SUSPECT_REASONS
+
+    if key not in self or value < self[key]:
+      self[key] = value
+    return self[key]
+
+  def update(self, *args, **kwargs):
+    """Overwrite update."""
+    if args:
+      if len(args) > 1:
+        raise TypeError('update expected at most 1 arguments, got %d' %
+                        len(args))
+
+      other = dict(args[0])
+      for key, value in other.iteritems():
+        if key not in self or value < self[key]:
+          self[key] = value
+
+      for key, value in kwargs.iteritems():
+        if key not in self or value < self[key]:
+          self[key] = value

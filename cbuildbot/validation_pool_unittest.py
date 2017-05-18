@@ -284,9 +284,11 @@ class ValidationFailureOrTimeout(MoxBase):
     self._patches = self.GetPatches(3)
     self._pool = MakePool(applied=self._patches, fake_db=self.fake_db)
 
+    suspects = triage_lib.SuspectChanges({
+        x: constants.SUSPECT_REASON_UNKNOWN for x in self._patches})
     self.PatchObject(
         triage_lib.CalculateSuspects, 'FindSuspects',
-        return_value=self._patches)
+        return_value=suspects)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
@@ -334,7 +336,7 @@ class ValidationFailureOrTimeout(MoxBase):
   def testNoSuspectsWithFailure(self):
     """Tests no change is blamed when there is no suspect."""
     self.PatchObject(triage_lib.CalculateSuspects, 'FindSuspects',
-                     return_value=[])
+                     return_value=triage_lib.SuspectChanges())
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(0, self.remove.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])

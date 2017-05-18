@@ -233,6 +233,25 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
     EXCEPTION_CATEGORY_LAB,
 )
 
+# Suspect reasons for rejecting changes in validation_pool.
+SUSPECT_REASON_BAD_CHANGE = 'bad_change'
+SUSPECT_REASON_INFRA_FAIL = 'infra_fail'
+SUSPECT_REASON_BUILD_FAIL = 'build_fail'
+SUSPECT_REASON_TEST_FAIL = 'test_fail'
+SUSPECT_REASON_OVERLAY_CHANGE = 'overlay_change'
+SUSPECT_REASON_UNKNOWN = 'unknown'
+
+# A dict mapping suspect reasons to their blame priorities.
+# Lower values have higher blame priorities.
+SUSPECT_REASONS = {
+    SUSPECT_REASON_BAD_CHANGE: 1,
+    SUSPECT_REASON_INFRA_FAIL: 2,
+    SUSPECT_REASON_BUILD_FAIL: 3,
+    SUSPECT_REASON_TEST_FAIL: 4,
+    SUSPECT_REASON_OVERLAY_CHANGE: 5,
+    SUSPECT_REASON_UNKNOWN: 6,
+}
+
 # Monarch metric names
 MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
 MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
@@ -273,8 +292,8 @@ MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_batch_builds_count')
 MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_pre_cq_build_count')
-
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
+MON_CL_REJECT_COUNT = ('chromeos/cbuildbot/change/rejected_count')
 
 # Sheriff-o-Matic tree which Chrome OS alerts are posted to.
 SOM_TREE = 'chromeos'

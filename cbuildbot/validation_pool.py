@@ -31,6 +31,7 @@ from chromite.lib import failures_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import metrics
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
@@ -1503,7 +1504,13 @@ class ValidationPool(object):
     self._InsertCLActionToDatabase(change, action, reason)
 
   def RemoveReady(self, change, reason=None):
-    """Remove the commit ready and trybot ready bits for |change|."""
+    """Remove the commit ready and trybot ready bits for |change|.
+
+    Args:
+      change: An instance of cros_patch.GerritPatch.
+      reason: The reason to remove the ready bit for the |change|. None by
+        default.
+    """
     try:
       self._helper_pool.ForChange(change).RemoveReady(
           change, dryrun=self.dryrun)
@@ -1519,6 +1526,10 @@ class ValidationPool(object):
       timestamp = int(time.time())
       metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
                               timestamp)
+
+    if reason in constants.SUSPECT_REASONS:
+      metrics.Counter(constants.MON_CL_REJECT_COUNT).increment(
+          fields={'reason': reason})
 
     self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
                                    reason)
@@ -1822,7 +1833,7 @@ class ValidationPool(object):
       change: The change to mark as failed.
       messages: A list of build failure messages from supporting builders.
           These must be BuildFailureMessage objects.
-      suspects: The list of changes that are suspected of breaking the build.
+      suspects: An instance of triage_lib.SuspectChanges.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
       infra_fail: The build failed purely due to infrastructure failures.
@@ -1830,7 +1841,7 @@ class ValidationPool(object):
       no_stat: A list of builders which failed prematurely without reporting
         status.
     """
-    retry = not sanity or lab_fail or change not in suspects
+    retry = not sanity or lab_fail or change not in suspects.keys()
     msg = cl_messages.CreateValidationFailureMessage(
         self.pre_cq_trybot, change, suspects, messages,
         sanity, infra_fail, lab_fail, no_stat, retry)
@@ -1838,7 +1849,7 @@ class ValidationPool(object):
     if retry:
       self.MarkForgiven(change)
     else:
-      self.RemoveReady(change)
+      self.RemoveReady(change, reason=suspects.get(change))
 
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
                               no_stat=None, failed_hwtests=None):

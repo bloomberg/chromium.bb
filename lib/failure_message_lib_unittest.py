@@ -14,6 +14,7 @@ from chromite.lib import failure_message_lib
 from chromite.lib import hwtest_results
 from chromite.lib import patch_unittest
 from chromite.lib import portage_util
+from chromite.lib import triage_lib
 
 
 DEFAULT_BUILD_SCRIPT_FAILURE_EXTRA_INFO = (
@@ -650,13 +651,19 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
 
     suspects = build_failure.FindSuspectedChanges(
         changes, mock.Mock(), mock.Mock(), True)
-    self.assertItemsEqual(suspects, changes[0: 3])
+    expected = triage_lib.SuspectChanges({
+        changes[0]: constants.SUSPECT_REASON_OVERLAY_CHANGE,
+        changes[1]: constants.SUSPECT_REASON_OVERLAY_CHANGE,
+        changes[2]: constants.SUSPECT_REASON_BUILD_FAIL})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, f_1)
 
     mock_find.reset_mock()
     suspects = build_failure.FindSuspectedChanges(
         changes, mock.Mock(), mock.Mock(), False)
-    self.assertItemsEqual(suspects, changes[2:3])
+    expected = expected = triage_lib.SuspectChanges({
+        changes[2]: constants.SUSPECT_REASON_BUILD_FAIL})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, f_1)
 
   def testFindSuspectedChangesOnPackageBuildFailuresBlameEverything(self):
@@ -669,13 +676,21 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
                                  return_value=({changes[2]}, True))
     suspects = build_failure.FindSuspectedChanges(
         changes, mock.Mock(), mock.Mock(), True)
-    self.assertItemsEqual(suspects, changes)
+    expected = triage_lib.SuspectChanges({
+        changes[0]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[1]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[2]: constants.SUSPECT_REASON_BUILD_FAIL,
+        changes[3]: constants.SUSPECT_REASON_UNKNOWN})
+
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, f_1)
     mock_find.reset_mock()
 
     suspects = build_failure.FindSuspectedChanges(
         changes, mock.Mock(), mock.Mock(), False)
-    self.assertItemsEqual(suspects, changes[2:3])
+    expected = triage_lib.SuspectChanges({
+        changes[2]: constants.SUSPECT_REASON_BUILD_FAIL})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, f_1)
 
   def testFindSuspectedChangesOnHWTestFailuresNotBlameEverything(self):
@@ -692,13 +707,19 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
 
     suspects = build_failure.FindSuspectedChanges(
         changes, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, changes[0:3])
+    expected = triage_lib.SuspectChanges({
+        changes[0]: constants.SUSPECT_REASON_OVERLAY_CHANGE,
+        changes[1]: constants.SUSPECT_REASON_OVERLAY_CHANGE,
+        changes[2]: constants.SUSPECT_REASON_TEST_FAIL})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
 
     mock_find.reset_mock()
     suspects = build_failure.FindSuspectedChanges(
         changes, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, changes[2:3])
+    expected = expected = triage_lib.SuspectChanges({
+        changes[2]: constants.SUSPECT_REASON_TEST_FAIL})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
 
   def testFindSuspectedChangesOnHWTestFailuresBlameEverything(self):
@@ -714,13 +735,20 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
 
     suspects = build_failure.FindSuspectedChanges(
         changes, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, changes)
+    expected = triage_lib.SuspectChanges({
+        changes[0]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[1]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[2]: constants.SUSPECT_REASON_TEST_FAIL,
+        changes[3]: constants.SUSPECT_REASON_UNKNOWN})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
     mock_find.reset_mock()
 
     suspects = build_failure.FindSuspectedChanges(
         changes, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, changes[2:3])
+    expected = triage_lib.SuspectChanges({
+        changes[2]: constants.SUSPECT_REASON_TEST_FAIL})
+    self.assertEqual(suspects, expected)
     mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
 
   def testFindSuspectedChangesOnUnknownFailures(self):
@@ -741,12 +769,18 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
 
     suspects = build_failure.FindSuspectedChanges(
         changes, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, changes)
+    expected = triage_lib.SuspectChanges({
+        changes[0]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[1]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[2]: constants.SUSPECT_REASON_UNKNOWN,
+        changes[3]: constants.SUSPECT_REASON_UNKNOWN})
+    self.assertEqual(suspects, expected)
     mock_find_build_failure.assert_not_called()
     mock_find_hwtest_failure.assert_not_called()
 
     suspects = build_failure.FindSuspectedChanges(
         changes, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, set())
+    expected = triage_lib.SuspectChanges()
+    self.assertEqual(suspects, expected)
     mock_find_build_failure.assert_not_called()
     mock_find_hwtest_failure.assert_not_called()

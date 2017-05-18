@@ -16,6 +16,7 @@ from chromite.lib import failures_lib
 from chromite.lib import hwtest_results
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
+from chromite.lib import triage_lib
 
 
 # These keys must exist as column names from failureView in cidb.
@@ -565,23 +566,25 @@ class BuildFailureMessage(object):
         the build started and ended.
 
     Returns:
-      A set of cros_patch.GerritPatch instances as suspects.
+      An instance of triage_lib.SuspectChanges.
     """
-    suspects = set()
+    suspect_changes = triage_lib.SuspectChanges()
     blame_everything = False
     for failure in self.failure_messages:
       if failure.exception_type == failures_lib.PackageBuildFailure.__name__:
         # Find suspects for PackageBuildFailure
         build_suspects, no_assignee_packages = (
             self.FindPackageBuildFailureSuspects(changes, failure))
-        suspects.update(build_suspects)
+        suspect_changes.update(
+            {x: constants.SUSPECT_REASON_BUILD_FAIL for x in build_suspects})
         blame_everything = blame_everything or no_assignee_packages
       elif failure.exception_category == constants.EXCEPTION_CATEGORY_TEST:
         # Find suspects for HWTestFailure
-        hwtest_supects, no_assignee_hwtests = (
+        hwtest_suspects, no_assignee_hwtests = (
             hwtest_results.HWTestResultManager.FindHWTestFailureSuspects(
                 changes, build_root, failed_hwtests))
-        suspects.update(hwtest_supects)
+        suspect_changes.update(
+            {x: constants.SUSPECT_REASON_TEST_FAIL for x in hwtest_suspects})
         blame_everything = blame_everything or no_assignee_hwtests
       else:
         # Unknown failures, blame everything
@@ -589,14 +592,17 @@ class BuildFailureMessage(object):
 
     # Only do broad-brush blaming if the tree is sane.
     if sanity:
-      if blame_everything or not suspects:
-        suspects = changes[:]
+      if blame_everything or len(suspect_changes) == 0:
+        suspect_changes.update(
+            {x: constants.SUSPECT_REASON_UNKNOWN for x in changes})
       else:
         # Never treat changes to overlays as innocent.
-        suspects.update(change for change in changes
-                        if '/overlays/' in change.project)
+        overlay_changes = [x for x in changes if '/overlays/' in x.project]
+        suspect_changes.update(
+            {x: constants.SUSPECT_REASON_OVERLAY_CHANGE
+             for x in overlay_changes})
 
-    return suspects
+    return suspect_changes
 
   def FindPackageBuildFailureSuspects(self, changes, failure):
     """Find suspects for a PackageBuild failure.

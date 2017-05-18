@@ -8,6 +8,8 @@ from __future__ import print_function
 
 from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import cl_messages
+from chromite.lib import constants
+from chromite.lib import triage_lib
 
 class TestCreateValidationFailureMessage(validation_pool_unittest.MoxBase):
   """Tests CreateValidationFailureMessage."""
@@ -27,8 +29,10 @@ class TestCreateValidationFailureMessage(validation_pool_unittest.MoxBase):
       no_stat: List of builders that did not start.
       xretry: Whether we expect the change to be retried.
     """
+    suspects = triage_lib.SuspectChanges({
+        x: constants.SUSPECT_REASON_UNKNOWN for x in suspects})
     msg = cl_messages.CreateValidationFailureMessage(
-        False, change, set(suspects), [], sanity=sanity,
+        False, change, suspects, [], sanity=sanity,
         infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat,
         retry=xretry)
     for x in messages:

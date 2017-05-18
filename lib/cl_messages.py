@@ -22,7 +22,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
     pre_cq_trybot: Whether the builder is a Pre-CQ trybot. (Note: The Pre-CQ
       launcher is NOT considered a Pre-CQ trybot.)
     change: The change we want to create a message for.
-    suspects: The set of suspect changes that we think broke the build.
+    suspects: An instance of triage_lib.SuspectChanges.
     messages: A list of build failure messages from supporting builders.
       These must be BuildFailureMessage objects or NoneType objects.
     sanity: A boolean indicating whether the build was considered sane. If
@@ -55,7 +55,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
   # Limit the number of suspects to 20 so that the list of suspects isn't
   # ridiculously long.
   max_suspects = 20
-  other_suspects = set(suspects) - set([change])
+  other_suspects = set(suspects.keys()) - set([change])
   if len(other_suspects) < max_suspects:
     other_suspects_str = cros_patch.GetChangesAsString(other_suspects)
   else:
@@ -76,7 +76,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
       msg.append('The build failure may have been caused by infrastructure '
                  'issues and/or bad %s changes.' % constants.INFRA_PROJECTS)
 
-    if change in suspects:
+    if change in suspects.keys():
       if other_suspects_str:
         msg.append('Your change may have caused this failure. There are '
                    'also other changes that may be at fault: %s'

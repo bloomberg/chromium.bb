@@ -155,7 +155,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     results = triage_lib.CalculateSuspects.FindSuspects(
         patches, [message], lab_fail=lab_fail, infra_fail=infra_fail,
         sanity=sanity)
-    self.assertEquals(set(suspects), results)
+    self.assertItemsEqual(suspects, results.keys())
 
   def testFailSameProject(self):
     """Patches to the package that failed should be marked as failing."""
@@ -218,11 +218,11 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     """If a message is just 'None', it should cause all patches to fail."""
     patches = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     results = triage_lib.CalculateSuspects.FindSuspects(patches, [None])
-    self.assertItemsEqual(results, patches)
+    self.assertItemsEqual(results.keys(), patches)
 
     results = triage_lib.CalculateSuspects.FindSuspects(
         patches, [None], sanity=False)
-    self.assertItemsEqual(results, [])
+    self.assertItemsEqual(results.keys(), [])
 
   def testFailNoExceptions(self):
     """If there are no exceptions, all patches should be failed."""
@@ -340,16 +340,17 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     messages = []
     for _ in range(0, 3):
       m = mock.Mock()
-      m.FindSuspectedChanges.return_value = self.changes[0:1]
+      m.FindSuspectedChanges.return_value = triage_lib.SuspectChanges({
+          self.changes[0]: constants.SUSPECT_REASON_UNKNOWN})
       messages.append(m)
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, self.changes[0:1])
+    self.assertItemsEqual(suspects.keys(), self.changes[0:1])
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, self.changes[0:1])
+    self.assertItemsEqual(suspects.keys(), self.changes[0:1])
 
     for index in range(0, 3):
       messages[index].FindSuspectedChanges.called_once_with(
@@ -365,11 +366,11 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects, set())
+    self.assertItemsEqual(suspects.keys(), set())
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects, self.changes)
+    self.assertItemsEqual(suspects.keys(), self.changes)
 
 
 class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
@@ -509,3 +510,83 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
                                         'fail_subsystems': ['A']}}
     self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
+
+
+class SuspectChangesTest(patch_unittest.MockPatchBase):
+  """Tests for SuspectChanges."""
+
+  def setUp(self):
+    self.patches = self.GetPatches(how_many=3)
+
+  def _CreateSuspectChanges(self, suspect_dict=None):
+    return triage_lib.SuspectChanges(suspect_dict)
+
+  def testSetitem(self):
+    """Test __setitem__."""
+    suspects = self._CreateSuspectChanges()
+
+    suspects[self.patches[0]] = constants.SUSPECT_REASON_BAD_CHANGE
+    suspects[self.patches[1]] = constants.SUSPECT_REASON_UNKNOWN
+
+    self.assertEqual(len(suspects), 2)
+    self.assertEqual(suspects[self.patches[0]],
+                     constants.SUSPECT_REASON_BAD_CHANGE)
+    self.assertEqual(suspects[self.patches[1]],
+                     constants.SUSPECT_REASON_UNKNOWN)
+
+    suspects[self.patches[0]] = constants.SUSPECT_REASON_UNKNOWN
+    suspects[self.patches[1]] = constants.SUSPECT_REASON_BUILD_FAIL
+
+    self.assertEqual(len(suspects), 2)
+    self.assertEqual(suspects[self.patches[0]],
+                     constants.SUSPECT_REASON_BAD_CHANGE)
+    self.assertEqual(suspects[self.patches[1]],
+                     constants.SUSPECT_REASON_BUILD_FAIL)
+
+    suspects[self.patches[2]] = constants.SUSPECT_REASON_OVERLAY_CHANGE
+    self.assertEqual(len(suspects), 3)
+    self.assertEqual(suspects[self.patches[2]],
+                     constants.SUSPECT_REASON_OVERLAY_CHANGE)
+
+  def testSetdefault(self):
+    """Test setdefault."""
+    suspects = self._CreateSuspectChanges()
+    self.assertRaises(Exception, suspects.setdefault, self.patches[0], None)
+
+    suspects.setdefault(self.patches[0], constants.SUSPECT_REASON_BAD_CHANGE)
+    suspects.setdefault(self.patches[1], constants.SUSPECT_REASON_UNKNOWN)
+
+    self.assertEqual(len(suspects), 2)
+    self.assertEqual(suspects[self.patches[0]],
+                     constants.SUSPECT_REASON_BAD_CHANGE)
+    self.assertEqual(suspects[self.patches[1]],
+                     constants.SUSPECT_REASON_UNKNOWN)
+
+    suspects.setdefault(self.patches[0], constants.SUSPECT_REASON_UNKNOWN)
+    suspects.setdefault(self.patches[1], constants.SUSPECT_REASON_BUILD_FAIL)
+
+    self.assertEqual(len(suspects), 2)
+    self.assertEqual(suspects[self.patches[0]],
+                     constants.SUSPECT_REASON_BAD_CHANGE)
+    self.assertEqual(suspects[self.patches[1]],
+                     constants.SUSPECT_REASON_BUILD_FAIL)
+
+    suspects.setdefault(self.patches[2],
+                        constants.SUSPECT_REASON_OVERLAY_CHANGE)
+    self.assertEqual(len(suspects), 3)
+    self.assertEqual(suspects[self.patches[2]],
+                     constants.SUSPECT_REASON_OVERLAY_CHANGE)
+
+  def testUpdate(self):
+    """Test update."""
+    suspects = self._CreateSuspectChanges({
+        self.patches[0]: constants.SUSPECT_REASON_BAD_CHANGE,
+        self.patches[1]: constants.SUSPECT_REASON_UNKNOWN})
+    suspects.update({
+        self.patches[0]: constants.SUSPECT_REASON_UNKNOWN,
+        self.patches[1]: constants.SUSPECT_REASON_BUILD_FAIL})
+    expected = self._CreateSuspectChanges({
+        self.patches[0]: constants.SUSPECT_REASON_BAD_CHANGE,
+        self.patches[1]: constants.SUSPECT_REASON_BUILD_FAIL})
+
+    self.assertEqual(suspects, expected)
