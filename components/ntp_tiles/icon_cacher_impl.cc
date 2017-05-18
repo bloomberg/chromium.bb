@@ -75,21 +75,25 @@ void IconCacherImpl::StartFetchPopularSites(
     const base::Closure& preliminary_icon_available) {
   // Copy values from |site| before it is moved.
   GURL site_url = site.url;
+  if (!StartRequest(site_url, icon_available)) {
+    return;
+  }
+
   favicon_base::IconType icon_type = IconType(site);
   favicon::GetFaviconImageForPageURL(
       favicon_service_, site_url, icon_type,
       base::Bind(&IconCacherImpl::OnGetFaviconImageForPageURLFinished,
-                 base::Unretained(this), std::move(site), icon_available,
+                 base::Unretained(this), std::move(site),
                  preliminary_icon_available),
       &tracker_);
 }
 
 void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
     PopularSites::Site site,
-    const base::Closure& icon_available,
     const base::Closure& preliminary_icon_available,
     const favicon_base::FaviconImageResult& result) {
   if (!result.image.IsEmpty()) {
+    FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/false);
     return;
   }
 
@@ -100,18 +104,17 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
       std::string(), IconURL(site),
       base::Bind(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
                  base::Unretained(this), site,
-                 base::Passed(std::move(preliminary_callback)),
-                 icon_available));
+                 base::Passed(std::move(preliminary_callback))));
 }
 
 void IconCacherImpl::OnPopularSitesFaviconDownloaded(
     PopularSites::Site site,
     std::unique_ptr<CancelableImageCallback> preliminary_callback,
-    const base::Closure& icon_available,
     const std::string& id,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
   if (fetched_image.IsEmpty()) {
+    FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/false);
     return;
   }
 
@@ -120,13 +123,22 @@ void IconCacherImpl::OnPopularSitesFaviconDownloaded(
   if (preliminary_callback) {
     preliminary_callback->Cancel();
   }
-  SaveAndNotifyIconForSite(site, icon_available, fetched_image);
+  SaveIconForSite(site, fetched_image);
+  FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/true);
 }
 
-void IconCacherImpl::SaveAndNotifyIconForSite(
+void IconCacherImpl::SaveAndNotifyDefaultIconForSite(
     const PopularSites::Site& site,
-    const base::Closure& icon_available,
+    const base::Closure& preliminary_icon_available,
     const gfx::Image& image) {
+  SaveIconForSite(site, image);
+  if (preliminary_icon_available) {
+    preliminary_icon_available.Run();
+  }
+}
+
+void IconCacherImpl::SaveIconForSite(const PopularSites::Site& site,
+                                     const gfx::Image& image) {
   // Although |SetFaviconColorSpace| affects OSX only, copies of gfx::Images are
   // just copies of the reference to the image and therefore cheap.
   gfx::Image img(image);
@@ -134,22 +146,19 @@ void IconCacherImpl::SaveAndNotifyIconForSite(
 
   favicon_service_->SetFavicons(site.url, IconURL(site), IconType(site),
                                 std::move(img));
-
-  if (icon_available) {
-    icon_available.Run();
-  }
 }
 
 std::unique_ptr<IconCacherImpl::CancelableImageCallback>
-IconCacherImpl::MaybeProvideDefaultIcon(const PopularSites::Site& site,
-                                        const base::Closure& icon_available) {
+IconCacherImpl::MaybeProvideDefaultIcon(
+    const PopularSites::Site& site,
+    const base::Closure& preliminary_icon_available) {
   if (site.default_icon_resource < 0) {
     return std::unique_ptr<CancelableImageCallback>();
   }
   std::unique_ptr<CancelableImageCallback> preliminary_callback(
-      new CancelableImageCallback(
-          base::Bind(&IconCacherImpl::SaveAndNotifyIconForSite,
-                     weak_ptr_factory_.GetWeakPtr(), site, icon_available)));
+      new CancelableImageCallback(base::Bind(
+          &IconCacherImpl::SaveAndNotifyDefaultIconForSite,
+          weak_ptr_factory_.GetWeakPtr(), site, preliminary_icon_available)));
   image_fetcher_->GetImageDecoder()->DecodeImage(
       ResourceBundle::GetSharedInstance()
           .GetRawDataResource(site.default_icon_resource)
@@ -161,40 +170,56 @@ IconCacherImpl::MaybeProvideDefaultIcon(const PopularSites::Site& site,
 
 void IconCacherImpl::StartFetchMostLikely(const GURL& page_url,
                                           const base::Closure& icon_available) {
+  if (!StartRequest(page_url, icon_available)) {
+    return;
+  }
+
   // Desired size 0 means that we do not want the service to resize the image
   // (as we will not use it anyway).
   large_icon_service_->GetLargeIconOrFallbackStyle(
       page_url, kTileIconMinSizePx, /*desired_size_in_pixel=*/0,
       base::Bind(&IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished,
-                 weak_ptr_factory_.GetWeakPtr(), page_url, icon_available),
+                 weak_ptr_factory_.GetWeakPtr(), page_url),
       &tracker_);
 }
 
 void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
     const GURL& page_url,
-    const base::Closure& icon_available,
     const favicon_base::LargeIconResult& result) {
   if (!HasResultDefaultBackgroundColor(result)) {
     // We should only fetch for default "gray" tiles so that we never overrite
     // any favicon of any size.
+    FinishRequestAndNotifyIconAvailable(page_url, /*newly_available=*/false);
     return;
   }
 
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           page_url, kTileIconMinSizePx, kTileIconDesiredSizePx,
-          base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,
-                     weak_ptr_factory_.GetWeakPtr(), icon_available));
+          base::Bind(&IconCacherImpl::FinishRequestAndNotifyIconAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), page_url));
 }
 
-void IconCacherImpl::OnMostLikelyFaviconDownloaded(
-    const base::Closure& icon_available,
-    bool success) {
-  if (!success) {
+bool IconCacherImpl::StartRequest(const GURL& request_url,
+                                  const base::Closure& icon_available) {
+  bool in_flight = in_flight_requests_.count(request_url) > 0;
+  in_flight_requests_[request_url].push_back(icon_available);
+  return !in_flight;
+}
+
+void IconCacherImpl::FinishRequestAndNotifyIconAvailable(
+    const GURL& request_url,
+    bool newly_available) {
+  std::vector<base::Closure> callbacks =
+      std::move(in_flight_requests_[request_url]);
+  in_flight_requests_.erase(request_url);
+  if (!newly_available) {
     return;
   }
-  if (icon_available) {
-    icon_available.Run();
+  for (const base::Closure& callback : callbacks) {
+    if (callback) {
+      callback.Run();
+    }
   }
 }
 
