@@ -1203,6 +1203,11 @@ VEAClient::VEAClient(TestStream* test_stream,
         test_stream_->requested_profile,
         base::Bind(&VEAClient::HandleEncodedFrame, base::Unretained(this)));
     CHECK(stream_validator_);
+    if (verify_output_)
+      quality_validator_.reset(new VideoFrameQualityValidator(
+          test_stream_->requested_profile,
+          base::Bind(&VEAClient::DecodeCompleted, base::Unretained(this)),
+          base::Bind(&VEAClient::DecodeFailed, base::Unretained(this))));
   }
 
   if (save_to_file_) {
@@ -1249,12 +1254,6 @@ void VEAClient::CreateEncoder() {
       TryToSetupEncodeOnSeparateThread();
       SetStreamParameters(requested_bitrate_, requested_framerate_);
       SetState(CS_INITIALIZED);
-
-      if (verify_output_ && !g_fake_encoder)
-        quality_validator_.reset(new VideoFrameQualityValidator(
-            test_stream_->requested_profile,
-            base::Bind(&VEAClient::DecodeCompleted, base::Unretained(this)),
-            base::Bind(&VEAClient::DecodeFailed, base::Unretained(this))));
       return;
     }
   }
