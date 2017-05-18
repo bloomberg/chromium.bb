@@ -69,6 +69,8 @@ class ManifestVersionedSyncCompletionStageTest(
         self._run, self.sync_stage, success=False)
     message = 'foo'
     self.PatchObject(stage, 'GetBuildFailureMessage', return_value=message)
+    get_msg_from_cidb_mock = self.PatchObject(
+        stage, 'GetBuildFailureMessageFromCIDB', return_value=message)
     update_status_mock = self.PatchObject(
         manifest_version.BuildSpecsManager, 'UpdateStatus')
 
@@ -76,6 +78,7 @@ class ManifestVersionedSyncCompletionStageTest(
     update_status_mock.assert_called_once_with(
         message='foo', success_map={self.BOT_ID: False},
         dashboard_url=mock.ANY)
+    get_msg_from_cidb_mock.assert_called_once_with()
 
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""

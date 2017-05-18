@@ -113,6 +113,26 @@ class ManifestVersionedSyncCompletionStage(
     # UpdateStatus.
     self.message = None
 
+    # TODO(nxia): remove self.message and use self.failure_message after we
+    # stop uploading BuilderStatus to GS.
+    self.failure_message = None
+
+  def GetBuildFailureMessageFromCIDB(self):
+    """Get message summarizing failures of this build from CIDB."""
+    build_id, db = self._run.GetCIDBHandle()
+
+    if db:
+      stage_failures = db.GetBuildsFailures([build_id])
+      failure_msg_manager = failure_message_lib.FailureMessageManager()
+      failure_messages = failure_msg_manager.ConstructStageFailureMessages(
+          stage_failures)
+
+      return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+          self._run.config.name,
+          self._run.config.overlays,
+          self._run.ConstructDashboardURL(),
+          failure_messages)
+
   def GetBuildFailureMessage(self):
     """Returns message summarizing the failures."""
     return CreateBuildFailureMessage(self._run.config.overlays,
@@ -122,6 +142,7 @@ class ManifestVersionedSyncCompletionStage(
   def PerformStage(self):
     if not self.success:
       self.message = self.GetBuildFailureMessage()
+      self.failure_message = self.GetBuildFailureMessageFromCIDB()
 
     if not config_lib.IsPFQType(self._run.config.build_type):
       # Update the pass/fail status in the manifest-versions
@@ -147,7 +168,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def _GetLocalBuildStatus(self):
     """Return the status for this build as a dictionary."""
     status = builder_status_lib.BuilderStatus.GetCompletedStatus(self.success)
-    status_obj = builder_status_lib.BuilderStatus(status, self.message)
+    status_obj = builder_status_lib.BuilderStatus(status, self.failure_message)
     return {self._bot_id: status_obj}
 
   def _GetSlaveBuildStatus(self, manager, build_id, db, builder_names,
