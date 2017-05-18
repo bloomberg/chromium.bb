@@ -225,4 +225,24 @@ public class WebApkInfoTest {
         WebApkInfo info = WebApkInfo.create(intent);
         Assert.assertTrue(info.shouldForceNavigation());
     }
+
+    /**
+     * Test that {@link WebApkInfo#source()} returns {@link ShortcutSource#UNKNOWN} if the source
+     * in the launch intent > {@link ShortcutSource#COUNT}. This can occur if the user is using a
+     * new WebAPK and an old version of Chrome.
+     */
+    @Test
+    public void testOutOfBoundsSource() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.COUNT + 1);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
+    }
 }
