@@ -73,6 +73,8 @@ class PageLoadMetricsObserverTestHarness
 
   const base::HistogramTester& histogram_tester() const;
 
+  MetricsWebContentsObserver* observer() const;
+
   // Gets the PageLoadExtraInfo for the committed_load_ in observer_.
   const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
 
