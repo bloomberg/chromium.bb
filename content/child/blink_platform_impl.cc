@@ -832,6 +832,11 @@ int BlinkPlatformImpl::DomKeyEnumFromString(const WebString& key_string) {
       ui::KeycodeConverter::KeyStringToDomKey(key_string.Utf8()));
 }
 
+bool BlinkPlatformImpl::IsDomKeyForModifier(int dom_key) {
+  return ui::KeycodeConverter::IsDomKeyForModifier(
+      static_cast<ui::DomKey>(dom_key));
+}
+
 std::unique_ptr<blink::WebFeaturePolicy> BlinkPlatformImpl::CreateFeaturePolicy(
     const blink::WebFeaturePolicy* parent_policy,
     const blink::WebParsedFeaturePolicy& container_policy,

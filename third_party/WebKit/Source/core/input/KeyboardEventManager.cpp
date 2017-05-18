@@ -4,6 +4,8 @@
 
 #include "KeyboardEventManager.h"
 
+#include <memory>
+
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/editing/Editor.h"
@@ -23,6 +25,7 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/WindowsKeyboardCodes.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
 
 #if OS(WIN)
@@ -187,8 +190,17 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (!node)
     return WebInputEventResult::kNotHandled;
 
-  UserGestureIndicator gesture_indicator(
-      DocumentUserGestureToken::Create(frame_->GetDocument()));
+  // To be meaningful enough to indicate user intention, a keyboard event needs
+  // - not to be a modifier event
+  // https://crbug.com/709765
+  bool is_modifier =
+      Platform::Current()->IsDomKeyForModifier(initial_key_event.dom_key);
+
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (!is_modifier) {
+    gesture_indicator.reset(new UserGestureIndicator(
+        DocumentUserGestureToken::Create(frame_->GetDocument())));
+  }
 
   // In IE, access keys are special, they are handled after default keydown
   // processing, but cannot be canceled - this is hard to match.  On Mac OS X,
