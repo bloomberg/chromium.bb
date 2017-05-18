@@ -45,12 +45,12 @@ class HttpStreamFactoryImpl::JobController
   // Methods below are called by HttpStreamFactoryImpl only.
   // Creates request and hands out to HttpStreamFactoryImpl, this will also
   // create Job(s) and start serving the created request.
-  Request* Start(HttpStreamRequest::Delegate* delegate,
-                 WebSocketHandshakeStreamBase::CreateHelper*
-                     websocket_handshake_stream_create_helper,
-                 const NetLogWithSource& source_net_log,
-                 HttpStreamRequest::StreamType stream_type,
-                 RequestPriority priority);
+  std::unique_ptr<Request> Start(HttpStreamRequest::Delegate* delegate,
+                                 WebSocketHandshakeStreamBase::CreateHelper*
+                                     websocket_handshake_stream_create_helper,
+                                 const NetLogWithSource& source_net_log,
+                                 HttpStreamRequest::StreamType stream_type,
+                                 RequestPriority priority);
 
   void Preconnect(int num_streams);
 
