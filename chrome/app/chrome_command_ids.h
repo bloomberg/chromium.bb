@@ -170,6 +170,7 @@
 #define IDC_MORE_TOOLS_MENU             40249
 #define IDC_TOGGLE_FULLSCREEN_TOOLBAR   40250
 #define IDC_CUSTOMIZE_TOUCH_BAR         40251
+#define IDC_SHOW_BETA_FORUM             40252
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

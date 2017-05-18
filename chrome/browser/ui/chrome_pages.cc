@@ -252,6 +252,10 @@ void ShowHelpForProfile(Profile* profile, HelpSource source) {
   ShowHelpImpl(NULL, profile, source);
 }
 
+void ShowBetaForum(Browser* browser) {
+  ShowSingletonTab(browser, GURL(kChromeBetaForumURL));
+}
+
 void ShowPolicy(Browser* browser) {
   ShowSingletonTab(browser, GURL(kChromeUIPolicyURL));
 }

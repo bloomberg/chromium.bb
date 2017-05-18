@@ -451,6 +451,9 @@ const char kChromeHelpViaWebUIURL[] =
     "https://support.google.com/chrome/?p=help&ctx=settings";
 #endif  // defined(OS_CHROMEOS)
 
+const char kChromeBetaForumURL[] =
+    "https://support.google.com/chrome/?p=beta_forum";
+
 #if defined(OS_CHROMEOS)
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/topic/6323347";
