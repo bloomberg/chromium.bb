@@ -66,6 +66,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
   // Parses and stores |certificate| in the certificate store. Returns true if
   // the operation succeeded.
   static bool ParseAndStoreCertificate(
+      ::onc::ONCSource source,
       bool allow_trust_imports,
       const base::DictionaryValue& certificate,
       net::NSSCertDatabase* nssdb,
@@ -76,6 +77,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
   // the |allow_trust_imports| permission is granted, otherwise the attribute is
   // ignored.
   static bool ParseServerOrCaCertificate(
+      ::onc::ONCSource source,
       bool allow_trust_imports,
       const std::string& cert_type,
       const std::string& guid,
