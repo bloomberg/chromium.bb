@@ -15,6 +15,10 @@
 #include "chromeos/system/version_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
+namespace device {
+class BluetoothAdapter;
+}
+
 namespace chromeos {
 
 class CrosSettings;
@@ -34,6 +38,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
     // Called when the enterprise info notice should be updated.
     virtual void OnEnterpriseInfoUpdated(const std::string& enterprise_info,
                                          const std::string& asset_id) = 0;
+
+    // Called when the device info should be updated.
+    virtual void OnDeviceInfoUpdated(const std::string& bluetooth_name) = 0;
   };
 
   explicit VersionInfoUpdater(Delegate* delegate);
@@ -66,6 +73,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(const std::string& version);
+
+  // Callback from device::BluetoothAdapterFactory::GetAdapter.
+  void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Information pieces for version label.
   std::string version_text_;

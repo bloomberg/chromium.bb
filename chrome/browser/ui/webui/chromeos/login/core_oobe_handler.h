@@ -56,6 +56,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
       const std::string& os_version_label_text) override;
   void OnEnterpriseInfoUpdated(const std::string& message_text,
                                const std::string& asset_id) override;
+  void OnDeviceInfoUpdated(const std::string& bluetooth_name) override;
 
   // ui::EventSource implementation:
   ui::EventSink* GetEventSink() override;

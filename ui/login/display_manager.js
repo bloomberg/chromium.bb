@@ -1051,6 +1051,15 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
+   * Sets the text content of the Bluetooth device info message.
+   * @param {string} bluetoothName The Bluetooth device name text.
+   */
+  DisplayManager.setBluetoothDeviceInfo = function(bluetoothName) {
+    $('bluetooth-name').hidden = false;
+    $('bluetooth-name').textContent = bluetoothName;
+  };
+
+  /**
    * Disable Add users button if said.
    * @param {boolean} disable true to disable
    */
