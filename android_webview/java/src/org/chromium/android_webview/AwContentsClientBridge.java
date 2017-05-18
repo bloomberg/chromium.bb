@@ -241,21 +241,49 @@ public class AwContentsClientBridge {
     }
 
     @CalledByNative
-    private void handleJsAlert(String url, String message, int id) {
-        JsResultHandler handler = new JsResultHandler(this, id);
-        mClient.handleJsAlert(url, message, handler);
+    private void handleJsAlert(final String url, final String message, final int id) {
+        // Post the application callback back to the current thread to ensure the application
+        // callback is executed without any native code on the stack. This so that any exception
+        // thrown by the application callback won't have to be propagated through a native call
+        // stack.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
+                mClient.handleJsAlert(url, message, handler);
+            }
+        });
     }
 
     @CalledByNative
-    private void handleJsConfirm(String url, String message, int id) {
-        JsResultHandler handler = new JsResultHandler(this, id);
-        mClient.handleJsConfirm(url, message, handler);
+    private void handleJsConfirm(final String url, final String message, final int id) {
+        // Post the application callback back to the current thread to ensure the application
+        // callback is executed without any native code on the stack. This so that any exception
+        // thrown by the application callback won't have to be propagated through a native call
+        // stack.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
+                mClient.handleJsConfirm(url, message, handler);
+            }
+        });
     }
 
     @CalledByNative
-    private void handleJsPrompt(String url, String message, String defaultValue, int id) {
-        JsResultHandler handler = new JsResultHandler(this, id);
-        mClient.handleJsPrompt(url, message, defaultValue, handler);
+    private void handleJsPrompt(
+            final String url, final String message, final String defaultValue, final int id) {
+        // Post the application callback back to the current thread to ensure the application
+        // callback is executed without any native code on the stack. This so that any exception
+        // thrown by the application callback won't have to be propagated through a native call
+        // stack.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
+                mClient.handleJsPrompt(url, message, defaultValue, handler);
+            }
+        });
     }
 
     @CalledByNative
