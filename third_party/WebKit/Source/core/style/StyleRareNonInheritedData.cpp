@@ -159,8 +159,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
                                                 : nullptr),
       animations_(o.animations_ ? CSSAnimationData::Create(*o.animations_)
                                 : nullptr),
-      transitions_(o.transitions_ ? CSSTransitionData::Create(*o.transitions_)
-                                  : nullptr),
+      transitions_(o.transitions_ ? o.transitions_->Clone() : nullptr),
       box_shadow_(o.box_shadow_),
       box_reflect_(o.box_reflect_),
       shape_outside_(o.shape_outside_),

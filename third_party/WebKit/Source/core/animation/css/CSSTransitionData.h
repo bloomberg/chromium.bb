@@ -54,9 +54,8 @@ class CSSTransitionData final : public CSSTimingData {
     return WTF::WrapUnique(new CSSTransitionData);
   }
 
-  static std::unique_ptr<CSSTransitionData> Create(
-      const CSSTransitionData& transition_data) {
-    return WTF::WrapUnique(new CSSTransitionData(transition_data));
+  std::unique_ptr<CSSTransitionData> Clone() {
+    return WTF::WrapUnique(new CSSTransitionData(*this));
   }
 
   bool TransitionsMatchForStyleRecalc(const CSSTransitionData& other) const;
