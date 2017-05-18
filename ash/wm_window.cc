@@ -14,7 +14,6 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
@@ -670,10 +669,6 @@ void WmWindow::SetChildrenUseExtendedHitRegion() {
   // function calls into. http://crbug.com/679056.
   window_->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
       window_, mouse_extend, touch_extend));
-}
-
-std::unique_ptr<views::View> WmWindow::CreateViewWithRecreatedLayers() {
-  return base::MakeUnique<wm::WindowMirrorView>(this);
 }
 
 void WmWindow::AddTransientWindowObserver(WmTransientWindowObserver* observer) {

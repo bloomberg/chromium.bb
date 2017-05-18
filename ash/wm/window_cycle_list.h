@@ -16,6 +16,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 
+namespace aura {
+class Window;
+}
+
 namespace display {
 class Screen;
 }
@@ -33,7 +37,7 @@ class WindowCycleView;
 class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
                                    public display::DisplayObserver {
  public:
-  using WindowList = std::vector<WmWindow*>;
+  using WindowList = std::vector<aura::Window*>;
 
   explicit WindowCycleList(const WindowList& windows);
   ~WindowCycleList() override;

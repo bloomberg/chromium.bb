@@ -11,6 +11,7 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
@@ -488,7 +489,7 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   minimized_widget_->set_focus_on_creation(false);
   minimized_widget_->Init(params);
 
-  views::View* mirror_view = window_->CreateViewWithRecreatedLayers().release();
+  views::View* mirror_view = new wm::WindowMirrorView(window_->aura_window());
   mirror_view->SetVisible(true);
   mirror_view->SetTargetHandler(this);
   minimized_widget_->SetContentsView(mirror_view);
