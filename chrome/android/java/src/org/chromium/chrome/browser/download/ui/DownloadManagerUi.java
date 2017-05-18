@@ -392,6 +392,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     }
 
     private void enableStorageInfoHeader(boolean show) {
+        // Finish any running or pending animations right away.
+        if (mRecyclerView.getItemAnimator() != null) {
+            mRecyclerView.getItemAnimator().endAnimations();
+        }
+
         mHistoryAdapter.setShowStorageInfoHeader(show);
         MenuItem infoMenuItem = mToolbar.getMenu().findItem(R.id.info_menu_id);
         Drawable iconDrawable = TintedDrawable.constructTintedDrawable(mActivity.getResources(),

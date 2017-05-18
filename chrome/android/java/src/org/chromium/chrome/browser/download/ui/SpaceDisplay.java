@@ -115,7 +115,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
         mHistoryAdapter = historyAdapter;
         mView = (ViewGroup) LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.download_manager_ui_space_widget, null);
+                        .inflate(R.layout.download_manager_ui_space_widget, parent, false);
         mSpaceUsedByDownloadsTextView = (TextView) mView.findViewById(R.id.size_downloaded);
         mSpaceUsedByOtherAppsTextView = (TextView) mView.findViewById(R.id.size_other_apps);
         mSpaceFreeTextView = (TextView) mView.findViewById(R.id.size_free);
