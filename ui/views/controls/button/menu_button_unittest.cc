@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/menu_button.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -80,10 +81,8 @@ class MenuButtonTest : public ViewsTestBase {
     CreateMenuButton(menu_button_listener);
   }
 
-  void AttachInkDrop() {
-    ink_drop_ = new test::TestInkDrop();
-    test::InkDropHostViewTestApi(button_).SetInkDrop(
-        base::WrapUnique(ink_drop_));
+  gfx::Point GetOutOfButtonLocation() const {
+    return gfx::Point(button_->x() - 1, button_->y() - 1);
   }
 
  private:
@@ -96,8 +95,12 @@ class MenuButtonTest : public ViewsTestBase {
 
     button_ = new TestMenuButton(menu_button_listener);
     button_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
-    widget_->SetContentsView(button_);
 
+    ink_drop_ = new test::TestInkDrop();
+    test::InkDropHostViewTestApi(button_).SetInkDrop(
+        base::WrapUnique(ink_drop_));
+
+    widget_->SetContentsView(button_);
     widget_->Show();
   }
 
@@ -192,6 +195,8 @@ class PressStateMenuButtonListener : public MenuButtonListener {
     if (release_lock_)
       pressed_lock_.reset();
   }
+
+  void ReleasePressedLock() { pressed_lock_.reset(); }
 
  private:
   MenuButton* menu_button_;
@@ -468,7 +473,6 @@ TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
 
 TEST_F(MenuButtonTest, InkDropStateForMenuButtonActivationsWithoutListener) {
   CreateMenuButtonWithNoListener();
-  AttachInkDrop();
   ink_drop()->AnimateToState(InkDropState::ACTION_PENDING);
   button()->Activate(nullptr);
 
@@ -479,7 +483,6 @@ TEST_F(MenuButtonTest,
        InkDropStateForMenuButtonActivationsWithListenerThatDoesntAcquireALock) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  AttachInkDrop();
   button()->Activate(nullptr);
 
   EXPECT_EQ(InkDropState::ACTION_TRIGGERED,
@@ -491,7 +494,6 @@ TEST_F(
     InkDropStateForMenuButtonActivationsWithListenerThatDontReleaseAllLocks) {
   PressStateMenuButtonListener menu_button_listener(false);
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  AttachInkDrop();
   menu_button_listener.set_menu_button(button());
   button()->Activate(nullptr);
 
@@ -503,7 +505,6 @@ TEST_F(MenuButtonTest,
   PressStateMenuButtonListener menu_button_listener(true);
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
   menu_button_listener.set_menu_button(button());
-  AttachInkDrop();
   button()->Activate(nullptr);
 
   EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop()->GetTargetInkDropState());
@@ -511,7 +512,6 @@ TEST_F(MenuButtonTest,
 
 TEST_F(MenuButtonTest, InkDropStateForMenuButtonsWithPressedLocks) {
   CreateMenuButtonWithNoListener();
-  AttachInkDrop();
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock1(
       new MenuButton::PressedLock(button()));
@@ -534,7 +534,6 @@ TEST_F(MenuButtonTest, InkDropStateForMenuButtonsWithPressedLocks) {
 // are attached to a MenuButton.
 TEST_F(MenuButtonTest, OneInkDropAnimationForReentrantPressedLocks) {
   CreateMenuButtonWithNoListener();
-  AttachInkDrop();
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock1(
       new MenuButton::PressedLock(button()));
@@ -554,7 +553,6 @@ TEST_F(MenuButtonTest,
        InkDropStateForMenuButtonWithPressedLockBeforeActivation) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  AttachInkDrop();
   MenuButton::PressedLock lock(button());
 
   button()->Activate(nullptr);
@@ -644,5 +642,47 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
+
+TEST_F(MenuButtonTest, InkDropHoverWhenShowingMenu) {
+  PressStateMenuButtonListener menu_button_listener(false);
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  menu_button_listener.set_menu_button(button());
+
+  generator()->MoveMouseTo(GetOutOfButtonLocation());
+  EXPECT_FALSE(ink_drop()->is_hovered());
+
+  generator()->MoveMouseTo(button()->bounds().CenterPoint());
+  EXPECT_TRUE(ink_drop()->is_hovered());
+
+  generator()->PressLeftButton();
+  EXPECT_FALSE(ink_drop()->is_hovered());
+}
+
+TEST_F(MenuButtonTest, InkDropIsHoveredAfterDismissingMenuWhenMouseOverButton) {
+  PressStateMenuButtonListener menu_button_listener(false);
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  menu_button_listener.set_menu_button(button());
+
+  generator()->MoveMouseTo(button()->bounds().CenterPoint());
+  generator()->PressLeftButton();
+  EXPECT_FALSE(ink_drop()->is_hovered());
+  menu_button_listener.ReleasePressedLock();
+
+  EXPECT_TRUE(ink_drop()->is_hovered());
+}
+
+TEST_F(MenuButtonTest,
+       InkDropIsntHoveredAfterDismissingMenuWhenMouseOutsideButton) {
+  PressStateMenuButtonListener menu_button_listener(false);
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  menu_button_listener.set_menu_button(button());
+
+  generator()->MoveMouseTo(button()->bounds().CenterPoint());
+  generator()->PressLeftButton();
+  generator()->MoveMouseTo(GetOutOfButtonLocation());
+  menu_button_listener.ReleasePressedLock();
+
+  EXPECT_FALSE(ink_drop()->is_hovered());
+}
 
 }  // namespace views

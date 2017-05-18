@@ -380,6 +380,7 @@ void MenuButton::IncrementPressedLocked(bool snap_ink_drop_to_activated,
       AnimateInkDrop(InkDropState::ACTIVATED, event);
   }
   SetState(STATE_PRESSED);
+  GetInkDrop()->SetHovered(false);
 }
 
 void MenuButton::DecrementPressedLocked() {
@@ -395,6 +396,7 @@ void MenuButton::DecrementPressedLocked() {
       should_disable_after_press_ = false;
     } else if (ShouldEnterHoveredState()) {
       desired_state = STATE_HOVERED;
+      GetInkDrop()->SetHovered(true);
     }
     SetState(desired_state);
     // The widget may be null during shutdown. If so, it doesn't make sense to
