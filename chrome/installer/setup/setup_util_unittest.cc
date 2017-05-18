@@ -313,6 +313,40 @@ TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
     EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
 }
 
+TEST(SetupUtilTest, GetInstallAge) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  installer::InstallerState installer_state;
+  installer_state.set_target_path_for_testing(temp_dir.GetPath());
+
+  // Wait a beat to let time advance.
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  EXPECT_GE(0, installer::GetInstallAge(installer_state));
+
+  // Crank back the directory's creation time.
+  constexpr int kAgeDays = 28;
+  base::Time now = base::Time::Now();
+  base::win::ScopedHandle dir(::CreateFile(
+      temp_dir.GetPath().value().c_str(),
+      FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr));
+  ASSERT_TRUE(dir.IsValid());
+
+  FILE_BASIC_INFO info = {};
+  ASSERT_NE(0, ::GetFileInformationByHandleEx(dir.Get(), FileBasicInfo, &info,
+                                              sizeof(info)));
+  FILETIME creation_time =
+      (now - base::TimeDelta::FromDays(kAgeDays)).ToFileTime();
+  info.CreationTime.u.LowPart = creation_time.dwLowDateTime;
+  info.CreationTime.u.HighPart = creation_time.dwHighDateTime;
+  ASSERT_NE(0, ::SetFileInformationByHandle(dir.Get(), FileBasicInfo, &info,
+                                            sizeof(info)));
+
+  EXPECT_EQ(kAgeDays, installer::GetInstallAge(installer_state));
+}
+
 TEST(SetupUtilTest, RecordUnPackMetricsTest) {
   base::HistogramTester histogram_tester;
   std::string unpack_status_metrics_name =
