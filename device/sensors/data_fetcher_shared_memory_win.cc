@@ -317,7 +317,8 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     return false;
 
   base::win::ScopedComPtr<ISensorManager> sensor_manager;
-  HRESULT hr = sensor_manager.CreateInstance(CLSID_SensorManager);
+  HRESULT hr = ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&sensor_manager));
   if (FAILED(hr) || !sensor_manager.Get())
     return false;
 
@@ -338,7 +339,8 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceValues> device_values;
-  if (SUCCEEDED(device_values.CreateInstance(CLSID_PortableDeviceValues))) {
+  if (SUCCEEDED(::CoCreateInstance(CLSID_PortableDeviceValues, nullptr,
+                                   CLSCTX_ALL, IID_PPV_ARGS(&device_values)))) {
     if (SUCCEEDED(device_values->SetUnsignedIntegerValue(
             SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
             GetInterval().InMilliseconds()))) {

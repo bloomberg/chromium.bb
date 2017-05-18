@@ -4,6 +4,8 @@
 
 #include "ui/gfx/win/direct_manipulation.h"
 
+#include <objbase.h>
+
 #include "base/win/windows_version.h"
 
 namespace gfx {
@@ -32,12 +34,13 @@ void DirectManipulationHelper::Initialize(HWND window) {
   // TODO(ananta)
   // Remove the CHECK statements here and below and replace them with logs
   // when this code stabilizes.
-  HRESULT hr = manager_.CreateInstance(CLSID_DirectManipulationManager,
-    nullptr, CLSCTX_INPROC_SERVER);
+  HRESULT hr =
+      ::CoCreateInstance(CLSID_DirectManipulationManager, nullptr,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&manager_));
   CHECK(SUCCEEDED(hr));
 
-  hr = compositor_.CreateInstance(CLSID_DCompManipulationCompositor,
-      nullptr, CLSCTX_INPROC_SERVER);
+  hr = ::CoCreateInstance(CLSID_DCompManipulationCompositor, nullptr,
+                          CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&compositor_));
   CHECK(SUCCEEDED(hr));
 
   hr = manager_->GetUpdateManager(IID_PPV_ARGS(update_manager_.GetAddressOf()));

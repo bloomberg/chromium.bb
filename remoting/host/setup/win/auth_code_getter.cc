@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/win/auth_code_getter.h"
 
+#include <objbase.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/scoped_bstr.h"
@@ -32,8 +34,8 @@ void AuthCodeGetter::GetAuthCode(
     return;
   }
   on_auth_code_ = on_auth_code;
-  HRESULT hr = browser_.CreateInstance(CLSID_InternetExplorer, nullptr,
-                                       CLSCTX_LOCAL_SERVER);
+  HRESULT hr = ::CoCreateInstance(CLSID_InternetExplorer, nullptr,
+                                  CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&browser_));
   if (FAILED(hr)) {
     on_auth_code_.Run("");
     return;

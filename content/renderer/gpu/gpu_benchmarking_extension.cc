@@ -63,6 +63,7 @@
 
 #if defined(OS_WIN) && !defined(NDEBUG)
 #include <XpsObjectModel.h>
+#include <objbase.h>
 #include "base/win/scoped_comptr.h"
 #endif
 
@@ -529,8 +530,8 @@ static sk_sp<SkDocument> MakeXPSDocument(SkWStream* s) {
   // In non-sandboxed mode, we will need to create and hold on to the
   // factory before entering the sandbox.
   base::win::ScopedComPtr<IXpsOMObjectFactory> factory;
-  HRESULT hr = factory.CreateInstance(CLSID_XpsOMObjectFactory, nullptr,
-                                      CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(CLSID_XpsOMObjectFactory, nullptr,
+                                  CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
   if (FAILED(hr) || !factory) {
     LOG(ERROR) << "CoCreateInstance(CLSID_XpsOMObjectFactory, ...) failed:"
                << logging::SystemErrorCodeToString(hr);

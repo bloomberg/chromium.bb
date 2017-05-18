@@ -4,6 +4,7 @@
 
 #include "remoting/host/desktop_session_win.h"
 
+#include <objbase.h>
 #include <sddl.h>
 
 #include <limits>
@@ -266,8 +267,9 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   }
 
   // Create the RDP wrapper object.
-  HRESULT result = rdp_desktop_session_.CreateInstance(
-      __uuidof(RdpDesktopSession));
+  HRESULT result =
+      ::CoCreateInstance(__uuidof(RdpDesktopSession), nullptr, CLSCTX_ALL,
+                         IID_PPV_ARGS(&rdp_desktop_session_));
   if (FAILED(result)) {
     LOG(ERROR) << "Failed to create RdpSession object, 0x"
                << std::hex << result << std::dec << ".";

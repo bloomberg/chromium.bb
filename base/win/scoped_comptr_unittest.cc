@@ -39,7 +39,8 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   EXPECT_TRUE(com_initializer.succeeded());
 
   ScopedComPtr<IUnknown> unk;
-  EXPECT_TRUE(SUCCEEDED(unk.CreateInstance(CLSID_ShellLink)));
+  EXPECT_TRUE(SUCCEEDED(::CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_ALL,
+                                           IID_PPV_ARGS(&unk))));
   ScopedComPtr<IUnknown> unk2;
   unk2.Attach(unk.Detach());
   EXPECT_TRUE(unk.Get() == NULL);

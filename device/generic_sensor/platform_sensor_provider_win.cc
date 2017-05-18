@@ -4,6 +4,8 @@
 
 #include "device/generic_sensor/platform_sensor_provider_win.h"
 
+#include <objbase.h>
+
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/task_runner_util.h"
@@ -50,7 +52,8 @@ bool PlatformSensorProviderWin::InitializeSensorManager() {
   if (sensor_manager_)
     return true;
 
-  HRESULT hr = sensor_manager_.CreateInstance(CLSID_SensorManager);
+  HRESULT hr = ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&sensor_manager_));
   return SUCCEEDED(hr);
 }
 

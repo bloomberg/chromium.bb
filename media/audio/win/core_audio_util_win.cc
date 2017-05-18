@@ -177,8 +177,9 @@ static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
 static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
     bool allow_reinitialize) {
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
-                                                NULL, CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
+                                  CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(&device_enumerator));
   if (hr == CO_E_NOTINITIALIZED && allow_reinitialize) {
     LOG(ERROR) << "CoCreateInstance fails with CO_E_NOTINITIALIZED";
     // We have seen crashes which indicates that this method can in fact
@@ -187,8 +188,9 @@ static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
     // issues. See http://crbug.com/378465 for details.
     hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
-      hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
-                                            NULL, CLSCTX_INPROC_SERVER);
+      hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
+                              CLSCTX_INPROC_SERVER,
+                              IID_PPV_ARGS(&device_enumerator));
     }
   }
   return device_enumerator;
@@ -877,7 +879,8 @@ bool CoreAudioUtil::GetDxDiagDetails(std::string* driver_name,
                                      std::string* driver_version) {
   ScopedComPtr<IDxDiagProvider, &IID_IDxDiagProvider> provider;
   HRESULT hr =
-      provider.CreateInstance(CLSID_DxDiagProvider, NULL, CLSCTX_INPROC_SERVER);
+      ::CoCreateInstance(CLSID_DxDiagProvider, NULL, CLSCTX_INPROC_SERVER,
+                         IID_IDxDiagProvider, &provider);
   if (FAILED(hr))
     return false;
 

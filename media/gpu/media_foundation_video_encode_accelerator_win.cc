@@ -10,6 +10,7 @@
 #include <codecapi.h>
 #include <mferror.h>
 #include <mftransform.h>
+#include <objbase.h>
 
 #include <iterator>
 #include <utility>
@@ -355,7 +356,8 @@ bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
   RETURN_ON_HR_FAILURE(hr, "Couldn't enumerate hardware encoder", false);
   RETURN_ON_FAILURE((count > 0), "No HW encoder found", false);
   DVLOG(3) << "HW encoder(s) found: " << count;
-  hr = encoder_.CreateInstance(CLSIDs[0]);
+  hr = ::CoCreateInstance(CLSIDs[0], nullptr, CLSCTX_ALL,
+                          IID_PPV_ARGS(&encoder_));
   RETURN_ON_HR_FAILURE(hr, "Couldn't activate hardware encoder", false);
   RETURN_ON_FAILURE((encoder_.Get() != nullptr),
                     "No HW encoder instance created", false);

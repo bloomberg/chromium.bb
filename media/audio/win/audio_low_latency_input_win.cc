@@ -513,8 +513,9 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   DCHECK(!endpoint_device_.Get());
 
   ScopedComPtr<IMMDeviceEnumerator> enumerator;
-  HRESULT hr = enumerator.CreateInstance(__uuidof(MMDeviceEnumerator), NULL,
-                                         CLSCTX_INPROC_SERVER);
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&enumerator));
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_CREATE_INSTANCE;
     return hr;

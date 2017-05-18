@@ -108,8 +108,8 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
   DCHECK(filter);
 
   ScopedComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr =
-      dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC);
+  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
+                                  IID_PPV_ARGS(&dev_enum));
   if (FAILED(hr))
     return hr;
 
@@ -316,14 +316,14 @@ bool VideoCaptureDeviceWin::Init() {
 
   input_sink_pin_ = sink_filter_->GetPin(0);
 
-  hr = graph_builder_.CreateInstance(CLSID_FilterGraph, NULL,
-                                     CLSCTX_INPROC_SERVER);
+  hr = ::CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
+                          IID_PPV_ARGS(&graph_builder_));
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create capture filter", hr);
   if (FAILED(hr))
     return false;
 
-  hr = capture_graph_builder_.CreateInstance(CLSID_CaptureGraphBuilder2, NULL,
-                                             CLSCTX_INPROC);
+  hr = ::CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC,
+                          IID_PPV_ARGS(&capture_graph_builder_));
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create the Capture Graph Builder", hr);
   if (FAILED(hr))
     return false;

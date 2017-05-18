@@ -5,6 +5,7 @@
 #include "device/generic_sensor/platform_sensor_reader_win.h"
 
 #include <Sensors.h>
+#include <objbase.h>
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -430,7 +431,8 @@ void PlatformSensorReaderWin::ListenSensorEvent() {
 bool PlatformSensorReaderWin::SetReportingInterval(
     const PlatformSensorConfiguration& configuration) {
   base::win::ScopedComPtr<IPortableDeviceValues> props;
-  if (SUCCEEDED(props.CreateInstance(CLSID_PortableDeviceValues))) {
+  if (SUCCEEDED(::CoCreateInstance(CLSID_PortableDeviceValues, nullptr,
+                                   CLSCTX_ALL, IID_PPV_ARGS(&props)))) {
     unsigned interval =
         (1 / configuration.frequency()) * base::Time::kMillisecondsPerSecond;
 

@@ -5,6 +5,7 @@
 #include "base/test/test_shortcut_win.h"
 
 #include <windows.h>
+#include <objbase.h>
 #include <shlobj.h>
 #include <propkey.h>
 
@@ -62,8 +63,9 @@ void ValidateShortcut(const base::FilePath& shortcut_path,
   HRESULT hr;
 
   // Initialize the shell interfaces.
-  EXPECT_TRUE(SUCCEEDED(hr = i_shell_link.CreateInstance(
-      CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER)));
+  EXPECT_TRUE(SUCCEEDED(hr = ::CoCreateInstance(CLSID_ShellLink, NULL,
+                                                CLSCTX_INPROC_SERVER,
+                                                IID_PPV_ARGS(&i_shell_link))));
   if (FAILED(hr))
     return;
 
