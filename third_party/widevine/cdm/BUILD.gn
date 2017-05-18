@@ -119,7 +119,7 @@ if (use_stub_cdm_for_chrome) {
       ":version_h",
       ":copy_widevinecdm",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
     ]
 
     public_deps = [ ":copy_widevinecdm" ]
@@ -150,7 +150,7 @@ if (use_stub_cdm_for_chrome) {
     deps = [
       ":version_h",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config:exe_and_shlib_deps",
     ]
 
     if (is_mac) {

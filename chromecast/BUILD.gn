@@ -379,7 +379,7 @@ executable("cast_shell") {
   deps = [
     ":cast_shell_lib",
     ":chromecast_locales_pak",
-    "//build/config/sanitizers:deps",
+    "//build/config:exe_and_shlib_deps",
     "//chromecast/app",
     "//content/public/app:both",
   ]
