@@ -100,6 +100,13 @@ PassRefPtr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
   return AdoptRef(new ComputedStyle());
 }
 
+ComputedStyle& ComputedStyle::MutableInitialStyle() {
+  LEAK_SANITIZER_DISABLED_SCOPE;
+  DEFINE_STATIC_REF(ComputedStyle, initial_style,
+                    (ComputedStyle::CreateInitialStyle()));
+  return *initial_style;
+}
+
 void ComputedStyle::InvalidateInitialStyle() {
   MutableInitialStyle().SetTapHighlightColor(InitialTapHighlightColor());
 }

@@ -22,6 +22,35 @@ std::unique_ptr<cc::TimingFunction> LinearTimingFunction::CloneToCC() const {
   return nullptr;
 }
 
+CubicBezierTimingFunction* CubicBezierTimingFunction::Preset(
+    EaseType ease_type) {
+  DEFINE_STATIC_REF(CubicBezierTimingFunction, ease,
+                    (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE))));
+  DEFINE_STATIC_REF(
+      CubicBezierTimingFunction, ease_in,
+      (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN))));
+  DEFINE_STATIC_REF(
+      CubicBezierTimingFunction, ease_out,
+      (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT))));
+  DEFINE_STATIC_REF(
+      CubicBezierTimingFunction, ease_in_out,
+      (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT))));
+
+  switch (ease_type) {
+    case EaseType::EASE:
+      return ease;
+    case EaseType::EASE_IN:
+      return ease_in;
+    case EaseType::EASE_OUT:
+      return ease_out;
+    case EaseType::EASE_IN_OUT:
+      return ease_in_out;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 String CubicBezierTimingFunction::ToString() const {
   switch (this->GetEaseType()) {
     case CubicBezierTimingFunction::EaseType::EASE:

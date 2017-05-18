@@ -198,12 +198,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   static PassRefPtr<ComputedStyle> CreateInitialStyle();
   // TODO(shend): Remove this. Initial style should not be mutable.
-  static inline ComputedStyle& MutableInitialStyle() {
-    LEAK_SANITIZER_DISABLED_SCOPE;
-    DEFINE_STATIC_REF(ComputedStyle, initial_style,
-                      (ComputedStyle::CreateInitialStyle()));
-    return *initial_style;
-  }
+  static ComputedStyle& MutableInitialStyle();
 
  public:
   static PassRefPtr<ComputedStyle> Create();
