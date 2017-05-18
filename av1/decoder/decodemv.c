@@ -45,16 +45,10 @@ static INLINE int read_uniform(aom_reader *r, int n) {
 }
 #endif  // CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 
-#if CONFIG_DAALA_EC || CONFIG_ANS
 static PREDICTION_MODE read_intra_mode(aom_reader *r, aom_cdf_prob *cdf) {
   return (PREDICTION_MODE)
       av1_intra_mode_inv[aom_read_symbol(r, cdf, INTRA_MODES, ACCT_STR)];
 }
-#else
-static PREDICTION_MODE read_intra_mode(aom_reader *r, const aom_prob *p) {
-  return (PREDICTION_MODE)aom_read_tree(r, av1_intra_mode_tree, p, ACCT_STR);
-}
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_DELTA_Q
 static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
@@ -75,16 +69,7 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 #endif
 
   if ((bsize != BLOCK_LARGEST || mbmi->skip == 0) && read_delta_q_flag) {
-#if !(CONFIG_DAALA_EC || CONFIG_ANS)
-    int bit = 1;
-    abs = 0;
-    while (abs < DELTA_Q_SMALL && bit) {
-      bit = aom_read(r, ec_ctx->delta_q_prob[abs], ACCT_STR);
-      abs += bit;
-    }
-#else
     abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
-#endif  // !(CONFIG_DAALA_EC || CONFIG_ANS)
     smallval = (abs < DELTA_Q_SMALL);
     if (counts) {
       for (i = 0; i < abs; ++i) counts->delta_q[i][1]++;
@@ -127,17 +112,8 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 #endif
 
   if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_lf_flag) {
-#if !(CONFIG_DAALA_EC || CONFIG_ANS)
-    int bit = 1;
-    abs = 0;
-    while (abs < DELTA_LF_SMALL && bit) {
-      bit = aom_read(r, ec_ctx->delta_lf_prob[abs], ACCT_STR);
-      abs += bit;
-    }
-#else
     abs =
         aom_read_symbol(r, ec_ctx->delta_lf_cdf, DELTA_LF_PROBS + 1, ACCT_STR);
-#endif  // !(CONFIG_DAALA_EC || CONFIG_ANS)
     smallval = (abs < DELTA_LF_SMALL);
     if (counts) {
       for (i = 0; i < abs; ++i) counts->delta_lf[i][1]++;
@@ -166,16 +142,12 @@ static PREDICTION_MODE read_intra_mode_y(AV1_COMMON *cm, MACROBLOCKD *xd,
                                          aom_reader *r, int size_group) {
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#elif CONFIG_DAALA_EC || CONFIG_ANS
+#else
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
   const PREDICTION_MODE y_mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
       read_intra_mode(r, ec_ctx->y_mode_cdf[size_group]);
-#else
-      read_intra_mode(r, cm->fc->y_mode_prob[size_group]);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   FRAME_COUNTS *counts = xd->counts;
 #if CONFIG_EC_ADAPT
   (void)cm;
@@ -189,16 +161,12 @@ static PREDICTION_MODE read_intra_mode_uv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                           PREDICTION_MODE y_mode) {
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#elif CONFIG_DAALA_EC || CONFIG_ANS
+#else
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
   const PREDICTION_MODE uv_mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
       read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
-#else
-      read_intra_mode(r, cm->fc->uv_mode_prob[y_mode]);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   FRAME_COUNTS *counts = xd->counts;
 #if CONFIG_EC_ADAPT
   (void)cm;
@@ -382,11 +350,7 @@ static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTER
 
 static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
-#if CONFIG_DAALA_EC || CONFIG_ANS
   return aom_read_symbol(r, segp->tree_cdf, MAX_SEGMENTS, ACCT_STR);
-#else
-  return aom_read_tree(r, av1_segment_tree, segp->tree_probs, ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 }
 
 #if CONFIG_VAR_TX
@@ -476,14 +440,8 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-  const int depth =
-#if CONFIG_DAALA_EC || CONFIG_ANS
-      aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx], tx_size_cat + 2,
-                      ACCT_STR);
-#else
-      aom_read_tree(r, av1_tx_size_tree[tx_size_cat],
-                    ec_ctx->tx_size_probs[tx_size_cat][ctx], ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
+  const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
+                                    tx_size_cat + 2, ACCT_STR);
   const TX_SIZE tx_size = depth_to_tx_size(depth);
 #if CONFIG_RECT_TX
   assert(!is_rect_tx(tx_size));
@@ -879,13 +837,8 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
     if (av1_is_intra_filter_switchable(p_angle)) {
       FRAME_COUNTS *counts = xd->counts;
-#if CONFIG_DAALA_EC || CONFIG_ANS
       mbmi->intra_filter = aom_read_symbol(r, ec_ctx->intra_filter_cdf[ctx],
                                            INTRA_FILTERS, ACCT_STR);
-#else
-      mbmi->intra_filter = aom_read_tree(
-          r, av1_intra_filter_tree, ec_ctx->intra_filter_probs[ctx], ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
       if (counts) ++counts->intra_filter[ctx][mbmi->intra_filter];
     } else {
       mbmi->intra_filter = INTRA_FILTER_LINEAR;
@@ -947,29 +900,16 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (inter_block) {
         if (eset > 0) {
-#if CONFIG_DAALA_EC || CONFIG_ANS
           *tx_type = av1_ext_tx_inter_inv[eset][aom_read_symbol(
               r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
               ext_tx_cnt_inter[eset], ACCT_STR)];
-#else
-          *tx_type = aom_read_tree(
-              r, av1_ext_tx_inter_tree[eset],
-              ec_ctx->inter_ext_tx_prob[eset][square_tx_size], ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
           if (counts) ++counts->inter_ext_tx[eset][square_tx_size][*tx_type];
         }
       } else if (ALLOW_INTRA_EXT_TX) {
         if (eset > 0) {
-#if CONFIG_DAALA_EC || CONFIG_ANS
           *tx_type = av1_ext_tx_intra_inv[eset][aom_read_symbol(
               r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
               ext_tx_cnt_intra[eset], ACCT_STR)];
-#else
-          *tx_type = aom_read_tree(
-              r, av1_ext_tx_intra_tree[eset],
-              ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
-              ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
           if (counts)
             ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode][*tx_type];
         }
@@ -990,25 +930,14 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       FRAME_COUNTS *counts = xd->counts;
 
       if (inter_block) {
-#if CONFIG_DAALA_EC || CONFIG_ANS
         *tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
-#else
-        *tx_type = aom_read_tree(r, av1_ext_tx_tree,
-                                 ec_ctx->inter_ext_tx_prob[tx_size], ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
         if (counts) ++counts->inter_ext_tx[tx_size][*tx_type];
       } else {
         const TX_TYPE tx_type_nom = intra_mode_to_tx_type_context[mbmi->mode];
-#if CONFIG_DAALA_EC || CONFIG_ANS
         *tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, ec_ctx->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
             ACCT_STR)];
-#else
-        *tx_type = aom_read_tree(
-            r, av1_ext_tx_tree, ec_ctx->intra_ext_tx_prob[tx_size][tx_type_nom],
-            ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
         if (counts) ++counts->intra_ext_tx[tx_size][tx_type_nom][*tx_type];
       }
     } else {
@@ -1061,7 +990,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#elif CONFIG_DAALA_EC || CONFIG_ANS
+#else
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
@@ -1146,59 +1075,30 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_CB4X4
   (void)i;
   mbmi->mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
       read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-#else
-      read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #else
   switch (bsize) {
     case BLOCK_4X4:
       for (i = 0; i < 4; ++i)
-        mi->bmi[i].as_mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
-            read_intra_mode(r,
-                            get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, i));
-#else
-            read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, i));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
+        mi->bmi[i].as_mode = read_intra_mode(
+            r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, i));
       mbmi->mode = mi->bmi[3].as_mode;
       break;
     case BLOCK_4X8:
       mi->bmi[0].as_mode = mi->bmi[2].as_mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
           read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-#else
-          read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
       mi->bmi[1].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
           read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 1));
-#else
-          read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 1));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
       break;
     case BLOCK_8X4:
       mi->bmi[0].as_mode = mi->bmi[1].as_mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
           read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-#else
-          read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
       mi->bmi[2].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
           read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 2));
-#else
-          read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 2));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
       break;
     default:
       mbmi->mode =
-#if CONFIG_DAALA_EC || CONFIG_ANS
           read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-#else
-          read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   }
 #endif
 
@@ -1256,11 +1156,7 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
   int mag, d, fr, hp;
   const int sign = aom_read(r, mvcomp->sign, ACCT_STR);
   const int mv_class =
-#if CONFIG_DAALA_EC || CONFIG_ANS
       aom_read_symbol(r, mvcomp->class_cdf, MV_CLASSES, ACCT_STR);
-#else
-      aom_read_tree(r, av1_mv_class_tree, mvcomp->classes, ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   const int class0 = mv_class == MV_CLASS_0;
 
   // Integer part
@@ -1276,14 +1172,9 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 
-// Fractional part
-#if CONFIG_DAALA_EC || CONFIG_ANS
+  // Fractional part
   fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                        MV_FP_SIZE, ACCT_STR);
-#else
-  fr = aom_read_tree(r, av1_mv_fp_tree,
-                     class0 ? mvcomp->class0_fp[d] : mvcomp->fp, ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
   // High precision part (if hp is not used, the default value of the hp is 1)
   hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
@@ -1300,11 +1191,7 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
   MV_JOINT_TYPE joint_type;
   MV diff = { 0, 0 };
   joint_type =
-#if CONFIG_DAALA_EC || CONFIG_ANS
       (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joint_cdf, MV_JOINTS, ACCT_STR);
-#else
-      (MV_JOINT_TYPE)aom_read_tree(r, av1_mv_joint_tree, ctx->joints, ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
   if (mv_joint_vertical(joint_type))
     diff.row = read_mv_component(r, &ctx->comps[0], allow_hp);
@@ -1471,16 +1358,10 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
       if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
           (mbmi->ref_frame[1] > INTRA_FRAME &&
            has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
-#if CONFIG_DAALA_EC || CONFIG_ANS
         mbmi->interp_filter[dir] =
             (InterpFilter)av1_switchable_interp_inv[aom_read_symbol(
                 r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS,
                 ACCT_STR)];
-#else
-        mbmi->interp_filter[dir] = (InterpFilter)aom_read_tree(
-            r, av1_switchable_interp_tree, ec_ctx->switchable_interp_prob[ctx],
-            ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
         if (counts) ++counts->switchable_interp[ctx][mbmi->interp_filter[dir]];
       }
     }
@@ -1490,21 +1371,15 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
     mbmi->interp_filter[2] = mbmi->interp_filter[0];
     mbmi->interp_filter[3] = mbmi->interp_filter[1];
   }
-#else  // CONFIG_DUAL_FILTER
+#else   // CONFIG_DUAL_FILTER
   if (cm->interp_filter != SWITCHABLE) {
     mbmi->interp_filter = cm->interp_filter;
   } else {
     const int ctx = av1_get_pred_context_switchable_interp(xd);
-#if CONFIG_DAALA_EC || CONFIG_ANS
     mbmi->interp_filter =
         (InterpFilter)av1_switchable_interp_inv[aom_read_symbol(
             r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS,
             ACCT_STR)];
-#else
-    mbmi->interp_filter = (InterpFilter)aom_read_tree(
-        r, av1_switchable_interp_tree, ec_ctx->switchable_interp_prob[ctx],
-        ACCT_STR);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
     if (counts) ++counts->switchable_interp[ctx][mbmi->interp_filter];
   }
 #endif  // CONFIG_DUAL_FILTER

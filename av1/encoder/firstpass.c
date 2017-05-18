@@ -568,16 +568,11 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
     od_init_qm(x->daala_enc.state.qm, x->daala_enc.state.qm_inv,
                x->daala_enc.qm == OD_HVS_QM ? OD_QM8_Q4_HVS : OD_QM8_Q4_FLAT);
-#if CONFIG_DAALA_EC
+#if !CONFIG_ANS
     od_ec_enc_init(&x->daala_enc.w.ec, 65025);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
-
-#if CONFIG_DAALA_EC
     od_ec_enc_reset(&x->daala_enc.w.ec);
 #else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#error "CONFIG_PVQ currently requires !CONFIG_ANS."
 #endif
   }
 #endif
@@ -998,10 +993,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   }
 
 #if CONFIG_PVQ
-#if CONFIG_DAALA_EC
+#if !CONFIG_ANS
   od_ec_enc_clear(&x->daala_enc.w.ec);
 #else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#error "CONFIG_PVQ currently requires !CONFIG_ANS."
 #endif
 
   x->pvq_q->last_pos = x->pvq_q->curr_pos;

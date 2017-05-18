@@ -1173,22 +1173,17 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
 
 #if CONFIG_DELTA_Q
 static const aom_prob default_delta_q_probs[DELTA_Q_PROBS] = { 220, 220, 220 };
-#if CONFIG_DAALA_EC || CONFIG_ANS
 static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #if CONFIG_EXT_DELTA_Q
 static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS] = { 220, 220,
                                                                  220 };
-#if CONFIG_DAALA_EC || CONFIG_ANS
 static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #endif
 #endif
-#if CONFIG_DAALA_EC || CONFIG_ANS
 int av1_intra_mode_ind[INTRA_MODES];
 int av1_intra_mode_inv[INTRA_MODES];
 int av1_inter_mode_ind[INTER_MODES];
@@ -1199,7 +1194,6 @@ int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];
 int av1_ext_tx_inter_ind[EXT_TX_SETS_INTER][TX_TYPES];
 int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
 #endif
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_ALT_INTRA
 #if CONFIG_SMOOTH_HV
@@ -2198,10 +2192,8 @@ const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)] = {
   -INTRA_FILTER_LINEAR,      2, -INTRA_FILTER_8TAP, 4, -INTRA_FILTER_8TAP_SHARP,
   -INTRA_FILTER_8TAP_SMOOTH,
 };
-#if CONFIG_DAALA_EC || CONFIG_ANS
 int av1_intra_filter_ind[INTRA_FILTERS];
 int av1_intra_filter_inv[INTRA_FILTERS];
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 
 #if CONFIG_FILTER_INTRA
@@ -2237,7 +2229,6 @@ static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
 };
 // clang-format on
 
-#if CONFIG_DAALA_EC || CONFIG_ANS
 #if CONFIG_DUAL_FILTER
 static const aom_cdf_prob
     default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(
@@ -4447,7 +4438,6 @@ const aom_cdf_prob
           AOM_ICDF(30393), AOM_ICDF(32768), 0 } },
 #endif  // CONFIG_ALT_INTRA
     };
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->uv_mode_prob, default_uv_probs);
@@ -4522,7 +4512,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_LOOP_RESTORATION
   av1_copy(fc->switchable_restore_prob, default_switchable_restore_prob);
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_DAALA_EC || CONFIG_ANS
   av1_copy(fc->y_mode_cdf, default_if_y_mode_cdf);
   av1_copy(fc->uv_mode_cdf, default_uv_mode_cdf);
   av1_copy(fc->switchable_interp_cdf, default_switchable_interp_cdf);
@@ -4535,17 +4524,12 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #if CONFIG_DELTA_Q
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
-#if CONFIG_DAALA_EC || CONFIG_ANS
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #if CONFIG_EXT_DELTA_Q
   av1_copy(fc->delta_lf_prob, default_delta_lf_probs);
-#if CONFIG_DAALA_EC || CONFIG_ANS
   av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #endif
 #endif  // CONFIG_DELTA_Q
 #if CONFIG_CFL
@@ -4553,7 +4537,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
 }
 
-#if CONFIG_DAALA_EC || CONFIG_ANS
 int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
 int av1_switchable_interp_inv[SWITCHABLE_FILTERS];
 
@@ -4654,7 +4637,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 }
 #endif  // !CONFIG_EC_ADAPT
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_DUAL_FILTER
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =

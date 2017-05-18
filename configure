@@ -279,7 +279,6 @@ EXPERIMENT_LIST="
     alt_intra
     palette
     palette_delta_encoding
-    daala_ec
     rawbits
     ec_smallmul
     pvq
@@ -498,7 +497,6 @@ post_process_cmdline() {
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
 
-    ! enabled ans && soft_enable daala_ec
     soft_enable palette
     soft_enable alt_intra
     soft_enable palette_throughput
@@ -519,28 +517,16 @@ post_process_cmdline() {
     enabled dpcm_intra && enable_feature ext_tx
     enabled chroma_sub8x8 && enable_feature cb4x4
 
-    if ! enabled daala_ec && ! enabled ans && enabled cfl; then
-      log_echo "cfl requires daala_ec or ans, so disabling cfl"
-      disable_feature cfl
-    fi
-    if ! enabled daala_ec && ! enabled ans && enabled ec_adapt; then
-      log_echo "ec_adapt requires daala_ec or ans, so disabling ec_adapt"
-      disable_feature ec_adapt
-    fi
-    if ! enabled daala_ec && ! enabled ans && enabled new_multisymbol; then
-      log_echo "new_multisymbol requires daala_ec or ans, so disabling new_multisymbol"
-      disable_feature new_multisymbol
-    fi
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
       disable_feature ext_delta_q
     fi
-    if enabled rawbits && ! enabled daala_ec; then
-      log_echo "rawbits requires daala_ec, so disabling rawbits"
+    if enabled rawbits && enabled ans; then
+      log_echo "rawbits requires not ans, so disabling rawbits"
       disable_feature rawbits
     fi
-    if enabled ec_smallmul && ! enabled daala_ec; then
-      log_echo "ec_smallmul requires daala_ec, so disabling ec_smallmul"
+    if enabled ec_smallmul && enabled ans; then
+      log_echo "ec_smallmul requires not ans, so disabling ec_smallmul"
       disable_feature ec_smallmul
     fi
     if enabled ext_tile; then

@@ -35,12 +35,10 @@ typedef struct {
 } TOKENVALUE;
 
 typedef struct {
-#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   int eob_val;
   int first_val;
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   const aom_prob *context_tree;
   EXTRABIT extra;
   uint8_t token;
@@ -49,9 +47,6 @@ typedef struct {
 
 extern const aom_tree_index av1_coef_tree[];
 extern const aom_tree_index av1_coef_con_tree[];
-#if !(CONFIG_DAALA_EC || CONFIG_ANS)
-extern const struct av1_token av1_coef_encodings[];
-#endif  // !(CONFIG_DAALA_EC || CONFIG_ANS)
 
 int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 

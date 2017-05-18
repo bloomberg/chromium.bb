@@ -45,18 +45,16 @@ extern "C" {
 #define CATEGORY5_TOKEN 9   // 35-66 Extra Bits 5+1
 #define CATEGORY6_TOKEN 10  // 67+   Extra Bits 14+1
 #define EOB_TOKEN 11        // EOB   Extra Bits 0+0
-#if CONFIG_DAALA_EC || CONFIG_ANS
-#define NO_EOB 0           // Not an end-of-block
-#define EARLY_EOB 1        // End of block before the last position
-#define LAST_EOB 2         // End of block in the last position (implicit)
-#define BLOCK_Z_TOKEN 255  // block zero
+#define NO_EOB 0            // Not an end-of-block
+#define EARLY_EOB 1         // End of block before the last position
+#define LAST_EOB 2          // End of block in the last position (implicit)
+#define BLOCK_Z_TOKEN 255   // block zero
 #define HEAD_TOKENS 5
 #define TAIL_TOKENS 9
 #define ONE_TOKEN_EOB 1
 #define ONE_TOKEN_NEOB 2
 #define TWO_TOKEN_PLUS_EOB 3
 #define TWO_TOKEN_PLUS_NEOB 4
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #define ENTROPY_TOKENS 12
 
 #define ENTROPY_NODES 11
@@ -171,9 +169,7 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
    distinct bands). */
 
 #define COEFF_CONTEXTS 6
-#if CONFIG_DAALA_EC || CONFIG_ANS
 #define BLOCKZ_CONTEXTS 3
-#endif                     // CONFIG_DAALA_EC || CONFIG_ANS
 #define COEFF_CONTEXTS0 3  // for band 0
 #define BAND_COEFF_CONTEXTS(band) \
   ((band) == 0 ? COEFF_CONTEXTS0 : COEFF_CONTEXTS)
@@ -243,7 +239,6 @@ typedef unsigned int av1_coeff_count_model[REF_TYPES][COEF_BANDS]
 
 void av1_model_to_full_probs(const aom_prob *model, aom_prob *full);
 
-#if CONFIG_DAALA_EC || CONFIG_ANS
 typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                     [CDF_SIZE(ENTROPY_TOKENS)];
 typedef aom_prob av1_blockz_probs_model[REF_TYPES][BLOCKZ_CONTEXTS];
@@ -256,7 +251,6 @@ struct frame_contexts;
 
 void av1_coef_head_cdfs(struct frame_contexts *fc);
 void av1_coef_pareto_cdfs(struct frame_contexts *fc);
-#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 typedef char ENTROPY_CONTEXT;
 
