@@ -29,13 +29,13 @@ bool GrabWindowSnapshotAura(aura::Window* window,
 }
 
 static void MakeAsyncCopyRequest(
-    aura::Window* window,
+    Layer* layer,
     const gfx::Rect& source_rect,
     const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
   std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
   request->set_area(source_rect);
-  window->layer()->RequestCopyOfOutput(std::move(request));
+  layer->RequestCopyOfOutput(std::move(request));
 }
 
 static void FinishedAsyncCopyRequest(
@@ -55,7 +55,7 @@ static void FinishedAsyncCopyRequest(
     // dereference.
     aura::Window* window = tracker->windows()[0];
     MakeAsyncCopyRequest(
-        window, source_rect,
+        window->layer(), source_rect,
         base::Bind(&FinishedAsyncCopyRequest, base::Passed(&tracker),
                    source_rect, callback, retry_count + 1));
     return;
@@ -71,7 +71,7 @@ static void MakeInitialAsyncCopyRequest(
   auto tracker = base::MakeUnique<aura::WindowTracker>();
   tracker->Add(window);
   MakeAsyncCopyRequest(
-      window, source_rect,
+      window->layer(), source_rect,
       base::Bind(&FinishedAsyncCopyRequest, base::Passed(&tracker), source_rect,
                  callback, 0));
 }
@@ -131,6 +131,14 @@ void GrabViewSnapshotAsync(gfx::NativeView view,
                            const gfx::Rect& source_rect,
                            const GrabWindowSnapshotAsyncCallback& callback) {
   GrabWindowSnapshotAsyncAura(view, source_rect, callback);
+}
+
+void GrabLayerSnapshotAsync(ui::Layer* layer,
+                            const gfx::Rect& source_rect,
+                            const GrabLayerSnapshotCallback& callback) {
+  MakeAsyncCopyRequest(
+      layer, source_rect,
+      base::Bind(&SnapshotAsync::RunCallbackWithCopyOutputResult, callback));
 }
 
 #endif

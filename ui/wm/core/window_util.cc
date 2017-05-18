@@ -14,22 +14,25 @@
 
 namespace {
 
-// Invokes RecreateLayer() on all the children of |to_clone|, adding the newly
-// cloned children to |parent|.
+// Invokes |map_func| on all the children of |to_clone|, adding the newly
+// cloned children to |parent|. If |map_func| returns nullptr on
+// the layer owner, all its layer's children will not be cloned.
 //
 // WARNING: It is assumed that |parent| is ultimately owned by a LayerTreeOwner.
-void CloneChildren(ui::Layer* to_clone, ui::Layer* parent) {
+void CloneChildren(ui::Layer* to_clone,
+                   ui::Layer* parent,
+                   const wm::MapLayerFunc& map_func) {
   typedef std::vector<ui::Layer*> Layers;
   // Make a copy of the children since RecreateLayer() mutates it.
   Layers children(to_clone->children());
   for (Layers::const_iterator i = children.begin(); i != children.end(); ++i) {
     ui::LayerOwner* owner = (*i)->owner();
-    ui::Layer* old_layer = owner ? owner->RecreateLayer().release() : NULL;
+    ui::Layer* old_layer = owner ? map_func.Run(owner).release() : NULL;
     if (old_layer) {
       parent->Add(old_layer);
       // RecreateLayer() moves the existing children to the new layer. Create a
       // copy of those.
-      CloneChildren(owner->layer(), old_layer);
+      CloneChildren(owner->layer(), old_layer, map_func);
     }
   }
 }
@@ -132,8 +135,20 @@ aura::Window* GetToplevelWindow(aura::Window* window) {
 
 std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
   DCHECK(root->OwnsLayer());
-  auto old_layer = base::MakeUnique<ui::LayerTreeOwner>(root->RecreateLayer());
-  CloneChildren(root->layer(), old_layer->root());
+  return RecreateLayersWithClosure(root, base::Bind([](ui::LayerOwner* owner) {
+                                     return owner->RecreateLayer();
+                                   }));
+}
+
+std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(
+    ui::LayerOwner* root,
+    const MapLayerFunc& map_func) {
+  DCHECK(root->OwnsLayer());
+  auto layer = map_func.Run(root);
+  if (!layer)
+    return nullptr;
+  auto old_layer = base::MakeUnique<ui::LayerTreeOwner>(std::move(layer));
+  CloneChildren(root->layer(), old_layer->root(), map_func);
   return old_layer;
 }
 
