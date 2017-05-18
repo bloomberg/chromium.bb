@@ -23,6 +23,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Weerawardhana.
 ** License changes
 ** Backwards incompatible changes
+** New, renamed or removed tables
+- sin.cti (new)
+- sin.utb (new)
 
 * Noteworthy changes in release 3.1.0 (2017-03-06)
 An influx of new contributors have made sure that liblouis continues
