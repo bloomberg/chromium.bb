@@ -154,15 +154,20 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
+  // The buttons to select payment methods and shipping address are present.
   EXPECT_NE(nullptr,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON)));
   EXPECT_NE(nullptr,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON)));
-  EXPECT_NE(nullptr,
+  // Shipping option section (or its button) is not yet present.
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
+  EXPECT_EQ(nullptr,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)));
+  // Contact details button is present.
   EXPECT_NE(nullptr,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON)));

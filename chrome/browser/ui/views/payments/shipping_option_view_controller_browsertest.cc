@@ -40,8 +40,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
   InvokePaymentRequestUI();
 
   // There is no shipping option section, because no address has been selected.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(2U, request->state()->shipping_profiles().size());
+  EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)));
 
   // Go to the shipping address screen and select the first address (MI state).
   OpenShippingAddressSectionScreen();
@@ -80,10 +86,13 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
-  // There is no longer shipping option section, because no shipping options are
-  // available for Canada.
+  // There is no a longer shipping option section, because no shipping options
+  // are available for Canada.
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)));
 
   // There is now an appropriate error that is shown in the shipping address
   // section of the Payment Sheet. The string is returned by the merchant.

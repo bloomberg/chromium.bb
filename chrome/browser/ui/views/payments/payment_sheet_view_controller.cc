@@ -885,8 +885,7 @@ PaymentSheetViewController::CreateShippingOptionRow() {
   //        selection's label and a chevron.
   //    1.3 There are options and none is selected: display a row with a
   //        choose button and the string "|preview of first option| and N more"
-  // 2. There is no selected shipping address: display a row with the string
-  //    "Choose an address" and a disabled Choose button.
+  // 2. There is no selected shipping address: do not display the row.
   mojom::PaymentShippingOption* selected_option =
       spec()->selected_shipping_option();
   // The shipping option section displays the currently selected option if there
@@ -899,12 +898,12 @@ PaymentSheetViewController::CreateShippingOptionRow() {
 
   if (state()->selected_shipping_profile()) {
     if (spec()->details().shipping_options.empty()) {
-      // TODO(anthonyvd): Display placeholder if there's no available shipping
-      // option.
+      // 1.1 No shipping options, do not display the row.
       return nullptr;
     }
 
     if (selected_option) {
+      // 1.2 Show the selected shipping option.
       std::unique_ptr<views::View> option_row_content =
           current_update_reason_ ==
                   PaymentRequestSpec::UpdateReason::SHIPPING_OPTION
@@ -916,6 +915,8 @@ PaymentSheetViewController::CreateShippingOptionRow() {
       return builder.Id(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)
           .CreateWithChevron(std::move(option_row_content), nullptr);
     } else {
+      // 1.3 There are options, none are selected: show the enabled Choose
+      // button.
       return builder
           .Id(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)
           .CreateWithButton(
@@ -928,11 +929,8 @@ PaymentSheetViewController::CreateShippingOptionRow() {
               /*button_enabled=*/true);
     }
   } else {
-    return builder
-        .Id(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)
-        .CreateWithButton(
-            l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_CHOOSE_AN_ADDRESS),
-            l10n_util::GetStringUTF16(IDS_CHOOSE), /*button_enabled=*/false);
+    // 2. There is no selected address: do not show the shipping option section.
+    return nullptr;
   }
 }
 
