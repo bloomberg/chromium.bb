@@ -143,9 +143,11 @@ check_targets = [
   #"//third_party/*",  # May not ever want this.
   "//third_party/brotli/*",
   "//third_party/hunspell/*",
+  "//third_party/leveldatabase/*",
   "//third_party/libaddressinput/*",
   "//third_party/libphonenumber/*",
   "//third_party/libwebp/*",
+  "//third_party/snappy/*",
   "//third_party/WebKit/*",
   "//tools/*",
 
