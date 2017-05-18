@@ -158,7 +158,7 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
     y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << tx_off_log2];
     int uv_width = (col << tx_off_log2) + width;
     diff_width = uv_width - cfl->y_width;
-    int uv_height = (row << tx_off_log2) + width;
+    int uv_height = (row << tx_off_log2) + height;
     diff_height = uv_height - cfl->y_height;
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
@@ -172,7 +172,7 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
     y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << (tx_off_log2 + sub_y)];
     int uv_width = ((col << tx_off_log2) + width) << sub_x;
     diff_width = (uv_width - cfl->y_width) >> sub_x;
-    int uv_height = ((row << tx_off_log2) + width) << sub_y;
+    int uv_height = ((row << tx_off_log2) + height) << sub_y;
     diff_height = (uv_height - cfl->y_height) >> sub_y;
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
