@@ -13,6 +13,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 
 namespace content {
 
@@ -58,9 +59,19 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
-  scoped_async_task_scheduler_.reset();
+  // This is required to ensure we run all remaining tasks in an atomic step
+  // (instead of ~ScopedAsyncTaskScheduler() followed by another
+  // RunLoop().RunUntilIdle()). Otherwise If a pending task in
+  // |scoped_async_task_scheduler_| posts to |message_loop_|, that task can then
+  // post back to |scoped_async_task_scheduler_| after the former was destroyed.
+  // This is a bit different than production where the main thread is not
+  // flushed after it's done running but this approach is preferred in unit
+  // tests as running more tasks can merely uncover more issues (e.g. if a bad
+  // tasks is posted but never blocked upon it could make a test flaky whereas
+  // by flushing we guarantee it will blow up).
+  RunAllBlockingPoolTasksUntilIdle();
 
-  base::RunLoop().RunUntilIdle();
+  scoped_async_task_scheduler_.reset();
   CHECK(base::MessageLoop::current()->IsIdleForTesting());
 
   // |message_loop_| needs to explicitly go away before fake threads in order
