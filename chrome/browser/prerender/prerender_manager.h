@@ -285,7 +285,7 @@ class PrerenderManager : public content::NotificationObserver,
 
   // Returns a Value object containing the active pages being prerendered, and
   // a history of pages which were prerendered.
-  std::unique_ptr<base::DictionaryValue> GetAsValue() const;
+  std::unique_ptr<base::DictionaryValue> CopyAsValue() const;
 
   // Clears the data indicated by which bits of clear_flags are set.
   //
