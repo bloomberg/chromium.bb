@@ -180,8 +180,7 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
          */
         public void setToolbar(Toolbar toolbar) {
             mToolbar = toolbar;
-            mTabStripHeightPx = mToolbarContainer.getResources().getDimensionPixelSize(
-                    R.dimen.tab_strip_height);
+            mTabStripHeightPx = mToolbar.getTabStripHeight();
         }
 
         /**

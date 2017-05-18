@@ -105,4 +105,10 @@ public interface Toolbar {
      * @param animate Whether the removal of the badge should be animated.
      */
     void removeAppMenuUpdateBadge(boolean animate);
+
+    /**
+     * Returns the height of the tab strip, iff the toolbar has one.
+     * @return height of the tab strip in px.
+     */
+    int getTabStripHeight();
 }
