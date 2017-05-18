@@ -110,6 +110,9 @@ class ChromePasswordManagerClient
       const override;
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
+
+  void CheckProtectedPasswordEntry(
+      const std::string& password_saved_domain) override;
 #endif
 
   static void CreateForWebContentsWithAutofillClient(

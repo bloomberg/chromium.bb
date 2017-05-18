@@ -20,11 +20,10 @@
 
 namespace {
 
-const char kPasswordReuseMatchWhitelistHistogramName[] =
-    "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist";
-const char kWhitelistedUrl[] = "http://inwhitelist.com";
-const char kNoneWhitelistedUrl[] = "http://notinwhitelist.com";
-const char kTargetUrl[] = "http://foo.com";
+const char kFormActionUrl[] = "https://form_action.com/";
+const char kPasswordFrameUrl[] = "https://password_frame.com/";
+const char kSavedDomain[] = "saved_domain.com";
+const char kTargetUrl[] = "http://foo.com/";
 const char kVerdictHistogramName[] =
     "PasswordProtection.Verdict.PasswordFieldOnFocus";
 
@@ -74,11 +73,13 @@ class TestPasswordProtectionService : public PasswordProtectionService {
                                   nullptr,
                                   content_setting_map.get()),
         is_extended_reporting_(true),
-        is_incognito_(false) {}
+        is_incognito_(false),
+        latest_request_(nullptr) {}
 
   void RequestFinished(
       PasswordProtectionRequest* request,
       std::unique_ptr<LoginReputationClientResponse> response) override {
+    latest_request_ = request;
     latest_response_ = std::move(response);
   }
 
@@ -114,9 +115,14 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   size_t GetPendingRequestsCount() { return requests_.size(); }
 
+  LoginReputationClientRequest* GetLatestRequestProto() {
+    return latest_request_ ? latest_request_->request_proto() : nullptr;
+  }
+
  private:
   bool is_extended_reporting_;
   bool is_incognito_;
+  PasswordProtectionRequest* latest_request_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
@@ -152,14 +158,28 @@ class PasswordProtectionServiceTest : public testing::Test {
   void TearDown() override { content_setting_map_->ShutdownOnUIThread(); }
 
   // Sets up |database_manager_| and |requests_| as needed.
-  void InitializeAndStartRequest(bool match_whitelist, int timeout_in_ms) {
+  void InitializeAndStartPasswordOnFocusRequest(bool match_whitelist,
+                                                int timeout_in_ms) {
     GURL target_url(kTargetUrl);
     EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
         .WillRepeatedly(testing::Return(match_whitelist));
 
     request_ = new PasswordProtectionRequest(
-        target_url, GURL(), GURL(),
-        LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+        target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
+        std::string(), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+        password_protection_service_.get(), timeout_in_ms);
+    request_->Start();
+  }
+
+  void InitializeAndStartPasswordEntryRequest(bool match_whitelist,
+                                              int timeout_in_ms) {
+    GURL target_url(kTargetUrl);
+    EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
+        .WillRepeatedly(testing::Return(match_whitelist));
+
+    request_ = new PasswordProtectionRequest(
+        target_url, GURL(), GURL(), std::string(kSavedDomain),
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
@@ -200,39 +220,6 @@ class PasswordProtectionServiceTest : public testing::Test {
   scoped_refptr<PasswordProtectionRequest> request_;
   base::HistogramTester histograms_;
 };
-
-TEST_F(PasswordProtectionServiceTest,
-       TestPasswordReuseMatchWhitelistHistogram) {
-  const GURL whitelisted_url(kWhitelistedUrl);
-  const GURL not_whitelisted_url(kNoneWhitelistedUrl);
-  EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(whitelisted_url))
-      .WillOnce(testing::Return(true));
-  EXPECT_CALL(*database_manager_.get(),
-              MatchCsdWhitelistUrl(not_whitelisted_url))
-      .WillOnce(testing::Return(false));
-  histograms_.ExpectTotalCount(kPasswordReuseMatchWhitelistHistogramName, 0);
-
-  // Empty url should increase "True" bucket by 1.
-  password_protection_service_->RecordPasswordReuse(GURL());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordReuseMatchWhitelistHistogramName),
-      testing::ElementsAre(base::Bucket(1, 1)));
-
-  // Whitelisted url should increase "True" bucket by 1.
-  password_protection_service_->RecordPasswordReuse(whitelisted_url);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordReuseMatchWhitelistHistogramName),
-      testing::ElementsAre(base::Bucket(1, 2)));
-
-  // Non-whitelisted url should increase "False" bucket by 1.
-  password_protection_service_->RecordPasswordReuse(not_whitelisted_url);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordReuseMatchWhitelistHistogramName),
-      testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 2)));
-}
 
 TEST_F(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
   std::unique_ptr<base::DictionaryValue> invalid_verdict_entry =
@@ -435,8 +422,8 @@ TEST_F(PasswordProtectionServiceTest,
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
-  InitializeAndStartRequest(true /* match whitelist */,
-                            10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(true /* match whitelist */,
+                                           10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -448,8 +435,8 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
   CacheVerdict(GURL(kTargetUrl), LoginReputationClientResponse::LOW_REPUTATION,
                600, GURL(kTargetUrl).host(), base::Time::Now());
-  InitializeAndStartRequest(false /* match whitelist */,
-                            10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
+                                           10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
@@ -465,8 +452,8 @@ TEST_F(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   failed_fetcher.set_status(
       net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
 
-  InitializeAndStartRequest(false /* match whitelist */,
-                            10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
+                                           10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&failed_fetcher);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -484,8 +471,8 @@ TEST_F(PasswordProtectionServiceTest, TestMalformedResponse) {
   fetcher.set_response_code(200);
   fetcher.SetResponseString("invalid response");
 
-  InitializeAndStartRequest(false /* match whitelist */,
-                            10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
+                                           10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -496,8 +483,8 @@ TEST_F(PasswordProtectionServiceTest, TestMalformedResponse) {
 
 TEST_F(PasswordProtectionServiceTest, TestRequestTimedout) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
-  InitializeAndStartRequest(false /* match whitelist */,
-                            0 /* timeout immediately */);
+  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
+                                           0 /* timeout immediately */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -516,8 +503,8 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
       LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
   fetcher.SetResponseString(expected_response.SerializeAsString());
 
-  InitializeAndStartRequest(false /* match whitelist */,
-                            10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
+                                           10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
@@ -541,7 +528,7 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
       .WillRepeatedly(testing::Return(false));
   password_protection_service_->StartRequest(
       target_url, GURL("http://foo.com/submit"), GURL("http://foo.com/frame"),
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+      std::string(), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();
@@ -590,4 +577,64 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpExpiredVerdict) {
                          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
                          std::string(), nullptr));
 }
+
+TEST_F(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
+  // Set up valid response.
+  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
+  fetcher.set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  fetcher.set_response_code(200);
+  LoginReputationClientResponse expected_response = CreateVerdictProto(
+      LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
+  fetcher.SetResponseString(expected_response.SerializeAsString());
+
+  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
+                                           100000 /* timeout in ms*/);
+  base::RunLoop().RunUntilIdle();
+  request_->OnURLFetchComplete(&fetcher);
+  base::RunLoop().RunUntilIdle();
+
+  LoginReputationClientRequest* actual_request =
+      password_protection_service_->GetLatestRequestProto();
+  EXPECT_EQ(kTargetUrl, actual_request->page_url());
+  EXPECT_EQ(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+            actual_request->trigger_type());
+  ASSERT_EQ(2, actual_request->frames_size());
+  EXPECT_EQ(kTargetUrl, actual_request->frames(0).url());
+  EXPECT_EQ(kPasswordFrameUrl, actual_request->frames(1).url());
+  EXPECT_EQ(true, actual_request->frames(1).has_password_field());
+  ASSERT_EQ(1, actual_request->frames(1).forms_size());
+  EXPECT_EQ(kFormActionUrl, actual_request->frames(1).forms(0).action_url());
+}
+
+TEST_F(PasswordProtectionServiceTest,
+       VerifyProtectedPasswordEntryRequestProto) {
+  // Set up valid response.
+  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
+  fetcher.set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  fetcher.set_response_code(200);
+  LoginReputationClientResponse expected_response = CreateVerdictProto(
+      LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
+  fetcher.SetResponseString(expected_response.SerializeAsString());
+  InitializeAndStartPasswordEntryRequest(false /* match whitelist */,
+                                         100000 /* timeout in ms*/);
+  base::RunLoop().RunUntilIdle();
+  request_->OnURLFetchComplete(&fetcher);
+  base::RunLoop().RunUntilIdle();
+
+  LoginReputationClientRequest* actual_request =
+      password_protection_service_->GetLatestRequestProto();
+  EXPECT_EQ(kTargetUrl, actual_request->page_url());
+  EXPECT_EQ(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+            actual_request->trigger_type());
+  EXPECT_EQ(1, actual_request->frames_size());
+  EXPECT_EQ(kTargetUrl, actual_request->frames(0).url());
+  ASSERT_TRUE(actual_request->has_password_reuse_event());
+  ASSERT_EQ(1, actual_request->password_reuse_event()
+                   .password_reused_original_origins_size());
+  EXPECT_EQ(kSavedDomain, actual_request->password_reuse_event()
+                              .password_reused_original_origins(0));
+}
+
 }  // namespace safe_browsing

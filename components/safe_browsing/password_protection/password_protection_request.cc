@@ -21,12 +21,14 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
+    const std::string& saved_domain,
     LoginReputationClientRequest::TriggerType type,
     PasswordProtectionService* pps,
     int request_timeout_in_ms)
     : main_frame_url_(main_frame_url),
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
+      saved_domain_(saved_domain),
       request_type_(type),
       password_protection_service_(pps),
       database_manager_(password_protection_service_->database_manager()),
@@ -47,6 +49,9 @@ void PasswordProtectionRequest::Start() {
 void PasswordProtectionRequest::CheckWhitelistOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool* match_whitelist = new bool(false);
+  // TODO(jialiul): Move CheckCsdWhitelistOnIOThread to
+  // PasswordProtectionRequest class, since PasswordProtectionService no longer
+  // need it.
   tracker_.PostTaskAndReply(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
       base::Bind(&PasswordProtectionService::CheckCsdWhitelistOnIOThread,
@@ -97,22 +102,39 @@ void PasswordProtectionRequest::FillRequestProto() {
   main_frame->set_frame_index(0 /* main frame */);
   password_protection_service_->FillReferrerChain(
       main_frame_url_, -1 /* tab id not available */, main_frame);
-  LoginReputationClientRequest::Frame::Form* password_form;
-  if (password_form_frame_url_ == main_frame_url_) {
-    main_frame->set_has_password_field(true);
-    password_form = main_frame->add_forms();
-  } else {
-    LoginReputationClientRequest::Frame* password_frame =
-        request_proto_->add_frames();
-    password_frame->set_url(password_form_frame_url_.spec());
-    password_frame->set_has_password_field(true);
-    // TODO(jialiul): Add referrer chain for subframes later.
-    password_form = password_frame->add_forms();
+
+  switch (request_type_) {
+    case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
+      LoginReputationClientRequest::Frame::Form* password_form;
+      if (password_form_frame_url_ == main_frame_url_) {
+        main_frame->set_has_password_field(true);
+        password_form = main_frame->add_forms();
+      } else {
+        LoginReputationClientRequest::Frame* password_frame =
+            request_proto_->add_frames();
+        password_frame->set_url(password_form_frame_url_.spec());
+        password_frame->set_has_password_field(true);
+        // TODO(jialiul): Add referrer chain for subframes later.
+        password_form = password_frame->add_forms();
+      }
+      password_form->set_action_url(password_form_action_.spec());
+      // TODO(jialiul): Fill more frame specific info when Safe Browsing backend
+      // is ready to handle these pieces of information.
+      break;
+    }
+    case LoginReputationClientRequest::PASSWORD_REUSE_EVENT: {
+      if (password_protection_service_->IsExtendedReporting() &&
+          !password_protection_service_->IsIncognito()) {
+        LoginReputationClientRequest::PasswordReuseEvent* password_reuse =
+            request_proto_->mutable_password_reuse_event();
+        password_reuse->add_password_reused_original_origins(saved_domain_);
+      }
+      // TODO(jialiul): Fill more password_reuse information.
+      break;
+    }
+    default:
+      NOTREACHED();
   }
-  password_form->set_action_url(password_form_action_.spec());
-  password_form->set_has_password_field(true);
-  // TODO(jialiul): Fill more frame specific info when Safe Browsing backend
-  // is ready to handle these pieces of information.
 }
 
 void PasswordProtectionRequest::SendRequest() {

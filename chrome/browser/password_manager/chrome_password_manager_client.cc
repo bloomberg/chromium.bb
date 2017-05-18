@@ -418,8 +418,22 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
   if (pps) {
+    // TODO(jialiul): Pass in web_content() instead of GetMainFrameURL(), such
+    // that web_content can be used to display safe browsing interstitial.
     pps->MaybeStartPasswordFieldOnFocusRequest(GetMainFrameURL(), form_action,
                                                frame_url);
+  }
+}
+
+void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
+    const std::string& password_saved_domain) {
+  safe_browsing::PasswordProtectionService* pps =
+      GetPasswordProtectionService();
+  if (pps) {
+    // TODO(jialiul): Pass in web_content() instead of GetMainFrameURL(), such
+    // that web_content can be used to display safe browsing interstitial.
+    pps->MaybeStartProtectedPasswordEntryRequest(GetMainFrameURL(),
+                                                 password_saved_domain);
   }
 }
 #endif
