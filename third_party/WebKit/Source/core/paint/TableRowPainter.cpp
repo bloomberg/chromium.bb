@@ -32,8 +32,10 @@ void TableRowPainter::Paint(const PaintInfo& paint_info,
     cull_rect.MoveBy(layout_table_row_.PhysicalLocation(section));
     LayoutRect logical_rect_in_section =
         section->LogicalRectForWritingModeAndDirection(cull_rect);
-    CellSpan dirtied_columns =
-        section->DirtiedEffectiveColumns(logical_rect_in_section);
+    CellSpan dirtied_rows;
+    CellSpan dirtied_columns;
+    section->DirtiedRowsAndEffectiveColumns(logical_rect_in_section,
+                                            dirtied_rows, dirtied_columns);
     PaintBoxDecorationBackground(paint_info, paint_offset, dirtied_columns);
   }
 
@@ -96,7 +98,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
   if (has_background) {
     PaintInfo paint_info_for_cells = paint_info.ForDescendants();
-    for (auto c = dirtied_columns.Start(); c < dirtied_columns.end(); c++) {
+    for (auto c = dirtied_columns.Start(); c < dirtied_columns.End(); c++) {
       if (const auto* cell =
               section->OriginatingCellAt(layout_table_row_.RowIndex(), c))
         PaintBackgroundBehindCell(*cell, paint_info_for_cells, paint_offset);

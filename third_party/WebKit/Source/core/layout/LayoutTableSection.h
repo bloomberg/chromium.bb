@@ -39,10 +39,11 @@ class CellSpan {
   STACK_ALLOCATED();
 
  public:
+  CellSpan() : start_(0), end_(0) {}
   CellSpan(unsigned start, unsigned end) : start_(start), end_(end) {}
 
   unsigned Start() const { return start_; }
-  unsigned end() const { return end_; }
+  unsigned End() const { return end_; }
 
   void DecreaseStart() { --start_; }
   void IncreaseEnd() { ++end_; }
@@ -55,7 +56,7 @@ class CellSpan {
 };
 
 inline bool operator==(const CellSpan& s1, const CellSpan& s2) {
-  return s1.Start() == s2.Start() && s1.end() == s2.end();
+  return s1.Start() == s2.Start() && s1.End() == s2.End();
 }
 inline bool operator!=(const CellSpan& s1, const CellSpan& s2) {
   return !(s1 == s2);
@@ -260,10 +261,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // columnPos vectors.
   LayoutRect LogicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
-  // Returns a row or column span covering all grid slots from each of which
-  // a primary cell intersecting |visualRect| originates.
-  CellSpan DirtiedRows(const LayoutRect& visual_rect) const;
-  CellSpan DirtiedEffectiveColumns(const LayoutRect& visual_rect) const;
+  // Sets |rows| and |columns| to cover all cells needing repaint in
+  // |damage_rect|.
+  void DirtiedRowsAndEffectiveColumns(const LayoutRect& damage_rect,
+                                      CellSpan& rows,
+                                      CellSpan& columns) const;
 
   const HashSet<const LayoutTableCell*>& OverflowingCells() const {
     return overflowing_cells_;

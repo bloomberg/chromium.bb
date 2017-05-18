@@ -16,9 +16,9 @@ using TablePainterTest = PaintControllerPaintTest;
 TEST_F(TablePainterTest, Background) {
   SetBodyInnerHTML(
       "<style>"
-      "  td { width: 200px; height: 200px; border: none; }"
+      "  td { width: 200px; height: 200px; padding: 0; border: none; }"
       "  tr { background-color: blue; }"
-      "  table { border: none; border-spacing: 0; border-collapse: collapse; }"
+      "  table { border: none; border-spacing: 0 }"
       "</style>"
       "<table>"
       "  <tr id='row1'><td></td></tr>"

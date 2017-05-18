@@ -109,23 +109,6 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
         .PaintOutline(paint_info, adjusted_paint_offset);
 }
 
-static inline bool CompareCellPositions(const LayoutTableCell* elem1,
-                                        const LayoutTableCell* elem2) {
-  return elem1->RowIndex() < elem2->RowIndex();
-}
-
-// This comparison is used only when we have overflowing cells as we have an
-// unsorted array to sort. We thus need to sort both on rows and columns to
-// paint in proper order.
-static inline bool CompareCellPositionsWithOverflowingCells(
-    const LayoutTableCell* elem1,
-    const LayoutTableCell* elem2) {
-  if (elem1->RowIndex() != elem2->RowIndex())
-    return elem1->RowIndex() < elem2->RowIndex();
-
-  return elem1->AbsoluteColumnIndex() < elem2->AbsoluteColumnIndex();
-}
-
 void TableSectionPainter::PaintCollapsedBorders(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
@@ -157,19 +140,20 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
       layout_table_section_.LogicalRectForWritingModeAndDirection(
           local_visual_rect);
 
-  CellSpan dirtied_rows = layout_table_section_.DirtiedRows(table_aligned_rect);
-  CellSpan dirtied_columns =
-      layout_table_section_.DirtiedEffectiveColumns(table_aligned_rect);
+  CellSpan dirtied_rows;
+  CellSpan dirtied_columns;
+  layout_table_section_.DirtiedRowsAndEffectiveColumns(
+      table_aligned_rect, dirtied_rows, dirtied_columns);
 
-  if (dirtied_columns.Start() >= dirtied_columns.end())
+  if (dirtied_columns.Start() >= dirtied_columns.End())
     return;
 
   // Collapsed borders are painted from the bottom right to the top left so that
   // precedence due to cell position is respected.
-  for (unsigned r = dirtied_rows.end(); r > dirtied_rows.Start(); r--) {
+  for (unsigned r = dirtied_rows.End(); r > dirtied_rows.Start(); r--) {
     unsigned row = r - 1;
     unsigned n_cols = layout_table_section_.NumCols(row);
-    for (unsigned c = std::min(dirtied_columns.end(), n_cols);
+    for (unsigned c = std::min(dirtied_columns.End(), n_cols);
          c > dirtied_columns.Start(); c--) {
       unsigned col = c - 1;
       if (const LayoutTableCell* cell =
@@ -193,9 +177,10 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       layout_table_section_.LogicalRectForWritingModeAndDirection(
           local_visual_rect);
 
-  CellSpan dirtied_rows = layout_table_section_.DirtiedRows(table_aligned_rect);
-  CellSpan dirtied_columns =
-      layout_table_section_.DirtiedEffectiveColumns(table_aligned_rect);
+  CellSpan dirtied_rows;
+  CellSpan dirtied_columns;
+  layout_table_section_.DirtiedRowsAndEffectiveColumns(
+      table_aligned_rect, dirtied_rows, dirtied_columns);
 
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
 
@@ -208,7 +193,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
     return;
 
   if (ShouldPaintDescendantBlockBackgrounds(paint_info.phase)) {
-    for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.end(); r++) {
+    for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
       const LayoutTableRow* row = layout_table_section_.RowLayoutObjectAt(r);
       // If a row has a layer, we'll paint row background though
       // TableRowPainter::paint().
@@ -222,16 +207,14 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
   // This is tested after background painting because during background painting
   // we need to check validity of the previous background display item based on
   // dirtyRows and dirtyColumns.
-  if (dirtied_rows.Start() >= dirtied_rows.end() ||
-      dirtied_columns.Start() >= dirtied_columns.end())
+  if (dirtied_rows.Start() >= dirtied_rows.End() ||
+      dirtied_columns.Start() >= dirtied_columns.End())
     return;
 
   const auto& overflowing_cells = layout_table_section_.OverflowingCells();
-  if (!layout_table_section_.HasMultipleCellLevels() &&
-      overflowing_cells.IsEmpty()) {
+  if (overflowing_cells.IsEmpty()) {
     // This path is for 2 cases:
-    // 1. Normal partial paint, without overflowing cells and multiple cell
-    //    levels;
+    // 1. Normal partial paint, without overflowing cells;
     // 2. Full paint, for small sections or big sections with many overflowing
     //    cells.
     // The difference between the normal partial paint and full paint is that
@@ -241,7 +224,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
             dirtied_columns ==
                 layout_table_section_.FullTableEffectiveColumnSpan()));
 
-    for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.end(); r++) {
+    for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
       const LayoutTableRow* row = layout_table_section_.RowLayoutObjectAt(r);
       // TODO(crbug.com/577282): This painting order is inconsistent with other
       // outlines.
@@ -250,7 +233,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
         TableRowPainter(*row).PaintOutline(paint_info_for_descendants,
                                            paint_offset);
       }
-      for (unsigned c = dirtied_columns.Start(); c < dirtied_columns.end();
+      for (unsigned c = dirtied_columns.Start(); c < dirtied_columns.End();
            c++) {
         if (const LayoutTableCell* cell =
                 layout_table_section_.OriginatingCellAt(r, c))
@@ -258,14 +241,14 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       }
     }
   } else {
-    // This path paints section with multiple cell levels or a reasonable number
-    // of overflowing cells. This is the "partial paint path" for overflowing
-    // cells referred in LayoutTableSection::ComputeOverflowFromDescendants().
+    // This path paints section with a reasonable number of overflowing cells.
+    // This is the "partial paint path" for overflowing cells referred in
+    // LayoutTableSection::ComputeOverflowFromDescendants().
     Vector<const LayoutTableCell*> cells;
     CopyToVector(overflowing_cells, cells);
 
     HashSet<const LayoutTableCell*> spanning_cells;
-    for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.end(); r++) {
+    for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
       const LayoutTableRow* row = layout_table_section_.RowLayoutObjectAt(r);
       // TODO(crbug.com/577282): This painting order is inconsistent with other
       // outlines.
@@ -276,28 +259,16 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       }
       unsigned n_cols = layout_table_section_.NumCols(r);
       for (unsigned c = dirtied_columns.Start();
-           c < n_cols && c < dirtied_columns.end(); c++) {
-        for (const auto* cell :
-             layout_table_section_.GridCellAt(r, c).Cells()) {
-          if (overflowing_cells.Contains(cell))
-            continue;
-          if (cell->RowSpan() > 1 || cell->ColSpan() > 1) {
-            if (!spanning_cells.insert(cell).is_new_entry)
-              continue;
-          }
-          cells.push_back(cell);
+           c < n_cols && c < dirtied_columns.End(); c++) {
+        if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c)) {
+          if (!overflowing_cells.Contains(cell))
+            cells.push_back(cell);
         }
       }
     }
 
     // Sort the dirty cells by paint order.
-    if (!overflowing_cells.size()) {
-      std::stable_sort(cells.begin(), cells.end(), CompareCellPositions);
-    } else {
-      std::sort(cells.begin(), cells.end(),
-                CompareCellPositionsWithOverflowingCells);
-    }
-
+    std::sort(cells.begin(), cells.end(), LayoutTableCell::CompareInDOMOrder);
     for (const auto* cell : cells)
       PaintCell(*cell, paint_info_for_descendants, paint_offset);
   }
@@ -341,8 +312,8 @@ void TableSectionPainter::PaintBoxDecorationBackground(
 
   if (may_have_background) {
     PaintInfo paint_info_for_cells = paint_info.ForDescendants();
-    for (auto r = dirtied_rows.Start(); r < dirtied_rows.end(); r++) {
-      for (auto c = dirtied_columns.Start(); c < dirtied_columns.end(); c++) {
+    for (auto r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
+      for (auto c = dirtied_columns.Start(); c < dirtied_columns.End(); c++) {
         if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c)) {
           PaintBackgroundsBehindCell(*cell, paint_info_for_cells, paint_offset);
         }
