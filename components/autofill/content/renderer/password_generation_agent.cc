@@ -354,6 +354,7 @@ PasswordGenerationAgent::CreatePasswordFormToPresave() {
         *render_frame()->GetWebFrame(), nullptr, nullptr);
   }
   if (password_form) {
+    password_form->type = PasswordForm::TYPE_GENERATED;
     // TODO(kolos): when we are good in username detection, save username
     // as well.
     password_form->username_value = base::string16();

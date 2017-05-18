@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
+
 FakeContentPasswordManagerDriver::FakeContentPasswordManagerDriver() {}
 
 FakeContentPasswordManagerDriver::~FakeContentPasswordManagerDriver() {}
@@ -42,11 +44,13 @@ void FakeContentPasswordManagerDriver::InPageNavigation(
 void FakeContentPasswordManagerDriver::PresaveGeneratedPassword(
     const autofill::PasswordForm& password_form) {
   called_presave_generated_password_ = true;
+  EXPECT_EQ(autofill::PasswordForm::TYPE_GENERATED, password_form.type);
 }
 
 void FakeContentPasswordManagerDriver::PasswordNoLongerGenerated(
     const autofill::PasswordForm& password_form) {
   called_password_no_longer_generated_ = true;
+  EXPECT_EQ(autofill::PasswordForm::TYPE_GENERATED, password_form.type);
 }
 
 void FakeContentPasswordManagerDriver::ShowPasswordSuggestions(
