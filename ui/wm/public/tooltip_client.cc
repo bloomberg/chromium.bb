@@ -35,7 +35,8 @@ void SetTooltipText(Window* window, base::string16* tooltip_text) {
 }
 
 void SetTooltipId(Window* window, void* id) {
-  window->SetProperty(kTooltipIdKey, id);
+  if (id != GetTooltipId(window))
+    window->SetProperty(kTooltipIdKey, id);
 }
 
 const base::string16 GetTooltipText(Window* window) {
