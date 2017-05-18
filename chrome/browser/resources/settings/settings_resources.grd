@@ -402,6 +402,12 @@
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_JS"
                  file="controls/settings_checkbox.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_IMPORTANT_SITE_CHECKBOX_HTML"
+                 file="controls/important_site_checkbox.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_IMPORTANT_SITE_CHECKBOX_JS"
+                 file="controls/important_site_checkbox.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_DROPDOWN_MENU_HTML"
                  file="controls/settings_dropdown_menu.html"
                  type="chrome_html" />

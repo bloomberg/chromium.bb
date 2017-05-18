@@ -526,8 +526,10 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearBrowsingDataLearnMoreUrl", IDS_SETTINGS_CLEAR_DATA_LEARN_MORE_URL},
       {"historyDeletionDialogTitle",
        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
-      {"historyDeletionDialogOK",
-       IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
+      {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
+      {"importantSitesSubtitle", IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE},
+      {"importantSitesConfirm", IDS_SETTINGS_IMPORTANT_SITES_CONFIRM},
+      {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
   html_source->AddString(
@@ -1523,6 +1525,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  html_source->AddBoolean(
+      "importantSitesInCbd",
+      base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
 
   html_source->AddLocalizedString(
       "safeBrowsingEnableExtendedReporting",

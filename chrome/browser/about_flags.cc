@@ -2430,10 +2430,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFullscreenToolbarRevealDescription, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableFullscreenToolbarReveal)},
 #endif  // OS_MACOSX
-#if defined(OS_ANDROID)
     {"important-sites-in-cbd", flag_descriptions::kImportantSitesInCbdName,
-     flag_descriptions::kImportantSitesInCbdDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
+     flag_descriptions::kImportantSitesInCbdDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kImportantSitesInCbd)},
+#if defined(OS_ANDROID)
     {"tabs-in-cbd", flag_descriptions::kTabsInCbdName,
      flag_descriptions::kTabsInCbdDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTabsInCbd)},

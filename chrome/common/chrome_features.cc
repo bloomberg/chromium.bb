@@ -161,6 +161,9 @@ const base::Feature kHappinessTrackingSystem {
     "HappinessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kImportantSitesInCbd{"ImportantSitesInCBD",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the "improved recovery component" is used. The improved
 // recovery component is a redesigned Chrome component intended to restore
 // a broken Chrome updater in more scenarios than before.

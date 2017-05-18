@@ -32,7 +32,6 @@ extern const base::Feature kCustomFeedbackUi;
 extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kDownloadHomeShowStorageInfo;
 extern const base::Feature kFullscreenActivity;
-extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kSearchEnginePromoExistingDevice;
 extern const base::Feature kSearchEnginePromoNewDevice;

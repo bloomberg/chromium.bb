@@ -663,16 +663,12 @@ const char kPassiveEventListenerDefaultDescription[] =
     "demonstrating the potential performance benefits of adopting passive "
     "event listeners.";
 
-#if defined(OS_ANDROID)
-
 const char kImportantSitesInCbdName[] =
     "Important sites options in clear browsing data dialog";
 
 const char kImportantSitesInCbdDescription[] =
     "Include the option to whitelist important sites in the clear browsing "
     "data dialog.";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
 

@@ -7,15 +7,40 @@
  * to interact with the browser.
  */
 
+/**
+ * An ImportantSite represents a domain with data that the user might want
+ * to protect from being deleted. ImportantSites are determined based on
+ * various engagement factors, such as whether a site is bookmarked or receives
+ * notifications.
+ *
+ * @typedef {{
+ *   registerableDomain: string,
+ *   reasonBitfield: number,
+ *   exampleOrigin: string,
+ *   isChecked: boolean,
+ *   storageSize: number,
+ *   hasNotifications: boolean
+ * }}
+ */
+var ImportantSite;
+
 cr.define('settings', function() {
   /** @interface */
   function ClearBrowsingDataBrowserProxy() {}
 
   ClearBrowsingDataBrowserProxy.prototype = {
     /**
-     * @return {!Promise} A promise resolved when data clearing has completed.
+     * @param {!Array<!ImportantSite>} importantSites
+     * @return {!Promise<void>}
+     *     A promise resolved when data clearing has completed.
      */
-    clearBrowsingData: function() {},
+    clearBrowsingData: function(importantSites) {},
+
+    /**
+     * @return {!Promise<!Array<!ImportantSite>>}
+     *     A promise resolved when imporant sites are retrieved.
+     */
+    getImportantSites: function() {},
 
     /**
      * Kick off counter updates and return initial state.
@@ -33,8 +58,13 @@ cr.define('settings', function() {
 
   ClearBrowsingDataBrowserProxyImpl.prototype = {
     /** @override */
-    clearBrowsingData: function() {
-      return cr.sendWithPromise('clearBrowsingData');
+    clearBrowsingData: function(importantSites) {
+      return cr.sendWithPromise('clearBrowsingData', importantSites);
+    },
+
+    /** @override */
+    getImportantSites: function() {
+      return cr.sendWithPromise('getImportantSites');
     },
 
     /** @override */

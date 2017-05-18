@@ -96,6 +96,8 @@ extern const base::Feature kGdiTextPrinting;
 extern const base::Feature kHappinessTrackingSystem;
 #endif
 
+extern const base::Feature kImportantSitesInCbd;
+
 extern const base::Feature kImprovedRecoveryComponent;
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)

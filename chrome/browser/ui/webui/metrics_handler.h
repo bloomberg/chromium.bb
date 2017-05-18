@@ -44,6 +44,11 @@ class MetricsHandler : public content::WebUIMessageHandler {
   // depending on the maximum value.
   void HandleRecordInHistogram(const base::ListValue* args);
 
+  // Callback for the "metricsHandler:recordBooleanHistogram" message. This
+  // records into a boolean histogram. |args| contains the histogram name, and
+  // the value to record.
+  void HandleRecordBooleanHistogram(const base::ListValue* args);
+
   // Record a millisecond time value in a histogram, similar to
   // UMA_HISTOGRAM_TIMES. Handles times between 1ms and 10sec. |args|
   // contains the histogram name and a value in milliseconds.

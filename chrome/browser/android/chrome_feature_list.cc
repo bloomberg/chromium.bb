@@ -39,6 +39,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
     &features::kConsistentOmniboxGeolocation,
     &features::kCopylessPaste,
+    &features::kImportantSitesInCbd,
     &features::kServiceWorkerPaymentApps,
     &features::kSimplifiedFullscreenUI,
     &features::kVrShell,
@@ -64,7 +65,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &data_reduction_proxy::features::kDataReductionMainMenu,
     &data_reduction_proxy::features::kDataReductionSiteBreakdown,
     &kFullscreenActivity,
-    &kImportantSitesInCBD,
     &kImprovedA2HS,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
@@ -165,9 +165,6 @@ const base::Feature kDownloadHomeShowStorageInfo{
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes "Add to Home screen" in the app menu generate an APK for the shortcut
 // URL which opens Chrome in fullscreen.
