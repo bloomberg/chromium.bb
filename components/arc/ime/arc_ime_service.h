@@ -80,6 +80,11 @@ class ArcImeService : public ArcService,
   void OnCursorRectChanged(const gfx::Rect& rect) override;
   void OnCancelComposition() override;
   void ShowImeIfNeeded() override;
+  void OnCursorRectChangedWithSurroundingText(
+      const gfx::Rect& rect,
+      const gfx::Range& text_range,
+      const base::string16& text_in_range,
+      const gfx::Range& selection_range) override;
 
   // Overridden from keyboard::KeyboardControllerObserver.
   void OnKeyboardBoundsChanging(const gfx::Rect& rect) override;
@@ -93,6 +98,10 @@ class ArcImeService : public ArcService,
   void InsertChar(const ui::KeyEvent& event) override;
   ui::TextInputType GetTextInputType() const override;
   gfx::Rect GetCaretBounds() const override;
+  bool GetTextRange(gfx::Range* range) const override;
+  bool GetSelectionRange(gfx::Range* range) const override;
+  bool GetTextFromRange(const gfx::Range& range,
+                        base::string16* text) const override;
 
   // Overridden from ui::TextInputClient (with default implementation):
   // TODO(kinaba): Support each of these methods to the extent possible in
@@ -104,13 +113,9 @@ class ArcImeService : public ArcService,
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
-  bool GetTextRange(gfx::Range* range) const override;
   bool GetCompositionTextRange(gfx::Range* range) const override;
-  bool GetSelectionRange(gfx::Range* range) const override;
   bool SetSelectionRange(const gfx::Range& range) override;
   bool DeleteRange(const gfx::Range& range) override;
-  bool GetTextFromRange(const gfx::Range& range,
-                        base::string16* text) const override;
   void OnInputMethodChanged() override {}
   bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
@@ -123,11 +128,16 @@ class ArcImeService : public ArcService,
  private:
   ui::InputMethod* GetInputMethod();
 
+  void InvalidateSurroundingTextAndSelectionRange();
+
   std::unique_ptr<ArcImeBridge> ime_bridge_;
   std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;
   ui::TextInputType ime_type_;
   gfx::Rect cursor_rect_;
   bool has_composition_text_;
+  gfx::Range text_range_;
+  base::string16 text_in_range_;
+  gfx::Range selection_range_;
 
   aura::Window* focused_arc_window_ = nullptr;
 

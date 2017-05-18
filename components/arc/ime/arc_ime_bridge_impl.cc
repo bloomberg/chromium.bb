@@ -141,10 +141,8 @@ void ArcImeBridgeImpl::OnTextInputTypeChanged(mojom::TextInputType type) {
   delegate_->OnTextInputTypeChanged(ConvertTextInputType(type));
 }
 
-void ArcImeBridgeImpl::OnCursorRectChanged(mojom::CursorRectPtr rect) {
-  delegate_->OnCursorRectChanged(gfx::Rect(rect->left, rect->top,
-                                           rect->right - rect->left,
-                                           rect->bottom - rect->top));
+void ArcImeBridgeImpl::OnCursorRectChanged(gfx::Rect rect) {
+  delegate_->OnCursorRectChanged(rect);
 }
 
 void ArcImeBridgeImpl::OnCancelComposition() {
@@ -153,6 +151,15 @@ void ArcImeBridgeImpl::OnCancelComposition() {
 
 void ArcImeBridgeImpl::ShowImeIfNeeded() {
   delegate_->ShowImeIfNeeded();
+}
+
+void ArcImeBridgeImpl::OnCursorRectChangedWithSurroundingText(
+    gfx::Rect rect,
+    gfx::Range text_range,
+    const std::string& text_in_range,
+    gfx::Range selection_range) {
+  delegate_->OnCursorRectChangedWithSurroundingText(
+      rect, text_range, base::UTF8ToUTF16(text_in_range), selection_range);
 }
 
 }  // namespace arc

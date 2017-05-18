@@ -18,6 +18,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/range/range.h"
 
 namespace arc {
 
@@ -209,6 +210,7 @@ void ArcImeService::OnTextInputTypeChanged(ui::TextInputType type) {
 }
 
 void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect) {
+  InvalidateSurroundingTextAndSelectionRange();
   if (cursor_rect_ == rect)
     return;
   cursor_rect_ = rect;
@@ -219,6 +221,7 @@ void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect) {
 }
 
 void ArcImeService::OnCancelComposition() {
+  InvalidateSurroundingTextAndSelectionRange();
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->CancelComposition(this);
@@ -229,6 +232,24 @@ void ArcImeService::ShowImeIfNeeded() {
   if (input_method && input_method->GetTextInputClient() == this) {
     input_method->ShowImeIfNeeded();
   }
+}
+
+void ArcImeService::OnCursorRectChangedWithSurroundingText(
+    const gfx::Rect& rect,
+    const gfx::Range& text_range,
+    const base::string16& text_in_range,
+    const gfx::Range& selection_range) {
+  text_range_ = text_range;
+  text_in_range_ = text_in_range;
+  selection_range_ = selection_range;
+
+  if (cursor_rect_ == rect)
+    return;
+  cursor_rect_ = rect;
+
+  ui::InputMethod* const input_method = GetInputMethod();
+  if (input_method)
+    input_method->OnCaretBoundsChanged(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,16 +271,19 @@ void ArcImeService::OnKeyboardClosed() {}
 
 void ArcImeService::SetCompositionText(
     const ui::CompositionText& composition) {
+  InvalidateSurroundingTextAndSelectionRange();
   has_composition_text_ = !composition.text.empty();
   ime_bridge_->SendSetCompositionText(composition);
 }
 
 void ArcImeService::ConfirmCompositionText() {
+  InvalidateSurroundingTextAndSelectionRange();
   has_composition_text_ = false;
   ime_bridge_->SendConfirmCompositionText();
 }
 
 void ArcImeService::ClearCompositionText() {
+  InvalidateSurroundingTextAndSelectionRange();
   if (has_composition_text_) {
     has_composition_text_ = false;
     ime_bridge_->SendInsertText(base::string16());
@@ -267,6 +291,7 @@ void ArcImeService::ClearCompositionText() {
 }
 
 void ArcImeService::InsertText(const base::string16& text) {
+  InvalidateSurroundingTextAndSelectionRange();
   has_composition_text_ = false;
   ime_bridge_->SendInsertText(text);
 }
@@ -277,6 +302,8 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
   // ARC we are only interested in the event as a method of text input.
   if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
+
+  InvalidateSurroundingTextAndSelectionRange();
 
   // For apps that doesn't handle hardware keyboard events well, keys that are
   // typically on software keyboard and lack of them are fatal, namely,
@@ -337,6 +364,32 @@ gfx::Rect ArcImeService::GetCaretBounds() const {
   return converted;
 }
 
+bool ArcImeService::GetTextRange(gfx::Range* range) const {
+  if (!text_range_.IsValid())
+    return false;
+  *range = text_range_;
+  return true;
+}
+
+bool ArcImeService::GetSelectionRange(gfx::Range* range) const {
+  if (!selection_range_.IsValid())
+    return false;
+  *range = selection_range_;
+  return true;
+}
+
+bool ArcImeService::GetTextFromRange(const gfx::Range& range,
+                                     base::string16* text) const {
+  // It's supposed that this method is called only from
+  // InputMethod::OnCaretBoundsChanged(). In that method, the range obtained
+  // from GetTextRange() is used as the argument of this method. To prevent an
+  // unexpected usage, the check, |range != text_range_|, is added.
+  if (!text_range_.IsValid() || range != text_range_)
+    return false;
+  *text = text_in_range_;
+  return true;
+}
+
 ui::TextInputMode ArcImeService::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
@@ -346,6 +399,7 @@ base::i18n::TextDirection ArcImeService::GetTextDirection() const {
 }
 
 void ArcImeService::ExtendSelectionAndDelete(size_t before, size_t after) {
+  InvalidateSurroundingTextAndSelectionRange();
   ime_bridge_->SendExtendSelectionAndDelete(before, after);
 }
 
@@ -366,15 +420,7 @@ bool ArcImeService::HasCompositionText() const {
   return has_composition_text_;
 }
 
-bool ArcImeService::GetTextRange(gfx::Range* range) const {
-  return false;
-}
-
 bool ArcImeService::GetCompositionTextRange(gfx::Range* range) const {
-  return false;
-}
-
-bool ArcImeService::GetSelectionRange(gfx::Range* range) const {
   return false;
 }
 
@@ -386,11 +432,6 @@ bool ArcImeService::DeleteRange(const gfx::Range& range) {
   return false;
 }
 
-bool ArcImeService::GetTextFromRange(
-    const gfx::Range& range, base::string16* text) const {
-  return false;
-}
-
 bool ArcImeService::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction) {
   return false;
@@ -399,6 +440,12 @@ bool ArcImeService::ChangeTextDirectionAndLayoutAlignment(
 bool ArcImeService::IsTextEditCommandEnabled(
     ui::TextEditCommand command) const {
   return false;
+}
+
+void ArcImeService::InvalidateSurroundingTextAndSelectionRange() {
+  text_range_ = gfx::Range::InvalidRange();
+  text_in_range_ = base::string16();
+  selection_range_ = gfx::Range::InvalidRange();
 }
 
 }  // namespace arc

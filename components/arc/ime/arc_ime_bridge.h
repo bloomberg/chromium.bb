@@ -10,6 +10,7 @@
 #include "ui/base/ime/text_input_type.h"
 
 namespace gfx {
+class Range;
 class Rect;
 }  // namespace gfx
 
@@ -32,6 +33,11 @@ class ArcImeBridge {
     virtual void OnCursorRectChanged(const gfx::Rect& rect) = 0;
     virtual void OnCancelComposition() = 0;
     virtual void ShowImeIfNeeded() = 0;
+    virtual void OnCursorRectChangedWithSurroundingText(
+        const gfx::Rect& rect,
+        const gfx::Range& text_range,
+        const base::string16& text_in_range,
+        const gfx::Range& selection_range) = 0;
   };
 
   // Serializes and sends IME related requests through IPCs.

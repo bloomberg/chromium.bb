@@ -43,9 +43,14 @@ class ArcImeBridgeImpl : public ArcImeBridge,
 
   // mojom::ImeHost overrides:
   void OnTextInputTypeChanged(mojom::TextInputType type) override;
-  void OnCursorRectChanged(mojom::CursorRectPtr rect) override;
+  void OnCursorRectChanged(gfx::Rect rect) override;
   void OnCancelComposition() override;
   void ShowImeIfNeeded() override;
+  void OnCursorRectChangedWithSurroundingText(
+      gfx::Rect rect,
+      gfx::Range text_range,
+      const std::string& text_in_range,
+      gfx::Range selection_range) override;
 
  private:
   mojo::Binding<mojom::ImeHost> binding_;
