@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class ChromeClientImpl;
+class ChromeClient;
 class PagePopup;
 class HTMLElement;
 class HTMLHRElement;
@@ -20,7 +20,7 @@ class HTMLSelectElement;
 
 class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
  public:
-  static PopupMenuImpl* Create(ChromeClientImpl*, HTMLSelectElement&);
+  static PopupMenuImpl* Create(ChromeClient*, HTMLSelectElement&);
   ~PopupMenuImpl() override;
   DECLARE_VIRTUAL_TRACE();
 
@@ -29,7 +29,7 @@ class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
   void Dispose();
 
  private:
-  PopupMenuImpl(ChromeClientImpl*, HTMLSelectElement&);
+  PopupMenuImpl(ChromeClient*, HTMLSelectElement&);
 
   class ItemIterationContext;
   void AddOption(ItemIterationContext&, HTMLOptionElement&);
@@ -54,7 +54,7 @@ class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
   Locale& GetLocale() override;
   void DidClosePopup() override;
 
-  Member<ChromeClientImpl> chrome_client_;
+  Member<ChromeClient> chrome_client_;
   Member<HTMLSelectElement> owner_element_;
   PagePopup* popup_;
   bool needs_update_;

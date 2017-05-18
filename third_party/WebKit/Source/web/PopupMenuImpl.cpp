@@ -20,13 +20,13 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/PagePopup.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/web/WebColorChooser.h"
-#include "web/ChromeClientImpl.h"
 
 namespace blink {
 
@@ -236,12 +236,12 @@ class PopupMenuImpl::ItemIterationContext {
 
 // ----------------------------------------------------------------
 
-PopupMenuImpl* PopupMenuImpl::Create(ChromeClientImpl* chrome_client,
+PopupMenuImpl* PopupMenuImpl::Create(ChromeClient* chrome_client,
                                      HTMLSelectElement& owner_element) {
   return new PopupMenuImpl(chrome_client, owner_element);
 }
 
-PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chrome_client,
+PopupMenuImpl::PopupMenuImpl(ChromeClient* chrome_client,
                              HTMLSelectElement& owner_element)
     : chrome_client_(chrome_client),
       owner_element_(owner_element),
