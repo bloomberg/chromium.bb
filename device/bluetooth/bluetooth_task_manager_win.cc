@@ -13,11 +13,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "device/bluetooth/bluetooth_classic_win.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_init_win.h"
@@ -26,8 +25,6 @@
 
 namespace {
 
-const int kNumThreadsInWorkerPool = 3;
-const char kBluetoothThreadName[] = "BluetoothPollingThreadWin";
 const int kMaxNumDeviceAddressChar = 127;
 const int kServiceDiscoveryResultBufferSize = 5000;
 
@@ -258,13 +255,9 @@ void BluetoothTaskManagerWin::RemoveObserver(Observer* observer) {
 
 void BluetoothTaskManagerWin::Initialize() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  worker_pool_ = new base::SequencedWorkerPool(
-      kNumThreadsInWorkerPool, kBluetoothThreadName,
-      base::TaskPriority::USER_VISIBLE);
-  InitializeWithBluetoothTaskRunner(
-      worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool_->GetSequenceToken(),
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN));
+  InitializeWithBluetoothTaskRunner(base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 }
 
 void BluetoothTaskManagerWin::InitializeWithBluetoothTaskRunner(
@@ -292,12 +285,6 @@ void BluetoothTaskManagerWin::StartPolling() {
                  this,
                  base::Owned(state)));
   }
-}
-
-void BluetoothTaskManagerWin::Shutdown() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  if (worker_pool_.get())
-    worker_pool_->Shutdown();
 }
 
 void BluetoothTaskManagerWin::PostSetPoweredBluetoothTask(

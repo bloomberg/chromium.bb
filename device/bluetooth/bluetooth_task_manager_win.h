@@ -24,7 +24,6 @@
 namespace base {
 
 class SequencedTaskRunner;
-class SequencedWorkerPool;
 
 }  // namespace base
 
@@ -121,7 +120,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void Initialize();
   void InitializeWithBluetoothTaskRunner(
       scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner);
-  void Shutdown();
 
   void PostSetPoweredBluetoothTask(
       bool powered,
@@ -316,7 +314,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   // UI task runner reference.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner_;
 
   // List of observers interested in event notifications.
