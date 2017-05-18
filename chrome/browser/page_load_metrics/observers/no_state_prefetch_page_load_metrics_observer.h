@@ -46,10 +46,10 @@ class NoStatePrefetchPageLoadMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   ObservePolicy OnHidden(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   bool is_no_store_;  // True if the main resource has a "no-store" HTTP header.

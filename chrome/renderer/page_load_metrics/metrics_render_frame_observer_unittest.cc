@@ -41,26 +41,23 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
     mock_timer_ = std::move(timer);
   }
 
-  bool WasFakeTimingConsumed() const { return fake_timing_.IsEmpty(); }
-
-  void ExpectPageLoadTiming(const PageLoadTiming& timing) {
+  void ExpectPageLoadTiming(const mojom::PageLoadTiming& timing) {
     SetFakePageLoadTiming(timing);
     fake_timing_ipc_sender_.ExpectPageLoadTiming(timing);
   }
 
-  void SetFakePageLoadTiming(const PageLoadTiming& timing) {
-    EXPECT_TRUE(fake_timing_.IsEmpty());
-    fake_timing_ = timing;
+  void SetFakePageLoadTiming(const mojom::PageLoadTiming& timing) {
+    EXPECT_EQ(nullptr, fake_timing_.get());
+    fake_timing_ = timing.Clone();
   }
 
-  PageLoadTiming GetTiming() const override {
-    PageLoadTiming tmp = fake_timing_;
-    fake_timing_ = PageLoadTiming();
-    return tmp;
+  mojom::PageLoadTimingPtr GetTiming() const override {
+    EXPECT_NE(nullptr, fake_timing_.get());
+    return std::move(fake_timing_);
   }
 
   void VerifyExpectedTimings() const {
-    EXPECT_TRUE(fake_timing_.IsEmpty());
+    EXPECT_EQ(nullptr, fake_timing_.get());
     fake_timing_ipc_sender_.VerifyExpectedTimings();
   }
 
@@ -69,7 +66,7 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
 
  private:
   FakePageTimingMetricsIPCSender fake_timing_ipc_sender_;
-  mutable PageLoadTiming fake_timing_;
+  mutable mojom::PageLoadTimingPtr fake_timing_;
   mutable std::unique_ptr<base::Timer> mock_timer_;
 };
 
@@ -92,13 +89,14 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
   observer.set_mock_timer(base::WrapUnique(mock_timer));
 
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer->Fire();
 
-  timing.document_timing.first_layout = first_layout;
+  timing.document_timing->first_layout = first_layout;
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -115,14 +113,15 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
   observer.set_mock_timer(base::WrapUnique(mock_timer));
 
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer->Fire();
 
-  timing.document_timing.first_layout = first_layout;
-  timing.document_timing.dom_content_loaded_event_start = dom_event;
+  timing.document_timing->first_layout = first_layout;
+  timing.document_timing->dom_content_loaded_event_start = dom_event;
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -133,7 +132,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   // part of the test.
   observer.VerifyExpectedTimings();
 
-  timing.document_timing.load_event_start = load_event;
+  timing.document_timing->load_event_start = load_event;
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -147,6 +146,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   // dom content, and load metrics. However, since we've already generated
   // timing information for all of these metrics previously, we do not expect
   // this invocation to generate any additional metrics.
+  observer.SetFakePageLoadTiming(timing);
   observer.DidChangePerformanceTiming();
   ASSERT_FALSE(mock_timer->IsRunning());
 }
@@ -161,15 +161,16 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
   observer.set_mock_timer(base::WrapUnique(mock_timer));
 
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer->Fire();
 
-  timing.document_timing.first_layout = first_layout;
-  timing.document_timing.dom_content_loaded_event_start = dom_event;
-  timing.document_timing.load_event_start = load_event;
+  timing.document_timing->first_layout = first_layout;
+  timing.document_timing->dom_content_loaded_event_start = dom_event;
+  timing.document_timing->load_event_start = load_event;
   observer.ExpectPageLoadTiming(timing);
   observer.DidChangePerformanceTiming();
   mock_timer->Fire();
@@ -183,7 +184,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   base::TimeDelta first_layout_2 = base::TimeDelta::FromMillisecondsD(20);
   base::TimeDelta dom_event_2 = base::TimeDelta::FromMillisecondsD(20);
   base::TimeDelta load_event_2 = base::TimeDelta::FromMillisecondsD(20);
-  PageLoadTiming timing_2;
+  mojom::PageLoadTiming timing_2;
+  page_load_metrics::InitPageLoadTimingForTest(&timing_2);
   timing_2.navigation_start = nav_start_2;
 
   base::MockTimer* mock_timer2 = new base::MockTimer(false, false);
@@ -193,9 +195,9 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer2->Fire();
 
-  timing_2.document_timing.first_layout = first_layout_2;
-  timing_2.document_timing.dom_content_loaded_event_start = dom_event_2;
-  timing_2.document_timing.load_event_start = load_event_2;
+  timing_2.document_timing->first_layout = first_layout_2;
+  timing_2.document_timing->dom_content_loaded_event_start = dom_event_2;
+  timing_2.document_timing->load_event_start = load_event_2;
   observer.ExpectPageLoadTiming(timing_2);
 
   observer.DidChangePerformanceTiming();

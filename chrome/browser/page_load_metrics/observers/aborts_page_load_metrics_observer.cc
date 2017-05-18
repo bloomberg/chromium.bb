@@ -296,7 +296,7 @@ bool ShouldTrackMetrics(const page_load_metrics::PageLoadExtraInfo& extra_info,
 AbortsPageLoadMetricsObserver::AbortsPageLoadMetricsObserver() {}
 
 void AbortsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(extra_info);
   if (!ShouldTrackMetrics(extra_info, abort_info))
@@ -309,17 +309,17 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   // timing IPCs are tracked via the ERR_NO_IPCS_RECEIVED error code in the
   // PageLoad.Events.InternalError histogram, so we can keep track of how often
   // this happens.
-  if (timing.IsEmpty())
+  if (page_load_metrics::IsEmpty(timing))
     return;
 
-  if (timing.parse_timing.parse_start &&
-      abort_info.time_to_abort >= timing.parse_timing.parse_start &&
-      (!timing.parse_timing.parse_stop ||
-       timing.parse_timing.parse_stop >= abort_info.time_to_abort)) {
+  if (timing.parse_timing->parse_start &&
+      abort_info.time_to_abort >= timing.parse_timing->parse_start &&
+      (!timing.parse_timing->parse_stop ||
+       timing.parse_timing->parse_stop >= abort_info.time_to_abort)) {
     RecordAbortDuringParse(abort_info);
   }
-  if (!timing.paint_timing.first_paint ||
-      timing.paint_timing.first_paint >= abort_info.time_to_abort) {
+  if (!timing.paint_timing->first_paint ||
+      timing.paint_timing->first_paint >= abort_info.time_to_abort) {
     RecordAbortAfterCommitBeforePaint(abort_info);
   }
 }

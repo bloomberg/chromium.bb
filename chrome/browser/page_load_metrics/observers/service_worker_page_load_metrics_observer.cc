@@ -62,81 +62,81 @@ bool IsInboxSite(const GURL& url) {
 ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
 
 void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_contentful_paint, info)) {
+          timing.paint_timing->first_contentful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
-        timing.paint_timing.first_contentful_paint.value());
+        timing.paint_timing->first_contentful_paint.value());
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
-                      timing.paint_timing.first_contentful_paint.value());
+                      timing.paint_timing->first_contentful_paint.value());
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
-      timing.paint_timing.first_contentful_paint.value() -
-          timing.parse_timing.parse_start.value());
+      timing.paint_timing->first_contentful_paint.value() -
+          timing.parse_timing->parse_start.value());
 
   if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintInbox,
-        timing.paint_timing.first_contentful_paint.value());
+        timing.paint_timing->first_contentful_paint.value());
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
-        timing.paint_timing.first_contentful_paint.value() -
-            timing.parse_timing.parse_start.value());
+        timing.paint_timing->first_contentful_paint.value() -
+            timing.parse_timing->parse_start.value());
   }
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.dom_content_loaded_event_start, info)) {
+          timing.document_timing->dom_content_loaded_event_start, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramServiceWorkerDomContentLoaded,
-      timing.document_timing.dom_content_loaded_event_start.value());
+      timing.document_timing->dom_content_loaded_event_start.value());
   if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedInbox,
-        timing.document_timing.dom_content_loaded_event_start.value());
+        timing.document_timing->dom_content_loaded_event_start.value());
   }
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.load_event_start, info))
+          timing.document_timing->load_event_start, info))
     return;
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
-                      timing.document_timing.load_event_start.value());
+                      timing.document_timing->load_event_start.value());
   if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
-                        timing.document_timing.load_event_start.value());
+                        timing.document_timing->load_event_start.value());
   }
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing.parse_start, info)) {
+          timing.parse_timing->parse_start, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
-                        timing.parse_timing.parse_start.value());
+                        timing.parse_timing->parse_start.value());
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramServiceWorkerParseStart,
-                        timing.parse_timing.parse_start.value());
+                        timing.parse_timing->parse_start.value());
   }
 }

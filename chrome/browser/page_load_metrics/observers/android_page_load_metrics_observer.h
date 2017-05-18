@@ -24,10 +24,10 @@ class AndroidPageLoadMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnLoadEventStart(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:

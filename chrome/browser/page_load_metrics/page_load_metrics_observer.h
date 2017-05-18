@@ -122,8 +122,8 @@ struct PageLoadExtraInfo {
       PageEndReason page_end_reason,
       UserInitiatedInfo page_end_user_initiated_info,
       const base::Optional<base::TimeDelta>& page_end_time,
-      const PageLoadMetadata& main_frame_metadata,
-      const PageLoadMetadata& subframe_metadata);
+      const mojom::PageLoadMetadata& main_frame_metadata,
+      const mojom::PageLoadMetadata& subframe_metadata);
 
   // Simplified version of the constructor, intended for use in tests.
   static PageLoadExtraInfo CreateForTesting(const GURL& url,
@@ -192,10 +192,10 @@ struct PageLoadExtraInfo {
 
   // Extra information supplied to the page load metrics system from the
   // renderer for the main frame.
-  const PageLoadMetadata main_frame_metadata;
+  const mojom::PageLoadMetadata main_frame_metadata;
 
   // PageLoadMetadata for subframes of the current page load.
-  const PageLoadMetadata subframe_metadata;
+  const mojom::PageLoadMetadata subframe_metadata;
 };
 
 // Container for various information about a completed request within a page
@@ -317,7 +317,7 @@ class PageLoadMetricsObserver {
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to
   // OnComplete instead.
-  virtual ObservePolicy OnHidden(const PageLoadTiming& timing,
+  virtual ObservePolicy OnHidden(const mojom::PageLoadTiming& timing,
                                  const PageLoadExtraInfo& extra_info);
 
   // OnShown is triggered when a page is brought to the foreground. It does not
@@ -342,7 +342,7 @@ class PageLoadMetricsObserver {
   // implementers should implement one of the On* callbacks, such as
   // OnFirstContentfulPaint or OnDomContentLoadedEventStart. Please email
   // loading-dev@chromium.org if you intend to override this method.
-  virtual void OnTimingUpdate(const PageLoadTiming& timing,
+  virtual void OnTimingUpdate(const mojom::PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
 
   // OnUserInput is triggered when a new user input is passed in to
@@ -352,33 +352,33 @@ class PageLoadMetricsObserver {
   // The following methods are invoked at most once, when the timing for the
   // associated event first becomes available.
   virtual void OnDomContentLoadedEventStart(
-      const PageLoadTiming& timing,
+      const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) {}
-  virtual void OnLoadEventStart(const PageLoadTiming& timing,
+  virtual void OnLoadEventStart(const mojom::PageLoadTiming& timing,
                                 const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstLayout(const PageLoadTiming& timing,
+  virtual void OnFirstLayout(const mojom::PageLoadTiming& timing,
                              const PageLoadExtraInfo& extra_info) {}
-  virtual void OnParseStart(const PageLoadTiming& timing,
+  virtual void OnParseStart(const mojom::PageLoadTiming& timing,
                             const PageLoadExtraInfo& extra_info) {}
-  virtual void OnParseStop(const PageLoadTiming& timing,
+  virtual void OnParseStop(const mojom::PageLoadTiming& timing,
                            const PageLoadExtraInfo& extra_info) {}
 
   // On*PaintInPage(...) are invoked when the first relevant paint in the page,
   // across all frames, is observed.
-  virtual void OnFirstPaintInPage(const PageLoadTiming& timing,
+  virtual void OnFirstPaintInPage(const mojom::PageLoadTiming& timing,
                                   const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstTextPaintInPage(const PageLoadTiming& timing,
+  virtual void OnFirstTextPaintInPage(const mojom::PageLoadTiming& timing,
                                       const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstImagePaintInPage(const PageLoadTiming& timing,
+  virtual void OnFirstImagePaintInPage(const mojom::PageLoadTiming& timing,
                                        const PageLoadExtraInfo& extra_info) {}
   virtual void OnFirstContentfulPaintInPage(
-      const PageLoadTiming& timing,
+      const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) {}
 
   // Unlike other paint callbacks, OnFirstMeaningfulPaintInMainFrameDocument is
   // tracked per document, and is reported for the main frame document only.
   virtual void OnFirstMeaningfulPaintInMainFrameDocument(
-      const PageLoadTiming& timing,
+      const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when there is a change in either the main_frame_metadata or the
@@ -411,7 +411,7 @@ class PageLoadMetricsObserver {
   //
   // The default implementation does nothing, and returns CONTINUE_OBSERVING.
   virtual ObservePolicy FlushMetricsOnAppEnterBackground(
-      const PageLoadTiming& timing,
+      const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info);
 
   // One of OnComplete or OnFailedProvisionalLoad is invoked for tracked page
@@ -428,7 +428,7 @@ class PageLoadMetricsObserver {
   // also want to implement FlushMetricsOnAppEnterBackground, to avoid loss of
   // data if the application is killed while in the background (this happens
   // frequently on Android).
-  virtual void OnComplete(const PageLoadTiming& timing,
+  virtual void OnComplete(const mojom::PageLoadTiming& timing,
                           const PageLoadExtraInfo& extra_info) {}
 
   // OnFailedProvisionalLoad is invoked for tracked page loads that did not

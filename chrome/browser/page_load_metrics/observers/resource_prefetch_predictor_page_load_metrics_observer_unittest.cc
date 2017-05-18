@@ -38,11 +38,12 @@ class ResourcePrefetchPredictorPageLoadMetricsObserverTest
     predictor_ =
         base::MakeUnique<testing::StrictMock<MockResourcePrefetchPredictor>>(
             config, profile());
+    page_load_metrics::InitPageLoadTimingForTest(&timing_);
     timing_.navigation_start = base::Time::FromDoubleT(1);
-    timing_.paint_timing.first_paint = base::TimeDelta::FromSeconds(2);
-    timing_.paint_timing.first_contentful_paint =
+    timing_.paint_timing->first_paint = base::TimeDelta::FromSeconds(2);
+    timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(3);
-    timing_.paint_timing.first_meaningful_paint =
+    timing_.paint_timing->first_meaningful_paint =
         base::TimeDelta::FromSeconds(4);
     PopulateRequiredTimingFields(&timing_);
   }
@@ -55,7 +56,7 @@ class ResourcePrefetchPredictorPageLoadMetricsObserverTest
 
   std::unique_ptr<testing::StrictMock<MockResourcePrefetchPredictor>>
       predictor_;
-  page_load_metrics::PageLoadTiming timing_;
+  page_load_metrics::mojom::PageLoadTiming timing_;
 };
 
 TEST_F(ResourcePrefetchPredictorPageLoadMetricsObserverTest,

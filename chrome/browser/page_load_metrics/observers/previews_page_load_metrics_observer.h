@@ -15,11 +15,6 @@ class NavigationHandle;
 class WebContents;
 }
 
-namespace page_load_metrics {
-struct PageLoadExtraInfo;
-struct PageLoadTiming;
-}
-
 namespace previews {
 
 namespace internal {
@@ -44,17 +39,17 @@ class PreviewsPageLoadMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnDomContentLoadedEventStart(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLoadEventStart(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstLayout(const page_load_metrics::PageLoadTiming& timing,
+  void OnFirstLayout(const page_load_metrics::mojom::PageLoadTiming& timing,
                      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnParseStart(const page_load_metrics::PageLoadTiming& timing,
+  void OnParseStart(const page_load_metrics::mojom::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;

@@ -51,7 +51,7 @@ void TabRestorePageLoadMetricsObserver::OnLoadedResource(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 TabRestorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
@@ -64,7 +64,7 @@ TabRestorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
 }
 
 void TabRestorePageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordByteHistograms();
 }

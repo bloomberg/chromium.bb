@@ -17,9 +17,9 @@ FakePageTimingMetricsIPCSender::~FakePageTimingMetricsIPCSender() {
 }
 
 void FakePageTimingMetricsIPCSender::ExpectPageLoadTiming(
-    const PageLoadTiming& timing) {
+    const mojom::PageLoadTiming& timing) {
   VerifyExpectedTimings();
-  expected_timings_.push_back(timing);
+  expected_timings_.push_back(timing.Clone());
 }
 
 void FakePageTimingMetricsIPCSender::VerifyExpectedTimings() const {
@@ -28,7 +28,7 @@ void FakePageTimingMetricsIPCSender::VerifyExpectedTimings() const {
   // the comments in the header file for additional details.
   ASSERT_EQ(actual_timings_.size(), expected_timings_.size());
   for (size_t i = 0; i < actual_timings_.size(); ++i) {
-    if (actual_timings_.at(i) == expected_timings_.at(i))
+    if (actual_timings_.at(i)->Equals(*expected_timings_.at(i)))
       continue;
     ADD_FAILURE() << "Actual timing != expected timing at index " << i;
   }
@@ -45,9 +45,9 @@ bool FakePageTimingMetricsIPCSender::Send(IPC::Message* message) {
 }
 
 void FakePageTimingMetricsIPCSender::OnTimingUpdated(
-    const PageLoadTiming& timing,
-    PageLoadMetadata metadata) {
-  actual_timings_.push_back(timing);
+    const mojom::PageLoadTiming& timing,
+    mojom::PageLoadMetadata metadata) {
+  actual_timings_.push_back(timing.Clone());
   VerifyExpectedTimings();
 }
 

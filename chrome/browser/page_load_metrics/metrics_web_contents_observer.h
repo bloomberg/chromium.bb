@@ -57,8 +57,8 @@ class MetricsWebContentsObserver
 
     // Invoked when a new PageLoadTiming update has been received and processed.
     virtual void OnTimingUpdated(bool is_main_frame,
-                                 const PageLoadTiming& timing,
-                                 const PageLoadMetadata& metadata) {}
+                                 const mojom::PageLoadTiming& timing,
+                                 const mojom::PageLoadMetadata& metadata) {}
 
    private:
     page_load_metrics::MetricsWebContentsObserver* observer_;
@@ -140,8 +140,8 @@ class MetricsWebContentsObserver
 
   // public only for testing
   void OnTimingUpdated(content::RenderFrameHost* render_frame_host,
-                       const PageLoadTiming& timing,
-                       const PageLoadMetadata& metadata);
+                       const mojom::PageLoadTiming& timing,
+                       const mojom::PageLoadMetadata& metadata);
 
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;

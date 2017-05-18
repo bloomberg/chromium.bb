@@ -80,8 +80,7 @@ void MetricsRenderFrameObserver::SendMetrics() {
     return;
   if (HasNoRenderFrame())
     return;
-  PageLoadTiming timing(GetTiming());
-  page_timing_metrics_sender_->Send(timing);
+  page_timing_metrics_sender_->Send(GetTiming());
 }
 
 bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
@@ -92,72 +91,73 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
   return RendererPageTrackDecider(&document, frame->DataSource()).ShouldTrack();
 }
 
-PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
+mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
   const blink::WebPerformance& perf =
       render_frame()->GetWebFrame()->Performance();
 
-  PageLoadTiming timing;
+  mojom::PageLoadTimingPtr timing(CreatePageLoadTiming());
   double start = perf.NavigationStart();
-  timing.navigation_start = base::Time::FromDoubleT(start);
+  timing->navigation_start = base::Time::FromDoubleT(start);
   if (perf.ResponseStart() > 0.0)
-    timing.response_start = ClampDelta(perf.ResponseStart(), start);
+    timing->response_start = ClampDelta(perf.ResponseStart(), start);
   if (perf.DomContentLoadedEventStart() > 0.0) {
-    timing.document_timing.dom_content_loaded_event_start =
+    timing->document_timing->dom_content_loaded_event_start =
         ClampDelta(perf.DomContentLoadedEventStart(), start);
   }
   if (perf.LoadEventStart() > 0.0) {
-    timing.document_timing.load_event_start =
+    timing->document_timing->load_event_start =
         ClampDelta(perf.LoadEventStart(), start);
   }
   if (perf.FirstLayout() > 0.0)
-    timing.document_timing.first_layout = ClampDelta(perf.FirstLayout(), start);
+    timing->document_timing->first_layout =
+        ClampDelta(perf.FirstLayout(), start);
   if (perf.FirstPaint() > 0.0)
-    timing.paint_timing.first_paint = ClampDelta(perf.FirstPaint(), start);
+    timing->paint_timing->first_paint = ClampDelta(perf.FirstPaint(), start);
   if (perf.FirstTextPaint() > 0.0) {
-    timing.paint_timing.first_text_paint =
+    timing->paint_timing->first_text_paint =
         ClampDelta(perf.FirstTextPaint(), start);
   }
   if (perf.FirstImagePaint() > 0.0) {
-    timing.paint_timing.first_image_paint =
+    timing->paint_timing->first_image_paint =
         ClampDelta(perf.FirstImagePaint(), start);
   }
   if (perf.FirstContentfulPaint() > 0.0) {
-    timing.paint_timing.first_contentful_paint =
+    timing->paint_timing->first_contentful_paint =
         ClampDelta(perf.FirstContentfulPaint(), start);
   }
   if (perf.FirstMeaningfulPaint() > 0.0) {
-    timing.paint_timing.first_meaningful_paint =
+    timing->paint_timing->first_meaningful_paint =
         ClampDelta(perf.FirstMeaningfulPaint(), start);
   }
   if (perf.ParseStart() > 0.0)
-    timing.parse_timing.parse_start = ClampDelta(perf.ParseStart(), start);
+    timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);
   if (perf.ParseStop() > 0.0)
-    timing.parse_timing.parse_stop = ClampDelta(perf.ParseStop(), start);
-  if (timing.parse_timing.parse_start) {
+    timing->parse_timing->parse_stop = ClampDelta(perf.ParseStop(), start);
+  if (timing->parse_timing->parse_start) {
     // If we started parsing, record all parser durations such as the amount of
     // time blocked on script load, even if those values are zero.
-    timing.parse_timing.parse_blocked_on_script_load_duration =
+    timing->parse_timing->parse_blocked_on_script_load_duration =
         base::TimeDelta::FromSecondsD(perf.ParseBlockedOnScriptLoadDuration());
-    timing.parse_timing
-        .parse_blocked_on_script_load_from_document_write_duration =
+    timing->parse_timing
+        ->parse_blocked_on_script_load_from_document_write_duration =
         base::TimeDelta::FromSecondsD(
             perf.ParseBlockedOnScriptLoadFromDocumentWriteDuration());
-    timing.parse_timing.parse_blocked_on_script_execution_duration =
+    timing->parse_timing->parse_blocked_on_script_execution_duration =
         base::TimeDelta::FromSecondsD(
             perf.ParseBlockedOnScriptExecutionDuration());
-    timing.parse_timing
-        .parse_blocked_on_script_execution_from_document_write_duration =
+    timing->parse_timing
+        ->parse_blocked_on_script_execution_from_document_write_duration =
         base::TimeDelta::FromSecondsD(
             perf.ParseBlockedOnScriptExecutionFromDocumentWriteDuration());
   }
 
   if (perf.AuthorStyleSheetParseDurationBeforeFCP() > 0.0) {
-    timing.style_sheet_timing.author_style_sheet_parse_duration_before_fcp =
+    timing->style_sheet_timing->author_style_sheet_parse_duration_before_fcp =
         base::TimeDelta::FromSecondsD(
             perf.AuthorStyleSheetParseDurationBeforeFCP());
   }
   if (perf.UpdateStyleDurationBeforeFCP() > 0.0) {
-    timing.style_sheet_timing.update_style_duration_before_fcp =
+    timing->style_sheet_timing->update_style_duration_before_fcp =
         base::TimeDelta::FromSecondsD(perf.UpdateStyleDurationBeforeFCP());
   }
   return timing;

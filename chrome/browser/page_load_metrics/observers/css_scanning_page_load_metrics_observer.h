@@ -19,15 +19,15 @@ class CssScanningMetricsObserver
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
   ObservePolicy OnHidden(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLoadingBehaviorObserved(
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:

@@ -137,9 +137,10 @@ TEST_F(DelayNavigationPageLoadMetricsObserverTest, NoMetricsWithoutNavigation) {
 TEST_F(DelayNavigationPageLoadMetricsObserverTest, CommitWithPaint) {
   NavigateToDefaultUrlAndCommit();
 
-  page_load_metrics::PageLoadTiming timing;
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing.first_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 

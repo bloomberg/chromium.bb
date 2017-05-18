@@ -166,7 +166,7 @@ DataReductionProxyMetricsObserver::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
@@ -180,7 +180,7 @@ DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
 }
 
 void DataReductionProxyMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageSizeUMA();
   SendPingback(timing, info, false /* app_background_occurred */);
@@ -270,7 +270,7 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
 }
 
 void DataReductionProxyMetricsObserver::SendPingback(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info,
     bool app_background_occurred) {
   // TODO(ryansturm): Move to OnFirstBackgroundEvent to handle some fast
@@ -295,30 +295,30 @@ void DataReductionProxyMetricsObserver::SendPingback(
     response_start = timing.response_start;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.load_event_start, info)) {
-    load_event_start = timing.document_timing.load_event_start;
+          timing.document_timing->load_event_start, info)) {
+    load_event_start = timing.document_timing->load_event_start;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_image_paint, info)) {
-    first_image_paint = timing.paint_timing.first_image_paint;
+          timing.paint_timing->first_image_paint, info)) {
+    first_image_paint = timing.paint_timing->first_image_paint;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_contentful_paint, info)) {
-    first_contentful_paint = timing.paint_timing.first_contentful_paint;
+          timing.paint_timing->first_contentful_paint, info)) {
+    first_contentful_paint = timing.paint_timing->first_contentful_paint;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_meaningful_paint, info)) {
+          timing.paint_timing->first_meaningful_paint, info)) {
     experimental_first_meaningful_paint =
-        timing.paint_timing.first_meaningful_paint;
+        timing.paint_timing->first_meaningful_paint;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing.parse_blocked_on_script_load_duration, info)) {
+          timing.parse_timing->parse_blocked_on_script_load_duration, info)) {
     parse_blocked_on_script_load_duration =
-        timing.parse_timing.parse_blocked_on_script_load_duration;
+        timing.parse_timing->parse_blocked_on_script_load_duration;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing.parse_stop, info)) {
-    parse_stop = timing.parse_timing.parse_stop;
+          timing.parse_timing->parse_stop, info)) {
+    parse_stop = timing.parse_timing->parse_stop;
   }
 
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
@@ -331,91 +331,91 @@ void DataReductionProxyMetricsObserver::SendPingback(
 }
 
 void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.document_timing.dom_content_loaded_event_start,
+      info, data_, timing.document_timing->dom_content_loaded_event_start,
       internal::kHistogramDOMContentLoadedEventFiredSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.document_timing.load_event_start,
+      info, data_, timing.document_timing->load_event_start,
       internal::kHistogramLoadEventFiredSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstLayout(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.document_timing.first_layout,
+      info, data_, timing.document_timing->first_layout,
       internal::kHistogramFirstLayoutSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
-                                          timing.paint_timing.first_paint,
+                                          timing.paint_timing->first_paint,
                                           internal::kHistogramFirstPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.paint_timing.first_text_paint,
+      info, data_, timing.paint_timing->first_text_paint,
       internal::kHistogramFirstTextPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.paint_timing.first_image_paint,
+      info, data_, timing.paint_timing->first_image_paint,
       internal::kHistogramFirstImagePaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.paint_timing.first_contentful_paint,
+      info, data_, timing.paint_timing->first_contentful_paint,
       internal::kHistogramFirstContentfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
-        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data_, timing.paint_timing.first_meaningful_paint,
+      info, data_, timing.paint_timing->first_meaningful_paint,
       internal::kHistogramFirstMeaningfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
-                                          timing.parse_timing.parse_start,
+                                          timing.parse_timing->parse_start,
                                           internal::kHistogramParseStartSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStop(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing.parse_stop, info))
+          timing.parse_timing->parse_stop, info))
     return;
 
-  base::TimeDelta parse_duration = timing.parse_timing.parse_stop.value() -
-                                   timing.parse_timing.parse_start.value();
+  base::TimeDelta parse_duration = timing.parse_timing->parse_stop.value() -
+                                   timing.parse_timing->parse_start.value();
   RECORD_HISTOGRAMS_FOR_SUFFIX(data_, parse_duration,
                                internal::kHistogramParseDurationSuffix);
   RECORD_HISTOGRAMS_FOR_SUFFIX(
-      data_, timing.parse_timing.parse_blocked_on_script_load_duration.value(),
+      data_, timing.parse_timing->parse_blocked_on_script_load_duration.value(),
       internal::kHistogramParseBlockedOnScriptLoadSuffix);
 }
 

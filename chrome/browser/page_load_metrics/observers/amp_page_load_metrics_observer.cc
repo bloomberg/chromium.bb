@@ -111,74 +111,75 @@ void AMPPageLoadMetricsObserver::OnCommitSameDocumentNavigation(
 }
 
 void AMPPageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (view_type_ == AMPViewType::NONE)
     return;
 
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.dom_content_loaded_event_start, info)) {
+          timing.document_timing->dom_content_loaded_event_start, info)) {
     return;
   }
   RECORD_HISTOGRAM_FOR_TYPE(
       kHistogramAMPDOMContentLoadedEventFired, view_type_,
-      timing.document_timing.dom_content_loaded_event_start.value());
+      timing.document_timing->dom_content_loaded_event_start.value());
 }
 
 void AMPPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (view_type_ == AMPViewType::NONE)
     return;
 
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.load_event_start, info)) {
+          timing.document_timing->load_event_start, info)) {
     return;
   }
   RECORD_HISTOGRAM_FOR_TYPE(kHistogramAMPLoadEventFired, view_type_,
-                            timing.document_timing.load_event_start.value());
+                            timing.document_timing->load_event_start.value());
 }
 
 void AMPPageLoadMetricsObserver::OnFirstLayout(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (view_type_ == AMPViewType::NONE)
     return;
 
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing.first_layout, info)) {
+          timing.document_timing->first_layout, info)) {
     return;
   }
   RECORD_HISTOGRAM_FOR_TYPE(kHistogramAMPFirstLayout, view_type_,
-                            timing.document_timing.first_layout.value());
+                            timing.document_timing->first_layout.value());
 }
 
 void AMPPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (view_type_ == AMPViewType::NONE)
     return;
 
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing.first_contentful_paint, info)) {
+          timing.paint_timing->first_contentful_paint, info)) {
     return;
   }
-  RECORD_HISTOGRAM_FOR_TYPE(kHistogramAMPFirstContentfulPaint, view_type_,
-                            timing.paint_timing.first_contentful_paint.value());
+  RECORD_HISTOGRAM_FOR_TYPE(
+      kHistogramAMPFirstContentfulPaint, view_type_,
+      timing.paint_timing->first_contentful_paint.value());
 }
 
 void AMPPageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (view_type_ == AMPViewType::NONE)
     return;
 
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing.parse_start, info)) {
+          timing.parse_timing->parse_start, info)) {
     return;
   }
   RECORD_HISTOGRAM_FOR_TYPE(kHistogramAMPParseStart, view_type_,
-                            timing.parse_timing.parse_start.value());
+                            timing.parse_timing->parse_start.value());
 }
 
 // static

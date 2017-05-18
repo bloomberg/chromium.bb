@@ -29,11 +29,11 @@ class PageTimingMetricsSender {
   PageTimingMetricsSender(IPC::Sender* ipc_sender,
                           int routing_id,
                           std::unique_ptr<base::Timer> timer,
-                          const PageLoadTiming& initial_timing);
+                          mojom::PageLoadTimingPtr initial_timing);
   ~PageTimingMetricsSender();
 
   void DidObserveLoadingBehavior(blink::WebLoadingBehaviorFlag behavior);
-  void Send(const PageLoadTiming& timing);
+  void Send(mojom::PageLoadTimingPtr timing);
 
  protected:
   base::Timer* timer() const { return timer_.get(); }
@@ -45,11 +45,11 @@ class PageTimingMetricsSender {
   IPC::Sender* const ipc_sender_;
   const int routing_id_;
   std::unique_ptr<base::Timer> timer_;
-  PageLoadTiming last_timing_;
+  mojom::PageLoadTimingPtr last_timing_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.
-  PageLoadMetadata metadata_;
+  mojom::PageLoadMetadata metadata_;
 
   bool have_sent_ipc_ = false;
 

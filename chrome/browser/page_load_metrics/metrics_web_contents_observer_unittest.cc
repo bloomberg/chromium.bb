@@ -44,9 +44,9 @@ class TestPageLoadMetricsObserver
  public:
   TestPageLoadMetricsObserver(
       content::WebContents* web_contents,
-      std::vector<PageLoadTiming>* updated_timings,
-      std::vector<PageLoadTiming>* updated_subframe_timings,
-      std::vector<PageLoadTiming>* complete_timings,
+      std::vector<mojom::PageLoadTimingPtr>* updated_timings,
+      std::vector<mojom::PageLoadTimingPtr>* updated_subframe_timings,
+      std::vector<mojom::PageLoadTimingPtr>* complete_timings,
       std::vector<GURL>* observed_committed_urls)
       : MetricsWebContentsObserver::TestingObserver(web_contents),
         updated_timings_(updated_timings),
@@ -61,34 +61,34 @@ class TestPageLoadMetricsObserver
     return CONTINUE_OBSERVING;
   }
 
-  void OnTimingUpdate(const PageLoadTiming& timing,
+  void OnTimingUpdate(const mojom::PageLoadTiming& timing,
                       const PageLoadExtraInfo& extra_info) override {
-    updated_timings_->push_back(timing);
+    updated_timings_->push_back(timing.Clone());
   }
 
   void OnTimingUpdated(bool is_main_frame,
-                       const PageLoadTiming& timing,
-                       const PageLoadMetadata& metadata) override {
+                       const mojom::PageLoadTiming& timing,
+                       const mojom::PageLoadMetadata& metadata) override {
     if (!is_main_frame) {
-      updated_subframe_timings_->push_back(timing);
+      updated_subframe_timings_->push_back(timing.Clone());
     }
   }
 
-  void OnComplete(const PageLoadTiming& timing,
+  void OnComplete(const mojom::PageLoadTiming& timing,
                   const PageLoadExtraInfo& extra_info) override {
-    complete_timings_->push_back(timing);
+    complete_timings_->push_back(timing.Clone());
   }
 
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const PageLoadTiming& timing,
+      const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) override {
     return STOP_OBSERVING;
   }
 
  private:
-  std::vector<PageLoadTiming>* const updated_timings_;
-  std::vector<PageLoadTiming>* const updated_subframe_timings_;
-  std::vector<PageLoadTiming>* const complete_timings_;
+  std::vector<mojom::PageLoadTimingPtr>* const updated_timings_;
+  std::vector<mojom::PageLoadTimingPtr>* const updated_subframe_timings_;
+  std::vector<mojom::PageLoadTimingPtr>* const complete_timings_;
   std::vector<GURL>* const observed_committed_urls_;
 };
 
@@ -114,7 +114,7 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
     return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
   }
 
-  void OnComplete(const PageLoadTiming& timing,
+  void OnComplete(const mojom::PageLoadTiming& timing,
                   const PageLoadExtraInfo& extra_info) override {
     completed_filtered_urls_->push_back(extra_info.url);
   }
@@ -139,13 +139,14 @@ class TestPageLoadMetricsEmbedderInterface
     tracker->AddObserver(base::MakeUnique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
-  const std::vector<PageLoadTiming>& updated_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& updated_timings() const {
     return updated_timings_;
   }
-  const std::vector<PageLoadTiming>& complete_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& complete_timings() const {
     return complete_timings_;
   }
-  const std::vector<PageLoadTiming>& updated_subframe_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& updated_subframe_timings()
+      const {
     return updated_subframe_timings_;
   }
 
@@ -160,9 +161,9 @@ class TestPageLoadMetricsEmbedderInterface
   }
 
  private:
-  std::vector<PageLoadTiming> updated_timings_;
-  std::vector<PageLoadTiming> updated_subframe_timings_;
-  std::vector<PageLoadTiming> complete_timings_;
+  std::vector<mojom::PageLoadTimingPtr> updated_timings_;
+  std::vector<mojom::PageLoadTimingPtr> updated_subframe_timings_;
+  std::vector<mojom::PageLoadTimingPtr> complete_timings_;
   std::vector<GURL> observed_committed_urls_;
   std::vector<GURL> completed_filtered_urls_;
   content::WebContents* web_contents_;
@@ -185,13 +186,14 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
         ->NavigateAndCommit(GURL(url::kAboutBlankURL));
   }
 
-  void SimulateTimingUpdate(const PageLoadTiming& timing) {
+  void SimulateTimingUpdate(const mojom::PageLoadTiming& timing) {
     SimulateTimingUpdate(timing, web_contents()->GetMainFrame());
   }
 
-  void SimulateTimingUpdate(const PageLoadTiming& timing,
+  void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
                             content::RenderFrameHost* render_frame_host) {
-    observer_->OnTimingUpdated(render_frame_host, timing, PageLoadMetadata());
+    observer_->OnTimingUpdated(render_frame_host, timing,
+                               mojom::PageLoadMetadata());
   }
 
   void AttachObserver() {
@@ -222,19 +224,20 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   int CountEmptyCompleteTimingReported() {
     int empty = 0;
     for (const auto& timing : embedder_interface_->complete_timings()) {
-      if (timing.IsEmpty())
+      if (page_load_metrics::IsEmpty(*timing))
         ++empty;
     }
     return empty;
   }
 
-  const std::vector<PageLoadTiming>& updated_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& updated_timings() const {
     return embedder_interface_->updated_timings();
   }
-  const std::vector<PageLoadTiming>& complete_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& complete_timings() const {
     return embedder_interface_->complete_timings();
   }
-  const std::vector<PageLoadTiming>& updated_subframe_timings() const {
+  const std::vector<mojom::PageLoadTimingPtr>& updated_subframe_timings()
+      const {
     return embedder_interface_->updated_subframe_timings();
   }
   int CountCompleteTimingReported() { return complete_timings().size(); }
@@ -263,7 +266,8 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
 
   content::WebContentsTester* web_contents_tester =
@@ -292,11 +296,12 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, SubFrame) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.response_start = base::TimeDelta::FromMilliseconds(10);
-  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(20);
-  timing.document_timing.first_layout = base::TimeDelta::FromMilliseconds(30);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
+  timing.document_timing->first_layout = base::TimeDelta::FromMilliseconds(30);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -304,21 +309,22 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   SimulateTimingUpdate(timing);
 
   ASSERT_EQ(1, CountUpdatedTimingReported());
-  EXPECT_EQ(timing, updated_timings().back());
+  EXPECT_TRUE(timing.Equals(*updated_timings().back()));
 
   content::RenderFrameHostTester* rfh_tester =
       content::RenderFrameHostTester::For(main_rfh());
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
 
   // Dispatch a timing update for the child frame that includes a first paint.
-  PageLoadTiming subframe_timing;
+  mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
   subframe_timing.response_start = base::TimeDelta::FromMilliseconds(10);
-  subframe_timing.parse_timing.parse_start =
+  subframe_timing.parse_timing->parse_start =
       base::TimeDelta::FromMilliseconds(20);
-  subframe_timing.document_timing.first_layout =
+  subframe_timing.document_timing->first_layout =
       base::TimeDelta::FromMilliseconds(30);
-  subframe_timing.paint_timing.first_paint =
+  subframe_timing.paint_timing->first_paint =
       base::TimeDelta::FromMilliseconds(40);
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(subframe);
@@ -328,13 +334,13 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   subframe_tester->SimulateNavigationStop();
 
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
-  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+  EXPECT_TRUE(subframe_timing.Equals(*updated_subframe_timings().back()));
 
   // The subframe update which included a paint should have also triggered
   // a main frame update, which includes a first paint.
   ASSERT_EQ(2, CountUpdatedTimingReported());
-  EXPECT_NE(timing, updated_timings().back());
-  EXPECT_TRUE(updated_timings().back().paint_timing.first_paint);
+  EXPECT_FALSE(timing.Equals(*updated_timings().back()));
+  EXPECT_TRUE(updated_timings().back()->paint_timing->first_paint);
 
   // Navigate again to see if the timing updated for a subframe message.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
@@ -344,13 +350,14 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   ASSERT_EQ(0, CountEmptyCompleteTimingReported());
 
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
-  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+  EXPECT_TRUE(subframe_timing.Equals(*updated_subframe_timings().back()));
 
   CheckNoErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, SameDocumentNoTrigger) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
 
   content::WebContentsTester* web_contents_tester =
@@ -380,7 +387,8 @@ TEST_F(MetricsWebContentsObserverTest, SameDocumentNoTrigger) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogNewTabPage) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
 
   content::WebContentsTester* web_contents_tester =
@@ -397,7 +405,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogNewTabPage) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(10);
 
   content::WebContentsTester* web_contents_tester =
@@ -417,7 +426,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, EmptyTimingError) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -441,8 +451,9 @@ TEST_F(MetricsWebContentsObserverTest, EmptyTimingError) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
-  PageLoadTiming timing;
-  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(1);
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -466,9 +477,10 @@ TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.parse_timing.parse_stop = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(1);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -492,9 +504,11 @@ TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, BadIPC) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(10);
-  PageLoadTiming timing2;
+  mojom::PageLoadTiming timing2;
+  page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(100);
 
   content::WebContentsTester* web_contents_tester =
@@ -517,7 +531,8 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   DeleteContents();
   SetContents(CreateTestWebContents());
 
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(10);
 
   content::WebContentsTester* web_contents_tester =
@@ -711,7 +726,8 @@ TEST_F(MetricsWebContentsObserverTest, StopObservingOnStart) {
 // We buffer cross frame timings in order to provide a consistent view of
 // timing data to observers. See crbug.com/722860 for more.
 TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
-  PageLoadTiming timing;
+  mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.response_start = base::TimeDelta::FromMilliseconds(10);
 
@@ -721,21 +737,22 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
   SimulateTimingUpdate(timing);
 
   ASSERT_EQ(1, CountUpdatedTimingReported());
-  EXPECT_EQ(timing, updated_timings().back());
+  EXPECT_TRUE(timing.Equals(*updated_timings().back()));
 
   content::RenderFrameHostTester* rfh_tester =
       content::RenderFrameHostTester::For(main_rfh());
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
 
   // Dispatch a timing update for the child frame that includes a first paint.
-  PageLoadTiming subframe_timing;
+  mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
   subframe_timing.response_start = base::TimeDelta::FromMilliseconds(10);
-  subframe_timing.parse_timing.parse_start =
+  subframe_timing.parse_timing->parse_start =
       base::TimeDelta::FromMilliseconds(20);
-  subframe_timing.document_timing.first_layout =
+  subframe_timing.document_timing->first_layout =
       base::TimeDelta::FromMilliseconds(30);
-  subframe_timing.paint_timing.first_paint =
+  subframe_timing.paint_timing->first_paint =
       base::TimeDelta::FromMilliseconds(40);
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(subframe);
@@ -749,30 +766,33 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
   // hasn't received updates for required earlier events such as parse_start and
   // first_layout.
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
-  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+  EXPECT_TRUE(subframe_timing.Equals(*updated_subframe_timings().back()));
   ASSERT_EQ(1, CountUpdatedTimingReported());
-  EXPECT_EQ(timing, updated_timings().back());
+  EXPECT_TRUE(timing.Equals(*updated_timings().back()));
 
   // Dispatch the parse_start event in the parent. We should still not observe
   // a first paint main frame update, since we don't yet have a first_layout.
-  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(20);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
   SimulateTimingUpdate(timing);
   ASSERT_EQ(1, CountUpdatedTimingReported());
-  EXPECT_NE(timing, updated_timings().back());
-  EXPECT_FALSE(updated_timings().back().parse_timing.parse_start);
-  EXPECT_FALSE(updated_timings().back().paint_timing.first_paint);
+  EXPECT_FALSE(timing.Equals(*updated_timings().back()));
+  EXPECT_FALSE(updated_timings().back()->parse_timing->parse_start);
+  EXPECT_FALSE(updated_timings().back()->paint_timing->first_paint);
 
   // Dispatch a first_layout in the parent. We should now unbuffer the first
   // paint main frame update and receive a main frame update with a first paint
   // value.
-  timing.document_timing.first_layout = base::TimeDelta::FromMilliseconds(30);
+  timing.document_timing->first_layout = base::TimeDelta::FromMilliseconds(30);
   SimulateTimingUpdate(timing);
   ASSERT_EQ(2, CountUpdatedTimingReported());
-  EXPECT_NE(timing, updated_timings().back());
-  EXPECT_EQ(updated_timings().back().parse_timing, timing.parse_timing);
-  EXPECT_EQ(updated_timings().back().document_timing, timing.document_timing);
-  EXPECT_NE(updated_timings().back().paint_timing, timing.paint_timing);
-  EXPECT_TRUE(updated_timings().back().paint_timing.first_paint);
+  EXPECT_FALSE(timing.Equals(*updated_timings().back()));
+  EXPECT_TRUE(
+      updated_timings().back()->parse_timing->Equals(*timing.parse_timing));
+  EXPECT_TRUE(updated_timings().back()->document_timing->Equals(
+      *timing.document_timing));
+  EXPECT_FALSE(
+      updated_timings().back()->paint_timing->Equals(*timing.paint_timing));
+  EXPECT_TRUE(updated_timings().back()->paint_timing->first_paint);
 
   // Navigate again to see if the timing updated for a subframe message.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
@@ -782,7 +802,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
   ASSERT_EQ(0, CountEmptyCompleteTimingReported());
 
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
-  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+  EXPECT_TRUE(subframe_timing.Equals(*updated_subframe_timings().back()));
 
   CheckNoErrorEvents();
 }

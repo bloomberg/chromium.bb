@@ -100,7 +100,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
 
 UkmPageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
   RecordTimingMetrics(timing);
@@ -108,7 +108,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
@@ -137,7 +137,7 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 }
 
 void UkmPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
@@ -145,35 +145,35 @@ void UkmPageLoadMetricsObserver::OnComplete(
 }
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
-    const page_load_metrics::PageLoadTiming& timing) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   ukm::UkmService* ukm_service = g_browser_process->ukm_service();
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
       ukm_service->GetEntryBuilder(source_id_, internal::kUkmPageLoadEventName);
-  if (timing.parse_timing.parse_start) {
+  if (timing.parse_timing->parse_start) {
     builder->AddMetric(
         internal::kUkmParseStartName,
-        timing.parse_timing.parse_start.value().InMilliseconds());
+        timing.parse_timing->parse_start.value().InMilliseconds());
   }
-  if (timing.document_timing.dom_content_loaded_event_start) {
+  if (timing.document_timing->dom_content_loaded_event_start) {
     builder->AddMetric(
         internal::kUkmDomContentLoadedName,
-        timing.document_timing.dom_content_loaded_event_start.value()
+        timing.document_timing->dom_content_loaded_event_start.value()
             .InMilliseconds());
   }
-  if (timing.document_timing.load_event_start) {
+  if (timing.document_timing->load_event_start) {
     builder->AddMetric(
         internal::kUkmLoadEventName,
-        timing.document_timing.load_event_start.value().InMilliseconds());
+        timing.document_timing->load_event_start.value().InMilliseconds());
   }
-  if (timing.paint_timing.first_contentful_paint) {
+  if (timing.paint_timing->first_contentful_paint) {
     builder->AddMetric(
         internal::kUkmFirstContentfulPaintName,
-        timing.paint_timing.first_contentful_paint.value().InMilliseconds());
+        timing.paint_timing->first_contentful_paint.value().InMilliseconds());
   }
-  if (timing.paint_timing.first_meaningful_paint) {
+  if (timing.paint_timing->first_meaningful_paint) {
     builder->AddMetric(
         internal::kUkmFirstMeaningfulPaintName,
-        timing.paint_timing.first_meaningful_paint.value().InMilliseconds());
+        timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
   }
 }
 

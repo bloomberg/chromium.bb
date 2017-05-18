@@ -110,6 +110,8 @@ static_library("common") {
     "origin_trials/chrome_origin_trial_policy.cc",
     "origin_trials/chrome_origin_trial_policy.h",
     "page_load_metrics/page_load_metrics_messages.h",
+    "page_load_metrics/page_load_metrics_param_traits.cc",
+    "page_load_metrics/page_load_metrics_param_traits.h",
     "page_load_metrics/page_load_timing.cc",
     "page_load_metrics/page_load_timing.h",
     "page_load_metrics/page_track_decider.cc",
@@ -161,6 +163,7 @@ static_library("common") {
   public_deps = [
     ":features",
     ":mojo_bindings",
+    ":page_load_metrics_mojom",
     "//base:base",
     "//base:base_static",
     "//base:i18n",
@@ -739,5 +742,15 @@ mojom("instant_mojom") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
+  ]
+}
+
+mojom("page_load_metrics_mojom") {
+  sources = [
+    "page_load_metrics/page_load_metrics.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
   ]
 }

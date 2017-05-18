@@ -151,7 +151,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
@@ -167,7 +167,7 @@ void AdsPageLoadMetricsObserver::OnLoadedResource(
 }
 
 void AdsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordHistograms();
 }

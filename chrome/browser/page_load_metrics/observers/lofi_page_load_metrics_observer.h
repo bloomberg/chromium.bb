@@ -14,11 +14,6 @@ namespace content {
 class NavigationHandle;
 }
 
-namespace page_load_metrics {
-struct PageLoadExtraInfo;
-struct PageLoadTiming;
-}
-
 namespace data_reduction_proxy {
 
 namespace lofi_names {
@@ -51,16 +46,17 @@ class LoFiPageLoadMetricsObserver
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnComplete(const page_load_metrics::PageLoadTiming& timing,
+  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info) override;
 
  private:
-  void RecordTimingMetrics(const page_load_metrics::PageLoadTiming& timing,
-                           const page_load_metrics::PageLoadExtraInfo& info);
+  void RecordTimingMetrics(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info);
 
   // Records UMA of page size when the observer is about to be deleted.
   void RecordPageSizeUMA() const;

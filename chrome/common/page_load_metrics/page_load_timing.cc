@@ -6,112 +6,54 @@
 
 namespace page_load_metrics {
 
-DocumentTiming::DocumentTiming() {}
-
-DocumentTiming::DocumentTiming(const DocumentTiming& other) = default;
-
-DocumentTiming::~DocumentTiming() {}
-
-bool DocumentTiming::operator==(const DocumentTiming& other) const {
-  return dom_content_loaded_event_start ==
-             other.dom_content_loaded_event_start &&
-         load_event_start == other.load_event_start &&
-         first_layout == other.first_layout;
+mojom::PageLoadTimingPtr CreatePageLoadTiming() {
+  return mojom::PageLoadTiming::New(
+      base::Time(), base::Optional<base::TimeDelta>(),
+      mojom::DocumentTiming::New(), mojom::PaintTiming::New(),
+      mojom::ParseTiming::New(), mojom::StyleSheetTiming::New());
 }
 
-bool DocumentTiming::IsEmpty() const {
-  return !dom_content_loaded_event_start && !load_event_start && !first_layout;
+bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
+  return !timing.dom_content_loaded_event_start && !timing.load_event_start &&
+         !timing.first_layout;
 }
 
-PaintTiming::PaintTiming() {}
-
-PaintTiming::PaintTiming(const PaintTiming& other) = default;
-
-PaintTiming::~PaintTiming() {}
-
-bool PaintTiming::operator==(const PaintTiming& other) const {
-  return first_paint == other.first_paint &&
-         first_text_paint == other.first_text_paint &&
-         first_image_paint == other.first_image_paint &&
-         first_contentful_paint == other.first_contentful_paint &&
-         first_meaningful_paint == other.first_meaningful_paint;
+bool IsEmpty(const page_load_metrics::mojom::PaintTiming& timing) {
+  return !timing.first_paint && !timing.first_text_paint &&
+         !timing.first_image_paint && !timing.first_contentful_paint &&
+         !timing.first_meaningful_paint;
 }
 
-bool PaintTiming::IsEmpty() const {
-  return !first_paint && !first_text_paint && !first_image_paint &&
-         !first_contentful_paint && !first_meaningful_paint;
+bool IsEmpty(const page_load_metrics::mojom::ParseTiming& timing) {
+  return !timing.parse_start && !timing.parse_stop &&
+         !timing.parse_blocked_on_script_load_duration &&
+         !timing.parse_blocked_on_script_load_from_document_write_duration &&
+         !timing.parse_blocked_on_script_execution_duration &&
+         !timing.parse_blocked_on_script_execution_from_document_write_duration;
 }
 
-ParseTiming::ParseTiming() {}
-
-ParseTiming::ParseTiming(const ParseTiming& other) = default;
-
-ParseTiming::~ParseTiming() {}
-
-bool ParseTiming::operator==(const ParseTiming& other) const {
-  return parse_start == other.parse_start && parse_stop == other.parse_stop &&
-         parse_blocked_on_script_load_duration ==
-             other.parse_blocked_on_script_load_duration &&
-         parse_blocked_on_script_load_from_document_write_duration ==
-             other.parse_blocked_on_script_load_from_document_write_duration &&
-         parse_blocked_on_script_execution_duration ==
-             other.parse_blocked_on_script_execution_duration &&
-         parse_blocked_on_script_execution_from_document_write_duration ==
-             other
-                 .parse_blocked_on_script_execution_from_document_write_duration;
+bool IsEmpty(const page_load_metrics::mojom::StyleSheetTiming& timing) {
+  return !timing.author_style_sheet_parse_duration_before_fcp &&
+         !timing.update_style_duration_before_fcp;
 }
 
-bool ParseTiming::IsEmpty() const {
-  return !parse_start && !parse_stop &&
-         !parse_blocked_on_script_load_duration &&
-         !parse_blocked_on_script_load_from_document_write_duration &&
-         !parse_blocked_on_script_execution_duration &&
-         !parse_blocked_on_script_execution_from_document_write_duration;
+bool IsEmpty(const page_load_metrics::mojom::PageLoadTiming& timing) {
+  return timing.navigation_start.is_null() && !timing.response_start &&
+         (!timing.document_timing ||
+          page_load_metrics::IsEmpty(*timing.document_timing)) &&
+         (!timing.paint_timing ||
+          page_load_metrics::IsEmpty(*timing.paint_timing)) &&
+         (!timing.parse_timing ||
+          page_load_metrics::IsEmpty(*timing.parse_timing)) &&
+         (!timing.style_sheet_timing ||
+          page_load_metrics::IsEmpty(*timing.style_sheet_timing));
 }
 
-StyleSheetTiming::StyleSheetTiming() {}
-
-StyleSheetTiming::StyleSheetTiming(const StyleSheetTiming& other) = default;
-
-StyleSheetTiming::~StyleSheetTiming() {}
-
-bool StyleSheetTiming::operator==(const StyleSheetTiming& other) const {
-  return author_style_sheet_parse_duration_before_fcp ==
-             other.author_style_sheet_parse_duration_before_fcp &&
-         update_style_duration_before_fcp ==
-             other.update_style_duration_before_fcp;
-}
-
-bool StyleSheetTiming::IsEmpty() const {
-  return !author_style_sheet_parse_duration_before_fcp &&
-         !update_style_duration_before_fcp;
-}
-
-PageLoadTiming::PageLoadTiming() {}
-
-PageLoadTiming::PageLoadTiming(const PageLoadTiming& other) = default;
-
-PageLoadTiming::~PageLoadTiming() {}
-
-bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
-  return navigation_start == other.navigation_start &&
-         response_start == other.response_start &&
-         document_timing == other.document_timing &&
-         paint_timing == other.paint_timing &&
-         parse_timing == other.parse_timing &&
-         style_sheet_timing == other.style_sheet_timing;
-}
-
-bool PageLoadTiming::IsEmpty() const {
-  return navigation_start.is_null() && !response_start &&
-         document_timing.IsEmpty() && paint_timing.IsEmpty() &&
-         parse_timing.IsEmpty() && style_sheet_timing.IsEmpty();
-}
-
-PageLoadMetadata::PageLoadMetadata() {}
-
-bool PageLoadMetadata::operator==(const PageLoadMetadata& other) const {
-  return behavior_flags == other.behavior_flags;
+void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing) {
+  timing->document_timing = mojom::DocumentTiming::New();
+  timing->paint_timing = mojom::PaintTiming::New();
+  timing->parse_timing = mojom::ParseTiming::New();
+  timing->style_sheet_timing = mojom::StyleSheetTiming::New();
 }
 
 }  // namespace page_load_metrics
