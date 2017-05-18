@@ -2068,7 +2068,8 @@ static bool EnabledDelete(LocalFrame& frame,
                           EditorCommandSource source) {
   switch (source) {
     case kCommandFromMenuOrKeyBinding:
-      return frame.GetEditor().CanDelete();
+      return frame.Selection().SelectionHasFocus() &&
+             frame.GetEditor().CanDelete();
     case kCommandFromDOM:
       // "Delete" from DOM is like delete/backspace keypress, affects selected
       // range if non-empty, otherwise removes a character
