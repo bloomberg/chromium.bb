@@ -46,6 +46,15 @@ PushSubscription::PushSubscription(
 
 PushSubscription::~PushSubscription() {}
 
+DOMTimeStamp PushSubscription::expirationTime(bool& out_is_null) const {
+  // This attribute reflects the time at which the subscription will expire,
+  // which is not relevant to this implementation yet as subscription refreshes
+  // are not supported.
+  out_is_null = true;
+
+  return 0;
+}
+
 DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const {
   if (name == "p256dh")
     return p256dh_;
@@ -73,6 +82,7 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* script_state) {
 
   V8ObjectBuilder result(script_state);
   result.AddString("endpoint", endpoint());
+  result.AddNull("expirationTime");
 
   V8ObjectBuilder keys(script_state);
   keys.Add("p256dh",

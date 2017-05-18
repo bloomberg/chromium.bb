@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMTimeStamp.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -37,6 +38,7 @@ class PushSubscription final
   virtual ~PushSubscription();
 
   KURL endpoint() const { return endpoint_; }
+  DOMTimeStamp expirationTime(bool& out_is_null) const;
 
   PushSubscriptionOptions* options() const { return options_.Get(); }
 

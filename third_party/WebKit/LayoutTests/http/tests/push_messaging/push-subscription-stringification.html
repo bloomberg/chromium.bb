@@ -36,6 +36,9 @@ async_test(function(test) {
             assert_own_property(reflectedObject, 'endpoint');
             assert_equals(reflectedObject.endpoint, pushSubscription.endpoint);
 
+            assert_own_property(reflectedObject, 'expirationTime');
+            assert_equals(reflectedObject.expirationTime, null);
+
             assert_own_property(reflectedObject, 'keys');
             assert_own_property(reflectedObject.keys, 'p256dh');
             assert_own_property(reflectedObject.keys, 'auth');
