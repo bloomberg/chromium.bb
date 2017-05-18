@@ -367,8 +367,6 @@ typedef enum {
 
 #if CONFIG_EXT_INTER
 #if CONFIG_INTERINTRA
-#define REDUCED_INTERINTRA_MODES 0
-#if REDUCED_INTERINTRA_MODES == 1
 typedef enum {
   II_DC_PRED = 0,
   II_V_PRED,
@@ -380,24 +378,6 @@ typedef enum {
 #endif  // CONFIG_ALT_INTRA
   INTERINTRA_MODES
 } INTERINTRA_MODE;
-#else
-typedef enum {
-  II_DC_PRED = 0,
-  II_V_PRED,
-  II_H_PRED,
-  II_D45_PRED,
-  II_D135_PRED,
-  II_D117_PRED,
-  II_D153_PRED,
-  II_D207_PRED,
-  II_D63_PRED,
-#if CONFIG_ALT_INTRA
-  II_SMOOTH_PRED,
-#endif  // CONFIG_ALT_INTRA
-  II_TM_PRED,
-  INTERINTRA_MODES
-} INTERINTRA_MODE;
-#endif
 #endif
 
 typedef enum {

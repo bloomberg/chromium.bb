@@ -2628,56 +2628,8 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
       }
       break;
 
-#if REDUCED_INTERINTRA_MODES == 0
-    case II_D63_PRED:
-    case II_D117_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale = (ii_weights1d[i * size_scale] * 3 +
-                       ii_weights1d[j * size_scale]) >>
-                      2;
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-
-    case II_D207_PRED:
-    case II_D153_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale = (ii_weights1d[j * size_scale] * 3 +
-                       ii_weights1d[i * size_scale]) >>
-                      2;
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-
-    case II_D45_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale =
-              (ii_weights1d[i * size_scale] + ii_weights1d[j * size_scale]) >>
-              1;
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-#endif
-
-#if REDUCED_INTERINTRA_MODES == 0 || CONFIG_ALT_INTRA
-#if REDUCED_INTERINTRA_MODES == 0
-    case II_D135_PRED:
-#endif
 #if CONFIG_ALT_INTRA
     case II_SMOOTH_PRED:
-#endif
       for (i = 0; i < bh; ++i) {
         for (j = 0; j < bw; ++j) {
           int scale = ii_weights1d[(i < j ? i : j) * size_scale];
@@ -2689,7 +2641,7 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
       break;
 #endif
 
-#if !(REDUCED_INTERINTRA_MODES == 1 && CONFIG_ALT_INTRA)
+#if !CONFIG_ALT_INTRA
     case II_TM_PRED:
 #endif
     case II_DC_PRED:
@@ -2755,56 +2707,8 @@ static void combine_interintra_highbd(
       }
       break;
 
-#if REDUCED_INTERINTRA_MODES == 0
-    case II_D63_PRED:
-    case II_D117_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale = (ii_weights1d[i * size_scale] * 3 +
-                       ii_weights1d[j * size_scale]) >>
-                      2;
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-
-    case II_D207_PRED:
-    case II_D153_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale = (ii_weights1d[j * size_scale] * 3 +
-                       ii_weights1d[i * size_scale]) >>
-                      2;
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-
-    case II_D45_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale =
-              (ii_weights1d[i * size_scale] + ii_weights1d[j * size_scale]) >>
-              1;
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-#endif
-
-#if REDUCED_INTERINTRA_MODES == 0 || CONFIG_ALT_INTRA
-#if REDUCED_INTERINTRA_MODES == 0
-    case II_D135_PRED:
-#endif
 #if CONFIG_ALT_INTRA
     case II_SMOOTH_PRED:
-#endif
       for (i = 0; i < bh; ++i) {
         for (j = 0; j < bw; ++j) {
           int scale = ii_weights1d[(i < j ? i : j) * size_scale];
@@ -2816,7 +2720,7 @@ static void combine_interintra_highbd(
       break;
 #endif
 
-#if !(REDUCED_INTERINTRA_MODES == 1 && CONFIG_ALT_INTRA)
+#if !CONFIG_ALT_INTRA
     case II_TM_PRED:
 #endif
     case II_DC_PRED:

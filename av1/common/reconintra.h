@@ -29,7 +29,6 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bw, int bh,
 
 #if CONFIG_EXT_INTER && CONFIG_INTERINTRA
 // Mapping of interintra to intra mode for use in the intra component
-#if REDUCED_INTERINTRA_MODES == 1
 static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
   DC_PRED, V_PRED, H_PRED,
 #if CONFIG_ALT_INTRA
@@ -54,30 +53,7 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
   II_TM_PRED
 #endif
 };
-#else
-static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
-  DC_PRED,     V_PRED,    H_PRED,    D45_PRED, D135_PRED,
-  D117_PRED,   D153_PRED, D207_PRED, D63_PRED,
-#if CONFIG_ALT_INTRA
-  SMOOTH_PRED,
-#endif
-  TM_PRED
-};
-
-// Mapping of intra mode to the interintra mode
-static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
-  II_DC_PRED,     II_V_PRED,    II_H_PRED,    II_D45_PRED, II_D135_PRED,
-  II_D117_PRED,   II_D153_PRED, II_D207_PRED, II_D63_PRED,
-#if CONFIG_ALT_INTRA
-  II_SMOOTH_PRED,
-#endif
-  II_TM_PRED
-};
-#endif
 #endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
-#ifdef __cplusplus
-}  // extern "C"
-#endif
 
 #if CONFIG_FILTER_INTRA
 #define FILTER_INTRA_PREC_BITS 10
@@ -98,4 +74,7 @@ static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
 }
 #endif  // CONFIG_EXT_INTRA
 
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 #endif  // AV1_COMMON_RECONINTRA_H_
