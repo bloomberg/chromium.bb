@@ -135,9 +135,9 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
 }
 
 void WindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  WmWindow* root =
+  aura::Window* root =
       ShellPort::Get()->GetRootWindowForDisplayId(new_display.id());
-  workspace_window_watcher_->RootWindowAdded(root->aura_window());
+  workspace_window_watcher_->RootWindowAdded(root);
 }
 
 void WindowWatcher::OnDisplayRemoved(const display::Display& old_display) {

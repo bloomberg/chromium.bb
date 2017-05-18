@@ -21,8 +21,7 @@ using AppListTest = InProcessBrowserTest;
 
 // An integration test to toggle the app list by pressing the shelf button.
 IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
-  ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::WmWindow::Get(ash::wm::GetActiveWindow()));
+  ash::WmShelf* shelf = ash::WmShelf::ForWindow(ash::wm::GetActiveWindow());
   ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
   ash::AppListButton* app_list_button = shelf_widget->GetAppListButton();
 

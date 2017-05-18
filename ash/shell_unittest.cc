@@ -352,9 +352,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
-  views::Widget* widget = ShellPort::Get()
-                              ->GetPrimaryRootWindow()
-                              ->GetRootWindowController()
+  views::Widget* widget = Shell::GetPrimaryRootWindowController()
                               ->wallpaper_widget_controller()
                               ->widget();
   std::unique_ptr<views::MenuRunner> menu_runner(

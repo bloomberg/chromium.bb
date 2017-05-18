@@ -282,9 +282,7 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   views::Widget panel_widget;
   views::Widget::InitParams panel_params(views::Widget::InitParams::TYPE_PANEL);
   panel_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  ShellPort::Get()
-      ->GetPrimaryRootWindow()
-      ->GetRootWindowController()
+  Shell::GetPrimaryRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           &panel_widget, kShellWindowId_PanelContainer, &panel_params);
   panel_widget.Init(panel_params);

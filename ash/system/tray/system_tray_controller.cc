@@ -151,7 +151,7 @@ void SystemTrayController::SetClient(mojom::SystemTrayClientPtr client) {
 
 void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
   ash::SystemTray* tray =
-      ShellPort::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+      Shell::GetPrimaryRootWindowController()->GetSystemTray();
   if (!tray)
     return;
 
@@ -170,7 +170,7 @@ void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
 
 void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
   ash::SystemTray* tray =
-      ShellPort::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+      Shell::GetPrimaryRootWindowController()->GetSystemTray();
   if (!tray)
     return;
 

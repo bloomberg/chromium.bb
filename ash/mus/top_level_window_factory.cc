@@ -72,8 +72,7 @@ RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
       }
     }
   }
-  return RootWindowController::ForWindow(
-      Shell::GetWmRootWindowForNewWindows()->aura_window());
+  return GetRootWindowController(Shell::GetRootWindowForNewWindows());
 }
 
 // Returns the bounds for the new window.

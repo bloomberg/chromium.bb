@@ -35,8 +35,8 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
   // ShellPort:
   void Shutdown() override;
   Config GetAshConfig() const override;
-  WmWindow* GetPrimaryRootWindow() override;
-  WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
+  aura::Window* GetPrimaryRootWindow() override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const override;
   bool IsActiveDisplayId(int64_t display_id) const override;

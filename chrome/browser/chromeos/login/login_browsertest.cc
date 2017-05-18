@@ -329,8 +329,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 void TestSystemTrayIsVisible(bool otr) {
   ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
-  ash::WmWindow* wm_primary_win = ash::WmWindow::Get(primary_win);
-  ash::WmShelf* wm_shelf = ash::WmShelf::ForWindow(wm_primary_win);
+  ash::WmShelf* wm_shelf = ash::WmShelf::ForWindow(primary_win);
   SCOPED_TRACE(testing::Message()
                << "ShelfVisibilityState=" << wm_shelf->GetVisibilityState()
                << " ShelfAutoHideBehavior=" << wm_shelf->auto_hide_behavior());

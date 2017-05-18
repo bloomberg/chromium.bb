@@ -14,6 +14,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm_window.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
@@ -158,14 +159,14 @@ void SetBoundsInScreen(WmWindow* window,
     }
 
     if (dst_container && window->GetParent() != dst_container) {
-      WmWindow* focused = WmWindow::Get(GetFocusedWindow());
-      WmWindow* active = WmWindow::Get(GetActiveWindow());
+      aura::Window* focused = GetFocusedWindow();
+      aura::Window* active = GetActiveWindow();
 
       aura::WindowTracker tracker;
       if (focused)
-        tracker.Add(focused->aura_window());
+        tracker.Add(focused);
       if (active && focused != active)
-        tracker.Add(active->aura_window());
+        tracker.Add(active);
 
       gfx::Point origin = bounds_in_screen.origin();
       const gfx::Point display_origin = display.bounds().origin();
@@ -181,11 +182,11 @@ void SetBoundsInScreen(WmWindow* window,
       MoveAllTransientChildrenToNewRoot(display, window);
 
       // Restore focused/active window.
-      if (focused && tracker.Contains(focused->aura_window())) {
-        focused->SetFocused();
+      if (focused && tracker.Contains(focused)) {
+        aura::client::GetFocusClient(focused)->FocusWindow(focused);
         Shell::Get()->set_root_window_for_new_windows(focused->GetRootWindow());
-      } else if (active && tracker.Contains(active->aura_window())) {
-        active->Activate();
+      } else if (active && tracker.Contains(active)) {
+        wm::ActivateWindow(active);
       }
       // TODO(oshima): We should not have to update the bounds again
       // below in theory, but we currently do need as there is a code

@@ -46,9 +46,9 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     const std::list<WmWindow*>* mru_windows,
     const CanActivateWindowPredicate& should_include_window_predicate) {
   MruWindowTracker::WindowList windows;
-  WmWindow* active_root = Shell::GetWmRootWindowForNewWindows();
+  aura::Window* active_root = Shell::GetRootWindowForNewWindows();
   for (WmWindow* window : ShellPort::Get()->GetAllRootWindows()) {
-    if (window == active_root)
+    if (window->aura_window() == active_root)
       continue;
     for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i)
       AddTrackedWindows(window, wm::kSwitchableWindowContainerIds[i], &windows);
@@ -56,9 +56,10 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
   // Add windows in the active root windows last so that the topmost window
   // in the active root window becomes the front of the list.
-  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i)
-    AddTrackedWindows(active_root, wm::kSwitchableWindowContainerIds[i],
-                      &windows);
+  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
+    AddTrackedWindows(WmWindow::Get(active_root),
+                      wm::kSwitchableWindowContainerIds[i], &windows);
+  }
 
   // Removes unfocusable windows.
   std::vector<WmWindow*>::iterator itr = windows.begin();

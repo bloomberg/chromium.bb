@@ -35,12 +35,14 @@ ShelfLayoutManager* GetShelfLayoutManager() {
   return GetShelfWidget()->shelf_layout_manager();
 }
 
-void TestLauncherAlignment(WmWindow* root,
+void TestLauncherAlignment(aura::Window* root,
                            ShelfAlignment alignment,
                            const gfx::Rect& expected) {
-  root->GetRootWindowController()->GetShelf()->SetAlignment(alignment);
-  EXPECT_EQ(expected.ToString(),
-            root->GetDisplayNearestWindow().work_area().ToString());
+  GetRootWindowController(root)->GetShelf()->SetAlignment(alignment);
+  EXPECT_EQ(expected.ToString(), display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(root)
+                                     .work_area()
+                                     .ToString());
 }
 
 using ShelfWidgetTest = test::AshTestBase;
@@ -49,31 +51,30 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
   UpdateDisplay("400x400");
   {
     SCOPED_TRACE("Single Bottom");
-    TestLauncherAlignment(ShellPort::Get()->GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_BOTTOM, gfx::Rect(0, 0, 400, 352));
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_BOTTOM,
+                          gfx::Rect(0, 0, 400, 352));
   }
   {
     SCOPED_TRACE("Single Locked");
-    TestLauncherAlignment(ShellPort::Get()->GetPrimaryRootWindow(),
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_BOTTOM_LOCKED,
                           gfx::Rect(0, 0, 400, 352));
   }
   {
     SCOPED_TRACE("Single Right");
-    TestLauncherAlignment(ShellPort::Get()->GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_RIGHT, gfx::Rect(0, 0, 352, 400));
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT,
+                          gfx::Rect(0, 0, 352, 400));
   }
   {
     SCOPED_TRACE("Single Left");
-    TestLauncherAlignment(ShellPort::Get()->GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_LEFT,
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT,
                           gfx::Rect(kShelfSize, 0, 352, 400));
   }
 }
 
 TEST_F(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
   UpdateDisplay("300x300,500x500");
-  std::vector<WmWindow*> root_windows = ShellPort::Get()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   {
     SCOPED_TRACE("Primary Bottom");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM,
@@ -150,7 +151,7 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   UpdateDisplay("300x200,400x300");
 
   // Both displays have a shelf controller.
-  std::vector<WmWindow*> roots = ShellPort::Get()->GetAllRootWindows();
+  aura::Window::Windows roots = Shell::GetAllRootWindows();
   WmShelf* shelf1 = WmShelf::ForWindow(roots[0]);
   WmShelf* shelf2 = WmShelf::ForWindow(roots[1]);
   ASSERT_TRUE(shelf1);

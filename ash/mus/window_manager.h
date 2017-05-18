@@ -145,8 +145,6 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   void Shutdown();
 
-  RootWindowController* GetPrimaryRootWindowController();
-
   // WindowTreeClientDelegate:
   void OnEmbed(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;

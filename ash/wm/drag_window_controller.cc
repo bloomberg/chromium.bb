@@ -37,9 +37,8 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
  public:
   DragWindowDetails(const display::Display& display,
                     aura::Window* original_window)
-      : root_window_(ShellPort::Get()
-                         ->GetRootWindowForDisplayId(display.id())
-                         ->aura_window()) {}
+      : root_window_(
+            ShellPort::Get()->GetRootWindowForDisplayId(display.id())) {}
 
   ~DragWindowDetails() override {
     delete drag_window_;

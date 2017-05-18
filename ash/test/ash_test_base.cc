@@ -72,7 +72,6 @@ class AshEventGeneratorDelegate
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return ShellPort::Get()
         ->GetRootWindowForDisplayId(display.id())
-        ->aura_window()
         ->GetHost();
   }
 
@@ -191,10 +190,7 @@ void AshTestBase::TearDown() {
 
 // static
 WmShelf* AshTestBase::GetPrimaryShelf() {
-  return ShellPort::Get()
-      ->GetPrimaryRootWindow()
-      ->GetRootWindowController()
-      ->GetShelf();
+  return Shell::GetPrimaryRootWindowController()->GetShelf();
 }
 
 // static
@@ -247,9 +243,7 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   params.delegate = delegate;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = bounds;
-  ShellPort::Get()
-      ->GetPrimaryRootWindow()
-      ->GetRootWindowController()
+  Shell::GetPrimaryRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
                                               &params);
   widget->Init(params);
@@ -363,9 +357,8 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   } else {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    aura::Window* root = ShellPort::Get()
-                             ->GetRootWindowForDisplayId(display.id())
-                             ->aura_window();
+    aura::Window* root =
+        ShellPort::Get()->GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();
     ::wm::ConvertPointFromScreen(root, &origin);
     window->SetBounds(gfx::Rect(origin, bounds.size()));

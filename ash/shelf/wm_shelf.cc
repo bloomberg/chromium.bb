@@ -73,8 +73,8 @@ WmShelf::WmShelf() : shelf_locking_manager_(this) {
 WmShelf::~WmShelf() {}
 
 // static
-WmShelf* WmShelf::ForWindow(WmWindow* window) {
-  return window->GetRootWindowController()->GetShelf();
+WmShelf* WmShelf::ForWindow(aura::Window* window) {
+  return GetRootWindowController(window->GetRootWindow())->GetShelf();
 }
 
 // static

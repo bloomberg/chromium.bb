@@ -144,9 +144,9 @@ void ExitWarningHandler::CancelTimer() {
 void ExitWarningHandler::Show() {
   if (widget_)
     return;
-  WmWindow* root_window = Shell::GetWmRootWindowForNewWindows();
+  aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   ExitWarningWidgetDelegateView* delegate = new ExitWarningWidgetDelegateView;
-  gfx::Size rs = root_window->GetBounds().size();
+  gfx::Size rs = root_window->bounds().size();
   gfx::Size ps = delegate->GetPreferredSize();
   gfx::Rect bounds((rs.width() - ps.width()) / 2,
                    (rs.height() - ps.height()) / 3, ps.width(), ps.height());
@@ -161,8 +161,9 @@ void ExitWarningHandler::Show() {
   params.bounds = bounds;
   params.name = "ExitWarningWindow";
   widget_.reset(new views::Widget);
-  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      widget_.get(), kShellWindowId_SettingBubbleContainer, &params);
+  GetRootWindowController(root_window)
+      ->ConfigureWidgetInitParamsForContainer(
+          widget_.get(), kShellWindowId_SettingBubbleContainer, &params);
   widget_->Init(params);
   widget_->Show();
 

@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/tray/tray_constants.h"
@@ -50,9 +50,7 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params =
       GetDialogWidgetInitParams(this, nullptr, nullptr, gfx::Rect());
-  ShellPort::Get()
-      ->GetPrimaryRootWindow()
-      ->GetRootWindowController()
+  Shell::GetPrimaryRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           widget, kShellWindowId_SystemModalContainer, &params);
   widget->Init(params);

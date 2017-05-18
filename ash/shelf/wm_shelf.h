@@ -13,6 +13,10 @@
 #include "ash/shelf/shelf_locking_manager.h"
 #include "base/observer_list.h"
 
+namespace aura {
+class Window;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -44,7 +48,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
 
   // Returns the shelf for the display that |window| is on. Note that the shelf
   // widget may not exist, or the shelf may not be visible.
-  static WmShelf* ForWindow(WmWindow* window);
+  static WmShelf* ForWindow(aura::Window* window);
 
   // Returns if shelf alignment options are enabled, and the user is able to
   // adjust the alignment (eg. not allowed in guest and supervised user modes).

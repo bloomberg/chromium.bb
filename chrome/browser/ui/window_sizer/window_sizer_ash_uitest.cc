@@ -54,8 +54,7 @@ void CloseBrowser(Browser* browser) {
 
 gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root_window) {
   const ash::ShelfView* shelf_view =
-      ash::WmShelf::ForWindow(ash::WmWindow::Get(root_window))
-          ->GetShelfViewForTesting();
+      ash::WmShelf::ForWindow(root_window)->GetShelfViewForTesting();
   const views::ViewModel* view_model = shelf_view->view_model_for_test();
 
   EXPECT_EQ(2, view_model->view_size());

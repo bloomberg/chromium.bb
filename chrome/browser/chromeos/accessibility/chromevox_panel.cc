@@ -201,15 +201,10 @@ void ChromeVoxPanel::UpdateWidgetBounds() {
 }
 
 void ChromeVoxPanel::SendPanelHeightToAsh(int panel_height) {
-  // WmShelf is available for the lifetime of the RootWindowController.
-  ash::RootWindowController* root_window_controller =
-      ash::RootWindowController::ForWindow(GetRootWindow());
-  if (!root_window_controller)
-    return;
-
   // TODO(mash): Replace with shelf mojo API.
+  ash::WmShelf* shelf = ash::WmShelf::ForWindow(GetRootWindow());
   ash::ShelfLayoutManager* shelf_layout_manager =
-      root_window_controller->GetShelf()->shelf_layout_manager();
+      shelf ? shelf->shelf_layout_manager() : nullptr;
   if (shelf_layout_manager)
     shelf_layout_manager->SetChromeVoxPanelHeight(panel_height);
 }

@@ -78,15 +78,13 @@ Config ShellPortClassic::GetAshConfig() const {
   return Config::CLASSIC;
 }
 
-WmWindow* ShellPortClassic::GetPrimaryRootWindow() {
-  return WmWindow::Get(
-      Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow());
+aura::Window* ShellPortClassic::GetPrimaryRootWindow() {
+  return Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow();
 }
 
-WmWindow* ShellPortClassic::GetRootWindowForDisplayId(int64_t display_id) {
-  return WmWindow::Get(
-      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display_id));
+aura::Window* ShellPortClassic::GetRootWindowForDisplayId(int64_t display_id) {
+  return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+      display_id);
 }
 
 const display::ManagedDisplayInfo& ShellPortClassic::GetDisplayInfo(

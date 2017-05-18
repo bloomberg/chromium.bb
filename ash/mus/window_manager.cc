@@ -172,7 +172,7 @@ bool WindowManager::WaitForInitialDisplays() {
 void WindowManager::DeleteAllRootWindowControllers() {
   // Primary RootWindowController must be destroyed last.
   RootWindowController* primary_root_window_controller =
-      GetPrimaryRootWindowController();
+      Shell::GetPrimaryRootWindowController();
   std::set<RootWindowController*> secondary_root_window_controllers;
   for (auto& root_window_controller_ptr : root_window_controllers_) {
     if (root_window_controller_ptr.get() != primary_root_window_controller) {
@@ -235,10 +235,10 @@ void WindowManager::CreateShell(
   DCHECK(!created_shell_);
   created_shell_ = true;
   ShellInitParams init_params;
-  ShellPortMash* shell_port = new ShellPortMash(
-      window_tree_host ? WmWindow::Get(window_tree_host->window()) : nullptr,
-      this, pointer_watcher_event_router_.get(),
-      create_session_state_delegate_stub_for_test_);
+  ShellPortMash* shell_port =
+      new ShellPortMash(window_tree_host ? window_tree_host->window() : nullptr,
+                        this, pointer_watcher_event_router_.get(),
+                        create_session_state_delegate_stub_for_test_);
   // Shell::CreateInstance() takes ownership of ShellDelegate.
   init_params.delegate = shell_delegate_ ? shell_delegate_.release()
                                          : new ShellDelegateMus(connector_);
@@ -265,9 +265,8 @@ void WindowManager::DestroyRootWindowController(
     RootWindowController* root_window_controller,
     bool in_shutdown) {
   if (!in_shutdown && root_window_controllers_.size() > 1) {
-    DCHECK_NE(root_window_controller, GetPrimaryRootWindowController());
-    root_window_controller->MoveWindowsTo(
-        GetPrimaryRootWindowController()->GetRootWindow());
+    DCHECK_NE(root_window_controller, Shell::GetPrimaryRootWindowController());
+    root_window_controller->MoveWindowsTo(Shell::GetPrimaryRootWindow());
   }
 
   root_window_controller->Shutdown();
@@ -296,13 +295,6 @@ void WindowManager::Shutdown() {
 
   window_tree_client_.reset();
   window_manager_client_ = nullptr;
-}
-
-RootWindowController* WindowManager::GetPrimaryRootWindowController() {
-  return RootWindowController::ForWindow(ShellPort::Get()
-                                             ->GetPrimaryRootWindowController()
-                                             ->GetWindow()
-                                             ->aura_window());
 }
 
 void WindowManager::OnEmbed(

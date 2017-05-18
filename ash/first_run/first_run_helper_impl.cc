@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm_window.h"
 #include "base/logging.h"
@@ -56,7 +55,7 @@ views::Widget* FirstRunHelperImpl::GetOverlayWidget() {
 }
 
 gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
-  WmShelf* shelf = WmShelf::ForWindow(ShellPort::Get()->GetPrimaryRootWindow());
+  WmShelf* shelf = WmShelf::ForWindow(Shell::GetPrimaryRootWindow());
   AppListButton* app_button = shelf->shelf_widget()->GetAppListButton();
   return app_button->GetBoundsInScreen();
 }
