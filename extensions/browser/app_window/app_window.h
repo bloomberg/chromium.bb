@@ -94,6 +94,8 @@ class AppWindow : public content::WebContentsDelegate,
   enum WindowType {
     WINDOW_TYPE_DEFAULT = 1 << 0,   // Default app window.
     WINDOW_TYPE_PANEL = 1 << 1,     // OS controlled panel window (Ash only).
+    WINDOW_TYPE_V1_PANEL = 1 << 2,  // For apps v1 support in Ash; deprecate
+                                    // with v1 apps.
   };
 
   enum Frame {
@@ -233,7 +235,8 @@ class AppWindow : public content::WebContentsDelegate,
   content::WebContents* web_contents() const;
   WindowType window_type() const { return window_type_; }
   bool window_type_is_panel() const {
-    return window_type_ == WINDOW_TYPE_PANEL;
+    return (window_type_ == WINDOW_TYPE_PANEL ||
+            window_type_ == WINDOW_TYPE_V1_PANEL);
   }
   content::BrowserContext* browser_context() const { return browser_context_; }
   const gfx::Image& app_icon() const { return app_icon_; }
