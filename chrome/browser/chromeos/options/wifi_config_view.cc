@@ -328,6 +328,8 @@ int UserCertComboboxModel::GetItemCount() const {
       CertLibrary::Get()->NumCertificates(CertLibrary::CERT_TYPE_USER);
   if (num_certs == 0)
     return 1;  // "None installed"
+  if (owner_->ManagedUserCertNotFound())
+    return 1;  // Empty: no user cert found, but managed (not editable).
   return num_certs;
 }
 
@@ -341,6 +343,9 @@ base::string16 UserCertComboboxModel::GetItemAt(int index) {
   if (CertLibrary::Get()->NumCertificates(CertLibrary::CERT_TYPE_USER) == 0)
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
+  if (owner_->ManagedUserCertNotFound())
+    return base::string16();  // Empty: no user cert found, but managed (not
+                              // editable).
   return CertLibrary::Get()->GetCertDisplayStringAt(
       CertLibrary::CERT_TYPE_USER, index);
 }
@@ -1117,6 +1122,7 @@ void WifiConfigView::Init(bool show_8021x) {
                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
     // User certificate
+    managed_user_cert_not_found_ = false;
     layout->StartRow(0, column_view_set_id);
     base::string16 user_cert_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT);
@@ -1403,6 +1409,17 @@ void WifiConfigView::InitFromProperties(
           CertLibrary::Get()->GetUserCertIndexByPkcs11Id(pkcs11_id);
       if (cert_index >= 0)
         user_cert_combobox_->SetSelectedIndex(cert_index);
+    } else if (!user_cert_ui_data_.IsEditable() &&
+               CertLibrary::Get()->NumCertificates(
+                   CertLibrary::CERT_TYPE_USER) > 0) {
+      // The cert is not configured (e.g. policy-provided client cert pattern
+      // did not match anything), and the cert selection is not editable
+      // (probably because the network is configured by policy). In this case,
+      // we don't want to display the first certificate in the list, as that
+      // would be misleading.
+      managed_user_cert_not_found_ = true;
+      user_cert_combobox_->ModelChanged();
+      user_cert_combobox_->SetSelectedIndex(0);
     }
   }
 
