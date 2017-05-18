@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_state_changer_win.h"
 
+#include <objbase.h>
+
 #include <utility>
 
 namespace {
@@ -127,7 +129,8 @@ bool StatusTrayStateChangerWin::CreateTrayNotify() {
 
   tray_notify_.Reset();  // Reset so this method can be called more than once.
 
-  HRESULT hr = tray_notify_.CreateInstance(CLSID_TrayNotify);
+  HRESULT hr = ::CoCreateInstance(CLSID_TrayNotify, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&tray_notify_));
   if (FAILED(hr))
     return false;
 

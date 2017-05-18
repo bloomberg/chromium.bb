@@ -28,8 +28,8 @@ bool AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
                   scoped_refptr<ShellLinkItem> item) {
   // Create an IShellLink object.
   base::win::ScopedComPtr<IShellLink> link;
-  HRESULT result = link.CreateInstance(CLSID_ShellLink, NULL,
-                                       CLSCTX_INPROC_SERVER);
+  HRESULT result = ::CoCreateInstance(
+      CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&link));
   if (FAILED(result))
     return false;
 
@@ -125,8 +125,9 @@ bool JumpListUpdater::BeginUpdate() {
     return false;
 
   // Create an ICustomDestinationList object and attach it to our application.
-  HRESULT result = destination_list_.CreateInstance(CLSID_DestinationList, NULL,
-                                                    CLSCTX_INPROC_SERVER);
+  HRESULT result =
+      ::CoCreateInstance(CLSID_DestinationList, NULL, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(&destination_list_));
   if (FAILED(result))
     return false;
 
@@ -177,8 +178,9 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   // Create an EnumerableObjectCollection object to be added items of the
   // "Task" category.
   base::win::ScopedComPtr<IObjectCollection> collection;
-  HRESULT result = collection.CreateInstance(CLSID_EnumerableObjectCollection,
-                                             NULL, CLSCTX_INPROC_SERVER);
+  HRESULT result =
+      ::CoCreateInstance(CLSID_EnumerableObjectCollection, NULL,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&collection));
   if (FAILED(result))
     return false;
 
@@ -225,8 +227,9 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
   // We once add the given items to this collection object and add this
   // collection to the JumpList.
   base::win::ScopedComPtr<IObjectCollection> collection;
-  HRESULT result = collection.CreateInstance(CLSID_EnumerableObjectCollection,
-                                             NULL, CLSCTX_INPROC_SERVER);
+  HRESULT result =
+      ::CoCreateInstance(CLSID_EnumerableObjectCollection, NULL,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&collection));
   if (FAILED(result))
     return false;
 

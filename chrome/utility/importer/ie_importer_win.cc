@@ -292,8 +292,9 @@ bool LoadInternetShortcut(
     const base::string16& file,
     base::win::ScopedComPtr<IUniformResourceLocator>* shortcut) {
   base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
-  if (FAILED(url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
-                                        CLSCTX_INPROC_SERVER)))
+  if (FAILED(::CoCreateInstance(CLSID_InternetShortcut, NULL,
+                                CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&url_locator))))
     return false;
 
   base::win::ScopedComPtr<IPersistFile> persist_file;
@@ -509,8 +510,8 @@ void IEImporter::ImportHistory() {
   int total_schemes = arraysize(kSchemes);
 
   base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
-  if (FAILED(url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
-                                             CLSCTX_INPROC_SERVER))) {
+  if (FAILED(::CoCreateInstance(CLSID_CUrlHistory, NULL, CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&url_history_stg2)))) {
     return;
   }
   base::win::ScopedComPtr<IEnumSTATURL> enum_url;

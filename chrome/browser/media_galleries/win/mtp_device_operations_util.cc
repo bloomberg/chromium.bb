@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/win/mtp_device_operations_util.h"
 
+#include <objbase.h>
 #include <portabledevice.h>
 #include <stdint.h>
 
@@ -33,8 +34,9 @@ bool GetClientInformation(
     base::win::ScopedComPtr<IPortableDeviceValues>* client_info) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(client_info);
-  HRESULT hr = client_info->CreateInstance(__uuidof(PortableDeviceValues),
-                                           NULL, CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
+                                  CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(client_info->GetAddressOf()));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDeviceValues";
     return false;
@@ -191,9 +193,9 @@ bool GetObjectDetails(IPortableDevice* device,
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceKeyCollection> properties_to_read;
-  hr = properties_to_read.CreateInstance(__uuidof(PortableDeviceKeyCollection),
-                                         NULL,
-                                         CLSCTX_INPROC_SERVER);
+  hr = ::CoCreateInstance(__uuidof(PortableDeviceKeyCollection), NULL,
+                          CLSCTX_INPROC_SERVER,
+                          IID_PPV_ARGS(&properties_to_read));
   if (FAILED(hr))
     return false;
 
@@ -310,8 +312,8 @@ base::win::ScopedComPtr<IPortableDevice> OpenDevice(
   if (!GetClientInformation(&client_info))
     return base::win::ScopedComPtr<IPortableDevice>();
   base::win::ScopedComPtr<IPortableDevice> device;
-  HRESULT hr = device.CreateInstance(__uuidof(PortableDevice), NULL,
-                                     CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDevice), NULL,
+                                  CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&device));
   if (FAILED(hr))
     return base::win::ScopedComPtr<IPortableDevice>();
 

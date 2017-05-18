@@ -4,6 +4,7 @@
 
 #include "chrome/utility/shell_handler_impl_win.h"
 
+#include <objbase.h>
 #include <shldisp.h>
 
 #include "base/files/file_enumerator.h"
@@ -88,7 +89,8 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
 
   base::win::ScopedComPtr<IShellDispatch> shell_dispatch;
   HRESULT hresult =
-      shell_dispatch.CreateInstance(CLSID_Shell, nullptr, CLSCTX_INPROC_SERVER);
+      ::CoCreateInstance(CLSID_Shell, nullptr, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(&shell_dispatch));
   if (FAILED(hresult) || !shell_dispatch) {
     error_occured_ = true;
     return false;

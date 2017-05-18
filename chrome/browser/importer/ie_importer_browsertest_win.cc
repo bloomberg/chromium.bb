@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <unknwn.h>
 #include <intshcut.h>
+#include <objbase.h>
 #include <propvarutil.h>
 #include <shlguid.h>
 #include <shlobj.h>
@@ -170,8 +171,9 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
                               const base::string16& url,
                               const base::string16& favicon_url) {
   base::win::ScopedComPtr<IUniformResourceLocator> locator;
-  HRESULT result = locator.CreateInstance(CLSID_InternetShortcut, NULL,
-                                          CLSCTX_INPROC_SERVER);
+  HRESULT result =
+      ::CoCreateInstance(CLSID_InternetShortcut, NULL, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(&locator));
   if (FAILED(result))
     return false;
   base::win::ScopedComPtr<IPersistFile> persist_file;
@@ -488,8 +490,9 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
 
   // Sets up a special history link.
   base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
-  ASSERT_EQ(S_OK, url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
-                                                  CLSCTX_INPROC_SERVER));
+  ASSERT_EQ(S_OK,
+            ::CoCreateInstance(CLSID_CUrlHistory, NULL, CLSCTX_INPROC_SERVER,
+                               IID_PPV_ARGS(&url_history_stg2)));
   // Usage of ADDURL_ADDTOHISTORYANDCACHE and ADDURL_ADDTOCACHE flags
   // is explained in the article:
   // http://msdn.microsoft.com/ru-ru/aa767730

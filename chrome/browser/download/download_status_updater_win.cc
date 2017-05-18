@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_status_updater.h"
 
+#include <objbase.h>
 #include <shobjidl.h>
 #include <string>
 
@@ -25,8 +26,8 @@ void UpdateTaskbarProgressBar(int download_count,
     return;
 
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
-  HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
-                                          CLSCTX_INPROC_SERVER);
+  HRESULT result = ::CoCreateInstance(
+      CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));
   if (FAILED(result)) {
     DVLOG(1) << "Failed creating a TaskbarList object: " << result;
     return;

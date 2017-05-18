@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <objbase.h>
 #include <oleauto.h>
 #include <stdint.h>
 #include <uiautomation.h>
@@ -649,8 +650,9 @@ void SettingsAppMonitor::Context::Initialize(
   monitor_runner_ = monitor_runner;
   monitor_ = monitor;
 
-  HRESULT result = automation_.CreateInstance(CLSID_CUIAutomation, nullptr,
-                                              CLSCTX_INPROC_SERVER);
+  HRESULT result =
+      ::CoCreateInstance(CLSID_CUIAutomation, nullptr, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(&automation_));
   if (SUCCEEDED(result))
     result = automation_ ? InstallObservers() : E_FAIL;
 

@@ -23,6 +23,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include <objbase.h>
 #include <wpcapi.h>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -102,8 +103,8 @@ class PlatformParentalControlsValue {
   // is enabled.
   static bool IsParentalControlActivityLoggingOnImpl() {
     base::win::ScopedComPtr<IWindowsParentalControlsCore> parent_controls;
-    HRESULT hr = parent_controls.CreateInstance(
-        __uuidof(WindowsParentalControls));
+    HRESULT hr = ::CoCreateInstance(__uuidof(WindowsParentalControls), nullptr,
+                                    CLSCTX_ALL, IID_PPV_ARGS(&parent_controls));
     if (FAILED(hr))
       return false;
 

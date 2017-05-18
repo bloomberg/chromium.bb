@@ -16,6 +16,7 @@
 #include <string.h>
 #define STRSAFE_NO_DEPRECATE
 #include <windows.h>
+#include <objbase.h>
 #include <strsafe.h>
 #include <tlhelp32.h>
 
@@ -487,9 +488,8 @@ BOOL __stdcall LaunchGoogleChrome() {
 
   bool ret = false;
   ScopedComPtr<IProcessLauncher> ipl;
-  if (SUCCEEDED(ipl.CreateInstance(__uuidof(ProcessLauncherClass),
-                                   NULL,
-                                   CLSCTX_LOCAL_SERVER))) {
+  if (SUCCEEDED(::CoCreateInstance(__uuidof(ProcessLauncherClass), NULL,
+                                   CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&ipl)))) {
     if (SUCCEEDED(ipl->LaunchCmdLine(
             chrome_command.GetCommandLineString().c_str())))
       ret = true;

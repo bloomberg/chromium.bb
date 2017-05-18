@@ -24,7 +24,8 @@ AdvancedFirewallManager::~AdvancedFirewallManager() {}
 bool AdvancedFirewallManager::Init(const base::string16& app_name,
                                    const base::FilePath& app_path) {
   firewall_rules_ = NULL;
-  HRESULT hr = firewall_policy_.CreateInstance(CLSID_NetFwPolicy2);
+  HRESULT hr = ::CoCreateInstance(CLSID_NetFwPolicy2, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&firewall_policy_));
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     firewall_policy_ = NULL;
@@ -127,7 +128,8 @@ base::win::ScopedComPtr<INetFwRule> AdvancedFirewallManager::CreateUDPRule(
     uint16_t port) {
   base::win::ScopedComPtr<INetFwRule> udp_rule;
 
-  HRESULT hr = udp_rule.CreateInstance(CLSID_NetFwRule);
+  HRESULT hr = ::CoCreateInstance(CLSID_NetFwRule, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&udp_rule));
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return base::win::ScopedComPtr<INetFwRule>();
