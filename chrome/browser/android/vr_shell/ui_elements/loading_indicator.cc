@@ -16,7 +16,9 @@ static constexpr int kVisibilityTimeoutMs = 200;
 
 LoadingIndicator::LoadingIndicator(int preferred_width)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<LoadingIndicatorTexture>()) {}
+      texture_(base::MakeUnique<LoadingIndicatorTexture>()) {
+  set_visible(false);
+}
 
 LoadingIndicator::~LoadingIndicator() = default;
 
