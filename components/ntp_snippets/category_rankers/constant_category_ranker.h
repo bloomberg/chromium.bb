@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_SECTION_RANKERS_CONSTANT_SECTION_RANKER_H_
 #define COMPONENTS_NTP_SNIPPETS_SECTION_RANKERS_CONSTANT_SECTION_RANKER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/time/time.h"
@@ -31,6 +32,7 @@ class ConstantCategoryRanker : public CategoryRanker {
                                        Category anchor) override;
   void InsertCategoryAfterIfNecessary(Category category_to_insert,
                                       Category anchor) override;
+  std::vector<CategoryRanker::DebugDataItem> GetDebugData() override;
   void OnSuggestionOpened(Category category) override;
   void OnCategoryDismissed(Category category) override;
 

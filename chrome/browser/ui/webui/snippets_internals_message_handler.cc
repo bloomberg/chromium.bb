@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
@@ -375,6 +376,7 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
                                        chrome::android::kPhysicalWebFeature));
 
   SendClassification();
+  SendRankerDebugData();
   SendLastRemoteSuggestionsBackgroundFetchTime();
 
   if (remote_suggestions_provider_) {
@@ -410,6 +412,24 @@ void SnippetsInternalsMessageHandler::SendClassification() {
       base::Value(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::SUGGESTIONS_USED)));
+}
+
+void SnippetsInternalsMessageHandler::SendRankerDebugData() {
+  std::vector<ntp_snippets::CategoryRanker::DebugDataItem> data =
+      content_suggestions_service_->category_ranker()->GetDebugData();
+
+  std::unique_ptr<base::ListValue> items_list(new base::ListValue);
+  for (const auto& item : data) {
+    auto entry = base::MakeUnique<base::DictionaryValue>();
+    entry->SetString("label", item.label);
+    entry->SetString("content", item.content);
+    items_list->Append(std::move(entry));
+  }
+
+  base::DictionaryValue result;
+  result.Set("list", std::move(items_list));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals.receiveRankerDebugData", result);
 }
 
 void SnippetsInternalsMessageHandler::

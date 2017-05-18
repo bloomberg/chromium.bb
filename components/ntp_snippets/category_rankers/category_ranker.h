@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CATEGORY_RANKERS_CATEGORY_RANKER_H_
 #define COMPONENTS_NTP_SNIPPETS_CATEGORY_RANKERS_CATEGORY_RANKER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
 
@@ -38,6 +41,17 @@ class CategoryRanker {
   // |anchor|, otherwise nothing is changed.
   virtual void InsertCategoryAfterIfNecessary(Category category_to_insert,
                                               Category anchor) = 0;
+
+  struct DebugDataItem {
+    std::string label;
+    std::string content;
+    DebugDataItem(const std::string& label, const std::string& content)
+        : label(label), content(content) {}
+  };
+
+  // Returns DebugData in form of pairs of strings (label; content),
+  // e.g. describing internal state or parameter values.
+  virtual std::vector<DebugDataItem> GetDebugData() = 0;
 
   // Feedback data from the user to update the ranking.
 
