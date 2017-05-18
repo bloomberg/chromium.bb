@@ -11,6 +11,7 @@ import android.media.FaceDetector.Face;
 import android.os.AsyncTask;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
@@ -29,12 +30,18 @@ import java.nio.ByteBuffer;
 public class FaceDetectionImpl implements FaceDetection {
     private static final String TAG = "FaceDetectionImpl";
     private static final int MAX_FACES = 32;
+    private static FaceDetector sFaceDetector;
     private final boolean mFastMode;
     private final int mMaxFaces;
 
     FaceDetectionImpl(FaceDetectorOptions options) {
         mFastMode = options.fastMode;
         mMaxFaces = Math.min(options.maxDetectedFaces, MAX_FACES);
+    }
+
+    @VisibleForTesting
+    public static void setFaceDetector(FaceDetector faceDetector) {
+        sFaceDetector = faceDetector;
     }
 
     @Override
@@ -63,7 +70,12 @@ public class FaceDetectionImpl implements FaceDetection {
         // to create this intermediate Bitmap.
         // TODO(xianglu): Consider worker pool as appropriate threads.
         // http://crbug.com/655814
-        bitmap.copyPixelsFromBuffer(imageBuffer);
+        try {
+            bitmap.copyPixelsFromBuffer(imageBuffer);
+        } catch (RuntimeException e) {
+            callback.call(new FaceDetectionResult[0]);
+            return;
+        }
 
         // A Bitmap must be in 565 format for findFaces() to work. See
         // http://androidxref.com/7.0.0_r1/xref/frameworks/base/media/java/android/media/FaceDetector.java#124
@@ -84,7 +96,9 @@ public class FaceDetectionImpl implements FaceDetection {
         AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
             @Override
             public void run() {
-                final FaceDetector detector = new FaceDetector(width, height, mMaxFaces);
+                final FaceDetector detector = (sFaceDetector != null)
+                        ? sFaceDetector
+                        : new FaceDetector(width, height, mMaxFaces);
                 Face[] detectedFaces = new Face[mMaxFaces];
                 // findFaces() will stop at |mMaxFaces|.
                 final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
