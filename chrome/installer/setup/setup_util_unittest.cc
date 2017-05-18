@@ -518,6 +518,11 @@ TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
                              base::CompareCase::SENSITIVE));
 }
 
+TEST(SetupUtilTest, GetConsoleSessionStartTime) {
+  base::Time start_time = installer::GetConsoleSessionStartTime();
+  EXPECT_FALSE(start_time.is_null());
+}
+
 namespace installer {
 
 class DeleteRegistryKeyPartialTest : public ::testing::Test {

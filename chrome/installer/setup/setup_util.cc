@@ -7,7 +7,9 @@
 #include "chrome/installer/setup/setup_util.h"
 
 #include <windows.h>
+
 #include <stddef.h>
+#include <wtsapi32.h>
 
 #include <algorithm>
 #include <initializer_list>
@@ -18,6 +20,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file_enumerator.h"
@@ -809,6 +812,31 @@ void DoLegacyCleanups(const InstallerState& installer_state,
   RemoveAppLauncherVersionKey(installer_state);
   RemoveAppHostExe(installer_state);
   RemoveLegacyChromeAppCommands(installer_state);
+}
+
+base::Time GetConsoleSessionStartTime() {
+  constexpr DWORD kInvalidSessionId = 0xFFFFFFFF;
+  DWORD console_session_id = ::WTSGetActiveConsoleSessionId();
+  if (console_session_id == kInvalidSessionId)
+    return base::Time();
+  wchar_t* buffer = nullptr;
+  DWORD buffer_size = 0;
+  if (!::WTSQuerySessionInformation(WTS_CURRENT_SERVER_HANDLE,
+                                    console_session_id, WTSSessionInfo, &buffer,
+                                    &buffer_size)) {
+    return base::Time();
+  }
+  base::ScopedClosureRunner wts_deleter(
+      base::Bind(&::WTSFreeMemory, base::Unretained(buffer)));
+
+  WTSINFO* wts_info = nullptr;
+  if (buffer_size < sizeof(*wts_info))
+    return base::Time();
+
+  wts_info = reinterpret_cast<WTSINFO*>(buffer);
+  FILETIME filetime = {wts_info->LogonTime.u.LowPart,
+                       wts_info->LogonTime.u.HighPart};
+  return base::Time::FromFileTime(filetime);
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

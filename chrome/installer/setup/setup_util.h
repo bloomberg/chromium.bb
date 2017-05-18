@@ -17,6 +17,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/lzma_util.h"
@@ -144,6 +145,10 @@ bool AreBinariesInstalled(const InstallerState& installer_state);
 // Removes leftover bits from features that have been removed from the product.
 void DoLegacyCleanups(const InstallerState& installer_state,
                       InstallStatus install_status);
+
+// Returns the time of the start of the console user's Windows logon session, or
+// a null time in case of error.
+base::Time GetConsoleSessionStartTime();
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
