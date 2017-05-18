@@ -6,7 +6,7 @@
 
 #include "base/hash.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -237,9 +237,8 @@ NativeDesktopMediaList::NativeDesktopMediaList(
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
-  base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
-  capture_task_runner_ = worker_pool->GetSequencedTaskRunner(
-      worker_pool->GetSequenceToken());
+  capture_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   worker_.reset(new Worker(weak_factory_.GetWeakPtr(),
                            std::move(screen_capturer),
@@ -345,7 +344,9 @@ void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
 
   pending_aura_capture_requests_++;
   ui::GrabWindowSnapshotAndScaleAsyncAura(
-      window, window_rect, scaled_rect.size(), BrowserThread::GetBlockingPool(),
+      window, window_rect, scaled_rect.size(),
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}),
       base::Bind(&NativeDesktopMediaList::OnAuraThumbnailCaptured,
                  weak_factory_.GetWeakPtr(), id));
 }
