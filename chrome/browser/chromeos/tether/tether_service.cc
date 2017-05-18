@@ -38,12 +38,19 @@ void TetherService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 TetherService::TetherService(
     Profile* profile,
+    chromeos::PowerManagerClient* power_manager_client,
+    chromeos::SessionManagerClient* session_manager_client,
     cryptauth::CryptAuthService* cryptauth_service,
     chromeos::NetworkStateHandler* network_state_handler)
     : profile_(profile),
+      power_manager_client_(power_manager_client),
+      session_manager_client_(session_manager_client),
       cryptauth_service_(cryptauth_service),
       network_state_handler_(network_state_handler),
       weak_ptr_factory_(this) {
+  power_manager_client_->AddObserver(this);
+  session_manager_client_->AddObserver(this);
+
   cryptauth_service_->GetCryptAuthDeviceManager()->AddObserver(this);
 
   network_state_handler_->AddObserver(this, FROM_HERE);
@@ -90,12 +97,32 @@ void TetherService::Shutdown() {
 
   shut_down_ = true;
 
+  power_manager_client_->RemoveObserver(this);
+  session_manager_client_->RemoveObserver(this);
   cryptauth_service_->GetCryptAuthDeviceManager()->RemoveObserver(this);
   network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (adapter_)
     adapter_->RemoveObserver(this);
   registrar_.RemoveAll();
 
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::SuspendImminent() {
+  suspended_ = true;
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::SuspendDone(const base::TimeDelta& sleep_duration) {
+  suspended_ = false;
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::ScreenIsLocked() {
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::ScreenIsUnlocked() {
   UpdateTetherTechnologyState();
 }
 
@@ -165,7 +192,8 @@ void TetherService::UpdateTetherTechnologyState() {
 
 chromeos::NetworkStateHandler::TechnologyState
 TetherService::GetTetherTechnologyState() {
-  if (shut_down_ || !IsFeatureFlagEnabled() || !HasSyncedTetherHosts()) {
+  if (shut_down_ || suspended_ || session_manager_client_->IsScreenLocked() ||
+      !IsFeatureFlagEnabled() || !HasSyncedTetherHosts()) {
     return chromeos::NetworkStateHandler::TechnologyState::
         TECHNOLOGY_UNAVAILABLE;
   } else if (!IsAllowedByPolicy()) {

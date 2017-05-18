@@ -8,6 +8,7 @@
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -41,6 +42,8 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
 
   return new TetherService(
       Profile::FromBrowserContext(context),
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
       ChromeCryptAuthServiceFactory::GetForBrowserContext(
           Profile::FromBrowserContext(context)),
       chromeos::NetworkHandler::Get()->network_state_handler());

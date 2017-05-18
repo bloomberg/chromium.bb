@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
@@ -24,11 +26,15 @@ class PrefRegistrySimple;
 class Profile;
 
 class TetherService : public KeyedService,
+                      public chromeos::PowerManagerClient::Observer,
+                      public chromeos::SessionManagerClient::Observer,
                       public cryptauth::CryptAuthDeviceManager::Observer,
                       public device::BluetoothAdapter::Observer,
                       public chromeos::NetworkStateHandlerObserver {
  public:
   TetherService(Profile* profile,
+                chromeos::PowerManagerClient* power_manager_client,
+                chromeos::SessionManagerClient* session_manager_client,
                 cryptauth::CryptAuthService* cryptauth_service,
                 chromeos::NetworkStateHandler* network_state_handler);
   ~TetherService() override;
@@ -49,6 +55,14 @@ class TetherService : public KeyedService,
  protected:
   // KeyedService:
   void Shutdown() override;
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent() override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // chromeos::SessionManagerClient::Observer:
+  void ScreenIsLocked() override;
+  void ScreenIsUnlocked() override;
 
   // cryptauth::CryptAuthDeviceManager::Observer
   void OnSyncFinished(cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
@@ -95,7 +109,13 @@ class TetherService : public KeyedService,
   // Whether the service has been shut down.
   bool shut_down_ = false;
 
+  // Whether the device and service have been suspended (e.g. the laptop lid
+  // was closed).
+  bool suspended_ = false;
+
   Profile* profile_;
+  chromeos::PowerManagerClient* power_manager_client_;
+  chromeos::SessionManagerClient* session_manager_client_;
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::NetworkStateHandler* network_state_handler_;
 
