@@ -1422,13 +1422,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EUserSelect e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case SELECT_NONE:
+    case EUserSelect::kNone:
       value_id_ = CSSValueNone;
       break;
-    case SELECT_TEXT:
+    case EUserSelect::kText:
       value_id_ = CSSValueText;
       break;
-    case SELECT_ALL:
+    case EUserSelect::kAll:
       value_id_ = CSSValueAll;
       break;
   }
@@ -1438,19 +1438,19 @@ template <>
 inline EUserSelect CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return SELECT_TEXT;
+      return EUserSelect::kText;
     case CSSValueNone:
-      return SELECT_NONE;
+      return EUserSelect::kNone;
     case CSSValueText:
-      return SELECT_TEXT;
+      return EUserSelect::kText;
     case CSSValueAll:
-      return SELECT_ALL;
+      return EUserSelect::kAll;
     default:
       break;
   }
 
   NOTREACHED();
-  return SELECT_TEXT;
+  return EUserSelect::kText;
 }
 
 template <>

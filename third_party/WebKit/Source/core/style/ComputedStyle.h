@@ -1941,12 +1941,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // -webkit-user-select
-  static EUserSelect InitialUserSelect() { return SELECT_TEXT; }
+  static EUserSelect InitialUserSelect() { return EUserSelect::kText; }
   EUserSelect UserSelect() const {
     return static_cast<EUserSelect>(rare_inherited_data_->user_select_);
   }
   void SetUserSelect(EUserSelect s) {
-    SET_VAR(rare_inherited_data_, user_select_, s);
+    SET_VAR(rare_inherited_data_, user_select_, static_cast<unsigned>(s));
   }
 
   // caret-color

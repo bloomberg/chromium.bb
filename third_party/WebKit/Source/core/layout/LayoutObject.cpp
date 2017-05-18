@@ -1392,7 +1392,7 @@ void LayoutObject::ShowLayoutTreeAndMark(const LayoutObject* marked_object1,
 #endif  // NDEBUG
 
 bool LayoutObject::IsSelectable() const {
-  return !IsInert() && !(Style()->UserSelect() == SELECT_NONE &&
+  return !IsInert() && !(Style()->UserSelect() == EUserSelect::kNone &&
                          Style()->UserModify() == EUserModify::kReadOnly);
 }
 
