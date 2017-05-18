@@ -20,7 +20,8 @@ namespace resource_coordinator {
 
 using EventType = mojom::EventType;
 
-class ResourceCoordinatorInterface {
+class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+    ResourceCoordinatorInterface {
  public:
   ResourceCoordinatorInterface(service_manager::Connector* connector,
                                const CoordinationUnitType& type);

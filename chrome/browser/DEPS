@@ -51,6 +51,7 @@ include_rules = [
   "+services/identity/public/interfaces",
   "+services/preferences/public/cpp",
   "+services/preferences/public/interfaces",
+  "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/interfaces/memory",
   "+services/service_manager",
   "+services/shape_detection/public/interfaces",

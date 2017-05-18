@@ -10,6 +10,8 @@ component("resource_coordinator_cpp") {
     "memory/coordinator.h",
     "memory/process_local_dump_manager_impl.cc",
     "memory/process_local_dump_manager_impl.h",
+    "resource_coordinator_features.cc",
+    "resource_coordinator_features.h",
     "resource_coordinator_interface.cc",
     "resource_coordinator_interface.h",
   ]

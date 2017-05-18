@@ -41,6 +41,9 @@
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -313,6 +316,14 @@ ServiceManagerContext::ServiceManagerContext() {
   device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
                                                     device_info);
+
+  if (base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator)) {
+    ServiceInfo resource_coordinator_info;
+    resource_coordinator_info.factory =
+        base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
+    packaged_services_connection_->AddEmbeddedService(
+        resource_coordinator::mojom::kServiceName, resource_coordinator_info);
+  }
 
   ContentBrowserClient::StaticServiceMap services;
   GetContentClient()->browser()->RegisterInProcessServices(&services);

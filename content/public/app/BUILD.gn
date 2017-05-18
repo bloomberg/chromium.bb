@@ -185,6 +185,7 @@ service_manifest("packaged_services_manifest") {
     "//media/mojo/services:media_manifest",
     "//services/data_decoder:manifest",
     "//services/device:manifest",
+    "//services/resource_coordinator:manifest",
     "//services/shape_detection:manifest",
   ]
 }
