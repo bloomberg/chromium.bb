@@ -57,7 +57,7 @@ void ReadingListModelImpl::StoreLoaded(
 void ReadingListModelImpl::Shutdown() {
   DCHECK(CalledOnValidThread());
   for (auto& observer : observers_)
-    observer.ReadingListModelBeingDeleted(this);
+    observer.ReadingListModelBeingShutdown(this);
   loaded_ = false;
 }
 

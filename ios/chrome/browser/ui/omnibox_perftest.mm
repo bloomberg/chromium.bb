@@ -222,8 +222,7 @@ class OmniboxPerfTest : public PerfTest {
 
 // Measures the amount of time it takes the Omnibox text field to activate
 // the on-screen keyboard.
-// TODO(crbug.com/717300): Test disabled because of a DCHECK in Reading List.
-TEST_F(OmniboxPerfTest, DISABLED_TestTextFieldDidBeginEditing) {
+TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
   LogPerfTiming("Keyboard preload", PreLoadKeyboard());
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
       [toolbar_ view], [OmniboxTextFieldIOS class]);
