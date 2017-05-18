@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Carbon/Carbon.h>
-
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -28,10 +26,13 @@ bool g_allow_showing_popup_menus = true;
 
 }  // namespace
 
-PopupMenuHelper::PopupMenuHelper(RenderFrameHost* render_frame_host)
-    : render_frame_host_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
+PopupMenuHelper::PopupMenuHelper(Delegate* delegate,
+                                 RenderFrameHost* render_frame_host)
+    : delegate_(delegate),
+      render_frame_host_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
       menu_runner_(nil),
-      popup_was_hidden_(false) {
+      popup_was_hidden_(false),
+      weak_ptr_factory_(this) {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(
@@ -40,6 +41,10 @@ PopupMenuHelper::PopupMenuHelper(RenderFrameHost* render_frame_host)
       this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(
           render_frame_host->GetRenderViewHost()->GetWidget()));
+}
+
+PopupMenuHelper::~PopupMenuHelper() {
+  Hide();
 }
 
 void PopupMenuHelper::ShowPopupMenu(
@@ -66,9 +71,15 @@ void PopupMenuHelper::ShowPopupMenu(
       [rwhvm->cocoa_view() retain]);
 
   // Display the menu.
-  menu_runner_ = [[WebMenuRunner alloc] initWithItems:items
-                                             fontSize:item_font_size
-                                         rightAligned:right_aligned];
+  base::scoped_nsobject<WebMenuRunner> runner([[WebMenuRunner alloc]
+      initWithItems:items
+           fontSize:item_font_size
+       rightAligned:right_aligned]);
+
+  // Take a weak reference so that Hide() can close the menu.
+  menu_runner_ = runner;
+
+  base::WeakPtr<PopupMenuHelper> weak_ptr(weak_ptr_factory_.GetWeakPtr());
 
   {
     // Make sure events can be pumped while the menu is up.
@@ -82,30 +93,27 @@ void PopupMenuHelper::ShowPopupMenu(
     // be done manually.
     base::mac::ScopedSendingEvent sending_event_scoper;
 
-    // Now run a SYNCHRONOUS NESTED EVENT LOOP until the pop-up is finished.
-    [menu_runner_ runMenuInView:cocoa_view
-                     withBounds:[cocoa_view flipRectToNSRect:bounds]
-                   initialIndex:selected_item];
+    // Now run a NESTED EVENT LOOP until the pop-up is finished.
+    [runner runMenuInView:cocoa_view
+               withBounds:[cocoa_view flipRectToNSRect:bounds]
+             initialIndex:selected_item];
   }
 
-  if (!render_frame_host_) {
-    // Bad news, the RenderFrameHost got deleted while we were off running the
-    // menu. Nothing to do.
-    [menu_runner_ release];
-    menu_runner_ = nil;
-    return;
-  }
+  if (!weak_ptr)
+    return;  // Handle |this| being deleted.
 
-  if (!popup_was_hidden_) {
-    if ([menu_runner_ menuItemWasChosen]) {
-      render_frame_host_->DidSelectPopupMenuItem(
-          [menu_runner_ indexOfSelectedItem]);
-    } else {
-      render_frame_host_->DidCancelPopupMenu();
-    }
-  }
-  [menu_runner_ release];
   menu_runner_ = nil;
+
+  // The RenderFrameHost may be deleted while running the menu, or it may have
+  // requested the close. Don't notify in these cases.
+  if (render_frame_host_ && !popup_was_hidden_) {
+    if ([runner menuItemWasChosen])
+      render_frame_host_->DidSelectPopupMenuItem([runner indexOfSelectedItem]);
+    else
+      render_frame_host_->DidCancelPopupMenu();
+  }
+
+  delegate_->OnMenuClosed();  // May delete |this|.
 }
 
 void PopupMenuHelper::Hide() {

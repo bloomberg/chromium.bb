@@ -307,16 +307,20 @@ void WebContentsViewMac::ShowPopupMenu(
     const std::vector<MenuItem>& items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  popup_menu_helper_.reset(new PopupMenuHelper(render_frame_host));
+  popup_menu_helper_.reset(new PopupMenuHelper(this, render_frame_host));
   popup_menu_helper_->ShowPopupMenu(bounds, item_height, item_font_size,
                                     selected_item, items, right_aligned,
                                     allow_multiple_selection);
-  popup_menu_helper_.reset();
+  // Note: |this| may be deleted here.
 }
 
 void WebContentsViewMac::HidePopupMenu() {
   if (popup_menu_helper_)
     popup_menu_helper_->Hide();
+}
+
+void WebContentsViewMac::OnMenuClosed() {
+  popup_menu_helper_.reset();
 }
 
 gfx::Rect WebContentsViewMac::GetViewBounds() const {

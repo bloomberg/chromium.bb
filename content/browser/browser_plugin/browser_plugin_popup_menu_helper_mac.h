@@ -15,7 +15,8 @@ class RenderFrameHostImpl;
 
 // This class is similiar to PopupMenuHelperMac but positions the popup relative
 // to the embedder, and issues a reply to the guest.
-class BrowserPluginPopupMenuHelper : public PopupMenuHelper {
+class BrowserPluginPopupMenuHelper : public PopupMenuHelper,
+                                     public PopupMenuHelper::Delegate {
  public:
   // Creates a BrowserPluginPopupMenuHelper that positions popups relative to
   // |embedder_rfh| and will notify |guest_rfh| when a user selects or cancels
@@ -24,7 +25,11 @@ class BrowserPluginPopupMenuHelper : public PopupMenuHelper {
                                RenderFrameHost* guest_rfh);
 
  private:
+  // PopupMenuHelper:
   RenderWidgetHostViewMac* GetRenderWidgetHostView() const override;
+
+  // PopupMenuHelper:Delegate:
+  void OnMenuClosed() override;
 
   RenderFrameHostImpl* embedder_rfh_;
 

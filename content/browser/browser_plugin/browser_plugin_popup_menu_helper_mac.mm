@@ -13,11 +13,16 @@ namespace content {
 BrowserPluginPopupMenuHelper::BrowserPluginPopupMenuHelper(
     RenderFrameHostImpl* embedder_rfh,
     RenderFrameHost* guest_rfh)
-    : PopupMenuHelper(guest_rfh), embedder_rfh_(embedder_rfh) {}
+    : PopupMenuHelper(this, guest_rfh), embedder_rfh_(embedder_rfh) {}
 
 RenderWidgetHostViewMac*
     BrowserPluginPopupMenuHelper::GetRenderWidgetHostView() const {
   return static_cast<RenderWidgetHostViewMac*>(embedder_rfh_->GetView());
+}
+
+void BrowserPluginPopupMenuHelper::OnMenuClosed() {
+  // BrowserPluginGuest doesn't support cancellation of popup menus, so the
+  // MenuHelper is its own delegate and OnMenuClosed() is ignored.
 }
 
 }  // namespace content
