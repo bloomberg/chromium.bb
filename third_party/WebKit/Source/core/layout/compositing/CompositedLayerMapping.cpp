@@ -337,6 +337,12 @@ void CompositedLayerMapping::UpdateStickyConstraints(
         FloatPoint(-enclosing_layer_offset) -
         FloatSize(ContentOffsetInCompositingLayer()));
 
+    if (compositing_container != ancestor_overflow_layer) {
+      parent_relative_sticky_box_offset.MoveBy(
+          FloatPoint(compositing_container->GetCompositedLayerMapping()
+                         ->ContentOffsetInCompositingLayer()));
+    }
+
     web_constraint.is_sticky = true;
     web_constraint.is_anchored_left =
         constraints.GetAnchorEdges() &
