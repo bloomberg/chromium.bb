@@ -2088,9 +2088,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'glados-cheets',
   ])
   _nyc_hwtest_boards = frozenset([
+      'caroline',
+      'veyron_jaq',
   ])
   _nyc_no_hwtest_boards = frozenset([
-      'caroline',
       'reef',
   ])
 
