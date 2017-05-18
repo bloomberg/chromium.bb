@@ -11,6 +11,8 @@
 
 namespace blink {
 
+// CSSStyleVariableReferenceValue represents a CSS var() value for CSS Typed OM.
+// The corresponding idl file is CSSVariableReferenceValue.idl.
 class CORE_EXPORT CSSStyleVariableReferenceValue final
     : public GarbageCollectedFinalized<CSSStyleVariableReferenceValue>,
       public ScriptWrappable {

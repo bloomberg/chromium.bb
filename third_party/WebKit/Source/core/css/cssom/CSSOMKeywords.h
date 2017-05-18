@@ -12,6 +12,11 @@ namespace blink {
 
 class CSSKeywordValue;
 
+// CSSOMKeywords provides utility methods for determining whether a given
+// CSSKeywordValue is valid for a given CSS Property.
+//
+// The implementation for this class is generated using input from
+// CSSProperties.json5 and build/scripts/make_cssom_types.py.
 class CSSOMKeywords {
   STATIC_ONLY(CSSOMKeywords);
 

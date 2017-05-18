@@ -17,6 +17,8 @@
 
 namespace blink {
 
+// CSSStyleImageValue is the base class for Typed OM representations of images.
+// The corresponding idl file is CSSImageValue.idl.
 class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
                                        public CanvasImageSource {
   WTF_MAKE_NONCOPYABLE(CSSStyleImageValue);

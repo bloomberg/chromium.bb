@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// CSSImageValue is the base class for Typed OM's representation of various
+// image types.
+// https://drafts.css-houdini.org/css-typed-om/#imagevalue-objects
 [
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,

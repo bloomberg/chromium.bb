@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// CSSUnparsedValue objects represent values that reference custom properties.
+// They represent a list of string fragments and variable references.
+// Spec: https://drafts.css-houdini.org/css-typed-om/#unparsedvalue-objects
 [
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,

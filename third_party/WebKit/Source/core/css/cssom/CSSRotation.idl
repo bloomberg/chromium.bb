@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Represents a rotation value in a CSSTransformValue used for properties like
+// "transform".
+// Spec: https://drafts.css-houdini.org/css-typed-om/#cssrotation
 [
     Constructor(CSSAngleValue angleValue),
     Constructor(double x, double y, double z, CSSAngleValue angle),

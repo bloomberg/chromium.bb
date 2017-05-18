@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Represents a <position> value, i.e. a coordinate for properties like
+// background-position.
+// Spec: https://drafts.css-houdini.org/css-typed-om/#positionvalue-objects
 [
     Constructor(CSSLengthValue x, CSSLengthValue y),
     Exposed=(Window,PaintWorklet),

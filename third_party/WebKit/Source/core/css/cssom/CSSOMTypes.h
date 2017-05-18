@@ -11,6 +11,10 @@
 
 namespace blink {
 
+// This class provides utility functions for determining whether a property
+// can accept a CSSStyleValue type or instance. Its implementation is generated
+// using input from CSSProperties.json5 and the script
+// build/scripts/make_cssom_types.py.
 class CSSOMTypes {
   STATIC_ONLY(CSSOMTypes);
 
