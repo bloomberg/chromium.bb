@@ -1221,13 +1221,6 @@ config("no_chromium_code") {
     ]
   }
 
-  if (is_linux || is_android) {
-    cflags_cc += [
-      # Don't warn about hash_map in third-party code.
-      "-Wno-deprecated",
-    ]
-  }
-
   configs = [ ":default_warnings" ]
 }
 
