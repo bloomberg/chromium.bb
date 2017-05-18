@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -42,6 +43,10 @@ void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
 void HoverHighlightView::AddRightView(views::View* view) {
   DCHECK(is_populated_);
   DCHECK(!right_view_);
+
+  // When a right view is added, extra padding on the CENTER container should be
+  // removed.
+  tri_view_->SetContainerBorder(TriView::Container::CENTER, nullptr);
 
   right_view_ = view;
   right_view_->SetEnabled(enabled());
@@ -125,6 +130,11 @@ void HoverHighlightView::DoAddIconAndLabels(
   TrayPopupItemStyle style(font_style);
   style.SetupLabel(text_label_);
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
+  // By default, END container is invisible, so labels in the CENTER should have
+  // an extra padding at the end.
+  tri_view_->SetContainerBorder(
+      TriView::Container::CENTER,
+      views::CreateEmptyBorder(0, 0, 0, kTrayPopupLabelRightPadding));
 
   if (!sub_text.empty())
     SetSubText(sub_text);

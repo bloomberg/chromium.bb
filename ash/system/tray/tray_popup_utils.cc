@@ -192,7 +192,9 @@ views::View* TrayPopupUtils::CreateInfoLabelRowView(int message_id) {
   style.SetupLabel(label);
 
   TriView* tri_view = CreateMultiTargetRowView();
-  tri_view->SetInsets(gfx::Insets(0, kTrayPopupPaddingHorizontal, 0, 0));
+  tri_view->SetInsets(
+      gfx::Insets(0, kMenuExtraMarginFromLeftEdge + kTrayPopupPaddingHorizontal,
+                  0, kTrayPopupPaddingHorizontal));
   tri_view->SetContainerVisible(TriView::Container::START, false);
   tri_view->SetContainerVisible(TriView::Container::END, false);
   tri_view->AddView(TriView::Container::CENTER, label);
@@ -222,8 +224,6 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
 views::Label* TrayPopupUtils::CreateDefaultLabel() {
   views::Label* label = new views::Label();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetBorder(
-      views::CreateEmptyBorder(0, 0, 0, kTrayPopupLabelRightPadding));
   // Frequently the label will paint to a layer that's non-opaque, so subpixel
   // rendering won't work unless we explicitly set a background. See
   // crbug.com/686363
