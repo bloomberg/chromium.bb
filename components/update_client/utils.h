@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "components/update_client/update_client.h"
-#include "components/update_client/updater_state.h"
 
 class GURL;
 
@@ -35,41 +34,6 @@ struct CrxComponent;
 // Installer attributes are component-specific metadata, which may be serialized
 // in an update check request.
 using InstallerAttribute = std::pair<std::string, std::string>;
-
-// An update protocol request starts with a common preamble which includes
-// version and platform information for Chrome and the operating system,
-// followed by a request body, which is the actual payload of the request.
-// For example:
-//
-// <?xml version="1.0" encoding="UTF-8"?>
-// <request protocol="3.0" version="chrome-32.0.1.0" prodversion="32.0.1.0"
-//        requestid="{7383396D-B4DD-46E1-9104-AAC6B918E792}"
-//        updaterchannel="canary" arch="x86" nacl_arch="x86-64"
-//        ADDITIONAL ATTRIBUTES>
-//   <hw physmemory="16"/>
-//   <os platform="win" version="6.1" arch="x86"/>
-//   ... REQUEST BODY ...
-// </request>
-
-// Builds a protocol request string by creating the outer envelope for
-// the request and including the request body specified as a parameter.
-// If present, the |download_preference| specifies a group policy that
-// affects the list of download URLs returned in the update response.
-// If specified, |additional_attributes| are appended as attributes of the
-// request element. The additional attributes have to be well-formed for
-// insertion in the request element. |updater_state_attributes| is an optional
-// parameter specifying that an <updater> element is serialized as part of
-// the request.
-std::string BuildProtocolRequest(
-    const std::string& prod_id,
-    const std::string& browser_version,
-    const std::string& channel,
-    const std::string& lang,
-    const std::string& os_long_name,
-    const std::string& download_preference,
-    const std::string& request_body,
-    const std::string& additional_attributes,
-    const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes);
 
 // Sends a protocol request to the the service endpoint specified by |url|.
 // The body of the request is provided by |protocol_request| and it is
