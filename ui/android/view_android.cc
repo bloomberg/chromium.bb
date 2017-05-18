@@ -126,7 +126,11 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
   if (child->parent_)
     child->RemoveFromParent();
   child->parent_ = this;
-  child->OnPhysicalBackingSizeChanged(physical_size_);
+
+  // Empty physical backing size need not propagating down since it can
+  // accidentally overwrite the valid ones in the children.
+  if (!physical_size_.IsEmpty())
+    child->OnPhysicalBackingSizeChanged(physical_size_);
 }
 
 // static
