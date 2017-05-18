@@ -127,9 +127,9 @@ OrientationSensor::OrientationSensor(ExecutionContext* execution_context,
     : Sensor(execution_context, options, exception_state, type),
       reading_dirty_(true) {}
 
-void OrientationSensor::OnSensorReadingChanged(double timestamp) {
+void OrientationSensor::OnSensorReadingChanged() {
   reading_dirty_ = true;
-  Sensor::OnSensorReadingChanged(timestamp);
+  Sensor::OnSensorReadingChanged();
 }
 
 DEFINE_TRACE(OrientationSensor) {

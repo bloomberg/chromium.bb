@@ -16,7 +16,6 @@ const kDefaultReadingValueY = 12.1;
 const kDefaultReadingValueZ = -44.3;
 
 function update_sensor_reading(buffer) {
-  buffer[1] = window.performance.now();
   buffer[2] = kDefaultReadingValueX;
   buffer[3] = kDefaultReadingValueY;
   buffer[4] = kDefaultReadingValueZ;

@@ -38,12 +38,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     virtual void OnSensorInitialized() {}
     // Observer should update its cached reading and send 'onchange'
     // event if needed.
-    // |timestamp| Reference timestamp in seconds of the moment when
-    // sensor reading was updated from the buffer.
-    // Note: |timestamp| values are only used to calculate elapsed time
-    // between shared buffer readings. These values *do not* correspond
-    // to sensor reading timestamps which are obtained on platform side.
-    virtual void OnSensorReadingChanged(double timestamp) {}
+    virtual void OnSensorReadingChanged() {}
     // An error has occurred.
     virtual void OnSensorError(ExceptionCode,
                                const String& sanitized_message,
