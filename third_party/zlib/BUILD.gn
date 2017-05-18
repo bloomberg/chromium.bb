@@ -160,6 +160,7 @@ if (build_with_chromium) {
     ]
     deps = [
       ":zlib",
+      "//base",
     ]
   }
 }
