@@ -120,10 +120,11 @@ IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, BubbleAtDefaultZoom) {
   EXPECT_TRUE(zoom_decoration->IsVisible());
   zoom_decoration->ShowBubble(false);
   Zoom(content::PAGE_ZOOM_RESET);
-  EXPECT_FALSE(zoom_decoration->IsVisible());
+  EXPECT_TRUE(zoom_decoration->IsVisible());
 
   // Hide bubble and verify the decoration is hidden.
   zoom_decoration->CloseBubble();
+  content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }
 
@@ -146,6 +147,7 @@ IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, IconRemainsVisibleAfterBubble) {
 
   // Close bubble and verify the decoration is still visible.
   zoom_decoration->CloseBubble();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(zoom_decoration->IsVisible());
 
   // Verify the decoration does go away when we expect it to.
