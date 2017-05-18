@@ -36792,6 +36792,8 @@ from previous Chrome versions.
   <int value="6" label="Windows 8.1"/>
   <int value="7" label="Windows 10"/>
   <int value="8" label="Windows 10 TH2"/>
+  <int value="9" label="Windows 10 RS1"/>
+  <int value="10" label="Windows 10 RS2"/>
 </enum>
 
 <enum name="WindowType" type="int">
