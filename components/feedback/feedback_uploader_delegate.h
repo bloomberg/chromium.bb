@@ -14,9 +14,9 @@
 
 namespace feedback {
 
-// FeedbackUploaderDelegate is a simple http uploader for a feedback report. On
-// succes or failure, it deletes itself, but on failure it also notifies the
-// error callback specified when constructing the class instance.
+// FeedbackUploaderDelegate is a simple HTTP uploader for a feedback report.
+// When finished, it runs the appropriate callback passed in via the
+// constructor, and then deletes itself.
 class FeedbackUploaderDelegate : public net::URLFetcherDelegate {
  public:
   FeedbackUploaderDelegate(const std::string& post_body,

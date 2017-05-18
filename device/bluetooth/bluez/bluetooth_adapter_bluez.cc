@@ -1455,17 +1455,12 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
     return;
   }
 
-  // If old and new filter are equal (null) then don't make request, just call
-  // succes callback
-  if (!current_filter_ && !discovery_filter.get()) {
-    callback.Run();
-    return;
-  }
-
-  // If old and new filter are not null and equal then don't make request, just
-  // call succes callback
-  if (current_filter_ && discovery_filter &&
-      current_filter_->Equals(*discovery_filter)) {
+  // If the old and new filter are both null then don't make the request, and
+  // just call the success callback.
+  // Do the same if the old and new filter are both not null and equal.
+  if ((!current_filter_ && !discovery_filter.get()) ||
+      (current_filter_ && discovery_filter &&
+       current_filter_->Equals(*discovery_filter))) {
     callback.Run();
     return;
   }

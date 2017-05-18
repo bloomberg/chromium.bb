@@ -334,8 +334,8 @@ class CHROME_DBUS_EXPORT MessageWriter {
   // into an array of bytes before communication, since protocol buffers are not
   // a native dbus type. On the receiving size the array of bytes needs to be
   // read and deserialized into a protocol buffer of the correct type. There are
-  // methods in MessageReader to assist in this.  Return true on succes and fail
-  // when serialization is not successful.
+  // methods in MessageReader to assist in this.  Return true on success and
+  // false when serialization fails.
   bool AppendProtoAsArrayOfBytes(const google::protobuf::MessageLite& protobuf);
 
   // Appends the byte wrapped in a variant data container. Variants are
