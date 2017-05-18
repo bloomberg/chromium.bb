@@ -55,6 +55,7 @@ vorbis-packet-3  - timestamp: 2902ms, duration: 0ms
 
 // 10-bit test file(s)
 bear-320x180-hi10p.mp4
+bear-320x240-vp9_profile2.webm - VP9 encoded video with profile 2 (10-bit, 4:2:0). Codec string: vp09.02.10.10.01.02.02.02.00.
 
 // Encrypted Files
 bear-1280x720-a_frag-cenc.mp4 - A fragmented MP4 version of the audio track of bear-1280x720.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
@@ -74,6 +75,16 @@ bear-320x240-16x9-aspect-av_enc-av.webm - bear-320x240-16x9-aspect.webm with aud
 bear-320x240-av_enc-av.webm - bear-320x240.webm with audio & video encrypted using key ID [1] and key [2].
 bear-320x240-av_enc-av_clear-1s.webm - Same as bear-320x240-av_enc-av.webm but with no frames in the first second encrypted.
 bear-320x240-av_enc-av_clear-all.webm - Same as bear-320x240-av_enc-av.webm but with no frames encrypted.
+bear-320x240-v-vp9_profile2_subsample_cenc-v.webm - Encrypted Bear video with VP9 codec (profile 2) in WebM container, using key ID [1] and key [2]. Codec string: vp09.02.10.10.01.02.02.02.00.
+                                                    Generated with shaka-packager 4ba5bec66054cfd4af13c07ac62a97f1a1a2e5f9 (https://github.com/google/shaka-packager):
+                                                    packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_profile2_subsample_cenc-v.webm --enable_fixed_key_encryption --key_id 30313233343536373839303132333435
+                                                             --key ebdd62f16814d27b68ef122afce4ae3c --clear_lead 0
+                                                             --pssh 0000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000000000467073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000261210303132333435363738393031323334351A00221030313233343536373839303132333435
+bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4 - Same as above, in MP4 container. Codec string: vp09.02.10.10.01.02.02.02.00.
+                                                   Generated with shaka-packager 4ba5bec66054cfd4af13c07ac62a97f1a1a2e5f9 (https://github.com/google/shaka-packager):
+                                                   packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4 --enable_fixed_key_encryption --key_id 30313233343536373839303132333435
+                                                            --key ebdd62f16814d27b68ef122afce4ae3c --clear_lead 0
+                                                            --pssh 0000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000000000467073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000261210303132333435363738393031323334351A00221030313233343536373839303132333435
 bear-640x360-av_enc-av.webm - bear-640x360.webm with audio & video encrypted using key ID [1] and key [2].
 bear-320x240-av_enc-v.webm - bear-320x240.webm with video track encrypted using key ID [1] and key [2].
 bear-320x240-av_enc-a.webm - bear-320x240.webm with audio track encrypted using key ID [1] and key [2].
