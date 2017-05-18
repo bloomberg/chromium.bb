@@ -176,9 +176,9 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void PostAccessibilityNotification(AXObject*,
                                      AXObjectCache::AXNotification) override;
   String AcceptLanguages() override;
+  void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override;
 
   // ChromeClientImpl:
-  void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*);
   void SetNewWindowNavigationPolicy(WebNavigationPolicy);
   void SetCursorOverridden(bool);
 

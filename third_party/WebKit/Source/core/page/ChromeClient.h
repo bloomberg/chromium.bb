@@ -88,6 +88,7 @@ struct CompositedSelection;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
+struct WebCursorInfo;
 struct WebPoint;
 struct WebScreenInfo;
 struct WindowFeatures;
@@ -196,6 +197,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   Node* LastSetTooltipNodeForTesting() const {
     return last_mouse_over_node_.Get();
   }
+
+  virtual void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) = 0;
 
   // Returns a custom visible content rect if a viewport override is active.
   virtual WTF::Optional<IntRect> VisibleContentRectForPainting() const {
