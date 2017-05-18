@@ -100,6 +100,7 @@
     {
       'target_name': 'list',
       'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-list/compiled_resources2.gyp:iron-list-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'actions',
         'store_client',

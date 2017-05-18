@@ -21,6 +21,10 @@ suite('<bookmarks-list>', function() {
     bookmarks.Store.instance_ = store;
 
     list = document.createElement('bookmarks-list');
+    list.style.height = '100%';
+    list.style.width = '100%';
+    list.style.position= 'absolute';
+
     replaceBody(list);
     Polymer.dom.flush();
   });
@@ -54,5 +58,16 @@ suite('<bookmarks-list>', function() {
   test('deselects items on click outside of card', function() {
     customClick(list);
     assertEquals('deselect-items', store.lastAction.name);
+  });
+
+  test('adds, deletes, and moves update displayedList_', function() {
+    list.displayedIds_ = ['1', '7', '3', '5'];
+    assertDeepEquals(list.displayedIds_, list.displayedList_.map(n => n.id));
+
+    list.displayedIds_ = ['1', '3', '5'];
+    assertDeepEquals(list.displayedIds_, list.displayedList_.map(n => n.id));
+
+    list.displayedIds_ = ['1', '3', '7', '5'];
+    assertDeepEquals(list.displayedIds_, list.displayedList_.map(n => n.id));
   });
 });

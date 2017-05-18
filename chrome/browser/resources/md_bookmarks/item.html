@@ -21,6 +21,10 @@
         position: relative;
       }
 
+      :host([mouse-focus_]) {
+        outline: none;
+      }
+
       :host([is-selected-item_]) {
         background-color: var(--highlight-color);
       }
@@ -62,7 +66,8 @@
       [[item_.title]]
     </div>
     <button is="paper-icon-button-light" class="more-vert-button"
-        on-click="onMenuButtonClick_" on-dblclick="onMenuButtonDblClick_">
+        on-click="onMenuButtonClick_" on-dblclick="onMenuButtonDblClick_"
+        tabindex$="[[ironListTabIndex]]" on-focus="onItemBlur_">
       <div></div>
       <div></div>
       <div></div>
