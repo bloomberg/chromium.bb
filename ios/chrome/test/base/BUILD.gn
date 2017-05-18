@@ -27,6 +27,7 @@ source_set("unit_tests") {
 }
 
 source_set("perf_test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "perf_test_ios.h",

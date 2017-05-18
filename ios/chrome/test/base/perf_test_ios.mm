@@ -7,6 +7,10 @@
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/test/base/perf_test_ios.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 PerfTest::PerfTest(std::string testGroup)
     : BlockCleanupTest(),
       testGroup_(testGroup),
