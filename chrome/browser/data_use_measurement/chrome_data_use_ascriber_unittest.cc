@@ -214,4 +214,29 @@ TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
   EXPECT_EQ(0u, recorders().size());
 }
 
+TEST_F(ChromeDataUseAscriberTest, FailedMainFrameNavigation) {
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
+  std::unique_ptr<net::URLRequest> request = CreateNewRequest(
+      "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
+
+  // Mainframe is created.
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+  EXPECT_EQ(1u, recorders().size());
+
+  // Request should cause a recorder to be created.
+  ascriber()->OnBeforeUrlRequest(request.get());
+  EXPECT_EQ(2u, recorders().size());
+
+  // Failed request will remove the pending entry.
+  request->Cancel();
+  ascriber()->OnUrlRequestCompleted(*request, false);
+
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+  ascriber()->OnUrlRequestDestroyed(request.get());
+
+  EXPECT_EQ(0u, recorders().size());
+}
+
 }  // namespace data_use_measurement
