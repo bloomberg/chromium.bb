@@ -5,6 +5,8 @@
 #ifndef WebWorkerFetchContext_h
 #define WebWorkerFetchContext_h
 
+#include "public/platform/WebURL.h"
+
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
@@ -40,6 +42,12 @@ class WebWorkerFetchContext {
   // The flag for Data Saver.
   virtual void SetDataSaverEnabled(bool) = 0;
   virtual bool IsDataSaverEnabled() const = 0;
+
+  // The URL that should be consulted for the third-party cookie blocking
+  // policy, as defined in Section 2.1.1 and 2.1.2 of
+  // https://tools.ietf.org/html/draft-west-first-party-cookies.
+  // See content::URLRequest::first_party_for_cookies() for details.
+  virtual WebURL FirstPartyForCookies() const = 0;
 };
 
 }  // namespace blink

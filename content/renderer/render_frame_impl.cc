@@ -3035,6 +3035,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       base::MakeUnique<WorkerFetchContextImpl>(
           worker_url_loader_factory_provider.PassInterface());
   worker_fetch_context->set_parent_frame_id(routing_id_);
+  worker_fetch_context->set_first_party_for_cookies(
+      frame_->GetDocument().FirstPartyForCookies());
   blink::WebServiceWorkerNetworkProvider* web_provider =
       frame_->DataSource()->GetServiceWorkerNetworkProvider();
   if (web_provider) {

@@ -7,6 +7,7 @@
 
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
+#include "url/gurl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -18,6 +19,7 @@ class ResourceDispatcher;
 class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
  public:
   ServiceWorkerFetchContextImpl(
+      const GURL& worker_script_url,
       mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info,
       int service_worker_provider_id);
   ~ServiceWorkerFetchContextImpl() override;
@@ -29,8 +31,10 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   bool IsControlledByServiceWorker() const override;
   void SetDataSaverEnabled(bool enabled) override;
   bool IsDataSaverEnabled() const override;
+  blink::WebURL FirstPartyForCookies() const override;
 
  private:
+  const GURL worker_script_url_;
   mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info_;
   const int service_worker_provider_id_;
 

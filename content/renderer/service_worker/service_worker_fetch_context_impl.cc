@@ -11,9 +11,11 @@
 namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
+    const GURL& worker_script_url,
     mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info,
     int service_worker_provider_id)
-    : provider_info_(std::move(provider_info)),
+    : worker_script_url_(worker_script_url),
+      provider_info_(std::move(provider_info)),
       service_worker_provider_id_(service_worker_provider_id) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
@@ -52,6 +54,14 @@ void ServiceWorkerFetchContextImpl::SetDataSaverEnabled(bool enabled) {
 
 bool ServiceWorkerFetchContextImpl::IsDataSaverEnabled() const {
   return is_data_saver_enabled_;
+}
+
+blink::WebURL ServiceWorkerFetchContextImpl::FirstPartyForCookies() const {
+  // According to the spec, we can use the |worker_script_url_| for
+  // FirstPartyForCookies, because "site for cookies" for the service worker is
+  // the service worker's origin's host's registrable domain.
+  // https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-2.1.2
+  return worker_script_url_;
 }
 
 }  // namespace content

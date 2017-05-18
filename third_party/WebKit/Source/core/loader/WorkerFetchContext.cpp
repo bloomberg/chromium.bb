@@ -93,6 +93,10 @@ ResourceFetcher* WorkerFetchContext::GetResourceFetcher() {
   return resource_fetcher_;
 }
 
+KURL WorkerFetchContext::FirstPartyForCookies() const {
+  return web_context_->FirstPartyForCookies();
+}
+
 ContentSettingsClient* WorkerFetchContext::GetContentSettingsClient() const {
   // TODO(horo): Implement this.
   return nullptr;
@@ -189,6 +193,28 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   WorkerGlobalScopePerformance::performance(*worker_global_scope_)
       ->AddResourceTiming(info);
+}
+
+void WorkerFetchContext::PopulateResourceRequest(
+    const KURL& url,
+    Resource::Type type,
+    const ClientHintsPreferences& hints_preferences,
+    const FetchParameters::ResourceWidth& resource_width,
+    const ResourceLoaderOptions& options,
+    SecurityViolationReportingPolicy reporting_policy,
+    ResourceRequest& out_request) {
+  SetFirstPartyCookieAndRequestorOrigin(out_request);
+}
+
+void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
+    ResourceRequest& out_request) {
+  if (out_request.FirstPartyForCookies().IsNull())
+    out_request.SetFirstPartyForCookies(FirstPartyForCookies());
+  // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
+  // initialize itself with a `nullptr` initiator so that this can be a simple
+  // `isNull()` check. https://crbug.com/625969
+  if (out_request.RequestorOrigin()->IsUnique())
+    out_request.SetRequestorOrigin(GetSecurityOrigin());
 }
 
 DEFINE_TRACE(WorkerFetchContext) {

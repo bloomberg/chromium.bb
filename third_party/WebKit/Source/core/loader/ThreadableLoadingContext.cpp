@@ -101,9 +101,7 @@ class WorkerThreadableLoadingContext : public ThreadableLoadingContext {
 
   KURL FirstPartyForCookies() const override {
     DCHECK(IsContextThread());
-    // TODO(horo): Returns the FirstPartyForCookies of the parent frame for
-    // dedicated workers.
-    return worker_global_scope_->Url();
+    return fetch_context_->FirstPartyForCookies();
   }
 
   String UserAgent() const override {

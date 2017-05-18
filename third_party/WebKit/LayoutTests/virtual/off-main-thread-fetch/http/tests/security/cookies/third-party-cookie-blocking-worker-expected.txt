@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Third-party cookie blocking tests for Worker assert_equals: Cookies must not be set in the fetch request from a worker started from a third-party iframe if third-party cookies are blocked. expected (undefined) undefined but got (string) "world"
-Harness: the test ran to completion.
-
