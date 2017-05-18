@@ -372,9 +372,9 @@ void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
   autofill::AddressComboboxModel* model =
       static_cast<autofill::AddressComboboxModel*>(address_combobox->model());
   int index = model->AddNewProfile(profile);
-  address_combobox->SetSelectedIndex(index);
-  // Force revalidation.
-  address_combobox->OnBlur();
+  // SetSelectedIndex doesn't trigger a perform action notification, which is
+  // needed to update the valid state.
+  address_combobox->SetSelectedRow(index);
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::
