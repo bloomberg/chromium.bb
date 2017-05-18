@@ -48,7 +48,6 @@
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -150,7 +149,8 @@ class InfobarView : public views::View {
         new views::BoxLayout(views::BoxLayout::kHorizontal,
                              kInfobarHorizontalPadding,
                              kInfobarVerticalPadding,
-                             views::kRelatedControlSmallHorizontalSpacing));
+                             ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
     content_->AddChildView(info_image_);
     content_->AddChildView(label_);
     UpdateVisibility(false, CONTENT_SETTING_BLOCK, base::string16());
@@ -166,14 +166,17 @@ class InfobarView : public views::View {
 
     // Add space around the banner.
     gfx::Size size(content_->GetPreferredSize());
-    size.Enlarge(0, 2 * views::kRelatedControlVerticalSpacing);
+    size.Enlarge(0, 2 * ChromeLayoutProvider::Get()->GetDistanceMetric(
+        views::DISTANCE_RELATED_CONTROL_VERTICAL));
     return size;
   }
 
   void Layout() override {
+    ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+    const int vertical_spacing =
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
     content_->SetBounds(
-        0, views::kRelatedControlVerticalSpacing,
-        width(), height() - views::kRelatedControlVerticalSpacing);
+        0, vertical_spacing, width(), height() - vertical_spacing);
   }
 
   void ViewHierarchyChanged(
