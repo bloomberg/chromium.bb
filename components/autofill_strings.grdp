@@ -284,7 +284,7 @@
       Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
-      Once you confirm, your card details will be shared with this site
+      Once you confirm, your card details will be shared with this site.
     </message>
   </if>
   <if expr="is_ios">

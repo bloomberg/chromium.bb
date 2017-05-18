@@ -154,9 +154,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
           result_delegate,
       content::WebContents* web_contents) override;
 
-  // Shows a full dialog spinner with the "processing" label that doesn't offer
-  // a way of closing the dialog.
+  // Shows/Hides a full dialog spinner with the "processing" label that doesn't
+  // offer a way of closing the dialog.
   void ShowProcessingSpinner();
+  void HideProcessingSpinner();
 
   Profile* GetProfile();
 
@@ -166,7 +167,6 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
  private:
   void ShowInitialPaymentSheet();
   void SetupSpinnerOverlay();
-  void HideProcessingSpinner();
 
   // views::View
   gfx::Size GetPreferredSize() const override;

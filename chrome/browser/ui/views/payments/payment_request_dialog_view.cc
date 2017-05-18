@@ -301,6 +301,11 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
   throbber_overlay_.SetVisible(true);
 }
 
+void PaymentRequestDialogView::HideProcessingSpinner() {
+  throbber_.Stop();
+  throbber_overlay_.SetVisible(false);
+}
+
 Profile* PaymentRequestDialogView::GetProfile() {
   return Profile::FromBrowserContext(
       request_->web_contents()->GetBrowserContext());
@@ -352,11 +357,6 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
 
   throbber_overlay_.SetLayoutManager(layout.release());
   AddChildView(&throbber_overlay_);
-}
-
-void PaymentRequestDialogView::HideProcessingSpinner() {
-  throbber_.Stop();
-  throbber_overlay_.SetVisible(false);
 }
 
 gfx::Size PaymentRequestDialogView::GetPreferredSize() const {

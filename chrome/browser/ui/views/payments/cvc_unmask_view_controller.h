@@ -85,6 +85,9 @@ class CvcUnmaskViewController
   // active FullCardRequest.
   void CvcConfirmed();
 
+  // Display a label with the text |error|
+  void DisplayError(base::string16 error);
+
   bool GetSheetId(DialogViewID* sheet_id) override;
   views::View* GetFirstFocusedView() override;
 
