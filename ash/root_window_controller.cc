@@ -452,7 +452,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   return true;
 }
 
-WmWindow* RootWindowController::FindEventTarget(
+aura::Window* RootWindowController::FindEventTarget(
     const gfx::Point& location_in_screen) {
   gfx::Point location_in_root(location_in_screen);
   aura::Window* root_window = GetRootWindow();
@@ -465,7 +465,7 @@ WmWindow* RootWindowController::FindEventTarget(
           ->dispatcher()
           ->GetDefaultEventTargeter()
           ->FindTargetForEvent(root_window, &test_event);
-  return WmWindow::Get(static_cast<aura::Window*>(event_handler));
+  return static_cast<aura::Window*>(event_handler);
 }
 
 gfx::Point RootWindowController::GetLastMouseLocationInRoot() {
