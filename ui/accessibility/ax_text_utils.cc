@@ -115,25 +115,26 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   }
 }
 
-base::string16 ActionToString(const AXSupportedAction supported_action) {
-  switch (supported_action) {
-    case AX_SUPPORTED_ACTION_NONE:
+base::string16 ActionVerbToLocalizedString(
+    const AXDefaultActionVerb action_verb) {
+  switch (action_verb) {
+    case AX_DEFAULT_ACTION_VERB_NONE:
       return base::string16();
-    case AX_SUPPORTED_ACTION_ACTIVATE:
+    case AX_DEFAULT_ACTION_VERB_ACTIVATE:
       return l10n_util::GetStringUTF16(IDS_AX_ACTIVATE_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_CHECK:
+    case AX_DEFAULT_ACTION_VERB_CHECK:
       return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_CLICK:
+    case AX_DEFAULT_ACTION_VERB_CLICK:
       return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_JUMP:
+    case AX_DEFAULT_ACTION_VERB_JUMP:
       return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_OPEN:
+    case AX_DEFAULT_ACTION_VERB_OPEN:
       return l10n_util::GetStringUTF16(IDS_AX_OPEN_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_PRESS:
+    case AX_DEFAULT_ACTION_VERB_PRESS:
       return l10n_util::GetStringUTF16(IDS_AX_PRESS_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_SELECT:
+    case AX_DEFAULT_ACTION_VERB_SELECT:
       return l10n_util::GetStringUTF16(IDS_AX_SELECT_ACTION_VERB);
-    case AX_SUPPORTED_ACTION_UNCHECK:
+    case AX_DEFAULT_ACTION_VERB_UNCHECK:
       return l10n_util::GetStringUTF16(IDS_AX_UNCHECK_ACTION_VERB);
   }
   NOTREACHED();
@@ -141,26 +142,26 @@ base::string16 ActionToString(const AXSupportedAction supported_action) {
 }
 
 // Some APIs on Linux and Windows need to return non-localized action names.
-base::string16 ActionToUnlocalizedString(
-    const AXSupportedAction supported_action) {
-  switch (supported_action) {
-    case ui::AX_SUPPORTED_ACTION_NONE:
+base::string16 ActionVerbToUnlocalizedString(
+    const AXDefaultActionVerb action_verb) {
+  switch (action_verb) {
+    case ui::AX_DEFAULT_ACTION_VERB_NONE:
       return base::UTF8ToUTF16("none");
-    case ui::AX_SUPPORTED_ACTION_ACTIVATE:
+    case ui::AX_DEFAULT_ACTION_VERB_ACTIVATE:
       return base::UTF8ToUTF16("activate");
-    case ui::AX_SUPPORTED_ACTION_CHECK:
+    case ui::AX_DEFAULT_ACTION_VERB_CHECK:
       return base::UTF8ToUTF16("check");
-    case ui::AX_SUPPORTED_ACTION_CLICK:
+    case ui::AX_DEFAULT_ACTION_VERB_CLICK:
       return base::UTF8ToUTF16("click");
-    case ui::AX_SUPPORTED_ACTION_JUMP:
+    case ui::AX_DEFAULT_ACTION_VERB_JUMP:
       return base::UTF8ToUTF16("jump");
-    case ui::AX_SUPPORTED_ACTION_OPEN:
+    case ui::AX_DEFAULT_ACTION_VERB_OPEN:
       return base::UTF8ToUTF16("open");
-    case ui::AX_SUPPORTED_ACTION_PRESS:
+    case ui::AX_DEFAULT_ACTION_VERB_PRESS:
       return base::UTF8ToUTF16("press");
-    case ui::AX_SUPPORTED_ACTION_SELECT:
+    case ui::AX_DEFAULT_ACTION_VERB_SELECT:
       return base::UTF8ToUTF16("select");
-    case ui::AX_SUPPORTED_ACTION_UNCHECK:
+    case ui::AX_DEFAULT_ACTION_VERB_UNCHECK:
       return base::UTF8ToUTF16("uncheck");
   }
   NOTREACHED();

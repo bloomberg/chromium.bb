@@ -438,8 +438,9 @@ HRESULT BrowserAccessibilityComWin::accDoDefaultAction(VARIANT var_id) {
   if (!target)
     return E_INVALIDARG;
 
-  // Return an error if it's not clickable.
-  if (!target->owner()->HasIntAttribute(ui::AX_ATTR_ACTION))
+  // Return an error if it hasn't got a custom action verb to describe what
+  // happens on click.
+  if (!target->owner()->HasIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB))
     return DISP_E_MEMBERNOTFOUND;
 
   manager->DoDefaultAction(*target->owner());
@@ -2759,7 +2760,8 @@ STDMETHODIMP BrowserAccessibilityComWin::nActions(long* n_actions) {
   // |IsHyperlink| is required for |IAccessibleHyperlink::anchor/anchorTarget|
   // to work properly because the |IAccessibleHyperlink| interface inherits from
   // |IAccessibleAction|.
-  if (IsHyperlink() || owner()->HasIntAttribute(ui::AX_ATTR_ACTION)) {
+  if (IsHyperlink() ||
+      owner()->HasIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB)) {
     *n_actions = 1;
   } else {
     *n_actions = 0;
@@ -2774,7 +2776,8 @@ STDMETHODIMP BrowserAccessibilityComWin::doAction(long action_index) {
   if (!owner())
     return E_FAIL;
 
-  if (!owner()->HasIntAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
+  if (!owner()->HasIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB) ||
+      action_index != 0)
     return E_INVALIDARG;
 
   Manager()->DoDefaultAction(*owner());
@@ -2809,14 +2812,14 @@ STDMETHODIMP BrowserAccessibilityComWin::get_name(long action_index,
     return E_INVALIDARG;
 
   int action;
-  if (!owner()->GetIntAttribute(ui::AX_ATTR_ACTION, &action) ||
+  if (!owner()->GetIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB, &action) ||
       action_index != 0) {
     *name = nullptr;
     return E_INVALIDARG;
   }
 
-  base::string16 action_verb =
-      ui::ActionToUnlocalizedString(static_cast<ui::AXSupportedAction>(action));
+  base::string16 action_verb = ui::ActionVerbToUnlocalizedString(
+      static_cast<ui::AXDefaultActionVerb>(action));
   if (action_verb.empty() || action_verb == L"none") {
     *name = nullptr;
     return S_FALSE;
@@ -2839,14 +2842,14 @@ BrowserAccessibilityComWin::get_localizedName(long action_index,
     return E_INVALIDARG;
 
   int action;
-  if (!owner()->GetIntAttribute(ui::AX_ATTR_ACTION, &action) ||
+  if (!owner()->GetIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB, &action) ||
       action_index != 0) {
     *localized_name = nullptr;
     return E_INVALIDARG;
   }
 
-  base::string16 action_verb =
-      ui::ActionToString(static_cast<ui::AXSupportedAction>(action));
+  base::string16 action_verb = ui::ActionVerbToLocalizedString(
+      static_cast<ui::AXDefaultActionVerb>(action));
   if (action_verb.empty()) {
     *localized_name = nullptr;
     return S_FALSE;

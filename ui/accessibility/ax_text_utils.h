@@ -54,12 +54,12 @@ size_t AX_EXPORT
 
 // Returns a string ID that corresponds to the name of the given action.
 base::string16 AX_EXPORT
-ActionToString(const AXSupportedAction supported_action);
+ActionVerbToLocalizedString(const AXDefaultActionVerb action_verb);
 
 // Returns the non-localized string representation of a supported action.
 // Some APIs on Linux and Windows need to return non-localized action names.
 base::string16 AX_EXPORT
-ActionToUnlocalizedString(const AXSupportedAction supported_action);
+ActionVerbToUnlocalizedString(const AXDefaultActionVerb action_verb);
 
 }  // namespace ui
 

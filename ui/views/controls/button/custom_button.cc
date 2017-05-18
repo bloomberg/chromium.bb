@@ -370,8 +370,8 @@ void CustomButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       break;
   }
   if (enabled()) {
-    node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
-                               ui::AX_SUPPORTED_ACTION_PRESS);
+    node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
+                               ui::AX_DEFAULT_ACTION_VERB_PRESS);
   }
 }
 

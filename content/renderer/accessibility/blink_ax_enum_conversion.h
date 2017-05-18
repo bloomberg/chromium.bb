@@ -24,8 +24,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event);
 // in AXNodeData instead.)
 uint32_t AXStateFromBlink(const blink::WebAXObject& o);
 
-ui::AXSupportedAction AXSupportedActionFromBlink(
-    blink::WebAXSupportedAction supported_action);
+ui::AXDefaultActionVerb AXDefaultActionVerbFromBlink(
+    blink::WebAXDefaultActionVerb action_verb);
 
 ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type);
 

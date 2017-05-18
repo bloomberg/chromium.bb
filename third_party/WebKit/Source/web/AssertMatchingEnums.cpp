@@ -343,16 +343,18 @@ STATIC_ASSERT_ENUM(kWebAXStateSelected, kAXSelectedState);
 STATIC_ASSERT_ENUM(kWebAXStateVertical, kAXVerticalState);
 STATIC_ASSERT_ENUM(kWebAXStateVisited, kAXVisitedState);
 
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kNone, AXSupportedAction::kNone);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kActivate,
-                   AXSupportedAction::kActivate);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kCheck, AXSupportedAction::kCheck);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kClick, AXSupportedAction::kClick);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kJump, AXSupportedAction::kJump);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kOpen, AXSupportedAction::kOpen);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kPress, AXSupportedAction::kPress);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kSelect, AXSupportedAction::kSelect);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::kUncheck, AXSupportedAction::kUncheck);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kNone, AXDefaultActionVerb::kNone);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kActivate,
+                   AXDefaultActionVerb::kActivate);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kCheck, AXDefaultActionVerb::kCheck);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kClick, AXDefaultActionVerb::kClick);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kJump, AXDefaultActionVerb::kJump);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kOpen, AXDefaultActionVerb::kOpen);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kPress, AXDefaultActionVerb::kPress);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kSelect,
+                   AXDefaultActionVerb::kSelect);
+STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kUncheck,
+                   AXDefaultActionVerb::kUncheck);
 
 STATIC_ASSERT_ENUM(kWebAXTextDirectionLR, kAccessibilityTextDirectionLTR);
 STATIC_ASSERT_ENUM(kWebAXTextDirectionRL, kAccessibilityTextDirectionRTL);
