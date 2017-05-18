@@ -121,21 +121,38 @@ TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
 
 const HeapVector<TraceWrapperMember<StyleSheet>>&
 StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
-  // TODO(rune@opera.com): we could split styleSheets and active stylesheet
-  // update to have a lighter update while accessing the styleSheets list.
   DCHECK(Master());
   if (Master()->IsActive()) {
-    if (IsMaster())
+    if (IsMaster()) {
+      // TODO(rune@opera.com): Replace with UpdateStyleSheetList().
       UpdateActiveStyle();
-    else
-      Master()->GetStyleEngine().UpdateActiveStyle();
+    } else {
+      UpdateStyleSheetList(tree_scope);
+    }
   }
 
   if (tree_scope == document_)
     return GetDocumentStyleSheetCollection().StyleSheetsForStyleSheetList();
 
+  DCHECK(IsMaster());
   return EnsureStyleSheetCollectionFor(tree_scope)
       ->StyleSheetsForStyleSheetList();
+}
+
+void StyleEngine::UpdateStyleSheetList(TreeScope& tree_scope) {
+  // TODO(rune@opera.com): currently only for import documents.
+  DCHECK(!IsMaster());
+  DCHECK(tree_scope.GetDocument() == GetDocument());
+
+  if (tree_scope != GetDocument())
+    return;
+  if (!ShouldUpdateDocumentStyleSheetCollection())
+    return;
+
+  GetDocumentStyleSheetCollection().CollectStyleSheetsForList();
+  // Avoid updating the styleSheets list repeatedly. Only safe for imports.
+  document_scope_dirty_ = false;
+  DCHECK(!all_tree_scopes_dirty_);
 }
 
 void StyleEngine::InjectAuthorSheet(StyleSheetContents* author_sheet) {

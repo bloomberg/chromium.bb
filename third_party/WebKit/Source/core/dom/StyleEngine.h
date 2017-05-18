@@ -343,6 +343,7 @@ class CORE_EXPORT StyleEngine final
       global_rule_set_->Update(GetDocument());
   }
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
+  void UpdateStyleSheetList(TreeScope&);
 
   Member<Document> document_;
   bool is_master_;

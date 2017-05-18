@@ -79,6 +79,21 @@ bool TreeScopeStyleSheetCollection::HasStyleSheets() const {
   return false;
 }
 
+void TreeScopeStyleSheetCollection::CollectStyleSheetsForList() {
+  HeapVector<Member<StyleSheet>> new_list;
+  for (Node* node : style_sheet_candidate_nodes_) {
+    StyleSheetCandidate candidate(*node);
+    DCHECK(!candidate.IsXSL());
+    if (candidate.IsImport())
+      continue;
+    if (candidate.IsEnabledAndLoading())
+      continue;
+    if (StyleSheet* sheet = candidate.Sheet())
+      new_list.push_back(sheet);
+  }
+  SwapSheetsForSheetList(new_list);
+}
+
 DEFINE_TRACE(TreeScopeStyleSheetCollection) {
   visitor->Trace(tree_scope_);
   visitor->Trace(style_sheet_candidate_nodes_);
