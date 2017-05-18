@@ -453,7 +453,6 @@
 
     <!-- Chrome Home dimensions -->
     <dimen name="chrome_home_empty_view_top_padding">16dp</dimen>
-    <dimen name="chrome_home_full_height_from_top">24dp</dimen>
     <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
     <dimen name="chrome_home_progress_bar_height">4dp</dimen>
 
