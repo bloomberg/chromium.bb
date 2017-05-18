@@ -275,21 +275,20 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
 }
 
 void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  WmWindow* root =
+  aura::Window* root =
       ShellPort::Get()->GetRootWindowForDisplayId(new_display.id());
-  aura::Window* aura_root = WmWindow::GetAuraWindow(root);
 
   // When the primary root window's display is removed, the existing root window
   // is taken over by the new display, and the observer is already set.
   aura::Window* default_container =
-      aura_root->GetChildById(kShellWindowId_DefaultContainer);
+      root->GetChildById(kShellWindowId_DefaultContainer);
   if (!observed_container_windows_.IsObserving(default_container)) {
     for (aura::Window* window : default_container->children())
       OnUserWindowAdded(window);
     observed_container_windows_.Add(default_container);
   }
   aura::Window* panel_container =
-      aura_root->GetChildById(kShellWindowId_PanelContainer);
+      root->GetChildById(kShellWindowId_PanelContainer);
   if (!observed_container_windows_.IsObserving(panel_container)) {
     for (aura::Window* window : panel_container->children())
       OnUserWindowAdded(window);

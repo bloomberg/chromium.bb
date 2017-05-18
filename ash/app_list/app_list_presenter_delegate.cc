@@ -95,9 +95,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
   view_ = view;
-  WmWindow* wm_root_window =
+  aura::Window* root_window =
       ShellPort::Get()->GetRootWindowForDisplayId(display_id);
-  aura::Window* root_window = wm_root_window->aura_window();
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
 
@@ -105,14 +104,14 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 
   if (!app_list::features::IsFullscreenAppListEnabled()) {
     view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
-        wm_root_window, GetMinimumBoundsHeightForAppList(view)));
+        WmWindow::Get(root_window), GetMinimumBoundsHeightForAppList(view)));
   }
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
   Shell::Get()->AddPreTargetHandler(this);
-  WmShelf* shelf = WmShelf::ForWindow(wm_root_window);
+  WmShelf* shelf = WmShelf::ForWindow(root_window);
   shelf->AddObserver(this);
 
   // By setting us as DnD recipient, the app list knows that we can
@@ -124,7 +123,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
-  WmWindow* root_window =
+  aura::Window* root_window =
       ShellPort::Get()->GetRootWindowForDisplayId(display_id);
   AppListButton* app_list_button =
       WmShelf::ForWindow(root_window)->shelf_widget()->GetAppListButton();
@@ -139,9 +138,8 @@ void AppListPresenterDelegate::OnDismissed() {
   is_visible_ = false;
 
   // Update applist button status when app list visibility is changed.
-  WmWindow* window = WmWindow::Get(view_->GetWidget()->GetNativeWindow());
-  AppListButton* app_list_button =
-      WmShelf::ForWindow(window)->shelf_widget()->GetAppListButton();
+  WmShelf* shelf = WmShelf::ForWindow(view_->GetWidget()->GetNativeWindow());
+  AppListButton* app_list_button = shelf->shelf_widget()->GetAppListButton();
   if (app_list_button)
     app_list_button->OnAppListDismissed();
 }
@@ -162,7 +160,7 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  WmShelf* shelf = WmShelf::ForWindow(WmWindow::Get(root_window));
+  WmShelf* shelf = WmShelf::ForWindow(root_window);
   shelf->UpdateAutoHideState();
 
   switch (shelf->alignment()) {

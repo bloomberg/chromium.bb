@@ -409,8 +409,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
 
   // Move the active root window to the secondary root and create two windows.
-  ScopedRootWindowForNewWindows root_for_new_windows(
-      WmWindow::Get(root_windows[1]));
+  ScopedRootWindowForNewWindows root_for_new_windows(root_windows[1]);
   std::unique_ptr<Window> window2(CreateTestWindowInShellWithId(2));
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 

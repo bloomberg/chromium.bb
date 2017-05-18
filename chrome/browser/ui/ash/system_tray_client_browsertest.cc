@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/system/enterprise/tray_enterprise.h"
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -19,9 +19,7 @@ namespace {
 
 // TODO(jamescook): Add a test-only mojo API to get system tray details.
 ash::SystemTray* GetSystemTray() {
-  return ash::ShellPort::Get()
-      ->GetPrimaryRootWindowController()
-      ->GetSystemTray();
+  return ash::Shell::GetPrimaryRootWindowController()->GetSystemTray();
 }
 
 }  // namespace

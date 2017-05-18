@@ -41,7 +41,7 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
  public:
   // If |create_session_state_delegate_stub| is true SessionStateDelegateStub is
   // created. If false, the SessionStateDelegate from Shell is used.
-  ShellPortMash(WmWindow* primary_root_window,
+  ShellPortMash(aura::Window* primary_root_window,
                 WindowManager* window_manager,
                 views::PointerWatcherEventRouter* pointer_watcher_event_router,
                 bool create_session_state_delegate_stub);
@@ -62,8 +62,8 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   // ShellPort:
   void Shutdown() override;
   Config GetAshConfig() const override;
-  WmWindow* GetPrimaryRootWindow() override;
-  WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
+  aura::Window* GetPrimaryRootWindow() override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const override;
   bool IsActiveDisplayId(int64_t display_id) const override;
@@ -149,7 +149,7 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   WindowManager* window_manager_;
 
   // TODO(sky): remove this once mash supports simple display management.
-  WmWindow* primary_root_window_;
+  aura::Window* primary_root_window_;
 
   // Only one of |mash_state_| or |mus_state_| is created, depending upon
   // Config.

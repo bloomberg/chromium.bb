@@ -433,7 +433,7 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
 
 gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   WmWindow* wm_window = WmWindow::Get(window);
-  WmShelf* shelf = WmShelf::ForWindow(wm_window);
+  WmShelf* shelf = WmShelf::ForWindow(window);
   gfx::Rect item_rect = shelf->GetScreenBoundsOfItemIconForWindow(wm_window);
 
   // The launcher item is visible and has an icon.

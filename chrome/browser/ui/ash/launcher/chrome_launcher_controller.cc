@@ -1359,7 +1359,7 @@ void ChromeLauncherController::OnDisplayConfigurationChanged() {
   // Because it might be called by some operations, like crbug.com/627040
   // rotating screen.
   ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::ShellPort::Get()->GetPrimaryRootWindow());
+      ash::WmShelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
   if (shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
     SetShelfBehaviorsFromPrefs();
 }

@@ -727,7 +727,6 @@ RootWindowController::RootWindowController(
 
 void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
-  ShellPort* shell_port = ShellPort::Get();
   Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);
 
@@ -739,7 +738,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   InitLayoutManagers();
   InitTouchHuds();
 
-  if (shell_port->GetPrimaryRootWindowController()
+  if (Shell::GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
           ->has_window_dimmer()) {
     GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
@@ -1062,11 +1061,11 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
-  WmWindow* root = GetWindow();
-  if (Shell::GetWmRootWindowForNewWindows() == root) {
+  aura::Window* root = GetRootWindow();
+  if (Shell::GetRootWindowForNewWindows() == root) {
     // The root window for new windows is being destroyed. Switch to the primary
     // root window if possible.
-    WmWindow* primary_root = ShellPort::Get()->GetPrimaryRootWindow();
+    aura::Window* primary_root = Shell::GetPrimaryRootWindow();
     Shell::Get()->set_root_window_for_new_windows(
         primary_root == root ? nullptr : primary_root);
   }

@@ -70,10 +70,6 @@ ShellPort::ShellPort() {
   instance_ = this;
 }
 
-RootWindowController* ShellPort::GetPrimaryRootWindowController() {
-  return GetPrimaryRootWindow()->GetRootWindowController();
-}
-
 bool ShellPort::IsForceMaximizeOnFirstRun() {
   return Shell::Get()->shell_delegate()->IsForceMaximizeOnFirstRun();
 }

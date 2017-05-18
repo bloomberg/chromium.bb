@@ -97,14 +97,14 @@ void PinWindow(aura::Window* window, bool trusted) {
 void SetAutoHideShelf(aura::Window* window, bool autohide) {
   wm::GetWindowState(window)->set_autohide_shelf_when_maximized_or_fullscreen(
       autohide);
-  for (WmWindow* root_window : ShellPort::Get()->GetAllRootWindows())
+  for (aura::Window* root_window : Shell::GetAllRootWindows())
     WmShelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 
 bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
   DCHECK(window);
-  WmWindow* root = ShellPort::Get()->GetRootWindowForDisplayId(display_id);
-  return root && MoveWindowToRoot(window, root->aura_window());
+  aura::Window* root = ShellPort::Get()->GetRootWindowForDisplayId(display_id);
+  return root && MoveWindowToRoot(window, root);
 }
 
 bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {

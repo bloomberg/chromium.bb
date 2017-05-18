@@ -77,13 +77,10 @@ class ASH_EXPORT ShellPort {
 
   virtual Config GetAshConfig() const = 0;
 
-  // Convenience for GetPrimaryRootWindow()->GetRootWindowController().
-  RootWindowController* GetPrimaryRootWindowController();
-
-  virtual WmWindow* GetPrimaryRootWindow() = 0;
+  virtual aura::Window* GetPrimaryRootWindow() = 0;
 
   // Returns the root window for the specified display.
-  virtual WmWindow* GetRootWindowForDisplayId(int64_t display_id) = 0;
+  virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
   // Retuns the display info associated with |display_id|.
   // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480

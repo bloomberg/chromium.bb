@@ -14,6 +14,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace chromeos {
 
@@ -48,10 +49,9 @@ void AccessibilityCursorRingLayer::Set(const gfx::Point& location) {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
-  ash::WmWindow* root_wm_window =
+  aura::Window* root_window =
       ash::ShellPort::Get()->GetRootWindowForDisplayId(display.id());
-  aura::Window* root_window = root_wm_window->aura_window();
-  bounds = root_wm_window->ConvertRectFromScreen(bounds);
+  ::wm::ConvertRectFromScreen(root_window, &bounds);
   CreateOrUpdateLayer(root_window, "AccessibilityCursorRing", bounds);
 }
 

@@ -429,7 +429,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   DCHECK_LT(-1, last_pressed_index_);
 
   // Place new windows on the same display as the button.
-  WmWindow* window = WmWindow::Get(sender->GetWidget()->GetNativeWindow());
+  aura::Window* window = sender->GetWidget()->GetNativeWindow();
   scoped_root_window_for_new_windows_.reset(
       new ScopedRootWindowForNewWindows(window->GetRootWindow()));
 
@@ -462,7 +462,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
       break;
   }
 
-  const int64_t display_id = window->GetDisplayNearestWindow().id();
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 
   // Notify the item of its selection; handle the result in AfterItemSelected.
   const ShelfItem& item = model_->items()[last_pressed_index_];
@@ -1694,7 +1695,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
       new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
 
   // Place new windows on the same display as the button that spawned the menu.
-  WmWindow* window = WmWindow::Get(source->GetWidget()->GetNativeWindow());
+  aura::Window* window = source->GetWidget()->GetNativeWindow();
   scoped_root_window_for_new_windows_.reset(
       new ScopedRootWindowForNewWindows(window->GetRootWindow()));
 
@@ -1705,8 +1706,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     // Application lists use a bubble.
     // It is possible to invoke the menu while it is sliding into view. To cover
     // that case, the screen coordinates are offsetted by the animation delta.
-    anchor = source->GetBoundsInScreen() + (window->GetTargetBounds().origin() -
-                                            window->GetBounds().origin());
+    anchor = source->GetBoundsInScreen() +
+             (window->GetTargetBounds().origin() - window->bounds().origin());
 
     // Adjust the anchor location for shelf items with asymmetrical borders.
     if (source->border())

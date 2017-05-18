@@ -204,8 +204,8 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
 
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
-  // TODO(jamescook): Should this be GetWmRootWindowForNewWindows()?
-  WmShelf* shelf = WmShelf::ForWindow(ShellPort::Get()->GetPrimaryRootWindow());
+  // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
+  WmShelf* shelf = WmShelf::ForWindow(Shell::GetPrimaryRootWindow());
   Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
 }
 
@@ -317,7 +317,7 @@ void HandleShowKeyboardOverlay() {
 }
 
 bool CanHandleShowMessageCenterBubble() {
-  WmWindow* target_root = Shell::GetWmRootWindowForNewWindows();
+  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
       WmShelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   return status_area_widget &&
@@ -326,7 +326,7 @@ bool CanHandleShowMessageCenterBubble() {
 
 void HandleShowMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
-  WmWindow* target_root = Shell::GetWmRootWindowForNewWindows();
+  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
       WmShelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   if (status_area_widget) {
@@ -339,8 +339,8 @@ void HandleShowMessageCenterBubble() {
 
 void HandleShowSystemTrayBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_System_Tray_Bubble"));
-  WmWindow* target_root = Shell::GetWmRootWindowForNewWindows();
-  SystemTray* tray = target_root->GetRootWindowController()->GetSystemTray();
+  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
+  SystemTray* tray = GetRootWindowController(target_root)->GetSystemTray();
   if (!tray->HasSystemBubble()) {
     tray->ShowDefaultView(BUBBLE_CREATE_NEW);
     tray->ActivateBubble();
@@ -445,8 +445,7 @@ void HandleShowImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
   StatusAreaWidget* status_area_widget =
-      WmShelf::ForWindow(ShellPort::Get()->GetPrimaryRootWindow())
-          ->GetStatusAreaWidget();
+      WmShelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
     if (ime_menu_tray && ime_menu_tray->visible() &&
@@ -507,8 +506,7 @@ void HandleLock() {
 
 void HandleShowStylusTools() {
   base::RecordAction(UserMetricsAction("Accel_Show_Stylus_Tools"));
-  Shell::GetWmRootWindowForNewWindows()
-      ->GetRootWindowController()
+  GetRootWindowController(Shell::GetRootWindowForNewWindows())
       ->GetShelf()
       ->GetStatusAreaWidget()
       ->palette_tray()

@@ -113,7 +113,7 @@ ShellPortMash::MusSpecificState::MusSpecificState() = default;
 ShellPortMash::MusSpecificState::~MusSpecificState() = default;
 
 ShellPortMash::ShellPortMash(
-    WmWindow* primary_root_window,
+    aura::Window* primary_root_window,
     WindowManager* window_manager,
     views::PointerWatcherEventRouter* pointer_watcher_event_router,
     bool create_session_state_delegate_stub)
@@ -179,27 +179,23 @@ Config ShellPortMash::GetAshConfig() const {
   return window_manager_->config();
 }
 
-WmWindow* ShellPortMash::GetPrimaryRootWindow() {
-  if (GetAshConfig() == Config::MUS) {
-    return WmWindow::Get(
-        Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow());
-  }
+aura::Window* ShellPortMash::GetPrimaryRootWindow() {
+  if (GetAshConfig() == Config::MUS)
+    return Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow();
   // NOTE: This is called before the RootWindowController has been created, so
   // it can't call through to RootWindowController to get all windows.
   return primary_root_window_;
 }
 
-WmWindow* ShellPortMash::GetRootWindowForDisplayId(int64_t display_id) {
+aura::Window* ShellPortMash::GetRootWindowForDisplayId(int64_t display_id) {
   if (GetAshConfig() == Config::MUS) {
-    return WmWindow::Get(
-        Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-            display_id));
+    return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+        display_id);
   }
   RootWindowController* root_window_controller =
       GetRootWindowControllerWithDisplayId(display_id);
-  return root_window_controller
-             ? WmWindow::Get(root_window_controller->GetRootWindow())
-             : nullptr;
+  return root_window_controller ? root_window_controller->GetRootWindow()
+                                : nullptr;
 }
 
 const display::ManagedDisplayInfo& ShellPortMash::GetDisplayInfo(

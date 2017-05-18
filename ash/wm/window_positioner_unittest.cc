@@ -30,7 +30,7 @@ TEST_F(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
   // a new window gets maximized.
   UpdateDisplay("400x400,500x500");
   ScopedRootWindowForNewWindows root_for_new_windows(
-      ShellPort::Get()->GetAllRootWindows()[1]);
+      Shell::GetAllRootWindows()[1]);
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
   params.can_maximize = true;
@@ -41,7 +41,7 @@ TEST_F(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
 
 TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
   UpdateDisplay("400x400,1400x900");
-  WmWindow* second_root_window = ShellPort::Get()->GetAllRootWindows()[1];
+  aura::Window* second_root_window = Shell::GetAllRootWindows()[1];
   ScopedRootWindowForNewWindows root_for_new_windows(second_root_window);
   shell::ToplevelWindow::CreateParams params;
   params.can_resize = true;
@@ -51,8 +51,10 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
 
   // The window should be in the 2nd display with the default size.
   EXPECT_EQ("300x300", bounds.size().ToString());
-  EXPECT_TRUE(
-      second_root_window->GetDisplayNearestWindow().bounds().Contains(bounds));
+  EXPECT_TRUE(display::Screen::GetScreen()
+                  ->GetDisplayNearestWindow(second_root_window)
+                  .bounds()
+                  .Contains(bounds));
 }
 
 // Tests that second window inherits first window's maximized state as well as

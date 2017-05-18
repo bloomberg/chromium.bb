@@ -7,7 +7,6 @@
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/window_util.h"
@@ -148,13 +147,14 @@ TEST_P(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   // Set up a screen with two displays (horizontally adjacent).
   UpdateDisplay("1024x768,1024x768");
 
-  std::vector<WmWindow*> root_windows = ShellPort::Get()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
-  WmWindow* secondary_root = root_windows[1];
+  aura::Window* secondary_root = root_windows[1];
   EXPECT_EQ("1024,0 1024x768", secondary_root->GetBoundsInScreen().ToString());
 
-  app_list_presenter_impl()->Show(
-      secondary_root->GetDisplayNearestWindow().id());
+  app_list_presenter_impl()->Show(display::Screen::GetScreen()
+                                      ->GetDisplayNearestWindow(secondary_root)
+                                      .id());
   EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
 
   // Remove the secondary display. Shouldn't crash (http://crbug.com/368990).

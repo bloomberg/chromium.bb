@@ -8,9 +8,11 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 
-namespace ash {
+namespace aura {
+class Window;
+}
 
-class WmWindow;
+namespace ash {
 
 // Constructing a ScopedRootWindowForNewWindows allows temporarily
 // switching a target root window so that a new window gets created
@@ -19,7 +21,7 @@ class WmWindow;
 // a new window using launcher's icon.
 class ASH_EXPORT ScopedRootWindowForNewWindows {
  public:
-  explicit ScopedRootWindowForNewWindows(WmWindow* new_root);
+  explicit ScopedRootWindowForNewWindows(aura::Window* new_root);
   ~ScopedRootWindowForNewWindows();
 
  private:

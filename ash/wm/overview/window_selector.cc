@@ -131,7 +131,7 @@ class RoundedContainerView : public views::View {
 
 // Triggers a shelf visibility update on all root window controllers.
 void UpdateShelfVisibility() {
-  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows())
+  for (aura::Window* root : Shell::GetAllRootWindows())
     WmShelf::ForWindow(root)->UpdateVisibilityState();
 }
 
@@ -299,7 +299,7 @@ void WindowSelector::Init(const WindowList& windows) {
 
     search_image_ = gfx::CreateVectorIcon(ui::kSearchIcon, kTextFilterIconSize,
                                           kTextFilterIconColor);
-    WmWindow* root_window = shell_port->GetPrimaryRootWindow();
+    WmWindow* root_window = WmWindow::Get(Shell::GetPrimaryRootWindow());
     text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image_,
                                                &text_filter_bottom_));
   }
@@ -637,7 +637,7 @@ void WindowSelector::PositionWindows(bool animate) {
 }
 
 void WindowSelector::RepositionTextFilterOnDisplayMetricsChange() {
-  WmWindow* root_window = ShellPort::Get()->GetPrimaryRootWindow();
+  WmWindow* root_window = WmWindow::Get(Shell::GetPrimaryRootWindow());
   const gfx::Rect rect = GetTextFilterPosition(root_window);
   text_filter_bottom_ = rect.bottom() + kTextFieldBottomMargin;
   text_filter_widget_->SetBounds(rect);

@@ -6,6 +6,7 @@
 
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -37,7 +38,7 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   // Update the window's immersive mode state for the window manager.
   window_state->set_in_immersive_fullscreen(entering);
 
-  for (WmWindow* root_window : ShellPort::Get()->GetAllRootWindows())
+  for (aura::Window* root_window : Shell::GetAllRootWindows())
     WmShelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 

@@ -219,9 +219,10 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     gfx::Rect* bounds_in_out,
     ui::WindowShowState* show_state_out) {
   // Always open new window in the target display.
-  WmWindow* target = Shell::GetWmRootWindowForNewWindows();
+  aura::Window* target = Shell::GetRootWindowForNewWindows();
 
-  WmWindow* top_window = GetReferenceWindow(target, nullptr, nullptr);
+  WmWindow* top_window =
+      GetReferenceWindow(WmWindow::Get(target), nullptr, nullptr);
   // Our window should not have any impact if we are already on top.
   if (top_window == new_window)
     top_window = nullptr;
@@ -229,7 +230,9 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
   // If there is no valid other window we take and adjust the passed coordinates
   // and show state.
   if (!top_window) {
-    gfx::Rect work_area = target->GetDisplayNearestWindow().work_area();
+    gfx::Rect work_area = display::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(target)
+                              .work_area();
 
     bounds_in_out->AdjustToFit(work_area);
     // Use adjusted saved bounds, if there is one.
@@ -274,7 +277,9 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
           gfx::Vector2d(kMinimumWindowOffset, kMinimumWindowOffset);
     }
     if (is_saved_bounds || has_restore_bounds) {
-      gfx::Rect work_area = target->GetDisplayNearestWindow().work_area();
+      gfx::Rect work_area = display::Screen::GetScreen()
+                                ->GetDisplayNearestWindow(target)
+                                .work_area();
       bounds_in_out->AdjustToFit(work_area);
       // Use adjusted saved bounds or restore bounds, if there is one.
       return;

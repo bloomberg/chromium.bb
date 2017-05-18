@@ -92,12 +92,12 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
         accelerator);
     if (HandleWindowCycleAccelerator(accelerator))
       return ui::mojom::EventResult::HANDLED;
-    WmWindow* target_window = WmWindow::Get(wm::GetFocusedWindow());
+    aura::Window* target_window = wm::GetFocusedWindow();
     if (!target_window)
-      target_window = Shell::GetWmRootWindowForNewWindows();
+      target_window = Shell::GetRootWindowForNewWindows();
     DCHECK(target_window);
-    if (router_->ProcessAccelerator(target_window, *(event.AsKeyEvent()),
-                                    accelerator)) {
+    if (router_->ProcessAccelerator(WmWindow::Get(target_window),
+                                    *(event.AsKeyEvent()), accelerator)) {
       return ui::mojom::EventResult::HANDLED;
     }
     if (accelerator_controller->IsActionForAcceleratorEnabled(accelerator)) {

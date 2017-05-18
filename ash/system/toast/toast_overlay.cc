@@ -50,7 +50,7 @@ const int kToastMinimumWidth = 288;
 // Returns the work area bounds for the root window where new windows are added
 // (including new toasts).
 gfx::Rect GetUserWorkAreaBounds() {
-  return WmShelf::ForWindow(Shell::GetWmRootWindowForNewWindows())
+  return WmShelf::ForWindow(Shell::GetRootWindowForNewWindows())
       ->GetUserWorkAreaBounds();
 }
 
@@ -216,8 +216,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.remove_standard_frame = true;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
-  Shell::GetWmRootWindowForNewWindows()
-      ->GetRootWindowController()
+  GetRootWindowController(Shell::GetRootWindowForNewWindows())
       ->ConfigureWidgetInitParamsForContainer(
           overlay_widget_.get(), kShellWindowId_SystemModalContainer, &params);
   overlay_widget_->Init(params);

@@ -236,7 +236,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // NOTE: this returns the root, newly created window should be added to the
   // appropriate container in the returned window.
   static aura::Window* GetRootWindowForNewWindows();
-  static WmWindow* GetWmRootWindowForNewWindows();
 
   // Returns all root windows.
   static aura::Window::Windows GetAllRootWindows();
@@ -514,7 +513,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
 
   // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
-  void set_root_window_for_new_windows(WmWindow* root) {
+  void set_root_window_for_new_windows(aura::Window* root) {
     root_window_for_new_windows_ = root;
   }
 
@@ -815,9 +814,9 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   bool is_touch_hud_projection_enabled_;
 
-  // See comment for GetWmRootWindowForNewWindows().
-  WmWindow* root_window_for_new_windows_ = nullptr;
-  WmWindow* scoped_root_window_for_new_windows_ = nullptr;
+  // See comment for GetRootWindowForNewWindows().
+  aura::Window* root_window_for_new_windows_ = nullptr;
+  aura::Window* scoped_root_window_for_new_windows_ = nullptr;
 
   // Injected content::GPUDataManager support.
   std::unique_ptr<GPUSupport> gpu_support_;

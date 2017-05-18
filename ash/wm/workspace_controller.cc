@@ -61,8 +61,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   if (fullscreen && !wm::GetWindowState(fullscreen)->ignored_by_shelf())
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 
-  const gfx::Rect shelf_bounds(
-      WmShelf::ForWindow(WmWindow::Get(viewport_))->GetIdealBounds());
+  const gfx::Rect shelf_bounds(WmShelf::ForWindow(viewport_)->GetIdealBounds());
   bool window_overlaps_launcher = false;
   // The default container may contain windows that may overlap the launcher
   // shelf and affect its transparency.

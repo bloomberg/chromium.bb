@@ -267,25 +267,19 @@ Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
 RootWindowController* Shell::GetRootWindowControllerWithDisplayId(
     int64_t display_id) {
   CHECK(HasInstance());
-  WmWindow* root_window =
+  aura::Window* root_window =
       instance_->shell_port_->GetRootWindowForDisplayId(display_id);
-  return root_window ? root_window->GetRootWindowController() : nullptr;
+  return GetRootWindowController(root_window);
 }
 
 // static
 aura::Window* Shell::GetPrimaryRootWindow() {
   CHECK(HasInstance());
-  return instance_->shell_port_->GetPrimaryRootWindow()->aura_window();
+  return instance_->shell_port_->GetPrimaryRootWindow();
 }
 
 // static
 aura::Window* Shell::GetRootWindowForNewWindows() {
-  CHECK(Shell::HasInstance());
-  return WmWindow::GetAuraWindow(Shell::GetWmRootWindowForNewWindows());
-}
-
-// static
-WmWindow* Shell::GetWmRootWindowForNewWindows() {
   CHECK(Shell::HasInstance());
   Shell* shell = Shell::Get();
   if (shell->scoped_root_window_for_new_windows_)
@@ -455,8 +449,9 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 
 void Shell::ShowAppList() {
   // Show the app list on the default display for new windows.
-  app_list_->Show(
-      GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
+  app_list_->Show(display::Screen::GetScreen()
+                      ->GetDisplayNearestWindow(GetRootWindowForNewWindows())
+                      .id());
 }
 
 void Shell::DismissAppList() {
@@ -466,7 +461,9 @@ void Shell::DismissAppList() {
 void Shell::ToggleAppList() {
   // Toggle the app list on the default display for new windows.
   app_list_->ToggleAppList(
-      GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(GetRootWindowForNewWindows())
+          .id());
 }
 
 bool Shell::IsAppListVisible() const {
@@ -936,7 +933,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   screen_position_controller_.reset(new ScreenPositionController);
 
   shell_port_->CreatePrimaryHost();
-  root_window_for_new_windows_ = WmWindow::Get(GetPrimaryRootWindow());
+  root_window_for_new_windows_ = GetPrimaryRootWindow();
 
   if (config != Config::MASH) {
     resolution_notification_controller_.reset(
@@ -1223,9 +1220,8 @@ void Shell::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
-  if (gained_active_wm)
-    root_window_for_new_windows_ = gained_active_wm->GetRootWindow();
+  if (gained_active)
+    root_window_for_new_windows_ = gained_active->GetRootWindow();
 }
 
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {

@@ -534,10 +534,13 @@ void WindowCycleList::InitWindowCycleView() {
   params.name = "WindowCycleList (Alt+Tab)";
   // TODO(estade): make sure nothing untoward happens when the lock screen
   // or a system modal dialog is shown.
-  WmWindow* root_window = Shell::GetWmRootWindowForNewWindows();
-  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      widget, kShellWindowId_OverlayContainer, &params);
-  gfx::Rect widget_rect = root_window->GetDisplayNearestWindow().bounds();
+  aura::Window* root_window = Shell::GetRootWindowForNewWindows();
+  GetRootWindowController(root_window)
+      ->ConfigureWidgetInitParamsForContainer(
+          widget, kShellWindowId_OverlayContainer, &params);
+  gfx::Rect widget_rect = display::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(root_window)
+                              .bounds();
   const int widget_height = cycle_view_->GetPreferredSize().height();
   widget_rect.set_y(widget_rect.y() +
                     (widget_rect.height() - widget_height) / 2);

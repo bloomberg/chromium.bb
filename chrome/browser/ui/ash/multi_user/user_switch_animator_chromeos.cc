@@ -231,7 +231,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
       chrome_launcher_controller->ActiveUserChanged(
           new_account_id_.GetUserEmail());
     // Hide the black rectangle on top of each shelf again.
-    for (ash::WmWindow* window : ash::ShellPort::Get()->GetAllRootWindows()) {
+    for (aura::Window* window : ash::Shell::GetAllRootWindows()) {
       ash::ShelfWidget* shelf = ash::WmShelf::ForWindow(window)->shelf_widget();
       shelf->HideShelfBehindBlackBar(false, duration_override);
     }
@@ -264,7 +264,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     // CPU usage and therefore effect jank, we should avoid hiding the shelf if
     // the start and end location are the same and cover the shelf instead with
     // a black rectangle on top.
-    ash::WmShelf* shelf = ash::WmShelf::ForWindow(ash::WmWindow::Get(window));
+    ash::WmShelf* shelf = ash::WmShelf::ForWindow(window);
     if (GetScreenCover(window) != NO_USER_COVERS_SCREEN &&
         (!chrome_launcher_controller ||
          !chrome_launcher_controller->ShelfBoundsChangesProbablyWithUser(

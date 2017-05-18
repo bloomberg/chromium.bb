@@ -801,9 +801,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
                                              CurrentContext())
           ->GetNativeWindow());
   SystemModalContainerLayoutManager* layout_manager =
-      ShellPort::Get()
-          ->GetPrimaryRootWindowController()
-          ->GetSystemModalLayoutManager(modal_window.get());
+      Shell::GetPrimaryRootWindowController()->GetSystemModalLayoutManager(
+          modal_window.get());
 
   EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());

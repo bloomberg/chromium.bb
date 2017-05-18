@@ -279,8 +279,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     // Ensure ash starts the session and creates the shelf and controller.
     SessionControllerClient::FlushForTesting();
 
-    shelf_ =
-        ash::WmShelf::ForWindow(ash::ShellPort::Get()->GetPrimaryRootWindow());
+    shelf_ = ash::WmShelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
     model_ = ash::Shell::Get()->shelf_model();
     controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
@@ -377,8 +376,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     int index = model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
     DCHECK_GE(index, 0);
     ash::ShelfItem item = model_->items()[index];
-    ash::WmShelf* shelf =
-        ash::WmShelf::ForWindow(ash::WmWindow::Get(CurrentContext()));
+    ash::WmShelf* shelf = ash::WmShelf::ForWindow(CurrentContext());
     std::unique_ptr<LauncherContextMenu> menu(
         LauncherContextMenu::Create(controller_, &item, shelf));
     return menu;
@@ -1904,7 +1902,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
   DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
   ash::WmShelf* secondary_shelf =
-      ash::WmShelf::ForWindow(ash::WmWindow::Get(secondary_root_window));
+      ash::WmShelf::ForWindow(secondary_root_window);
 
   ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
   ash::test::ShelfViewTestAPI test(secondary_shelf->GetShelfViewForTesting());

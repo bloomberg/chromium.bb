@@ -195,8 +195,7 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   UpdateDisplay("400x400,400x400");
   observer()->Reset();
 
-  WmWindow* second_root = ShellPort::Get()->GetAllRootWindows()[1];
-  WmShelf* second_shelf = second_root->GetRootWindowController()->GetShelf();
+  WmShelf* second_shelf = WmShelf::ForWindow(Shell::GetAllRootWindows()[1]);
   TestWmShelfObserver second_observer(second_shelf);
 
   ShelfItem item;
@@ -1642,8 +1641,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 // Check the drag insertion bounds of shelf view in multi monitor environment.
 TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
-  WmShelf* secondary_shelf =
-      WmShelf::ForWindow(ShellPort::Get()->GetAllRootWindows()[1]);
+  WmShelf* secondary_shelf = WmShelf::ForWindow(Shell::GetAllRootWindows()[1]);
   ShelfView* shelf_view_for_secondary =
       secondary_shelf->GetShelfViewForTesting();
 
@@ -1708,8 +1706,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2U, ShellPort::Get()->GetAllRootWindows().size());
 
-  WmWindow* second_root = ShellPort::Get()->GetAllRootWindows()[1];
-  WmShelf* secondary_shelf = second_root->GetRootWindowController()->GetShelf();
+  WmShelf* secondary_shelf = WmShelf::ForWindow(Shell::GetAllRootWindows()[1]);
 
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
@@ -1728,7 +1725,8 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-  start_point = second_root->ConvertPointFromScreen(start_point);
+  start_point =
+      secondary_shelf->GetWindow()->ConvertPointFromScreen(start_point);
 
   ui::test::EventGenerator generator(Shell::GetAllRootWindows()[1],
                                      start_point);
