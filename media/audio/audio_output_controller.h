@@ -234,9 +234,11 @@ class MEDIA_EXPORT AudioOutputController
   // When non-NULL, audio is being diverted to this stream.
   AudioOutputStream* diverting_to_stream_;
 
-  // The targets for audio stream to be copied to.
+  // The targets for audio stream to be copied to. |should_duplicate_| is set to
+  // 1 when the OnMoreData() call should proxy the data to
+  // BroadcastDataToDuplicationTargets().
   std::set<AudioPushSink*> duplication_targets_;
-  base::Lock duplication_targets_lock_;
+  base::AtomicRefCount should_duplicate_;
 
   // The current volume of the audio stream.
   double volume_;

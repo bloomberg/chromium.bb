@@ -34,6 +34,7 @@ AudioOutputController::AudioOutputController(
       output_device_id_(output_device_id),
       stream_(NULL),
       diverting_to_stream_(NULL),
+      should_duplicate_(0),
       volume_(1.0),
       state_(kEmpty),
       sync_reader_(sync_reader),
@@ -272,12 +273,7 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
-  bool need_to_duplicate = false;
-  {
-    base::AutoLock lock(duplication_targets_lock_);
-    need_to_duplicate = !duplication_targets_.empty();
-  }
-  if (need_to_duplicate) {
+  if (base::AtomicRefCountIsOne(&should_duplicate_)) {
     const base::TimeTicks reference_time = delay_timestamp + delay;
     std::unique_ptr<AudioBus> copy(AudioBus::Create(params_));
     dest->CopyTo(copy.get());
@@ -443,7 +439,9 @@ void AudioOutputController::DoStartDuplicating(AudioPushSink* to_stream) {
   if (state_ == kClosed)
     return;
 
-  base::AutoLock lock(duplication_targets_lock_);
+  if (duplication_targets_.empty())
+    base::AtomicRefCountInc(&should_duplicate_);
+
   duplication_targets_.insert(to_stream);
 }
 
@@ -451,8 +449,11 @@ void AudioOutputController::DoStopDuplicating(AudioPushSink* to_stream) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   to_stream->Close();
 
-  base::AutoLock lock(duplication_targets_lock_);
   duplication_targets_.erase(to_stream);
+  if (duplication_targets_.empty()) {
+    const bool is_nonzero = base::AtomicRefCountDec(&should_duplicate_);
+    DCHECK(!is_nonzero);
+  }
 }
 
 std::pair<float, bool> AudioOutputController::ReadCurrentPowerAndClip() {
