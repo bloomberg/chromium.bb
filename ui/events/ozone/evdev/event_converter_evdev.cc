@@ -34,7 +34,9 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                     GetInputPathInSys(path),
                     vendor_id,
                     product_id),
-      controller_(FROM_HERE) {}
+      controller_(FROM_HERE) {
+  input_device_.enabled = false;
+}
 
 EventConverterEvdev::~EventConverterEvdev() {
 }
