@@ -88,7 +88,6 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Do not create the after translate infobar if we are auto translating.
-  TranslateClient* translate_client = translate_manager->translate_client();
   if (((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
        (step == translate::TRANSLATE_STEP_TRANSLATING)) &&
       translate_manager->GetLanguageState().InTranslateNavigation()) {
@@ -109,11 +108,11 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Add the new delegate.
+  TranslateClient* translate_client = translate_manager->translate_client();
   std::unique_ptr<infobars::InfoBar> infobar(translate_client->CreateInfoBar(
       base::WrapUnique(new TranslateInfoBarDelegate(
-          translate_manager, is_off_the_record, step, old_delegate,
-          original_language, target_language, error_type,
-          triggered_from_menu))));
+          translate_manager, is_off_the_record, step, original_language,
+          target_language, error_type, triggered_from_menu))));
   if (old_delegate)
     infobar_manager->ReplaceInfoBar(old_infobar, std::move(infobar));
   else
@@ -351,7 +350,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     const base::WeakPtr<TranslateManager>& translate_manager,
     bool is_off_the_record,
     translate::TranslateStep step,
-    TranslateInfoBarDelegate* old_delegate,
     const std::string& original_language,
     const std::string& target_language,
     TranslateErrors::Type error_type,
@@ -359,7 +357,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     : infobars::InfoBarDelegate(),
       is_off_the_record_(is_off_the_record),
       step_(step),
-      background_animation_(NONE),
       ui_delegate_(translate_manager, original_language, target_language),
       translate_manager_(translate_manager),
       error_type_(error_type),
@@ -368,9 +365,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
   DCHECK_NE((step_ == translate::TRANSLATE_STEP_TRANSLATE_ERROR),
             (error_type_ == TranslateErrors::NONE));
   DCHECK(translate_manager_);
-
-  if (old_delegate && (old_delegate->is_error() != is_error()))
-    background_animation_ = is_error() ? NORMAL_TO_ERROR : ERROR_TO_NORMAL;
 }
 
 infobars::InfoBarDelegate::Type
