@@ -256,11 +256,8 @@ bool SafeBrowsingNavigationObserverManager::HasUserGesture(
     content::WebContents* web_contents) {
   if (!web_contents)
     return false;
-  auto it = user_gesture_map_.find(web_contents);
-  if (it != user_gesture_map_.end() &&
-      !IsEventExpired(it->second, kUserGestureTTLInSecond)) {
+  if (user_gesture_map_.find(web_contents) != user_gesture_map_.end())
     return true;
-  }
   return false;
 }
 
@@ -439,7 +436,7 @@ void SafeBrowsingNavigationObserverManager::CleanUpNavigationEvents() {
 
 void SafeBrowsingNavigationObserverManager::CleanUpUserGestures() {
   for (auto it = user_gesture_map_.begin(); it != user_gesture_map_.end();) {
-    if (IsEventExpired(it->second, kUserGestureTTLInSecond))
+    if (IsEventExpired(it->second, kNavigationFootprintTTLInSecond))
       it = user_gesture_map_.erase(it);
     else
       ++it;
