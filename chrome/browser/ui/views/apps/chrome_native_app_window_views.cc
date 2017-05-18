@@ -360,7 +360,8 @@ void ChromeNativeAppWindowViews::InitializeWindow(
   has_frame_color_ = create_params.has_frame_color;
   active_frame_color_ = create_params.active_frame_color;
   inactive_frame_color_ = create_params.inactive_frame_color;
-  if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL) {
+  if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL ||
+      create_params.window_type == AppWindow::WINDOW_TYPE_V1_PANEL) {
     InitializePanelWindow(create_params);
   } else {
     InitializeDefaultWindow(create_params);

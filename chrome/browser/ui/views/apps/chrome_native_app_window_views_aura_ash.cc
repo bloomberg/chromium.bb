@@ -166,6 +166,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     }
   }
   DCHECK_NE(AppWindow::WINDOW_TYPE_PANEL, create_params.window_type);
+  DCHECK_NE(AppWindow::WINDOW_TYPE_V1_PANEL, create_params.window_type);
   init_params->mus_properties
       [ui::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);

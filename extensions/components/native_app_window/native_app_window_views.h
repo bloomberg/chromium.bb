@@ -95,6 +95,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
+  bool ShouldShowWindowIcon() const override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   void DeleteDelegate() override;
