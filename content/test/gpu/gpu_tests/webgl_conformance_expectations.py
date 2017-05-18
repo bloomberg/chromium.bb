@@ -115,14 +115,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/get-extension.html',
         ['passthrough'], bug=682745)
-    self.Fail('conformance/extensions/oes-texture-float.html',
-        ['passthrough'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-float-linear.html',
-        ['passthrough'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        ['passthrough'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-half-float-linear.html',
-        ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
@@ -137,10 +129,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['passthrough'], bug=665518)
-    self.Fail('WebglExtension_OES_texture_float_linear',
-        ['passthrough'], bug=1523) # angle bug ID
-    self.Fail('WebglExtension_OES_texture_half_float_linear',
-        ['passthrough'], bug=1523) # angle bug ID
     self.Skip('conformance/textures/canvas/*',
         ['passthrough'], bug=1932) # angle bug ID
     self.Skip('conformance/textures/video/*',
@@ -149,11 +137,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1932) # angle bug ID
     self.Skip('conformance/textures/webgl_canvas/*',
         ['passthrough'], bug=1932) # angle bug ID
-    self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
-        ['passthrough'], bug=1932) # angle bug ID
     self.Skip('conformance/extensions/oes-texture-float-with-canvas.html',
-        ['passthrough'], bug=1932) # angle bug ID
-    self.Skip('conformance/extensions/oes-texture-half-float-with-video.html',
         ['passthrough'], bug=1932) # angle bug ID
     self.Skip('conformance/extensions/oes-texture-float-with-video.html',
         ['passthrough'], bug=1932) # angle bug ID
