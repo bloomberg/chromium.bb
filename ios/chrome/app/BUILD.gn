@@ -64,6 +64,8 @@ source_set("tests_hook") {
 }
 
 source_set("tests_fake_hook") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   # This target is intentionally not test-only, as the main app depends on it.
   sources = [
     "tests_fake_hook.mm",
