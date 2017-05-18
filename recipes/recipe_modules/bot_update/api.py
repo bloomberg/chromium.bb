@@ -303,6 +303,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
             if patch_body:
               e.result.presentation.logs['patch error'] = (
                   patch_body.splitlines())
+            raise e
 
         # bot_update actually just sets root to be the folder name of the
         # first solution.
