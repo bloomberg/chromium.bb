@@ -38,8 +38,7 @@ std::string ChangeToDescription(const Change& change,
     case CHANGE_TYPE_EMBED:
       if (type == ChangeDescriptionType::ONE)
         return "OnEmbed";
-      return base::StringPrintf("OnEmbed %s drawn=%s",
-                                change.frame_sink_id.ToString().c_str(),
+      return base::StringPrintf("OnEmbed drawn=%s",
                                 change.bool_value ? "true" : "false");
 
     case CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED:
@@ -141,11 +140,10 @@ std::string ChangeToDescription(const Change& change,
                                 change.bool_value ? "true" : "false");
 
     case CHANGE_TYPE_ON_TOP_LEVEL_CREATED:
-      return base::StringPrintf(
-          "TopLevelCreated id=%d %s window_id=%s drawn=%s", change.change_id,
-          change.frame_sink_id.ToString().c_str(),
-          WindowIdToString(change.window_id).c_str(),
-          change.bool_value ? "true" : "false");
+      return base::StringPrintf("TopLevelCreated id=%d window_id=%s drawn=%s",
+                                change.change_id,
+                                WindowIdToString(change.window_id).c_str(),
+                                change.bool_value ? "true" : "false");
     case CHANGE_TYPE_OPACITY:
       return base::StringPrintf("OpacityChanged window_id=%s opacity=%.2f",
                                 WindowIdToString(change.window_id).c_str(),
@@ -244,13 +242,11 @@ TestChangeTracker::~TestChangeTracker() {}
 
 void TestChangeTracker::OnEmbed(ClientSpecificId client_id,
                                 mojom::WindowDataPtr root,
-                                bool drawn,
-                                const cc::FrameSinkId& frame_sink_id) {
+                                bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
   change.client_id = client_id;
   change.bool_value = drawn;
-  change.frame_sink_id = frame_sink_id;
   change.windows.push_back(WindowDataToTestWindow(root));
   AddChange(change);
 }
@@ -438,17 +434,14 @@ void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnTopLevelCreated(
-    uint32_t change_id,
-    mojom::WindowDataPtr window_data,
-    bool drawn,
-    const cc::FrameSinkId& frame_sink_id) {
+void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
+                                          mojom::WindowDataPtr window_data,
+                                          bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_ON_TOP_LEVEL_CREATED;
   change.change_id = change_id;
   change.window_id = window_data->window_id;
   change.bool_value = drawn;
-  change.frame_sink_id = frame_sink_id;
   AddChange(change);
 }
 

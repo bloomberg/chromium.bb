@@ -280,14 +280,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
     // TODO(sky): add coverage of |focused_window_id|.
     ASSERT_TRUE(root);
     root_window_id_ = root->window_id;
     tree_ = std::move(tree);
     client_id_ = client_id;
-    tracker()->OnEmbed(client_id, std::move(root), drawn, frame_sink_id);
+    tracker()->OnEmbed(client_id, std::move(root), drawn);
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
@@ -306,10 +305,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
-    tracker()->OnTopLevelCreated(change_id, std::move(data), drawn,
-                                 frame_sink_id);
+    tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
   }
   void OnWindowBoundsChanged(
       Id window_id,
@@ -453,7 +450,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       const display::Display& display,
       mojom::WindowDataPtr root_data,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
     NOTIMPLEMENTED();
   }
@@ -1756,9 +1752,7 @@ TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications2) {
 
   // Establish the second client at 1,2.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClientWithRoot(window_1_2));
-  EXPECT_EQ(
-      base::StringPrintf("OnEmbed FrameSinkId(%d, 0) drawn=true", window_1_2),
-      SingleChangeToDescription2(*changes2()));
+  EXPECT_EQ("OnEmbed drawn=true", SingleChangeToDescription2(*changes2()));
   changes2()->clear();
 
   // Show 1,2 from client 1. Client 2 should see this.
@@ -1786,9 +1780,7 @@ TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications3) {
   // window ID. This is likely bad from a security perspective and should be
   // fixed.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClientWithRoot(window_1_2));
-  EXPECT_EQ(
-      base::StringPrintf("OnEmbed FrameSinkId(%d, 0) drawn=false", window_1_2),
-      SingleChangeToDescription2(*changes2()));
+  EXPECT_EQ("OnEmbed drawn=false", SingleChangeToDescription2(*changes2()));
   changes2()->clear();
 
   // Show 1,1, drawn should be true for 1,2 (as that is all the child sees).

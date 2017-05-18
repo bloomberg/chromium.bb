@@ -146,7 +146,7 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
   const bool drawn = root->parent() && root->parent()->IsDrawn();
   client()->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
                     display_id, focused_window_id.id, drawn,
-                    root->frame_sink_id(), root->current_local_surface_id());
+                    root->current_local_surface_id());
 }
 
 void WindowTree::ConfigureWindowManager(
@@ -237,8 +237,7 @@ void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
 
   window_manager_internal_->WmNewDisplayAdded(
       ws_display->GetDisplay(), WindowToWindowData(root),
-      root->parent()->IsDrawn(), root->frame_sink_id(),
-      root->current_local_surface_id());
+      root->parent()->IsDrawn(), root->current_local_surface_id());
 }
 
 void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
@@ -662,7 +661,7 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
   int64_t display_id = display ? display->GetId() : display::kInvalidDisplayId;
   const bool drawn = window->parent() && window->parent()->IsDrawn();
   client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window),
-                              display_id, drawn, window->frame_sink_id(),
+                              display_id, drawn,
                               window->current_local_surface_id());
 }
 
@@ -2234,11 +2233,11 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
       ProcessSetDisplayRoot(display, *viewport_metrics, is_primary_display,
                             ClientWindowId(window_id));
   if (!display_root) {
-    callback.Run(base::Optional<cc::FrameSinkId>());
+    callback.Run(false);
     return;
   }
   display_root->parent()->SetVisible(true);
-  callback.Run(display_root->frame_sink_id());
+  callback.Run(true);
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

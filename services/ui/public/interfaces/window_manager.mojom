@@ -153,13 +153,11 @@ interface WindowManager {
   OnConnect(uint16 client_id);
 
   // Called when a new display is added. |root| gives the root window specific
-  // to this WindowManager for |display|. |frame_sink_id| uniquely identifies
-  // the window manager in the frame sink manager. |local_surface_id| identifies
-  // the ID to use to submit CompositorFrames.
+  // to this WindowManager for |display|. |local_surface_id| identifies the ID
+  // to use to submit CompositorFrames.
   WmNewDisplayAdded(display.mojom.Display display,
                     WindowData root,
                     bool parent_drawn,
-                    cc.mojom.FrameSinkId frame_sink_id,
                     cc.mojom.LocalSurfaceId? local_surface_id);
 
   // Called when a display is removed. The root of the specified display is
@@ -273,13 +271,12 @@ interface WindowManagerClient {
   // Sets the root of a particular display. This is only applicable when the
   // WindowTree was created with a value of false for
   // |automatically_create_display_roots| (see
-  // WindowManagerWindowTreeFactory::CreateWindowTree() for details). On success
-  // this responds with the FrameSinkId of the root. On failure the FrameSinkId
-  // is not valid.
+  // WindowManagerWindowTreeFactory::CreateWindowTree() for details).
+  // Returns true on success.
   SetDisplayRoot(display.mojom.Display display,
                  WmViewportMetrics viewport_metrics,
                  bool is_primary_display,
-                 uint32 window_id) => (cc.mojom.FrameSinkId? frame_sink_id);
+                 uint32 window_id) => (bool success);
 
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);

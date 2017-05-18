@@ -53,7 +53,7 @@ void RendererWindowTreeClient::RequestCompositorFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const CompositorFrameSinkCallback& callback) {
   DCHECK(pending_compositor_frame_sink_callback_.is_null());
-  if (frame_sink_id_.is_valid()) {
+  if (tree_) {
     RequestCompositorFrameSinkInternal(std::move(context_provider),
                                        gpu_memory_buffer_manager, callback);
     return;
@@ -77,9 +77,12 @@ void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const CompositorFrameSinkCallback& callback) {
   std::unique_ptr<ui::ClientCompositorFrameSinkBinding> frame_sink_binding;
+  bool enable_surface_synchronization =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization);
   auto frame_sink = ui::ClientCompositorFrameSink::Create(
-      frame_sink_id_, std::move(context_provider), gpu_memory_buffer_manager,
-      &frame_sink_binding);
+      std::move(context_provider), gpu_memory_buffer_manager,
+      &frame_sink_binding, enable_surface_synchronization);
   tree_->AttachCompositorFrameSink(
       root_window_id_, frame_sink_binding->TakeFrameSinkRequest(),
       mojo::MakeProxy(frame_sink_binding->TakeFrameSinkClient()));
@@ -97,9 +100,7 @@ void RendererWindowTreeClient::OnEmbed(
     int64_t display_id,
     ui::Id focused_window_id,
     bool drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
-  frame_sink_id_ = frame_sink_id;
   root_window_id_ = root->window_id;
   tree_ = std::move(tree);
   if (!pending_compositor_frame_sink_callback_.is_null()) {
@@ -136,7 +137,6 @@ void RendererWindowTreeClient::OnTopLevelCreated(
     ui::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   NOTREACHED();
 }

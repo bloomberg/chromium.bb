@@ -238,7 +238,6 @@ class AURA_EXPORT WindowTreeClient
       WindowMusType window_mus_type,
       const ui::mojom::WindowData& window_data,
       int64_t display_id,
-      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId(),
       const base::Optional<cc::LocalSurfaceId>& local_surface_id =
           base::nullopt);
 
@@ -267,20 +266,16 @@ class AURA_EXPORT WindowTreeClient
                    int64_t display_id,
                    Id focused_window_id,
                    bool drawn,
-                   const cc::FrameSinkId& frame_sink_id,
                    const base::Optional<cc::LocalSurfaceId>& local_surface_id);
 
   // Called once mus acks the call to SetDisplayRoot().
-  void OnSetDisplayRootDone(
-      Id window_id,
-      const base::Optional<cc::FrameSinkId>& frame_sink_id);
+  void OnSetDisplayRootDone(bool success);
 
   // Called by WmNewDisplayAdded().
   WindowTreeHostMus* WmNewDisplayAddedImpl(
       const display::Display& display,
       ui::mojom::WindowDataPtr root_data,
       bool parent_drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id);
 
   std::unique_ptr<EventResultCallback> CreateEventResultCallback(
@@ -332,7 +327,6 @@ class AURA_EXPORT WindowTreeClient
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
@@ -345,7 +339,6 @@ class AURA_EXPORT WindowTreeClient
       ui::mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
       Id window_id,
@@ -424,7 +417,6 @@ class AURA_EXPORT WindowTreeClient
       const display::Display& display,
       ui::mojom::WindowDataPtr root_data,
       bool parent_drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override;

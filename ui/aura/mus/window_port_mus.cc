@@ -93,39 +93,19 @@ void WindowPortMus::Embed(
   window_tree_client_->Embed(window_, std::move(client), flags, callback);
 }
 
-void WindowPortMus::RequestCompositorFrameSink(
+std::unique_ptr<cc::CompositorFrameSink>
+WindowPortMus::RequestCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const CompositorFrameSinkCallback& callback) {
-  DCHECK(pending_compositor_frame_sink_request_.is_null());
-  // If we haven't received a FrameSinkId from the window server yet then we
-  // bind the parameters to a closure that will be called once the FrameSinkId
-  // is available.
-  if (!frame_sink_id_.is_valid()) {
-    pending_compositor_frame_sink_request_ =
-        base::Bind(&WindowPortMus::RequestCompositorFrameSinkInternal,
-                   base::Unretained(this), std::move(context_provider),
-                   gpu_memory_buffer_manager, callback);
-    return;
-  }
-
-  RequestCompositorFrameSinkInternal(std::move(context_provider),
-                                     gpu_memory_buffer_manager, callback);
-}
-
-void WindowPortMus::RequestCompositorFrameSinkInternal(
-    scoped_refptr<cc::ContextProvider> context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const CompositorFrameSinkCallback& callback) {
-  DCHECK(frame_sink_id_.is_valid());
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
       compositor_frame_sink_binding;
   std::unique_ptr<ui::ClientCompositorFrameSink> compositor_frame_sink =
       ui::ClientCompositorFrameSink::Create(
-          frame_sink_id_, std::move(context_provider),
-          gpu_memory_buffer_manager, &compositor_frame_sink_binding);
+          std::move(context_provider), gpu_memory_buffer_manager,
+          &compositor_frame_sink_binding,
+          window_tree_client_->enable_surface_synchronization_);
   AttachCompositorFrameSink(std::move(compositor_frame_sink_binding));
-  callback.Run(std::move(compositor_frame_sink));
+  return std::move(compositor_frame_sink);
 }
 
 void WindowPortMus::AttachCompositorFrameSink(
@@ -288,15 +268,9 @@ void WindowPortMus::SetPropertyFromServer(
 
 void WindowPortMus::SetFrameSinkIdFromServer(
     const cc::FrameSinkId& frame_sink_id) {
+  DCHECK(window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
+         window_mus_type() == WindowMusType::EMBED_IN_OWNER);
   frame_sink_id_ = frame_sink_id;
-  if (!pending_compositor_frame_sink_request_.is_null()) {
-    // TOP_LEVEL_IN_WM, and EMBED_IN_OWNER windows should not be requesting
-    // CompositorFrameSinks.
-    DCHECK_NE(WindowMusType::TOP_LEVEL_IN_WM, window_mus_type());
-    DCHECK_NE(WindowMusType::EMBED_IN_OWNER, window_mus_type());
-    base::ResetAndReturn(&pending_compositor_frame_sink_request_).Run();
-    return;
-  }
   UpdatePrimarySurfaceInfo();
 }
 

@@ -759,12 +759,10 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   // window ID. This is likely bad from a security perspective and should be
   // fixed.
   EXPECT_EQ(
-      base::StringPrintf(
-          "TopLevelCreated id=17 FrameSinkId(%d, 0) window_id=%s drawn=true",
-          WindowIdToTransportId(embed_window->id()),
-          WindowIdToString(
-              WindowIdFromTransportId(embed_window_id2_in_child.id))
-              .c_str()),
+      base::StringPrintf("TopLevelCreated id=17 window_id=%s drawn=true",
+                         WindowIdToString(WindowIdFromTransportId(
+                                              embed_window_id2_in_child.id))
+                             .c_str()),
       SingleChangeToDescription(
           *child_binding->client()->tracker()->changes()));
   child_binding->client()->tracker()->changes()->clear();

@@ -469,7 +469,6 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
     WindowMusType window_mus_type,
     const ui::mojom::WindowData& window_data,
     int64_t display_id,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   std::unique_ptr<WindowPortMus> window_port =
       CreateWindowPortMus(window_data, window_mus_type);
@@ -478,7 +477,6 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   init_params.window_port = std::move(window_port);
   init_params.window_tree_client = this;
   init_params.display_id = display_id;
-  init_params.frame_sink_id = frame_sink_id;
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       base::MakeUnique<WindowTreeHostMus>(std::move(init_params));
   window_tree_host->InitHost();
@@ -571,7 +569,6 @@ void WindowTreeClient::OnEmbedImpl(
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   // WARNING: this is only called if WindowTreeClient was created as the
   // result of an embedding.
@@ -579,9 +576,8 @@ void WindowTreeClient::OnEmbedImpl(
   WindowTreeConnectionEstablished(window_tree);
 
   DCHECK(roots_.empty());
-  std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      CreateWindowTreeHost(WindowMusType::EMBED, *root_data, display_id,
-                           frame_sink_id, local_surface_id);
+  std::unique_ptr<WindowTreeHostMus> window_tree_host = CreateWindowTreeHost(
+      WindowMusType::EMBED, *root_data, display_id, local_surface_id);
 
   focus_synchronizer_->SetFocusFromServer(
       GetWindowByServerId(focused_window_id));
@@ -589,24 +585,15 @@ void WindowTreeClient::OnEmbedImpl(
   delegate_->OnEmbed(std::move(window_tree_host));
 }
 
-void WindowTreeClient::OnSetDisplayRootDone(
-    Id window_id,
-    const base::Optional<cc::FrameSinkId>& frame_sink_id) {
+void WindowTreeClient::OnSetDisplayRootDone(bool success) {
   // The only way SetDisplayRoot() should fail is if we've done something wrong.
-  CHECK(frame_sink_id);
-
-  WindowMus* window = GetWindowByServerId(window_id);
-  if (!window)
-    return;  // Display was already deleted.
-
-  window->SetFrameSinkIdFromServer(*frame_sink_id);
+  CHECK(success);
 }
 
 WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   DCHECK(window_manager_delegate_);
 
@@ -614,9 +601,9 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
 
   window_manager_delegate_->OnWmWillCreateDisplay(display);
 
-  std::unique_ptr<WindowTreeHostMus> window_tree_host = CreateWindowTreeHost(
-      WindowMusType::DISPLAY_AUTOMATICALLY_CREATED, *root_data, display.id(),
-      frame_sink_id, local_surface_id);
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      CreateWindowTreeHost(WindowMusType::DISPLAY_AUTOMATICALLY_CREATED,
+                           *root_data, display.id(), local_surface_id);
 
   WindowTreeHostMus* window_tree_host_ptr = window_tree_host.get();
   window_manager_delegate_->OnWmNewDisplay(std::move(window_tree_host),
@@ -748,7 +735,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
           base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
-                     base::Unretained(this), window->server_id()));
+                     base::Unretained(this)));
     }
   }
 }
@@ -984,7 +971,6 @@ void WindowTreeClient::OnEmbed(
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
@@ -998,7 +984,7 @@ void WindowTreeClient::OnEmbed(
   }
 
   OnEmbedImpl(tree_ptr_.get(), client_id, std::move(root_data), display_id,
-              focused_window_id, drawn, frame_sink_id, local_surface_id);
+              focused_window_id, drawn, local_surface_id);
 }
 
 void WindowTreeClient::OnEmbeddedAppDisconnected(Id window_id) {
@@ -1046,7 +1032,6 @@ void WindowTreeClient::OnTopLevelCreated(
     ui::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   // The server ack'd the top level window we created and supplied the state
   // of the window at the time the server created it. For properties we do not
@@ -1112,8 +1097,6 @@ void WindowTreeClient::OnTopLevelCreated(
 
   // Top level windows should not have a parent.
   DCHECK_EQ(0u, data->parent_id);
-
-  window->SetFrameSinkIdFromServer(frame_sink_id);
 }
 
 void WindowTreeClient::OnWindowBoundsChanged(
@@ -1512,10 +1495,9 @@ void WindowTreeClient::WmNewDisplayAdded(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn,
-    const cc::FrameSinkId& frame_sink_id,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   WmNewDisplayAddedImpl(display, std::move(root_data), parent_drawn,
-                        frame_sink_id, local_surface_id);
+                        local_surface_id);
 }
 
 void WindowTreeClient::WmDisplayRemoved(int64_t display_id) {

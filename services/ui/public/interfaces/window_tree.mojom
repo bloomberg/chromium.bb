@@ -327,8 +327,7 @@ interface WindowTreeClient {
   // the window manager service, unless the connection is to the root connection
   // in which case it will be null. |parent_drawn| is true if roots parent is
   // drawn, see OnParentDrawnStateChanged() for details. |display_id| identifies
-  // the display this root window is on. |frame_sink_id| uniquely identifies the
-  // client in the frame sink manager. If the embedded window has a size,
+  // the display this root window is on. If the embedded window has a size,
   // |local_surface_id| identifies the ID to use to submit CompositorFrames.
   OnEmbed(uint16 connection_id,
           WindowData root,
@@ -336,7 +335,6 @@ interface WindowTreeClient {
           int64 display_id,
           uint32 focused_window,
           bool parent_drawn,
-          cc.mojom.FrameSinkId frame_sink_id,
           cc.mojom.LocalSurfaceId? local_surface_id);
 
   // Invoked when the application embedded at |window| is disconnected. In other
@@ -361,14 +359,12 @@ interface WindowTreeClient {
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see
   // OnDrawnStateChanged() for details. |display_id| identifies the display this
-  // window is on. |frame_sink_id| uniquely identifies the client in the display
-  // compositor. If the top level window has a size, |local_surface_id|
+  // window is on. If the top level window has a size, |local_surface_id|
   // identifies the ID to use to submit CompositorFrames.
   OnTopLevelCreated(uint32 change_id,
                     WindowData data,
                     int64 display_id,
                     bool parent_drawn,
-                    cc.mojom.FrameSinkId frame_sink_id,
                     cc.mojom.LocalSurfaceId? local_surface_id);
 
   // Invoked when a window's bounds have changed. Only the client embedded in
