@@ -127,11 +127,11 @@ public class BottomSheet
     /** This is a cached array for getting the window location of different views. */
     private final int[] mLocationArray = new int[2];
 
-    /** The distance from the top the sheet should be when fully expanded. */
-    private final float mFullHeightDistanceFromTop;
-
     /** The minimum distance between half and full states to allow the half state. */
     private final float mMinHalfFullDistance;
+
+    /** The height of the shadow that sits above the toolbar. */
+    private final int mToolbarShadowHeight;
 
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
@@ -367,11 +367,10 @@ public class BottomSheet
     public BottomSheet(Context context, AttributeSet atts) {
         super(context, atts);
 
-        mFullHeightDistanceFromTop =
-                getResources().getDimensionPixelSize(R.dimen.chrome_home_full_height_from_top);
-
         mMinHalfFullDistance =
                 getResources().getDimensionPixelSize(R.dimen.chrome_home_min_full_half_distance);
+        mToolbarShadowHeight =
+                getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
 
         mVelocityTracker = VelocityTracker.obtain();
 
@@ -834,7 +833,8 @@ public class BottomSheet
         // also updated.
         mStateRatios[0] = mToolbarHeight / mContainerHeight;
         mStateRatios[1] = HALF_HEIGHT_RATIO;
-        mStateRatios[2] = (mContainerHeight - mFullHeightDistanceFromTop) / mContainerHeight;
+        // The max height ratio will be greater than 1 to account for the toolbar shadow.
+        mStateRatios[2] = (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
 
         // Compute the height that the content section of the bottom sheet.
         float contentHeight = (mContainerHeight * getFullRatio()) - mToolbarHeight;
