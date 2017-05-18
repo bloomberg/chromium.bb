@@ -1269,6 +1269,7 @@ CrSettingsLanguagesTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     'test_util.js',
     'test_browser_proxy.js',
