@@ -17,7 +17,7 @@ class LayoutTableSectionTest : public RenderingTest {
     return ToLayoutTableSection(GetLayoutObjectByElementId(id));
   }
 
-  LayoutTableSection* CreateSection(unsigned rows, unsigned cols) {
+  LayoutTableSection* CreateSection(unsigned rows, unsigned columns) {
     auto* table = GetDocument().createElement("table");
     GetDocument().body()->appendChild(table);
     auto* section = GetDocument().createElement("tbody");
@@ -25,7 +25,7 @@ class LayoutTableSectionTest : public RenderingTest {
     for (unsigned i = 0; i < rows; ++i) {
       auto* row = GetDocument().createElement("tr");
       section->appendChild(row);
-      for (unsigned i = 0; i < cols; ++i)
+      for (unsigned i = 0; i < columns; ++i)
         row->appendChild(GetDocument().createElement("td"));
     }
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -78,7 +78,7 @@ TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
       section->BackgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
 
-TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRows) {
+TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRowsAndEffeciveColumns) {
   SetBodyInnerHTML(
       "<table style='border: 100px solid red'>"
       "  <thead id='section'></thead>"
@@ -86,25 +86,16 @@ TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRows) {
 
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
-  CellSpan cell_span = section->DirtiedRows(LayoutRect(50, 50, 100, 100));
-  EXPECT_EQ(0u, cell_span.Start());
-  EXPECT_EQ(0u, cell_span.end());
-}
-
-TEST_F(LayoutTableSectionTest, EmptySectionDirtiedEffectiveColumns) {
-  SetBodyInnerHTML(
-      "<table style='border: 100px solid red'>"
-      "  <thead id='section'></thead>"
-      "</table>");
-
-  auto* section = GetSectionByElementId("section");
-  EXPECT_TRUE(section);
-  CellSpan cell_span =
-      section->DirtiedEffectiveColumns(LayoutRect(50, 50, 100, 100));
+  CellSpan rows;
+  CellSpan columns;
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(50, 50, 100, 100), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(0u, rows.End());
   // The table has at least 1 column even if there is no cell.
   EXPECT_EQ(1u, section->Table()->NumEffectiveColumns());
-  EXPECT_EQ(1u, cell_span.Start());
-  EXPECT_EQ(1u, cell_span.end());
+  EXPECT_EQ(1u, columns.Start());
+  EXPECT_EQ(1u, columns.End());
 }
 
 TEST_F(LayoutTableSectionTest, PrimaryCellAtAndOriginatingCellAt) {
@@ -141,7 +132,7 @@ TEST_F(LayoutTableSectionTest, PrimaryCellAtAndOriginatingCellAt) {
   EXPECT_EQ(nullptr, section->OriginatingCellAt(1, 1));
 }
 
-TEST_F(LayoutTableSectionTest, DirtiedRowsAndDirtiedEffectiveColumnsWithSpans) {
+TEST_F(LayoutTableSectionTest, DirtiedRowsAndEffectiveColumnsWithSpans) {
   SetBodyInnerHTML(
       "<style>"
       "  td { width: 100px; height: 100px; padding: 0 }"
@@ -172,58 +163,114 @@ TEST_F(LayoutTableSectionTest, DirtiedRowsAndDirtiedEffectiveColumnsWithSpans) {
   auto* section = GetSectionByElementId("section");
 
   // Cell 0,0 only.
-  auto span = section->DirtiedRows(LayoutRect(5, 5, 90, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(1u, span.end());
-  span = section->DirtiedEffectiveColumns(LayoutRect(5, 5, 90, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(1u, span.end());
+  CellSpan rows;
+  CellSpan columns;
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(5, 5, 90, 90), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(1u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(1u, columns.End());
 
   // Rect intersects the first row and all originating primary cells.
-  span = section->DirtiedRows(LayoutRect(5, 5, 290, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(1u, span.end());
-  span = section->DirtiedEffectiveColumns(LayoutRect(5, 5, 290, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(3u, span.end());
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(5, 5, 290, 90), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(1u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(3u, columns.End());
 
   // Rect intersects (1,2). Dirtied rows also cover the first row to cover the
   // primary cell's originating slot.
-  span = section->DirtiedRows(LayoutRect(205, 105, 90, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(2u, span.end());
-  span = section->DirtiedEffectiveColumns(LayoutRect(205, 105, 90, 90));
-  EXPECT_EQ(2u, span.Start());
-  EXPECT_EQ(3u, span.end());
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(205, 105, 90, 90), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(2u, rows.End());
+  EXPECT_EQ(2u, columns.Start());
+  EXPECT_EQ(3u, columns.End());
 
   // Rect intersects (1,1) which has multiple levels of cells (originating from
-  // (1,0) and (0,1), in which (1,0) is the primary cell).
-  // Dirtied columns also cover the first column to cover the primary cell's
-  // originating grid slot.
-  span = section->DirtiedRows(LayoutRect(105, 105, 90, 90));
-  EXPECT_EQ(1u, span.Start());
-  EXPECT_EQ(2u, span.end());
-  span = section->DirtiedEffectiveColumns(LayoutRect(105, 105, 90, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(2u, span.end());
+  // (1,0) and (0,1)). Dirtied columns also cover the first column. Dirtied rows
+  // also cover the first row.
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(105, 105, 90, 90), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(2u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(2u, columns.End());
 
   // Rect intersects (1,1) and (1,2). Dirtied rows also cover the first row.
   // Dirtied columns also cover the first column.
-  span = section->DirtiedRows(LayoutRect(105, 105, 190, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(2u, span.end());
-  span = section->DirtiedEffectiveColumns(LayoutRect(105, 105, 190, 90));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(3u, span.end());
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(105, 105, 190, 90), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(2u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(3u, columns.End());
 
   // Rect intersects (1,2) and (2,2). Dirtied rows and dirtied columns cover all
   // rows and columns.
-  span = section->DirtiedRows(LayoutRect(205, 105, 90, 190));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(3u, span.end());
-  span = section->DirtiedEffectiveColumns(LayoutRect(205, 105, 90, 190));
-  EXPECT_EQ(0u, span.Start());
-  EXPECT_EQ(3u, span.end());
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(205, 105, 90, 190), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(3u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(3u, columns.End());
+}
+
+TEST_F(LayoutTableSectionTest,
+       DirtiedRowsAndEffectiveColumnsWithCollapsedBorders) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  td { width: 100px; height: 100px; padding: 0; border: 2px solid; }"
+      "  table { border-collapse: collapse }"
+      "</style>"
+      "<table>"
+      "  <tbody id='section'>"
+      "    <tr><td></td><td></td><td></td><td></td></tr>"
+      "    <tr><td></td><td></td><td></td><td></td></tr>"
+      "    <tr><td></td><td></td><td></td><td></td></tr>"
+      "    <tr><td></td><td></td><td></td><td></td></tr>"
+      "  </tbody>"
+      "</table>");
+
+  // Dirtied rows and columns are expanded by 1 cell in each side to ensure
+  // collapsed borders are covered.
+  auto* section = GetSectionByElementId("section");
+  CellSpan rows;
+  CellSpan columns;
+
+  // Rect intersects cells (0,0 1x1), expanded to (0,0 2x2)
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(50, 50, 10, 10), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(2u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(2u, columns.End());
+
+  // Rect intersects cells (2,1 1x1), expanded to (1,0 3x3)
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(250, 150, 10, 10), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(3u, rows.End());
+  EXPECT_EQ(1u, columns.Start());
+  EXPECT_EQ(4u, columns.End());
+
+  // Rect intersects cells (3,2 1x2), expanded to (2,1 2x3)
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(350, 220, 110, 110), rows,
+                                          columns);
+  EXPECT_EQ(1u, rows.Start());
+  EXPECT_EQ(4u, rows.End());
+  EXPECT_EQ(2u, columns.Start());
+  EXPECT_EQ(4u, columns.End());
+
+  // All cells.
+  section->DirtiedRowsAndEffectiveColumns(LayoutRect(0, 0, 400, 400), rows,
+                                          columns);
+  EXPECT_EQ(0u, rows.Start());
+  EXPECT_EQ(4u, rows.End());
+  EXPECT_EQ(0u, columns.Start());
+  EXPECT_EQ(4u, columns.End());
 }
 
 TEST_F(LayoutTableSectionTest, VisualOverflowWithCollapsedBorders) {
@@ -275,37 +322,35 @@ TEST_F(LayoutTableSectionTest, OverflowingCells) {
   LayoutRect paint_rect(50, 50, 50, 50);
   auto* small_section = CreateSection(20, 20);
   EXPECT_FALSE(small_section->HasOverflowingCell());
-  EXPECT_NE(small_section->FullTableEffectiveColumnSpan(),
-            small_section->DirtiedEffectiveColumns(paint_rect));
-  EXPECT_NE(small_section->FullSectionRowSpan(),
-            small_section->DirtiedRows(paint_rect));
+  CellSpan rows;
+  CellSpan columns;
+  small_section->DirtiedRowsAndEffectiveColumns(paint_rect, rows, columns);
+  EXPECT_NE(small_section->FullSectionRowSpan(), rows);
+  EXPECT_NE(small_section->FullTableEffectiveColumnSpan(), columns);
 
   auto* big_section = CreateSection(80, 80);
   EXPECT_FALSE(big_section->HasOverflowingCell());
-  EXPECT_NE(big_section->FullTableEffectiveColumnSpan(),
-            big_section->DirtiedEffectiveColumns(paint_rect));
-  EXPECT_NE(big_section->FullSectionRowSpan(),
-            big_section->DirtiedRows(paint_rect));
+  big_section->DirtiedRowsAndEffectiveColumns(paint_rect, rows, columns);
+  EXPECT_NE(big_section->FullSectionRowSpan(), rows);
+  EXPECT_NE(big_section->FullTableEffectiveColumnSpan(), columns);
 
   SetCellsOverflowInRow(small_section->FirstRow());
   SetCellsOverflowInRow(big_section->FirstRow());
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  // Small sections with overflowing cells always use the slow path.
+  // Small sections with overflowing cells always use the full paint path.
   EXPECT_TRUE(small_section->HasOverflowingCell());
   EXPECT_EQ(0u, small_section->OverflowingCells().size());
-  EXPECT_EQ(small_section->FullTableEffectiveColumnSpan(),
-            small_section->DirtiedEffectiveColumns(paint_rect));
-  EXPECT_EQ(small_section->FullSectionRowSpan(),
-            small_section->DirtiedRows(paint_rect));
+  small_section->DirtiedRowsAndEffectiveColumns(paint_rect, rows, columns);
+  EXPECT_EQ(small_section->FullSectionRowSpan(), rows);
+  EXPECT_EQ(small_section->FullTableEffectiveColumnSpan(), columns);
 
-  // Big sections with small number of overflowing cells use the fast path.
+  // Big sections with small number of overflowing cells use partial paint path.
   EXPECT_TRUE(big_section->HasOverflowingCell());
   EXPECT_EQ(80u, big_section->OverflowingCells().size());
-  EXPECT_NE(big_section->FullTableEffectiveColumnSpan(),
-            big_section->DirtiedEffectiveColumns(paint_rect));
-  EXPECT_NE(big_section->FullSectionRowSpan(),
-            big_section->DirtiedRows(paint_rect));
+  big_section->DirtiedRowsAndEffectiveColumns(paint_rect, rows, columns);
+  EXPECT_NE(big_section->FullSectionRowSpan(), rows);
+  EXPECT_NE(big_section->FullTableEffectiveColumnSpan(), columns);
 
   for (auto* row = small_section->FirstRow(); row; row = row->NextRow())
     SetCellsOverflowInRow(row);
@@ -313,22 +358,20 @@ TEST_F(LayoutTableSectionTest, OverflowingCells) {
     SetCellsOverflowInRow(row);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  // Small sections with overflowing cells always use the slow path.
+  // Small sections with overflowing cells always use the full paint path.
   EXPECT_TRUE(small_section->HasOverflowingCell());
   EXPECT_EQ(0u, small_section->OverflowingCells().size());
-  EXPECT_EQ(small_section->FullTableEffectiveColumnSpan(),
-            small_section->DirtiedEffectiveColumns(paint_rect));
-  EXPECT_EQ(small_section->FullSectionRowSpan(),
-            small_section->DirtiedRows(paint_rect));
+  small_section->DirtiedRowsAndEffectiveColumns(paint_rect, rows, columns);
+  EXPECT_EQ(small_section->FullSectionRowSpan(), rows);
+  EXPECT_EQ(small_section->FullTableEffectiveColumnSpan(), columns);
 
-  // Big sections with too many overflowing cells are forced to use the slow
-  // path.
+  // Big sections with too many overflowing cells are forced to use the full
+  // paint path.
   EXPECT_TRUE(big_section->HasOverflowingCell());
   EXPECT_EQ(0u, big_section->OverflowingCells().size());
-  EXPECT_EQ(big_section->FullTableEffectiveColumnSpan(),
-            big_section->DirtiedEffectiveColumns(paint_rect));
-  EXPECT_EQ(big_section->FullSectionRowSpan(),
-            big_section->DirtiedRows(paint_rect));
+  big_section->DirtiedRowsAndEffectiveColumns(paint_rect, rows, columns);
+  EXPECT_EQ(big_section->FullSectionRowSpan(), rows);
+  EXPECT_EQ(big_section->FullTableEffectiveColumnSpan(), columns);
 }
 
 }  // anonymous namespace

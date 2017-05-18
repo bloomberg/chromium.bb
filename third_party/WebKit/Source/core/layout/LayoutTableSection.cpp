@@ -1522,89 +1522,75 @@ LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(
   return table_aligned_rect;
 }
 
-CellSpan LayoutTableSection::DirtiedRows(const LayoutRect& damage_rect) const {
-  if (force_full_paint_)
-    return FullSectionRowSpan();
-
-  if (!grid_.size())
-    return CellSpan(0, 0);
-
-  CellSpan covered_rows = SpannedRows(damage_rect);
-
-  // To paint the border we might need to paint the first or last row even if
-  // they are not spanned themselves.
-  CHECK_LT(covered_rows.Start(), row_pos_.size());
-  if (covered_rows.Start() == row_pos_.size() - 1 &&
-      row_pos_[row_pos_.size() - 1] + Table()->OuterBorderAfter() >=
-          damage_rect.Y())
-    covered_rows.DecreaseStart();
-
-  if (!covered_rows.end() &&
-      row_pos_[0] - Table()->OuterBorderBefore() <= damage_rect.MaxY())
-    covered_rows.IncreaseEnd();
-
-  covered_rows.EnsureConsistency(grid_.size());
-  if (!has_spanning_cells_ || !covered_rows.Start() ||
-      covered_rows.Start() >= grid_.size())
-    return covered_rows;
-
-  // If there are any cells spanning into the first row, expand covered_rows
-  // to cover the primary cells.
-  unsigned n_cols = NumCols(covered_rows.Start());
-  unsigned smallest_row = covered_rows.Start();
-  CellSpan covered_columns = SpannedEffectiveColumns(damage_rect);
-  for (unsigned c = covered_columns.Start();
-       c < std::min(covered_columns.end(), n_cols); ++c) {
-    if (const auto* cell = PrimaryCellAt(covered_rows.Start(), c)) {
-      smallest_row = std::min(smallest_row, cell->RowIndex());
-      if (!smallest_row)
-        break;
-    }
+void LayoutTableSection::DirtiedRowsAndEffectiveColumns(
+    const LayoutRect& damage_rect,
+    CellSpan& rows,
+    CellSpan& columns) const {
+  if (!grid_.size()) {
+    rows = CellSpan();
+    columns = CellSpan();
   }
-  return CellSpan(smallest_row, covered_rows.end());
-}
 
-CellSpan LayoutTableSection::DirtiedEffectiveColumns(
-    const LayoutRect& damage_rect) const {
-  if (force_full_paint_)
-    return FullTableEffectiveColumnSpan();
-
-  CHECK(Table()->NumEffectiveColumns());
-  CellSpan covered_columns = SpannedEffectiveColumns(damage_rect);
-
-  const Vector<int>& column_pos = Table()->EffectiveColumnPositions();
-  // To paint the border we might need to paint the first or last column even if
-  // they are not spanned themselves.
-  CHECK_LT(covered_columns.Start(), column_pos.size());
-  if (covered_columns.Start() == column_pos.size() - 1 &&
-      column_pos[column_pos.size() - 1] + Table()->OuterBorderEnd() >=
-          damage_rect.X())
-    covered_columns.DecreaseStart();
-
-  if (!covered_columns.end() &&
-      column_pos[0] - Table()->OuterBorderStart() <= damage_rect.MaxX())
-    covered_columns.IncreaseEnd();
-
-  covered_columns.EnsureConsistency(Table()->NumEffectiveColumns());
-  if (!has_spanning_cells_ || !covered_columns.Start())
-    return covered_columns;
-
-  // If there are any cells spanning into the first column, expand
-  // covered_columns to cover the primary cells.
-  unsigned smallest_column = covered_columns.Start();
-  CellSpan covered_rows = SpannedRows(damage_rect);
-  for (unsigned r = covered_rows.Start(); r < covered_rows.end(); ++r) {
-    const auto& grid_cells = grid_[r].grid_cells;
-    if (covered_columns.Start() < grid_cells.size()) {
-      unsigned c = covered_columns.Start();
-      while (c && grid_cells[c].InColSpan())
-        --c;
-      smallest_column = std::min(c, smallest_column);
-      if (!smallest_column)
-        break;
-    }
+  if (force_full_paint_) {
+    rows = FullSectionRowSpan();
+    columns = FullTableEffectiveColumnSpan();
+    return;
   }
-  return CellSpan(smallest_column, covered_columns.end());
+
+  rows = SpannedRows(damage_rect);
+  columns = SpannedEffectiveColumns(damage_rect);
+
+  // Expand by one cell in each direction to cover any collapsed borders.
+  if (Table()->ShouldCollapseBorders()) {
+    if (rows.Start() > 0)
+      rows.DecreaseStart();
+    if (rows.End() < grid_.size())
+      rows.IncreaseEnd();
+    if (columns.Start() > 0)
+      columns.DecreaseStart();
+    if (columns.End() < Table()->NumEffectiveColumns())
+      columns.IncreaseEnd();
+  }
+
+  rows.EnsureConsistency(grid_.size());
+  columns.EnsureConsistency(Table()->NumEffectiveColumns());
+
+  if (!has_spanning_cells_)
+    return;
+
+  if (rows.Start() > 0 && rows.Start() < grid_.size()) {
+    // If there are any cells spanning into the first row, expand |rows| to
+    // cover the cells.
+    unsigned n_cols = NumCols(rows.Start());
+    unsigned smallest_row = rows.Start();
+    for (unsigned c = columns.Start(); c < std::min(columns.End(), n_cols);
+         ++c) {
+      for (const auto* cell : GridCellAt(rows.Start(), c).Cells()) {
+        smallest_row = std::min(smallest_row, cell->RowIndex());
+        if (!smallest_row)
+          break;
+      }
+    }
+    rows = CellSpan(smallest_row, rows.End());
+  }
+
+  if (columns.Start() > 0 && columns.Start() < Table()->NumEffectiveColumns()) {
+    // If there are any cells spanning into the first column, expand |columns|
+    // to cover the cells.
+    unsigned smallest_column = columns.Start();
+    for (unsigned r = rows.Start(); r < rows.End(); ++r) {
+      const auto& grid_cells = grid_[r].grid_cells;
+      if (columns.Start() < grid_cells.size()) {
+        unsigned c = columns.Start();
+        while (c && grid_cells[c].InColSpan())
+          --c;
+        smallest_column = std::min(c, smallest_column);
+        if (!smallest_column)
+          break;
+      }
+    }
+    columns = CellSpan(smallest_column, columns.End());
+  }
 }
 
 CellSpan LayoutTableSection::SpannedRows(const LayoutRect& flipped_rect) const {
@@ -1862,11 +1848,11 @@ bool LayoutTableSection::NodeAtPoint(
   CellSpan column_span = SpannedEffectiveColumns(table_aligned_rect);
 
   // Now iterate over the spanned rows and columns.
-  for (unsigned hit_row = row_span.Start(); hit_row < row_span.end();
+  for (unsigned hit_row = row_span.Start(); hit_row < row_span.End();
        ++hit_row) {
     unsigned n_cols = NumCols(hit_row);
     for (unsigned hit_column = column_span.Start();
-         hit_column < n_cols && hit_column < column_span.end(); ++hit_column) {
+         hit_column < n_cols && hit_column < column_span.End(); ++hit_column) {
       auto& grid_cell = GridCellAt(hit_row, hit_column);
 
       // If the cell is empty, there's nothing to do

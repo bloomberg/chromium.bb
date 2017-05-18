@@ -347,6 +347,14 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   bool HasLineIfEmpty() const override;
 
+  static bool CompareInDOMOrder(const LayoutTableCell* cell1,
+                                const LayoutTableCell* cell2) {
+    DCHECK(cell1->Section() == cell2->Section());
+    if (cell1->RowIndex() == cell2->RowIndex())
+      return cell1->absolute_column_index_ < cell2->absolute_column_index_;
+    return cell1->RowIndex() < cell2->RowIndex();
+  }
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void ComputePreferredLogicalWidths() override;
