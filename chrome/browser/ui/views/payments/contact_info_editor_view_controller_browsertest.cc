@@ -257,8 +257,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
   save_data_loop.Run();
 
-  ASSERT_EQ(2UL, personal_data_manager->GetProfiles().size());
-  autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
+  autofill::AutofillProfile* profile =
+      request->state()->selected_contact_profile();
   DCHECK(profile);
 
   EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
@@ -270,8 +270,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
                              GetLocale()));
 
   EXPECT_EQ(2U, request->state()->contact_profiles().size());
-  EXPECT_EQ(request->state()->contact_profiles().back(),
-            request->state()->selected_contact_profile());
+  EXPECT_EQ(request->state()->contact_profiles().back(), profile);
 }
 
 }  // namespace payments
