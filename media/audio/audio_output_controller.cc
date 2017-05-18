@@ -66,9 +66,7 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
   CHECK(audio_manager);
   CHECK_EQ(AudioManager::Get(), audio_manager);
   DCHECK(sync_reader);
-
-  if (!params.IsValid())
-    return NULL;
+  DCHECK(params.IsValid());
 
   scoped_refptr<AudioOutputController> controller(new AudioOutputController(
       audio_manager, event_handler, params, output_device_id, sync_reader));

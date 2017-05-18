@@ -127,6 +127,17 @@ class MockClient {
   std::unique_ptr<base::CancelableSyncSocket> socket_;
 };
 
+std::unique_ptr<AudioOutputDelegate> CreateNoDelegate(
+    AudioOutputDelegate::EventHandler* event_handler) {
+  return nullptr;
+}
+
+void NotCalled(mojo::ScopedSharedBufferHandle shared_buffer,
+               mojo::ScopedHandle socket_handle) {
+  EXPECT_TRUE(false) << "The StreamCreated callback was called despite the "
+                        "test expecting it not to.";
+}
+
 }  // namespace
 
 class MojoAudioOutputStreamTest : public Test {
@@ -170,6 +181,19 @@ class MojoAudioOutputStreamTest : public Test {
   MockClient client_;
   std::unique_ptr<MojoAudioOutputStream> impl_;
 };
+
+TEST_F(MojoAudioOutputStreamTest, NoDelegate_SignalsError) {
+  bool deleter_called = false;
+  mojom::AudioOutputStreamPtr stream_ptr;
+  MojoAudioOutputStream stream(
+      mojo::MakeRequest(&stream_ptr), base::BindOnce(&CreateNoDelegate),
+      base::Bind(&NotCalled),
+      base::BindOnce([](bool* p) { *p = true; }, &deleter_called));
+  EXPECT_FALSE(deleter_called)
+      << "Stream shouldn't call the deleter from its constructor.";
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(deleter_called);
+}
 
 TEST_F(MojoAudioOutputStreamTest, Play_Plays) {
   AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();

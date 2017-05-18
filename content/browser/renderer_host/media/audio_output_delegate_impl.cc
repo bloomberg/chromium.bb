@@ -68,7 +68,29 @@ void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerError() {
       base::BindOnce(&AudioOutputDelegateImpl::OnError, delegate_));
 }
 
+std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
+    EventHandler* handler,
+    media::AudioManager* audio_manager,
+    std::unique_ptr<media::AudioLog> audio_log,
+    AudioMirroringManager* mirroring_manager,
+    MediaObserver* media_observer,
+    int stream_id,
+    int render_frame_id,
+    int render_process_id,
+    const media::AudioParameters& params,
+    const std::string& output_device_id) {
+  auto reader = AudioSyncReader::Create(params);
+  if (!reader)
+    return nullptr;
+
+  return base::MakeUnique<AudioOutputDelegateImpl>(
+      std::move(reader), handler, audio_manager, std::move(audio_log),
+      mirroring_manager, media_observer, stream_id, render_frame_id,
+      render_process_id, params, output_device_id);
+}
+
 AudioOutputDelegateImpl::AudioOutputDelegateImpl(
+    std::unique_ptr<AudioSyncReader> reader,
     EventHandler* handler,
     media::AudioManager* audio_manager,
     std::unique_ptr<media::AudioLog> audio_log,
@@ -81,7 +103,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
     const std::string& output_device_id)
     : subscriber_(handler),
       audio_log_(std::move(audio_log)),
-      reader_(AudioSyncReader::Create(params)),
+      reader_(std::move(reader)),
       mirroring_manager_(mirroring_manager),
       stream_id_(stream_id),
       render_frame_id_(render_frame_id),
@@ -92,6 +114,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
   DCHECK(audio_manager);
   DCHECK(audio_log_);
   DCHECK(mirroring_manager_);
+  DCHECK(reader_);
   // Since the event handler never directly calls functions on |this| but rather
   // posts them to the IO thread, passing a pointer from the constructor is
   // safe.
