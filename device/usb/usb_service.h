@@ -66,11 +66,6 @@ class UsbService : public base::NonThreadSafe {
 
   scoped_refptr<UsbDevice> GetDevice(const std::string& guid);
 
-  // Shuts down the UsbService. Must be called before destroying the UsbService
-  // when tasks can still be posted to the |blocking_task_runner| provided to
-  // Create().
-  virtual void Shutdown();
-
   // Enumerates available devices.
   virtual void GetDevices(const GetDevicesCallback& callback);
 
@@ -107,10 +102,6 @@ class UsbService : public base::NonThreadSafe {
   std::unordered_map<std::string, scoped_refptr<UsbDevice>> devices_;
   std::unordered_set<std::string> testing_devices_;
   base::ObserverList<Observer, true> observer_list_;
-
-#if DCHECK_IS_ON()
-  bool did_shutdown_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };
