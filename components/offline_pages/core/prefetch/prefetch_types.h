@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_TYPES_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_TYPES_H_
 
+#include <vector>
 #include "base/macros.h"
 #include "base/time/time.h"
 
@@ -98,6 +99,11 @@ enum class PrefetchItemErrorCode {
   SUCCESS,
   EXPIRED,
 };
+
+// Callback invoked upon completion of a prefetch request.
+using PrefetchRequestFinishedCallback =
+    base::Callback<void(PrefetchRequestStatus status,
+                        const std::vector<RenderPageInfo>& pages)>;
 
 }  // namespace offline_pages
 

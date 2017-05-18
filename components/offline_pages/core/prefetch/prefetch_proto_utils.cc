@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/prefetch/prefetch_utils.h"
+#include "components/offline_pages/core/prefetch/prefetch_proto_utils.h"
 
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/proto/any.pb.h"
 #include "components/offline_pages/core/prefetch/proto/offline_pages.pb.h"
+#include "components/offline_pages/core/prefetch/proto/operation.pb.h"
 
 namespace offline_pages {
 
 const char kPageBundleTypeURL[] =
-    "type.googleapis.com/chrome.offlinepages.v1.PageBundle";
+    "type.googleapis.com/google.internal.chrome.offlinepages.v1.PageBundle";
 
+namespace {
+
+// Parse PageBundle data stored as Any proto data. True is returned when the
+// parsing succeeds and the result pages are stored in |pages|.
 bool ParsePageBundleInAnyData(const proto::Any& any_data,
                               std::vector<RenderPageInfo>* pages) {
   if (any_data.type_url() != kPageBundleTypeURL) {
@@ -89,6 +94,47 @@ bool ParsePageBundleInAnyData(const proto::Any& any_data,
   }
 
   return true;
+}
+
+bool ParseDoneOperationResponse(const proto::Operation& operation,
+                                std::vector<RenderPageInfo>* pages) {
+  switch (operation.result_case()) {
+    case proto::Operation::kError:
+      DCHECK_NE(proto::OK, operation.error().code());
+      DVLOG(1) << "Error found in operation: " << operation.error().code()
+               << operation.error().message();
+      return false;
+    case proto::Operation::kResponse:
+      return ParsePageBundleInAnyData(operation.response(), pages);
+    default:
+      DVLOG(1) << "Result not set in operation";
+      return false;
+  }
+}
+
+bool ParsePendingOperationResponse(const proto::Operation& operation,
+                                   std::vector<RenderPageInfo>* pages) {
+  if (!operation.has_metadata()) {
+    DVLOG(1) << "metadata not found in GeneratePageBundle response";
+    return false;
+  }
+  return ParsePageBundleInAnyData(operation.metadata(), pages);
+}
+
+}  // namespace
+
+bool ParseOperationResponse(const std::string& data,
+                            std::vector<RenderPageInfo>* pages) {
+  proto::Operation operation;
+  if (!operation.ParseFromString(data)) {
+    DVLOG(1) << "Failed to parse operation";
+    return false;
+  }
+
+  if (operation.done())
+    return ParseDoneOperationResponse(operation, pages);
+  else
+    return ParsePendingOperationResponse(operation, pages);
 }
 
 }  // namespace offline_pages

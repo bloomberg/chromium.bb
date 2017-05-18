@@ -5,7 +5,9 @@
 #include "components/offline_pages/core/prefetch/prefetch_request_fetcher.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
@@ -16,11 +18,43 @@
 namespace offline_pages {
 
 namespace {
+
+const char kPrefetchServer[] =
+    "http://staging-offlinepages-pa.sandbox.googleapis.com/";
+
+// Content type needed in order to communicate with the server in binary
+// proto format.
 const char kRequestContentType[] = "application/x-protobuf";
+
+GURL CompleteURL(const std::string& url_path) {
+  GURL::Replacements replacements;
+  replacements.SetPathStr(url_path);
+  return GURL(kPrefetchServer).ReplaceComponents(replacements);
+}
+
 }  // namespace
 
+// static
+std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForGet(
+    const std::string& url_path,
+    net::URLRequestContextGetter* request_context_getter,
+    const FinishedCallback& callback) {
+  return base::WrapUnique(new PrefetchRequestFetcher(
+      url_path, std::string(), request_context_getter, callback));
+}
+
+// static
+std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForPost(
+    const std::string& url_path,
+    const std::string& message,
+    net::URLRequestContextGetter* request_context_getter,
+    const FinishedCallback& callback) {
+  return base::WrapUnique(new PrefetchRequestFetcher(
+      url_path, message, request_context_getter, callback));
+}
+
 PrefetchRequestFetcher::PrefetchRequestFetcher(
-    const GURL& url,
+    const std::string& url_path,
     const std::string& message,
     net::URLRequestContextGetter* request_context_getter,
     const FinishedCallback& callback)
@@ -46,12 +80,21 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
           policy_exception_justification:
             "Not implemented, considered not useful."
         })");
-  url_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::POST, this,
-                                         traffic_annotation);
+  url_fetcher_ = net::URLFetcher::Create(
+      CompleteURL(url_path),
+      message.empty() ? net::URLFetcher::GET : net::URLFetcher::POST, this,
+      traffic_annotation);
   url_fetcher_->SetRequestContext(request_context_getter_.get());
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
-  url_fetcher_->SetUploadData(kRequestContentType, message);
+  if (message.empty()) {
+    std::string extra_header(net::HttpRequestHeaders::kContentType);
+    extra_header += ": ";
+    extra_header += kRequestContentType;
+    url_fetcher_->AddExtraRequestHeader(extra_header);
+  } else {
+    url_fetcher_->SetUploadData(kRequestContentType, message);
+  }
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
   url_fetcher_->Start();

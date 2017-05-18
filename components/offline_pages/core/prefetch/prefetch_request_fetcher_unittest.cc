@@ -20,7 +20,7 @@ using testing::SaveArg;
 namespace offline_pages {
 
 namespace {
-const GURL kTestUrl("http://example.com");
+const char kTestURLPath[] = "/test";
 const char kTestMessage[] = "Testing";
 }  // namespace
 
@@ -30,52 +30,56 @@ class PrefetchRequestFetcherTest : public PrefetchRequestTestBase {
   PrefetchRequestStatus RunFetcherWithHttpError(int http_error);
   PrefetchRequestStatus RunFetcherWithData(const std::string& response_data,
                                            std::string* data_received);
+
+ private:
+  PrefetchRequestStatus RunFetcher(
+      const base::Callback<void(void)>& respond_callback,
+      std::string* data_received);
 };
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithNetError(
     net::Error net_error) {
-  base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
-  std::unique_ptr<PrefetchRequestFetcher> fetcher(new PrefetchRequestFetcher(
-      kTestUrl, kTestMessage, request_context(), callback.Get()));
-
-  PrefetchRequestStatus status;
-  std::string data;
-  EXPECT_CALL(callback, Run(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&data)));
-  RespondWithNetError(net_error);
-
-  EXPECT_TRUE(data.empty());
+  std::string data_received;
+  PrefetchRequestStatus status =
+      RunFetcher(base::Bind(&PrefetchRequestTestBase::RespondWithNetError,
+                            base::Unretained(this), net_error),
+                 &data_received);
+  EXPECT_TRUE(data_received.empty());
   return status;
 }
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithHttpError(
     int http_error) {
-  base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
-  std::unique_ptr<PrefetchRequestFetcher> fetcher(new PrefetchRequestFetcher(
-      kTestUrl, kTestMessage, request_context(), callback.Get()));
-
-  PrefetchRequestStatus status;
-  std::string data;
-  EXPECT_CALL(callback, Run(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&data)));
-  RespondWithHttpError(http_error);
-
-  EXPECT_TRUE(data.empty());
+  std::string data_received;
+  PrefetchRequestStatus status =
+      RunFetcher(base::Bind(&PrefetchRequestTestBase::RespondWithHttpError,
+                            base::Unretained(this), http_error),
+                 &data_received);
+  EXPECT_TRUE(data_received.empty());
   return status;
 }
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithData(
     const std::string& response_data,
     std::string* data_received) {
+  return RunFetcher(base::Bind(&PrefetchRequestTestBase::RespondWithData,
+                               base::Unretained(this), response_data),
+                    data_received);
+}
+
+PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
+    const base::Callback<void(void)>& respond_callback,
+    std::string* data_received) {
   base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
-  std::unique_ptr<PrefetchRequestFetcher> fetcher(new PrefetchRequestFetcher(
-      kTestUrl, kTestMessage, request_context(), callback.Get()));
+  std::unique_ptr<PrefetchRequestFetcher> fetcher =
+      PrefetchRequestFetcher::CreateForPost(kTestURLPath, kTestMessage,
+                                            request_context(), callback.Get());
 
   PrefetchRequestStatus status;
   std::string data;
   EXPECT_CALL(callback, Run(_, _))
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&data)));
-  RespondWithData(response_data);
+  respond_callback.Run();
 
   *data_received = data;
   return status;

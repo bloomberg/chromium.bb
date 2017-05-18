@@ -11,11 +11,15 @@ static_library("prefetch") {
   sources = [
     "generate_page_bundle_request.cc",
     "generate_page_bundle_request.h",
+    "get_operation_request.cc",
+    "get_operation_request.h",
     "prefetch_dispatcher.h",
     "prefetch_dispatcher_impl.cc",
     "prefetch_dispatcher_impl.h",
     "prefetch_item.cc",
     "prefetch_item.h",
+    "prefetch_proto_utils.cc",
+    "prefetch_proto_utils.h",
     "prefetch_request_fetcher.cc",
     "prefetch_request_fetcher.h",
     "prefetch_service.h",
@@ -23,8 +27,6 @@ static_library("prefetch") {
     "prefetch_service_impl.h",
     "prefetch_types.cc",
     "prefetch_types.h",
-    "prefetch_utils.cc",
-    "prefetch_utils.h",
   ]
 
   public_deps = [
@@ -53,9 +55,11 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "generate_page_bundle_request_unittest.cc",
+    "get_operation_request_unittest.cc",
     "prefetch_dispatcher_impl_unittest.cc",
     "prefetch_item_unittest.cc",
     "prefetch_request_fetcher_unittest.cc",
+    "prefetch_request_operation_response_unittest.cc",
     "prefetch_request_test_base.cc",
     "prefetch_request_test_base.h",
   ]

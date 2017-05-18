@@ -11,28 +11,44 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class GURL;
 namespace net {
 class URLRequestContextGetter;
 }
 
 namespace offline_pages {
 
+// Asynchronously fetches the offline prefetch related data from the server.
 class PrefetchRequestFetcher : public net::URLFetcherDelegate {
  public:
   using FinishedCallback = base::Callback<void(PrefetchRequestStatus status,
                                                const std::string& data)>;
 
-  PrefetchRequestFetcher(const GURL& url,
-                         const std::string& message,
-                         net::URLRequestContextGetter* request_context_getter,
-                         const FinishedCallback& callback);
+  // Creates a fetcher that will sends a GET request to the server.
+  static std::unique_ptr<PrefetchRequestFetcher> CreateForGet(
+      const std::string& url_path,
+      net::URLRequestContextGetter* request_context_getter,
+      const FinishedCallback& callback);
+
+  // Creates a fetcher that will sends a POST request to the server.
+  static std::unique_ptr<PrefetchRequestFetcher> CreateForPost(
+      const std::string& url_path,
+      const std::string& message,
+      net::URLRequestContextGetter* request_context_getter,
+      const FinishedCallback& callback);
+
   ~PrefetchRequestFetcher() override;
 
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
+  // If |message| is empty, the GET request is sent. Otherwise, the POST request
+  // is sent with |message| as post data.
+  PrefetchRequestFetcher(const std::string& url_path,
+                         const std::string& message,
+                         net::URLRequestContextGetter* request_context_getter,
+                         const FinishedCallback& callback);
+
   PrefetchRequestStatus ParseResponse(const net::URLFetcher* source,
                                       std::string* data);
 
