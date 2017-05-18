@@ -76324,14 +76324,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Translate.Ranker.Timer.DownloadModel" units="ms">
   <owner>rogerm@google.com</owner>
   <summary>
-    Time taken for the TranslateRanker to download its model, in ms.
+    Time taken for the Translate Ranker Model Loader to download its model from
+    the configured URL, in ms.
   </summary>
 </histogram>
 
 <histogram name="Translate.Ranker.Timer.ParseModel" units="ms">
   <owner>rogerm@google.com</owner>
   <summary>
-    Time taken for the TranslateRanker to parse its model, in ms.
+    Time taken for the Translate Ranker Model Loader to parse its model, in ms.
+  </summary>
+</histogram>
+
+<histogram name="Translate.Ranker.Timer.ReadModel" units="ms">
+  <owner>rogerm@google.com</owner>
+  <summary>
+    Time taken for the Translate Ranker Model Loader to read its model from
+    local storage (cache), in ms.
   </summary>
 </histogram>
 
@@ -76342,6 +76351,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     be offered or not, in ms. This includes the time taken to extract the
     relevant features upon which to base the decision, as well as the time taken
     to calculate the result.
+  </summary>
+</histogram>
+
+<histogram name="Translate.Ranker.Timer.WriteModel" units="ms">
+  <owner>rogerm@google.com</owner>
+  <summary>
+    Time taken for the Translate Ranker Model Loader to write its model to local
+    storage, in ms.
   </summary>
 </histogram>
 
