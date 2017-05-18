@@ -45,7 +45,7 @@ cr.define('ntp', function() {
       this.menu = menu;
 
       this.launch_ = this.appendMenuItem_();
-      this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
+      this.launch_.addEventListener('activate', this.onActivate_.bind(this));
 
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
@@ -95,6 +95,7 @@ cr.define('ntp', function() {
      * Appends a menu item to |this.menu|.
      * @param {string=} opt_textId If defined, the ID for the localized string
      *     that acts as the item's label.
+     * @private
      */
     appendMenuItem_: function(opt_textId) {
       var button = cr.doc.createElement('button');
@@ -110,6 +111,7 @@ cr.define('ntp', function() {
      * @param {function(cr.ui.MenuItem, number)} f The function to call for each
      *     menu item. The parameters to the function include the menu item and
      *     the associated launch ID.
+     * @private
      */
     forAllLaunchTypes_: function(f) {
       // Order matters: index matches launchType id.
@@ -170,14 +172,15 @@ cr.define('ntp', function() {
       }
     },
 
-    /**
-     * Handlers for menu item activation.
-     * @param {Event} e The activation event.
-     * @private
-     */
-    onLaunch_: function(e) {
+    /** @private */
+    onActivate_: function() {
       chrome.send('launchApp', [this.app_.appId, APP_LAUNCH.NTP_APPS_MENU]);
     },
+
+    /**
+     * @param {Event} e
+     * @private
+     */
     onLaunchTypeChanged_: function(e) {
       var pressed = e.currentTarget;
       var app = this.app_;
@@ -197,21 +200,31 @@ cr.define('ntp', function() {
         }
       });
     },
-    onShowOptions_: function(e) {
+
+    /** @private */
+    onShowOptions_: function() {
       window.location = this.app_.appData.optionsUrl;
     },
-    onShowDetails_: function(e) {
+
+    /** @private */
+    onShowDetails_: function() {
       var url = this.app_.appData.detailsUrl;
       url = appendParam(url, 'utm_source', 'chrome-ntp-launcher');
       window.location = url;
     },
-    onUninstall_: function(e) {
+
+    /** @private */
+    onUninstall_: function() {
       chrome.send('uninstallApp', [this.app_.appData.id]);
     },
-    onCreateShortcut_: function(e) {
+
+    /** @private */
+    onCreateShortcut_: function() {
       chrome.send('createAppShortcut', [this.app_.appData.id]);
     },
-    onShowAppInfo_: function(e) {
+
+    /** @private */
+    onShowAppInfo_: function() {
       chrome.send('showAppInfo', [this.app_.appData.id]);
     }
   };
@@ -348,7 +361,8 @@ cr.define('ntp', function() {
       this.style.top = toCssPx(y);
     },
 
-    onBlur_: function(e) {
+    /** @private */
+    onBlur_: function() {
       this.classList.remove('click-focus');
       this.appContents_.classList.remove('suppress-active');
     },
@@ -392,6 +406,7 @@ cr.define('ntp', function() {
      * appContents, even a part that is outside the ideally clickable region,
      * will cause the app icon to look active).
      * @param {HTMLElement} node The node that should be clickable.
+     * @private
      */
     addLaunchClickTarget_: function(node) {
       node.classList.add('launch-click-target');
@@ -405,6 +420,7 @@ cr.define('ntp', function() {
      * these occasions). Also, we don't pulse for clicks that aren't within the
      * clickable regions.
      * @param {Event} e The mousedown event.
+     * @private
      */
     onMousedown_: function(e) {
       // If the current platform uses middle click to autoscroll and this
@@ -442,6 +458,7 @@ cr.define('ntp', function() {
     set appData(data) { this.appData_ = data; },
     get appData() { return this.appData_; },
 
+    /** @type {string} */
     get appId() { return this.appData_.id; },
 
     /**
@@ -562,7 +579,7 @@ cr.define('ntp', function() {
      * first time this is called, we load all the app icons.
      * @private
      */
-    onCardSelected_: function(e) {
+    onCardSelected_: function() {
       var apps = this.querySelectorAll('.app.icon-loading');
       for (var i = 0; i < apps.length; i++) {
         apps[i].loadIcon();
@@ -572,6 +589,7 @@ cr.define('ntp', function() {
     /**
      * Handler for tile additions to this page.
      * @param {Event} e The tilePage:tile_added event.
+     * @private
      */
     onTileAdded_: function(e) {
       assert(e.currentTarget == this);
@@ -585,7 +603,7 @@ cr.define('ntp', function() {
      * the bubbles.
      * @private
      */
-    onScroll_: function(e) {
+    onScroll_: function() {
       if (!this.selected)
         return;
       for (var i = 0; i < this.tileElements_.length; i++) {
