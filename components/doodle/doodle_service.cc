@@ -10,10 +10,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/doodle/pref_names.h"
+#include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/gfx/image/image.h"
 
 namespace doodle {
 
@@ -25,6 +29,11 @@ const int64_t kMaxTimeToLiveSecs = 30 * 24 * 60 * 60;  // 30 days
 
 // The default value for DoodleService::min_refresh_interval_.
 const int64_t kDefaultMinRefreshIntervalSecs = 15 * 60;  // 15 minutes
+
+// The maximum number of bytes to allow in a doodle image. This limits the
+// downloaded data to an amount that real images are unlikely to exceed. It is a
+// safeguard against server-side errors.
+const int64_t kMaxImageDownloadBytes = 1024 * 1024;
 
 }  // namespace
 
@@ -43,7 +52,8 @@ DoodleService::DoodleService(
     std::unique_ptr<base::OneShotTimer> expiry_timer,
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<base::TickClock> tick_clock,
-    base::Optional<base::TimeDelta> override_min_refresh_interval)
+    base::Optional<base::TimeDelta> override_min_refresh_interval,
+    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : pref_service_(pref_service),
       fetcher_(std::move(fetcher)),
       expiry_timer_(std::move(expiry_timer)),
@@ -52,12 +62,18 @@ DoodleService::DoodleService(
       min_refresh_interval_(
           override_min_refresh_interval.has_value()
               ? override_min_refresh_interval.value()
-              : base::TimeDelta::FromSeconds(kDefaultMinRefreshIntervalSecs)) {
+              : base::TimeDelta::FromSeconds(kDefaultMinRefreshIntervalSecs)),
+      image_fetcher_(std::move(image_fetcher)) {
   DCHECK(pref_service_);
   DCHECK(fetcher_);
   DCHECK(expiry_timer_);
   DCHECK(clock_);
   DCHECK(tick_clock_);
+  DCHECK(image_fetcher_);
+
+  image_fetcher_->SetImageDownloadLimit(kMaxImageDownloadBytes);
+  image_fetcher_->SetDataUseServiceName(
+      data_use_measurement::DataUseUserData::DOODLE);
 
   base::Time expiry_date = base::Time::FromInternalValue(
       pref_service_->GetInt64(prefs::kCachedConfigExpiry));
@@ -77,6 +93,24 @@ DoodleService::DoodleService(
 DoodleService::~DoodleService() = default;
 
 void DoodleService::Shutdown() {}
+
+void DoodleService::GetImage(const ImageCallback& callback) {
+  if (!cached_config_.has_value()) {
+    callback.Run(gfx::Image());
+    return;
+  }
+
+  // If there is a CTA image, that means the main image is animated. Show the
+  // non-animated CTA image first, and load the animated one only when the
+  // user requests it.
+  bool has_cta = cached_config_->large_cta_image.has_value();
+  const GURL& image_url = has_cta ? cached_config_->large_cta_image->url
+                                  : cached_config_->large_image.url;
+  image_fetcher_->StartOrQueueNetworkRequest(
+      image_url.spec(), image_url,
+      base::Bind(&DoodleService::ImageFetched, base::Unretained(this),
+                 callback));
+}
 
 void DoodleService::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -256,6 +290,23 @@ void DoodleService::UpdateCachedConfig(
 void DoodleService::DoodleExpired() {
   DCHECK(cached_config_.has_value());
   HandleNewConfig(DoodleState::NO_DOODLE, base::TimeDelta(), base::nullopt);
+}
+
+void DoodleService::ImageFetched(
+    const ImageCallback& callback,
+    const std::string& id,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
+  if (image.IsEmpty()) {
+    DLOG(WARNING) << "Failed to download doodle image";
+  } else {
+    // TODO(treib): Rename this to "Doodle.*" after we've decided what to do
+    // about crbug.com/719513.
+    UMA_HISTOGRAM_BOOLEAN("NewTabPage.LogoImageDownloaded",
+                          metadata.from_http_cache);
+  }
+
+  callback.Run(image);
 }
 
 }  // namespace doodle

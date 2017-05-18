@@ -30,7 +30,7 @@ class URLRequestContextGetter;
 namespace image_fetcher {
 
 // The standard (non-test) implementation of ImageFetcher.
-class ImageFetcherImpl : public image_fetcher::ImageFetcher {
+class ImageFetcherImpl : public ImageFetcher {
  public:
   ImageFetcherImpl(std::unique_ptr<ImageDecoder> image_decoder,
                    net::URLRequestContextGetter* url_request_context);

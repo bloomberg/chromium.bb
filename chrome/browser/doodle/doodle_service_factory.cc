@@ -14,9 +14,11 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_fetcher_impl.h"
 #include "components/doodle/doodle_service.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
@@ -85,5 +87,8 @@ KeyedService* DoodleServiceFactory::BuildServiceInstanceFor(
       base::MakeUnique<base::OneShotTimer>(),
       base::MakeUnique<base::DefaultClock>(),
       base::MakeUnique<base::DefaultTickClock>(),
-      /*override_min_refresh_interval=*/base::nullopt);
+      /*override_min_refresh_interval=*/base::nullopt,
+      base::MakeUnique<image_fetcher::ImageFetcherImpl>(
+          base::MakeUnique<suggestions::ImageDecoderImpl>(),
+          profile->GetRequestContext()));
 }

@@ -12,16 +12,26 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
+using image_fetcher::ImageFetcher;
+using image_fetcher::RequestMetadata;
+using testing::_;
 using testing::Eq;
 using testing::StrictMock;
+using testing::Not;
 
 namespace doodle {
 
@@ -60,8 +70,72 @@ class MockDoodleObserver : public DoodleService::Observer {
   MOCK_METHOD1(OnDoodleConfigRevalidated, void(bool));
 };
 
+class FakeImageFetcher : public ImageFetcher {
+ public:
+  FakeImageFetcher() = default;
+  ~FakeImageFetcher() override = default;
+
+  void SetImageFetcherDelegate(image_fetcher::ImageFetcherDelegate*) override {
+    NOTREACHED();
+  }
+
+  void SetDataUseServiceName(DataUseServiceName) override {
+    // Ignored.
+  }
+
+  void SetImageDownloadLimit(base::Optional<int64_t>) override {
+    // Ignored.
+  }
+
+  void SetDesiredImageFrameSize(const gfx::Size&) override {
+    // Ignored.
+  }
+
+  void StartOrQueueNetworkRequest(
+      const std::string& id,
+      const GURL& url,
+      const ImageFetcherCallback& callback) override {
+    // For simplicity, the fake doesn't support multiple concurrent requests.
+    DCHECK(!HasPendingRequest());
+
+    pending_id_ = id;
+    pending_url_ = url;
+    pending_callback_ = callback;
+  }
+
+  image_fetcher::ImageDecoder* GetImageDecoder() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  bool HasPendingRequest() const { return !pending_callback_.is_null(); }
+
+  const GURL& pending_url() const { return pending_url_; }
+
+  void RespondToPendingRequest(const gfx::Image& image) {
+    DCHECK(HasPendingRequest());
+
+    RequestMetadata metadata;
+    metadata.http_response_code = 200;
+    pending_callback_.Run(pending_id_, image, metadata);
+
+    pending_id_.clear();
+    pending_url_ = GURL();
+    pending_callback_.Reset();
+  }
+
+ private:
+  std::string pending_id_;
+  GURL pending_url_;
+  ImageFetcherCallback pending_callback_;
+};
+
 DoodleConfig CreateConfig(DoodleType type) {
   return DoodleConfig(type, DoodleImage(GURL("https://doodle.com/image.jpg")));
+}
+
+MATCHER(IsEmptyImage, "") {
+  return arg.IsEmpty();
 }
 
 }  // namespace
@@ -83,7 +157,20 @@ class DoodleServiceTest : public testing::Test {
     RecreateServiceWithZeroRefreshInterval();
   }
 
-  void DestroyService() { service_ = nullptr; }
+  void TearDown() override { DestroyService(); }
+
+  void DestroyService() {
+    if (image_fetcher_) {
+      // Make sure we didn't receive an unexpected image request.
+      ASSERT_FALSE(image_fetcher_->HasPendingRequest());
+    }
+
+    fetcher_ = nullptr;
+    expiry_timer_ = nullptr;
+    image_fetcher_ = nullptr;
+
+    service_ = nullptr;
+  }
 
   void RecreateServiceWithZeroRefreshInterval() {
     RecreateService(/*min_refresh_interval=*/base::TimeDelta());
@@ -97,14 +184,18 @@ class DoodleServiceTest : public testing::Test {
     auto fetcher = base::MakeUnique<FakeDoodleFetcher>();
     fetcher_ = fetcher.get();
 
+    auto image_fetcher = base::MakeUnique<FakeImageFetcher>();
+    image_fetcher_ = image_fetcher.get();
+
     service_ = base::MakeUnique<DoodleService>(
         &pref_service_, std::move(fetcher), std::move(expiry_timer),
         task_runner_->GetMockClock(), task_runner_->GetMockTickClock(),
-        refresh_interval);
+        refresh_interval, std::move(image_fetcher));
   }
 
   DoodleService* service() { return service_.get(); }
   FakeDoodleFetcher* fetcher() { return fetcher_; }
+  FakeImageFetcher* image_fetcher() { return image_fetcher_; }
 
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
 
@@ -120,6 +211,7 @@ class DoodleServiceTest : public testing::Test {
   // Weak, owned by the service.
   FakeDoodleFetcher* fetcher_;
   base::OneShotTimer* expiry_timer_;
+  FakeImageFetcher* image_fetcher_;
 };
 
 TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
@@ -595,6 +687,57 @@ TEST_F(DoodleServiceTest, DoesNotRecordMetricsWhenConfigExpires) {
   // This should not have resulted in any metrics being emitted.
   histograms.ExpectTotalCount("Doodle.ConfigDownloadOutcome", 0);
   histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
+}
+
+TEST_F(DoodleServiceTest, GetImageWithEmptyConfigReturnsImmediately) {
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  base::MockCallback<DoodleService::ImageCallback> callback;
+  EXPECT_CALL(callback, Run(IsEmptyImage()));
+
+  service()->GetImage(callback.Get());
+}
+
+TEST_F(DoodleServiceTest, GetImageFetchesLargeImage) {
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  base::MockCallback<DoodleService::ImageCallback> callback;
+  service()->GetImage(callback.Get());
+
+  EXPECT_EQ(config.large_image.url, image_fetcher()->pending_url());
+
+  EXPECT_CALL(callback, Run(Not(IsEmptyImage())));
+  gfx::Image image = gfx::test::CreateImage(1, 1);
+  ASSERT_TRUE(image_fetcher()->HasPendingRequest());
+  image_fetcher()->RespondToPendingRequest(image);
+}
+
+TEST_F(DoodleServiceTest, GetImageFetchesCTAImage) {
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  // Set a CTA image, which should take precedence over the regular image.
+  config.large_image.is_animated_gif = true;
+  config.large_cta_image = DoodleImage(GURL("https://doodle.com/cta.jpg"));
+  config.large_cta_image->is_cta = true;
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  base::MockCallback<DoodleService::ImageCallback> callback;
+  service()->GetImage(callback.Get());
+
+  // If the doodle has a CTA image, that should loaded instead of the regular
+  // large image.
+  EXPECT_EQ(config.large_cta_image->url, image_fetcher()->pending_url());
+
+  EXPECT_CALL(callback, Run(Not(IsEmptyImage())));
+  gfx::Image image = gfx::test::CreateImage(1, 1);
+  ASSERT_TRUE(image_fetcher()->HasPendingRequest());
+  image_fetcher()->RespondToPendingRequest(image);
 }
 
 }  // namespace doodle
