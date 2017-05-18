@@ -5,13 +5,10 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string16.h"
 
@@ -23,9 +20,6 @@ class TimeTicks;
 namespace ash {
 struct IMEInfo;
 struct IMEPropertyInfo;
-
-class SystemTray;
-class SystemTrayItem;
 
 using IMEInfoList = std::vector<IMEInfo>;
 using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
@@ -84,12 +78,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns true when the Search key is configured to be treated as Caps Lock.
   virtual bool IsSearchKeyMappedToCapsLock();
-
-  // Creates a system tray item for display rotation lock.
-  // TODO(jamescook): Remove this when mus has support for display management
-  // and we have a DisplayManager equivalent. See http://crbug.com/548429
-  virtual std::unique_ptr<SystemTrayItem> CreateRotationLockTrayItem(
-      SystemTray* tray);
 };
 
 }  // namespace ash

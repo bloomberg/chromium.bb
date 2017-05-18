@@ -59,8 +59,6 @@ class SystemTrayDelegateChromeOS
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;
-  std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
-      ash::SystemTray* tray) override;
 
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier();

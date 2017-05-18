@@ -10,6 +10,7 @@
 
 #include "ash/key_event_watcher.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -31,13 +32,13 @@
 #include "ash/system/night_light/tray_night_light.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/tray_power.h"
+#include "ash/system/rotation/tray_rotation_lock.h"
 #include "ash/system/screen_security/screen_capture_tray_item.h"
 #include "ash/system/screen_security/screen_share_tray_item.h"
 #include "ash/system/session/tray_session_length_limit.h"
 #include "ash/system/supervised/tray_supervised_user.h"
 #include "ash/system/tiles/tray_tiles.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -267,12 +268,10 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(base::MakeUnique<TrayCapsLock>(this));
   tray_night_light_ = new TrayNightLight(this);
   AddTrayItem(base::WrapUnique(tray_night_light_));
-  // TODO(jamescook): Remove this when mus has support for display management
+  // TODO(jamescook): Remove this when mash has support for display management
   // and we have a DisplayManager equivalent. See http://crbug.com/548429
-  std::unique_ptr<SystemTrayItem> tray_rotation_lock =
-      delegate->CreateRotationLockTrayItem(this);
-  if (tray_rotation_lock)
-    AddTrayItem(std::move(tray_rotation_lock));
+  if (Shell::GetAshConfig() != Config::MASH)
+    AddTrayItem(base::MakeUnique<TrayRotationLock>(this));
   tray_update_ = new TrayUpdate(this);
   AddTrayItem(base::WrapUnique(tray_update_));
   tray_tiles_ = new TrayTiles(this);
