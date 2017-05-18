@@ -25,6 +25,7 @@ namespace payments {
 
 namespace {
 
+const char kLocale[] = "en_US";
 const char kNameFull[] = "Bob Jones";
 const char kHomeAddress[] = "42 Answers-All Avenue";
 const char kHomeCity[] = "Question-City";
@@ -32,6 +33,8 @@ const char kHomeZip[] = "ziiiiiip";
 const char kHomePhone[] = "5755555555";  // 5555555555 is invalid :-(.
 const char kFormattedHomePhone[] = "(575) 555-5555";
 const char kAnyState[] = "any state";
+const char kCountryWithoutStates[] = "Albania";
+const char kCountryWithoutStatesPhoneNumber[] = "42223446";
 
 }  // namespace
 
@@ -83,15 +86,16 @@ class PaymentRequestShippingAddressEditorTest
     SetFieldTestValue(autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
-  // First check if the requested field of |type| exists, if so set it's value
-  // in |textfield_text| and return true.
+  // First check if the requested field of |type| exists, if so, set its value
+  // in |textfield_text| if it's not null, and return true.
   bool GetEditorTextfieldValueIfExists(autofill::ServerFieldType type,
                                        base::string16* textfield_text) {
     ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
         dialog_view()->GetViewByID(static_cast<int>(type)));
     if (!textfield)
       return false;
-    *textfield_text = textfield->text();
+    if (textfield_text)
+      *textfield_text = textfield->text();
     return true;
   }
 
@@ -336,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
         static_cast<views::Combobox*>(dialog_view()->GetViewByID(
             static_cast<int>(autofill::ADDRESS_HOME_STATE)));
     autofill::RegionComboboxModel* region_model = nullptr;
-    // Some countries don't have a state combo box.
+    // Some countries don't have a state combobox.
     if (region_combobox) {
       autofill::RegionComboboxModel* region_model =
           static_cast<autofill::RegionComboboxModel*>(region_combobox->model());
@@ -377,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       unset_types.erase(type);
     }
 
-    // Make sure the country combo box was properly reset to the chosen country.
+    // Make sure the country combobox was properly reset to the chosen country.
     country_combobox = static_cast<views::Combobox*>(dialog_view()->GetViewByID(
         static_cast<int>(autofill::ADDRESS_HOME_COUNTRY)));
     DCHECK(country_combobox);
@@ -481,7 +485,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Add incomplete address.
   autofill::AutofillProfile profile;
   profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                  base::ASCIIToUTF16(kNameFull), "fr_CA");
+                  base::ASCIIToUTF16(kNameFull), kLocale);
+  // Also set non-default country, to make sure proper fields will be used.
+  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+                  base::ASCIIToUTF16(kCountryWithoutStates), kLocale);
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
@@ -499,11 +506,16 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
             GetEditorTextfieldValue(autofill::NAME_FULL));
-  EXPECT_EQ(base::ASCIIToUTF16(""),
-            GetEditorTextfieldValue(autofill::ADDRESS_HOME_ZIP));
+  // There are no state field in |kCountryWithoutStates|.
+  EXPECT_FALSE(
+      GetEditorTextfieldValueIfExists(autofill::ADDRESS_HOME_STATE, nullptr));
 
   // Set all required fields.
   SetCommonFields();
+  // The phone number must be replaced by one that is valid for
+  // |kCountryWithoutStates|.
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kCountryWithoutStatesPhoneNumber),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -518,6 +530,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
+  autofill::AutofillProfile* saved_profile =
+      personal_data_manager->GetProfiles()[0];
+  DCHECK(saved_profile);
+  EXPECT_EQ(
+      base::ASCIIToUTF16(kCountryWithoutStates),
+      saved_profile->GetInfo(
+          autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY), kLocale));
   ExpectExistingRequiredFields(/*unset_types=*/nullptr,
                                /*accept_empty_phone_number=*/false);
 
