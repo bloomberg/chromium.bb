@@ -4,6 +4,7 @@
 
 #include "base/win/shortcut.h"
 
+#include <objbase.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <propkey.h>
@@ -31,8 +32,8 @@ void InitializeShortcutInterfaces(
     ScopedComPtr<IPersistFile>* i_persist_file) {
   i_shell_link->Reset();
   i_persist_file->Reset();
-  if (FAILED(i_shell_link->CreateInstance(CLSID_ShellLink, NULL,
-                                          CLSCTX_INPROC_SERVER)) ||
+  if (FAILED(::CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(i_shell_link->GetAddressOf()))) ||
       FAILED(i_shell_link->CopyTo(i_persist_file->GetAddressOf())) ||
       (shortcut && FAILED((*i_persist_file)->Load(shortcut, STGM_READWRITE)))) {
     i_shell_link->Reset();
@@ -197,8 +198,8 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
   ScopedComPtr<IShellLink> i_shell_link;
 
   // Get pointer to the IShellLink interface.
-  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
-                                         CLSCTX_INPROC_SERVER))) {
+  if (FAILED(::CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&i_shell_link)))) {
     return false;
   }
 

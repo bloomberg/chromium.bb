@@ -132,8 +132,9 @@ const int kPurgeStaleJobsIntervalBetweenChecksDays = 1;
 
 // Retrieves the singleton instance of GIT for this process.
 HRESULT GetGit(ScopedComPtr<IGlobalInterfaceTable>* git) {
-  return git->CreateInstance(CLSID_StdGlobalInterfaceTable, NULL,
-                             CLSCTX_INPROC_SERVER);
+  return ::CoCreateInstance(CLSID_StdGlobalInterfaceTable, NULL,
+                            CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(git->GetAddressOf()));
 }
 
 // Retrieves an interface pointer from the process GIT for a given |cookie|.
@@ -366,7 +367,8 @@ bool JobFileUrlEqual::operator()(IBackgroundCopyJob* job) const {
 // Creates an instance of the BITS manager.
 HRESULT CreateBitsManager(IBackgroundCopyManager** bits_manager) {
   ScopedComPtr<IBackgroundCopyManager> object;
-  HRESULT hr = object.CreateInstance(__uuidof(BackgroundCopyManager));
+  HRESULT hr = ::CoCreateInstance(__uuidof(BackgroundCopyManager), nullptr,
+                                  CLSCTX_ALL, IID_PPV_ARGS(&object));
   if (FAILED(hr)) {
     return hr;
   }

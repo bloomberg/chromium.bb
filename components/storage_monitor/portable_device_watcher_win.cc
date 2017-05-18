@@ -9,6 +9,7 @@
 #include "components/storage_monitor/portable_device_watcher_win.h"
 
 #include <dbt.h>
+#include <objbase.h>
 #include <portabledevice.h>
 
 #include "base/files/file_path.h"
@@ -122,8 +123,9 @@ bool GetDeviceDescription(const base::string16& pnp_device_id,
 // application that communicates with the device.
 bool GetClientInformation(
     base::win::ScopedComPtr<IPortableDeviceValues>* client_info) {
-  HRESULT hr = client_info->CreateInstance(__uuidof(PortableDeviceValues),
-                                           NULL, CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
+                                  CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(client_info->GetAddressOf()));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDeviceValues";
     return false;
@@ -150,8 +152,9 @@ bool SetUp(const base::string16& pnp_device_id,
   if (!GetClientInformation(&client_info))
     return false;
 
-  HRESULT hr = device->CreateInstance(__uuidof(PortableDevice), NULL,
-                                      CLSCTX_INPROC_SERVER);
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(PortableDevice), NULL, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(device->GetAddressOf()));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDevice";
     return false;
@@ -178,8 +181,9 @@ REFPROPERTYKEY GetUniqueIdPropertyKey(const base::string16& object_id) {
 bool PopulatePropertyKeyCollection(
     const base::string16& object_id,
     base::win::ScopedComPtr<IPortableDeviceKeyCollection>* properties_to_read) {
-  HRESULT hr = properties_to_read->CreateInstance(
-      __uuidof(PortableDeviceKeyCollection), NULL, CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(
+      __uuidof(PortableDeviceKeyCollection), NULL, CLSCTX_INPROC_SERVER,
+      IID_PPV_ARGS(properties_to_read->GetAddressOf()));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create IPortableDeviceKeyCollection instance";
     return false;
@@ -385,8 +389,9 @@ bool GetDeviceInfoOnBlockingThread(
 bool GetPortableDeviceManager(
   base::win::ScopedComPtr<IPortableDeviceManager>* portable_device_mgr) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  HRESULT hr = portable_device_mgr->CreateInstance(
-      __uuidof(PortableDeviceManager), NULL, CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(
+      __uuidof(PortableDeviceManager), NULL, CLSCTX_INPROC_SERVER,
+      IID_PPV_ARGS(portable_device_mgr->GetAddressOf()));
   if (SUCCEEDED(hr))
     return true;
 

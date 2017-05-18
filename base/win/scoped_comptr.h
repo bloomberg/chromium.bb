@@ -5,7 +5,6 @@
 #ifndef BASE_WIN_SCOPED_COMPTR_H_
 #define BASE_WIN_SCOPED_COMPTR_H_
 
-#include <objbase.h>
 #include <unknwn.h>
 
 #include "base/logging.h"
@@ -114,16 +113,6 @@ class ScopedComPtr {
     DCHECK(obj);
     DCHECK(ptr_);
     return ptr_->QueryInterface(iid, obj);
-  }
-
-  // Convenience wrapper around CoCreateInstance
-  HRESULT CreateInstance(const CLSID& clsid,
-                         IUnknown* outer = nullptr,
-                         DWORD context = CLSCTX_ALL) {
-    DCHECK(!ptr_);
-    HRESULT hr = ::CoCreateInstance(clsid, outer, context, *interface_id,
-                                    reinterpret_cast<void**>(&ptr_));
-    return hr;
   }
 
   // Provides direct access to the interface.

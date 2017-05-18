@@ -156,8 +156,8 @@ static void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
   DVLOG(1) << __func__;
 
   ScopedComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr =
-      dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC);
+  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
+                                  IID_PPV_ARGS(&dev_enum));
   if (FAILED(hr))
     return;
 
@@ -247,8 +247,8 @@ static void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
   DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for "
            << descriptor.display_name;
   ScopedComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr =
-      dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC);
+  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
+                                  IID_PPV_ARGS(&dev_enum));
   if (FAILED(hr))
     return;
 

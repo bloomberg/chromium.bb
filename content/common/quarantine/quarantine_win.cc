@@ -197,7 +197,8 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
                               const GUID& client_guid,
                               HRESULT* save_result) {
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
-  HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
+  HRESULT hr = ::CoCreateInstance(CLSID_AttachmentServices, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&attachment_services));
   *save_result = S_OK;
 
   if (FAILED(hr)) {

@@ -104,7 +104,8 @@ bool AudioCapturerWin::Initialize() {
 
   HRESULT hr = S_OK;
   base::win::ScopedComPtr<IMMDeviceEnumerator> mm_device_enumerator;
-  hr = mm_device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator));
+  hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                          IID_PPV_ARGS(&mm_device_enumerator));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create IMMDeviceEnumerator. Error " << hr;
     return false;
