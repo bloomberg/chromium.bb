@@ -23,6 +23,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -684,6 +685,14 @@ bool IsChromeActivelyUsed(const InstallerState& installer_state) {
   VisitUserHives(base::Bind(&OnUserHive, chrome_dist->GetStateKey(),
                             base::Unretained(&is_used)));
   return is_used;
+}
+
+int GetInstallAge(const InstallerState& installer_state) {
+  base::File::Info info;
+  if (!base::GetFileInfo(installer_state.target_path(), &info))
+    return -1;
+  base::TimeDelta age = base::Time::Now() - info.creation_time;
+  return age >= base::TimeDelta() ? age.InDays() : -1;
 }
 
 void RecordUnPackMetrics(UnPackStatus unpack_status,

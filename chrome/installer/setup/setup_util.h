@@ -122,6 +122,10 @@ bool IsDowngradeAllowed(const MasterPreferences& prefs);
 // Returns true if Chrome has been run within the last 28 days.
 bool IsChromeActivelyUsed(const InstallerState& installer_state);
 
+// Returns the age (in days) of the installation based on the creation time of
+// its installation directory, or -1 in case of error.
+int GetInstallAge(const InstallerState& installer_state);
+
 // Records UMA metrics for unpack result.
 void RecordUnPackMetrics(UnPackStatus unpack_status,
                          int32_t status,
