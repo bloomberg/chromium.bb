@@ -43,6 +43,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/laser/laser_pointer_controller.h"
+#include "ash/login/lock_screen_controller.h"
 #include "ash/login_status.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -557,6 +558,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           base::MakeUnique<KeyboardBrightnessController>()),
       locale_notification_controller_(
           base::MakeUnique<LocaleNotificationController>()),
+      lock_screen_controller_(base::MakeUnique<LockScreenController>()),
       media_controller_(base::MakeUnique<MediaController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
       session_controller_(base::MakeUnique<SessionController>()),
