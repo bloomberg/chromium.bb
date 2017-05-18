@@ -65,6 +65,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
 
   source_->SetAudioFormat(number_of_channels, node.context()->sampleRate());
 
+  SetInternalChannelCountMode(kExplicit);
   Initialize();
 }
 
