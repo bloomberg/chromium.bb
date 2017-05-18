@@ -25,24 +25,17 @@
 
 namespace gpu {
 
-class MockCommandBufferBase : public CommandBufferServiceBase {
+class FakeCommandBufferServiceBase : public CommandBufferServiceBase {
  public:
   static const int32_t kTransferBufferBaseId = 0x123;
   static const int32_t kMaxTransferBuffers = 32;
 
-  MockCommandBufferBase();
-  ~MockCommandBufferBase() override;
+  FakeCommandBufferServiceBase();
+  ~FakeCommandBufferServiceBase() override;
 
-  State GetLastState() override;
-  State WaitForTokenInRange(int32_t start, int32_t end) override;
-  State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
-                                int32_t start,
-                                int32_t end) override;
-  void SetGetBuffer(int transfer_buffer_id) override;
+  CommandBuffer::State GetState() override;
   void SetGetOffset(int32_t get_offset) override;
   void SetReleaseCount(uint64_t release_count) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                  int32_t* id) override;
   scoped_refptr<gpu::Buffer> GetTransferBuffer(int32_t id) override;
   void SetToken(int32_t token) override;
   void SetParseError(error::Error error) override;
@@ -54,20 +47,31 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   int32_t GetNextFreeTransferBufferId();
 
   void FlushHelper(int32_t put_offset);
+  void SetGetBufferHelper(int transfer_buffer_id);
+  scoped_refptr<gpu::Buffer> CreateTransferBufferHelper(size_t size,
+                                                        int32_t* id);
   void DestroyTransferBufferHelper(int32_t id);
-
-  virtual void OnFlush() = 0;
 
  private:
   scoped_refptr<Buffer> transfer_buffer_buffers_[kMaxTransferBuffers];
-  State state_;
+  CommandBuffer::State state_;
   int32_t put_offset_;
 };
 
-class MockClientCommandBuffer : public MockCommandBufferBase {
+class MockClientCommandBuffer : public CommandBuffer,
+                                public FakeCommandBufferServiceBase {
  public:
   MockClientCommandBuffer();
   ~MockClientCommandBuffer() override;
+
+  State GetLastState() override;
+  State WaitForTokenInRange(int32_t start, int32_t end) override;
+  State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
+                                int32_t start,
+                                int32_t end) override;
+  void SetGetBuffer(int transfer_buffer_id) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                  int32_t* id) override;
 
   // This is so we can use all the gmock functions when Flush is called.
   MOCK_METHOD0(OnFlush, void());
