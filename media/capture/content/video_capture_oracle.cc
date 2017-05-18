@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -384,9 +385,11 @@ void VideoCaptureOracle::SetFrameTimestamp(int frame_number,
   frame_timestamps_[frame_number % kMaxFrameTimestamps] = timestamp;
 }
 
-bool VideoCaptureOracle::IsFrameInRecentHistory(int frame_number) const {
+NOINLINE bool VideoCaptureOracle::IsFrameInRecentHistory(
+    int frame_number) const {
   // Adding (next_frame_number_ >= 0) helps the compiler deduce that there
-  // is no possibility of overflow here.
+  // is no possibility of overflow here. NOINLINE is also required to ensure the
+  // compiler can make this deduction (some compilers fail to otherwise...).
   return (frame_number >= 0 && next_frame_number_ >= 0 &&
           frame_number <= next_frame_number_ &&
           (next_frame_number_ - frame_number) < kMaxFrameTimestamps);
