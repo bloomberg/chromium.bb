@@ -18,7 +18,7 @@ PrefetchRequestTestBase::PrefetchRequestTestBase()
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
 
 void PrefetchRequestTestBase::RespondWithNetError(int net_error) {
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
   DCHECK(url_fetcher);
   url_fetcher->set_status(net::URLRequestStatus::FromError(net_error));
   url_fetcher->SetResponseString("");
@@ -26,7 +26,7 @@ void PrefetchRequestTestBase::RespondWithNetError(int net_error) {
 }
 
 void PrefetchRequestTestBase::RespondWithHttpError(int http_error) {
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
   DCHECK(url_fetcher);
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(http_error);
@@ -35,12 +35,17 @@ void PrefetchRequestTestBase::RespondWithHttpError(int http_error) {
 }
 
 void PrefetchRequestTestBase::RespondWithData(const std::string& data) {
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
   DCHECK(url_fetcher);
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(net::HTTP_OK);
   url_fetcher->SetResponseString(data);
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+}
+
+net::TestURLFetcher* PrefetchRequestTestBase::GetRunningFetcher() {
+  // All created TestURLFetchers have ID 0 by default.
+  return url_fetcher_factory_.GetFetcherByID(0);
 }
 
 }  // namespace offline_pages

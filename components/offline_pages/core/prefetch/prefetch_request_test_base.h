@@ -23,6 +23,7 @@ class PrefetchRequestTestBase : public testing::Test {
   void RespondWithNetError(int net_error);
   void RespondWithHttpError(int http_error);
   void RespondWithData(const std::string& data);
+  net::TestURLFetcher* GetRunningFetcher();
 
   net::URLRequestContextGetter* request_context() const {
     return request_context_.get();
