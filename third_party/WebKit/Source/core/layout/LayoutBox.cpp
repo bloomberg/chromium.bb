@@ -2677,14 +2677,17 @@ void LayoutBox::ComputeLogicalWidth(
            computed_values.margins_.end_) &&
       !IsFloating() && !IsInline() && !cb->IsFlexibleBoxIncludingDeprecated() &&
       !cb->IsLayoutGrid()) {
-    LayoutUnit new_margin = container_logical_width - computed_values.extent_ -
-                            cb->MarginStartForChild(*this);
+    LayoutUnit new_margin_total =
+        container_logical_width - computed_values.extent_;
     bool has_inverted_direction = cb->Style()->IsLeftToRightDirection() !=
                                   Style()->IsLeftToRightDirection();
-    if (has_inverted_direction)
-      computed_values.margins_.start_ = new_margin;
-    else
-      computed_values.margins_.end_ = new_margin;
+    if (has_inverted_direction) {
+      computed_values.margins_.start_ =
+          new_margin_total - computed_values.margins_.end_;
+    } else {
+      computed_values.margins_.end_ =
+          new_margin_total - computed_values.margins_.start_;
+    }
   }
 
   if (style_to_use.TextAutosizingMultiplier() != 1 &&
