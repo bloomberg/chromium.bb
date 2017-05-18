@@ -314,6 +314,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ProxyResolutionFailsSync) {
   EXPECT_FALSE(job_controller_->main_job());
   EXPECT_FALSE(job_controller_->alternative_job());
 
+  // Make sure calling GetLoadState() when before job creation does not crash.
+  // Regression test for crbug.com/723920.
+  EXPECT_EQ(LOAD_STATE_IDLE, job_controller_->GetLoadState());
+
   base::RunLoop().RunUntilIdle();
   request_.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
@@ -341,6 +345,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ProxyResolutionFailsAsync) {
 
   EXPECT_FALSE(job_controller_->main_job());
   EXPECT_FALSE(job_controller_->alternative_job());
+
+  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL,
+            job_controller_->GetLoadState());
 
   EXPECT_CALL(request_delegate_,
               OnStreamFailed(ERR_MANDATORY_PROXY_CONFIGURATION_FAILED, _))

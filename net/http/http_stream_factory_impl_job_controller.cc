@@ -160,13 +160,15 @@ LoadState HttpStreamFactoryImpl::JobController::GetLoadState() const {
   DCHECK(request_);
   if (next_state_ == STATE_RESOLVE_PROXY_COMPLETE)
     return session_->proxy_service()->GetLoadState(pac_request_);
-  DCHECK(main_job_ || alternative_job_);
   if (bound_job_)
     return bound_job_->GetLoadState();
-
-  // Just pick the first one.
-  return main_job_ ? main_job_->GetLoadState()
-                   : alternative_job_->GetLoadState();
+  if (main_job_)
+    return main_job_->GetLoadState();
+  if (alternative_job_)
+    return alternative_job_->GetLoadState();
+  // When proxy resolution fails, there is no job created and
+  // NotifyRequestFailed() is executed one message loop iteration later.
+  return LOAD_STATE_IDLE;
 }
 
 void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
