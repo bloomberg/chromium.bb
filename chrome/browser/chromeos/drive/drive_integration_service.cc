@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
@@ -249,9 +249,8 @@ DriveIntegrationService::DriveIntegrationService(
   DCHECK(profile && !profile->IsOffTheRecord());
 
   logger_.reset(new EventLogger);
-  base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
-  blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
-      blocking_pool->GetSequenceToken());
+  blocking_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
 
   ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
