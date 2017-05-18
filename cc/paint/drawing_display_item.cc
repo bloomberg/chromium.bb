@@ -10,8 +10,9 @@ namespace cc {
 
 DrawingDisplayItem::DrawingDisplayItem() : DisplayItem(DRAWING) {}
 
-DrawingDisplayItem::DrawingDisplayItem(sk_sp<const PaintRecord> record)
-    : DisplayItem(DRAWING), picture(std::move(record)) {}
+DrawingDisplayItem::DrawingDisplayItem(sk_sp<const PaintRecord> record,
+                                       const SkRect& bounds)
+    : DisplayItem(DRAWING), picture(std::move(record)), bounds(bounds) {}
 
 DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
     : DisplayItem(DRAWING), picture(item.picture) {}

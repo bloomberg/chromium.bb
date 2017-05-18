@@ -37,6 +37,7 @@ namespace blink {
 
 class BoxReflection;
 class FilterEffect;
+class FloatRect;
 
 namespace SkiaImageFilterBuilder {
 
@@ -54,7 +55,9 @@ PLATFORM_EXPORT void PopulateSourceGraphicImageFilters(
     FilterEffect* source_graphic,
     sk_sp<SkImageFilter> input,
     InterpolationSpace input_interpolation_space);
-PLATFORM_EXPORT void BuildSourceGraphic(FilterEffect*, sk_sp<PaintRecord>);
+PLATFORM_EXPORT void BuildSourceGraphic(FilterEffect*,
+                                        sk_sp<PaintRecord>,
+                                        const FloatRect& record_bounds);
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> BuildBoxReflectFilter(
     const BoxReflection&,

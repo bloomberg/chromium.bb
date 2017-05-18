@@ -13,8 +13,8 @@ PaintRecorder::PaintRecorder() = default;
 PaintRecorder::~PaintRecorder() = default;
 
 PaintCanvas* PaintRecorder::beginRecording(const SkRect& bounds) {
-  buffer_.reset(new PaintOpBuffer(bounds));
-  canvas_.emplace(buffer_.get());
+  buffer_ = sk_make_sp<PaintOpBuffer>();
+  canvas_.emplace(buffer_.get(), bounds);
   return getRecordingCanvas();
 }
 

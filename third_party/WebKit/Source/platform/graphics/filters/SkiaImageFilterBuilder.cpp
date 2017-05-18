@@ -110,11 +110,11 @@ sk_sp<SkImageFilter> TransformInterpolationSpace(
 }
 
 void BuildSourceGraphic(FilterEffect* source_graphic,
-                        sk_sp<PaintRecord> record) {
+                        sk_sp<PaintRecord> record,
+                        const FloatRect& record_bounds) {
   DCHECK(record);
-  SkRect cull_rect = record->cullRect();
   sk_sp<SkImageFilter> filter =
-      SkPictureImageFilter::Make(ToSkPicture(record), cull_rect);
+      SkPictureImageFilter::Make(ToSkPicture(record, record_bounds));
   PopulateSourceGraphicImageFilters(
       source_graphic, std::move(filter),
       source_graphic->OperatingInterpolationSpace());
@@ -131,34 +131,35 @@ sk_sp<SkImageFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
     // raster the mask to a bitmap, then encode it in an SkImageSource, which
     // can be serialized.
     SkBitmap bitmap;
-    const SkRect cull_rect = mask_record->cullRect();
-    if (static_cast<float>(cull_rect.width()) *
-            static_cast<float>(cull_rect.height()) <
+    const SkRect mask_record_bounds = reflection.MaskBounds();
+    if (mask_record_bounds.width() * mask_record_bounds.height() <
         kMaxMaskBufferSize) {
-      bitmap.allocPixels(
-          SkImageInfo::MakeN32Premul(cull_rect.width(), cull_rect.height()));
+      bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+          mask_record_bounds.width(), mask_record_bounds.height()));
       SkiaPaintCanvas canvas(bitmap);
       canvas.clear(SK_ColorTRANSPARENT);
-      canvas.translate(-cull_rect.x(), -cull_rect.y());
+      canvas.translate(-mask_record_bounds.x(), -mask_record_bounds.y());
       canvas.drawPicture(mask_record);
       sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 
       // SkXfermodeImageFilter can choose an excessively large size if the
       // mask is smaller than the filtered contents (due to overflow).
       // http://skbug.com/5210
-      SkImageFilter::CropRect crop_rect(mask_record->cullRect());
+      SkImageFilter::CropRect crop_rect(mask_record_bounds);
       masked_input = SkXfermodeImageFilter::Make(
           SkBlendMode::kSrcIn,
-          SkOffsetImageFilter::Make(cull_rect.x(), cull_rect.y(),
+          SkOffsetImageFilter::Make(mask_record_bounds.x(),
+                                    mask_record_bounds.y(),
                                     SkImageSource::Make(image)),
           input, &crop_rect);
     } else {
       // If the buffer is excessively big, give up and make an
       // SkPictureImageFilter anyway, even if it might not render.
-      SkImageFilter::CropRect crop_rect(mask_record->cullRect());
+      SkImageFilter::CropRect crop_rect(mask_record_bounds);
       masked_input = SkXfermodeImageFilter::Make(
           SkBlendMode::kSrcOver,
-          SkPictureImageFilter::Make(ToSkPicture(std::move(mask_record))),
+          SkPictureImageFilter::Make(
+              ToSkPicture(std::move(mask_record), mask_record_bounds)),
           input, &crop_rect);
     }
   } else {

@@ -45,8 +45,10 @@ class MockWebDisplayItemList : public WebDisplayItemList {
  public:
   ~MockWebDisplayItemList() override {}
 
-  MOCK_METHOD2(AppendDrawingItem,
-               void(const WebRect&, sk_sp<const PaintRecord>));
+  MOCK_METHOD3(AppendDrawingItem,
+               void(const WebRect& visual_rect,
+                    sk_sp<const cc::PaintRecord>,
+                    const WebRect& record_bounds));
 };
 
 void PaintRecursively(GraphicsLayer* layer, WebDisplayItemList* display_items) {
@@ -845,7 +847,7 @@ TEST_P(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled) {
   // If painting of the iframe is throttled, we should only receive two
   // drawing items.
   MockWebDisplayItemList display_items;
-  EXPECT_CALL(display_items, AppendDrawingItem(_, _)).Times(2);
+  EXPECT_CALL(display_items, AppendDrawingItem(_, _, _)).Times(2);
 
   GraphicsLayer* layer = WebView().RootGraphicsLayer();
   PaintRecursively(layer, &display_items);

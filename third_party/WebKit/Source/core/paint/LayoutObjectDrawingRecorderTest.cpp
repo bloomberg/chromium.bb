@@ -119,7 +119,7 @@ FloatRect DrawAndGetCullRect(PaintController& controller,
   controller.CommitNewDisplayItems();
   const auto& drawing = static_cast<const DrawingDisplayItem&>(
       controller.GetDisplayItemList()[0]);
-  return drawing.GetPaintRecord()->cullRect();
+  return drawing.GetPaintRecordBounds();
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip) {

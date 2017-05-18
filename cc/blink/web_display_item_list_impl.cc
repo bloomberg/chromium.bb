@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
 namespace cc_blink {
@@ -41,9 +42,10 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
 
 void WebDisplayItemListImpl::AppendDrawingItem(
     const blink::WebRect& visual_rect,
-    sk_sp<const cc::PaintRecord> record) {
+    sk_sp<const cc::PaintRecord> record,
+    const blink::WebRect& record_bounds) {
   display_item_list_->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(
-      visual_rect, std::move(record));
+      visual_rect, std::move(record), gfx::RectToSkRect(record_bounds));
 }
 
 void WebDisplayItemListImpl::AppendClipItem(

@@ -49,7 +49,7 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
 
   auto display_list = make_scoped_refptr(new DisplayItemList);
   display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-      clip, recorder.finishRecordingAsPicture());
+      clip, recorder.finishRecordingAsPicture(), gfx::RectToSkRect(clip));
 
   display_list->Finalize();
   return display_list;

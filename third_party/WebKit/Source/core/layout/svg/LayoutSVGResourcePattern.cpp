@@ -122,7 +122,8 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
 
   std::unique_ptr<PatternData> pattern_data = WTF::WrapUnique(new PatternData);
   pattern_data->pattern = Pattern::CreatePaintRecordPattern(
-      AsPaintRecord(tile_bounds, tile_transform));
+      AsPaintRecord(tile_bounds.Size(), tile_transform),
+      FloatRect(FloatPoint(), tile_bounds.Size()));
 
   // Compute pattern space transformation.
   pattern_data->transform.Translate(tile_bounds.X(), tile_bounds.Y());
@@ -196,7 +197,7 @@ LayoutSVGResourcePattern::ResolveContentElement() const {
 }
 
 sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
-    const FloatRect& tile_bounds,
+    const FloatSize& size,
     const AffineTransform& tile_transform) const {
   DCHECK(!should_collect_pattern_attributes_);
 
@@ -205,7 +206,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
     content_transform = tile_transform;
 
-  FloatRect bounds(FloatPoint(), tile_bounds.Size());
+  FloatRect bounds(FloatPoint(), size);
   const LayoutSVGResourceContainer* pattern_layout_object =
       ResolveContentElement();
   DCHECK(pattern_layout_object);
