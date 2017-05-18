@@ -848,9 +848,9 @@ TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::NONE, CurrentUseCase());
 }
 
@@ -2417,7 +2417,7 @@ TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("D1"),
+              testing::ElementsAre(std::string("D1"), std::string("C1"),
                                    std::string("I1")));
 
   // The rest queued tasks fire when the tab goes foregrounded.
@@ -2449,7 +2449,7 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("D1"),
+              testing::ElementsAre(std::string("D1"), std::string("C1"),
                                    std::string("I1")));
 
   // The rest queued tasks fire when the renderer is resumed.
@@ -2467,7 +2467,7 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C2"), std::string("D2"),
+              testing::ElementsAre(std::string("D2"), std::string("C2"),
                                    std::string("I2")));
 
   // The rest queued tasks fire when the renderer is resumed.
