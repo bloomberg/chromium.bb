@@ -36,6 +36,7 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
@@ -313,4 +314,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
+
+  if (ResourceCoordinatorWebContentsObserver::IsEnabled())
+    ResourceCoordinatorWebContentsObserver::CreateForWebContents(web_contents);
 }

@@ -78,7 +78,9 @@
           "barcode_detection",
           "face_detection",
           "text_detection"
-        ]
+
+        ],
+        "resource_coordinator": [ "coordination_unit" ]
       }
     },
     "navigation:frame": {
