@@ -5707,13 +5707,16 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   // the scroll doesn't bubble up to the parent layer.
   gfx::Size surface_size(20, 20);
   gfx::Size viewport_size(10, 10);
+  const int kPageScaleLayerId = 1;
+  const int kViewportClipLayerId = 2;
+  const int kViewportScrollLayerId = 3;
   std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl_->active_tree(), 1);
+      LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
   std::unique_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
+      LayerImpl::Create(host_impl_->active_tree(), kViewportClipLayerId);
   root_clip->test_properties()->force_render_surface = true;
-  std::unique_ptr<LayerImpl> root_scrolling =
-      CreateScrollableLayer(3, surface_size, root_clip.get());
+  std::unique_ptr<LayerImpl> root_scrolling = CreateScrollableLayer(
+      kViewportScrollLayerId, surface_size, root_clip.get());
   root_scrolling->test_properties()->is_container_for_fixed_position_layers =
       true;
 
@@ -5733,8 +5736,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, 1, Layer::INVALID_ID, Layer::INVALID_ID, 3,
-      Layer::INVALID_ID);
+      Layer::INVALID_ID, kPageScaleLayerId, kViewportClipLayerId,
+      Layer::INVALID_ID, kViewportScrollLayerId, Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(viewport_size);
 
@@ -5853,17 +5856,20 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
   // should be applied to one of its ancestors if possible.
   gfx::Size surface_size(10, 10);
   gfx::Size content_size(20, 20);
+  const int kPageScaleLayerId = 4;
+  const int kViewportClipLayerId = 1;
+  const int kViewportScrollLayerId = 2;
   std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl_->active_tree(), 4);
+      LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
   std::unique_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl_->active_tree(), 3);
   root_clip->test_properties()->force_render_surface = true;
-  std::unique_ptr<LayerImpl> root_scroll =
-      CreateScrollableLayer(1, content_size, root_clip.get());
+  std::unique_ptr<LayerImpl> root_scroll = CreateScrollableLayer(
+      kViewportClipLayerId, content_size, root_clip.get());
   // Make 'root' the clip layer for child: since they have the same sizes the
   // child will have zero max_scroll_offset and scrolls will bubble.
-  std::unique_ptr<LayerImpl> child =
-      CreateScrollableLayer(2, content_size, root_scroll.get());
+  std::unique_ptr<LayerImpl> child = CreateScrollableLayer(
+      kViewportScrollLayerId, content_size, root_scroll.get());
   child->test_properties()->is_container_for_fixed_position_layers = true;
   root_scroll->SetBounds(content_size);
 
@@ -5874,8 +5880,8 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
 
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, 4, Layer::INVALID_ID, Layer::INVALID_ID, 2,
-      Layer::INVALID_ID);
+      Layer::INVALID_ID, kPageScaleLayerId, kViewportClipLayerId,
+      Layer::INVALID_ID, kViewportScrollLayerId, Layer::INVALID_ID);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
@@ -5902,17 +5908,22 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
+  const int kPageScaleLayerId = 1;
+  const int kInnerViewportClipLayerId = 2;
+  const int kOuterViewportClipLayerId = 7;
+  const int kInnerViewportScrollLayerId = 3;
+  const int kOuterViewportScrollLayerId = 8;
   gfx::Size surface_size(10, 10);
   std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl_->active_tree(), 1);
+      LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
   std::unique_ptr<LayerImpl> inner_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
-  std::unique_ptr<LayerImpl> inner_scroll =
-      CreateScrollableLayer(3, surface_size, inner_clip.get());
+      LayerImpl::Create(host_impl_->active_tree(), kInnerViewportClipLayerId);
+  std::unique_ptr<LayerImpl> inner_scroll = CreateScrollableLayer(
+      kInnerViewportScrollLayerId, surface_size, inner_clip.get());
   std::unique_ptr<LayerImpl> outer_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 7);
-  std::unique_ptr<LayerImpl> outer_scroll =
-      CreateScrollableLayer(8, surface_size, outer_clip.get());
+      LayerImpl::Create(host_impl_->active_tree(), kOuterViewportClipLayerId);
+  std::unique_ptr<LayerImpl> outer_scroll = CreateScrollableLayer(
+      kOuterViewportScrollLayerId, surface_size, outer_clip.get());
   inner_clip->test_properties()->force_render_surface = true;
   inner_scroll->test_properties()->is_container_for_fixed_position_layers =
       true;
@@ -5924,7 +5935,9 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   root_ptr->test_properties()->AddChild(std::move(inner_clip));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, 1, Layer::INVALID_ID, Layer::INVALID_ID, 3, 8);
+      Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportClipLayerId,
+      kOuterViewportClipLayerId, kInnerViewportScrollLayerId,
+      kOuterViewportScrollLayerId);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
@@ -5934,17 +5947,22 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   // synchronization.
   DrawFrame();
 
+  const int kPageScaleLayerId2 = 4;
+  const int kInnerViewportClipLayerId2 = 5;
+  const int kOuterViewportClipLayerId2 = 9;
+  const int kInnerViewportScrollLayerId2 = 6;
+  const int kOuterViewportScrollLayerId2 = 10;
   host_impl_->active_tree()->DetachLayers();
   std::unique_ptr<LayerImpl> root_ptr2 =
       LayerImpl::Create(host_impl_->active_tree(), 4);
   std::unique_ptr<LayerImpl> inner_clip2 =
-      LayerImpl::Create(host_impl_->active_tree(), 5);
-  std::unique_ptr<LayerImpl> inner_scroll2 =
-      CreateScrollableLayer(6, surface_size, inner_clip2.get());
+      LayerImpl::Create(host_impl_->active_tree(), kInnerViewportClipLayerId2);
+  std::unique_ptr<LayerImpl> inner_scroll2 = CreateScrollableLayer(
+      kInnerViewportScrollLayerId2, surface_size, inner_clip2.get());
   std::unique_ptr<LayerImpl> outer_clip2 =
-      LayerImpl::Create(host_impl_->active_tree(), 9);
-  std::unique_ptr<LayerImpl> outer_scroll2 =
-      CreateScrollableLayer(10, surface_size, outer_clip2.get());
+      LayerImpl::Create(host_impl_->active_tree(), kOuterViewportClipLayerId2);
+  std::unique_ptr<LayerImpl> outer_scroll2 = CreateScrollableLayer(
+      kOuterViewportScrollLayerId2, surface_size, outer_clip2.get());
   inner_scroll2->test_properties()->is_container_for_fixed_position_layers =
       true;
   outer_scroll2->test_properties()->is_container_for_fixed_position_layers =
@@ -5957,7 +5975,9 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr2));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, 4, Layer::INVALID_ID, Layer::INVALID_ID, 6, 10);
+      Layer::INVALID_ID, kPageScaleLayerId2, kInnerViewportClipLayerId2,
+      kOuterViewportClipLayerId2, kInnerViewportScrollLayerId2,
+      kOuterViewportScrollLayerId2);
   host_impl_->active_tree()->DidBecomeActive();
 
   // Scrolling should still work even though we did not draw yet.
@@ -6524,12 +6544,14 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
   // overscroll does not accumulate.
   InputHandlerScrollResult scroll_result;
   gfx::Size surface_size(10, 10);
+  const int kInnerViewportClipLayerId = 4;
+  const int kInnerViewportScrollLayerId = 1;
   std::unique_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 4);
+      LayerImpl::Create(host_impl_->active_tree(), kInnerViewportClipLayerId);
   root_clip->test_properties()->force_render_surface = true;
 
-  std::unique_ptr<LayerImpl> root =
-      CreateScrollableLayer(1, surface_size, root_clip.get());
+  std::unique_ptr<LayerImpl> root = CreateScrollableLayer(
+      kInnerViewportScrollLayerId, surface_size, root_clip.get());
 
   std::unique_ptr<LayerImpl> grand_child =
       CreateScrollableLayer(3, surface_size, root_clip.get());
@@ -6540,8 +6562,8 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
   child->test_properties()->AddChild(std::move(grand_child));
 
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
-      Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
+      Layer::INVALID_ID, Layer::INVALID_ID, kInnerViewportClipLayerId,
+      Layer::INVALID_ID, kInnerViewportScrollLayerId, Layer::INVALID_ID);
 
   LayerImpl* child_layer = child.get();
   root->test_properties()->AddChild(std::move(child));
@@ -8836,14 +8858,17 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
   // bubble).
   gfx::Size surface_size(10, 10);
   gfx::Size content_size(20, 20);
+  const int kPageScaleLayerId = 4;
+  const int kInnerViewportClipLayerId = 3;
+  const int kInnerViewportScrollLayerId = 1;
   std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl_->active_tree(), 4);
+      LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
   std::unique_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 3);
+      LayerImpl::Create(host_impl_->active_tree(), kInnerViewportClipLayerId);
   root_clip->test_properties()->force_render_surface = true;
 
-  std::unique_ptr<LayerImpl> root_scroll =
-      CreateScrollableLayer(1, content_size, root_clip.get());
+  std::unique_ptr<LayerImpl> root_scroll = CreateScrollableLayer(
+      kInnerViewportScrollLayerId, content_size, root_clip.get());
   root_scroll->test_properties()->is_container_for_fixed_position_layers = true;
   std::unique_ptr<LayerImpl> child =
       CreateScrollableLayer(2, content_size, root_clip.get());
@@ -8856,8 +8881,8 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, 4, Layer::INVALID_ID, Layer::INVALID_ID, 1,
-      Layer::INVALID_ID);
+      Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportClipLayerId,
+      Layer::INVALID_ID, kInnerViewportScrollLayerId, Layer::INVALID_ID);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
@@ -9864,6 +9889,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
   LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
   LayerImpl* scroll_layer = nullptr;
+  LayerImpl* clip_layer = nullptr;
 
   // Initialization: Add a child scrolling layer to the outer scroll layer and
   // set its scroll layer as the outer viewport. This simulates setting a
@@ -9880,14 +9906,14 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
     scroll->SetDrawsContent(true);
 
     scroll_layer = scroll.get();
+    clip_layer = clip.get();
 
     clip->test_properties()->AddChild(std::move(scroll));
     outer_scroll->test_properties()->AddChild(std::move(clip));
-
     layer_tree_impl->SetViewportLayersFromIds(
         Layer::INVALID_ID, layer_tree_impl->PageScaleLayer()->id(),
-        Layer::INVALID_ID, Layer::INVALID_ID, inner_scroll->id(),
-        scroll_layer->id());
+        layer_tree_impl->InnerViewportContainerLayer()->id(), clip_layer->id(),
+        inner_scroll->id(), scroll_layer->id());
     layer_tree_impl->BuildPropertyTreesForTesting();
     DrawFrame();
   }

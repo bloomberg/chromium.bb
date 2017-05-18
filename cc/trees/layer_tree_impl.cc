@@ -1230,17 +1230,21 @@ const Region& LayerTreeImpl::UnoccludedScreenSpaceRegion() const {
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableSize() const {
-  LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
-                                     ? OuterViewportScrollLayer()
-                                     : InnerViewportScrollLayer();
-  if (!root_scroll_layer)
+  LayerImpl* root_scroll_layer = nullptr;
+  LayerImpl* root_container_layer = nullptr;
+  if (OuterViewportScrollLayer()) {
+    root_scroll_layer = OuterViewportScrollLayer();
+    root_container_layer = OuterViewportContainerLayer();
+  } else if (InnerViewportScrollLayer()) {
+    root_scroll_layer = InnerViewportScrollLayer();
+    root_container_layer = InnerViewportContainerLayer();
+  }
+
+  if (!root_scroll_layer || !root_container_layer)
     return gfx::SizeF();
 
   gfx::SizeF content_size = root_scroll_layer->BoundsForScrolling();
-  gfx::SizeF viewport_size =
-      root_scroll_layer->scroll_clip_layer()->BoundsForScrolling();
-
-  content_size.SetToMax(viewport_size);
+  content_size.SetToMax(root_container_layer->BoundsForScrolling());
   return content_size;
 }
 
