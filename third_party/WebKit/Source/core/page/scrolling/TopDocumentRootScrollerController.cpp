@@ -202,6 +202,13 @@ GraphicsLayer* TopDocumentRootScrollerController::RootScrollerLayer() const {
   return graphics_layer;
 }
 
+GraphicsLayer* TopDocumentRootScrollerController::RootContainerLayer() const {
+  ScrollableArea* area =
+      RootScrollerUtil::ScrollableAreaForRootScroller(global_root_scroller_);
+
+  return area ? area->LayerForContainer() : nullptr;
+}
+
 PaintLayer* TopDocumentRootScrollerController::RootScrollerPaintLayer() const {
   return RootScrollerUtil::PaintLayerForRootScroller(global_root_scroller_);
 }

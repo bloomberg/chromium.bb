@@ -3826,10 +3826,17 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
 
   DCHECK(document);
 
-  // Get the outer viewport scroll layer.
+  // Get the outer viewport scroll layers.
+  GraphicsLayer* layout_viewport_container_layer =
+      GetPage()->GlobalRootScrollerController().RootContainerLayer();
+  WebLayer* layout_viewport_container_web_layer =
+      layout_viewport_container_layer
+          ? layout_viewport_container_layer->PlatformLayer()
+          : nullptr;
+
   GraphicsLayer* layout_viewport_scroll_layer =
       GetPage()->GlobalRootScrollerController().RootScrollerLayer();
-  WebLayer* layout_viewport_web_layer =
+  WebLayer* layout_viewport_scroll_web_layer =
       layout_viewport_scroll_layer
           ? layout_viewport_scroll_layer->PlatformLayer()
           : nullptr;
@@ -3839,13 +3846,15 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
   // TODO(bokan): This was moved here from when registerViewportLayers was a
   // part of VisualViewport and maybe doesn't belong here. See comment inside
   // the mehtod.
-  visual_viewport.SetScrollLayerOnScrollbars(layout_viewport_web_layer);
+  visual_viewport.SetScrollLayerOnScrollbars(layout_viewport_scroll_web_layer);
 
   layer_tree_view_->RegisterViewportLayers(
       visual_viewport.OverscrollElasticityLayer()->PlatformLayer(),
       visual_viewport.PageScaleLayer()->PlatformLayer(),
+      visual_viewport.ContainerLayer()->PlatformLayer(),
+      layout_viewport_container_web_layer,
       visual_viewport.ScrollLayer()->PlatformLayer(),
-      layout_viewport_web_layer);
+      layout_viewport_scroll_web_layer);
 }
 
 void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {

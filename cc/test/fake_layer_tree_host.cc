@@ -82,7 +82,14 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
     active_tree()->SetViewportLayersFromIds(
         overscroll_elasticity_layer() ? overscroll_elasticity_layer()->id()
                                       : Layer::INVALID_ID,
-        page_scale_layer()->id(), inner_viewport_scroll_layer()->id(),
+        page_scale_layer()->id(),
+        inner_viewport_container_layer()
+            ? inner_viewport_container_layer()->id()
+            : Layer::INVALID_ID,
+        outer_viewport_container_layer()
+            ? outer_viewport_container_layer()->id()
+            : Layer::INVALID_ID,
+        inner_viewport_scroll_layer()->id(),
         outer_viewport_scroll_layer() ? outer_viewport_scroll_layer()->id()
                                       : Layer::INVALID_ID);
   }

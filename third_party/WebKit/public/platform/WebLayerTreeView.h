@@ -139,6 +139,8 @@ class WebLayerTreeView {
   virtual void RegisterViewportLayers(
       const WebLayer* overscroll_elasticity_layer,
       const WebLayer* page_scale_layer,
+      const WebLayer* inner_viewport_container_layer,
+      const WebLayer* outer_viewport_container_layer,
       const WebLayer* inner_viewport_scroll_layer,
       const WebLayer* outer_viewport_scroll_layer) {}
   virtual void ClearViewportLayers() {}

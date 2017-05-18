@@ -173,7 +173,7 @@ LayerTreeHost::~LayerTreeHost() {
   mutator_host_->SetMutatorHostClient(nullptr);
 
   // We must clear any pointers into the layer tree prior to destroying it.
-  RegisterViewportLayers(nullptr, nullptr, nullptr, nullptr);
+  RegisterViewportLayers(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   if (root_layer_) {
     root_layer_->SetLayerTreeHost(nullptr);
@@ -906,12 +906,16 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
 void LayerTreeHost::RegisterViewportLayers(
     scoped_refptr<Layer> overscroll_elasticity_layer,
     scoped_refptr<Layer> page_scale_layer,
+    scoped_refptr<Layer> inner_viewport_container_layer,
+    scoped_refptr<Layer> outer_viewport_container_layer,
     scoped_refptr<Layer> inner_viewport_scroll_layer,
     scoped_refptr<Layer> outer_viewport_scroll_layer) {
   DCHECK(!inner_viewport_scroll_layer ||
          inner_viewport_scroll_layer != outer_viewport_scroll_layer);
   overscroll_elasticity_layer_ = overscroll_elasticity_layer;
   page_scale_layer_ = page_scale_layer;
+  inner_viewport_container_layer_ = inner_viewport_container_layer;
+  outer_viewport_container_layer_ = outer_viewport_container_layer;
   inner_viewport_scroll_layer_ = inner_viewport_scroll_layer;
   outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
 }
@@ -1173,7 +1177,12 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->SetViewportLayersFromIds(
         overscroll_elasticity_layer_ ? overscroll_elasticity_layer_->id()
                                      : Layer::INVALID_ID,
-        page_scale_layer_->id(), inner_viewport_scroll_layer_->id(),
+        page_scale_layer_->id(),
+        inner_viewport_container_layer_ ? inner_viewport_container_layer_->id()
+                                        : Layer::INVALID_ID,
+        outer_viewport_container_layer_ ? outer_viewport_container_layer_->id()
+                                        : Layer::INVALID_ID,
+        inner_viewport_scroll_layer_->id(),
         outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
                                      : Layer::INVALID_ID);
     DCHECK(inner_viewport_scroll_layer_->IsContainerForFixedPositionLayers());

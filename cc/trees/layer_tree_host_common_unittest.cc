@@ -605,7 +605,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   page_scale = 1.888f;
   root_layer->layer_tree_impl()->SetViewportLayersFromIds(
       Layer::INVALID_ID, scroll_layer->test_properties()->parent->id(),
-      Layer::INVALID_ID, Layer::INVALID_ID);
+      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
+      Layer::INVALID_ID);
   root_layer->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale);
   EXPECT_FALSE(root_layer->layer_tree_impl()->property_trees()->needs_rebuild);
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
@@ -4110,8 +4111,8 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
   root->layer_tree_impl()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, page_scale->id(), Layer::INVALID_ID,
-      Layer::INVALID_ID);
+      Layer::INVALID_ID, page_scale->id(), Layer::INVALID_ID, Layer::INVALID_ID,
+      Layer::INVALID_ID, Layer::INVALID_ID);
   root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
   root->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale_factor);
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
@@ -6548,7 +6549,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomInnerViewportDelta) {
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
   scroller->SetScrollClipLayerId(root->id());
-  host()->RegisterViewportLayers(nullptr, root, scroller, nullptr);
+  host()->RegisterViewportLayers(nullptr, root, root, nullptr, scroller,
+                                 nullptr);
 
   LayerStickyPositionConstraint sticky_position;
   sticky_position.is_sticky = true;
@@ -6621,7 +6623,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
   host()->SetRootLayer(root);
   scroller->SetScrollClipLayerId(root->id());
   outer_viewport->SetScrollClipLayerId(outer_clip->id());
-  host()->RegisterViewportLayers(nullptr, root, scroller, outer_viewport);
+  host()->RegisterViewportLayers(nullptr, root, root, outer_clip, scroller,
+                                 outer_viewport);
 
   LayerStickyPositionConstraint sticky_position;
   sticky_position.is_sticky = true;
@@ -8123,7 +8126,8 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
   // Make root the inner viewport scroll layer. This ensures the later call to
   // |SetViewportBoundsDelta| will be on a viewport layer.
   host_impl.active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
+      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
+      Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
 
   root->test_properties()->AddChild(
       LayerImpl::Create(host_impl.active_tree(), 2));
@@ -8170,7 +8174,9 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
   outer_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
 
   host()->SetRootLayer(root);
-  host()->RegisterViewportLayers(nullptr, root, inner_viewport_scroll_layer,
+  host()->RegisterViewportLayers(nullptr, root, inner_viewport_container_layer,
+                                 outer_viewport_container_layer,
+                                 inner_viewport_scroll_layer,
                                  outer_viewport_scroll_layer);
 
   scoped_refptr<Layer> fixed_to_inner = Layer::Create();
@@ -9998,7 +10004,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   parent5->SetBounds(gfx::Size(10, 10));
 
-  host()->RegisterViewportLayers(nullptr, page_scale_layer, parent2, nullptr);
+  host()->RegisterViewportLayers(nullptr, page_scale_layer, root1, nullptr,
+                                 parent2, nullptr);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root1.get());
 
   const int kRootPropertyTreeNodeId = 0;

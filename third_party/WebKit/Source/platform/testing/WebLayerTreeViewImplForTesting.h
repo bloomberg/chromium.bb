@@ -61,6 +61,8 @@ class WebLayerTreeViewImplForTesting
   void RegisterViewportLayers(
       const blink::WebLayer* overscroll_elasticity_layer,
       const blink::WebLayer* page_scale_layer_layer,
+      const blink::WebLayer* inner_viewport_container_layer,
+      const blink::WebLayer* outer_viewport_container_layer,
       const blink::WebLayer* inner_viewport_scroll_layer,
       const blink::WebLayer* outer_viewport_scroll_layer) override;
   void ClearViewportLayers() override;

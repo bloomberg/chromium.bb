@@ -779,30 +779,41 @@ void RenderWidgetCompositor::DidStopFlinging() {
 void RenderWidgetCompositor::RegisterViewportLayers(
     const blink::WebLayer* overscrollElasticityLayer,
     const blink::WebLayer* pageScaleLayer,
+    const blink::WebLayer* innerViewportContainerLayer,
+    const blink::WebLayer* outerViewportContainerLayer,
     const blink::WebLayer* innerViewportScrollLayer,
     const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
       // TODO(bokan): This check can probably be removed now, but it looks
-      // like overscroll elasticity may still be NULL until VisualViewport
+      // like overscroll elasticity may still be nullptr until VisualViewport
       // registers its layers.
       overscrollElasticityLayer ? static_cast<const cc_blink::WebLayerImpl*>(
                                       overscrollElasticityLayer)
                                       ->layer()
-                                : NULL,
+                                : nullptr,
       static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
+      innerViewportContainerLayer ? static_cast<const cc_blink::WebLayerImpl*>(
+                                        innerViewportContainerLayer)
+                                        ->layer()
+                                  : nullptr,
+      outerViewportContainerLayer ? static_cast<const cc_blink::WebLayerImpl*>(
+                                        outerViewportContainerLayer)
+                                        ->layer()
+                                  : nullptr,
       static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
           ->layer(),
       // TODO(bokan): This check can probably be removed now, but it looks
-      // like overscroll elasticity may still be NULL until VisualViewport
+      // like overscroll elasticity may still be nullptr until VisualViewport
       // registers its layers.
       outerViewportScrollLayer
           ? static_cast<const cc_blink::WebLayerImpl*>(outerViewportScrollLayer)
                 ->layer()
-          : NULL);
+          : nullptr);
 }
 
 void RenderWidgetCompositor::ClearViewportLayers() {
   layer_tree_host_->RegisterViewportLayers(
+      scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>(),
       scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>(),
       scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>());
 }

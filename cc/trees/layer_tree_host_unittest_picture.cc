@@ -423,8 +423,8 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     picture_->SetBounds(gfx::Size(100, 100));
     pinch_->AddChild(picture_);
 
-    layer_tree_host()->RegisterViewportLayers(NULL, page_scale_layer, pinch_,
-                                              nullptr);
+    layer_tree_host()->RegisterViewportLayers(NULL, page_scale_layer, root_clip,
+                                              nullptr, pinch_, nullptr);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
     layer_tree_host()->SetRootLayer(root_clip);
     LayerTreeHostPictureTest::SetupTree();

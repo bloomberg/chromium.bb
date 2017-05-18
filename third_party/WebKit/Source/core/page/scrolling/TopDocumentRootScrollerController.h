@@ -57,6 +57,9 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // Returns the GraphicsLayer for the global root scroller.
   GraphicsLayer* RootScrollerLayer() const;
 
+  // Returns the GraphicsLayer for the global root scroll container.
+  GraphicsLayer* RootContainerLayer() const;
+
   PaintLayer* RootScrollerPaintLayer() const;
 
   // Returns the Element that's the global root scroller.  See README.md for

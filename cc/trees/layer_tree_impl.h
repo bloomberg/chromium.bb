@@ -218,6 +218,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetViewportLayersFromIds(int overscroll_elasticity_layer,
                                 int page_scale_layer_id,
+                                int inner_viewport_container_layer_id,
+                                int outer_viewport_container_layer_id,
                                 int inner_viewport_scroll_layer_id,
                                 int outer_viewport_scroll_layer_id);
   void ClearViewportLayers();
@@ -527,6 +529,10 @@ class CC_EXPORT LayerTreeImpl {
   int last_scrolled_scroll_node_index_;
   int overscroll_elasticity_layer_id_;
   int page_scale_layer_id_;
+
+  int inner_viewport_container_layer_id_;
+  int outer_viewport_container_layer_id_;
+
   int inner_viewport_scroll_layer_id_;
   int outer_viewport_scroll_layer_id_;
 

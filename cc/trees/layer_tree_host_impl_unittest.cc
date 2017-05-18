@@ -382,7 +382,8 @@ class LayerTreeHostImplTest : public testing::Test,
     layer_tree_impl->SetRootLayerForTesting(std::move(root));
     layer_tree_impl->BuildPropertyTreesForTesting();
     layer_tree_impl->SetViewportLayersFromIds(
-        Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportScrollLayerId,
+        Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportClipLayerId,
+        kOuterViewportClipLayerId, kInnerViewportScrollLayerId,
         kOuterViewportScrollLayerId);
 
     layer_tree_impl->DidBecomeActive();
@@ -4298,6 +4299,8 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
     outer_scroll->test_properties()->is_container_for_fixed_position_layers =
         true;
 
+    int inner_viewport_container_layer_id = root_clip->id();
+    int outer_viewport_container_layer_id = outer_clip->id();
     int inner_viewport_scroll_layer_id = root->id();
     int outer_viewport_scroll_layer_id = outer_scroll->id();
     int page_scale_layer_id = page_scale->id();
@@ -4308,9 +4311,10 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
     root_clip->test_properties()->AddChild(std::move(page_scale));
 
     tree_impl->SetRootLayerForTesting(std::move(root_clip));
-    tree_impl->SetViewportLayersFromIds(Layer::INVALID_ID, page_scale_layer_id,
-                                        inner_viewport_scroll_layer_id,
-                                        outer_viewport_scroll_layer_id);
+    tree_impl->SetViewportLayersFromIds(
+        Layer::INVALID_ID, page_scale_layer_id,
+        inner_viewport_container_layer_id, outer_viewport_container_layer_id,
+        inner_viewport_scroll_layer_id, outer_viewport_scroll_layer_id);
     tree_impl->BuildPropertyTreesForTesting();
 
     host_impl_->SetViewportSize(inner_viewport_size);
@@ -5728,8 +5732,9 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   root_ptr->test_properties()->AddChild(std::move(root_clip));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
-                                                      Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, 1, Layer::INVALID_ID, Layer::INVALID_ID, 3,
+      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(viewport_size);
 
@@ -5868,8 +5873,9 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
   root_ptr->test_properties()->AddChild(std::move(root_clip));
 
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 4, 2,
-                                                      Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, 4, Layer::INVALID_ID, Layer::INVALID_ID, 2,
+      Layer::INVALID_ID);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
@@ -5917,8 +5923,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   inner_clip->test_properties()->AddChild(std::move(inner_scroll));
   root_ptr->test_properties()->AddChild(std::move(inner_clip));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
-                                                      8);
+  host_impl_->active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, 1, Layer::INVALID_ID, Layer::INVALID_ID, 3, 8);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
@@ -5950,8 +5956,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   root_ptr2->test_properties()->AddChild(std::move(inner_clip2));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr2));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 4, 6,
-                                                      10);
+  host_impl_->active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, 4, Layer::INVALID_ID, Layer::INVALID_ID, 6, 10);
   host_impl_->active_tree()->DidBecomeActive();
 
   // Scrolling should still work even though we did not draw yet.
@@ -6534,7 +6540,8 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
   child->test_properties()->AddChild(std::move(grand_child));
 
   host_impl_->active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
+      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
+      Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
 
   LayerImpl* child_layer = child.get();
   root->test_properties()->AddChild(std::move(child));
@@ -6939,7 +6946,8 @@ TEST_F(LayerTreeHostImplTest, ScrollChainingWithReplacedOuterViewport) {
     content_layer->test_properties()->AddChild(std::move(clip));
     layer_tree_impl->SetViewportLayersFromIds(
         Layer::INVALID_ID, layer_tree_impl->PageScaleLayer()->id(),
-        inner_scroll_layer->id(), scroll_layer->id());
+        Layer::INVALID_ID, Layer::INVALID_ID, inner_scroll_layer->id(),
+        scroll_layer->id());
     layer_tree_impl->BuildPropertyTreesForTesting();
   }
 
@@ -7072,9 +7080,12 @@ TEST_F(LayerTreeHostImplTest, RootScrollerScrollNonDescendant) {
     clip2->test_properties()->AddChild(std::move(scroll2));
     content_layer->test_properties()->AddChild(std::move(clip2));
 
+    LayerImpl* inner_container =
+        host_impl_->active_tree()->InnerViewportContainerLayer();
     layer_tree_impl->SetViewportLayersFromIds(
         Layer::INVALID_ID, layer_tree_impl->PageScaleLayer()->id(),
-        inner_scroll_layer->id(), outer_scroll_layer->id());
+        inner_container->id(), Layer::INVALID_ID, inner_scroll_layer->id(),
+        outer_scroll_layer->id());
     layer_tree_impl->BuildPropertyTreesForTesting();
 
     ASSERT_EQ(outer_scroll_layer, layer_tree_impl->OuterViewportScrollLayer());
@@ -8844,8 +8855,9 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
 
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 4, 1,
-                                                      Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, 4, Layer::INVALID_ID, Layer::INVALID_ID, 1,
+      Layer::INVALID_ID);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
@@ -9871,9 +9883,11 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
     clip->test_properties()->AddChild(std::move(scroll));
     outer_scroll->test_properties()->AddChild(std::move(clip));
+
     layer_tree_impl->SetViewportLayersFromIds(
         Layer::INVALID_ID, layer_tree_impl->PageScaleLayer()->id(),
-        inner_scroll->id(), scroll_layer->id());
+        Layer::INVALID_ID, Layer::INVALID_ID, inner_scroll->id(),
+        scroll_layer->id());
     layer_tree_impl->BuildPropertyTreesForTesting();
     DrawFrame();
   }
@@ -9963,7 +9977,8 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
     inner_clip->test_properties()->force_render_surface = true;
     layer_tree_impl->SetRootLayerForTesting(std::move(inner_clip));
     layer_tree_impl->SetViewportLayersFromIds(
-        Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportScrollLayerId,
+        Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportClipLayerId,
+        kOuterViewportClipLayerId, kInnerViewportScrollLayerId,
         kOuterViewportScrollLayerId);
 
     host_impl_->active_tree()->BuildPropertyTreesForTesting();

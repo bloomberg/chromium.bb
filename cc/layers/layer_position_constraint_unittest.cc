@@ -135,8 +135,9 @@ class LayerPositionConstraintTest : public testing::Test {
     root_->AddChild(inner_viewport_container_layer_);
 
     layer_tree_host_->SetRootLayer(root_);
-    layer_tree_host_->RegisterViewportLayers(nullptr, root_, scroll_layer_,
-                                             child_);
+    layer_tree_host_->RegisterViewportLayers(
+        nullptr, root_, inner_viewport_container_layer_,
+        outer_viewport_container_layer_, scroll_layer_, child_);
   }
 
   void CommitAndUpdateImplPointers() {

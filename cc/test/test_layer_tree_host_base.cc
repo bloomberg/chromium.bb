@@ -134,7 +134,8 @@ void TestLayerTreeHostBase::SetupPendingTree(
   pending_root->test_properties()->AddChild(std::move(pending_layer));
   pending_tree->SetViewportLayersFromIds(
       Layer::INVALID_ID, pending_tree->root_layer_for_testing()->id(),
-      Layer::INVALID_ID, Layer::INVALID_ID);
+      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
+      Layer::INVALID_ID);
 
   pending_layer_ = static_cast<FakePictureLayerImpl*>(
       host_impl()->pending_tree()->LayerById(id_));
