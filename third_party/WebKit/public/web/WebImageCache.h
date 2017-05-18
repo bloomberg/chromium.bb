@@ -31,7 +31,7 @@
 #ifndef WebImageCache_h
 #define WebImageCache_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

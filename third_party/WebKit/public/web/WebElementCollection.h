@@ -32,8 +32,8 @@
 #ifndef WebElementCollection_h
 #define WebElementCollection_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
 
 #if BLINK_IMPLEMENTATION
 #include "platform/heap/Handle.h"

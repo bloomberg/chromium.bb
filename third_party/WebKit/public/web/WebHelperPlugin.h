@@ -31,7 +31,7 @@
 #ifndef WebHelperPlugin_h
 #define WebHelperPlugin_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 #include "WebFrame.h"
 
 #if INSIDE_BLINK

@@ -31,7 +31,7 @@
 #ifndef WebPepperSocketClient_h
 #define WebPepperSocketClient_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

@@ -31,9 +31,9 @@
 #ifndef WebImageDecoder_h
 #define WebImageDecoder_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebImage.h"
-#include "../platform/WebNonCopyable.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebImage.h"
+#include "public/platform/WebNonCopyable.h"
 
 namespace blink {
 

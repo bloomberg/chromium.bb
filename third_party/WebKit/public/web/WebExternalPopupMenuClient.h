@@ -31,7 +31,7 @@
 #ifndef WebExternalPopupMenuClient_h
 #define WebExternalPopupMenuClient_h
 
-#include "../platform/WebVector.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 

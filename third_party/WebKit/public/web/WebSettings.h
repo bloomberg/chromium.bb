@@ -31,10 +31,10 @@
 #ifndef WebSettings_h
 #define WebSettings_h
 
-#include "../platform/PointerProperties.h"
-#include "../platform/WebCommon.h"
-#include "../platform/WebSize.h"
-#include "../platform/WebViewportStyle.h"
+#include "public/platform/PointerProperties.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebViewportStyle.h"
 #include <unicode/uscript.h>
 
 namespace blink {

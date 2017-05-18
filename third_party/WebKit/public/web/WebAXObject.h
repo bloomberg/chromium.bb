@@ -31,11 +31,11 @@
 #ifndef WebAXObject_h
 #define WebAXObject_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPoint.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebSize.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebVector.h"
 #include "WebAXEnums.h"
 #include <memory>
 

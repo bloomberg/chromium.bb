@@ -5,7 +5,7 @@
 #ifndef WebSharedWorkerCreationContextType_h
 #define WebSharedWorkerCreationContextType_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #ifndef WebCustomElement_h
 #define WebCustomElement_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

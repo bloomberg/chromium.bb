@@ -25,7 +25,7 @@
 #ifndef WebSurroundingText_h
 #define WebSurroundingText_h
 
-#include "../platform/WebString.h"
+#include "public/platform/WebString.h"
 #include "WebNode.h"
 #include "WebRange.h"
 #include <memory>

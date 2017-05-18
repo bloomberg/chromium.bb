@@ -31,8 +31,8 @@
 #ifndef WebScriptSource_h
 #define WebScriptSource_h
 
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 

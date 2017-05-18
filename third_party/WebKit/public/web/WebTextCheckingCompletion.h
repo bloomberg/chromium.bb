@@ -31,7 +31,7 @@
 #ifndef WebTextCheckingCompletion_h
 #define WebTextCheckingCompletion_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #ifndef WebHistoryItem_h
 #define WebHistoryItem_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebHistoryScrollRestorationType.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebReferrerPolicy.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebHistoryScrollRestorationType.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

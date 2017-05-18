@@ -31,9 +31,9 @@
 #ifndef WebCryptoNormalize_h
 #define WebCryptoNormalize_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
-#include "../platform/WebCryptoAlgorithm.h"
+#include "public/platform/WebCryptoAlgorithm.h"
 
 namespace v8 {
 class Isolate;
