@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -400,6 +401,7 @@ public class ToolbarPhone extends ToolbarLayout
             }
         });
         mNewTabButton.setOnClickListener(this);
+        mNewTabButton.setOnLongClickListener(this);
     }
 
     @Override
@@ -502,10 +504,13 @@ public class ToolbarPhone extends ToolbarLayout
         CharSequence description = null;
         if (v == mToggleTabStackButton) {
             description = getResources().getString(R.string.open_tabs);
+        } else if (v == mNewTabButton) {
+            description = getResources().getString(
+                    isIncognito() ? R.string.button_new_incognito_tab : R.string.button_new_tab);
         } else {
             return false;
         }
-        return showAccessibilityToast(v, description);
+        return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
     }
 
     @Override

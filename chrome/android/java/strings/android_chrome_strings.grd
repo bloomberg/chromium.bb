@@ -2306,6 +2306,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BUTTON_NEW_TAB" desc="Button name for opening a new tab.">
         New tab
       </message>
+      <message name="IDS_BUTTON_NEW_INCOGNITO_TAB" desc="Tooltip for the button to open a new incognito browser tab.">
+        New incognito tab
+      </message>
 
       <!-- Main menu items -->
       <message name="IDS_MENU_UPDATE" desc="Menu item for updating chrome. [CHAR-LIMIT=24]">
@@ -2319,6 +2322,21 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_MENU_MOVE_TO_OTHER_WINDOW" desc="Menu item for moving the current tab into the other window. [CHAR-LIMIT=27]">
         Move to other window
+      </message>
+      <message name="IDS_MENU_FORWARD" desc="Tooltip for the button to advance to the next web page. Verb. [CHAR-LIMIT=27]">
+        Forward
+      </message>
+      <message name="IDS_MENU_BOOKMARK" desc="Tooltip for the button to save the web page to 'Bookmarks' section. Verb. [CHAR-LIMIT=27]">
+        Bookmark
+      </message>
+      <message name="IDS_MENU_DOWNLOAD" desc="Tooltip for the button to download the current web page. [CHAR-LIMIT=27]">
+        Download
+      </message>
+      <message name="IDS_MENU_PAGE_INFO" desc="Tooltip on Android for the button to view information about the current web page. Info is short for information.  [CHAR-LIMIT=27]">
+        Page info
+      </message>
+      <message name="IDS_MENU_REFRESH" desc="Tooltip on Android for the button to refresh the current web page. [CHAR-LIMIT=27]">
+        Refresh
       </message>
       <message name="IDS_MENU_NEW_TAB" desc="Menu item for opening a new tab. [CHAR-LIMIT=27]">
         New tab

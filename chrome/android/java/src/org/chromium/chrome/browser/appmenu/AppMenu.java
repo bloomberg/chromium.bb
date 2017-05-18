@@ -35,9 +35,11 @@ import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.AnimationFrameTimeHistogram;
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 
 import java.util.ArrayList;
@@ -374,6 +376,33 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             dismiss();
             mHandler.onOptionsItemSelected(menuItem);
         }
+    }
+
+    /**
+     * Handles long clicks on image buttons on the AppMenu popup.
+     * @param menuItem The menu item in the popup that was long clicked.
+     * @param view The anchor view of the menu item.
+     */
+    boolean onItemLongClick(MenuItem menuItem, View view) {
+        if (!menuItem.isEnabled()) return false;
+
+        String description = null;
+        Context context = ContextUtils.getApplicationContext();
+        Resources resources = context.getResources();
+        final int itemId = menuItem.getItemId();
+
+        if (itemId == R.id.forward_menu_id) {
+            description = resources.getString(R.string.menu_forward);
+        } else if (itemId == R.id.bookmark_this_page_id) {
+            description = resources.getString(R.string.menu_bookmark);
+        } else if (itemId == R.id.offline_page_id) {
+            description = resources.getString(R.string.menu_download);
+        } else if (itemId == R.id.info_menu_id) {
+            description = resources.getString(R.string.menu_page_info);
+        } else if (itemId == R.id.reload_menu_id) {
+            description = resources.getString(R.string.menu_refresh);
+        }
+        return AccessibilityUtil.showAccessibilityToast(context, view, description);
     }
 
     @Override
