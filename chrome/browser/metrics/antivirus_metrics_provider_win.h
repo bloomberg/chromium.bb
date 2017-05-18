@@ -18,8 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
 // AntiVirusMetricsProvider is responsible for adding antivirus information to
@@ -29,8 +28,7 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   static constexpr base::Feature kReportNamesFeature = {
       "ReportFullAVProductDetails", base::FEATURE_DISABLED_BY_DEFAULT};
 
-  explicit AntiVirusMetricsProvider(
-      scoped_refptr<base::TaskRunner> task_runner);
+  AntiVirusMetricsProvider();
 
   ~AntiVirusMetricsProvider() override;
 
@@ -95,14 +93,10 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   void GotAntiVirusProducts(const base::Closure& done_callback,
                             const std::vector<AvProduct>& av_products);
 
-  // The TaskRunner on which file operations are performed (supplied by the
-  // embedder).
-  scoped_refptr<base::TaskRunner> task_runner_;
-
   // Information on installed AntiVirus gathered.
   std::vector<AvProduct> av_products_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<AntiVirusMetricsProvider> weak_ptr_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(AntiVirusMetricsProviderTest, GetMetricsFullName);
