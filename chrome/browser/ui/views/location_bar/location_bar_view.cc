@@ -320,9 +320,10 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   }
 
   WebContents* web_contents = GetWebContents();
-  if (can_show_bubble && zoom_view_->visible() && web_contents)
+  if (can_show_bubble && web_contents) {
     ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
                                ZoomBubbleView::AUTOMATIC);
+  }
 }
 
 void LocationBarView::SetStarToggled(bool on) {
@@ -701,8 +702,6 @@ bool LocationBarView::RefreshZoomView() {
     return false;
   const bool was_visible = zoom_view_->visible();
   zoom_view_->Update(zoom::ZoomController::FromWebContents(web_contents));
-  if (!zoom_view_->visible())
-    ZoomBubbleView::CloseCurrentBubble();
   return was_visible != zoom_view_->visible();
 }
 
@@ -881,6 +880,11 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
         edit_bookmarks_enabled_.GetValue() &&
         !IsBookmarkStarHiddenByExtension());
   }
+}
+
+void LocationBarView::UpdateZoomViewVisibility() {
+  RefreshZoomView();
+  OnChanged();
 }
 
 void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {
