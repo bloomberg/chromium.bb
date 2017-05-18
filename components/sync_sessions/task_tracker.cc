@@ -17,6 +17,18 @@ int kMaxNumTasksPerTab = 100;
 
 TabTasks::TabTasks() {}
 
+TabTasks::TabTasks(const TabTasks* source_tab) {
+  if (source_tab->current_navigation_index_ >= 0) {
+    std::vector<int64_t> source_tab_task_ids =
+        source_tab->GetTaskIdsForNavigation(
+            source_tab->current_navigation_index_);
+    for (auto source_tab_task_id : source_tab_task_ids)
+      task_ids_.push_back({0, source_tab_task_id});
+
+    source_tab_task_num_ = source_tab_task_ids.size();
+  }
+}
+
 TabTasks::~TabTasks() {}
 
 std::vector<int64_t> TabTasks::GetTaskIdsForNavigation(
@@ -26,7 +38,8 @@ std::vector<int64_t> TabTasks::GetTaskIdsForNavigation(
 
   std::vector<int64_t> root_to_self_task_ids;
   // Position of the navigation in task_ids_ vector.
-  int navigation_position = navigation_index - excluded_navigation_num_;
+  int navigation_position =
+      GetTaskIdPositionFromNavigationIndex(navigation_index);
 
   // If navigation_index is an excluded ancestor task, returns empty.
   if (navigation_position < 0)
@@ -53,7 +66,7 @@ std::vector<int64_t> TabTasks::GetTaskIdsForNavigation(
 }
 
 int TabTasks::GetNavigationsCount() const {
-  return excluded_navigation_num_ + task_ids_.size();
+  return GetNavigationIndexFromTaskIdPosition(task_ids_.size());
 }
 
 void TabTasks::UpdateWithNavigation(int navigation_index,
@@ -78,25 +91,26 @@ void TabTasks::UpdateWithNavigation(int navigation_index,
   }
 
   // A new task for the new navigation.
-  int root_navigation_index = navigation_index;
-  if (current_navigation_index_ != -1 &&
-      (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK) ||
-       ui::PageTransitionCoreTypeIs(transition,
-                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME) ||
-       ui::PageTransitionCoreTypeIs(transition,
-                                    ui::PAGE_TRANSITION_MANUAL_SUBFRAME) ||
-       ui::PageTransitionCoreTypeIs(transition,
-                                    ui::PAGE_TRANSITION_FORM_SUBMIT) ||
-       transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK)) {
-    // Creating a sub-task with navigation at current_navigation_index as
-    // parent.
+  int root_navigation_index = source_tab_task_num_ + navigation_index;
+  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK) ||
+      ui::PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME) ||
+      ui::PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_MANUAL_SUBFRAME) ||
+      ui::PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_FORM_SUBMIT) ||
+      transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) {
+    // Creating a sub-task with navigation at current_navigation_index_ as
+    // parent. If current_navigation_index_ == -1, the parent is the last task
+    // from source tab.
     DVLOG(1) << "Creating a sub-task with navigation_index: "
              << navigation_index << " of transition: " << transition
              << " under navigation_index: " << current_navigation_index_;
-    // Position in task_id_.
+    // Position of current_navigation_index_ in task_id_
     int current_navigation_position =
-        current_navigation_index_ - excluded_navigation_num_;
-    // If current/parent task is excluded, consider the new task as a root task.
+        GetTaskIdPositionFromNavigationIndex(current_navigation_index_);
+    // If current task, which is parent task of navigation_index, is excluded,
+    // consider the new task as a root task.
     if (current_navigation_position >= 0) {
       CHECK_LT(current_navigation_position,
                base::checked_cast<int>(task_ids_.size()));
@@ -115,22 +129,23 @@ void TabTasks::UpdateWithNavigation(int navigation_index,
   }
 
   // In most cases navigation_index == excluded_navigation_num_ +
-  // task_ids_.size() if the previous navigation is end of chain, or
-  // navigation_index < excluded_navigation_num_ + task_ids_.size() otherwise.
-  // In few case navigation_index > excluded_navigation_num_ + task_ids_.size(),
-  // we fill task_ids_ with invalid contents. A known case is the first
-  // navigation after newtab.
-  for (int i = task_ids_.size() + excluded_navigation_num_;
+  // task_ids_.size() - source_tab_task_num_ if the previous navigation is end
+  // of chain, or navigation_index < excluded_navigation_num_ + task_ids_.size()
+  // otherwise. In few case navigation_index > excluded_navigation_num_ +
+  // task_ids_.size(), we fill task_ids_ with invalid contents. A known case is
+  // the first navigation after newtab.
+  for (int i = GetNavigationIndexFromTaskIdPosition(task_ids_.size());
        i < navigation_index; i++) {
     task_ids_.push_back({-1, -1});
   }
 
+  int new_task_id_position =
+      GetTaskIdPositionFromNavigationIndex(navigation_index);
   // Erase all task ids associated with an outdated forward navigation stack.
-  if (navigation_index > excluded_navigation_num_) {
-    int new_task_id_position = navigation_index - excluded_navigation_num_;
+  if (new_task_id_position > 0) {
     task_ids_.erase(task_ids_.begin() + new_task_id_position, task_ids_.end());
   } else {
-    excluded_navigation_num_ = navigation_index;
+    excluded_navigation_num_ = navigation_index + source_tab_task_num_;
     // new task id position is 0
     task_ids_.clear();
   }
@@ -152,6 +167,14 @@ void TabTasks::UpdateWithNavigation(int navigation_index,
   return;
 }
 
+int TabTasks::GetTaskIdPositionFromNavigationIndex(int navigation_index) const {
+  return source_tab_task_num_ + navigation_index - excluded_navigation_num_;
+}
+
+int TabTasks::GetNavigationIndexFromTaskIdPosition(int task_id_position) const {
+  return excluded_navigation_num_ + task_id_position - source_tab_task_num_;
+}
+
 TaskTracker::TaskTracker() {}
 
 TaskTracker::~TaskTracker() {}
@@ -159,6 +182,20 @@ TaskTracker::~TaskTracker() {}
 TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id) {
   if (local_tab_tasks_map_.find(tab_id) == local_tab_tasks_map_.end()) {
     local_tab_tasks_map_[tab_id] = base::MakeUnique<TabTasks>();
+  }
+  return local_tab_tasks_map_[tab_id].get();
+}
+
+TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id,
+                                   SessionID::id_type source_tab_id) {
+  if (local_tab_tasks_map_.find(tab_id) == local_tab_tasks_map_.end()) {
+    auto source_tab_iter = local_tab_tasks_map_.find(source_tab_id);
+    if (source_tab_iter != local_tab_tasks_map_.end()) {
+      local_tab_tasks_map_[tab_id] =
+          base::MakeUnique<TabTasks>(source_tab_iter->second.get());
+    } else {
+      local_tab_tasks_map_[tab_id] = base::MakeUnique<TabTasks>();
+    }
   }
   return local_tab_tasks_map_[tab_id].get();
 }
