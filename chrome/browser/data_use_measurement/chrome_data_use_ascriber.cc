@@ -41,7 +41,10 @@ ChromeDataUseAscriber::ChromeDataUseAscriber() {
 ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(subframe_to_mainframe_map_.empty());
-  DCHECK(data_use_recorders_.empty());
+  // |data_use_recorders_| can be non empty, when mainframe url requests are
+  // created but no mainframe navigations take place.
+  // TODO(rajendrant): Enable this check when fixed for unittests.
+  // DCHECK(data_use_recorders_.empty());
 }
 
 ChromeDataUseRecorder* ChromeDataUseAscriber::GetOrCreateDataUseRecorder(
@@ -156,15 +159,40 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   return entry;
 }
 
+void ChromeDataUseAscriber::OnUrlRequestCompleted(
+    const net::URLRequest& request,
+    bool started) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  ChromeDataUseRecorder* recorder = GetDataUseRecorder(request);
+
+  if (!recorder)
+    return;
+
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(&request);
+  if (!request_info ||
+      request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME) {
+    return;
+  }
+
+  // If mainframe request was not successful, then NavigationHandle in
+  // DidFinishMainFrameNavigation will not have GlobalRequestID. So we erase the
+  // DataUseRecorderEntry here.
+  if (!request.status().is_success())
+    pending_navigation_data_use_map_.erase(recorder->main_frame_request_id());
+}
+
 void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  // TODO(rajendrant): GetDataUseRecorder is sufficient and
+  // GetOrCreateDataUseRecorderEntry is not needed. The entry gets created in
+  // DataUseAscriber::OnBeforeUrlRequest().
   DataUseRecorderEntry entry = GetOrCreateDataUseRecorderEntry(request);
 
   if (entry == data_use_recorders_.end())
     return;
-
-  DataUseRecorder* recorder = &(*entry);
 
   RenderFrameHostID frame_key = entry->main_frame_id();
   auto frame_iter = main_render_frame_data_use_map_.find(frame_key);
@@ -174,30 +202,16 @@ void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
 
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
-  content::ResourceType resource_type = request_info
-                                            ? request_info->GetResourceType()
-                                            : content::RESOURCE_TYPE_LAST_TYPE;
-
-  bool is_in_pending_navigation_map = false;
-  if (request_info && resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
-    auto navigation_iter = pending_navigation_data_use_map_.find(
-        entry->main_frame_request_id());
-    is_in_pending_navigation_map =
-        navigation_iter != pending_navigation_data_use_map_.end();
-
-    // If request was not successful, then NavigationHandle in
-    // DidFinishMainFrameNavigation will not have GlobalRequestID. So we erase
-    // the DataUseRecorderEntry here.
-    if (is_in_pending_navigation_map && !request->status().is_success()) {
-      pending_navigation_data_use_map_.erase(navigation_iter);
-      is_in_pending_navigation_map = false;
-    }
-  }
+  bool is_in_pending_navigation_map =
+      request_info &&
+      request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
+      pending_navigation_data_use_map_.find(entry->main_frame_request_id()) !=
+          pending_navigation_data_use_map_.end();
 
   DataUseAscriber::OnUrlRequestDestroyed(request);
   request->RemoveUserData(DataUseRecorderEntryAsUserData::kUserDataKey);
 
-  if (recorder->IsDataUseComplete() && !is_in_render_frame_map &&
+  if (entry->IsDataUseComplete() && !is_in_render_frame_map &&
       !is_in_pending_navigation_map) {
     OnDataUseCompleted(entry);
     data_use_recorders_.erase(entry);

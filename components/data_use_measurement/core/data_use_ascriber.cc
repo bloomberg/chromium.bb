@@ -42,7 +42,7 @@ void DataUseAscriber::OnNetworkBytesReceived(net::URLRequest* request,
     recorder->OnNetworkBytesReceived(request, bytes_received);
 }
 
-void DataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
+void DataUseAscriber::OnUrlRequestCompleted(const net::URLRequest& request,
                                             bool started) {}
 
 void DataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
