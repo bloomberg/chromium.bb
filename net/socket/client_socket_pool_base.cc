@@ -902,37 +902,36 @@ void ClientSocketPoolBaseHelper::ReleaseSocket(
 }
 
 void ClientSocketPoolBaseHelper::CheckForStalledSocketGroups() {
-  // If we have idle sockets, see if we can give one to the top-stalled group.
-  std::string top_group_name;
-  Group* top_group = NULL;
-  if (!FindTopStalledGroup(&top_group, &top_group_name)) {
-    // There may still be a stalled group in a lower level pool.
-    for (std::set<LowerLayeredPool*>::iterator it = lower_pools_.begin();
-         it != lower_pools_.end();
-         ++it) {
-       if ((*it)->IsStalled()) {
-         CloseOneIdleSocket();
-         break;
-       }
-    }
-    return;
-  }
-
-  if (ReachedMaxSocketsLimit()) {
-    if (idle_socket_count() > 0) {
-      CloseOneIdleSocket();
-    } else {
-      // We can't activate more sockets since we're already at our global
-      // limit.
+  // Loop until there's nothing more to do.
+  while (true) {
+    // If we have idle sockets, see if we can give one to the top-stalled group.
+    std::string top_group_name;
+    Group* top_group = NULL;
+    if (!FindTopStalledGroup(&top_group, &top_group_name)) {
+      // There may still be a stalled group in a lower level pool.
+      for (std::set<LowerLayeredPool*>::iterator it = lower_pools_.begin();
+           it != lower_pools_.end(); ++it) {
+        if ((*it)->IsStalled()) {
+          CloseOneIdleSocket();
+          break;
+        }
+      }
       return;
     }
-  }
 
-  // Note:  we don't loop on waking stalled groups.  If the stalled group is at
-  //        its limit, may be left with other stalled groups that could be
-  //        woken.  This isn't optimal, but there is no starvation, so to avoid
-  //        the looping we leave it at this.
-  OnAvailableSocketSlot(top_group_name, top_group);
+    if (ReachedMaxSocketsLimit()) {
+      if (idle_socket_count() > 0) {
+        CloseOneIdleSocket();
+      } else {
+        // We can't activate more sockets since we're already at our global
+        // limit.
+        return;
+      }
+    }
+
+    // Note that this may delete top_group.
+    OnAvailableSocketSlot(top_group_name, top_group);
+  }
 }
 
 // Search for the highest priority pending request, amongst the groups that
