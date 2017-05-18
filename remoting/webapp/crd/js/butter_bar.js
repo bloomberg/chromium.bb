@@ -4,8 +4,8 @@
 
 /**
  * @fileoverview
- * ButterBar class that is used to show the butter bar with various
- * notifications.
+ * ButterBar class that is used to show a butter bar with deprecation messages.
+ * Each message is displayed for at most one week.
  */
 
 'use strict';
@@ -17,37 +17,58 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.ButterBar = function() {
-  this.storageKey_ = '';
+  /** @private @const */
+  this.messages_ = [
+    {id: /*i18n-content*/'WEBSITE_INVITE_BETA', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_STABLE', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION_1', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION_2', dismissable: false},
+  ];
+  // TODO(jamiewalch): Read the message index using metricsPrivate.
+  this.currentMessage_ = -1;
+  /** @private {!Element} */
+  this.root_ = document.getElementById(remoting.ButterBar.kId_);
+  /** @private {!Element} */
+  this.message_ = document.getElementById(remoting.ButterBar.kMessageId_);
+  /** @private {!Element} */
+  this.dismiss_ = document.getElementById(remoting.ButterBar.kDismissId_);
+}
 
-  chrome.storage.sync.get(
-      [remoting.ButterBar.kSurveyStorageKey_],
-      this.onStateLoaded_.bind(this));
+remoting.ButterBar.prototype.init = function() {
+  var result = new base.Deferred();
+  if (this.currentMessage_ > -1) {
+    chrome.storage.sync.get(
+        [remoting.ButterBar.kStorageKey_],
+        (syncValues) => {
+          this.onStateLoaded_(syncValues);
+          result.resolve();
+        });
+  } else {
+    result.resolve();
+  }
+  return result.promise();
 }
 
 /**
- * Shows butter bar with the specified |message| and updates |storageKey| after
- * the bar is dismissed.
+ * Shows butter bar with the current message.
  *
  * @param {string} messageId
  * @param {string|Array} substitutions
- * @param {string} storageKey
+ * @param {boolean} dismissable
  * @private
  */
-remoting.ButterBar.prototype.show_ =
-    function(messageId, substitutions, storageKey) {
-  this.storageKey_ = storageKey;
-
-  var messageElement = document.getElementById(remoting.ButterBar.kMessageId_);
-  l10n.localizeElementFromTag(messageElement, messageId, substitutions, true);
-  var acceptLink =
-      /** @type{Element} */ (messageElement.getElementsByTagName('a')[0]);
-  acceptLink.addEventListener(
-      'click', this.dismiss.bind(this, true), false);
-
-  document.getElementById(remoting.ButterBar.kDismissId_).addEventListener(
-      'click', this.dismiss.bind(this, false), false);
-
-  document.getElementById(remoting.ButterBar.kId_).hidden = false;
+remoting.ButterBar.prototype.show_ = function() {
+  var messageId = this.messages_[this.currentMessage_].id;
+  var substitutions = ['<a href="https://example.com" target="_blank">', '</a>'];
+  var dismissable = this.messages_[this.currentMessage_].dismissable;
+  l10n.localizeElementFromTag(this.message_, messageId, substitutions, true);
+  if (dismissable) {
+    this.dismiss_.addEventListener('click', this.dismiss.bind(this), false);
+  } else {
+    this.dismiss_.hidden = true;
+    this.root_.classList.add('red');
+  }
+  this.root_.hidden = false;
 }
 
 /**
@@ -55,14 +76,54 @@ remoting.ButterBar.prototype.show_ =
   * @private
   */
 remoting.ButterBar.prototype.onStateLoaded_ = function(syncValues) {
-  /** @type {boolean} */
-  var surveyDismissed = !!syncValues[remoting.ButterBar.kSurveyStorageKey_];
-
-  if (!surveyDismissed) {
-    this.show_(/*i18n-content*/'SURVEY_INVITATION',
-               ['<a href="http://goo.gl/njH2q" target="_blank">', '</a>'],
-               remoting.ButterBar.kSurveyStorageKey_);
+  /** @type {!Object|undefined} */
+  var messageState = syncValues[remoting.ButterBar.kStorageKey_];
+  if (!messageState) {
+    messageState = {
+      index: -1,
+      timestamp: new Date().getTime(),
+      hidden: false,
+    }
   }
+
+  // Show the current message unless it was explicitly dismissed or if it was
+  // first shown more than a week ago. If it is marked as not dismissable, show
+  // it unconditionally.
+  var elapsed = new Date() - messageState.timestamp;
+  var show =
+      this.currentMessage_ > messageState.index ||
+      !this.messages_[this.currentMessage_].dismissable ||
+      (!messageState.hidden && elapsed <= remoting.ButterBar.kTimeout_);
+
+  if (show) {
+    this.show_();
+    // If this is the first time this message is being displayed, update the
+    // saved state.
+    if (this.currentMessage_ > messageState.index) {
+      var value = {};
+      value[remoting.ButterBar.kStorageKey_] = {
+        index: this.currentMessage_,
+        timestamp: new Date().getTime(),
+        hidden: false
+      };
+      chrome.storage.sync.set(value);
+    }
+  }
+};
+
+/**
+ * Hide the butter bar request and record the message that was being displayed.
+ */
+remoting.ButterBar.prototype.dismiss = function() {
+  var value = {};
+  value[remoting.ButterBar.kStorageKey_] = {
+    index: this.currentMessage_,
+    timestamp: new Date().getTime(),
+    hidden: true
+  };
+  chrome.storage.sync.set(value);
+
+  this.root_.hidden = true;
 };
 
 /** @const @private */
@@ -74,25 +135,7 @@ remoting.ButterBar.kMessageId_ = 'butter-bar-message';
 remoting.ButterBar.kDismissId_ = 'butter-bar-dismiss';
 
 /** @const @private */
-remoting.ButterBar.kSurveyStorageKey_ = 'feedback-survey-dismissed';
+remoting.ButterBar.kStorageKey_ = 'message-state';
 
-/**
- * Hide the butter bar request and record some basic information about the
- * current state of the world in synced storage. This may be useful in the
- * future if we want to show the request again. At the moment, the data itself
- * is ignored; only its presence or absence is important.
- *
- * @param {boolean} accepted True if the user clicked the "accept" link;
- *     false if they clicked the close icon.
- */
-remoting.ButterBar.prototype.dismiss = function(accepted) {
-  var value = {};
-  value[this.storageKey_] = {
-    optIn: accepted,
-    date: new Date(),
-    version: chrome.runtime.getManifest().version
-  };
-  chrome.storage.sync.set(value);
-
-  document.getElementById(remoting.ButterBar.kId_).hidden = true;
-};
+/** @const @private */
+remoting.ButterBar.kTimeout_ = 7 * 24 * 60 * 60 * 1000;   // 1 week
