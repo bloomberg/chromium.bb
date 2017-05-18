@@ -17,6 +17,7 @@ namespace blink {
 class FrameView;
 class LayoutBoxModelObject;
 class LayoutObject;
+class ObjectPaintProperties;
 
 // The context for PaintPropertyTreeBuilder.
 // It's responsible for bookkeeping tree state in other order, for example, the
@@ -155,22 +156,27 @@ class PaintPropertyTreeBuilder {
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateTransform(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateTransformForNonRootSVG(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateEffect(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateFilter(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateCssClip(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateLocalBorderBoxContext(
@@ -179,22 +185,27 @@ class PaintPropertyTreeBuilder {
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateScrollbarPaintOffset(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateOverflowClip(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdatePerspective(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateSvgLocalToBorderBoxTransform(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateScrollAndScrollTranslation(
       const LayoutObject&,
+      ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateOutOfFlowContext(
