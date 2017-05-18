@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Test that the (a, ... , f) and (m11, ... , m44) attributes for CSSMatrixComponent are correct. 
+PASS Test that the is2D values for CSSMatrixComponent are correct. 
+PASS Test that the toString for CSSMatrixComponent is correct. 
+FAIL Test that invalid number of arguments for CSSMatrixComponent throws an exception. Test bug: need to pass exception to assert_throws()
+PASS Test that asMatrix has all the same properties as the original CSSMatrixComponent. 
+Harness: the test ran to completion.
+

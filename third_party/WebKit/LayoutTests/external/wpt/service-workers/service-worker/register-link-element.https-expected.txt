@@ -2,15 +2,15 @@ This is a testharness.js-based test.
 PASS Registering normal scope 
 PASS Registering scope with fragment 
 PASS Registering same scope as the script directory 
-PASS Registering same scope as the script directory without the last slash 
-PASS Registration scope outside the script directory 
-PASS Registering scope outside domain 
-PASS Registering script outside domain 
-PASS Registering non-existent script 
-PASS Registering invalid chunked encoding script 
-PASS Registering invalid chunked encoding script with flush 
-PASS Registering script with no MIME type 
-PASS Registering script with bad MIME type 
+FAIL Registering same scope as the script directory without the last slash Test bug: need to pass exception to assert_throws()
+FAIL Registration scope outside the script directory Test bug: need to pass exception to assert_throws()
+FAIL Registering scope outside domain Test bug: need to pass exception to assert_throws()
+FAIL Registering script outside domain Test bug: need to pass exception to assert_throws()
+FAIL Registering non-existent script Test bug: need to pass exception to assert_throws()
+FAIL Registering invalid chunked encoding script Test bug: need to pass exception to assert_throws()
+FAIL Registering invalid chunked encoding script with flush Test bug: need to pass exception to assert_throws()
+FAIL Registering script with no MIME type Test bug: need to pass exception to assert_throws()
+FAIL Registering script with bad MIME type Test bug: need to pass exception to assert_throws()
 FAIL Registering script with good MIME type application/ecmascript promise_test: Unhandled rejection with value: object "[object Event]"
 PASS Registering script that imports script with good MIME type application/ecmascript 
 PASS Registering script with good MIME type application/javascript 
@@ -45,29 +45,29 @@ FAIL Registering script with good MIME type text/x-javascript promise_test: Unha
 PASS Registering script that imports script with good MIME type text/x-javascript 
 FAIL Registering script that imports script with no MIME type assert_unreached: Should have rejected: Registration of no MIME type imported script should fail. Reached unreachable code
 FAIL Registering script that imports script with bad MIME type assert_unreached: Should have rejected: Registration of plain text imported script should fail. Reached unreachable code
-PASS Registering redirected script 
-PASS Registering script including parse error 
-PASS Registering script including undefined error 
-PASS Registering script including uncaught exception 
+FAIL Registering redirected script Test bug: need to pass exception to assert_throws()
+FAIL Registering script including parse error Test bug: need to pass exception to assert_throws()
+FAIL Registering script including undefined error Test bug: need to pass exception to assert_throws()
+FAIL Registering script including uncaught exception Test bug: need to pass exception to assert_throws()
 PASS Registering script including caught exception 
-PASS Registering script importing malformed script 
-PASS Registering script importing non-existent script 
+FAIL Registering script importing malformed script Test bug: need to pass exception to assert_throws()
+FAIL Registering script importing non-existent script Test bug: need to pass exception to assert_throws()
 PASS Scope including URL-encoded multibyte characters 
 PASS Scope including non-escaped multibyte characters 
-PASS Script URL including URL-encoded slash 
-PASS Script URL including uppercase URL-encoded slash 
-PASS Scope including URL-encoded slash 
-PASS Script URL including URL-encoded backslash 
-PASS Script URL including uppercase URL-encoded backslash 
-PASS Scope including URL-encoded backslash 
+FAIL Script URL including URL-encoded slash Test bug: need to pass exception to assert_throws()
+FAIL Script URL including uppercase URL-encoded slash Test bug: need to pass exception to assert_throws()
+FAIL Scope including URL-encoded slash Test bug: need to pass exception to assert_throws()
+FAIL Script URL including URL-encoded backslash Test bug: need to pass exception to assert_throws()
+FAIL Script URL including uppercase URL-encoded backslash Test bug: need to pass exception to assert_throws()
+FAIL Scope including URL-encoded backslash Test bug: need to pass exception to assert_throws()
 PASS Script URL including self-reference 
 PASS Scope including self-reference 
 PASS Script URL including parent-reference 
 PASS Scope including parent-reference 
-PASS Scope including parent-reference and not under the script directory 
-PASS Script URL including consecutive slashes 
+FAIL Scope including parent-reference and not under the script directory Test bug: need to pass exception to assert_throws()
+FAIL Script URL including consecutive slashes Test bug: need to pass exception to assert_throws()
 PASS Scope including consecutive slashes 
-PASS Script URL is same-origin filesystem: URL 
-PASS Scope URL is same-origin filesystem: URL 
+FAIL Script URL is same-origin filesystem: URL Test bug: need to pass exception to assert_throws()
+FAIL Scope URL is same-origin filesystem: URL Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

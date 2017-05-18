@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Constructor should throw an error for CSSCalcLengths with a percentage type Test bug: need to pass exception to assert_throws()
+FAIL Constructor should throw an error for CSSSimpleLengths with a percentage type Test bug: need to pass exception to assert_throws()
+PASS cssText should return a string of form perspective(<CSSLengthValue.cssString()>) 
+Harness: the test ran to completion.
+

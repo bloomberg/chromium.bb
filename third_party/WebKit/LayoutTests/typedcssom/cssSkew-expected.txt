@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS (ax, ay) values for CSSSkew are correct. 
+PASS is2D values for CSSSkew are correct. 
+PASS toString() for CSSSkew is correct. 
+FAIL Invalid arguments for CSSSkew throws an exception. Test bug: need to pass exception to assert_throws()
+PASS asMatrix is constructed correctly for CSSSkew. 
+Harness: the test ran to completion.
+

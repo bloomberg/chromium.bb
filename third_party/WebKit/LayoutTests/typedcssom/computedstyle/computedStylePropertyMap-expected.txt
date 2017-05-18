@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS Test that passing null to getComputedStyleMap does not crash 
+PASS Computed StyleMap.getProperties returns the same list of property names as ComputedStyle 
+PASS Unsupported but serializable property returns a base CSSStyleValue. 
+PASS Unsupported and unserializable property returns null. 
+FAIL get() throws for an invalid property. Test bug: need to pass exception to assert_throws()
+PASS has() return false for an unsupported property. 
+FAIL has() throws for an invalid property. Test bug: need to pass exception to assert_throws()
+PASS has() returns true for an unsupported but serializable shorthand property. 
+PASS has() return false for unsupported and unserializable shorthand properties. 
+PASS has() returns true for a supported property. 
+PASS get() returns correct values for an element with display: none. 
+Harness: the test ran to completion.
+

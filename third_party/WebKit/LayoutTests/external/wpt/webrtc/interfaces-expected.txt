@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 367 tests; 156 PASS, 211 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 355 tests; 150 PASS, 205 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 FAIL MediaStreamTrack interface: attribute isolated assert_true: The prototype object must have a property "isolated" expected true got false
 FAIL MediaStreamTrack interface: attribute onisolationchange assert_true: The prototype object must have a property "onisolationchange" expected true got false
@@ -58,8 +58,6 @@ FAIL RTCPeerConnection interface: operation getIdentityAssertion() assert_own_pr
 FAIL RTCPeerConnection interface: attribute peerIdentity assert_true: The prototype object must have a property "peerIdentity" expected true got false
 FAIL RTCPeerConnection interface: attribute idpLoginUrl assert_true: The prototype object must have a property "idpLoginUrl" expected true got false
 FAIL RTCPeerConnection interface: attribute idpErrorInfo assert_true: The prototype object must have a property "idpErrorInfo" expected true got false
-PASS RTCPeerConnection must be primary interface of new RTCPeerConnection 
-FAIL Stringification of new RTCPeerConnection Cannot read property 'has_stringifier' of undefined
 PASS RTCPeerConnection interface: new RTCPeerConnection must inherit property "createOffer" with the proper type (0) 
 PASS RTCPeerConnection interface: calling createOffer(RTCOfferOptions) on new RTCPeerConnection with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: new RTCPeerConnection must inherit property "createAnswer" with the proper type (1) 
@@ -135,8 +133,6 @@ PASS RTCSessionDescription interface: existence and properties of interface prot
 PASS RTCSessionDescription interface: existence and properties of interface prototype object's "constructor" property 
 FAIL RTCSessionDescription interface: attribute type assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
 FAIL RTCSessionDescription interface: attribute sdp assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
-PASS RTCSessionDescription must be primary interface of new RTCSessionDescription({ type: "offer" }) 
-PASS Stringification of new RTCSessionDescription({ type: "offer" }) 
 PASS RTCSessionDescription interface: new RTCSessionDescription({ type: "offer" }) must inherit property "type" with the proper type (0) 
 FAIL RTCSessionDescription interface: new RTCSessionDescription({ type: "offer" }) must inherit property "sdp" with the proper type (1) assert_equals: expected "string" but got "object"
 PASS RTCIceCandidate interface: existence and properties of interface object 
@@ -157,8 +153,6 @@ FAIL RTCIceCandidate interface: attribute tcpType assert_true: The prototype obj
 FAIL RTCIceCandidate interface: attribute relatedAddress assert_true: The prototype object must have a property "relatedAddress" expected true got false
 FAIL RTCIceCandidate interface: attribute relatedPort assert_true: The prototype object must have a property "relatedPort" expected true got false
 FAIL RTCIceCandidate interface: attribute ufrag assert_true: The prototype object must have a property "ufrag" expected true got false
-FAIL RTCIceCandidate must be primary interface of new RTCIceCandidate assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCIceCandidate': 1 argument required, but only 0 present."
-FAIL Stringification of new RTCIceCandidate assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCIceCandidate': 1 argument required, but only 0 present."
 FAIL RTCIceCandidate interface: new RTCIceCandidate must inherit property "candidate" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCIceCandidate': 1 argument required, but only 0 present."
 FAIL RTCIceCandidate interface: new RTCIceCandidate must inherit property "sdpMid" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCIceCandidate': 1 argument required, but only 0 present."
 FAIL RTCIceCandidate interface: new RTCIceCandidate must inherit property "sdpMLineIndex" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCIceCandidate': 1 argument required, but only 0 present."
@@ -179,8 +173,6 @@ FAIL RTCPeerConnectionIceEvent interface: existence and properties of interface 
 PASS RTCPeerConnectionIceEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS RTCPeerConnectionIceEvent interface: attribute candidate 
 FAIL RTCPeerConnectionIceEvent interface: attribute url assert_true: The prototype object must have a property "url" expected true got false
-PASS RTCPeerConnectionIceEvent must be primary interface of new RTCPeerConnectionIceEvent("ice") 
-FAIL Stringification of new RTCPeerConnectionIceEvent("ice") Cannot read property 'has_stringifier' of undefined
 PASS RTCPeerConnectionIceEvent interface: new RTCPeerConnectionIceEvent("ice") must inherit property "candidate" with the proper type (0) 
 FAIL RTCPeerConnectionIceEvent interface: new RTCPeerConnectionIceEvent("ice") must inherit property "url" with the proper type (1) assert_inherits: property "url" not found in prototype chain
 FAIL RTCPeerConnectionIceErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "RTCPeerConnectionIceErrorEvent" expected property "RTCPeerConnectionIceErrorEvent" missing
@@ -192,8 +184,6 @@ FAIL RTCPeerConnectionIceErrorEvent interface: attribute hostCandidate assert_ow
 FAIL RTCPeerConnectionIceErrorEvent interface: attribute url assert_own_property: self does not have own property "RTCPeerConnectionIceErrorEvent" expected property "RTCPeerConnectionIceErrorEvent" missing
 FAIL RTCPeerConnectionIceErrorEvent interface: attribute errorCode assert_own_property: self does not have own property "RTCPeerConnectionIceErrorEvent" expected property "RTCPeerConnectionIceErrorEvent" missing
 FAIL RTCPeerConnectionIceErrorEvent interface: attribute errorText assert_own_property: self does not have own property "RTCPeerConnectionIceErrorEvent" expected property "RTCPeerConnectionIceErrorEvent" missing
-FAIL RTCPeerConnectionIceErrorEvent must be primary interface of new RTCPeerConnectionIceErrorEvent("ice-error", { errorCode: 701 }); assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCPeerConnectionIceErrorEvent is not defined"
-FAIL Stringification of new RTCPeerConnectionIceErrorEvent("ice-error", { errorCode: 701 }); assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCPeerConnectionIceErrorEvent is not defined"
 FAIL RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent("ice-error", { errorCode: 701 }); must inherit property "hostCandidate" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCPeerConnectionIceErrorEvent is not defined"
 FAIL RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent("ice-error", { errorCode: 701 }); must inherit property "url" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCPeerConnectionIceErrorEvent is not defined"
 FAIL RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent("ice-error", { errorCode: 701 }); must inherit property "errorCode" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCPeerConnectionIceErrorEvent is not defined"
@@ -206,8 +196,6 @@ PASS RTCCertificate interface: existence and properties of interface prototype o
 PASS RTCCertificate interface: attribute expires 
 FAIL RTCCertificate interface: attribute fingerprints assert_true: The prototype object must have a property "fingerprints" expected true got false
 FAIL RTCCertificate interface: operation getAlgorithm() assert_own_property: interface prototype object missing non-static operation expected property "getAlgorithm" missing
-PASS RTCCertificate must be primary interface of certificate 
-PASS Stringification of certificate 
 PASS RTCCertificate interface: certificate must inherit property "expires" with the proper type (0) 
 FAIL RTCCertificate interface: certificate must inherit property "fingerprints" with the proper type (1) assert_inherits: property "fingerprints" not found in prototype chain
 FAIL RTCCertificate interface: certificate must inherit property "getAlgorithm" with the proper type (2) assert_inherits: property "getAlgorithm" not found in prototype chain

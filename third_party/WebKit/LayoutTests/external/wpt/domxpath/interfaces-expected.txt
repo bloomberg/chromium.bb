@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 89 tests; 87 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 85 tests; 83 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS XPathEvaluator interface: existence and properties of interface object 
 PASS XPathEvaluator interface object length 
 PASS XPathEvaluator interface object name 
@@ -14,8 +14,6 @@ PASS XPathExpression interface object name
 PASS XPathExpression interface: existence and properties of interface prototype object 
 PASS XPathExpression interface: existence and properties of interface prototype object's "constructor" property 
 PASS XPathExpression interface: operation evaluate(Node,unsigned short,object) 
-PASS XPathExpression must be primary interface of expression 
-PASS Stringification of expression 
 PASS XPathExpression interface: expression must inherit property "evaluate" with the proper type (0) 
 PASS XPathExpression interface: calling evaluate(Node,unsigned short,object) on expression with too few arguments must throw TypeError 
 PASS XPathNSResolver interface: existence and properties of interface object 
@@ -56,8 +54,6 @@ PASS XPathResult interface: attribute invalidIteratorState
 PASS XPathResult interface: attribute snapshotLength 
 PASS XPathResult interface: operation iterateNext() 
 PASS XPathResult interface: operation snapshotItem(unsigned long) 
-PASS XPathResult must be primary interface of result 
-PASS Stringification of result 
 PASS XPathResult interface: result must inherit property "ANY_TYPE" with the proper type (0) 
 PASS XPathResult interface: result must inherit property "NUMBER_TYPE" with the proper type (1) 
 PASS XPathResult interface: result must inherit property "STRING_TYPE" with the proper type (2) 
