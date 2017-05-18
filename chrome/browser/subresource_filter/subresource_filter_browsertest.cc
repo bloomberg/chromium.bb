@@ -129,7 +129,7 @@ const char kNavigationChainSize[] =
 const char kSubresourceFilterOnlySuffix[] = ".SubresourceFilterOnly";
 const char kSocialEngineeringAdsInterstitialSuffix[] =
     ".SocialEngineeringAdsInterstitial";
-const char kPhishingInterstitalSuffix[] = ".PhishingInterstital";
+const char kPhishingInterstitialSuffix[] = ".PhishingInterstitial";
 #endif
 
 // Other histograms.
@@ -1423,7 +1423,7 @@ IN_PROC_BROWSER_TEST_F(
                             true, 1);
 
   tester.ExpectUniqueSample(std::string(kMatchesPatternHistogramName) +
-                                std::string(kPhishingInterstitalSuffix),
+                                std::string(kPhishingInterstitialSuffix),
                             false, 1);
   EXPECT_THAT(tester.GetAllSamples(std::string(kNavigationChainSize) +
                                    std::string(kSubresourceFilterOnlySuffix)),
@@ -1455,7 +1455,7 @@ IN_PROC_BROWSER_TEST_F(
                             false, 1);
 
   tester.ExpectUniqueSample(std::string(kMatchesPatternHistogramName) +
-                                std::string(kPhishingInterstitalSuffix),
+                                std::string(kPhishingInterstitialSuffix),
                             false, 1);
 }
 #endif

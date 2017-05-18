@@ -244,11 +244,11 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
   } kTestCases[] = {
       {false, "", ActivationList::NONE},
       {false, "social eng ads intertitial", ActivationList::NONE},
-      {false, "phishing,interstital", ActivationList::NONE},
+      {false, "phishing,interstitial", ActivationList::NONE},
       {false, "%$ garbage !%", ActivationList::NONE},
       {true, "", ActivationList::NONE},
       {true, "social eng ads intertitial", ActivationList::NONE},
-      {true, "phishing interstital", ActivationList::NONE},
+      {true, "phishing interstitial", ActivationList::NONE},
       {true, "%$ garbage !%", ActivationList::NONE},
       {true, kActivationListSocialEngineeringAdsInterstitial,
        ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL},

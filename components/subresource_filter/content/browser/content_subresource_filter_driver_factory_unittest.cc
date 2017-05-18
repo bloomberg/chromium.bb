@@ -54,7 +54,7 @@ std::string GetSuffixForList(const ActivationList& type) {
     case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
       return "SocialEngineeringAdsInterstitial";
     case ActivationList::PHISHING_INTERSTITIAL:
-      return "PhishingInterstital";
+      return "PhishingInterstitial";
     case ActivationList::SUBRESOURCE_FILTER:
       return "SubresourceFilterOnly";
     case ActivationList::NONE:
