@@ -5,13 +5,12 @@
 #include "ash/system/tray/system_tray_delegate.h"
 
 #include "ash/system/tray/ime_info.h"
-#include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
 
-SystemTrayDelegate::SystemTrayDelegate() {}
+SystemTrayDelegate::SystemTrayDelegate() = default;
 
-SystemTrayDelegate::~SystemTrayDelegate() {}
+SystemTrayDelegate::~SystemTrayDelegate() = default;
 
 void SystemTrayDelegate::Initialize() {}
 
@@ -50,11 +49,6 @@ void SystemTrayDelegate::ActiveUserWasChanged() {}
 
 bool SystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
   return false;
-}
-
-std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateRotationLockTrayItem(
-    SystemTray* tray) {
-  return nullptr;
 }
 
 }  // namespace ash

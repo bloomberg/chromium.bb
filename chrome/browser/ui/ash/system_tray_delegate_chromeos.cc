@@ -19,7 +19,6 @@
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/power/power_status.h"
-#include "ash/system/rotation/tray_rotation_lock.h"
 #include "ash/system/session/logout_button_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
@@ -292,11 +291,6 @@ void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
 
 bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
   return search_key_mapped_to_ == input_method::kCapsLockKey;
-}
-
-std::unique_ptr<ash::SystemTrayItem>
-SystemTrayDelegateChromeOS::CreateRotationLockTrayItem(ash::SystemTray* tray) {
-  return base::MakeUnique<ash::TrayRotationLock>(tray);
 }
 
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
