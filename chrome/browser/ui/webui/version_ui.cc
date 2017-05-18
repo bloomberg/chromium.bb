@@ -146,7 +146,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #else
   html_source->AddString(version_ui::kCompiler, "MSVC 2015");
 #endif
-#elif defined(_MSC_VER) && _MSC_VER == 1910
+#elif defined(_MSC_VER) && _MSC_VER >= 1910 && _MSC_VER <= 1911
 #if BUILDFLAG(PGO_BUILD)
   html_source->AddString(version_ui::kCompiler, "MSVC 2017 (PGO)");
 #else
