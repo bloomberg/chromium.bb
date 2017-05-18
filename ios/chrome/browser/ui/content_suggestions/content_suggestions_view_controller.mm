@@ -124,6 +124,12 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   [self.collectionView addGestureRecognizer:longPressRecognizer];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [self.collectionUpdater updateMostVisitedForSize:size];
+}
+
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
