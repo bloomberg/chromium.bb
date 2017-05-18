@@ -193,6 +193,10 @@ ACTION(OnCloseNotification) {
   return dbus::Response::CreateEmpty().release();
 }
 
+ACTION_P(OnNotificationBridgeReady, success) {
+  EXPECT_EQ(success, arg0);
+}
+
 // Matches a method call to the specified dbus target.
 MATCHER_P(Calls, member, "") {
   return arg->GetMember() == member;
@@ -210,30 +214,9 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
     mock_notification_proxy_ = new StrictMock<dbus::MockObjectProxy>(
         mock_bus_.get(), kFreedesktopNotificationsName,
         dbus::ObjectPath(kFreedesktopNotificationsPath));
-
-    EXPECT_CALL(*mock_bus_.get(),
-                GetObjectProxy(kFreedesktopNotificationsName,
-                               dbus::ObjectPath(kFreedesktopNotificationsPath)))
-        .WillOnce(Return(mock_notification_proxy_.get()));
-
-    EXPECT_CALL(*mock_notification_proxy_.get(),
-                MockCallMethodAndBlock(Calls("GetCapabilities"), _))
-        .WillOnce(OnGetCapabilities(std::vector<std::string>{
-            "body", "body-hyperlinks", "body-images", "body-markup"}));
-
-    EXPECT_CALL(
-        *mock_notification_proxy_.get(),
-        ConnectToSignal(kFreedesktopNotificationsName, "ActionInvoked", _, _))
-        .WillOnce(RegisterSignalCallback(&action_invoked_callback_));
-
-    EXPECT_CALL(*mock_notification_proxy_.get(),
-                ConnectToSignal(kFreedesktopNotificationsName,
-                                "NotificationClosed", _, _))
-        .WillOnce(RegisterSignalCallback(&notification_closed_callback_));
   }
 
   void TearDown() override {
-    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock());
     notification_bridge_linux_->CleanUp();
     content::RunAllBlockingPoolTasksUntilIdle();
     notification_bridge_linux_.reset();
@@ -243,10 +226,54 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
  protected:
   void CreateNotificationBridgeLinux() {
+    CreateNotificationBridgeLinux(
+        std::vector<std::string>{"actions", "body", "body-hyperlinks",
+                                 "body-images", "body-markup"},
+        true, true, true);
+  }
+
+  void CreateNotificationBridgeLinux(
+      const std::vector<std::string>& capabilities,
+      bool expect_init_success,
+      bool expect_shutdown,
+      bool connect_signals) {
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy(kFreedesktopNotificationsName,
+                               dbus::ObjectPath(kFreedesktopNotificationsPath)))
+        .WillOnce(Return(mock_notification_proxy_.get()));
+
+    EXPECT_CALL(*mock_notification_proxy_.get(),
+                MockCallMethodAndBlock(Calls("GetCapabilities"), _))
+        .WillOnce(OnGetCapabilities(capabilities));
+
+    if (connect_signals) {
+      EXPECT_CALL(
+          *mock_notification_proxy_.get(),
+          ConnectToSignal(kFreedesktopNotificationsName, "ActionInvoked", _, _))
+          .WillOnce(RegisterSignalCallback(&action_invoked_callback_));
+
+      EXPECT_CALL(*mock_notification_proxy_.get(),
+                  ConnectToSignal(kFreedesktopNotificationsName,
+                                  "NotificationClosed", _, _))
+          .WillOnce(RegisterSignalCallback(&notification_closed_callback_));
+    }
+
+    EXPECT_CALL(*this, MockableNotificationBridgeReadyCallback(_))
+        .WillOnce(OnNotificationBridgeReady(expect_init_success));
+
+    if (expect_shutdown)
+      EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock());
+
     notification_bridge_linux_ =
         base::WrapUnique(new NotificationPlatformBridgeLinux(mock_bus_));
+    notification_bridge_linux_->SetReadyCallback(
+        base::BindOnce(&NotificationPlatformBridgeLinuxTest::
+                           MockableNotificationBridgeReadyCallback,
+                       base::Unretained(this)));
     content::RunAllBlockingPoolTasksUntilIdle();
   }
+
+  MOCK_METHOD1(MockableNotificationBridgeReadyCallback, void(bool));
 
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -406,4 +433,14 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
           .SetMessage(base::ASCIIToUTF16("Body text"))
           .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
           .GetResult());
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, MissingActionsCapability) {
+  CreateNotificationBridgeLinux(std::vector<std::string>{"body"}, false, true,
+                                false);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, MissingBodyCapability) {
+  CreateNotificationBridgeLinux(std::vector<std::string>{"actions"}, false,
+                                true, false);
 }
