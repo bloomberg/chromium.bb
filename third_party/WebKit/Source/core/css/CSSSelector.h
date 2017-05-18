@@ -96,7 +96,7 @@ class CORE_EXPORT CSSSelector {
 
   ~CSSSelector();
 
-  String SelectorText(const String& right_side = "") const;
+  String SelectorText() const;
 
   bool operator==(const CSSSelector&) const;
 
@@ -368,6 +368,7 @@ class CORE_EXPORT CSSSelector {
 
   unsigned SpecificityForOneSelector() const;
   unsigned SpecificityForPage() const;
+  const CSSSelector* SerializeCompound(StringBuilder&) const;
 
   // Hide.
   CSSSelector& operator=(const CSSSelector&);
