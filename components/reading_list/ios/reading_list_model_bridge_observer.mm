@@ -26,6 +26,14 @@ void ReadingListModelBridge::ReadingListModelLoaded(
   [observer_ readingListModelLoaded:model];
 }
 
+void ReadingListModelBridge::ReadingListModelBeingShutdown(
+    const ReadingListModel* model) {
+  if ([observer_
+          respondsToSelector:@selector(readingListModelBeingShutdown:)]) {
+    [observer_ readingListModelBeingShutdown:model];
+  }
+}
+
 void ReadingListModelBridge::ReadingListModelBeingDeleted(
     const ReadingListModel* model) {
   if ([observer_ respondsToSelector:@selector(readingListModelBeingDeleted:)]) {

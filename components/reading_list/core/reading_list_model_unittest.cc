@@ -314,6 +314,9 @@ TEST_F(ReadingListModelTest, EmptyLoaded) {
   EXPECT_EQ(0ul, ReadSize());
   model_->Shutdown();
   EXPECT_FALSE(model_->loaded());
+  // Shutdown() does not delete the model observer. Verify that deleting the
+  // model will delete the model observer.
+  model_.reset();
   AssertObserverCount(1, 0, 0, 1, 0, 0, 0, 0, 0);
 }
 

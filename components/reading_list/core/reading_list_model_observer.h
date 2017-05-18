@@ -32,6 +32,9 @@ class ReadingListModelObserver {
   virtual void ReadingListModelCompletedBatchUpdates(
       const ReadingListModel* model) {}
 
+  // Invoked before the destruction of the model.
+  virtual void ReadingListModelBeingShutdown(const ReadingListModel* model) {}
+
   // Invoked from the destructor of the model. The model is no longer valid
   // after this call. There is no need to call RemoveObserver on the model from
   // here, as the observers are automatically deleted.
