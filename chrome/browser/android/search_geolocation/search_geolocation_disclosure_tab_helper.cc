@@ -16,6 +16,7 @@
 #include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -24,6 +25,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/GeolocationHeader_jni.h"
@@ -82,17 +84,61 @@ SearchGeolocationDisclosureTabHelper::~SearchGeolocationDisclosureTabHelper() {}
 
 void SearchGeolocationDisclosureTabHelper::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  MaybeShowDisclosure(web_contents()->GetVisibleURL());
+  MaybeShowDisclosureForNavigation(web_contents()->GetVisibleURL());
 }
 
-void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosure(
+void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForAPIAccess(
     const GURL& gurl) {
   if (!consistent_geolocation_disclosure_enabled_)
     return;
 
-  if (!ShouldShowDisclosureForUrl(gurl))
+  if (!ShouldShowDisclosureForAPIAccess(gurl))
     return;
 
+  MaybeShowDisclosureForValidUrl(gurl);
+}
+
+// static
+void SearchGeolocationDisclosureTabHelper::ResetDisclosure(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  prefs->ClearPref(prefs::kSearchGeolocationDisclosureShownCount);
+  prefs->ClearPref(prefs::kSearchGeolocationDisclosureLastShowDate);
+  prefs->ClearPref(prefs::kSearchGeolocationDisclosureDismissed);
+}
+
+// static
+void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kSearchGeolocationDisclosureDismissed,
+                                false);
+  registry->RegisterIntegerPref(prefs::kSearchGeolocationDisclosureShownCount,
+                                0);
+  registry->RegisterInt64Pref(prefs::kSearchGeolocationDisclosureLastShowDate,
+                              0);
+  registry->RegisterBooleanPref(
+      prefs::kSearchGeolocationPreDisclosureMetricsRecorded, false);
+  registry->RegisterBooleanPref(
+      prefs::kSearchGeolocationPostDisclosureMetricsRecorded, false);
+}
+
+// static
+bool SearchGeolocationDisclosureTabHelper::Register(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForNavigation(
+    const GURL& gurl) {
+  if (!consistent_geolocation_disclosure_enabled_)
+    return;
+
+  if (!ShouldShowDisclosureForNavigation(gurl))
+    return;
+
+  MaybeShowDisclosureForValidUrl(gurl);
+}
+
+void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
+    const GURL& gurl) {
   // Don't show the infobar if the user has dismissed it, or they've seen it
   // enough times already.
   PrefService* prefs = GetProfile()->GetPrefs();
@@ -149,35 +195,7 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosure(
                   GetTimeNow().ToInternalValue());
 }
 
-// static
-void SearchGeolocationDisclosureTabHelper::ResetDisclosure(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
-  prefs->ClearPref(prefs::kSearchGeolocationDisclosureShownCount);
-  prefs->ClearPref(prefs::kSearchGeolocationDisclosureLastShowDate);
-  prefs->ClearPref(prefs::kSearchGeolocationDisclosureDismissed);
-}
-
-// static
-void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kSearchGeolocationDisclosureDismissed,
-                                false);
-  registry->RegisterIntegerPref(prefs::kSearchGeolocationDisclosureShownCount,
-                                0);
-  registry->RegisterInt64Pref(prefs::kSearchGeolocationDisclosureLastShowDate,
-                              0);
-  registry->RegisterBooleanPref(
-      prefs::kSearchGeolocationPreDisclosureMetricsRecorded, false);
-  registry->RegisterBooleanPref(
-      prefs::kSearchGeolocationPostDisclosureMetricsRecorded, false);
-}
-
-// static
-bool SearchGeolocationDisclosureTabHelper::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForUrl(
+bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
     const GURL& gurl) {
   SearchGeolocationService* service =
       SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
@@ -191,6 +209,21 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForUrl(
     return true;
 
   return service->UseDSEGeolocationSetting(url::Origin(gurl));
+}
+
+bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForNavigation(
+    const GURL& gurl) {
+  if (!ShouldShowDisclosureForAPIAccess(gurl))
+    return false;
+
+  if (gIgnoreUrlChecksForTesting)
+    return true;
+
+  // Only show the disclosure for default search navigations from the omnibox.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(GetProfile());
+  return template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
+      gurl);
 }
 
 void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
