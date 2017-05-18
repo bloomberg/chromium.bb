@@ -37,12 +37,13 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.FileProviderHelper;
-import org.chromium.chrome.browser.crash.MinidumpDirectoryObserver;
+import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
+import org.chromium.components.crash.browser.CrashDumpManager;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
@@ -51,6 +52,7 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -70,8 +72,6 @@ public class ChromeBrowserInitializer {
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
-
-    private MinidumpDirectoryObserver mMinidumpDirectoryObserver;
 
     // Public to allow use in ChromeBackupAgent
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
@@ -406,19 +406,15 @@ public class ChromeBrowserInitializer {
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
 
-        // Start the file observer to watch the minidump directory.
-        new AsyncTask<Void, Void, MinidumpDirectoryObserver>() {
+        // When a minidump is detected, extract and append a logcat to it, then upload it to the
+        // crash server. Note that the logcat extraction might fail. This is ok; in that case, the
+        // minidump will be found and uploaded upon the next browser launch.
+        CrashDumpManager.registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
-            protected MinidumpDirectoryObserver doInBackground(Void... params) {
-                return new MinidumpDirectoryObserver();
+            public void tryToUploadMinidump(File minidump) {
+                AsyncTask.THREAD_POOL_EXECUTOR.execute(new LogcatExtractionRunnable(minidump));
             }
-
-            @Override
-            protected void onPostExecute(MinidumpDirectoryObserver minidumpDirectoryObserver) {
-                mMinidumpDirectoryObserver = minidumpDirectoryObserver;
-                mMinidumpDirectoryObserver.startWatching();
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
     }
 
     private void waitForDebuggerIfNeeded() {
