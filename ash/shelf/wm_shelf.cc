@@ -12,7 +12,6 @@
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_locking_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf_observer.h"
@@ -64,7 +63,12 @@ class WmShelf::AutoHideEventHandler : public ui::EventHandler {
 
 // WmShelf ---------------------------------------------------------------------
 
-WmShelf::WmShelf() {}
+WmShelf::WmShelf() : shelf_locking_manager_(this) {
+  // TODO: ShelfBezelEventHandler needs to work with mus too.
+  // http://crbug.com/636647
+  if (Shell::GetAshConfig() != Config::MASH)
+    bezel_event_handler_ = base::MakeUnique<ShelfBezelEventHandler>(this);
+}
 
 WmShelf::~WmShelf() {}
 
@@ -117,11 +121,6 @@ void WmShelf::CreateShelfWidget(WmWindow* root) {
   WmWindow* status_container =
       root->GetChildByShellWindowId(kShellWindowId_StatusContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
-
-  // TODO: ShelfBezelEventHandler needs to work with mus too.
-  // http://crbug.com/636647
-  if (Shell::GetAshConfig() != Config::MASH)
-    bezel_event_handler_ = base::MakeUnique<ShelfBezelEventHandler>(this);
 }
 
 void WmShelf::ShutdownShelfWidget() {
@@ -133,23 +132,10 @@ void WmShelf::DestroyShelfWidget() {
   shelf_widget_.reset();
 }
 
-void WmShelf::CreateShelfView() {
+void WmShelf::NotifyShelfInitialized() {
   DCHECK(shelf_layout_manager_);
   DCHECK(shelf_widget_);
-  DCHECK(!shelf_view_);
-  shelf_view_ = shelf_widget_->CreateShelfView();
-  shelf_locking_manager_.reset(new ShelfLockingManager(this));
-  Shell::Get()->shelf_controller()->NotifyShelfCreated(this);
-}
-
-void WmShelf::ShutdownShelf() {
-  DCHECK(shelf_view_);
-  shelf_locking_manager_.reset();
-  shelf_view_ = nullptr;
-}
-
-bool WmShelf::IsShelfInitialized() const {
-  return !!shelf_view_;
+  Shell::Get()->shelf_controller()->NotifyShelfInitialized(this);
 }
 
 WmWindow* WmShelf::GetWindow() {
@@ -158,14 +144,13 @@ WmWindow* WmShelf::GetWindow() {
 
 void WmShelf::SetAlignment(ShelfAlignment alignment) {
   DCHECK(shelf_layout_manager_);
-  DCHECK(shelf_locking_manager_);
 
   if (alignment_ == alignment)
     return;
 
-  if (shelf_locking_manager_->is_locked() &&
+  if (shelf_locking_manager_.is_locked() &&
       alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    shelf_locking_manager_->set_stored_alignment(alignment);
+    shelf_locking_manager_.set_stored_alignment(alignment);
     return;
   }
 
@@ -232,10 +217,6 @@ void WmShelf::UpdateAutoHideState() {
 
 ShelfBackgroundType WmShelf::GetBackgroundType() const {
   return shelf_widget_->GetBackgroundType();
-}
-
-bool WmShelf::IsVisible() const {
-  return shelf_widget_->IsShelfVisible();
 }
 
 void WmShelf::UpdateVisibilityState() {
@@ -333,11 +314,11 @@ void WmShelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
 }
 
 ShelfLockingManager* WmShelf::GetShelfLockingManagerForTesting() {
-  return shelf_locking_manager_.get();
+  return &shelf_locking_manager_;
 }
 
 ShelfView* WmShelf::GetShelfViewForTesting() {
-  return shelf_view_;
+  return shelf_widget_->shelf_view_for_testing();
 }
 
 void WmShelf::WillDeleteShelfLayoutManager() {

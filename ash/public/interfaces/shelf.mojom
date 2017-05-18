@@ -73,7 +73,9 @@ interface ShelfController {
 
 // ShelfObserver is notified on shelf changes; used to persist profile settings.
 interface ShelfObserver {
-  OnShelfCreated(int64 display_id);
+  // TODO(jamescook): Eliminate all these methods and use the ash pref service
+  // to observe and to set prefs. http://crbug.com/723085
+  OnShelfInitialized(int64 display_id);
   OnAlignmentChanged(ShelfAlignment alignment, int64 display_id);
   OnAutoHideBehaviorChanged(ShelfAutoHideBehavior auto_hide, int64 display_id);
 };

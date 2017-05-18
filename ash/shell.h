@@ -522,10 +522,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
 
-  // Creates the ShelfView for each display and populates it with items.
-  // Called after the user session is active and profile is available.
-  void CreateShelfView();
-
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
 
   // Toggles cursor compositing on/off. Native cursor is disabled when cursor
@@ -656,6 +652,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
+
+  // Finalizes the shelf state. Called after the user session is active and
+  // the profile is available.
+  void InitializeShelf();
 
   // Callback for prefs::ConnectToPrefService.
   void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);

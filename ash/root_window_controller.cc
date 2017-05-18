@@ -351,27 +351,19 @@ wm::WorkspaceWindowState RootWindowController::GetWorkspaceWindowState() {
                                : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
-bool RootWindowController::HasShelf() {
-  return wm_shelf_->shelf_widget() != nullptr;
-}
-
-WmShelf* RootWindowController::GetShelf() {
-  return wm_shelf_.get();
-}
-
-void RootWindowController::CreateShelfView() {
-  if (wm_shelf_->IsShelfInitialized())
+void RootWindowController::InitializeShelf() {
+  if (shelf_initialized_)
     return;
-  wm_shelf_->CreateShelfView();
+  shelf_initialized_ = true;
+  wm_shelf_->NotifyShelfInitialized();
 
   // TODO(jamescook): Pass |wm_shelf_| into the constructors for these layout
   // managers.
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(wm_shelf_.get());
 
-  // Notify shell observers that the shelf has been created.
-  // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
-  // require changing AttachedPanelWidgetTargeter's access to WmShelf.
+  // TODO(jamescook): Eliminate this. Refactor AttachedPanelWidgetTargeter's
+  // access to WmShelf.
   Shell::Get()->NotifyShelfCreatedForRootWindow(WmWindow::Get(GetRootWindow()));
 
   wm_shelf_->shelf_widget()->PostCreateShelf();
@@ -601,11 +593,6 @@ void RootWindowController::CloseChildWindows() {
 
   shelf->DestroyShelfWidget();
 
-  // CloseChildWindows() may be called twice during the shutdown of ash
-  // unittests. Avoid notifying WmShelf that the shelf has been destroyed twice.
-  if (shelf->IsShelfInitialized())
-    shelf->ShutdownShelf();
-
   aura::client::SetDragDropClient(GetRootWindow(), nullptr);
   aura::client::SetTooltipClient(GetRootWindow(), nullptr);
 }
@@ -767,9 +754,9 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   } else {
     window_tree_host_->Show();
 
-    // Create a shelf if a user is already logged in.
-    if (shell->session_controller()->NumberOfLoggedInUsers())
-      CreateShelfView();
+    // At the login screen the shelf will be hidden because its container window
+    // is hidden. InitializeShelf() will make it visible.
+    InitializeShelf();
 
     // Notify shell observers about new root window.
     shell->OnRootWindowAdded(WmWindow::Get(root_window));

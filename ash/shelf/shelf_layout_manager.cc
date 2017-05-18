@@ -234,10 +234,17 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  // Bail out early before the shelf is initialized or after it is destroyed.
-  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  if (in_shutdown_ || !wm_shelf_->IsShelfInitialized() || !shelf_window)
+  // Shelf is not available before login.
+  // TODO(crbug.com/701157): Remove this when the login webui fake-shelf is
+  // replaced with views.
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return;
+
+  // Bail out early after shelf is destroyed.
+  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  if (in_shutdown_ || !shelf_window)
+    return;
+
   if (state_.IsScreenLocked() || state_.IsAddingSecondaryUser()) {
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
@@ -887,7 +894,13 @@ bool ShelfLayoutManager::HasVisibleWindow() const {
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
-  if (visibility_state != SHELF_AUTO_HIDE || !wm_shelf_->IsShelfInitialized())
+  // Shelf is not available before login.
+  // TODO(crbug.com/701157): Remove this when the login webui fake-shelf is
+  // replaced with views.
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
+    return SHELF_AUTO_HIDE_HIDDEN;
+
+  if (visibility_state != SHELF_AUTO_HIDE)
     return SHELF_AUTO_HIDE_HIDDEN;
 
   if (shelf_widget_->IsShowingAppList())

@@ -374,8 +374,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
 }
 
 void WorkspaceLayoutManager::UpdateShelfVisibility() {
-  if (root_window_controller_->HasShelf())
-    root_window_controller_->GetShelf()->UpdateVisibilityState();
+  root_window_controller_->wm_shelf()->UpdateVisibilityState();
 }
 
 void WorkspaceLayoutManager::UpdateFullscreenState() {

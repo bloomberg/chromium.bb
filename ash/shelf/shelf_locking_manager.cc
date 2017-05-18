@@ -13,7 +13,7 @@ namespace ash {
 
 ShelfLockingManager::ShelfLockingManager(WmShelf* shelf)
     : shelf_(shelf),
-      stored_alignment_(shelf->GetAlignment()),
+      stored_alignment_(SHELF_ALIGNMENT_BOTTOM_LOCKED),
       scoped_session_observer_(this) {
   DCHECK(shelf_);
   ShellPort::Get()->AddLockStateObserver(this);

@@ -32,7 +32,7 @@ class ShelfController : public mojom::ShelfController {
   ShelfModel* model() { return &model_; }
 
   // Functions used to notify mojom::ShelfObserver instances of changes.
-  void NotifyShelfCreated(WmShelf* shelf);
+  void NotifyShelfInitialized(WmShelf* shelf);
   void NotifyShelfAlignmentChanged(WmShelf* shelf);
   void NotifyShelfAutoHideBehaviorChanged(WmShelf* shelf);
 

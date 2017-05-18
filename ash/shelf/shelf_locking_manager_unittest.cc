@@ -9,10 +9,10 @@
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
-namespace test {
+namespace {
 
 // Tests the shelf behavior when the screen or session is locked.
-class ShelfLockingManagerTest : public ash::test::AshTestBase {
+class ShelfLockingManagerTest : public test::AshTestBase {
  public:
   ShelfLockingManagerTest() {}
 
@@ -78,5 +78,5 @@ TEST_F(ShelfLockingManagerTest, AlignmentChangesDeferredWhileLocked) {
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf->GetAlignment());
 }
 
-}  // namespace test
+}  // namespace
 }  // namespace ash

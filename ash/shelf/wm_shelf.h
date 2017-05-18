@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_locking_manager.h"
 #include "base/observer_list.h"
 
 namespace gfx {
@@ -33,8 +34,9 @@ class StatusAreaWidget;
 class WmShelfObserver;
 class WmWindow;
 
-// Controller for the shelf state. Exists for the lifetime of each root window
-// controller. Note that the shelf widget may not be created until after login.
+// Controller for the shelf state. One per display, because each display might
+// have different shelf alignment, autohide, etc. Exists for the lifetime of the
+// root window controller.
 class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
  public:
   WmShelf();
@@ -58,14 +60,8 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
 
   ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
 
-  // Creates the shelf view.
-  void CreateShelfView();
-
   // TODO(jamescook): Eliminate this method.
-  void ShutdownShelf();
-
-  // True after the ShelfView has been created (e.g. after login).
-  bool IsShelfInitialized() const;
+  void NotifyShelfInitialized();
 
   // Returns the window showing the shelf.
   WmWindow* GetWindow();
@@ -96,10 +92,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   void UpdateAutoHideState();
 
   ShelfBackgroundType GetBackgroundType() const;
-
-  // Whether the shelf view is visible.
-  // TODO(jamescook): Consolidate this with GetVisibilityState().
-  bool IsVisible() const;
 
   void UpdateVisibilityState();
 
@@ -159,16 +151,12 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
 
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
-  // Internal implementation detail. Do not expose externally. Owned by views
-  // hierarchy. Null before login and in secondary display init.
-  ShelfView* shelf_view_ = nullptr;
-
   // These initial values hide the shelf until user preferences are available.
   ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
   ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
 
   // Sets shelf alignment to bottom during login and screen lock.
-  std::unique_ptr<ShelfLockingManager> shelf_locking_manager_;
+  ShelfLockingManager shelf_locking_manager_;
 
   base::ObserverList<WmShelfObserver> observers_;
 
