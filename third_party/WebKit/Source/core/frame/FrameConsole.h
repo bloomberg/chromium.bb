@@ -56,10 +56,6 @@ class CORE_EXPORT FrameConsole final
   }
 
   void AddMessage(ConsoleMessage*);
-  void AddMessageFromWorker(MessageLevel,
-                            const String& message,
-                            std::unique_ptr<SourceLocation>,
-                            const String& worker_id);
 
   // Show the specified ConsoleMessage only if the frame haven't shown a message
   // same as ConsoleMessage::messsage().

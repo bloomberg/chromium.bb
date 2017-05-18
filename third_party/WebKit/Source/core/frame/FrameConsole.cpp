@@ -105,16 +105,6 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
       frame_, source, level, message, location->LineNumber(), url, stack_trace);
 }
 
-void FrameConsole::AddMessageFromWorker(
-    MessageLevel level,
-    const String& message,
-    std::unique_ptr<SourceLocation> location,
-    const String& worker_id) {
-  ReportMessageToClient(kWorkerMessageSource, level, message, location.get());
-  AddMessageToStorage(ConsoleMessage::CreateFromWorker(
-      level, message, std::move(location), worker_id));
-}
-
 void FrameConsole::AddSingletonMessage(ConsoleMessage* console_message) {
   if (singleton_messages_.Contains(console_message->Message()))
     return;

@@ -36,7 +36,9 @@ WorkerInspectorProxy::AllProxies() {
 }
 
 WorkerInspectorProxy::WorkerInspectorProxy()
-    : worker_thread_(nullptr), document_(nullptr), page_inspector_(nullptr) {}
+    : worker_thread_(nullptr),
+      execution_context_(nullptr),
+      page_inspector_(nullptr) {}
 
 WorkerInspectorProxy* WorkerInspectorProxy::Create() {
   return new WorkerInspectorProxy();
@@ -51,37 +53,39 @@ const String& WorkerInspectorProxy::InspectorId() {
 }
 
 WorkerThreadStartMode WorkerInspectorProxy::WorkerStartMode(
-    Document* document) {
+    ExecutionContext* execution_context) {
   bool result = false;
-  probe::shouldWaitForDebuggerOnWorkerStart(document, &result);
+  probe::shouldWaitForDebuggerOnWorkerStart(execution_context, &result);
   return result ? kPauseWorkerGlobalScopeOnStart
                 : kDontPauseWorkerGlobalScopeOnStart;
 }
 
-void WorkerInspectorProxy::WorkerThreadCreated(Document* document,
-                                               WorkerThread* worker_thread,
-                                               const KURL& url) {
+void WorkerInspectorProxy::WorkerThreadCreated(
+    ExecutionContext* execution_context,
+    WorkerThread* worker_thread,
+    const KURL& url) {
   worker_thread_ = worker_thread;
-  document_ = document;
+  execution_context_ = execution_context;
   url_ = url.GetString();
   InspectorProxies().insert(this);
   // We expect everyone starting worker thread to synchronously ask for
-  // workerStartMode right before.
+  // WorkerStartMode() right before.
   bool waiting_for_debugger = false;
-  probe::shouldWaitForDebuggerOnWorkerStart(document, &waiting_for_debugger);
-  probe::didStartWorker(document, this, waiting_for_debugger);
+  probe::shouldWaitForDebuggerOnWorkerStart(execution_context_,
+                                            &waiting_for_debugger);
+  probe::didStartWorker(execution_context_, this, waiting_for_debugger);
 }
 
 void WorkerInspectorProxy::WorkerThreadTerminated() {
   if (worker_thread_) {
     DCHECK(InspectorProxies().Contains(this));
     InspectorProxies().erase(this);
-    probe::workerTerminated(document_, this);
+    probe::workerTerminated(execution_context_, this);
   }
 
   worker_thread_ = nullptr;
   page_inspector_ = nullptr;
-  document_ = nullptr;
+  execution_context_ = nullptr;
 }
 
 void WorkerInspectorProxy::DispatchMessageFromWorker(const String& message) {
@@ -93,9 +97,8 @@ void WorkerInspectorProxy::AddConsoleMessageFromWorker(
     MessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {
-  if (LocalFrame* frame = document_->GetFrame())
-    frame->Console().AddMessageFromWorker(level, message, std::move(location),
-                                          inspector_id_);
+  execution_context_->AddConsoleMessage(ConsoleMessage::CreateFromWorker(
+      level, message, std::move(location), inspector_id_));
 }
 
 static void ConnectToWorkerGlobalScopeInspectorTask(
@@ -158,7 +161,7 @@ void WorkerInspectorProxy::WriteTimelineStartedEvent(const String& session_id) {
 }
 
 DEFINE_TRACE(WorkerInspectorProxy) {
-  visitor->Trace(document_);
+  visitor->Trace(execution_context_);
 }
 
 }  // namespace blink

@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 class KURL;
 
 // A proxy for talking to the worker inspector on the worker thread.
@@ -33,8 +33,8 @@ class CORE_EXPORT WorkerInspectorProxy final
                                            const String&) = 0;
   };
 
-  WorkerThreadStartMode WorkerStartMode(Document*);
-  void WorkerThreadCreated(Document*, WorkerThread*, const KURL&);
+  WorkerThreadStartMode WorkerStartMode(ExecutionContext*);
+  void WorkerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
   void WorkerThreadTerminated();
   void DispatchMessageFromWorker(const String&);
   void AddConsoleMessageFromWorker(MessageLevel,
@@ -47,7 +47,7 @@ class CORE_EXPORT WorkerInspectorProxy final
   void WriteTimelineStartedEvent(const String& session_id);
 
   const String& Url() { return url_; }
-  Document* GetDocument() { return document_; }
+  ExecutionContext* GetExecutionContext() { return execution_context_; }
   const String& InspectorId();
 
   using WorkerInspectorProxySet =
@@ -58,7 +58,7 @@ class CORE_EXPORT WorkerInspectorProxy final
   WorkerInspectorProxy();
 
   WorkerThread* worker_thread_;
-  Member<Document> document_;
+  Member<ExecutionContext> execution_context_;
   PageInspector* page_inspector_;
   String url_;
   String inspector_id_;
