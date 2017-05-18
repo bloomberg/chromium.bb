@@ -138,8 +138,11 @@ void InspectorWorkerAgent::WorkerTerminated(WorkerInspectorProxy* proxy) {
 
 void InspectorWorkerAgent::ConnectToAllProxies() {
   for (WorkerInspectorProxy* proxy : WorkerInspectorProxy::AllProxies()) {
-    if (proxy->GetDocument()->GetFrame() &&
-        inspected_frames_->Contains(proxy->GetDocument()->GetFrame()))
+    // For now we assume this is document. TODO(kinuko): Fix this.
+    DCHECK(proxy->GetExecutionContext()->IsDocument());
+    Document* document = ToDocument(proxy->GetExecutionContext());
+    if (document->GetFrame() &&
+        inspected_frames_->Contains(document->GetFrame()))
       ConnectToProxy(proxy, false);
   }
 }

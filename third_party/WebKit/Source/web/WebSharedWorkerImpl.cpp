@@ -322,10 +322,10 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     return;
   }
 
-  Document* document = main_frame_->GetFrame()->GetDocument();
-  // FIXME: this document's origin is pristine and without any extra privileges.
-  // (crbug.com/254993)
-  SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  // FIXME: this document's origin is pristine and without any extra privileges
+  // (e.g. GrantUniversalAccess) that can be overriden in regular documents
+  // via WebPreference by embedders. (crbug.com/254993)
+  SecurityOrigin* starter_origin = loading_document_->GetSecurityOrigin();
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideLocalFileSystemToWorker(worker_clients,
@@ -348,7 +348,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     // TODO(horo): Set more information about the context (ex: AppCacheHostID)
     // to |web_worker_fetch_context|.
     web_worker_fetch_context->SetDataSaverEnabled(
-        document->GetFrame()->GetSettings()->GetDataSaverEnabled());
+        main_frame_->GetFrame()->GetSettings()->GetDataSaverEnabled());
     ProvideWorkerFetchContextToWorker(worker_clients,
                                       std::move(web_worker_fetch_context));
   }
@@ -356,9 +356,9 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   ContentSecurityPolicy* content_security_policy =
       main_script_loader_->ReleaseContentSecurityPolicy();
   WorkerThreadStartMode start_mode =
-      worker_inspector_proxy_->WorkerStartMode(document);
-  std::unique_ptr<WorkerSettings> worker_settings =
-      WTF::WrapUnique(new WorkerSettings(document->GetSettings()));
+      worker_inspector_proxy_->WorkerStartMode(loading_document_);
+  std::unique_ptr<WorkerSettings> worker_settings = WTF::WrapUnique(
+      new WorkerSettings(main_frame_->GetFrame()->GetSettings()));
   WorkerV8Settings worker_v8_settings = WorkerV8Settings::Default();
   worker_v8_settings.atomics_wait_mode_ =
       WorkerV8Settings::AtomicsWaitMode::kAllow;
