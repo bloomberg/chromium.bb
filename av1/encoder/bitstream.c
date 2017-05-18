@@ -252,10 +252,9 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
   const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
   const aom_prob newmv_prob = ec_ctx->newmv_prob[newmv_ctx];
 
-#define IS_NEWMV_MODE(mode) ((mode) == NEWMV)
-  aom_write(w, !IS_NEWMV_MODE(mode), newmv_prob);
+  aom_write(w, mode != NEWMV, newmv_prob);
 
-  if (!IS_NEWMV_MODE(mode)) {
+  if (mode != NEWMV) {
     const int16_t zeromv_ctx = (mode_ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
     const aom_prob zeromv_prob = ec_ctx->zeromv_prob[zeromv_ctx];
 
@@ -278,8 +277,6 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
       aom_write(w, mode != NEARESTMV, refmv_prob);
     }
   }
-
-#undef IS_NEWMV_MODE
 }
 
 static void write_drl_idx(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
