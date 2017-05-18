@@ -34992,6 +34992,10 @@ from previous Chrome versions.
   <int value="18" label="Cancel clicked on never translate snackbar"/>
   <int value="19" label="Undo always translate"/>
   <int value="20" label="Infobar closed"/>
+  <int value="21" label="Auto-always translate snackbar impression"/>
+  <int value="22" label="Auto-never translate snackbar impression"/>
+  <int value="23" label="Cancel clicked on auto-always translate snackbar"/>
+  <int value="24" label="Cancel clicked on auto-never translate snackbar"/>
 </enum>
 
 <enum name="TranslateError" type="int">

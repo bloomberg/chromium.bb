@@ -90,8 +90,11 @@ class TranslateCompactInfoBar extends InfoBar
     private static final int INFOBAR_SNACKBAR_CANCEL_NEVER = 18;
     private static final int INFOBAR_ALWAYS_TRANSLATE_UNDO = 19;
     private static final int INFOBAR_CLOSE = 20;
-    private static final int INFOBAR_HISTOGRAM_BOUNDARY = 21;
-    // TODO(martiw): create the values for the impressions/cancels of auto-always and auto-never.
+    private static final int INFOBAR_SNACKBAR_AUTO_ALWAYS_IMPRESSION = 21;
+    private static final int INFOBAR_SNACKBAR_AUTO_NEVER_IMPRESSION = 22;
+    private static final int INFOBAR_SNACKBAR_CANCEL_AUTO_ALWAYS = 23;
+    private static final int INFOBAR_SNACKBAR_CANCEL_AUTO_NEVER = 24;
+    private static final int INFOBAR_HISTOGRAM_BOUNDARY = 25;
 
     // Need 2 instances of TranslateMenuHelper to prevent a race condition bug which happens when
     // showing language menu after dismissing overflow menu.
@@ -117,14 +120,16 @@ class TranslateCompactInfoBar extends InfoBar
         public void onAction(Object actionData) {
             switch (mActionId) {
                 case ACTION_OVERFLOW_ALWAYS_TRANSLATE:
-                case ACTION_AUTO_ALWAYS_TRANSLATE:
                     recordInfobarAction(INFOBAR_SNACKBAR_CANCEL_ALWAYS);
+                    return;
+                case ACTION_AUTO_ALWAYS_TRANSLATE:
+                    recordInfobarAction(INFOBAR_SNACKBAR_CANCEL_AUTO_ALWAYS);
                     return;
                 case ACTION_OVERFLOW_NEVER_LANGUAGE:
                     recordInfobarAction(INFOBAR_SNACKBAR_CANCEL_NEVER);
                     return;
                 case ACTION_AUTO_NEVER_LANGUAGE:
-                    recordInfobarAction(INFOBAR_SNACKBAR_CANCEL_NEVER);
+                    recordInfobarAction(INFOBAR_SNACKBAR_CANCEL_AUTO_NEVER);
                     // This snackbar is triggered automatically after a close button click.  Need to
                     // dismiss the infobar even if the user cancels the "Never Translate".
                     performCloseButtonActionWithoutDeniedCheck();
@@ -411,12 +416,16 @@ class TranslateCompactInfoBar extends InfoBar
         }
         switch (actionId) {
             case ACTION_OVERFLOW_ALWAYS_TRANSLATE:
-            case ACTION_AUTO_ALWAYS_TRANSLATE:
                 recordInfobarAction(INFOBAR_SNACKBAR_ALWAYS_TRANSLATE_IMPRESSION);
                 break;
+            case ACTION_AUTO_ALWAYS_TRANSLATE:
+                recordInfobarAction(INFOBAR_SNACKBAR_AUTO_ALWAYS_IMPRESSION);
+                break;
             case ACTION_OVERFLOW_NEVER_LANGUAGE:
-            case ACTION_AUTO_NEVER_LANGUAGE:
                 recordInfobarAction(INFOBAR_SNACKBAR_NEVER_TRANSLATE_IMPRESSION);
+                break;
+            case ACTION_AUTO_NEVER_LANGUAGE:
+                recordInfobarAction(INFOBAR_SNACKBAR_AUTO_NEVER_IMPRESSION);
                 break;
             case ACTION_OVERFLOW_NEVER_SITE:
                 recordInfobarAction(INFOBAR_SNACKBAR_NEVER_TRANSLATE_SITE_IMPRESSION);
