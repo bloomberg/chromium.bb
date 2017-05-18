@@ -5442,9 +5442,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_ZOOM_EXTENSION_ICON" desc="The tooltip for the extension icon in the zoom bubble">
         This page was zoomed by the "<ph name="NAME">$1<ex>Google Cast</ex></ph>" extension
       </message>
-      <message name="IDS_ZOOM_SET_DEFAULT" desc="The text label of a button which, when clicked, returns the page to default zoom">
-        Reset
-      </message>
+      <if expr="not use_titlecase">
+        <message name="IDS_ZOOM_SET_DEFAULT" desc="The text label of a button which, when clicked, returns the page to default zoom">
+          Reset to default
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_ZOOM_SET_DEFAULT" desc="In Title Case: The text label of a button which, when clicked, returns the page to default zoom">
+          Reset to Default
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="In Title Case: The short text label of a button which, when clicked, returns the page to default zoom">
+          Reset
+        </message>
+      </if>
 
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
@@ -5498,9 +5510,6 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_ACCNAME_CLOSE_TAB" desc="The accessible name for the button that is used to close a specific tab.">
         Close <ph name="TAB_NAME">$1<ex>Google Search</ex></ph>
-      </message>
-      <message name="IDS_ACCNAME_ZOOM_SET_DEFAULT" desc="The accessible description of the Reset button in the Zoom bubble.">
-        Reset to default zoom level
       </message>
 
       <!-- Browser Hung Plugin Detector -->

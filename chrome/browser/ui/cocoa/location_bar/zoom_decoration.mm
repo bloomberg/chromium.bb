@@ -48,7 +48,7 @@ bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
   }
 
   BOOL old_visibility = IsVisible();
-  SetVisible(true);
+  SetVisible(ShouldShowDecoration() && !zoom_controller->IsAtDefaultZoom());
 
   base::string16 zoom_percent =
       base::FormatPercent(zoom_controller->GetZoomPercent());
@@ -127,10 +127,15 @@ void ZoomDecoration::HideUI() {
 void ZoomDecoration::UpdateUI(zoom::ZoomController* zoom_controller,
                               NSString* tooltip_string,
                               bool location_bar_is_dark) {
-  vector_icon_ = zoom_controller->GetZoomRelativeToDefault() ==
-                         zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
-                     ? &kZoomMinusIcon
-                     : &kZoomPlusIcon;
+  vector_icon_ = nullptr;
+  zoom::ZoomController::RelativeZoom relative_zoom =
+      zoom_controller->GetZoomRelativeToDefault();
+  // There is no icon at the default zoom factor.
+  if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
+    vector_icon_ = &kZoomMinusIcon;
+  } else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
+    vector_icon_ = &kZoomPlusIcon;
+  }
 
   SetImage(GetMaterialIcon(location_bar_is_dark));
 
