@@ -55,8 +55,8 @@ class PlatformSensorReaderWin {
 
   bool SetReportingInterval(const PlatformSensorConfiguration& configuration);
   void ListenSensorEvent();
-  HRESULT SensorReadingChanged(ISensorDataReport& report,
-                               SensorReading& reading) const;
+  HRESULT SensorReadingChanged(ISensorDataReport* report,
+                               SensorReading* reading) const;
   void SensorError();
 
  private:
