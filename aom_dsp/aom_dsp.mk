@@ -281,6 +281,13 @@ DSP_SRCS-$(HAVE_DSPR2) += mips/itrans16_dspr2.c
 DSP_SRCS-$(HAVE_DSPR2) += mips/itrans32_dspr2.c
 DSP_SRCS-$(HAVE_DSPR2) += mips/itrans32_cols_dspr2.c
 endif  # CONFIG_HIGHBITDEPTH
+
+ifeq ($(CONFIG_LOOP_RESTORATION),yes)
+DSP_SRCS-$(HAVE_SSE2)   += x86/aom_convolve_hip_sse2.c
+ifeq ($(CONFIG_HIGHBITDEPTH),yes)
+DSP_SRCS-$(HAVE_SSSE3)  += x86/aom_highbd_convolve_hip_ssse3.c
+endif
+endif  # CONFIG_LOOP_RESTORATION
 endif  # CONFIG_AV1
 
 # quantization

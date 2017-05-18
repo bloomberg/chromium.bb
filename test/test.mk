@@ -235,6 +235,9 @@ LIBAOM_TEST_SRCS-$(HAVE_SSE2) += warp_filter_test_util.h
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += warp_filter_test.cc warp_filter_test_util.cc
 endif
 ifeq ($(CONFIG_LOOP_RESTORATION),yes)
+LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test_util.h
+LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test.cc
+LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test_util.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += selfguided_filter_test.cc
 endif
 

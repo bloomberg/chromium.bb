@@ -447,8 +447,6 @@ void aom_convolve8_add_src_c(const uint8_t *src, ptrdiff_t src_stride,
                    x_step_q4, filters_y, y0_q4, y_step_q4, w, h);
 }
 
-#define EXTRAPREC_BITS 2
-#define EXTRAPREC_CLAMP_LIMIT (512 << EXTRAPREC_BITS)
 static void convolve_add_src_horiz_hip(const uint8_t *src, ptrdiff_t src_stride,
                                        uint16_t *dst, ptrdiff_t dst_stride,
                                        const InterpKernel *x_filters, int x0_q4,
