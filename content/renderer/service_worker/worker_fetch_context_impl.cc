@@ -43,6 +43,7 @@ std::unique_ptr<blink::WebURLLoader> WorkerFetchContextImpl::CreateURLLoader() {
 void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
+  extra_data->set_render_frame_id(parent_frame_id_);
   request.SetExtraData(extra_data);
 
   if (!IsControlledByServiceWorker() &&
@@ -72,6 +73,10 @@ void WorkerFetchContextImpl::set_service_worker_provider_id(int id) {
 
 void WorkerFetchContextImpl::set_is_controlled_by_service_worker(bool flag) {
   is_controlled_by_service_worker_ = flag;
+}
+
+void WorkerFetchContextImpl::set_parent_frame_id(int id) {
+  parent_frame_id_ = id;
 }
 
 void WorkerFetchContextImpl::SetControllerServiceWorker(
