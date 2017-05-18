@@ -2033,9 +2033,12 @@ static bool EnabledVisibleSelectionAndMark(LocalFrame& frame,
 
 static bool EnableCaretInEditableText(LocalFrame& frame,
                                       Event* event,
-                                      EditorCommandSource) {
+                                      EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
+  if (source == kCommandFromMenuOrKeyBinding &&
+      !frame.Selection().SelectionHasFocus())
+    return false;
   const VisibleSelection& selection =
       frame.GetEditor().SelectionForCommand(event);
   return selection.IsCaret() && selection.IsContentEditable();
