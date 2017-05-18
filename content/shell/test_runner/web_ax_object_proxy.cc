@@ -92,8 +92,6 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("Directory");
     case blink::kWebAXRoleDisclosureTriangle:
       return result.append("DisclosureTriangle");
-    case blink::kWebAXRoleDiv:
-      return result.append("Div");
     case blink::kWebAXRoleDocument:
       return result.append("Document");
     case blink::kWebAXRoleEmbeddedObject:
@@ -106,6 +104,8 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("Footer");
     case blink::kWebAXRoleForm:
       return result.append("Form");
+    case blink::kWebAXRoleGenericContainer:
+      return result.append("GenericContainer");
     case blink::kWebAXRoleGrid:
       return result.append("Grid");
     case blink::kWebAXRoleGroup:
