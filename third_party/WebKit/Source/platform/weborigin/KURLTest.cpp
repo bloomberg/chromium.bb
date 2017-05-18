@@ -302,7 +302,7 @@ TEST(KURLTest, EncodeWithURLEscapeSequences) {
   EXPECT_EQ(EncodeWithURLEscapeSequences(precomposed), "%C4%99");
 }
 
-TEST(KURLTest, RemoveWhitespace) {
+TEST(KURLTest, AbsoluteRemoveWhitespace) {
   struct {
     const char* input;
     const char* expected;
@@ -330,6 +330,34 @@ TEST(KURLTest, RemoveWhitespace) {
     EXPECT_EQ(input, expected);
     EXPECT_TRUE(input.WhitespaceRemoved());
     EXPECT_FALSE(expected.WhitespaceRemoved());
+  }
+}
+
+TEST(KURLTest, RelativeRemoveWhitespace) {
+  struct {
+    const char* base;
+    const char* relative;
+    bool whitespace_removed;
+  } cases[] = {
+      {"http://example.com/", "/path", false},
+      {"http://example.com/", "\n/path", true},
+      {"http://example.com/", "\r/path", true},
+      {"http://example.com/", "\t/path", true},
+      {"http://example.com/", "/pa\nth", true},
+      {"http://example.com/", "/pa\rth", true},
+      {"http://example.com/", "/pa\tth", true},
+      {"http://example.com/", "/path\n", true},
+      {"http://example.com/", "/path\r", true},
+      {"http://example.com/", "/path\t", true},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(::testing::Message() << test.base << ", " << test.relative);
+    const KURL base(kParsedURLString, test.base);
+    const KURL expected(kParsedURLString, "http://example.com/path");
+    const KURL actual(base, test.relative);
+    EXPECT_EQ(actual, expected);
+    EXPECT_EQ(test.whitespace_removed, actual.WhitespaceRemoved());
   }
 }
 
