@@ -5,6 +5,8 @@
 #include "platform/audio/IIRFilter.h"
 
 #include <complex>
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/VectorMath.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {
@@ -29,6 +31,7 @@ IIRFilter::~IIRFilter() {}
 void IIRFilter::Reset() {
   x_buffer_.Zero();
   y_buffer_.Zero();
+  buffer_index_ = 0;
 }
 
 static std::complex<double> EvaluatePolynomial(const double* coef,
@@ -137,6 +140,75 @@ void IIRFilter::GetFrequencyResponse(int n_frequencies,
     phase_response[k] =
         static_cast<float>(atan2(imag(response), real(response)));
   }
+}
+
+double IIRFilter::TailTime(double sample_rate) {
+  // The maximum tail time.  This is somewhat arbitrary, but we're assuming that
+  // no one is going to expect the IIRFilter to produce an output after this
+  // much time after the inputs have stopped.
+  const double kMaxTailTime = 60;
+
+  // If the maximum amplitude of the impulse response is less than this, we
+  // assume that we've reached the tail of the response.  Currently, this means
+  // that the impulse is less than 1 bit of a 16-bit PCM value.
+  const float kMaxTailAmplitude = 1 / 32768.0;
+
+  // How to compute the tail time?  We're going to filter an impulse
+  // for |kMaxTailTime| seconds, in blocks of kRenderQuantumFrames at
+  // a time.  The maximum magnitude of this block is saved.  After all
+  // of the samples have been computed, find the last block with a
+  // maximum magnitude greater than |kMaxTaileAmplitude|.  That block
+  // index + 1 will be the tail time.  We don't need to be
+  // super-accurate in computing the tail time since we process on
+  // blocks, block accuracy is good enough, and the value just needs
+  // to be larger than the "real" tail time, so we don't prematurely
+  // zero out the output of the node.
+
+  // Number of render quanta needed to reach the max tail time.
+  int number_of_blocks = std::ceil(sample_rate * kMaxTailTime /
+                                   AudioUtilities::kRenderQuantumFrames);
+
+  // Input and output buffers for filtering.
+  AudioFloatArray input(AudioUtilities::kRenderQuantumFrames);
+  AudioFloatArray output(AudioUtilities::kRenderQuantumFrames);
+
+  // Array to hold the max magnitudes
+  AudioFloatArray magnitudes(number_of_blocks);
+
+  // Create the impulse input signal.
+  input[0] = 1;
+
+  // Process the first block and get the max magnitude of the output.
+  Process(input.Data(), output.Data(), AudioUtilities::kRenderQuantumFrames);
+  VectorMath::Vmaxmgv(output.Data(), 1, &magnitudes[0],
+                      AudioUtilities::kRenderQuantumFrames);
+
+  // Process the rest of the signal, getting the max magnitude of the
+  // output for each block.
+  input[0] = 0;
+
+  for (int k = 1; k < number_of_blocks; ++k) {
+    Process(input.Data(), output.Data(), AudioUtilities::kRenderQuantumFrames);
+    VectorMath::Vmaxmgv(output.Data(), 1, &magnitudes[k],
+                        AudioUtilities::kRenderQuantumFrames);
+  }
+
+  // Done computing the impulse response; reset the state so the actual node
+  // starts in the expected initial state.
+  Reset();
+
+  // Find the last block with amplitude greater than the threshold.
+  int index = number_of_blocks - 1;
+  for (int k = index; k >= 0; --k) {
+    if (magnitudes[k] > kMaxTailAmplitude) {
+      index = k;
+      break;
+    }
+  }
+
+  // The magnitude first become lower than the threshold at the next block.
+  // Compute the corresponding time value value; that's the tail time.
+  return (index + 1) * AudioUtilities::kRenderQuantumFrames / sample_rate;
 }
 
 }  // namespace blink

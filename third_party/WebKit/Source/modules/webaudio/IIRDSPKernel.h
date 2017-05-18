@@ -15,9 +15,7 @@ class IIRProcessor;
 
 class IIRDSPKernel final : public AudioDSPKernel {
  public:
-  explicit IIRDSPKernel(IIRProcessor* processor)
-      : AudioDSPKernel(processor),
-        iir_(processor->Feedforward(), processor->Feedback()) {}
+  explicit IIRDSPKernel(IIRProcessor*);
 
   // AudioDSPKernel
   void Process(const float* source,
@@ -37,6 +35,9 @@ class IIRDSPKernel final : public AudioDSPKernel {
 
  protected:
   IIRFilter iir_;
+
+ private:
+  double tail_time_;
 };
 
 }  // namespace blink

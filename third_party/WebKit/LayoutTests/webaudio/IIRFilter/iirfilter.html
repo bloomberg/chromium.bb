@@ -170,7 +170,7 @@
           // computations versus the double-precision Javascript computations.
           should(actual, 'IIR 1-pole output')
             .beCloseToArray(expected, {
-              relativeThreshold: 5.723e-8
+              absoluteThreshold: 2.7657e-8
             });
         }).then(() => task.done());
       });
