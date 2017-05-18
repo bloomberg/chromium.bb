@@ -3257,7 +3257,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
                              PseudoStyleRequest::kForComputedStyle),
           element_style, layout_parent_style);
   DCHECK(result);
-  return element_style->AddCachedPseudoStyle(result.Release());
+  return element_style->AddCachedPseudoStyle(std::move(result));
 }
 
 const ComputedStyle* Element::NonLayoutObjectComputedStyle() const {
@@ -3439,7 +3439,7 @@ ComputedStyle* Element::PseudoStyle(const PseudoStyleRequest& request,
 
   RefPtr<ComputedStyle> result = GetUncachedPseudoStyle(request, parent_style);
   if (result)
-    return style->AddCachedPseudoStyle(result.Release());
+    return style->AddCachedPseudoStyle(std::move(result));
   return nullptr;
 }
 
