@@ -463,6 +463,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * @return The height of the tab strip. Return 0 for toolbars that do not have a tabstrip.
      */
+    @Override
     public int getTabStripHeight() {
         return getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
     }
