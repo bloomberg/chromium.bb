@@ -121,7 +121,7 @@ bool HardwareSupportsOverlays() {
 
   // Before Windows 10 Anniversary Update (Redstone 1), overlay planes
   // wouldn't be assigned to non-UWP apps.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_R1)
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return false;
 
   base::win::ScopedComPtr<ID3D11Device> d3d11_device =
