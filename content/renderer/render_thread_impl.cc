@@ -1677,24 +1677,6 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
     return;
 
   purge_and_suspend_memory_metrics_ = memory_metrics;
-  // record how many memory usage increases after purged.
-  // Since RenderThreadImpl is kept alive while its render process is alive,
-  // it is possible to use base::Unretained(this) here.
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-                 base::Unretained(this), "30min", process_foregrounded_count_),
-      base::TimeDelta::FromMinutes(30));
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-                 base::Unretained(this), "60min", process_foregrounded_count_),
-      base::TimeDelta::FromMinutes(60));
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-                 base::Unretained(this), "90min", process_foregrounded_count_),
-      base::TimeDelta::FromMinutes(90));
 }
 
 // TODO(tasak): Replace the following GetMallocUsage() with memory-infra
