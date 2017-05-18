@@ -158,10 +158,10 @@ static EColorInterpolation ColorInterpolationForElement(
   return parent_color_interpolation;
 }
 
-ColorSpace SVGFilterBuilder::ResolveColorSpace(
+InterpolationSpace SVGFilterBuilder::ResolveInterpolationSpace(
     EColorInterpolation color_interpolation) {
-  return color_interpolation == CI_LINEARRGB ? kColorSpaceLinearRGB
-                                             : kColorSpaceDeviceRGB;
+  return color_interpolation == CI_LINEARRGB ? kInterpolationSpaceLinear
+                                             : kInterpolationSpaceSRGB;
 }
 
 void SVGFilterBuilder::BuildGraph(Filter* filter,
@@ -190,7 +190,8 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
                                           reference_box);
     EColorInterpolation color_interpolation = ColorInterpolationForElement(
         *effect_element, filter_color_interpolation);
-    effect->SetOperatingColorSpace(ResolveColorSpace(color_interpolation));
+    effect->SetOperatingInterpolationSpace(
+        ResolveInterpolationSpace(color_interpolation));
     if (effect_element->TaintsOrigin(effect->InputsTaintOrigin()))
       effect->SetOriginTainted();
 

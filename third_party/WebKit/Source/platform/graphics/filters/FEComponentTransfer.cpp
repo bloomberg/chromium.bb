@@ -135,8 +135,8 @@ bool FEComponentTransfer::AffectsTransparentPixels() const {
 }
 
 sk_sp<SkImageFilter> FEComponentTransfer::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
 
   unsigned char r_values[256], g_values[256], b_values[256], a_values[256];
   GetValues(r_values, g_values, b_values, a_values);

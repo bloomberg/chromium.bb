@@ -37,24 +37,24 @@ namespace blink {
 
 class ImageFilterBuilderTest : public Test {
  protected:
-  void ColorSpaceTest() {
+  void InterpolationSpaceTest() {
     // Build filter tree
     Filter* reference_filter = Filter::Create(1.0f);
 
     // Add a dummy source graphic input
     FilterEffect* source_effect = reference_filter->GetSourceGraphic();
-    source_effect->SetOperatingColorSpace(kColorSpaceDeviceRGB);
+    source_effect->SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 
     // Add a blur effect (with input : source)
     FilterEffect* blur_effect =
         FEGaussianBlur::Create(reference_filter, 3.0f, 3.0f);
-    blur_effect->SetOperatingColorSpace(kColorSpaceLinearRGB);
+    blur_effect->SetOperatingInterpolationSpace(kInterpolationSpaceLinear);
     blur_effect->InputEffects().push_back(source_effect);
 
     // Add a blend effect (with inputs : blur, source)
     FilterEffect* blend_effect =
         FEBlend::Create(reference_filter, kWebBlendModeNormal);
-    blend_effect->SetOperatingColorSpace(kColorSpaceDeviceRGB);
+    blend_effect->SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
     FilterEffectVector& blend_inputs = blend_effect->InputEffects();
     blend_inputs.ReserveCapacity(2);
     blend_inputs.push_back(source_effect);
@@ -62,7 +62,7 @@ class ImageFilterBuilderTest : public Test {
 
     // Add a merge effect (with inputs : blur, blend)
     FilterEffect* merge_effect = FEMerge::Create(reference_filter);
-    merge_effect->SetOperatingColorSpace(kColorSpaceLinearRGB);
+    merge_effect->SetOperatingInterpolationSpace(kInterpolationSpaceLinear);
     FilterEffectVector& merge_inputs = merge_effect->InputEffects();
     merge_inputs.ReserveCapacity(2);
     merge_inputs.push_back(blur_effect);
@@ -71,10 +71,10 @@ class ImageFilterBuilderTest : public Test {
 
     // Get SkImageFilter resulting tree
     sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::Build(
-        reference_filter->LastEffect(), kColorSpaceDeviceRGB);
+        reference_filter->LastEffect(), kInterpolationSpaceSRGB);
 
     // Let's check that the resulting tree looks like this :
-    //      ColorSpace (Linear->Device) : CS (L->D)
+    //      InterpolationSpace (Linear->Device) : CS (L->D)
     //                |
     //             Merge (L)
     //              |     |
@@ -112,8 +112,8 @@ class ImageFilterBuilderTest : public Test {
   }
 };
 
-TEST_F(ImageFilterBuilderTest, testColorSpace) {
-  ColorSpaceTest();
+TEST_F(ImageFilterBuilderTest, testInterpolationSpace) {
+  InterpolationSpaceTest();
 }
 
 }  // namespace blink

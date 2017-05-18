@@ -50,7 +50,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/ColorSpaceGamut.h"
 #include "platform/wtf/HashMap.h"
 #include "public/platform/PointerProperties.h"
 #include "public/platform/ShapeProperties.h"

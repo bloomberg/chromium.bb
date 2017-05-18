@@ -33,8 +33,8 @@
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/LengthFunctions.h"
-#include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/CompositorFilterOperations.h"
+#include "platform/graphics/InterpolationSpace.h"
 #include "platform/graphics/filters/FEBoxReflect.h"
 #include "platform/graphics/filters/FEColorMatrix.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
@@ -293,7 +293,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         // Unlike SVG, filters applied here should not clip to their primitive
         // subregions.
         effect->SetClipsToBounds(false);
-        effect->SetOperatingColorSpace(kColorSpaceDeviceRGB);
+        effect->SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
         effect->InputEffects().push_back(previous_effect);
       }
       if (previous_effect->OriginTainted())
@@ -306,7 +306,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
 
 CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
     const FilterOperations& operations) const {
-  ColorSpace current_color_space = kColorSpaceDeviceRGB;
+  InterpolationSpace current_interpolation_space = kInterpolationSpaceSRGB;
 
   CompositorFilterOperations filters;
   for (FilterOperation* op : operations.Operations()) {
@@ -319,12 +319,13 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
         if (reference_filter && reference_filter->LastEffect()) {
           SkiaImageFilterBuilder::PopulateSourceGraphicImageFilters(
               reference_filter->GetSourceGraphic(), nullptr,
-              current_color_space);
+              current_interpolation_space);
 
           FilterEffect* filter_effect = reference_filter->LastEffect();
-          current_color_space = filter_effect->OperatingColorSpace();
+          current_interpolation_space =
+              filter_effect->OperatingInterpolationSpace();
           filters.AppendReferenceFilter(SkiaImageFilterBuilder::Build(
-              filter_effect, current_color_space));
+              filter_effect, current_interpolation_space));
         }
         reference_operation.SetFilter(reference_filter);
         break;
@@ -400,10 +401,11 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
         break;
     }
   }
-  if (current_color_space != kColorSpaceDeviceRGB) {
+  if (current_interpolation_space != kInterpolationSpaceSRGB) {
     // Transform to device color space at the end of processing, if required.
-    sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::TransformColorSpace(
-        nullptr, current_color_space, kColorSpaceDeviceRGB);
+    sk_sp<SkImageFilter> filter =
+        SkiaImageFilterBuilder::TransformInterpolationSpace(
+            nullptr, current_interpolation_space, kInterpolationSpaceSRGB);
     filters.AppendReferenceFilter(std::move(filter));
   }
   return filters;

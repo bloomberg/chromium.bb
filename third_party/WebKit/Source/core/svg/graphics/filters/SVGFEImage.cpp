@@ -48,7 +48,7 @@ FEImage::FEImage(Filter* filter,
       image_(std::move(image)),
       tree_scope_(nullptr),
       preserve_aspect_ratio_(preserve_aspect_ratio) {
-  FilterEffect::SetOperatingColorSpace(kColorSpaceDeviceRGB);
+  FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
 FEImage::FEImage(Filter* filter,
@@ -59,7 +59,7 @@ FEImage::FEImage(Filter* filter,
       tree_scope_(&tree_scope),
       href_(href),
       preserve_aspect_ratio_(preserve_aspect_ratio) {
-  FilterEffect::SetOperatingColorSpace(kColorSpaceDeviceRGB);
+  FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
 DEFINE_TRACE(FEImage) {

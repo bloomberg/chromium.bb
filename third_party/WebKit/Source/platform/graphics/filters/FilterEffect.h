@@ -27,7 +27,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/InterpolationSpace.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
@@ -99,9 +99,12 @@ class PLATFORM_EXPORT FilterEffect
   bool ClipsToBounds() const { return clips_to_bounds_; }
   void SetClipsToBounds(bool value) { clips_to_bounds_ = value; }
 
-  ColorSpace OperatingColorSpace() const { return operating_color_space_; }
-  virtual void SetOperatingColorSpace(ColorSpace color_space) {
-    operating_color_space_ = color_space;
+  InterpolationSpace OperatingInterpolationSpace() const {
+    return operating_interpolation_space_;
+  }
+  virtual void SetOperatingInterpolationSpace(
+      InterpolationSpace interpolation_space) {
+    operating_interpolation_space_ = interpolation_space;
   }
 
   virtual bool AffectsTransparentPixels() const { return false; }
@@ -110,9 +113,9 @@ class PLATFORM_EXPORT FilterEffect
   // values, with alpha in [0,255] and each color component in [0, alpha].
   virtual bool MayProduceInvalidPreMultipliedPixels() { return false; }
 
-  SkImageFilter* GetImageFilter(ColorSpace,
+  SkImageFilter* GetImageFilter(InterpolationSpace,
                                 bool requires_pm_color_validation) const;
-  void SetImageFilter(ColorSpace,
+  void SetImageFilter(InterpolationSpace,
                       bool requires_pm_color_validation,
                       sk_sp<SkImageFilter>);
 
@@ -137,7 +140,7 @@ class PLATFORM_EXPORT FilterEffect
 
   sk_sp<SkImageFilter> CreateTransparentBlack() const;
 
-  Color AdaptColorToOperatingColorSpace(const Color& device_color);
+  Color AdaptColorToOperatingInterpolationSpace(const Color& device_color);
 
   SkImageFilter::CropRect GetCropRect() const;
 
@@ -160,7 +163,7 @@ class PLATFORM_EXPORT FilterEffect
 
   bool origin_tainted_;
 
-  ColorSpace operating_color_space_;
+  InterpolationSpace operating_interpolation_space_;
 
   sk_sp<SkImageFilter> image_filters_[4];
 };

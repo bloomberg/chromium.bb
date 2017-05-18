@@ -33,7 +33,7 @@ FilterEffect::FilterEffect(Filter* filter)
     : filter_(filter),
       clips_to_bounds_(true),
       origin_tainted_(false),
-      operating_color_space_(kColorSpaceLinearRGB) {
+      operating_interpolation_space_(kInterpolationSpaceLinear) {
   DCHECK(filter_);
 }
 
@@ -101,9 +101,11 @@ void FilterEffect::DisposeImageFiltersRecursive() {
     effect->DisposeImageFiltersRecursive();
 }
 
-Color FilterEffect::AdaptColorToOperatingColorSpace(const Color& device_color) {
+Color FilterEffect::AdaptColorToOperatingInterpolationSpace(
+    const Color& device_color) {
   // |deviceColor| is assumed to be DeviceRGB.
-  return ColorSpaceUtilities::ConvertColor(device_color, OperatingColorSpace());
+  return InterpolationSpaceUtilities::ConvertColor(
+      device_color, OperatingInterpolationSpace());
 }
 
 TextStream& FilterEffect::ExternalRepresentation(TextStream& ts, int) const {
@@ -147,28 +149,30 @@ SkImageFilter::CropRect FilterEffect::GetCropRect() const {
   }
 }
 
-static int GetImageFilterIndex(ColorSpace color_space,
+static int GetImageFilterIndex(InterpolationSpace interpolation_space,
                                bool requires_pm_color_validation) {
   // Map the (colorspace, bool) tuple to an integer index as follows:
   // 0 == linear colorspace, no PM validation
   // 1 == device colorspace, no PM validation
   // 2 == linear colorspace, PM validation
   // 3 == device colorspace, PM validation
-  return (color_space == kColorSpaceLinearRGB ? 0x1 : 0x0) |
+  return (interpolation_space == kInterpolationSpaceLinear ? 0x1 : 0x0) |
          (requires_pm_color_validation ? 0x2 : 0x0);
 }
 
 SkImageFilter* FilterEffect::GetImageFilter(
-    ColorSpace color_space,
+    InterpolationSpace interpolation_space,
     bool requires_pm_color_validation) const {
-  int index = GetImageFilterIndex(color_space, requires_pm_color_validation);
+  int index =
+      GetImageFilterIndex(interpolation_space, requires_pm_color_validation);
   return image_filters_[index].get();
 }
 
-void FilterEffect::SetImageFilter(ColorSpace color_space,
+void FilterEffect::SetImageFilter(InterpolationSpace interpolation_space,
                                   bool requires_pm_color_validation,
                                   sk_sp<SkImageFilter> image_filter) {
-  int index = GetImageFilterIndex(color_space, requires_pm_color_validation);
+  int index =
+      GetImageFilterIndex(interpolation_space, requires_pm_color_validation);
   image_filters_[index] = std::move(image_filter);
 }
 

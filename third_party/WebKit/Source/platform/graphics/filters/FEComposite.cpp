@@ -180,12 +180,12 @@ sk_sp<SkImageFilter> FEComposite::CreateImageFilterWithoutValidation() {
 
 sk_sp<SkImageFilter> FEComposite::CreateImageFilterInternal(
     bool requires_pm_color_validation) {
-  sk_sp<SkImageFilter> foreground(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace(),
-                                    !MayProduceInvalidPreMultipliedPixels()));
-  sk_sp<SkImageFilter> background(
-      SkiaImageFilterBuilder::Build(InputEffect(1), OperatingColorSpace(),
-                                    !MayProduceInvalidPreMultipliedPixels()));
+  sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace(),
+      !MayProduceInvalidPreMultipliedPixels()));
+  sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::Build(
+      InputEffect(1), OperatingInterpolationSpace(),
+      !MayProduceInvalidPreMultipliedPixels()));
   SkImageFilter::CropRect crop_rect = GetCropRect();
 
   if (type_ == FECOMPOSITE_OPERATOR_ARITHMETIC) {

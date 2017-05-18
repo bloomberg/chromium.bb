@@ -42,28 +42,31 @@
 namespace blink {
 namespace SkiaImageFilterBuilder {
 
-void PopulateSourceGraphicImageFilters(FilterEffect* source_graphic,
-                                       sk_sp<SkImageFilter> input,
-                                       ColorSpace input_color_space) {
+void PopulateSourceGraphicImageFilters(
+    FilterEffect* source_graphic,
+    sk_sp<SkImageFilter> input,
+    InterpolationSpace input_interpolation_space) {
   // Prepopulate SourceGraphic with two image filters: one with a null image
   // filter, and the other with a colorspace conversion filter.
   // We don't know what color space the interior nodes will request, so we
   // have to initialize SourceGraphic with both options.
   // Since we know SourceGraphic is always PM-valid, we also use these for
   // the PM-validated options.
-  sk_sp<SkImageFilter> device_filter =
-      TransformColorSpace(input, input_color_space, kColorSpaceDeviceRGB);
-  sk_sp<SkImageFilter> linear_filter =
-      TransformColorSpace(input, input_color_space, kColorSpaceLinearRGB);
-  source_graphic->SetImageFilter(kColorSpaceDeviceRGB, false, device_filter);
-  source_graphic->SetImageFilter(kColorSpaceLinearRGB, false, linear_filter);
-  source_graphic->SetImageFilter(kColorSpaceDeviceRGB, true, device_filter);
-  source_graphic->SetImageFilter(kColorSpaceLinearRGB, true, linear_filter);
+  sk_sp<SkImageFilter> device_filter = TransformInterpolationSpace(
+      input, input_interpolation_space, kInterpolationSpaceSRGB);
+  sk_sp<SkImageFilter> linear_filter = TransformInterpolationSpace(
+      input, input_interpolation_space, kInterpolationSpaceLinear);
+  source_graphic->SetImageFilter(kInterpolationSpaceSRGB, false, device_filter);
+  source_graphic->SetImageFilter(kInterpolationSpaceLinear, false,
+                                 linear_filter);
+  source_graphic->SetImageFilter(kInterpolationSpaceSRGB, true, device_filter);
+  source_graphic->SetImageFilter(kInterpolationSpaceLinear, true,
+                                 linear_filter);
 }
 
 sk_sp<SkImageFilter> Build(
     FilterEffect* effect,
-    ColorSpace color_space,
+    InterpolationSpace interpolation_space,
     bool destination_requires_valid_pre_multiplied_pixels) {
   if (!effect)
     return nullptr;
@@ -72,8 +75,8 @@ sk_sp<SkImageFilter> Build(
       effect->MayProduceInvalidPreMultipliedPixels() &&
       destination_requires_valid_pre_multiplied_pixels;
 
-  if (SkImageFilter* filter =
-          effect->GetImageFilter(color_space, requires_pm_color_validation))
+  if (SkImageFilter* filter = effect->GetImageFilter(
+          interpolation_space, requires_pm_color_validation))
     return sk_ref_sp(filter);
 
   // Note that we may still need the color transform even if the filter is null
@@ -81,22 +84,24 @@ sk_sp<SkImageFilter> Build(
       requires_pm_color_validation
           ? effect->CreateImageFilter()
           : effect->CreateImageFilterWithoutValidation();
-  sk_sp<SkImageFilter> filter = TransformColorSpace(
-      orig_filter, effect->OperatingColorSpace(), color_space);
-  effect->SetImageFilter(color_space, requires_pm_color_validation, filter);
+  sk_sp<SkImageFilter> filter = TransformInterpolationSpace(
+      orig_filter, effect->OperatingInterpolationSpace(), interpolation_space);
+  effect->SetImageFilter(interpolation_space, requires_pm_color_validation,
+                         filter);
   if (filter.get() != orig_filter.get())
-    effect->SetImageFilter(effect->OperatingColorSpace(),
+    effect->SetImageFilter(effect->OperatingInterpolationSpace(),
                            requires_pm_color_validation,
                            std::move(orig_filter));
   return filter;
 }
 
-sk_sp<SkImageFilter> TransformColorSpace(sk_sp<SkImageFilter> input,
-                                         ColorSpace src_color_space,
-                                         ColorSpace dst_color_space) {
+sk_sp<SkImageFilter> TransformInterpolationSpace(
+    sk_sp<SkImageFilter> input,
+    InterpolationSpace src_interpolation_space,
+    InterpolationSpace dst_interpolation_space) {
   sk_sp<SkColorFilter> color_filter =
-      ColorSpaceUtilities::CreateColorSpaceFilter(src_color_space,
-                                                  dst_color_space);
+      InterpolationSpaceUtilities::CreateInterpolationSpaceFilter(
+          src_interpolation_space, dst_interpolation_space);
   if (!color_filter)
     return input;
 
@@ -110,8 +115,9 @@ void BuildSourceGraphic(FilterEffect* source_graphic,
   SkRect cull_rect = record->cullRect();
   sk_sp<SkImageFilter> filter =
       SkPictureImageFilter::Make(ToSkPicture(record), cull_rect);
-  PopulateSourceGraphicImageFilters(source_graphic, std::move(filter),
-                                    source_graphic->OperatingColorSpace());
+  PopulateSourceGraphicImageFilters(
+      source_graphic, std::move(filter),
+      source_graphic->OperatingInterpolationSpace());
 }
 
 static const float kMaxMaskBufferSize =

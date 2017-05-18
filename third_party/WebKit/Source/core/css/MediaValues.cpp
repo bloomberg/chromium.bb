@@ -19,7 +19,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/ColorSpaceGamut.h"
 #include "public/platform/WebScreenInfo.h"
 
 namespace blink {

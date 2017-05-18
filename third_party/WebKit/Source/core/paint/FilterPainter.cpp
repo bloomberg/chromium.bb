@@ -40,7 +40,7 @@ FilterPainter::FilterPainter(PaintLayer& layer,
     return;
 
   sk_sp<SkImageFilter> image_filter =
-      SkiaImageFilterBuilder::Build(last_effect, kColorSpaceDeviceRGB);
+      SkiaImageFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
   if (!image_filter)
     return;
 

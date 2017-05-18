@@ -88,7 +88,7 @@ class SVGFilterBuilder {
   FilterEffect* GetEffectById(const AtomicString& id) const;
   FilterEffect* LastEffect() const { return last_effect_.Get(); }
 
-  static ColorSpace ResolveColorSpace(EColorInterpolation);
+  static InterpolationSpace ResolveInterpolationSpace(EColorInterpolation);
 
  private:
   void Add(const AtomicString& id, FilterEffect*);

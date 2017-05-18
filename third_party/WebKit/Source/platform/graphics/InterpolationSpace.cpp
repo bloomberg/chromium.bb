@@ -30,18 +30,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/InterpolationSpace.h"
 
 #include <algorithm>
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/wtf/MathExtras.h"
-#include "public/platform/WebScreenInfo.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 
 namespace blink {
 
-namespace ColorSpaceUtilities {
+namespace InterpolationSpaceUtilities {
 
 static const uint8_t* GetLinearRgbLUT() {
   static uint8_t linear_rgb_lut[256];
@@ -76,22 +74,22 @@ static const uint8_t* GetDeviceRgbLUT() {
   return device_rgb_lut;
 }
 
-const uint8_t* GetConversionLUT(ColorSpace dst_color_space,
-                                ColorSpace src_color_space) {
+const uint8_t* GetConversionLUT(InterpolationSpace dst_interpolation_space,
+                                InterpolationSpace src_interpolation_space) {
   // Identity.
-  if (src_color_space == dst_color_space)
+  if (src_interpolation_space == dst_interpolation_space)
     return 0;
 
   // Only sRGB/DeviceRGB <-> linearRGB are supported at the moment.
-  if ((src_color_space != kColorSpaceLinearRGB &&
-       src_color_space != kColorSpaceDeviceRGB) ||
-      (dst_color_space != kColorSpaceLinearRGB &&
-       dst_color_space != kColorSpaceDeviceRGB))
+  if ((src_interpolation_space != kInterpolationSpaceLinear &&
+       src_interpolation_space != kInterpolationSpaceSRGB) ||
+      (dst_interpolation_space != kInterpolationSpaceLinear &&
+       dst_interpolation_space != kInterpolationSpaceSRGB))
     return 0;
 
-  if (dst_color_space == kColorSpaceLinearRGB)
+  if (dst_interpolation_space == kInterpolationSpaceLinear)
     return GetLinearRgbLUT();
-  if (dst_color_space == kColorSpaceDeviceRGB)
+  if (dst_interpolation_space == kInterpolationSpaceSRGB)
     return GetDeviceRgbLUT();
 
   NOTREACHED();
@@ -99,10 +97,10 @@ const uint8_t* GetConversionLUT(ColorSpace dst_color_space,
 }
 
 Color ConvertColor(const Color& src_color,
-                   ColorSpace dst_color_space,
-                   ColorSpace src_color_space) {
+                   InterpolationSpace dst_interpolation_space,
+                   InterpolationSpace src_interpolation_space) {
   const uint8_t* lookup_table =
-      GetConversionLUT(dst_color_space, src_color_space);
+      GetConversionLUT(dst_interpolation_space, src_interpolation_space);
   if (!lookup_table)
     return src_color;
 
@@ -110,10 +108,11 @@ Color ConvertColor(const Color& src_color,
                lookup_table[src_color.Blue()], src_color.Alpha());
 }
 
-sk_sp<SkColorFilter> CreateColorSpaceFilter(ColorSpace src_color_space,
-                                            ColorSpace dst_color_space) {
+sk_sp<SkColorFilter> CreateInterpolationSpaceFilter(
+    InterpolationSpace src_interpolation_space,
+    InterpolationSpace dst_interpolation_space) {
   const uint8_t* lookup_table =
-      GetConversionLUT(dst_color_space, src_color_space);
+      GetConversionLUT(dst_interpolation_space, src_interpolation_space);
   if (!lookup_table)
     return nullptr;
 
@@ -121,58 +120,6 @@ sk_sp<SkColorFilter> CreateColorSpaceFilter(ColorSpace src_color_space,
                                       lookup_table);
 }
 
-ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo& screen_info) {
-  const gfx::ICCProfile& profile = screen_info.icc_profile;
-  if (profile == gfx::ICCProfile())
-    return ColorSpaceGamut::kUnknown;
-
-  return ColorSpaceUtilities::GetColorSpaceGamut(
-      profile.GetColorSpace().ToSkColorSpace().get());
-}
-
-ColorSpaceGamut GetColorSpaceGamut(SkColorSpace* color_space) {
-  sk_sp<SkColorSpace> sc_rgb(SkColorSpace::MakeSRGBLinear());
-  std::unique_ptr<SkColorSpaceXform> transform(
-      SkColorSpaceXform::New(color_space, sc_rgb.get()));
-
-  if (!transform)
-    return ColorSpaceGamut::kUnknown;
-
-  unsigned char in[3][4];
-  float out[3][4];
-  memset(in, 0, sizeof(in));
-  in[0][0] = 255;
-  in[1][1] = 255;
-  in[2][2] = 255;
-  in[0][3] = 255;
-  in[1][3] = 255;
-  in[2][3] = 255;
-  transform->apply(SkColorSpaceXform::kRGBA_F32_ColorFormat, out,
-                   SkColorSpaceXform::kRGBA_8888_ColorFormat, in, 3,
-                   kOpaque_SkAlphaType);
-  float score = out[0][0] * out[1][1] * out[2][2];
-
-  if (score < 0.9)
-    return ColorSpaceGamut::kLessThanNTSC;
-  if (score < 0.95)
-    return ColorSpaceGamut::NTSC;  // actual score 0.912839
-  if (score < 1.1)
-    return ColorSpaceGamut::SRGB;  // actual score 1.0
-  if (score < 1.3)
-    return ColorSpaceGamut::kAlmostP3;
-  if (score < 1.425)
-    return ColorSpaceGamut::P3;  // actual score 1.401899
-  if (score < 1.5)
-    return ColorSpaceGamut::kAdobeRGB;  // actual score 1.458385
-  if (score < 2.0)
-    return ColorSpaceGamut::kWide;
-  if (score < 2.2)
-    return ColorSpaceGamut::BT2020;  // actual score 2.104520
-  if (score < 2.7)
-    return ColorSpaceGamut::kProPhoto;  // actual score 2.913247
-  return ColorSpaceGamut::kUltraWide;
-}
-
-}  // namespace ColorSpaceUtilities
+}  // namespace InterpolationSpaceUtilities
 
 }  // namespace blink

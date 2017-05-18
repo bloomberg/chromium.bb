@@ -27,7 +27,7 @@
 #define SkiaImageFilterBuilder_h
 
 #include "platform/PlatformExport.h"
-#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/InterpolationSpace.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -40,18 +40,20 @@ class FilterEffect;
 
 namespace SkiaImageFilterBuilder {
 
-PLATFORM_EXPORT sk_sp<SkImageFilter>
-Build(FilterEffect*, ColorSpace, bool requires_pm_color_validation = true);
+PLATFORM_EXPORT sk_sp<SkImageFilter> Build(
+    FilterEffect*,
+    InterpolationSpace,
+    bool requires_pm_color_validation = true);
 
-PLATFORM_EXPORT sk_sp<SkImageFilter> TransformColorSpace(
+PLATFORM_EXPORT sk_sp<SkImageFilter> TransformInterpolationSpace(
     sk_sp<SkImageFilter> input,
-    ColorSpace src_color_space,
-    ColorSpace dst_color_space);
+    InterpolationSpace src_interpolation_space,
+    InterpolationSpace dst_interpolation_space);
 
 PLATFORM_EXPORT void PopulateSourceGraphicImageFilters(
     FilterEffect* source_graphic,
     sk_sp<SkImageFilter> input,
-    ColorSpace input_color_space);
+    InterpolationSpace input_interpolation_space);
 PLATFORM_EXPORT void BuildSourceGraphic(FilterEffect*, sk_sp<PaintRecord>);
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> BuildBoxReflectFilter(

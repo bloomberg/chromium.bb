@@ -39,8 +39,8 @@ FloatRect FETile::MapInputs(const FloatRect& rect) const {
 }
 
 sk_sp<SkImageFilter> FETile::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   FloatRect src_rect;
   if (InputEffect(0)->GetFilterEffectType() == kFilterEffectTypeSourceInput)
     src_rect = GetFilter()->FilterRegion();

@@ -50,10 +50,10 @@ bool FEBlend::SetBlendMode(WebBlendMode mode) {
 }
 
 sk_sp<SkImageFilter> FEBlend::CreateImageFilter() {
-  sk_sp<SkImageFilter> foreground(
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
-  sk_sp<SkImageFilter> background(
-      SkiaImageFilterBuilder::Build(InputEffect(1), OperatingColorSpace()));
+  sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::Build(
+      InputEffect(1), OperatingInterpolationSpace()));
   SkBlendMode mode =
       WebCoreCompositeToSkiaComposite(kCompositeSourceOver, mode_);
   SkImageFilter::CropRect crop_rect = GetCropRect();

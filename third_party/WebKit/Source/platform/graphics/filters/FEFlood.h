@@ -41,7 +41,7 @@ class PLATFORM_EXPORT FEFlood final : public FilterEffect {
   // feFlood does not perform color interpolation of any kind, so the result is
   // always in the current color space regardless of the value of
   // color-interpolation-filters.
-  void SetOperatingColorSpace(ColorSpace) override {}
+  void SetOperatingInterpolationSpace(InterpolationSpace) override {}
 
   TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 

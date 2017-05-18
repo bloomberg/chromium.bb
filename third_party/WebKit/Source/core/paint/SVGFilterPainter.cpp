@@ -64,7 +64,7 @@ static void PaintFilteredContent(GraphicsContext& context,
   LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter,
                                        bounds);
   sk_sp<SkImageFilter> image_filter =
-      SkiaImageFilterBuilder::Build(effect, kColorSpaceDeviceRGB);
+      SkiaImageFilterBuilder::Build(effect, kInterpolationSpaceSRGB);
   context.Save();
 
   // Clip drawing of filtered image to the minimum required paint rect.

@@ -113,10 +113,10 @@ static SkDisplacementMapEffect::ChannelSelectorType ToSkiaMode(
 }
 
 sk_sp<SkImageFilter> FEDisplacementMap::CreateImageFilter() {
-  sk_sp<SkImageFilter> color =
-      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace());
-  sk_sp<SkImageFilter> displ =
-      SkiaImageFilterBuilder::Build(InputEffect(1), OperatingColorSpace());
+  sk_sp<SkImageFilter> color = SkiaImageFilterBuilder::Build(
+      InputEffect(0), OperatingInterpolationSpace());
+  sk_sp<SkImageFilter> displ = SkiaImageFilterBuilder::Build(
+      InputEffect(1), OperatingInterpolationSpace());
   SkDisplacementMapEffect::ChannelSelectorType type_x =
       ToSkiaMode(x_channel_selector_);
   SkDisplacementMapEffect::ChannelSelectorType type_y =

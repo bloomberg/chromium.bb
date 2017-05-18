@@ -83,11 +83,11 @@ bool SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
   DCHECK(GetLayoutObject());
   EColorInterpolation color_interpolation =
       GetLayoutObject()->StyleRef().SvgStyle().ColorInterpolationFilters();
-  ColorSpace resolved_color_space =
-      SVGFilterBuilder::ResolveColorSpace(color_interpolation);
-  if (resolved_color_space == effect->OperatingColorSpace())
+  InterpolationSpace resolved_interpolation_space =
+      SVGFilterBuilder::ResolveInterpolationSpace(color_interpolation);
+  if (resolved_interpolation_space == effect->OperatingInterpolationSpace())
     return false;
-  effect->SetOperatingColorSpace(resolved_color_space);
+  effect->SetOperatingInterpolationSpace(resolved_interpolation_space);
   return true;
 }
 
