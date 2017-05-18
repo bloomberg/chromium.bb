@@ -1,0 +1,65 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/payments/core/address_normalization_manager.h"
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
+#include "components/payments/core/test_address_normalizer.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace payments {
+
+class AddressNormalizationManagerTest : public testing::Test {
+ protected:
+  AddressNormalizationManagerTest() {}
+
+  void Initialize(const std::string& country_code) {
+    std::unique_ptr<TestAddressNormalizer> address_normalizer =
+        base::MakeUnique<TestAddressNormalizer>();
+    address_normalizer_ = address_normalizer.get();
+    manager_ = base::MakeUnique<AddressNormalizationManager>(
+        std::move(address_normalizer), country_code);
+  }
+
+  void Finalize() {
+    manager_->FinalizeWithCompletionCallback(
+        base::BindOnce(&AddressNormalizationManagerTest::CompletionCallback,
+                       base::Unretained(this)));
+  }
+
+  void CompletionCallback() { completion_callback_called_ = true; }
+
+  std::unique_ptr<AddressNormalizationManager> manager_;
+  TestAddressNormalizer* address_normalizer_ = nullptr;  // Weak.
+  bool completion_callback_called_ = false;
+};
+
+TEST_F(AddressNormalizationManagerTest, SynchronousResult) {
+  Initialize("US");
+
+  autofill::AutofillProfile profile_to_normalize;
+  manager_->StartNormalizingAddress(&profile_to_normalize);
+
+  EXPECT_FALSE(completion_callback_called_);
+  Finalize();
+  EXPECT_TRUE(completion_callback_called_);
+}
+
+TEST_F(AddressNormalizationManagerTest, AsynchronousResult) {
+  Initialize("US");
+  address_normalizer_->DelayNormalization();
+
+  autofill::AutofillProfile profile_to_normalize;
+  manager_->StartNormalizingAddress(&profile_to_normalize);
+
+  EXPECT_FALSE(completion_callback_called_);
+  Finalize();
+  EXPECT_FALSE(completion_callback_called_);
+  address_normalizer_->CompleteAddressNormalization();
+  EXPECT_TRUE(completion_callback_called_);
+}
+
+}  // namespace payments
