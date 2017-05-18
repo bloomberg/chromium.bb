@@ -333,7 +333,7 @@
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE" file="common/profile_avatar_placeholder_large.png" />
 
       <!-- New style avatar button -->
-      <if expr="toolkit_views and not is_macosx">
+      <if expr="is_win">
         <!-- Windows, themed -->
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_AVATAR" file="win/avatar_button/themed/sign_in_button_avatar.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_NORMAL_BOTTOM" file="win/avatar_button/themed/sign_in_button_bottom.png" />
