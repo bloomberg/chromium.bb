@@ -34,7 +34,7 @@ config("config") {
   }
 
   if (is_chromecast) {
-    defines += [ "BLINK_MEDIA_LOG=VLOG(2)" ]
+    defines += [ "BLINK_MEDIA_LOG=LOG(INFO)" ]
   }
 }
 

@@ -27,8 +27,8 @@ config("modules_implementation") {
 
   if (is_chromecast) {
     defines += [
-      "BLINK_MSLOG=VLOG(2)",
-      "BLINK_SBLOG=VLOG(2)",
+      "BLINK_MSLOG=LOG(INFO)",
+      "BLINK_SBLOG=LOG(INFO)",
     ]
   }
 }

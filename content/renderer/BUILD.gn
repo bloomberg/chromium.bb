@@ -972,7 +972,7 @@ target(link_target_type, "renderer") {
   }
 
   if (is_chromecast) {
-    defines += [ "MEDIA_EVENT_LOG_UTILITY=VLOG(1)" ]
+    defines += [ "MEDIA_EVENT_LOG_UTILITY=LOG(INFO)" ]
   }
 }
 
