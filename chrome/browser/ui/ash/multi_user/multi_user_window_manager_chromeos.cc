@@ -88,9 +88,7 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
     }
     if (app_window) {
       if (app_window->window_type() ==
-          extensions::AppWindow::WINDOW_TYPE_PANEL ||
-          app_window->window_type() ==
-          extensions::AppWindow::WINDOW_TYPE_V1_PANEL) {
+          extensions::AppWindow::WINDOW_TYPE_PANEL) {
         window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_PANEL;
       } else {
         window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V2_APP;
