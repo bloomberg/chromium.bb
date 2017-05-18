@@ -6,6 +6,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include <objbase.h>
 #include <shlobj.h>
 #endif
 
@@ -31,7 +32,8 @@ base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
-  HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
+  HRESULT hr = ::CoCreateInstance(CLSID_AttachmentServices, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&attachment_services));
 
   if (FAILED(hr)) {
     // The thread must have COM initialized.

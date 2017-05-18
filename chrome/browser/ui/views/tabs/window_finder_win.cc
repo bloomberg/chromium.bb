@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include <objbase.h>
 #include <shobjidl.h>
 
 #include "base/macros.h"
@@ -200,8 +201,9 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
       : BaseWindowFinder(ignore),
         result_(NULL) {
     if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
-      CHECK(SUCCEEDED(virtual_desktop_manager_.CreateInstance(
-          __uuidof(VirtualDesktopManager))));
+      CHECK(SUCCEEDED(::CoCreateInstance(
+          __uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
+          IID_PPV_ARGS(&virtual_desktop_manager_))));
     }
     screen_loc_ = display::win::ScreenWin::DIPToScreenPoint(screen_loc);
     EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, as_lparam());

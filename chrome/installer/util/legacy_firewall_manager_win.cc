@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
 
+#include <objbase.h>
+
 #include "base/logging.h"
 #include "base/win/scoped_bstr.h"
 
@@ -16,7 +18,8 @@ LegacyFirewallManager::~LegacyFirewallManager() {}
 bool LegacyFirewallManager::Init(const base::string16& app_name,
                                  const base::FilePath& app_path) {
   base::win::ScopedComPtr<INetFwMgr> firewall_manager;
-  HRESULT hr = firewall_manager.CreateInstance(CLSID_NetFwMgr);
+  HRESULT hr = ::CoCreateInstance(CLSID_NetFwMgr, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&firewall_manager));
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return false;
@@ -113,7 +116,8 @@ LegacyFirewallManager::CreateChromeAuthorization(bool allow) {
   base::win::ScopedComPtr<INetFwAuthorizedApplication> chrome_application;
 
   HRESULT hr =
-      chrome_application.CreateInstance(CLSID_NetFwAuthorizedApplication);
+      ::CoCreateInstance(CLSID_NetFwAuthorizedApplication, nullptr, CLSCTX_ALL,
+                         IID_PPV_ARGS(&chrome_application));
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return base::win::ScopedComPtr<INetFwAuthorizedApplication>();

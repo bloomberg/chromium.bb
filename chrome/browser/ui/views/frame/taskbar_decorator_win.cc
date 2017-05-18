@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
 
+#include <objbase.h>
 #include <shobjidl.h>
 
 #include "base/bind.h"
@@ -32,8 +33,8 @@ namespace {
 // valid.
 void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
-  HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, nullptr,
-                                          CLSCTX_INPROC_SERVER);
+  HRESULT result = ::CoCreateInstance(
+      CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));
   if (FAILED(result) || FAILED(taskbar->HrInit()))
     return;
 

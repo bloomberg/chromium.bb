@@ -339,8 +339,9 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
     return RESULT_FAILED_TO_INITIALIZE_COM;
 
   base::win::ScopedComPtr<IWbemLocator> wmi_locator;
-  HRESULT hr = wmi_locator.CreateInstance(CLSID_WbemLocator, nullptr,
-                                          CLSCTX_INPROC_SERVER);
+  HRESULT hr =
+      ::CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(&wmi_locator));
   if (FAILED(hr))
     return RESULT_FAILED_TO_CREATE_INSTANCE;
 

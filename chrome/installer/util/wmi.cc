@@ -5,6 +5,7 @@
 #include "chrome/installer/util/wmi.h"
 
 #include <windows.h>
+#include <objbase.h>
 #include <stdint.h>
 
 #include "base/win/scoped_bstr.h"
@@ -18,8 +19,8 @@ namespace installer {
 bool WMI::CreateLocalConnection(bool set_blanket,
                                 IWbemServices** wmi_services) {
   base::win::ScopedComPtr<IWbemLocator> wmi_locator;
-  HRESULT hr = wmi_locator.CreateInstance(CLSID_WbemLocator, NULL,
-                                          CLSCTX_INPROC_SERVER);
+  HRESULT hr = ::CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(&wmi_locator));
   if (FAILED(hr))
     return false;
 
