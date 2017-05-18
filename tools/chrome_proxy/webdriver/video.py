@@ -84,7 +84,6 @@ class Video(IntegrationTest):
           % (metric, expected[metric], actual), places=None, delta=0.001)
 
   # Check the frames of a compressed video.
-  @NotAndroid
   @Slow
   def testVideoFrames(self):
     self.instrumentedVideoTest('http://check.googlezip.net/cacheable/video/buck_bunny_640x360_24fps_video.html')
@@ -123,7 +122,10 @@ class Video(IntegrationTest):
       if attempts >= max_attempts:
         self.fail('Could not get a compressed video after %d tries' % attempts)
       t.ExecuteJavascriptStatement('test.ready = true')
-      wait_time = int(t.ExecuteJavascriptStatement('test.waitTime'))
+      waitTimeQuery = 'test.waitTime'
+      if ParseFlags().android:
+        waitTimeQuery = 'test.androidWaitTime'
+      wait_time = int(t.ExecuteJavascriptStatement(waitTimeQuery))
       t.WaitForJavascriptExpression('test.metrics.complete', wait_time)
       metrics = t.ExecuteJavascriptStatement('test.metrics')
       if not metrics['complete']:
