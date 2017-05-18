@@ -797,14 +797,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     LevelDBWrapperImpl::EnableAggressiveCommitDelay();
   }
 
-  // Create the memory instrumentation service. It will initialize the memory
-  // dump manager, too. It makes sense that BrowserMainLoop owns the service;
-  // this way, the service is alive for the lifetime of Mojo. Mojo is shutdown
-  // in BrowserMainLoop::ShutdownThreadsAndCleanupIO.
-  memory_instrumentation_coordinator_ =
-      base::MakeUnique<memory_instrumentation::CoordinatorImpl>(
-          true /* initialize_memory_dump_manager */);
-
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();
   tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
@@ -1398,6 +1390,15 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // Initializaing mojo requires the IO thread to have been initialized first,
   // so this cannot happen any earlier than now.
   InitializeMojo();
+
+  // Create the memory instrumentation service. It will initialize the memory
+  // dump manager, too. It makes sense that BrowserMainLoop owns the service;
+  // this way, the service is alive for the lifetime of Mojo. Mojo is shutdown
+  // in BrowserMainLoop::ShutdownThreadsAndCleanupIO.
+  memory_instrumentation_coordinator_ =
+      base::MakeUnique<memory_instrumentation::CoordinatorImpl>(
+          true /* initialize_memory_dump_manager */,
+          content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
 #if defined(USE_AURA)
   if (service_manager::ServiceManagerIsRemote()) {

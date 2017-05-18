@@ -71,6 +71,7 @@
         "service_manager": [
           "service_manager:client_process",
           "service_manager:instance_name",
+          "service_manager:service_manager",
           "service_manager:user_id"
         ],
         "shape_detection": [
