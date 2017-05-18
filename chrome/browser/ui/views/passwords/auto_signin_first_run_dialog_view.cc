@@ -6,6 +6,8 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -13,7 +15,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -23,7 +24,7 @@ enum ColumnSetType {
   SINGLE_VIEW_COLUMN_SET,
 
   // | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
-  // Used for buttons at the bottom of the bubble which should nest at the
+  // Used for buttons at the bottom of the dialog which should nest at the
   // bottom-right corner.
   DOUBLE_BUTTON_COLUMN_SET,
 };
@@ -32,7 +33,10 @@ enum ColumnSetType {
 // to |layout|.
 void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
-  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  gfx::Insets dialog_insets =
+      layout_provider->GetInsetsMetric(views::INSETS_PANEL);
+  column_set->AddPaddingColumn(0, dialog_insets.left());
   switch (type) {
     case SINGLE_VIEW_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::FILL,
@@ -49,7 +53,9 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             views::GridLayout::USE_PREF,
                             0,
                             0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddPaddingColumn(
+          0, layout_provider->GetDistanceMetric(
+                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
       column_set->AddColumn(views::GridLayout::TRAILING,
                             views::GridLayout::CENTER,
                             0,
@@ -58,7 +64,7 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             0);
       break;
   }
-  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  column_set->AddPaddingColumn(0, dialog_insets.right());
 }
 
 }  // namespace
@@ -140,26 +146,23 @@ void AutoSigninFirstRunDialogView::StyledLabelLinkClicked(
 }
 
 void AutoSigninFirstRunDialogView::InitWindow() {
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
 
   // Title.
-  views::Label* title_label = new views::Label(GetWindowTitle());
+  views::Label* title_label =
+      new views::Label(GetWindowTitle(), views::style::CONTEXT_DIALOG_TITLE);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
-  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0, kTitleTopInset);
-  layout->AddView(title_label);
 
   // Content.
   std::pair<base::string16, gfx::Range> text_content =
       controller_->GetAutoSigninText();
   views::StyledLabel* content_label =
       new views::StyledLabel(text_content.first, this);
-  content_label->SetBaseFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::SmallFont));
+  content_label->SetBaseFontList(views::style::GetFont(
+      CONTEXT_DEPRECATED_SMALL, views::style::STYLE_PRIMARY));
   views::StyledLabel::RangeStyleInfo default_style;
   default_style.color = kAutoSigninTextColor;
   content_label->SetDefaultStyle(default_style);
@@ -168,21 +171,33 @@ void AutoSigninFirstRunDialogView::InitWindow() {
         text_content.second,
         views::StyledLabel::RangeStyleInfo::CreateForLink());
   }
-  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
-                              2 * views::kRelatedControlVerticalSpacing);
-  layout->AddView(content_label);
 
   // Buttons.
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
-                              3 * views::kRelatedControlVerticalSpacing);
   ok_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
   turn_off_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF));
+
+  // Layout.
+  layout->StartRowWithPadding(
+      0, SINGLE_VIEW_COLUMN_SET, 0,
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_TITLE).top());
+  layout->AddView(title_label);
+  const gfx::Insets dialog_insets =
+      layout_provider->GetInsetsMetric(views::INSETS_PANEL);
+  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
+                              dialog_insets.top());
+  layout->AddView(content_label);
+  layout->AddPaddingRow(0, dialog_insets.bottom());
+
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  const gfx::Insets button_insets =
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON);
+  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
+                              button_insets.top());
   layout->AddView(ok_button_);
   layout->AddView(turn_off_button_);
-  layout->AddPaddingRow(0, views::kButtonVEdgeMarginNew);
+  layout->AddPaddingRow(0, button_insets.bottom());
 }
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(

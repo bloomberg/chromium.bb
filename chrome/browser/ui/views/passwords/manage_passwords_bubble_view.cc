@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
@@ -40,7 +41,6 @@
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -90,6 +90,8 @@ enum TextRowType { ROW_SINGLE, ROW_MULTILINE };
 void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
   int full_width = ManagePasswordsBubbleView::kDesiredBubbleWidth;
+  const int button_divider = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   switch (type) {
     case SINGLE_VIEW_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::FILL,
@@ -106,7 +108,7 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             views::GridLayout::USE_PREF,
                             0,
                             0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddPaddingColumn(0, button_divider);
       column_set->AddColumn(views::GridLayout::TRAILING,
                             views::GridLayout::CENTER,
                             0,
@@ -121,7 +123,7 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             views::GridLayout::USE_PREF,
                             0,
                             0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddPaddingColumn(0, button_divider);
       column_set->AddColumn(views::GridLayout::TRAILING,
                             views::GridLayout::CENTER,
                             0,
@@ -144,14 +146,14 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             views::GridLayout::USE_PREF,
                             0,
                             0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddPaddingColumn(0, button_divider);
       column_set->AddColumn(views::GridLayout::TRAILING,
                             views::GridLayout::CENTER,
                             0,
                             views::GridLayout::USE_PREF,
                             0,
                             0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddPaddingColumn(0, button_divider);
       column_set->AddColumn(views::GridLayout::TRAILING,
                             views::GridLayout::CENTER,
                             0,
@@ -180,13 +182,14 @@ void AddTitleRowWithLink(views::GridLayout* layout,
 
   views::StyledLabel* title_label =
       new views::StyledLabel(model->title(), listener);
-  title_label->SetBaseFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::MediumFont));
+  title_label->SetBaseFontList(views::style::GetFont(
+      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
   title_label->AddStyleRange(model->title_brand_link_range(), GetLinkStyle());
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0,
+      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_PANEL).top());
 }
 
 }  // namespace
@@ -339,7 +342,9 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   if (item) {
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, ChromeLayoutProvider::Get()
+                                 ->GetInsetsMetric(views::INSETS_PANEL)
+                                 .bottom());
   }
 
   // Button row.
@@ -413,28 +418,22 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   views::GridLayout* layout = new views::GridLayout(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
 
   // If we have a list of passwords to store for the current site, display
   // them to the user for management. Otherwise, render a "No passwords for
   // this site" message.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   if (!parent_->model()->local_credentials().empty()) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
         parent_->model(), &parent_->model()->local_credentials());
-    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
-                                views::kUnrelatedControlVerticalSpacing);
     layout->AddView(item);
   } else {
     views::Label* empty_label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS),
+        CONTEXT_DEPRECATED_SMALL);
     empty_label->SetMultiLine(true);
     empty_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    empty_label->SetFontList(
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::SmallFont));
-
-    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
-                                views::kUnrelatedControlVerticalSpacing);
     layout->AddView(empty_label);
   }
 
@@ -447,9 +446,13 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   done_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
 
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  layout->AddPaddingRow(
+      0, layout_provider->GetInsetsMetric(views::INSETS_PANEL).bottom());
   BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(0, LINK_BUTTON_COLUMN_SET, 0,
-                              views::kUnrelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(
+      0, LINK_BUTTON_COLUMN_SET, 0,
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON).top());
   layout->AddView(manage_link_);
   layout->AddView(done_button_);
 
@@ -510,11 +513,10 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
 
   views::StyledLabel* confirmation =
       new views::StyledLabel(parent_->model()->save_confirmation_text(), this);
-  confirmation->SetBaseFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::SmallFont));
-  confirmation->AddStyleRange(
-      parent_->model()->save_confirmation_link_range(), GetLinkStyle());
+  confirmation->SetBaseFontList(views::style::GetFont(
+      CONTEXT_DEPRECATED_SMALL, views::style::STYLE_PRIMARY));
+  confirmation->AddStyleRange(parent_->model()->save_confirmation_link_range(),
+                              GetLinkStyle());
 
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
@@ -523,9 +525,14 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
   ok_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_OK));
 
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  layout->AddPaddingRow(
+      0, layout_provider->GetInsetsMetric(views::INSETS_PANEL).bottom());
   BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, SINGLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  gfx::Insets button_insets =
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON);
+  layout->StartRowWithPadding(0, SINGLE_BUTTON_COLUMN_SET, 0,
+                              button_insets.top());
   layout->AddView(ok_button_);
 
   parent_->set_initially_focused_view(ok_button_);
@@ -645,6 +652,7 @@ class ManagePasswordsBubbleView::UpdatePendingView
 ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent), selection_view_(nullptr) {
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   views::GridLayout* layout = new views::GridLayout(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
@@ -671,11 +679,14 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   // Credential row.
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(item);
+  layout->AddPaddingRow(
+      0, layout_provider->GetInsetsMetric(views::INSETS_PANEL).bottom());
 
   // Button row.
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
-                              views::kUnrelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(
+      0, DOUBLE_BUTTON_COLUMN_SET, 0,
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON).top());
   layout->AddView(update_button_);
   layout->AddView(nope_button_);
 

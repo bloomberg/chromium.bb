@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
@@ -22,15 +23,13 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
 // Maximum height of the credential list. The unit is one row's height.
 constexpr double kMaxHeightAccounts = 3.5;
-
-constexpr int kVerticalAvatarMargin = 8;
 
 // An identifier for views::ColumnSet.
 enum ColumnSetType {
@@ -41,17 +40,19 @@ enum ColumnSetType {
 // Construct a |type| ColumnSet and add it to |layout|.
 void BuildColumnSet(ColumnSetType type, views::GridLayout* layout) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
-  bool padding = (type == SINGLE_VIEW_COLUMN_SET);
-  if (padding)
-    column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  const int horizontal_padding =
+      type == SINGLE_VIEW_COLUMN_SET
+          ? ChromeLayoutProvider::Get()->GetDistanceMetric(
+                DISTANCE_DIALOG_BUTTON_MARGIN)
+          : 0;
+  column_set->AddPaddingColumn(0, horizontal_padding);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  if (padding)
-    column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  column_set->AddPaddingColumn(0, horizontal_padding);
 }
 
 views::StyledLabel::RangeStyleInfo GetLinkStyle() {
@@ -82,9 +83,14 @@ views::ScrollView* CreateCredentialsView(
         button_listener, titles.first, titles.second, kButtonHoverColor,
         form.get(), request_context);
     credential_view->SetLowerLabelColor(kAutoSigninTextColor);
-    credential_view->SetBorder(views::CreateEmptyBorder(
-        kVerticalAvatarMargin, views::kButtonHEdgeMarginNew,
-        kVerticalAvatarMargin, views::kButtonHEdgeMarginNew));
+    ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+    gfx::Insets dialog_insets =
+        layout_provider->GetInsetsMetric(views::INSETS_PANEL);
+    const int vertical_padding = layout_provider->GetDistanceMetric(
+        views::DISTANCE_RELATED_CONTROL_VERTICAL);
+    credential_view->SetBorder(
+        views::CreateEmptyBorder(vertical_padding, dialog_insets.left(),
+                                 vertical_padding, dialog_insets.right()));
     item_height = std::max(item_height, credential_view->GetPreferredHeight());
     list_view->AddChildView(credential_view);
   }
@@ -200,26 +206,29 @@ void AccountChooserDialogView::InitWindow() {
       controller_->GetAccoutChooserTitle();
   views::StyledLabel* title_label =
       new views::StyledLabel(title_content.first, this);
-  title_label->SetBaseFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::MediumFont));
-  if (!title_content.second.is_empty()) {
+  title_label->SetBaseFontList(views::style::GetFont(
+      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
+  if (!title_content.second.is_empty())
     title_label->AddStyleRange(title_content.second, GetLinkStyle());
-  }
-  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0, kTitleTopInset);
+
+  // Show the title.
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  layout->StartRowWithPadding(
+      0, SINGLE_VIEW_COLUMN_SET, 0,
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_TITLE).top());
   layout->AddView(title_label);
-  layout->AddPaddingRow(0, 2*views::kRelatedControlVerticalSpacing);
 
   // Show credentials.
+  gfx::Insets dialog_insets =
+      layout_provider->GetInsetsMetric(views::INSETS_PANEL);
   BuildColumnSet(SINGLE_VIEW_COLUMN_SET_NO_PADDING, layout);
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET_NO_PADDING);
+  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET_NO_PADDING, 0,
+                              dialog_insets.top());
   layout->AddView(CreateCredentialsView(
       controller_->GetLocalForms(),
       this,
       GetProfileFromWebContents(web_contents_)->GetRequestContext()));
-  // DialogClientView adds kRelatedControlVerticalSpacing padding once more for
-  // the buttons.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, dialog_insets.bottom());
 }
 
 AccountChooserPrompt* CreateAccountChooserPromptView(

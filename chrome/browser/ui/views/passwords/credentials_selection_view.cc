@@ -7,21 +7,20 @@
 #include <stddef.h>
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 
 namespace {
 
 views::Label* GeneratePasswordLabel(const autofill::PasswordForm& form) {
-  views::Label* label = new views::Label(form.password_value);
-  label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
+  views::Label* label =
+      new views::Label(form.password_value, CONTEXT_DEPRECATED_SMALL);
   label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   label->SetObscured(true);
   return label;
@@ -47,14 +46,16 @@ CredentialsSelectionView::CredentialsSelectionView(
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, 0, 0);
-  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  const int inner_padding =
+      layout_provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+  column_set->AddPaddingColumn(0, inner_padding);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, 0, 0);
-  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
+  column_set->AddPaddingColumn(0, inner_padding);
 
   // The username combobox and password label.
-  layout->StartRowWithPadding(0, column_set_id, 0,
-                              views::kRelatedControlVerticalSpacing);
+  layout->StartRow(0, column_set_id);
   GenerateUsernameCombobox(
       manage_passwords_bubble_model->pending_password().username_value);
   layout->AddView(combobox_.get());

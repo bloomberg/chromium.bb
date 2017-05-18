@@ -24,15 +24,27 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 
+namespace {
+constexpr char kTestOrigin[] = "https://www.example.com";
+constexpr char kTestUsername[] = "test_username";
+constexpr char kTestPassword[] = "test_password";
+}  // namespace
+
 ManagePasswordsTest::ManagePasswordsTest() {
   fetcher_.Fetch();
+
+  // Populate |test_form_| with some dummy data.
+  test_form_.signon_realm = kTestOrigin;
+  test_form_.origin = GURL(kTestOrigin);
+  test_form_.username_value = base::ASCIIToUTF16(kTestUsername);
+  test_form_.password_value = base::ASCIIToUTF16(kTestPassword);
 }
 
 ManagePasswordsTest::~ManagePasswordsTest() {
 }
 
 void ManagePasswordsTest::SetUpOnMainThread() {
-  AddTabAtIndex(0, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kTestOrigin), ui::PAGE_TRANSITION_TYPED);
 }
 
 void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
@@ -48,9 +60,8 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
 }
 
 void ManagePasswordsTest::SetupManagingPasswords() {
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   std::map<base::string16, const autofill::PasswordForm*> map;
-  map.insert(std::make_pair(kTestUsername, test_form()));
+  map.insert(std::make_pair(base::ASCIIToUTF16(kTestUsername), test_form()));
   GetController()->OnPasswordAutofilled(map, map.begin()->second->origin,
                                         nullptr);
 }
