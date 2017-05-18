@@ -19,11 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -346,7 +344,7 @@ public class CrashFileManager {
             deleteFile(f);
         }
 
-        Set<String> recentCrashes = new HashSet<String>();
+        int numSavedCrashes = 0;
         for (File f : listCrashFiles(null)) {
             // The uploads.log file should always be preserved, as it stores the metadata that
             // powers the chrome://crashes UI.
@@ -363,12 +361,11 @@ public class CrashFileManager {
             }
 
             // Delete the oldest crash reports that exceed the cap on the number of allowed reports.
-            // Each crash typically has two files associated with it: a .dmp file and a .logcat
-            // file. These have the same filename other than the file extension.
-            String fileNameSansExtension = f.getName().split("\\.")[0];
-            if (recentCrashes.size() < MAX_CRASH_REPORTS_TO_KEEP) {
-                recentCrashes.add(fileNameSansExtension);
-            } else if (!recentCrashes.contains(fileNameSansExtension)) {
+            if (numSavedCrashes < MAX_CRASH_REPORTS_TO_KEEP) {
+                // Note that /not/ deleting the file is a no-op, so all that's needed is to mark
+                // that one more file has been kept.
+                ++numSavedCrashes;
+            } else {
                 deleteFile(f);
             }
         }

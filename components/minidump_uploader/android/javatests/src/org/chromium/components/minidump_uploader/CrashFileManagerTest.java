@@ -608,26 +608,14 @@ public class CrashFileManagerTest extends CrashTestCase {
 
         // These will be the most recent files in the directory, after all successfully uploaded
         // files and all temp files are removed.
-        File[] recentFiles = new File[3 * CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP];
+        File[] recentFiles = new File[CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP];
         for (int i = 0; i < CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP; ++i) {
-            String prefix = "chromium-renderer-minidump-deadbeef" + i;
-            // There is no reason why both a minidump-sans-logcat and failed upload should exist at
-            // the same time, but the cleanup code should be robust to it anyway.
-            File recentMinidump = new File(mCrashDir, prefix + ".dmp");
-            File recentFailedUpload = new File(mCrashDir, prefix + ".dmp0.try1");
-            File recentLogcatFile = new File(mCrashDir, prefix + ".logcat");
+            File recentMinidump =
+                    new File(mCrashDir, "chromium-renderer-minidump-deadbeef" + i + ".dmp");
             recentMinidump.createNewFile();
-            recentFailedUpload.createNewFile();
-            recentLogcatFile.createNewFile();
             recentMinidump.setLastModified(mModificationTimestamp);
             mModificationTimestamp += 1000;
-            recentFailedUpload.setLastModified(mModificationTimestamp);
-            mModificationTimestamp += 1000;
-            recentLogcatFile.setLastModified(mModificationTimestamp);
-            mModificationTimestamp += 1000;
-            recentFiles[3 * i + 0] = recentMinidump;
-            recentFiles[3 * i + 1] = recentFailedUpload;
-            recentFiles[3 * i + 2] = recentLogcatFile;
+            recentFiles[i] = recentMinidump;
         }
 
         // Create some additional successful uploads.
