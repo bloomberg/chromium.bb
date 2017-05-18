@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -591,11 +592,10 @@ bool FileSystemGetWritableEntryFunction::RunAsync() {
           render_frame_host()->GetProcess()->GetID(), &path_, &error_))
     return false;
 
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(
-          &FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread,
-          this),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&FileSystemGetWritableEntryFunction::SetIsDirectoryAsync,
+                     this),
       base::BindOnce(
           &FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse,
           this));
@@ -615,8 +615,7 @@ void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
   PrepareFilesForWritableApp(paths);
 }
 
-void FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+void FileSystemGetWritableEntryFunction::SetIsDirectoryAsync() {
   if (base::DirectoryExists(path_)) {
     is_directory_ = true;
   }
@@ -878,11 +877,11 @@ void FileSystemChooseEntryFunction::FilesSelected(
         file_manager::util::IsUnderNonNativeLocalPath(GetProfile(), paths[0]);
 #endif
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(
-            &FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread,
-            this, non_native_path, paths, web_contents));
+            &FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync, this,
+            non_native_path, paths, web_contents));
     return;
   }
 
@@ -894,7 +893,7 @@ void FileSystemChooseEntryFunction::FileSelectionCanceled() {
   SendResponse(false);
 }
 
-void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
+void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
     bool non_native_path,
     const std::vector<base::FilePath>& paths,
     content::WebContents* web_contents) {
@@ -1114,8 +1113,8 @@ bool FileSystemChooseEntryFunction::RunAsync() {
     return true;
   }
 #endif
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&base::DirectoryExists, previous_path),
       set_initial_path_callback);
 
