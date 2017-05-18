@@ -55,8 +55,11 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(MainThreadType main_thread_type)
 }
 
 ScopedTaskEnvironment::~ScopedTaskEnvironment() {
-  // Intentionally do not RunLoop().RunUntilIdle() here as this simulates the
-  // replaced base::~MessageLoop() behaviour better.
+  // Ideally this would RunLoop().RunUntilIdle() here to catch any errors or
+  // infinite post loop in the remaining work but this isn't possible right now
+  // because base::~MessageLoop() didn't use to do this and adding it here would
+  // make the migration away from MessageLoop that much harder.
+
   DCHECK_EQ(TaskScheduler::GetInstance(), task_scheduler_);
   // Without FlushForTesting(), DeleteSoon() and ReleaseSoon() tasks could be
   // skipped, resulting in memory leaks.
