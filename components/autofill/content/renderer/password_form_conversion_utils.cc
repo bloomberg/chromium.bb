@@ -593,10 +593,7 @@ bool GetPasswordForm(
 
   password_form->origin =
       form_util::GetCanonicalOriginForDocument(form.document);
-  GURL::Replacements rep;
-  rep.SetPathStr("");
-  password_form->signon_realm =
-      password_form->origin.ReplaceComponents(rep).spec();
+  password_form->signon_realm = GetSignOnRealm(password_form->origin);
   password_form->other_possible_usernames.swap(other_possible_usernames);
 
   if (!password.IsNull()) {
@@ -779,6 +776,12 @@ bool IsCreditCardVerificationPasswordField(
 
   return MatchesPattern(field.GetAttribute("id").Utf16(), kCardCvcReCached) ||
          MatchesPattern(field.GetAttribute("name").Utf16(), kCardCvcReCached);
+}
+
+std::string GetSignOnRealm(const GURL& origin) {
+  GURL::Replacements rep;
+  rep.SetPathStr("");
+  return origin.ReplaceComponents(rep).spec();
 }
 
 }  // namespace autofill
