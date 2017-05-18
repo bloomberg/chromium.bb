@@ -4,6 +4,9 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
+#include "core/frame/FrameView.h"
+#include "core/layout/LayoutView.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
@@ -143,6 +146,19 @@ TEST_F(SVGImageTest, ResetAnimation) {
   PumpFrame();
   EXPECT_FALSE(chrome_client.IsSuspended());
   EXPECT_TRUE(timer->IsActive());
+}
+
+TEST_F(SVGImageTest, SupportsSubsequenceCaching) {
+  const bool kShouldPause = true;
+  Load(kAnimatedDocument, kShouldPause);
+  PumpFrame();
+  LocalFrame* local_frame =
+      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+  EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
+  LayoutObject* svg_root = local_frame->View()->GetLayoutView()->FirstChild();
+  EXPECT_TRUE(svg_root->IsSVGRoot());
+  EXPECT_TRUE(
+      ToLayoutBoxModelObject(svg_root)->Layer()->SupportsSubsequenceCaching());
 }
 
 }  // namespace blink

@@ -183,6 +183,7 @@ class CORE_EXPORT SVGImage final : public Image {
   void ScheduleTimelineRewind();
   void FlushPendingTimelineRewind();
 
+  Page* GetPageForTesting() { return page_; }
   void LoadCompleted();
 
   class SVGImageLocalFrameClient;
@@ -209,6 +210,7 @@ class CORE_EXPORT SVGImage final : public Image {
   LoadState load_state_ = kDataChangedNotStarted;
 
   Persistent<SVGImageLocalFrameClient> frame_client_;
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SupportsSubsequenceCaching);
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);
