@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.net.http.SslCertificate;
 import android.net.http.SslError;
+import android.os.Handler;
 import android.util.Log;
 import android.webkit.ValueCallback;
 
@@ -172,7 +173,7 @@ public class AwContentsClientBridge {
             return false;
         }
         final SslError sslError = SslUtil.sslErrorFromNetErrorCode(certError, cert, url);
-        ValueCallback<Boolean> callback = new ValueCallback<Boolean>() {
+        final ValueCallback<Boolean> callback = new ValueCallback<Boolean>() {
             @Override
             public void onReceiveValue(final Boolean value) {
                 ThreadUtils.runOnUiThread(new Runnable() {
@@ -183,7 +184,16 @@ public class AwContentsClientBridge {
                 });
             }
         };
-        mClient.onReceivedSslError(callback, sslError);
+        // Post the application callback back to the current thread to ensure the application
+        // callback is executed without any native code on the stack. This so that any exception
+        // thrown by the application callback won't have to be propagated through a native call
+        // stack.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                mClient.onReceivedSslError(callback, sslError);
+            }
+        });
         return true;
     }
 
