@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_pages/content/prefetch_service_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "content/public/browser/browser_context.h"
 #include "jni/PrefetchBackgroundTask_jni.h"
 
@@ -29,7 +30,7 @@ static jboolean StartPrefetchTask(JNIEnv* env,
   if (!prefetch_service)
     return false;
 
-  prefetch_service->BeginBackgroundTask(
+  prefetch_service->GetDispatcher()->BeginBackgroundTask(
       base::MakeUnique<PrefetchBackgroundTask>(env, jcaller, prefetch_service));
   return true;
 }
@@ -68,7 +69,7 @@ PrefetchBackgroundTask::~PrefetchBackgroundTask() {
 bool PrefetchBackgroundTask::OnStopTask(JNIEnv* env,
                                         const JavaParamRef<jobject>& jcaller) {
   DCHECK(jcaller.obj() == java_prefetch_background_task_.obj());
-  service_->StopBackgroundTask(this);
+  service_->GetDispatcher()->StopBackgroundTask(this);
   return needs_reschedule_;
 }
 

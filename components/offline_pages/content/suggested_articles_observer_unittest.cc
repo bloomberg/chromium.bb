@@ -8,6 +8,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,9 +28,9 @@ ContentSuggestion ContentSuggestionFromTestURL(const GURL& test_url) {
   return ContentSuggestion(category, test_url.spec(), test_url);
 }
 
-class TestingPrefetchService : public PrefetchService {
+class TestingPrefetchDispatcher : public PrefetchDispatcher {
  public:
-  TestingPrefetchService() = default;
+  TestingPrefetchDispatcher() = default;
 
   void AddCandidatePrefetchURLs(
       const std::vector<PrefetchURL>& suggested_urls) override {
@@ -59,6 +61,15 @@ class TestingPrefetchService : public PrefetchService {
   int new_suggestions_count = 0;
   int remove_all_suggestions_count = 0;
   int remove_by_client_id_count = 0;
+};
+
+class TestingPrefetchService : public PrefetchService {
+ public:
+  TestingPrefetchService() = default;
+
+  PrefetchDispatcher* GetDispatcher() override { return &dispatcher; };
+
+  TestingPrefetchDispatcher dispatcher;
 };
 
 class TestDelegate : public SuggestedArticlesObserver::Delegate {
@@ -106,8 +117,13 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
   SuggestedArticlesObserver* observer() { return observer_.get(); }
 
   TestDelegate* test_delegate() { return test_delegate_; }
+
   TestingPrefetchService* test_prefetch_service() {
     return &(test_delegate()->prefetch_service);
+  }
+
+  TestingPrefetchDispatcher* test_prefetch_dispatcher() {
+    return &(test_prefetch_service()->dispatcher);
   }
 
  protected:
@@ -125,7 +141,7 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest,
   // We should not do anything if the category is not loaded.
   observer()->OnNewSuggestions(category);
   EXPECT_EQ(0, test_delegate()->get_suggestions_count);
-  EXPECT_EQ(0, test_prefetch_service()->new_suggestions_count);
+  EXPECT_EQ(0, test_prefetch_dispatcher()->new_suggestions_count);
 
   // Once the category becomes available, new suggestions should cause us to ask
   // the delegate for suggestion URLs.
@@ -136,7 +152,7 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest,
 
   // We expect that no pages were forwarded to the prefetch service since no
   // pages were prepopulated.
-  EXPECT_EQ(0, test_prefetch_service()->new_suggestions_count);
+  EXPECT_EQ(0, test_prefetch_dispatcher()->new_suggestions_count);
 }
 
 TEST_F(OfflinePageSuggestedArticlesObserverTest,
@@ -148,12 +164,13 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest,
   observer()->OnCategoryStatusChanged(category,
                                       ntp_snippets::CategoryStatus::AVAILABLE);
   observer()->OnNewSuggestions(category);
-  EXPECT_EQ(1, test_prefetch_service()->new_suggestions_count);
-  EXPECT_EQ(1U, test_prefetch_service()->latest_prefetch_urls.size());
-  EXPECT_EQ(test_url_1, test_prefetch_service()->latest_prefetch_urls[0].url);
+  EXPECT_EQ(1, test_prefetch_dispatcher()->new_suggestions_count);
+  EXPECT_EQ(1U, test_prefetch_dispatcher()->latest_prefetch_urls.size());
+  EXPECT_EQ(test_url_1,
+            test_prefetch_dispatcher()->latest_prefetch_urls[0].url);
   EXPECT_EQ(
       kSuggestedArticlesNamespace,
-      test_prefetch_service()->latest_prefetch_urls[0].client_id.name_space);
+      test_prefetch_dispatcher()->latest_prefetch_urls[0].client_id.name_space);
 }
 
 TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesAllOnBadStatus) {
@@ -167,15 +184,15 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesAllOnBadStatus) {
   observer()->OnCategoryStatusChanged(category,
                                       ntp_snippets::CategoryStatus::AVAILABLE);
   observer()->OnNewSuggestions(category);
-  ASSERT_EQ(2U, test_prefetch_service()->latest_prefetch_urls.size());
+  ASSERT_EQ(2U, test_prefetch_dispatcher()->latest_prefetch_urls.size());
 
   observer()->OnCategoryStatusChanged(
       category, ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
-  EXPECT_EQ(1, test_prefetch_service()->remove_all_suggestions_count);
+  EXPECT_EQ(1, test_prefetch_dispatcher()->remove_all_suggestions_count);
   observer()->OnCategoryStatusChanged(
       category,
       ntp_snippets::CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
-  EXPECT_EQ(2, test_prefetch_service()->remove_all_suggestions_count);
+  EXPECT_EQ(2, test_prefetch_dispatcher()->remove_all_suggestions_count);
 }
 
 TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesClientIdOnInvalidated) {
@@ -185,14 +202,14 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesClientIdOnInvalidated) {
   observer()->OnCategoryStatusChanged(category,
                                       ntp_snippets::CategoryStatus::AVAILABLE);
   observer()->OnNewSuggestions(category);
-  ASSERT_EQ(1U, test_prefetch_service()->latest_prefetch_urls.size());
+  ASSERT_EQ(1U, test_prefetch_dispatcher()->latest_prefetch_urls.size());
 
   observer()->OnSuggestionInvalidated(
       ntp_snippets::ContentSuggestion::ID(category, test_url_1.spec()));
 
-  EXPECT_EQ(1, test_prefetch_service()->remove_by_client_id_count);
+  EXPECT_EQ(1, test_prefetch_dispatcher()->remove_by_client_id_count);
   EXPECT_EQ(ClientId(kSuggestedArticlesNamespace, test_url_1.spec()),
-            *test_prefetch_service()->last_removed_client_id);
+            *test_prefetch_dispatcher()->last_removed_client_id);
 }
 
 }  // namespace offline_pages

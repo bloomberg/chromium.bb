@@ -11,6 +11,9 @@ static_library("prefetch") {
   sources = [
     "generate_page_bundle_request.cc",
     "generate_page_bundle_request.h",
+    "prefetch_dispatcher.h",
+    "prefetch_dispatcher_impl.cc",
+    "prefetch_dispatcher_impl.h",
     "prefetch_item.cc",
     "prefetch_item.h",
     "prefetch_request_fetcher.cc",
@@ -50,11 +53,11 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "generate_page_bundle_request_unittest.cc",
+    "prefetch_dispatcher_impl_unittest.cc",
     "prefetch_item_unittest.cc",
     "prefetch_request_fetcher_unittest.cc",
     "prefetch_request_test_base.cc",
     "prefetch_request_test_base.h",
-    "prefetch_service_impl_unittest.cc",
   ]
 
   deps = [

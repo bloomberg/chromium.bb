@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_PREFETCH_PREFETCH_BACKGROUND_TASK_H_
 
 #include "base/android/jni_android.h"
-#include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 
 namespace offline_pages {
+class PrefetchService;
 
 // A task with a counterpart in Java for managing the background activity of the
 // offline page prefetcher.  Schedules and listens for events about prefetching
 // tasks.
-class PrefetchBackgroundTask : public PrefetchService::ScopedBackgroundTask {
+class PrefetchBackgroundTask : public PrefetchDispatcher::ScopedBackgroundTask {
  public:
   PrefetchBackgroundTask(
       JNIEnv* env,
