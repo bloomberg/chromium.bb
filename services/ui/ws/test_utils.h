@@ -350,7 +350,6 @@ class TestWindowManager : public mojom::WindowManager {
       const display::Display& display,
       ui::mojom::WindowDataPtr root,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override {}
@@ -434,7 +433,6 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(uint32_t window) override;
   void OnUnembed(Id window_id) override;
@@ -447,7 +445,6 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
       mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
       uint32_t window,

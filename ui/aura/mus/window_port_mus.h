@@ -76,17 +76,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  using CompositorFrameSinkCallback =
-      base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
-  void RequestCompositorFrameSink(
+  std::unique_ptr<cc::CompositorFrameSink> RequestCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const CompositorFrameSinkCallback& callback);
-
-  void RequestCompositorFrameSinkInternal(
-      scoped_refptr<cc::ContextProvider> context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const CompositorFrameSinkCallback& callback);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   void AttachCompositorFrameSink(
       std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
@@ -281,7 +273,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChanges server_changes_;
 
   cc::FrameSinkId frame_sink_id_;
-  base::Closure pending_compositor_frame_sink_request_;
 
   cc::SurfaceInfo primary_surface_info_;
   cc::SurfaceInfo fallback_surface_info_;

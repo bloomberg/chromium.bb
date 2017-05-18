@@ -71,7 +71,6 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
       int64_t display_id,
       ui::Id focused_window_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
   void OnUnembed(ui::Id window_id) override;
@@ -84,7 +83,6 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
       ui::mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
       ui::Id window_id,
@@ -160,7 +158,6 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
 
   const int routing_id_;
   ui::Id root_window_id_;
-  cc::FrameSinkId frame_sink_id_;
   scoped_refptr<cc::ContextProvider> pending_context_provider_;
   gpu::GpuMemoryBufferManager* pending_gpu_memory_buffer_manager_ = nullptr;
   CompositorFrameSinkCallback pending_compositor_frame_sink_callback_;

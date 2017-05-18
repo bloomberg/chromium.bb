@@ -25,11 +25,11 @@ class ClientCompositorFrameSink
  public:
   // static
   static std::unique_ptr<ClientCompositorFrameSink> Create(
-      const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       std::unique_ptr<ClientCompositorFrameSinkBinding>*
-          compositor_frame_sink_binding);
+          compositor_frame_sink_binding,
+      bool enable_surface_synchronization);
 
   ~ClientCompositorFrameSink() override;
 
@@ -41,11 +41,11 @@ class ClientCompositorFrameSink
 
  private:
   ClientCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest client_request);
+      cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+      bool enable_surface_synchronization);
 
   // cc::mojom::MojoCompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
@@ -67,8 +67,7 @@ class ClientCompositorFrameSink
   std::unique_ptr<mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>>
       client_binding_;
   std::unique_ptr<base::ThreadChecker> thread_checker_;
-  const cc::FrameSinkId frame_sink_id_;
-  bool enable_surface_synchronization_ = false;
+  const bool enable_surface_synchronization_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSink);
 };

@@ -52,9 +52,7 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // seems them at the time the window is created.
   for (auto& pair : init_params.properties)
     window_mus->SetPropertyFromServer(pair.first, &pair.second);
-  // TODO(fsamuel): Once the display compositor is decoupled from the browser
-  // process then ui::Compositor will not a cc::FrameSinkId.
-  CreateCompositor(init_params.frame_sink_id);
+  CreateCompositor(cc::FrameSinkId());
   gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each
 // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
@@ -86,9 +84,6 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
 
   // Mus windows are assumed hidden.
   compositor()->SetVisible(false);
-
-  if (init_params.frame_sink_id.is_valid())
-    window_mus->SetFrameSinkIdFromServer(init_params.frame_sink_id);
 }
 
 WindowTreeHostMus::~WindowTreeHostMus() {
