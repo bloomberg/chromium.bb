@@ -413,13 +413,13 @@ STDMETHODIMP AXPlatformNodeWin::get_accDefaultAction(
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, def_action, target);
 
   int action;
-  if (!target->GetIntAttribute(AX_ATTR_ACTION, &action)) {
+  if (!target->GetIntAttribute(AX_ATTR_DEFAULT_ACTION_VERB, &action)) {
     *def_action = nullptr;
     return S_FALSE;
   }
 
   base::string16 action_verb =
-      ActionToString(static_cast<AXSupportedAction>(action));
+      ActionVerbToLocalizedString(static_cast<AXDefaultActionVerb>(action));
   if (action_verb.empty()) {
     *def_action = nullptr;
     return S_FALSE;

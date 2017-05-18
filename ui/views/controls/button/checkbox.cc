@@ -115,11 +115,11 @@ void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE, checked_state);
   if (enabled()) {
     if (checked()) {
-      node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
-                                 ui::AX_SUPPORTED_ACTION_UNCHECK);
+      node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
+                                 ui::AX_DEFAULT_ACTION_VERB_UNCHECK);
     } else {
-      node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
-                                 ui::AX_SUPPORTED_ACTION_CHECK);
+      node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
+                                 ui::AX_DEFAULT_ACTION_VERB_CHECK);
     }
   }
 }

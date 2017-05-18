@@ -412,30 +412,30 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
   }
 }
 
-ui::AXSupportedAction AXSupportedActionFromBlink(
-    blink::WebAXSupportedAction supported_action) {
-  switch (supported_action) {
-    case blink::WebAXSupportedAction::kNone:
-      return ui::AX_SUPPORTED_ACTION_NONE;
-    case blink::WebAXSupportedAction::kActivate:
-      return ui::AX_SUPPORTED_ACTION_ACTIVATE;
-    case blink::WebAXSupportedAction::kCheck:
-      return ui::AX_SUPPORTED_ACTION_CHECK;
-    case blink::WebAXSupportedAction::kClick:
-      return ui::AX_SUPPORTED_ACTION_CLICK;
-    case blink::WebAXSupportedAction::kJump:
-      return ui::AX_SUPPORTED_ACTION_JUMP;
-    case blink::WebAXSupportedAction::kOpen:
-      return ui::AX_SUPPORTED_ACTION_OPEN;
-    case blink::WebAXSupportedAction::kPress:
-      return ui::AX_SUPPORTED_ACTION_PRESS;
-    case blink::WebAXSupportedAction::kSelect:
-      return ui::AX_SUPPORTED_ACTION_SELECT;
-    case blink::WebAXSupportedAction::kUncheck:
-      return ui::AX_SUPPORTED_ACTION_UNCHECK;
+ui::AXDefaultActionVerb AXDefaultActionVerbFromBlink(
+    blink::WebAXDefaultActionVerb action_verb) {
+  switch (action_verb) {
+    case blink::WebAXDefaultActionVerb::kNone:
+      return ui::AX_DEFAULT_ACTION_VERB_NONE;
+    case blink::WebAXDefaultActionVerb::kActivate:
+      return ui::AX_DEFAULT_ACTION_VERB_ACTIVATE;
+    case blink::WebAXDefaultActionVerb::kCheck:
+      return ui::AX_DEFAULT_ACTION_VERB_CHECK;
+    case blink::WebAXDefaultActionVerb::kClick:
+      return ui::AX_DEFAULT_ACTION_VERB_CLICK;
+    case blink::WebAXDefaultActionVerb::kJump:
+      return ui::AX_DEFAULT_ACTION_VERB_JUMP;
+    case blink::WebAXDefaultActionVerb::kOpen:
+      return ui::AX_DEFAULT_ACTION_VERB_OPEN;
+    case blink::WebAXDefaultActionVerb::kPress:
+      return ui::AX_DEFAULT_ACTION_VERB_PRESS;
+    case blink::WebAXDefaultActionVerb::kSelect:
+      return ui::AX_DEFAULT_ACTION_VERB_SELECT;
+    case blink::WebAXDefaultActionVerb::kUncheck:
+      return ui::AX_DEFAULT_ACTION_VERB_UNCHECK;
   }
   NOTREACHED();
-  return ui::AX_SUPPORTED_ACTION_NONE;
+  return ui::AX_DEFAULT_ACTION_VERB_NONE;
 }
 
 ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type) {

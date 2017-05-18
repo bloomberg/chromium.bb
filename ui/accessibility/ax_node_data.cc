@@ -91,7 +91,7 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     // add a new attribute without explicitly considering whether it's
     // a node id attribute or not.
     case AX_INT_ATTRIBUTE_NONE:
-    case AX_ATTR_ACTION:
+    case AX_ATTR_DEFAULT_ACTION_VERB:
     case AX_ATTR_SCROLL_X:
     case AX_ATTR_SCROLL_X_MIN:
     case AX_ATTR_SCROLL_X_MAX:
@@ -455,11 +455,11 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < int_attributes.size(); ++i) {
     std::string value = IntToString(int_attributes[i].second);
     switch (int_attributes[i].first) {
-      case AX_ATTR_ACTION:
+      case AX_ATTR_DEFAULT_ACTION_VERB:
         result +=
             " action=" +
-            base::UTF16ToUTF8(ActionToUnlocalizedString(
-                static_cast<AXSupportedAction>(int_attributes[i].second)));
+            base::UTF16ToUTF8(ActionVerbToUnlocalizedString(
+                static_cast<AXDefaultActionVerb>(int_attributes[i].second)));
         break;
       case AX_ATTR_SCROLL_X:
         result += " scroll_x=" + value;

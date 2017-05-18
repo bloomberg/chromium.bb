@@ -544,9 +544,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                               src.AriaAutoComplete().Utf8());
     }
 
-    if (src.Action() != blink::WebAXSupportedAction::kNone) {
-      dst->AddIntAttribute(ui::AX_ATTR_ACTION,
-                           AXSupportedActionFromBlink(src.Action()));
+    if (src.Action() != blink::WebAXDefaultActionVerb::kNone) {
+      dst->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
+                           AXDefaultActionVerbFromBlink(src.Action()));
     }
 
     if (src.IsAriaReadOnly())

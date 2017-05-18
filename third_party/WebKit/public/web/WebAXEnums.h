@@ -228,7 +228,7 @@ enum WebAXState {
   kWebAXStateVisited,
 };
 
-enum class WebAXSupportedAction {
+enum class WebAXDefaultActionVerb {
   kNone = 0,
   kActivate,
   kCheck,

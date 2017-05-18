@@ -96,10 +96,10 @@ static const gchar* browser_accessibility_get_name(AtkAction* atk_action,
     return nullptr;
 
   int action;
-  if (!obj->GetIntAttribute(ui::AX_ATTR_ACTION, &action))
+  if (!obj->GetIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB, &action))
     return nullptr;
-  base::string16 action_verb =
-      ui::ActionToUnlocalizedString(static_cast<ui::AXSupportedAction>(action));
+  base::string16 action_verb = ui::ActionVerbToUnlocalizedString(
+      static_cast<ui::AXDefaultActionVerb>(action));
   return base::UTF16ToUTF8(action_verb).c_str();
 }
 

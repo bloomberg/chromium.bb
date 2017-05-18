@@ -1035,28 +1035,28 @@ AccessibilityOrientation AXObjectImpl::Orientation() const {
   return kAccessibilityOrientationUndefined;
 }
 
-AXSupportedAction AXObjectImpl::Action() const {
+AXDefaultActionVerb AXObjectImpl::Action() const {
   if (!ActionElement())
-    return AXSupportedAction::kNone;
+    return AXDefaultActionVerb::kNone;
 
   switch (RoleValue()) {
     case kButtonRole:
     case kToggleButtonRole:
-      return AXSupportedAction::kPress;
+      return AXDefaultActionVerb::kPress;
     case kTextFieldRole:
-      return AXSupportedAction::kActivate;
+      return AXDefaultActionVerb::kActivate;
     case kRadioButtonRole:
-      return AXSupportedAction::kSelect;
+      return AXDefaultActionVerb::kSelect;
     case kCheckBoxRole:
     case kSwitchRole:
-      return CheckedState() == kButtonStateOff ? AXSupportedAction::kCheck
-                                               : AXSupportedAction::kUncheck;
+      return CheckedState() == kButtonStateOff ? AXDefaultActionVerb::kCheck
+                                               : AXDefaultActionVerb::kUncheck;
     case kLinkRole:
-      return AXSupportedAction::kJump;
+      return AXDefaultActionVerb::kJump;
     case kPopUpButtonRole:
-      return AXSupportedAction::kOpen;
+      return AXDefaultActionVerb::kOpen;
     default:
-      return AXSupportedAction::kClick;
+      return AXDefaultActionVerb::kClick;
   }
 }
 

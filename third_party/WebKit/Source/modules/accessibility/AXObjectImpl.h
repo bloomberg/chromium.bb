@@ -252,7 +252,7 @@ enum AXObjectInclusion {
   kDefaultBehavior,
 };
 
-enum class AXSupportedAction {
+enum class AXDefaultActionVerb {
   kNone = 0,
   kActivate,
   kCheck,
@@ -864,7 +864,7 @@ class MODULES_EXPORT AXObjectImpl
   virtual void GetWordBoundaries(Vector<AXRange>&) const {}
 
   // Properties of interactive elements.
-  AXSupportedAction Action() const;
+  AXDefaultActionVerb Action() const;
   AccessibilityButtonState CheckedState() const;
   virtual AriaCurrentState GetAriaCurrentState() const {
     return kAriaCurrentStateUndefined;

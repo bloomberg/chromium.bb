@@ -242,7 +242,7 @@
   };
 
   // An action to be taken on an accessibility node.
-  // In contrast to |AXSupportedAction|, these describe what happens to the
+  // In contrast to |AXDefaultActionVerb|, these describe what happens to the
   // object, e.g. "FOCUS".
   enum AXAction {
     blur,
@@ -299,11 +299,13 @@
     request_inline_text_boxes
   };
 
-  // Lists the actions that can be performed on a given node.
+  // A list of valid values for the |AXIntAttribute| |default_action_verb|.
+  // These will describe the action that will be performed on a given node when
+  // executing the default action, which is a click.
   // In contrast to |AXAction|, these describe what the user can do on the
   // object, e.g. "PRESS", not what happens to the object as a result.
-  // Only one action is supported for now.
-  enum AXSupportedAction {
+  // Only one verb can be used at a time to describe the default action.
+  enum AXDefaultActionVerb {
     activate,
     check,
     click,
@@ -352,7 +354,7 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntAttribute {
-    action,
+    default_action_verb,
     // Scrollable container attributes.
     scroll_x,
     scroll_x_min,
