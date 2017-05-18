@@ -1808,7 +1808,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame& frame) {
   LocalFrameClient* client = frame.Loader().Client();
   if (!client || !client->IsLocalFrameClientImpl())
     return nullptr;
-  return ToLocalFrameClientImpl(client)->GetWebFrame();
+  return ToWebLocalFrameImpl(ToLocalFrameClientImpl(client)->GetWebFrame());
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {

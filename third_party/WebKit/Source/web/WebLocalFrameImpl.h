@@ -324,8 +324,8 @@ class WEB_EXPORT WebLocalFrameImpl final
                            const AtomicString& name) override;
   LocalFrame* GetFrame() const override { return frame_.Get(); }
 
-  void WillBeDetached();
-  void WillDetachParent();
+  void WillBeDetached() override;
+  void WillDetachParent() override;
 
   static WebLocalFrameImpl* Create(WebTreeScopeType,
                                    WebFrameClient*,
@@ -341,11 +341,11 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   LocalFrame* CreateChildFrame(const FrameLoadRequest&,
                                const AtomicString& name,
-                               HTMLFrameOwnerElement*);
+                               HTMLFrameOwnerElement*) override;
 
   void DidChangeContentsSize(const IntSize&);
 
-  void CreateFrameView();
+  void CreateFrameView() override;
 
   static WebLocalFrameImpl* FromFrame(LocalFrame*);
   static WebLocalFrameImpl* FromFrame(LocalFrame&);
@@ -385,8 +385,10 @@ class WEB_EXPORT WebLocalFrameImpl final
   // allows us to navigate by pressing Enter after closing the Find box.
   void SetFindEndstateFocusAndSelection();
 
-  void DidFail(const ResourceError&, bool was_provisional, HistoryCommitType);
-  void DidFinish();
+  void DidFail(const ResourceError&,
+               bool was_provisional,
+               HistoryCommitType) override;
+  void DidFinish() override;
 
   // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
   // If the parameter is true, allow the document to be scrolled.
@@ -396,11 +398,12 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebFrameClient* Client() const override { return client_; }
   void SetClient(WebFrameClient* client) override { client_ = client; }
 
-  ContentSettingsClient& GetContentSettingsClient() {
+  ContentSettingsClient& GetContentSettingsClient() override {
     return content_settings_client_;
-  }
+  };
 
-  SharedWorkerRepositoryClientImpl* SharedWorkerRepositoryClient() const {
+  SharedWorkerRepositoryClientImpl* SharedWorkerRepositoryClient()
+      const override {
     return shared_worker_repository_client_.get();
   }
 
@@ -408,7 +411,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   static void SelectWordAroundPosition(LocalFrame*, VisiblePosition);
 
-  TextCheckerClient& GetTextCheckerClient() const;
+  TextCheckerClient& GetTextCheckerClient() const override;
   WebTextCheckClient* TextCheckClient() const override {
     return text_check_client_;
   }
@@ -424,10 +427,10 @@ class WEB_EXPORT WebLocalFrameImpl final
   void SetFrameWidget(WebFrameWidgetBase*) override;
 
   // DevTools front-end bindings.
-  void SetDevToolsFrontend(WebDevToolsFrontendImpl* frontend) {
+  void SetDevToolsFrontend(WebDevToolsFrontendImpl* frontend) override {
     web_dev_tools_frontend_ = frontend;
   }
-  WebDevToolsFrontendImpl* DevToolsFrontend() {
+  WebDevToolsFrontendImpl* DevToolsFrontend() override {
     return web_dev_tools_frontend_;
   }
 
@@ -459,7 +462,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebRemoteFrame* ToWebRemoteFrame() override;
 
   // Sets the local core frame and registers destruction observers.
-  void SetCoreFrame(LocalFrame*);
+  void SetCoreFrame(LocalFrame*) override;
 
   void LoadJavaScriptURL(const KURL&);
 

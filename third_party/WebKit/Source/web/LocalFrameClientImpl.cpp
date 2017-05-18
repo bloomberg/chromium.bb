@@ -45,6 +45,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -107,7 +108,6 @@
 #include "web/DevToolsEmulator.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebDevToolsFrontendImpl.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
 namespace blink {
@@ -126,12 +126,12 @@ Frame* ToCoreFrame(WebFrame* frame) {
 
 // Return the parent of |frame| as a LocalFrame, nullptr when there is no
 // parent or when the parent is a remote frame.
-LocalFrame* GetLocalParentFrame(WebLocalFrameImpl* frame) {
+LocalFrame* GetLocalParentFrame(WebLocalFrameBase* frame) {
   WebFrame* parent = frame->Parent();
   if (!parent || !parent->IsWebLocalFrame())
     return nullptr;
 
-  return ToWebLocalFrameImpl(parent)->GetFrame();
+  return ToWebLocalFrameBase(parent)->GetFrame();
 }
 
 // Returns whether the |local_frame| has been loaded using an MHTMLArchive. When
@@ -151,10 +151,10 @@ bool IsBackForwardNavigationInProgress(LocalFrame* local_frame) {
 
 }  // namespace
 
-LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
+LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameBase* frame)
     : web_frame_(frame) {}
 
-LocalFrameClientImpl* LocalFrameClientImpl::Create(WebLocalFrameImpl* frame) {
+LocalFrameClientImpl* LocalFrameClientImpl::Create(WebLocalFrameBase* frame) {
   return new LocalFrameClientImpl(frame);
 }
 
@@ -194,7 +194,7 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
   // FIXME: when extensions go out of process, this whole concept stops working.
   WebDevToolsFrontendImpl* dev_tools_frontend =
       web_frame_->Top()->IsWebLocalFrame()
-          ? ToWebLocalFrameImpl(web_frame_->Top())->DevToolsFrontend()
+          ? ToWebLocalFrameBase(web_frame_->Top())->DevToolsFrontend()
           : nullptr;
   if (dev_tools_frontend)
     dev_tools_frontend->DidClearWindowObject(web_frame_);
@@ -782,8 +782,8 @@ std::unique_ptr<WebMediaPlayer> LocalFrameClientImpl::CreateWebMediaPlayer(
     HTMLMediaElement& html_media_element,
     const WebMediaPlayerSource& source,
     WebMediaPlayerClient* client) {
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(html_media_element.GetDocument().GetFrame());
+  WebLocalFrameBase* web_frame =
+      WebLocalFrameBase::FromFrame(html_media_element.GetDocument().GetFrame());
 
   if (!web_frame || !web_frame->Client())
     return nullptr;
@@ -1004,7 +1004,7 @@ bool LocalFrameClientImpl::ShouldUseClientLoFiForRequest(
 }
 
 WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {
-  return WebLocalFrameImpl::FromFrame(web_frame_->GetFrame()->LocalFrameRoot())
+  return WebLocalFrameBase::FromFrame(web_frame_->GetFrame()->LocalFrameRoot())
       ->DevToolsAgentImpl();
 }
 
