@@ -1815,12 +1815,6 @@ class ShelfLayoutManagerKeyboardTest : public test::AshTestBase {
                              work_area.width(), work_area.height() / 2);
   }
 
-  void EnableNewVKMode() {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
-      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
-  }
-
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }
 
  private:
@@ -1830,6 +1824,10 @@ class ShelfLayoutManagerKeyboardTest : public test::AshTestBase {
 };
 
 TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
+  // Append the flag to cause work area change in non-sticky mode.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kDisableNewVirtualKeyboardBehavior);
+
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
@@ -1866,9 +1864,6 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
 // keyboard work area in non-sticky mode.
 TEST_F(ShelfLayoutManagerKeyboardTest,
        ShelfIgnoreWorkAreaChangeInNonStickyMode) {
-  // Append flag to ignore work area change in non-sticky mode.
-  EnableNewVKMode();
-
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
   Shell::Get()->CreateKeyboard();

@@ -23,10 +23,6 @@ class ImeUtilChromeosTest : public aura::test::AuraTestBase {
     screen_position_client_ = base::MakeUnique<DefaultScreenPositionClient>();
     aura::client::SetScreenPositionClient(root_window(),
                                           screen_position_client_.get());
-
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
-      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
   }
 
   void TearDown() override {

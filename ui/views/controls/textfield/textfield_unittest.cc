@@ -2964,12 +2964,6 @@ TEST_F(TextfieldTest, CursorBlinkRestartsOnInsertOrReplace) {
 TEST_F(TextfieldTest, VirtualKeyboardFocusEnsureCaretNotInRect) {
   InitTextfield();
 
-  // Enable new virtual keyboard behavior.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior)) {
-    command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
-  }
-
   aura::Window* root_window = widget_->GetNativeView()->GetRootWindow();
   int keyboard_height = 200;
   gfx::Rect root_bounds = root_window->bounds();

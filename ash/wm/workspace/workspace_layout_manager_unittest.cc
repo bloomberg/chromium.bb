@@ -116,6 +116,11 @@ display::Display GetDisplayNearestWindow(aura::Window* window) {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window);
 }
 
+void DisableNewVKMode() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kDisableNewVirtualKeyboardBehavior);
+}
+
 }  // namespace
 
 using WorkspaceLayoutManagerTest = test::AshTestBase;
@@ -1404,12 +1409,6 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
                              work_area.width(), work_area.height() / 2);
   }
 
-  void EnableNewVKMode() {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
-      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
-  }
-
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }
 
  private:
@@ -1423,6 +1422,9 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
 // Tests that when a child window gains focus the top level window containing it
 // is resized to fit the remaining workspace area.
 TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
+  // Append the flag to cause work area change in non-sticky mode.
+  DisableNewVKMode();
+
   // See comment at top of file for why this is needed.
   WmWindowTestApi::GlobalMinimumSizeLock min_size_lock;
 
@@ -1455,6 +1457,9 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
+  // Append the flag to cause work area change in non-sticky mode.
+  DisableNewVKMode();
+
   // See comment at top of file for why this is needed.
   WmWindowTestApi::GlobalMinimumSizeLock min_size_lock;
   InitKeyboardBounds();
@@ -1507,6 +1512,8 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, IgnoreKeyboardBoundsChange) {
+  // Append the flag to cause work area change in non-sticky mode.
+  DisableNewVKMode();
   InitKeyboardBounds();
 
   std::unique_ptr<aura::Window> window(CreateTestWindow(keyboard_bounds()));
