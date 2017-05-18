@@ -3,21 +3,20 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
+
+async function test()
 {
-    function fetchResources() {
-      InspectorTest.recordNetwork();
+    await InspectorTest.clearNetworkCache();
 
-      InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
-      InspectorTest.makeFetch("resources/abe.png", {}, () => {
-          // Ensures result is cached.
-          InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
-          ensureAllResources();
-      });
-      InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
-    }
+    InspectorTest.recordNetwork();
 
-    InspectorTest.clearNetworkCache(fetchResources);
+    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, () => {
+      // Ensures result is cached.
+      InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+      ensureAllResources();
+    });
+    InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
 
     var filterChecks = [{
         filterText: "-.css",

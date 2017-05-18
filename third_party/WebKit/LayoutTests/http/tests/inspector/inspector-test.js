@@ -430,7 +430,7 @@ InspectorTest.dumpNavigatorViewInMode = function(view, mode)
 /**
  * @param {symbol} event
  * @param {!Common.Object} obj
- * @param {function(?):boolean=}
+ * @param {function(?):boolean=} condition
  * @return {!Promise}
  */
 InspectorTest.waitForEvent = function(event, obj, condition)
