@@ -886,6 +886,13 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
   if (!element.IsPasswordField()) {
     *username_element = element;
   } else {
+    // If there is a password field, but a request to the store hasn't been sent
+    // yet, then do fetch saved credentials now.
+    if (!sent_request_to_store_) {
+      SendPasswordForms(false);
+      return false;
+    }
+
     WebInputToPasswordInfoMap::iterator iter =
         web_input_to_password_info_.find(element);
     if (iter != web_input_to_password_info_.end()) {
@@ -1224,10 +1231,11 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
       rep.SetPathStr("");
       password_forms.back().signon_realm =
           password_forms.back().origin.ReplaceComponents(rep).spec();
-      sent_request_to_store_ = true;
     }
-    if (!password_forms.empty())
+    if (!password_forms.empty()) {
+      sent_request_to_store_ = true;
       GetPasswordManagerDriver()->PasswordFormsParsed(password_forms);
+    }
   }
 }
 
