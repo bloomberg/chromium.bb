@@ -349,6 +349,8 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-109
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-110.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-113.xht [ Skip ]
 crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-114.xht [ Skip ]
+crbug.com/723117 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-124.xht [ Skip ]
+crbug.com/723117 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-125.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-126.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-127.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-128.xht [ Skip ]
@@ -390,6 +392,12 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-014.xht [ Skip ]
 
 ### external/wpt/css/CSS2/floats
+crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Skip ]
+crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Skip ]
+crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Skip ]
+crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Skip ]
+crbug.com/723135 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-zero-height-wrap-001.xht [ Skip ]
+crbug.com/723135 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-zero-height-wrap-002.xht [ Skip ]
 crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001a.xht [ Skip ]
 crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001b.xht [ Skip ]
 crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001c.xht [ Skip ]

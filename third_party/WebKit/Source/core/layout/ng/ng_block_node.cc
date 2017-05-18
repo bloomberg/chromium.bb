@@ -278,13 +278,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   intrinsic_logical_height -= border_and_padding.BlockSum();
   layout_box_->SetIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
-  // We may still have unpositioned floats when we reach the root box.
-  if (!layout_box_->Parent()) {
-    for (const NGPositionedFloat& positioned_float :
-         fragment->PositionedFloats()) {
-      FloatingObjectPositionedUpdated(positioned_float, layout_box_);
-    }
-  }
+  for (const NGPositionedFloat& positioned_float : fragment->PositionedFloats())
+    FloatingObjectPositionedUpdated(positioned_float, layout_box_);
 
   for (const auto& child_fragment : fragment->Children()) {
     if (child_fragment->IsPlaced())
