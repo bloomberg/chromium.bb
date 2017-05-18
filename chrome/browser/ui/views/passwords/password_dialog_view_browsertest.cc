@@ -437,6 +437,11 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
 
 // DialogBrowserTest methods for interactive dialog invocation.
 void PasswordDialogViewTest::ShowDialog(const std::string& name) {
+  if (name == "AutoSigninFirstRun") {
+    controller()->OnPromptEnableAutoSignin();
+    return;
+  }
+
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
@@ -469,6 +474,11 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
 IN_PROC_BROWSER_TEST_F(
     PasswordDialogViewTest,
     InvokeDialog_PopupAccountChooserWithSingleCredentialClickSignIn) {
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       InvokeDialog_AutoSigninFirstRun) {
   RunDialog();
 }
 
