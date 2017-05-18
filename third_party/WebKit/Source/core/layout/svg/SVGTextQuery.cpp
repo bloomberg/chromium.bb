@@ -28,7 +28,6 @@
 #include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "platform/wtf/MathExtras.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -258,8 +257,7 @@ static float CalculateGlyphRange(const QueryData* query_data,
   auto end_metrics = FindMetricsForCharacter(metrics_list, fragment, end);
   float glyph_range = 0;
   for (; metrics != end_metrics; ++metrics)
-    glyph_range +=
-        query_data->is_vertical_text ? metrics->Height() : metrics->Width();
+    glyph_range += metrics->Advance(query_data->is_vertical_text);
   return glyph_range;
 }
 
@@ -447,11 +445,7 @@ struct ExtentOfCharacterData : QueryData {
 static FloatRect PhysicalGlyphExtents(const QueryData* query_data,
                                       const SVGTextMetrics& metrics,
                                       const FloatPoint& glyph_position) {
-  // TODO(fs): Negative glyph extents seems kind of weird to have, but
-  // presently it can occur in some cases (like Arabic.)
-  FloatRect glyph_extents(glyph_position,
-                          FloatSize(std::max<float>(metrics.Width(), 0),
-                                    std::max<float>(metrics.Height(), 0)));
+  FloatRect glyph_extents(glyph_position, metrics.Extents());
 
   // If RTL, adjust the starting point to align with the LHS of the glyph
   // bounding box.
@@ -621,8 +615,7 @@ static bool CharacterNumberAtPositionCallback(QueryData* query_data,
       return true;
     }
     fragment_offset += metrics->length();
-    glyph_offset +=
-        data->is_vertical_text ? metrics->Height() : metrics->Width();
+    glyph_offset += metrics->Advance(data->is_vertical_text);
     ++metrics;
   }
   return false;

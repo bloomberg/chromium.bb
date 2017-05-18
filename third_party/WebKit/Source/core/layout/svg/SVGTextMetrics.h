@@ -24,6 +24,7 @@
 
 namespace blink {
 
+class FloatSize;
 enum class FontOrientation;
 
 class SVGTextMetrics {
@@ -37,12 +38,14 @@ class SVGTextMetrics {
 
   bool IsEmpty() const { return !width_ && !height_ && length_ <= 1; }
 
-  float Width() const { return width_; }
-  float Height() const { return height_; }
+  FloatSize Extents() const;
 
   // TODO(kojii): We should store logical width (advance) and height instead
   // of storing physical and calculate logical. crbug.com/544767
   float Advance(FontOrientation) const;
+  float Advance(bool is_vertical) const {
+    return is_vertical ? height_ : width_;
+  }
   unsigned length() const { return length_; }
 
  private:
