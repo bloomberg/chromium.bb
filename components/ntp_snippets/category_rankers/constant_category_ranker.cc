@@ -5,6 +5,8 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "components/ntp_snippets/features.h"
 
 namespace ntp_snippets {
@@ -73,6 +75,33 @@ void ConstantCategoryRanker::InsertCategoryAfterIfNecessary(
   LOG(DFATAL) << "Not implemented, use ClickBasedCategoryRanker instead for "
                  "inserting categories relative to other categories.";
   AppendCategoryIfNecessary(category_to_insert);
+}
+
+std::vector<CategoryRanker::DebugDataItem>
+ConstantCategoryRanker::GetDebugData() {
+  std::vector<CategoryRanker::DebugDataItem> result;
+  result.push_back(
+      CategoryRanker::DebugDataItem("Type", "ConstantCategoryRanker"));
+
+  std::string initial_order_type;
+  CategoryOrderChoice choice = GetSelectedCategoryOrder();
+  if (choice == CategoryOrderChoice::GENERAL) {
+    initial_order_type = "GENERAL";
+  }
+  if (choice == CategoryOrderChoice::EMERGING_MARKETS_ORIENTED) {
+    initial_order_type = "EMERGING_MARKETS_ORIENTED;";
+  }
+  result.push_back(
+      CategoryRanker::DebugDataItem("Initial order type", initial_order_type));
+
+  std::vector<std::string> category_strings;
+  for (Category category : ordered_categories_) {
+    category_strings.push_back(base::IntToString(category.id()));
+  }
+  result.push_back(CategoryRanker::DebugDataItem(
+      "Current order", base::JoinString(category_strings, ", ")));
+
+  return result;
 }
 
 void ConstantCategoryRanker::OnSuggestionOpened(Category category) {

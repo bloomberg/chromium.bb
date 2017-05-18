@@ -64,6 +64,7 @@ class SnippetsInternalsMessageHandler
 
   void SendAllContent();
   void SendClassification();
+  void SendRankerDebugData();
   void SendLastRemoteSuggestionsBackgroundFetchTime();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);

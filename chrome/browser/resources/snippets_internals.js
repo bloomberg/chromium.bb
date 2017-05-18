@@ -113,6 +113,10 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveProperty('avg-time-to-use', timeToUse);
   }
 
+  function receiveRankerDebugData(itemsList) {
+    displayList(itemsList, 'ranker', 'no-togler');
+  }
+
   function receiveLastRemoteSuggestionsBackgroundFetchTime(
       lastRemoteSuggestionsBackgroundFetchTime) {
     receiveProperty('last-background-fetch-time-label',
@@ -168,6 +172,7 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveContentSuggestions: receiveContentSuggestions,
     receiveJson: receiveJson,
     receiveClassification: receiveClassification,
+    receiveRankerDebugData: receiveRankerDebugData,
     receiveLastRemoteSuggestionsBackgroundFetchTime:
         receiveLastRemoteSuggestionsBackgroundFetchTime,
   };

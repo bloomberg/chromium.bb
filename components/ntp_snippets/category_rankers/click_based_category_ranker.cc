@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
@@ -129,6 +130,14 @@ base::Optional<Category> GetPromotedCategoryFromVariations() {
     return base::nullopt;
   }
   return Category::FromIDValue(category_id);
+}
+
+std::string GetOptionalCategoryAsString(
+    const base::Optional<Category>& optional_category) {
+  if (optional_category.has_value()) {
+    return base::IntToString(optional_category->id());
+  }
+  return "None";
 }
 
 }  // namespace
@@ -262,6 +271,46 @@ void ClickBasedCategoryRanker::InsertCategoryAfterIfNecessary(
     Category anchor) {
   InsertCategoryRelativeToIfNecessary(category_to_insert, anchor,
                                       /*after=*/true);
+}
+
+std::vector<CategoryRanker::DebugDataItem>
+ClickBasedCategoryRanker::GetDebugData() {
+  std::vector<CategoryRanker::DebugDataItem> result;
+  result.push_back(
+      CategoryRanker::DebugDataItem("Type", "ClickBasedCategoryRanker"));
+
+  std::string initial_order_type;
+  CategoryOrderChoice choice = GetSelectedCategoryOrder();
+  if (choice == CategoryOrderChoice::GENERAL) {
+    initial_order_type = "GENERAL";
+  }
+  if (choice == CategoryOrderChoice::EMERGING_MARKETS_ORIENTED) {
+    initial_order_type = "EMERGING_MARKETS_ORIENTED;";
+  }
+  result.push_back(
+      CategoryRanker::DebugDataItem("Initial order type", initial_order_type));
+
+  std::vector<std::string> category_strings;
+  for (const auto& ranked_category : ordered_categories_) {
+    category_strings.push_back(base::ReplaceStringPlaceholders(
+        "($1; $2)",
+        {base::IntToString(ranked_category.category.id()),
+         base::IntToString(ranked_category.clicks)},
+        /*offsets=*/nullptr));
+  }
+  result.push_back(
+      CategoryRanker::DebugDataItem("Current order (with click counts)",
+                                    base::JoinString(category_strings, ", ")));
+
+  result.push_back(CategoryRanker::DebugDataItem(
+      "Actual promoted category",
+      GetOptionalCategoryAsString(promoted_category_)));
+
+  result.push_back(CategoryRanker::DebugDataItem(
+      "Raw promoted category from variations",
+      GetOptionalCategoryAsString(GetPromotedCategoryFromVariations())));
+
+  return result;
 }
 
 void ClickBasedCategoryRanker::OnSuggestionOpened(Category category) {

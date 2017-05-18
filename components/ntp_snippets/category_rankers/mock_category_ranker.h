@@ -24,6 +24,7 @@ class MockCategoryRanker : public CategoryRanker {
                void(Category category_to_insert, Category anchor));
   MOCK_METHOD2(InsertCategoryAfterIfNecessary,
                void(Category category_to_insert, Category anchor));
+  MOCK_METHOD0(GetDebugData, std::vector<CategoryRanker::DebugDataItem>());
   MOCK_METHOD1(OnSuggestionOpened, void(Category category));
   MOCK_METHOD1(OnCategoryDismissed, void(Category Category));
 };

@@ -42,6 +42,11 @@ void FakeCategoryRanker::InsertCategoryAfterIfNecessary(
   // Ignored.
 }
 
+std::vector<CategoryRanker::DebugDataItem> FakeCategoryRanker::GetDebugData() {
+  // Ignored.
+  return std::vector<CategoryRanker::DebugDataItem>();
+}
+
 void FakeCategoryRanker::OnSuggestionOpened(Category category) {
   // Ignored.
 }
