@@ -700,4 +700,28 @@ TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
   EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
 }
 
+// Make sure that mouse can move across display in magnified mode.
+TEST_F(MagnificationControllerTest, MoveMouseToSecondDisplay) {
+  UpdateDisplay("0+0-500x500, 500+0-500x500");
+  EXPECT_EQ(2ul, display::Screen::GetScreen()->GetAllDisplays().size());
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  GetEventGenerator().MoveMouseTo(gfx::Point(250, 250));
+  EXPECT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_FALSE(root_windows[0]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+
+  GetEventGenerator().MoveMouseTo(gfx::Point(750, 250));
+  EXPECT_FALSE(root_windows[1]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+
+  GetMagnificationController()->SetEnabled(false);
+  EXPECT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+}
+
 }  // namespace ash

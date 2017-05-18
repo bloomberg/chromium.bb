@@ -167,7 +167,11 @@ class MagnificationControllerImpl : public MagnificationController,
 
   // Redraw with the given zoom scale keeping the mouse cursor location. In
   // other words, zoom (or unzoom) centering around the cursor.
-  void RedrawKeepingMousePosition(float scale, bool animate);
+  // Ignore mouse position change after redrawing if |ignore_mouse_change| is
+  // true.
+  void RedrawKeepingMousePosition(float scale,
+                                  bool animate,
+                                  bool ignore_mouse_change);
 
   void OnMouseMove(const gfx::Point& location);
 
@@ -292,10 +296,11 @@ MagnificationControllerImpl::~MagnificationControllerImpl() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void MagnificationControllerImpl::RedrawKeepingMousePosition(float scale,
-                                                             bool animate) {
+void MagnificationControllerImpl::RedrawKeepingMousePosition(
+    float scale,
+    bool animate,
+    bool ignore_mouse_change) {
   gfx::Point mouse_in_root = point_of_interest_;
-
   // mouse_in_root is invalid value when the cursor is hidden.
   if (!root_window_->bounds().Contains(mouse_in_root))
     mouse_in_root = root_window_->bounds().CenterPoint();
@@ -306,7 +311,7 @@ void MagnificationControllerImpl::RedrawKeepingMousePosition(float scale,
   bool changed =
       RedrawDIP(origin, scale, animate ? kDefaultAnimationDurationInMs : 0,
                 kDefaultAnimationTweenType);
-  if (changed)
+  if (!ignore_mouse_change && changed)
     AfterAnimationMoveCursorTo(mouse_in_root);
 }
 
@@ -459,10 +464,14 @@ void MagnificationControllerImpl::SwitchTargetRootWindow(
 
   // Unmagnify the previous root window.
   root_window_->RemoveObserver(this);
+  // Do not move mouse back to its original position (point at border of the
+  // root window) after redrawing as doing so will trigger root window switch
+  // again.
   if (redraw_original_root_window)
-    RedrawKeepingMousePosition(1.0f, true);
+    RedrawKeepingMousePosition(1.0f, true, true);
   root_window_ = new_root_window;
-  RedrawKeepingMousePosition(scale, true);
+  RedrawKeepingMousePosition(scale, true, true);
+
   root_window_->AddObserver(this);
 }
 
@@ -566,7 +575,7 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
 
   ValidateScale(&scale);
   Shell::Get()->accessibility_delegate()->SaveScreenMagnifierScale(scale);
-  RedrawKeepingMousePosition(scale, animate);
+  RedrawKeepingMousePosition(scale, animate, false);
 }
 
 void MagnificationControllerImpl::MoveWindow(int x, int y, bool animate) {
@@ -608,7 +617,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
       return;
 
     is_enabled_ = enabled;
-    RedrawKeepingMousePosition(scale, true);
+    RedrawKeepingMousePosition(scale, true, false);
     shell->accessibility_delegate()->SaveScreenMagnifierScale(scale);
   } else {
     // Do nothing, if already disabled.
@@ -618,7 +627,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     if (input_method)
       input_method->RemoveObserver(this);
 
-    RedrawKeepingMousePosition(kNonMagnifiedScale, true);
+    RedrawKeepingMousePosition(kNonMagnifiedScale, true, false);
     is_enabled_ = enabled;
   }
 }
