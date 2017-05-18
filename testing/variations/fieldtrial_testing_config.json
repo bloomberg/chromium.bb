@@ -3032,6 +3032,21 @@
             ]
         }
     ],
+    "TranslateCompactUI": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TranslateCompactUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "TranslateRankerModel": [
         {
             "platforms": [
