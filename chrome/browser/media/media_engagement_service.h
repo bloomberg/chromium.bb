@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class MediaEngagementContentsObserver;
 class Profile;
 
 namespace content {
@@ -32,9 +33,9 @@ class MediaEngagementService : public KeyedService {
   ~MediaEngagementService() override;
 
  private:
-  class ContentsObserver;
+  friend MediaEngagementContentsObserver;
 
-  std::set<ContentsObserver*> contents_observers_;
+  std::set<MediaEngagementContentsObserver*> contents_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementService);
 };

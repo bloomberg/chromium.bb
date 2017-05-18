@@ -4,33 +4,11 @@
 
 #include "chrome/browser/media/media_engagement_service.h"
 
+#include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "media/base/media_switches.h"
-
-class MediaEngagementService::ContentsObserver
-    : public content::WebContentsObserver {
- public:
-  ContentsObserver(content::WebContents* web_contents,
-                   MediaEngagementService* service)
-      : WebContentsObserver(web_contents), service_(service) {}
-
-  ~ContentsObserver() override = default;
-
-  // WebContentsObserver implementation.
-  void WebContentsDestroyed() override {
-    service_->contents_observers_.erase(this);
-    delete this;
-  }
-
- private:
-  // |this| is owned by |service_|.
-  MediaEngagementService* service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentsObserver);
-};
 
 // static
 bool MediaEngagementService::IsEnabled() {
@@ -52,7 +30,7 @@ void MediaEngagementService::CreateWebContentsObserver(
   if (!service)
     return;
   service->contents_observers_.insert(
-      new ContentsObserver(web_contents, service));
+      new MediaEngagementContentsObserver(web_contents, service));
 }
 
 MediaEngagementService::MediaEngagementService(Profile* profile) {
