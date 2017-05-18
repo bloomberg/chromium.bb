@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_style.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/widget/widget_observer.h"
 
 class Profile;
 
@@ -19,7 +20,8 @@ class Profile;
 // caption area.
 class AvatarButton : public views::LabelButton,
                      public AvatarButtonErrorControllerDelegate,
-                     public ProfileAttributesStorage::Observer {
+                     public ProfileAttributesStorage::Observer,
+                     public views::WidgetObserver {
  public:
   AvatarButton(views::ButtonListener* listener,
                AvatarButtonStyle button_style,
@@ -32,9 +34,12 @@ class AvatarButton : public views::LabelButton,
   gfx::Size GetPreferredSize() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  void NotifyClick(const ui::Event& event) override;
 
  protected:
   // views::LabelButton:
+  bool ShouldEnterPushedState(const ui::Event& event) override;
   bool ShouldUseFloodFillInkDrop() const override;
 
  private:
@@ -52,12 +57,19 @@ class AvatarButton : public views::LabelButton,
   void OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) override;
 
+  // views::WidgetObserver
+  void OnWidgetClosing(views::Widget* widget) override;
+
   // Called when the profile info cache or signin/sync error has changed, which
   // means we might have to update the icon/text of the button.
   void Update();
 
   // Sets generic_avatar_ to the image with the specified IDR.
   void SetButtonAvatar(int avatar_idr);
+
+  // Returns true when the button can get smaller to accomodate a more crowded
+  // browser frame.
+  bool IsCondensible() const;
 
   AvatarButtonErrorController error_controller_;
   Profile* profile_;
@@ -67,10 +79,7 @@ class AvatarButton : public views::LabelButton,
   // Different assets are used depending on the OS version.
   gfx::ImageSkia generic_avatar_;
 
-  // True to use the Windows 10 native (non-themed) button, which is drawn using
-  // a vector icon and can change height to slide atop the tabstrip. False to
-  // use the old PNG, fixed-size icon button or a themed button.
-  bool use_win10_native_button_;
+  AvatarButtonStyle button_style_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarButton);
 };

@@ -11,15 +11,20 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/label_button_border.h"
 
 #if defined(OS_WIN)
@@ -29,12 +34,12 @@
 
 namespace {
 
-constexpr int kLeftRightInset = 8;
-constexpr int kTopInset = 2;
-constexpr int kBottomInset = 4;
+constexpr gfx::Insets kBorderInsets(2, 8, 4, 8);
 
 // TODO(emx): Calculate width based on caption button [http://crbug.com/716365]
-constexpr int kMdButtonMinWidth = 46;
+constexpr int kCondensibleButtonMinWidth = 46;
+// TODO(emx): Should this be calculated based on average character width?
+constexpr int kCondensibleButtonMaxWidth = 98;
 
 std::unique_ptr<views::Border> CreateThemedBorder(
     const int normal_image_set[],
@@ -50,16 +55,70 @@ std::unique_ptr<views::Border> CreateThemedBorder(
   border->SetPainter(false, views::Button::STATE_PRESSED,
                      views::Painter::CreateImageGridPainter(pushed_image_set));
 
-  border->set_insets(
-      gfx::Insets(kTopInset, kLeftRightInset, kBottomInset, kLeftRightInset));
+  border->set_insets(kBorderInsets);
 
   return std::move(border);
 }
 
-std::unique_ptr<views::Border> CreateWin10NativeBorder() {
-  return views::CreateEmptyBorder(kTopInset, kLeftRightInset, kBottomInset,
-                                  kLeftRightInset);
-}
+// This class draws the border (and background) of the avatar button for
+// "themed" browser windows, i.e. OpaqueBrowserFrameView. Currently it's only
+// used on Linux as the shape specifically matches the Linux caption buttons.
+// TODO(estade): make this look nice on Windows and use it there as well.
+class AvatarButtonThemedBorder : public views::Border {
+ public:
+  AvatarButtonThemedBorder() {}
+  ~AvatarButtonThemedBorder() override {}
+
+  void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    // Start with an outer dark stroke.
+    cc::PaintFlags stroke_flags;
+    stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
+    // The colors are chosen to match the assets we use for Linux.
+    stroke_flags.setColor(SkColorSetA(SK_ColorBLACK, 0x2B));
+    stroke_flags.setStrokeWidth(kStrokeWidth);
+    stroke_flags.setAntiAlias(true);
+    gfx::RectF stroke_bounds(view.GetLocalBounds());
+    stroke_bounds.Inset(gfx::InsetsF(0.5f));
+    canvas->DrawRoundRect(stroke_bounds, kCornerRadius, stroke_flags);
+
+    // There's a second, light stroke that matches the fill bounds.
+    stroke_bounds.Inset(gfx::InsetsF(kStrokeWidth));
+    stroke_flags.setColor(SkColorSetA(SK_ColorWHITE, 0x3F));
+    canvas->DrawRoundRect(stroke_bounds, kCornerRadius, stroke_flags);
+  }
+
+  gfx::Insets GetInsets() const override {
+    auto insets = views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
+        views::Button::STYLE_TEXTBUTTON);
+    return kBorderStrokeInsets +
+           gfx::Insets(0, insets.left(), 0, insets.right());
+  }
+
+  gfx::Size GetMinimumSize() const override {
+    return gfx::Size(GetInsets().width(), GetInsets().height());
+  }
+
+  static std::unique_ptr<views::InkDropMask> CreateInkDropMask(
+      const gfx::Size& size) {
+    return base::MakeUnique<views::RoundRectInkDropMask>(
+        size, kBorderStrokeInsets, kCornerRadius);
+  }
+
+ private:
+  static constexpr int kStrokeWidth = 1;
+
+  // Insets between view bounds and the interior of the strokes.
+  static constexpr gfx::Insets kBorderStrokeInsets{kStrokeWidth * 2};
+
+  // Corner radius of the roundrect.
+  static constexpr float kCornerRadius = 1;
+
+  DISALLOW_COPY_AND_ASSIGN(AvatarButtonThemedBorder);
+};
+
+constexpr int AvatarButtonThemedBorder::kStrokeWidth;
+constexpr gfx::Insets AvatarButtonThemedBorder::kBorderStrokeInsets;
+constexpr float AvatarButtonThemedBorder::kCornerRadius;
 
 }  // namespace
 
@@ -70,7 +129,7 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
       error_controller_(this, profile),
       profile_(profile),
       profile_observer_(this),
-      use_win10_native_button_(false) {
+      button_style_(button_style) {
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
@@ -89,54 +148,52 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
   label()->SetFontList(
       label()->font_list().DeriveWithHeightUpperBound(kDisplayFontHeight));
 
-#if defined(OS_WIN)
-  // TODO(estade): Use MD button in other cases, too [http://crbug.com/591586]
-  if ((base::win::GetVersion() >= base::win::VERSION_WIN10) &&
-      ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme() &&
-      button_style == AvatarButtonStyle::NATIVE)
-    use_win10_native_button_ = true;
-#endif  // defined(OS_WIN)
+  bool apply_ink_drop = IsCondensible();
+#if defined(OS_LINUX)
+  DCHECK_EQ(AvatarButtonStyle::THEMED, button_style);
+  apply_ink_drop = true;
+#endif
 
-  if (use_win10_native_button_) {
-    constexpr int kMdButtonIconHeight = 16;
-    constexpr SkColor kMdButtonIconColor =
+  if (apply_ink_drop) {
+    constexpr int kIconSize = 16;
+    constexpr SkColor kIconColor =
         SkColorSetA(SK_ColorBLACK, static_cast<SkAlpha>(0.54 * 0xFF));
-    generic_avatar_ = gfx::CreateVectorIcon(
-        kAccountCircleIcon, kMdButtonIconHeight, kMdButtonIconColor);
-    SetBorder(CreateWin10NativeBorder());
+    generic_avatar_ =
+        gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize, kIconColor);
 
     SetInkDropMode(InkDropMode::ON);
-    set_has_ink_drop_action_on_click(true);
     SetFocusPainter(nullptr);
+#if defined(OS_LINUX)
+    set_ink_drop_base_color(SK_ColorWHITE);
+    SetBorder(base::MakeUnique<AvatarButtonThemedBorder>());
+#elif defined(OS_WIN)
+    DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
     set_ink_drop_base_color(SK_ColorBLACK);
-  } else {
-    if (button_style == AvatarButtonStyle::THEMED) {
-      const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
-      const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
-      const int kPressedImageSet[] =
-          IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_PRESSED);
-      SetButtonAvatar(IDR_AVATAR_THEMED_BUTTON_AVATAR);
-      SetBorder(CreateThemedBorder(kNormalImageSet, kHoverImageSet,
-                                   kPressedImageSet));
+    SetBorder(views::CreateEmptyBorder(kBorderInsets));
+#endif  // defined(OS_WIN)
+  } else if (button_style == AvatarButtonStyle::THEMED) {
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
+    const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
+    const int kPressedImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_PRESSED);
+    SetButtonAvatar(IDR_AVATAR_THEMED_BUTTON_AVATAR);
+    SetBorder(
+        CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
 #if defined(OS_WIN)
-    } else if (base::win::GetVersion() < base::win::VERSION_WIN8) {
-      const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
-      const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
-      const int kPressedImageSet[] =
-          IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_PRESSED);
-      SetButtonAvatar(IDR_AVATAR_GLASS_BUTTON_AVATAR);
-      SetBorder(CreateThemedBorder(kNormalImageSet, kHoverImageSet,
-                                   kPressedImageSet));
+  } else if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
+    const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
+    const int kPressedImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_PRESSED);
+    SetButtonAvatar(IDR_AVATAR_GLASS_BUTTON_AVATAR);
+    SetBorder(
+        CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
 #endif
-    } else {
-      const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_NORMAL);
-      const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_HOVER);
-      const int kPressedImageSet[] =
-          IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_PRESSED);
-      SetButtonAvatar(IDR_AVATAR_NATIVE_BUTTON_AVATAR);
-      SetBorder(CreateThemedBorder(kNormalImageSet, kHoverImageSet,
-                                   kPressedImageSet));
-    }
+  } else {
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_NORMAL);
+    const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_HOVER);
+    const int kPressedImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_PRESSED);
+    SetButtonAvatar(IDR_AVATAR_NATIVE_BUTTON_AVATAR);
+    SetBorder(
+        CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
   }
 
   Update();
@@ -157,46 +214,69 @@ void AvatarButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 gfx::Size AvatarButton::GetMinimumSize() const {
-  if (use_win10_native_button_) {
+  if (IsCondensible()) {
     // Returns the size of the button when it is atop the tabstrip. Called by
     // GlassBrowserFrameView::LayoutProfileSwitcher().
     // TODO(emx): Calculate the height based on the top of the new tab button.
-    return gfx::Size(kMdButtonMinWidth, 20);
+    return gfx::Size(kCondensibleButtonMinWidth, 20);
   }
 
   return LabelButton::GetMinimumSize();
 }
 
 gfx::Size AvatarButton::GetPreferredSize() const {
-  gfx::Size size = LabelButton::GetPreferredSize();
+  // TODO(estade): Calculate the height instead of hardcoding to 20 for the
+  // not-condensible case.
+  gfx::Size size(LabelButton::GetPreferredSize().width(), 20);
 
-  if (use_win10_native_button_) {
-#if defined(OS_WIN)
+  if (IsCondensible()) {
     // Returns the normal size of the button (when it does not overlap the
-    // tabstrip). Its height should match the caption button height.
-    // The minimum width is the caption button width and the maximum is fixed
-    // as per the spec in http://crbug.com/635699.
-    // TODO(emx): Should this be calculated based on average character width?
-    constexpr int kMdButtonMaxWidth = 98;
-    size.set_width(
-        std::min(std::max(size.width(), kMdButtonMinWidth), kMdButtonMaxWidth));
+    // tabstrip).
+    size.set_width(std::min(std::max(size.width(), kCondensibleButtonMinWidth),
+                            kCondensibleButtonMaxWidth));
+#if defined(OS_WIN)
     size.set_height(MinimizeButtonMetrics::GetCaptionButtonHeightInDIPs());
 #endif
-  } else {
-    size.set_height(20);
   }
 
   return size;
 }
 
+std::unique_ptr<views::InkDropMask> AvatarButton::CreateInkDropMask() const {
+  if (button_style_ == AvatarButtonStyle::THEMED)
+    return AvatarButtonThemedBorder::CreateInkDropMask(size());
+  return LabelButton::CreateInkDropMask();
+}
+
 std::unique_ptr<views::InkDropHighlight> AvatarButton::CreateInkDropHighlight()
     const {
-  auto center = gfx::RectF(GetLocalBounds()).CenterPoint();
+  if (button_style_ == AvatarButtonStyle::THEMED)
+    return LabelButton::CreateInkDropHighlight();
+
   auto ink_drop_highlight = base::MakeUnique<views::InkDropHighlight>(
-      size(), 0, center, GetInkDropBaseColor());
+      size(), 0, gfx::RectF(GetLocalBounds()).CenterPoint(),
+      GetInkDropBaseColor());
   constexpr float kInkDropHighlightOpacity = 0.08f;
   ink_drop_highlight->set_visible_opacity(kInkDropHighlightOpacity);
   return ink_drop_highlight;
+}
+
+void AvatarButton::NotifyClick(const ui::Event& event) {
+  LabelButton::NotifyClick(event);
+
+  views::Widget* bubble_widget = ProfileChooserView::GetCurrentBubbleWidget();
+  if (bubble_widget && !bubble_widget->HasObserver(this)) {
+    ProfileChooserView::GetCurrentBubbleWidget()->AddObserver(this);
+    AnimateInkDrop(views::InkDropState::ACTIVATED,
+                   ui::LocatedEvent::FromIfValid(&event));
+  }
+}
+
+bool AvatarButton::ShouldEnterPushedState(const ui::Event& event) {
+  if (ProfileChooserView::IsShowing())
+    return false;
+
+  return LabelButton::ShouldEnterPushedState(event);
 }
 
 bool AvatarButton::ShouldUseFloodFillInkDrop() const {
@@ -230,6 +310,10 @@ void AvatarButton::OnProfileSupervisedUserIdChanged(
     const base::FilePath& profile_path) {
   if (profile_->GetPath() == profile_path)
     Update();
+}
+
+void AvatarButton::OnWidgetClosing(views::Widget* widget) {
+  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 }
 
 void AvatarButton::Update() {
@@ -278,4 +362,15 @@ void AvatarButton::Update() {
 void AvatarButton::SetButtonAvatar(int avatar_idr) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   generic_avatar_ = *rb->GetImageNamed(avatar_idr).ToImageSkia();
+}
+
+// TODO(estade): all versions of this button should condense.
+bool AvatarButton::IsCondensible() const {
+#if defined(OS_WIN)
+  return (base::win::GetVersion() >= base::win::VERSION_WIN10) &&
+         ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme() &&
+         button_style_ == AvatarButtonStyle::NATIVE;
+#else
+  return false;
+#endif
 }
