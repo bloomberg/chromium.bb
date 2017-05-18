@@ -357,8 +357,15 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
 
 #if BUILDFLAG(RTC_USE_H264)
 
+// TODO(philipel): Remove disable condition when H264 flakyness has been
+//                 investigated (crbug.com/722746).
+#if defined(OS_WIN)
+#define MAYBE_TestVideoQualityH264 DISABLED_TestVideoQualityH264
+#else
+#define MAYBE_TestVideoQualityH264 MANUAL_TestVideoQualityH264
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVideoQualityH264) {
+                       MAYBE_TestVideoQualityH264) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
