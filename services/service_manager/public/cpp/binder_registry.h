@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/interface_binder.h"
 
 namespace service_manager {
@@ -20,7 +21,7 @@ namespace service_manager {
 class InterfaceBinder;
 struct BindSourceInfo;
 
-class BinderRegistry {
+class SERVICE_MANAGER_PUBLIC_CPP_EXPORT BinderRegistry {
  public:
   using Binder = base::Callback<void(const std::string&,
                                 mojo::ScopedMessagePipeHandle)>;

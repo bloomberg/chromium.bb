@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -40,7 +41,7 @@ namespace service_manager {
 // command-line (in the form of a pipe token), from a mojom::ServiceFactory
 // call, or from some other embedded service-running facility defined by the
 // client.
-class ServiceContext : public mojom::Service {
+class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContext : public mojom::Service {
  public:
   // Creates a new ServiceContext bound to |request|. This connection may be
   // used immediately to make outgoing connections via connector().
