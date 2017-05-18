@@ -98,9 +98,6 @@ NOINLINE DISABLE_CFI_PERF void RasterItem(const DisplayItem& base_item,
       break;
     case DisplayItem::DRAWING: {
       const auto& item = static_cast<const DrawingDisplayItem&>(base_item);
-      if (canvas->quickReject(item.bounds))
-        break;
-
       // TODO(enne): Maybe the PaintRecord itself could know whether this
       // was needed?  It's not clear whether these save/restore semantics
       // that SkPicture handles during playback are things that should be
