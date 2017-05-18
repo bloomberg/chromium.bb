@@ -8,12 +8,16 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
-#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
+
+using filesystem::mojom::FileError;
+using leveldb_env::UMALogger;
 
 namespace leveldb {
 
@@ -29,10 +33,10 @@ base::File::Error LastFileError() {
 #endif
 }
 
-Status FilesystemErrorToStatus(filesystem::mojom::FileError error,
+Status FilesystemErrorToStatus(FileError error,
                                const std::string& filename,
                                leveldb_env::MethodID method) {
-  if (error == filesystem::mojom::FileError::OK)
+  if (error == FileError::OK)
     return Status::OK();
 
   std::string err_str =
@@ -65,8 +69,10 @@ class MojoFileLock : public FileLock {
 
 class MojoSequentialFile : public leveldb::SequentialFile {
  public:
-  MojoSequentialFile(const std::string& fname, base::File f)
-      : filename_(fname), file_(std::move(f)) {}
+  MojoSequentialFile(const std::string& fname,
+                     base::File f,
+                     const UMALogger* uma_logger)
+      : filename_(fname), file_(std::move(f)), uma_logger_(uma_logger) {}
   ~MojoSequentialFile() override {}
 
   Status Read(size_t n, Slice* result, char* scratch) override {
@@ -75,6 +81,7 @@ class MojoSequentialFile : public leveldb::SequentialFile {
         static_cast<int>(n));
     if (bytes_read == -1) {
       base::File::Error error = LastFileError();
+      uma_logger_->RecordOSError(leveldb_env::kSequentialFileRead, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kSequentialFileRead, error);
     } else {
@@ -86,6 +93,7 @@ class MojoSequentialFile : public leveldb::SequentialFile {
   Status Skip(uint64_t n) override {
     if (file_.Seek(base::File::FROM_CURRENT, n) == -1) {
       base::File::Error error = LastFileError();
+      uma_logger_->RecordOSError(leveldb_env::kSequentialFileSkip, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kSequentialFileSkip, error);
     } else {
@@ -96,14 +104,17 @@ class MojoSequentialFile : public leveldb::SequentialFile {
  private:
   std::string filename_;
   base::File file_;
+  const UMALogger* uma_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoSequentialFile);
 };
 
 class MojoRandomAccessFile : public leveldb::RandomAccessFile {
  public:
-  MojoRandomAccessFile(const std::string& fname, base::File file)
-      : filename_(fname), file_(std::move(file)) {}
+  MojoRandomAccessFile(const std::string& fname,
+                       base::File file,
+                       const UMALogger* uma_logger)
+      : filename_(fname), file_(std::move(file)), uma_logger_(uma_logger) {}
   ~MojoRandomAccessFile() override {}
 
   Status Read(uint64_t offset,
@@ -117,6 +128,8 @@ class MojoRandomAccessFile : public leveldb::RandomAccessFile {
       // An error: return a non-ok status
       s = MakeIOError(filename_, "Could not perform read",
                       leveldb_env::kRandomAccessFileRead);
+      uma_logger_->RecordOSError(leveldb_env::kRandomAccessFileRead,
+                                 LastFileError());
     }
     return s;
   }
@@ -124,6 +137,7 @@ class MojoRandomAccessFile : public leveldb::RandomAccessFile {
  private:
   std::string filename_;
   mutable base::File file_;
+  const UMALogger* uma_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRandomAccessFile);
 };
@@ -133,12 +147,14 @@ class MojoWritableFile : public leveldb::WritableFile {
   MojoWritableFile(LevelDBMojoProxy::OpaqueDir* dir,
                    const std::string& fname,
                    base::File f,
-                   scoped_refptr<LevelDBMojoProxy> thread)
+                   scoped_refptr<LevelDBMojoProxy> thread,
+                   const UMALogger* uma_logger)
       : filename_(fname),
         file_(std::move(f)),
         file_type_(kOther),
         dir_(dir),
-        thread_(thread) {
+        thread_(thread),
+        uma_logger_(uma_logger) {
     base::FilePath path = base::FilePath::FromUTF8Unsafe(fname);
     if (base::StartsWith(path.BaseName().AsUTF8Unsafe(), "MANIFEST",
                          base::CompareCase::SENSITIVE)) {
@@ -157,6 +173,7 @@ class MojoWritableFile : public leveldb::WritableFile {
         data.data(), static_cast<int>(data.size()));
     if (bytes_written != data.size()) {
       base::File::Error error = LastFileError();
+      uma_logger_->RecordOSError(leveldb_env::kWritableFileAppend, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kWritableFileAppend, error);
     }
@@ -181,6 +198,7 @@ class MojoWritableFile : public leveldb::WritableFile {
 
     if (!file_.Flush()) {
       base::File::Error error = LastFileError();
+      uma_logger_->RecordOSError(leveldb_env::kWritableFileSync, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kWritableFileSync, error);
     }
@@ -198,9 +216,8 @@ class MojoWritableFile : public leveldb::WritableFile {
   enum Type { kManifest, kTable, kOther };
 
   leveldb::Status SyncParent() {
-    filesystem::mojom::FileError error =
-        thread_->SyncDirectory(dir_, parent_dir_);
-    return error == filesystem::mojom::FileError::OK
+    FileError error = thread_->SyncDirectory(dir_, parent_dir_);
+    return error == FileError::OK
                ? Status::OK()
                : Status::IOError(filename_,
                                  base::File::ErrorToString(base::File::Error(
@@ -213,6 +230,7 @@ class MojoWritableFile : public leveldb::WritableFile {
   LevelDBMojoProxy::OpaqueDir* dir_;
   std::string parent_dir_;
   scoped_refptr<LevelDBMojoProxy> thread_;
+  const UMALogger* uma_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoWritableFile);
 };
@@ -255,11 +273,12 @@ Status MojoEnv::NewSequentialFile(const std::string& fname,
       dir_, fname, filesystem::mojom::kFlagOpen | filesystem::mojom::kFlagRead);
   if (!f.IsValid()) {
     *result = nullptr;
+    RecordOSError(leveldb_env::kNewSequentialFile, f.error_details());
     return MakeIOError(fname, "Unable to create sequential file",
                        leveldb_env::kNewSequentialFile, f.error_details());
   }
 
-  *result = new MojoSequentialFile(fname, std::move(f));
+  *result = new MojoSequentialFile(fname, std::move(f), this);
   return Status::OK();
 }
 
@@ -271,11 +290,12 @@ Status MojoEnv::NewRandomAccessFile(const std::string& fname,
   if (!f.IsValid()) {
     *result = nullptr;
     base::File::Error error_code = f.error_details();
+    RecordOSError(leveldb_env::kNewRandomAccessFile, error_code);
     return MakeIOError(fname, base::File::ErrorToString(error_code),
                        leveldb_env::kNewRandomAccessFile, error_code);
   }
 
-  *result = new MojoRandomAccessFile(fname, std::move(f));
+  *result = new MojoRandomAccessFile(fname, std::move(f), this);
   return Status::OK();
 }
 
@@ -287,11 +307,12 @@ Status MojoEnv::NewWritableFile(const std::string& fname,
                                                filesystem::mojom::kFlagWrite);
   if (!f.IsValid()) {
     *result = nullptr;
+    RecordOSError(leveldb_env::kNewWritableFile, f.error_details());
     return MakeIOError(fname, "Unable to create writable file",
                        leveldb_env::kNewWritableFile, f.error_details());
   }
 
-  *result = new MojoWritableFile(dir_, fname, std::move(f), thread_);
+  *result = new MojoWritableFile(dir_, fname, std::move(f), thread_, this);
   return Status::OK();
 }
 
@@ -303,11 +324,12 @@ Status MojoEnv::NewAppendableFile(const std::string& fname,
                                                filesystem::mojom::kFlagAppend);
   if (!f.IsValid()) {
     *result = nullptr;
+    RecordOSError(leveldb_env::kNewAppendableFile, f.error_details());
     return MakeIOError(fname, "Unable to create appendable file",
                        leveldb_env::kNewAppendableFile, f.error_details());
   }
 
-  *result = new MojoWritableFile(dir_, fname, std::move(f), thread_);
+  *result = new MojoWritableFile(dir_, fname, std::move(f), thread_, this);
   return Status::OK();
 }
 
@@ -319,47 +341,61 @@ bool MojoEnv::FileExists(const std::string& fname) {
 Status MojoEnv::GetChildren(const std::string& path,
                             std::vector<std::string>* result) {
   TRACE_EVENT1("leveldb", "MojoEnv::GetChildren", "path", path);
-  return FilesystemErrorToStatus(thread_->GetChildren(dir_, path, result), path,
-                                 leveldb_env::kGetChildren);
+  FileError error = thread_->GetChildren(dir_, path, result);
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kGetChildren, error);
+  return FilesystemErrorToStatus(error, path, leveldb_env::kGetChildren);
 }
 
 Status MojoEnv::DeleteFile(const std::string& fname) {
   TRACE_EVENT1("leveldb", "MojoEnv::DeleteFile", "fname", fname);
-  return FilesystemErrorToStatus(thread_->Delete(dir_, fname, 0), fname,
-                                 leveldb_env::kDeleteFile);
+  FileError error = thread_->Delete(dir_, fname, 0);
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kDeleteFile, error);
+  return FilesystemErrorToStatus(error, fname, leveldb_env::kDeleteFile);
 }
 
 Status MojoEnv::CreateDir(const std::string& dirname) {
   TRACE_EVENT1("leveldb", "MojoEnv::CreateDir", "dirname", dirname);
-  return FilesystemErrorToStatus(thread_->CreateDir(dir_, dirname), dirname,
-                                 leveldb_env::kCreateDir);
+  FileError error = thread_->CreateDir(dir_, dirname);
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kCreateDir, error);
+  return FilesystemErrorToStatus(error, dirname, leveldb_env::kCreateDir);
 }
 
 Status MojoEnv::DeleteDir(const std::string& dirname) {
   TRACE_EVENT1("leveldb", "MojoEnv::DeleteDir", "dirname", dirname);
-  return FilesystemErrorToStatus(
-      thread_->Delete(dir_, dirname, filesystem::mojom::kDeleteFlagRecursive),
-      dirname, leveldb_env::kDeleteDir);
+  FileError error =
+      thread_->Delete(dir_, dirname, filesystem::mojom::kDeleteFlagRecursive);
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kDeleteDir, error);
+  return FilesystemErrorToStatus(error, dirname, leveldb_env::kDeleteDir);
 }
 
 Status MojoEnv::GetFileSize(const std::string& fname, uint64_t* file_size) {
   TRACE_EVENT1("leveldb", "MojoEnv::GetFileSize", "fname", fname);
-  return FilesystemErrorToStatus(thread_->GetFileSize(dir_, fname, file_size),
-                                 fname,
-                                 leveldb_env::kGetFileSize);
+  FileError error = thread_->GetFileSize(dir_, fname, file_size);
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kGetFileSize, error);
+  return FilesystemErrorToStatus(error, fname, leveldb_env::kGetFileSize);
 }
 
 Status MojoEnv::RenameFile(const std::string& src, const std::string& target) {
   TRACE_EVENT2("leveldb", "MojoEnv::RenameFile", "src", src, "target", target);
-  return FilesystemErrorToStatus(thread_->RenameFile(dir_, src, target), src,
-                                 leveldb_env::kRenameFile);
+  FileError error = thread_->RenameFile(dir_, src, target);
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kRenameFile, error);
+  return FilesystemErrorToStatus(error, src, leveldb_env::kRenameFile);
 }
 
 Status MojoEnv::LockFile(const std::string& fname, FileLock** lock) {
   TRACE_EVENT1("leveldb", "MojoEnv::LockFile", "fname", fname);
 
-  std::pair<filesystem::mojom::FileError, LevelDBMojoProxy::OpaqueLock*> p =
+  std::pair<FileError, LevelDBMojoProxy::OpaqueLock*> p =
       thread_->LockFile(dir_, fname);
+
+  if (p.first != FileError::OK)
+    RecordFileError(leveldb_env::kLockFile, p.first);
 
   if (p.second)
     *lock = new MojoFileLock(p.second, fname);
@@ -373,9 +409,11 @@ Status MojoEnv::UnlockFile(FileLock* lock) {
   std::string fname = my_lock ? my_lock->name() : "(invalid)";
   TRACE_EVENT1("leveldb", "MojoEnv::UnlockFile", "fname", fname);
 
-  filesystem::mojom::FileError err = thread_->UnlockFile(my_lock->TakeLock());
+  FileError error = thread_->UnlockFile(my_lock->TakeLock());
+  if (error != FileError::OK)
+    RecordFileError(leveldb_env::kUnlockFile, error);
   delete my_lock;
-  return FilesystemErrorToStatus(err, fname, leveldb_env::kUnlockFile);
+  return FilesystemErrorToStatus(error, fname, leveldb_env::kUnlockFile);
 }
 
 Status MojoEnv::GetTestDirectory(std::string* path) {
@@ -395,12 +433,31 @@ Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
       filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite));
   if (!f.IsValid()) {
     *result = NULL;
+    RecordOSError(leveldb_env::kNewLogger, f.error_details());
     return MakeIOError(fname, "Unable to create log file",
                        leveldb_env::kNewLogger, f.error_details());
   } else {
     *result = new leveldb::ChromiumLogger(std::move(f));
     return Status::OK();
   }
+}
+
+void MojoEnv::RecordErrorAt(leveldb_env::MethodID method) const {
+  UMA_HISTOGRAM_ENUMERATION("MojoLevelDBEnv.IOError", method,
+                            leveldb_env::kNumEntries);
+}
+
+void MojoEnv::RecordOSError(leveldb_env::MethodID method,
+                            base::File::Error error) const {
+  RecordErrorAt(method);
+  std::string uma_name =
+      std::string("MojoLevelDBEnv.IOError.BFE.") + MethodIDToString(method);
+  base::UmaHistogramExactLinear(uma_name, -error, -base::File::FILE_ERROR_MAX);
+}
+
+void MojoEnv::RecordFileError(leveldb_env::MethodID method,
+                              FileError error) const {
+  RecordOSError(method, static_cast<base::File::Error>(error));
 }
 
 uint64_t MojoEnv::NowMicros() {
