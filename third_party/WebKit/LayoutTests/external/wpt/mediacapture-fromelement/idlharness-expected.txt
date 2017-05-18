@@ -15,8 +15,6 @@ PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interf
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property 
 PASS CanvasCaptureMediaStreamTrack interface: attribute canvas 
 PASS CanvasCaptureMediaStreamTrack interface: operation requestFrame() 
-PASS CanvasCaptureMediaStreamTrack must be primary interface of [object CanvasCaptureMediaStreamTrack] 
-PASS Stringification of [object CanvasCaptureMediaStreamTrack] 
 PASS CanvasCaptureMediaStreamTrack interface: [object CanvasCaptureMediaStreamTrack] must inherit property "canvas" with the proper type (0) 
 PASS CanvasCaptureMediaStreamTrack interface: [object CanvasCaptureMediaStreamTrack] must inherit property "requestFrame" with the proper type (1) 
 Harness: the test ran to completion.

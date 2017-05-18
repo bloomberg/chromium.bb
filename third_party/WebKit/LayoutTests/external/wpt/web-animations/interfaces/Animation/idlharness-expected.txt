@@ -21,8 +21,6 @@ FAIL Animation interface: operation finish() assert_own_property: self does not 
 FAIL Animation interface: operation play() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
 FAIL Animation interface: operation pause() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
 FAIL Animation interface: operation reverse() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation must be primary interface of new Animation() assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Stringification of new Animation() assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
 FAIL Animation interface: new Animation() must inherit property "id" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
 FAIL Animation interface: new Animation() must inherit property "effect" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
 FAIL Animation interface: new Animation() must inherit property "timeline" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"

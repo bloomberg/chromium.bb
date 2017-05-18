@@ -48,20 +48,20 @@ PASS Android Pay parameters for network token without environment key should not
 PASS Invalid Android Pay parameters should not throw when method name is not "https://android.com/pay". 
 PASS Invalid Android Pay parameters should not throw even when method name is "https://android.com/pay". 
 PASS Array value for payment method specific data parameter should not throw 
-PASS abort() without show() should reject with error 
-PASS PaymentRequest constructor should throw for incorrect parameter types. 
-PASS PaymentRequest constructor should throw for undefined required parameters. 
-PASS PaymentRequest constructor should throw for null required parameter. 
+FAIL abort() without show() should reject with error Test bug: need to pass exception to assert_throws()
+FAIL PaymentRequest constructor should throw for incorrect parameter types. Test bug: need to pass exception to assert_throws()
+FAIL PaymentRequest constructor should throw for undefined required parameters. Test bug: need to pass exception to assert_throws()
+FAIL PaymentRequest constructor should throw for null required parameter. Test bug: need to pass exception to assert_throws()
 PASS Empty list of supported payment method identifiers should throw TypeError. 
-PASS Empty supported payment method identifiers should throw TypeError. 
-PASS Absence of total should throw TypeError. 
-PASS Negative total value should throw a TypeError. 
-PASS Negative total value in PaymentDetailsModifier should throw a TypeError. 
-PASS Null supportedMethods in modifiers should throw TypeError. 
-PASS Undefined supportedMethods in modifiers should throw TypeError. 
-PASS Empty supportedMethods in modifiers should throw TypeError. 
-PASS Absence of supportedMethods in modifiers should throw TypeError. 
-PASS Empty details should throw 
+FAIL Empty supported payment method identifiers should throw TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Absence of total should throw TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Negative total value should throw a TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Negative total value in PaymentDetailsModifier should throw a TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Null supportedMethods in modifiers should throw TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Undefined supportedMethods in modifiers should throw TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Empty supportedMethods in modifiers should throw TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Absence of supportedMethods in modifiers should throw TypeError. Test bug: need to pass exception to assert_throws()
+FAIL Empty details should throw Test bug: need to pass exception to assert_throws()
 PASS Null items should throw 
 PASS Null shipping options should throw 
 PASS Undefined PaymentShippingType value for shppingType should throw a TypeError 
@@ -69,85 +69,85 @@ PASS Null for shppingType should throw a TypeError
 PASS Array value for shppingType should throw a TypeError 
 PASS Object value for shppingType should throw a TypeError 
 PASS Numeric value for shppingType should throw a TypeError 
-PASS String value for payment method specific data parameter should throw 
-PASS Numeric value for payment method specific data parameter should throw 
-PASS Infinite JSON value for one of the payment method specific data pieces should throw 
-PASS Null for payment method specific data parameter should throw 
-PASS Empty string for payment method specific data parameter should throw 
-PASS Undefined currency code in total should throw 
-PASS Invalid amount "-" in total should throw 
-PASS Invalid amount "notdigits" in total should throw 
-PASS Invalid amount "ALSONOTDIGITS" in total should throw 
-PASS Invalid amount "10." in total should throw 
-PASS Invalid amount ".99" in total should throw 
-PASS Invalid amount "-10." in total should throw 
-PASS Invalid amount "-.99" in total should throw 
-PASS Invalid amount "10-" in total should throw 
-PASS Invalid amount "1-0" in total should throw 
-PASS Invalid amount "1.0.0" in total should throw 
-PASS Invalid amount "1/3" in total should throw 
-PASS Empty amount in total should throw 
-PASS Null amount in total should throw 
-PASS Undefined amount in total should throw 
-PASS Undefined currency code in displayItems.0 should throw 
-PASS Invalid amount "-" in displayItems.0 should throw 
-PASS Invalid amount "notdigits" in displayItems.0 should throw 
-PASS Invalid amount "ALSONOTDIGITS" in displayItems.0 should throw 
-PASS Invalid amount "10." in displayItems.0 should throw 
-PASS Invalid amount ".99" in displayItems.0 should throw 
-PASS Invalid amount "-10." in displayItems.0 should throw 
-PASS Invalid amount "-.99" in displayItems.0 should throw 
-PASS Invalid amount "10-" in displayItems.0 should throw 
-PASS Invalid amount "1-0" in displayItems.0 should throw 
-PASS Invalid amount "1.0.0" in displayItems.0 should throw 
-PASS Invalid amount "1/3" in displayItems.0 should throw 
-PASS Empty amount in displayItems.0 should throw 
-PASS Null amount in displayItems.0 should throw 
-PASS Undefined amount in displayItems.0 should throw 
-PASS Undefined currency code in shippingOptions.0 should throw 
-PASS Invalid amount "-" in shippingOptions.0 should throw 
-PASS Invalid amount "notdigits" in shippingOptions.0 should throw 
-PASS Invalid amount "ALSONOTDIGITS" in shippingOptions.0 should throw 
-PASS Invalid amount "10." in shippingOptions.0 should throw 
-PASS Invalid amount ".99" in shippingOptions.0 should throw 
-PASS Invalid amount "-10." in shippingOptions.0 should throw 
-PASS Invalid amount "-.99" in shippingOptions.0 should throw 
-PASS Invalid amount "10-" in shippingOptions.0 should throw 
-PASS Invalid amount "1-0" in shippingOptions.0 should throw 
-PASS Invalid amount "1.0.0" in shippingOptions.0 should throw 
-PASS Invalid amount "1/3" in shippingOptions.0 should throw 
-PASS Empty amount in shippingOptions.0 should throw 
-PASS Null amount in shippingOptions.0 should throw 
-PASS Undefined amount in shippingOptions.0 should throw 
-PASS Undefined currency code in modifiers.0.total should throw 
-PASS Invalid amount "-" in modifiers.0.total should throw 
-PASS Invalid amount "notdigits" in modifiers.0.total should throw 
-PASS Invalid amount "ALSONOTDIGITS" in modifiers.0.total should throw 
-PASS Invalid amount "10." in modifiers.0.total should throw 
-PASS Invalid amount ".99" in modifiers.0.total should throw 
-PASS Invalid amount "-10." in modifiers.0.total should throw 
-PASS Invalid amount "-.99" in modifiers.0.total should throw 
-PASS Invalid amount "10-" in modifiers.0.total should throw 
-PASS Invalid amount "1-0" in modifiers.0.total should throw 
-PASS Invalid amount "1.0.0" in modifiers.0.total should throw 
-PASS Invalid amount "1/3" in modifiers.0.total should throw 
-PASS Empty amount in modifiers.0.total should throw 
-PASS Null amount in modifiers.0.total should throw 
-PASS Undefined amount in modifiers.0.total should throw 
-PASS Undefined currency code in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "-" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "notdigits" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "ALSONOTDIGITS" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "10." in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount ".99" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "-10." in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "-.99" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "10-" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "1-0" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "1.0.0" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Invalid amount "1/3" in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Empty amount in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Null amount in modifiers.0.additionalDisplayItems.0 should throw 
-PASS Undefined amount in modifiers.0.additionalDisplayItems.0 should throw 
+FAIL String value for payment method specific data parameter should throw Test bug: need to pass exception to assert_throws()
+FAIL Numeric value for payment method specific data parameter should throw Test bug: need to pass exception to assert_throws()
+FAIL Infinite JSON value for one of the payment method specific data pieces should throw Test bug: need to pass exception to assert_throws()
+FAIL Null for payment method specific data parameter should throw Test bug: need to pass exception to assert_throws()
+FAIL Empty string for payment method specific data parameter should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined currency code in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "notdigits" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "ALSONOTDIGITS" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10." in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount ".99" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-10." in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-.99" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10-" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1-0" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1.0.0" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1/3" in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Empty amount in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Null amount in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined amount in total should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined currency code in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "notdigits" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "ALSONOTDIGITS" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10." in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount ".99" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-10." in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-.99" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10-" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1-0" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1.0.0" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1/3" in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Empty amount in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Null amount in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined amount in displayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined currency code in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "notdigits" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "ALSONOTDIGITS" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10." in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount ".99" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-10." in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-.99" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10-" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1-0" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1.0.0" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1/3" in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Empty amount in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Null amount in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined amount in shippingOptions.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined currency code in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "notdigits" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "ALSONOTDIGITS" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10." in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount ".99" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-10." in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-.99" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10-" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1-0" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1.0.0" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1/3" in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Empty amount in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Null amount in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined amount in modifiers.0.total should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined currency code in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "notdigits" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "ALSONOTDIGITS" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10." in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount ".99" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-10." in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "-.99" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "10-" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1-0" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1.0.0" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Invalid amount "1/3" in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Empty amount in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Null amount in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
+FAIL Undefined amount in modifiers.0.additionalDisplayItems.0 should throw Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

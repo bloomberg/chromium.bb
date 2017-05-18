@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+FAIL Passing invalid arguments to CSSCalcLength throws an exception. Test bug: need to pass exception to assert_throws()
+PASS Adding two CSSCalcLengths produces a new CSSCalcLength with the correct value. 
+PASS Subtracting two CSSCalcLengths produces a new CSSCalcLength with the correct values. 
+PASS Multiplying a CSSCalcLength produces a new CSSCalcLength with the correct values. 
+PASS Dividing a CSSCalcLength produces a new CSSCalcLength with the correct values. 
+PASS Dividing by zero throws a RangeError 
+PASS cssText produces the correct string 
+Harness: the test ran to completion.
+

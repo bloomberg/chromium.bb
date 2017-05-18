@@ -1,0 +1,20 @@
+This is a testharness.js-based test.
+PASS initialize global state 
+PASS The SW must intercept the request for a main resource. 
+PASS The SW must intercept the request of same origin XHR. 
+FAIL The SW must intercept the request of CORS-unsupported other origin XHR. Test bug: need to pass exception to assert_throws()
+FAIL The SW must intercept the request of CORS-supported other origin XHR. assert_object_equals: property "url" expected object "[object Object]" got object "[object Object]"
+PASS The SW must intercept only the first request of redirected XHR. 
+FAIL The SW must intercept only the first request for XHR which is redirected to CORS-unsupported other origin. Test bug: need to pass exception to assert_throws()
+FAIL The SW must intercept only the first request for XHR which is redirected to CORS-supported other origin. assert_object_equals: property "url" expected object "[object Object]" got object "[object Object]"
+PASS The SW must intercept the request for image. 
+PASS The SW must intercept the request for other origin image. 
+FAIL The SW must intercept the request for CORS-unsupported other origin image. Test bug: need to pass exception to assert_throws()
+FAIL The SW must intercept the request for CORS-supported other origin image. assert_object_equals: property "url" expected object "[object Object]" got object "[object Object]"
+PASS The SW must intercept only the first request for redirected image resource. 
+PASS The SW must intercept only the first request for image resource which is redirected to other origin. 
+FAIL The SW must intercept only the first request for image resource which is redirected to CORS-unsupported other origin. Test bug: need to pass exception to assert_throws()
+FAIL The SW must intercept only the first request for image resource which is redirected to CORS-supported other origin. assert_object_equals: property "url" expected object "[object Object]" got object "[object Object]"
+PASS restore global state 
+Harness: the test ran to completion.
+

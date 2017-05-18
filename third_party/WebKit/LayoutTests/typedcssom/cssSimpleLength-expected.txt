@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS CSSSimpleLengths are immutable 
+PASS Each unit type is returned according to the spec 
+PASS Adding CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value. 
+PASS Adding CSSSimpleLengths with different units produces a calc length with the correct values. 
+PASS Subtracting CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value. 
+PASS Subtracting CSSSimpleLengths with different units produces a calc length with the correct values. 
+PASS Multiplying a CSSSimpleLength produces a new CSSSimpleLength with the correct value. 
+PASS Dividing a CSSSimpleLength produces a new CSSSimpleLength with the correct value. 
+PASS Dividing by zero throws a RangeError 
+PASS cssText is generated correctly for each unit type. 
+FAIL Invalid input throws an exception. Test bug: need to pass exception to assert_throws()
+Harness: the test ran to completion.
+

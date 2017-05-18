@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Test that the (x, y, z) values for CSSTranslation are correct. 
+PASS Test that the is2D values for CSSTranslation is correct. 
+PASS Test that toString values for CSSTranslation is correct. 
+FAIL Test that CSSTranslation constructor throws when z component contains percent. Test bug: need to pass exception to assert_throws()
+FAIL Test that invalid number of arguments for CSSTranslation throws an exception. Test bug: need to pass exception to assert_throws()
+Harness: the test ran to completion.
+
