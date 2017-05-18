@@ -10,6 +10,7 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
+#include "url/gurl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -33,14 +34,17 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   bool IsControlledByServiceWorker() const override;
   void SetDataSaverEnabled(bool) override;
   bool IsDataSaverEnabled() const override;
+  blink::WebURL FirstPartyForCookies() const override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
   void SetControllerServiceWorker(int64_t controller_version_id) override;
 
-  // Sets the service worker status of the parent frame.
+  // Sets the fetch context status of the parent frame.
   void set_service_worker_provider_id(int id);
   void set_is_controlled_by_service_worker(bool flag);
   void set_parent_frame_id(int id);
+  void set_first_party_for_cookies(
+      const blink::WebURL& first_party_for_cookies);
 
  private:
   mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info_;
@@ -60,6 +64,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
 
   bool is_data_saver_enabled_ = false;
   int parent_frame_id_ = MSG_ROUTING_NONE;
+  GURL first_party_for_cookies_;
 };
 
 }  // namespace content

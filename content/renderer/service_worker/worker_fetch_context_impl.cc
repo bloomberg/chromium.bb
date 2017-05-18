@@ -67,6 +67,10 @@ bool WorkerFetchContextImpl::IsDataSaverEnabled() const {
   return is_data_saver_enabled_;
 }
 
+blink::WebURL WorkerFetchContextImpl::FirstPartyForCookies() const {
+  return first_party_for_cookies_;
+}
+
 void WorkerFetchContextImpl::set_service_worker_provider_id(int id) {
   service_worker_provider_id_ = id;
 }
@@ -77,6 +81,11 @@ void WorkerFetchContextImpl::set_is_controlled_by_service_worker(bool flag) {
 
 void WorkerFetchContextImpl::set_parent_frame_id(int id) {
   parent_frame_id_ = id;
+}
+
+void WorkerFetchContextImpl::set_first_party_for_cookies(
+    const blink::WebURL& first_party_for_cookies) {
+  first_party_for_cookies_ = first_party_for_cookies;
 }
 
 void WorkerFetchContextImpl::SetControllerServiceWorker(

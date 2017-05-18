@@ -272,6 +272,11 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       base::MakeUnique<WorkerFetchContextImpl>(
           worker_url_loader_factory_provider.PassInterface());
+  // TODO(horo): To get the correct first_party_to_cookies for the shared
+  // worker, we need to check the all documents bounded by the shared worker.
+  // (crbug.com/723553)
+  // https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-2.1.2
+  worker_fetch_context->set_first_party_for_cookies(url_);
   if (web_network_provider) {
     ServiceWorkerNetworkProvider* network_provider =
         ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(

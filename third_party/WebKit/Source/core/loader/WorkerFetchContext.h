@@ -33,6 +33,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   virtual ~WorkerFetchContext();
 
   ResourceFetcher* GetResourceFetcher();
+  KURL FirstPartyForCookies() const;
 
   // BaseFetchContext implementation:
   ContentSettingsClient* GetContentSettingsClient() const override;
@@ -63,6 +64,14 @@ class WorkerFetchContext final : public BaseFetchContext {
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
+  void PopulateResourceRequest(const KURL&,
+                               Resource::Type,
+                               const ClientHintsPreferences&,
+                               const FetchParameters::ResourceWidth&,
+                               const ResourceLoaderOptions&,
+                               SecurityViolationReportingPolicy,
+                               ResourceRequest&) override;
+  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
 
   DECLARE_VIRTUAL_TRACE();
 
