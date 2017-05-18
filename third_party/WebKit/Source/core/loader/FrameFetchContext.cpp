@@ -777,7 +777,7 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
 }
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader() {
-  return Platform::Current()->CreateURLLoader();
+  return GetFrame()->CreateURLLoader();
 }
 
 DEFINE_TRACE(FrameFetchContext) {

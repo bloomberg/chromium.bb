@@ -39,6 +39,7 @@
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
@@ -272,6 +273,11 @@ class TestWebFrameClient : public WebFrameClient {
 
   // Tests can override the virtual method below to mock the interface provider.
   virtual blink::InterfaceProvider* GetInterfaceProvider() { return nullptr; }
+
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
+    // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
+    return Platform::Current()->CreateURLLoader();
+  }
 
  private:
   int loads_in_progress_ = 0;

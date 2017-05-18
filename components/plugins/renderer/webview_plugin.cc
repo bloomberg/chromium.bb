@@ -333,6 +333,12 @@ void WebViewPlugin::WebViewHelper::ScheduleAnimation() {
   }
 }
 
+std::unique_ptr<blink::WebURLLoader>
+WebViewPlugin::WebViewHelper::CreateURLLoader() {
+  // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
+  return blink::Platform::Current()->CreateURLLoader();
+}
+
 void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
   if (!plugin_->delegate_)
     return;

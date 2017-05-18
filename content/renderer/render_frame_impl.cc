@@ -6894,6 +6894,11 @@ blink::WebPageVisibilityState RenderFrameImpl::VisibilityState() const {
   return current_state;
 }
 
+std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader() {
+  // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
+  return blink::Platform::Current()->CreateURLLoader();
+}
+
 blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {
   return VisibilityState();
 }

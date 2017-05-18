@@ -226,6 +226,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   TextCheckerClient& GetTextCheckerClient() const override;
 
+  std::unique_ptr<WebURLLoader> CreateURLLoader() override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameBase*);
 

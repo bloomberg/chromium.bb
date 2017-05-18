@@ -1038,4 +1038,8 @@ TextCheckerClient& LocalFrameClientImpl::GetTextCheckerClient() const {
   return web_frame_->GetTextCheckerClient();
 }
 
+std::unique_ptr<blink::WebURLLoader> LocalFrameClientImpl::CreateURLLoader() {
+  return web_frame_->CreateURLLoader();
+}
+
 }  // namespace blink
