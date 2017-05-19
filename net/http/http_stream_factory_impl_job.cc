@@ -1152,9 +1152,9 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     if (delegate_->for_websockets()) {
       DCHECK_NE(job_type_, PRECONNECT);
       DCHECK(delegate_->websocket_handshake_stream_create_helper());
-      websocket_stream_.reset(
+      websocket_stream_ =
           delegate_->websocket_handshake_stream_create_helper()
-              ->CreateBasicStream(std::move(connection_), using_proxy));
+              ->CreateBasicStream(std::move(connection_), using_proxy);
     } else {
       stream_.reset(new HttpBasicStream(
           std::move(connection_), using_proxy,

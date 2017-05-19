@@ -25,7 +25,7 @@ WebSocketHandshakeStreamCreateHelper::WebSocketHandshakeStreamCreateHelper(
 
 WebSocketHandshakeStreamCreateHelper::~WebSocketHandshakeStreamCreateHelper() {}
 
-WebSocketHandshakeStreamBase*
+std::unique_ptr<WebSocketHandshakeStreamBase>
 WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
     std::unique_ptr<ClientSocketHandle> connection,
     bool using_proxy) {
@@ -36,12 +36,12 @@ WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
   // method.
   std::vector<std::string> extensions(
       1, "permessage-deflate; client_max_window_bits");
-  WebSocketBasicHandshakeStream* stream = new WebSocketBasicHandshakeStream(
+  auto stream = base::MakeUnique<WebSocketBasicHandshakeStream>(
       std::move(connection), connect_delegate_, using_proxy,
       requested_subprotocols_, extensions, request_);
-  OnBasicStreamCreated(stream);
-  request_->OnHandshakeStreamCreated(stream);
-  return stream;
+  OnBasicStreamCreated(stream.get());
+  request_->OnHandshakeStreamCreated(stream.get());
+  return std::move(stream);
 }
 
 void WebSocketHandshakeStreamCreateHelper::OnBasicStreamCreated(

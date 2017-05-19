@@ -46,7 +46,7 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
     // underlying connection has been established but before any handshake data
     // has been transferred. This can be called more than once in the case that
     // HTTP authentication is needed.
-    virtual WebSocketHandshakeStreamBase* CreateBasicStream(
+    virtual std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
         std::unique_ptr<ClientSocketHandle> connection,
         bool using_proxy) = 0;
   };
