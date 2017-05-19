@@ -41,6 +41,7 @@
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
@@ -891,10 +892,15 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
     IntRect& compositing_bounds_relative_to_composited_ancestor,
     LayoutPoint& offset_from_composited_ancestor,
     IntPoint& snapped_offset_from_composited_ancestor) {
-  LayoutRect local_raw_compositing_bounds = CompositedBounds();
+  // HACK(chrishtr): adjust for position of inlines.
+  LayoutPoint local_representative_point_for_fragmentation;
+  if (owning_layer_.GetLayoutObject().IsLayoutInline()) {
+    local_representative_point_for_fragmentation =
+        ToLayoutInline(owning_layer_.GetLayoutObject()).FirstLineBoxTopLeft();
+  }
   offset_from_composited_ancestor = ComputeOffsetFromCompositedAncestor(
       &owning_layer_, composited_ancestor,
-      local_raw_compositing_bounds.Location());
+      local_representative_point_for_fragmentation);
   snapped_offset_from_composited_ancestor =
       IntPoint(offset_from_composited_ancestor.X().Round(),
                offset_from_composited_ancestor.Y().Round());
@@ -911,6 +917,7 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
 
   // Move the bounds by the subpixel accumulation so that it pixel-snaps
   // relative to absolute pixels instead of local coordinates.
+  LayoutRect local_raw_compositing_bounds = CompositedBounds();
   local_raw_compositing_bounds.Move(subpixel_accumulation);
   local_bounds = PixelSnappedIntRect(local_raw_compositing_bounds);
 
