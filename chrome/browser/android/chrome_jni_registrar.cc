@@ -44,7 +44,6 @@
 #include "chrome/browser/android/devtools_server.h"
 #include "chrome/browser/android/document/document_web_contents_delegate.h"
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
-#include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/items/offline_content_aggregator_factory_android.h"
@@ -223,7 +222,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DomDistillerContent",
      dom_distiller::content::android::RegisterDomDistiller},
     {"DomDistillerCore", dom_distiller::core::android::RegisterDomDistiller},
-    {"ChromeDownloadDelegate", RegisterChromeDownloadDelegate},
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},
     {"InstanceID", instance_id::android::RegisterInstanceIDJni},
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
