@@ -656,7 +656,7 @@ static Node* NonBoundaryShadowTreeRootNode(const Position& position) {
              : nullptr;
 }
 
-void FrameSelection::SelectAll() {
+void FrameSelection::SelectAll(EUserTriggered user_triggered) {
   if (isHTMLSelectElement(GetDocument().FocusedElement())) {
     HTMLSelectElement* select_element =
         toHTMLSelectElement(GetDocument().FocusedElement());
@@ -668,7 +668,12 @@ void FrameSelection::SelectAll() {
 
   Node* root = nullptr;
   Node* select_start_target = nullptr;
-  if (ComputeVisibleSelectionInDOMTree().IsContentEditable()) {
+  if (user_triggered == kUserTriggered && IsHidden()) {
+    // Hidden selection appears as no selection to user, in which case user-
+    // triggered SelectAll should act as if there is no selection.
+    root = GetDocument().documentElement();
+    select_start_target = GetDocument().body();
+  } else if (ComputeVisibleSelectionInDOMTree().IsContentEditable()) {
     root = HighestEditableRoot(ComputeVisibleSelectionInDOMTree().Start());
     if (Node* shadow_root = NonBoundaryShadowTreeRootNode(
             ComputeVisibleSelectionInDOMTree().Start()))
@@ -703,11 +708,13 @@ void FrameSelection::SelectAll() {
       return;
   }
 
+  // TODO(editing-dev): Should we pass in user_triggered?
   SetSelection(SelectionInDOMTree::Builder()
                    .SelectAllChildren(*root)
                    .SetIsHandleVisible(IsHandleVisible())
                    .Build());
   SelectFrameElementInParentIfFullySelected();
+  // TODO(editing-dev): Should we pass in user_triggered?
   NotifyTextControlOfSelectionChange(kUserTriggered);
 }
 

@@ -1750,9 +1750,12 @@ static bool ExecuteScrollToEndOfDocument(LocalFrame& frame,
 
 static bool ExecuteSelectAll(LocalFrame& frame,
                              Event*,
-                             EditorCommandSource,
+                             EditorCommandSource source,
                              const String&) {
-  frame.Selection().SelectAll();
+  const EUserTriggered user_triggered = source == kCommandFromMenuOrKeyBinding
+                                            ? kUserTriggered
+                                            : kNotUserTriggered;
+  frame.Selection().SelectAll(user_triggered);
   return true;
 }
 
@@ -2168,13 +2171,19 @@ static bool EnabledUnselect(LocalFrame& frame,
          selection.IsRange();
 }
 
-static bool EnabledSelectAll(LocalFrame& frame, Event*, EditorCommandSource) {
+static bool EnabledSelectAll(LocalFrame& frame,
+                             Event*,
+                             EditorCommandSource source) {
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   const VisibleSelection& selection =
       frame.Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
+    return true;
+  // Hidden selection appears as no selection to users, in which case user-
+  // triggered SelectAll should be enabled and act as if there is no selection.
+  if (source == kCommandFromMenuOrKeyBinding && frame.Selection().IsHidden())
     return true;
   if (Node* root = HighestEditableRoot(selection.Start())) {
     if (!root->hasChildren())
