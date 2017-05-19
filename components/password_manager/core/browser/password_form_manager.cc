@@ -197,14 +197,6 @@ void LabelFields(const FieldTypeMap& field_types,
   }
 }
 
-// Check whether |form_data| corresponds to a 2 field form with 1 text field and
-// 1 password field. Such form is likely sign-in form.
-bool IsSignInSubmission(const FormData& form_data) {
-  return form_data.fields.size() == 2 &&
-         form_data.fields[0].form_control_type == "text" &&
-         form_data.fields[1].form_control_type == "password";
-}
-
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -1298,8 +1290,16 @@ void PasswordFormManager::SendVotesOnSave() {
   if (observed_form_.IsPossibleChangePasswordFormWithoutUsername())
     return;
 
-  if (IsSignInSubmission(pending_credentials_.form_data)) {
-    SendSignInVote(pending_credentials_.form_data);
+  // Send votes for sign-in form.
+  autofill::FormData& form_data = pending_credentials_.form_data;
+  if (form_data.fields.size() == 2 &&
+      form_data.fields[0].form_control_type == "text" &&
+      form_data.fields[1].form_control_type == "password") {
+    // |form_data| is received from the renderer and does not contain field
+    // values. Fill username field value with username to allow AutofillManager
+    // to detect username autofill type.
+    form_data.fields[0].value = pending_credentials_.username_value;
+    SendSignInVote(form_data);
     return;
   }
 
