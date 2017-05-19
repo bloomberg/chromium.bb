@@ -10101,9 +10101,8 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   url::SchemeHostPort test_server(request.url);
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  EXPECT_TRUE(alternative_service_vector.empty());
+  EXPECT_TRUE(
+      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -10118,12 +10117,12 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  ASSERT_EQ(1u, alternative_service_vector.size());
-  EXPECT_EQ(kProtoHTTP2, alternative_service_vector[0].protocol);
-  EXPECT_EQ("mail.example.org", alternative_service_vector[0].host);
-  EXPECT_EQ(443, alternative_service_vector[0].port);
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_properties->GetAlternativeServiceInfos(test_server);
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+  AlternativeService alternative_service(kProtoHTTP2, "mail.example.org", 443);
+  EXPECT_EQ(alternative_service,
+            alternative_service_info_vector[0].alternative_service);
 }
 
 // Regression test for https://crbug.com/615497.
@@ -10153,9 +10152,8 @@ TEST_F(HttpNetworkTransactionTest,
   url::SchemeHostPort test_server(request.url);
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  EXPECT_TRUE(alternative_service_vector.empty());
+  EXPECT_TRUE(
+      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
 
   int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -10172,9 +10170,8 @@ TEST_F(HttpNetworkTransactionTest,
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  EXPECT_TRUE(alternative_service_vector.empty());
+  EXPECT_TRUE(
+      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
 }
 
 // HTTP/2 Alternative Services should be disabled by default.
@@ -10271,9 +10268,9 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       test_server, alternative_service, expiration);
-  AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  EXPECT_EQ(1u, alternative_service_vector.size());
+  EXPECT_EQ(
+      1u,
+      http_server_properties->GetAlternativeServiceInfos(test_server).size());
 
   // Send a clear header.
   MockRead data_reads[] = {
@@ -10311,9 +10308,8 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  EXPECT_TRUE(alternative_service_vector.empty());
+  EXPECT_TRUE(
+      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
 }
 
 TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
@@ -10346,9 +10342,8 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   url::SchemeHostPort test_server("https", "www.example.org", 443);
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  EXPECT_TRUE(alternative_service_vector.empty());
+  EXPECT_TRUE(
+      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -10363,15 +10358,17 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service_vector =
-      http_server_properties->GetAlternativeServices(test_server);
-  ASSERT_EQ(2u, alternative_service_vector.size());
-  EXPECT_EQ(kProtoHTTP2, alternative_service_vector[0].protocol);
-  EXPECT_EQ("www.example.com", alternative_service_vector[0].host);
-  EXPECT_EQ(443, alternative_service_vector[0].port);
-  EXPECT_EQ(kProtoHTTP2, alternative_service_vector[1].protocol);
-  EXPECT_EQ("www.example.org", alternative_service_vector[1].host);
-  EXPECT_EQ(1234, alternative_service_vector[1].port);
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_properties->GetAlternativeServiceInfos(test_server);
+  ASSERT_EQ(2u, alternative_service_info_vector.size());
+
+  AlternativeService alternative_service(kProtoHTTP2, "www.example.com", 443);
+  EXPECT_EQ(alternative_service,
+            alternative_service_info_vector[0].alternative_service);
+  AlternativeService alternative_service_2(kProtoHTTP2, "www.example.org",
+                                           1234);
+  EXPECT_EQ(alternative_service_2,
+            alternative_service_info_vector[1].alternative_service);
 }
 
 TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
@@ -10486,9 +10483,8 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
 
   // Mark one of the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service1);
-
-  const AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(server);
+  EXPECT_EQ(2u,
+            http_server_properties->GetAlternativeServiceInfos(server).size());
 
   HttpRequestInfo request;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -10555,12 +10551,13 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
-  const AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(server);
-  ASSERT_EQ(1u, alternative_service_vector.size());
-  EXPECT_EQ(alternative_service, alternative_service_vector[0]);
-  EXPECT_TRUE(http_server_properties->IsAlternativeServiceBroken(
-      alternative_service_vector[0]));
+  const AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_properties->GetAlternativeServiceInfos(server);
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+  EXPECT_EQ(alternative_service,
+            alternative_service_info_vector[0].alternative_service);
+  EXPECT_TRUE(
+      http_server_properties->IsAlternativeServiceBroken(alternative_service));
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol

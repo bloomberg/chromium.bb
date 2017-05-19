@@ -248,12 +248,12 @@ class HttpStreamFactoryImpl::JobController
   // Resumes the main job immediately.
   void ResumeMainJob();
 
-  AlternativeService GetAlternativeServiceFor(
+  AlternativeServiceInfo GetAlternativeServiceInfoFor(
       const HttpRequestInfo& request_info,
       HttpStreamRequest::Delegate* delegate,
       HttpStreamRequest::StreamType stream_type);
 
-  AlternativeService GetAlternativeServiceForInternal(
+  AlternativeServiceInfo GetAlternativeServiceInfoInternal(
       const HttpRequestInfo& request_info,
       HttpStreamRequest::Delegate* delegate,
       HttpStreamRequest::StreamType stream_type);
