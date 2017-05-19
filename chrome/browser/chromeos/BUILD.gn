@@ -1012,6 +1012,8 @@ source_set("chromeos") {
     "login/users/user_manager_interface.h",
     "login/users/wallpaper/wallpaper_manager.cc",
     "login/users/wallpaper/wallpaper_manager.h",
+    "login/users/wallpaper/wallpaper_window_state_manager.cc",
+    "login/users/wallpaper/wallpaper_window_state_manager.h",
     "login/version_info_updater.cc",
     "login/version_info_updater.h",
     "login/views/user_board_view.h",
