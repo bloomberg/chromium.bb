@@ -41,6 +41,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/Event.h"
+#include "core/exported/WebPluginContainerBase.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
@@ -55,7 +56,6 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
 #include "public/web/WebPluginContainer.h"
-#include "web/WebPluginContainerImpl.h"
 
 namespace blink {
 
@@ -185,7 +185,7 @@ WebPluginContainer* WebNode::PluginContainerFromNode(const Node* node) {
   if (object && object->IsLayoutPart()) {
     PluginView* plugin = ToLayoutPart(object)->Plugin();
     if (plugin && plugin->IsPluginContainer())
-      return ToWebPluginContainerImpl(plugin);
+      return ToWebPluginContainerBase(plugin);
   }
 
   return nullptr;
