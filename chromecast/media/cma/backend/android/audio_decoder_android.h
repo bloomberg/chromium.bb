@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "chromecast/media/cma/backend/android/audio_sink_android.h"
+#include "chromecast/media/cma/backend/android/audio_sink_manager.h"
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -108,7 +109,7 @@ class AudioDecoderAndroid : public MediaPipelineBackend::AudioDecoder,
 
   int64_t current_pts_;
 
-  std::unique_ptr<AudioSinkAndroid> sink_;
+  ManagedAudioSink sink_;
   RenderingDelay last_sink_delay_;
   int64_t pending_output_frames_;
   float volume_multiplier_;

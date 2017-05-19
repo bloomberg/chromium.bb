@@ -169,6 +169,15 @@ class AudioSinkAudioTrackImpl {
         mAudioTrack.pause();
     }
 
+    @CalledByNative
+    private void setVolume(float volume) {
+        Log.i(TAG, "Setting volume to " + volume);
+        int ret = mAudioTrack.setVolume(volume);
+        if (ret != AudioTrack.SUCCESS) {
+            Log.e(TAG, "Cannot set volume: ret=" + ret);
+        }
+    }
+
     private boolean isPlaying() {
         return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING;
     }

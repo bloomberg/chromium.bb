@@ -44,23 +44,6 @@ using base::android::JavaParamRef;
 namespace chromecast {
 namespace media {
 
-namespace {
-
-const char* GetContentTypeName(const AudioContentType type) {
-  switch (type) {
-    case AudioContentType::kMedia:
-      return "kMedia";
-    case AudioContentType::kAlarm:
-      return "kAlarm";
-    case AudioContentType::kCommunication:
-      return "kCommunication";
-    default:
-      return "Unknown";
-  }
-}
-
-}  // namespace
-
 AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
     AudioSinkAndroid::Delegate* delegate,
     int input_samples_per_second,
@@ -72,18 +55,21 @@ AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
       primary_(primary),
       device_id_(device_id),
       content_type_(content_type),
+      stream_volume_multiplier_(1.0f),
+      type_volume_multiplier_(1.0f),
+      mute_volume_multiplier_(1.0f),
+      fade_ms_(kDefaultSlewTimeMs),
       feeder_thread_("AudioTrack feeder thread"),
       feeder_task_runner_(nullptr),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       direct_pcm_buffer_address_(nullptr),
       direct_rendering_delay_address_(nullptr),
       state_(kStateUninitialized),
-      stream_volume_multiplier_(1.0f),
       weak_factory_(this) {
   LOG(INFO) << __func__ << "(" << this << "):"
             << " input_samples_per_second_=" << input_samples_per_second_
             << " primary_=" << primary_ << " device_id_=" << device_id_
-            << " content_type__=" << GetContentTypeName(content_type_);
+            << " content_type__=" << GetContentTypeName();
   DCHECK(delegate_);
 
   // Create Java part and initialize.
@@ -104,9 +90,30 @@ AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
 
 AudioSinkAndroidAudioTrackImpl::~AudioSinkAndroidAudioTrackImpl() {
   LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_;
+  PreventDelegateCalls();
   FinalizeOnFeederThread();
   feeder_thread_.Stop();
   feeder_task_runner_ = nullptr;
+}
+
+int AudioSinkAndroidAudioTrackImpl::input_samples_per_second() const {
+  return input_samples_per_second_;
+}
+
+bool AudioSinkAndroidAudioTrackImpl::primary() const {
+  return primary_;
+}
+
+std::string AudioSinkAndroidAudioTrackImpl::device_id() const {
+  return device_id_;
+}
+
+AudioContentType AudioSinkAndroidAudioTrackImpl::content_type() const {
+  return content_type_;
+}
+
+const char* AudioSinkAndroidAudioTrackImpl::GetContentTypeName() const {
+  return GetAudioContentTypeName(content_type_);
 }
 
 void AudioSinkAndroidAudioTrackImpl::FinalizeOnFeederThread() {
@@ -244,7 +251,7 @@ void AudioSinkAndroidAudioTrackImpl::TrackRawMonotonicClockDeviation() {
 }
 
 void AudioSinkAndroidAudioTrackImpl::FeedDataContinue() {
-  RUN_ON_FEEDER_THREAD(FeedData);
+  RUN_ON_FEEDER_THREAD(FeedDataContinue);
 
   DCHECK(pending_data_);
   DCHECK(pending_data_bytes_already_fed_);
@@ -313,13 +320,57 @@ void AudioSinkAndroidAudioTrackImpl::SetPaused(bool paused) {
   }
 }
 
+void AudioSinkAndroidAudioTrackImpl::UpdateVolume() {
+  DCHECK(feeder_task_runner_->BelongsToCurrentThread());
+
+  LOG(INFO) << __func__ << "(" << this << "): vol=" << EffectiveVolume();
+
+  Java_AudioSinkAudioTrackImpl_setVolume(base::android::AttachCurrentThread(),
+                                         j_audio_sink_audiotrack_impl_,
+                                         EffectiveVolume());
+}
+
 void AudioSinkAndroidAudioTrackImpl::SetVolumeMultiplier(float multiplier) {
+  RUN_ON_FEEDER_THREAD(SetVolumeMultiplier, multiplier);
+
   stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
-  LOG(INFO) << __func__ << "(" << this << "): "
-            << " multiplier=" << multiplier << " device_id_=" << device_id_
-            << "(" << this << "): "
-            << "stream_volume_multiplier_= " << stream_volume_multiplier_;
-  // TODO(ckuiper): implement as part of volume control
+  LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
+            << " stream_multiplier=" << stream_volume_multiplier_ << " ("
+            << multiplier << ")"
+            << " effective=" << EffectiveVolume();
+  UpdateVolume();
+}
+
+void AudioSinkAndroidAudioTrackImpl::SetContentTypeVolume(float multiplier,
+                                                          int fade_ms) {
+  RUN_ON_FEEDER_THREAD(SetContentTypeVolume, multiplier, fade_ms);
+
+  type_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
+  LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
+            << " type_multiplier=" << type_volume_multiplier_ << " ("
+            << multiplier << ")"
+            << " effective=" << EffectiveVolume();
+  if (fade_ms < 0) {
+    fade_ms = kDefaultSlewTimeMs;
+  }
+  fade_ms_ = fade_ms;
+  LOG(INFO) << "Fade over " << fade_ms_ << " ms";
+  UpdateVolume();
+}
+
+void AudioSinkAndroidAudioTrackImpl::SetMuted(bool muted) {
+  RUN_ON_FEEDER_THREAD(SetMuted, muted);
+
+  mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
+  LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
+            << " mute_multiplier=" << mute_volume_multiplier_
+            << " effective=" << EffectiveVolume();
+  UpdateVolume();
+}
+
+float AudioSinkAndroidAudioTrackImpl::EffectiveVolume() const {
+  return stream_volume_multiplier_ * type_volume_multiplier_ *
+         mute_volume_multiplier_;
 }
 
 }  // namespace media
