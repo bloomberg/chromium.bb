@@ -202,31 +202,44 @@ class CC_EXPORT LayerTreeImpl {
     hud_layer_ = layer_impl;
   }
 
-  LayerImpl* InnerViewportScrollLayer() const;
-  // This function may return NULL, it is the caller's responsibility to check.
-  LayerImpl* OuterViewportScrollLayer() const;
   gfx::ScrollOffset TotalScrollOffset() const;
   gfx::ScrollOffset TotalMaxScrollOffset() const;
 
-  LayerImpl* InnerViewportContainerLayer() const;
-  LayerImpl* OuterViewportContainerLayer() const;
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
   int LastScrolledScrollNodeIndex() const;
   void SetCurrentlyScrollingNode(ScrollNode* node);
   void ClearCurrentlyScrollingNode();
 
-  void SetViewportLayersFromIds(int overscroll_elasticity_layer,
-                                int page_scale_layer_id,
-                                int inner_viewport_container_layer_id,
-                                int outer_viewport_container_layer_id,
-                                int inner_viewport_scroll_layer_id,
-                                int outer_viewport_scroll_layer_id);
+  struct ViewportLayerIds {
+    int overscroll_elasticity = Layer::INVALID_ID;
+    int page_scale = Layer::INVALID_ID;
+    int inner_viewport_container = Layer::INVALID_ID;
+    int outer_viewport_container = Layer::INVALID_ID;
+    int inner_viewport_scroll = Layer::INVALID_ID;
+    int outer_viewport_scroll = Layer::INVALID_ID;
+  };
+  void SetViewportLayersFromIds(const ViewportLayerIds& viewport_layer_ids);
   void ClearViewportLayers();
-  LayerImpl* OverscrollElasticityLayer() {
-    return LayerById(overscroll_elasticity_layer_id_);
+  LayerImpl* OverscrollElasticityLayer() const {
+    return LayerById(viewport_layer_ids_.overscroll_elasticity);
   }
-  LayerImpl* PageScaleLayer() { return LayerById(page_scale_layer_id_); }
+  LayerImpl* PageScaleLayer() const {
+    return LayerById(viewport_layer_ids_.page_scale);
+  }
+  LayerImpl* InnerViewportContainerLayer() const {
+    return LayerById(viewport_layer_ids_.inner_viewport_container);
+  }
+  LayerImpl* OuterViewportContainerLayer() const {
+    return LayerById(viewport_layer_ids_.outer_viewport_container);
+  }
+  LayerImpl* InnerViewportScrollLayer() const {
+    return LayerById(viewport_layer_ids_.inner_viewport_scroll);
+  }
+  LayerImpl* OuterViewportScrollLayer() const {
+    return LayerById(viewport_layer_ids_.outer_viewport_scroll);
+  }
+
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
   SkColor background_color() const { return background_color_; }
@@ -527,14 +540,8 @@ class CC_EXPORT LayerTreeImpl {
   bool has_transparent_background_;
 
   int last_scrolled_scroll_node_index_;
-  int overscroll_elasticity_layer_id_;
-  int page_scale_layer_id_;
 
-  int inner_viewport_container_layer_id_;
-  int outer_viewport_container_layer_id_;
-
-  int inner_viewport_scroll_layer_id_;
-  int outer_viewport_scroll_layer_id_;
+  ViewportLayerIds viewport_layer_ids_;
 
   LayerSelection selection_;
 
