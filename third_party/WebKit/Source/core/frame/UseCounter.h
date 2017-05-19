@@ -1587,6 +1587,8 @@ class CORE_EXPORT UseCounter {
     kCrossOriginPropertyAccessFromOpener = 1978,
     kCredentialManagerCreate = 1979,
     kWebDatabaseCreateDropFTS3Table = 1980,
+    kFieldEditInSecureContext = 1981,
+    kFieldEditInNonSecureContext = 1982,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
