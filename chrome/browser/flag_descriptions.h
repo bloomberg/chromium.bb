@@ -8,6 +8,7 @@
 // Includes needed for macros allowing conditional compilation of some strings.
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "device/vr/features/features.h"
 #include "media/media_features.h"
 
 // This file declares strings used in chrome://flags. These messages are not
@@ -782,8 +783,10 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
 
+#if BUILDFLAG(ENABLE_VR)
 extern const char kWebvrExperimentalRenderingName[];
 extern const char kWebvrExperimentalRenderingDescription[];
+#endif  // ENABLE_VR
 
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
@@ -933,8 +936,15 @@ extern const char kEnableOskOverscrollDescription[];
 extern const char kEnableSpecialLocaleName[];
 extern const char kEnableSpecialLocaleDescription[];
 
+#if BUILDFLAG(ENABLE_VR)
+
 extern const char kEnableVrShellName[];
 extern const char kEnableVrShellDescription[];
+
+extern const char kVrCustomTabBrowsingName[];
+extern const char kVrCustomTabBrowsingDescription[];
+
+#endif  // BUILDFLAG(ENABLE_VR)
 
 extern const char kEnableWebapk[];
 extern const char kEnableWebapkDescription[];

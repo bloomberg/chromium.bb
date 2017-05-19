@@ -2011,6 +2011,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-vr-shell", flag_descriptions::kEnableVrShellName,
      flag_descriptions::kEnableVrShellDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVrShell)},
+    {"enable-vr-custom-tab-browsing",
+     flag_descriptions::kVrCustomTabBrowsingName,
+     flag_descriptions::kVrCustomTabBrowsingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kVrCustomTabBrowsing)},
 #endif  // OS_ANDROID
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)
