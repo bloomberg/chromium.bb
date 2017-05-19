@@ -311,20 +311,18 @@ class ContentSubresourceFilterDriverFactoryTest
     navigation_simulator->SetTransition(transition);
     navigation_simulator->Start();
 
-    if (blacklisted_urls.front()) {
-      factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-          navigation_chain.front(), threat_type, threat_type_metadata);
-    }
     ::testing::Mock::VerifyAndClearExpectations(client());
+    for (size_t i = 1; i < navigation_chain.size(); ++i)
+      navigation_simulator->Redirect(navigation_chain[i]);
 
-    for (size_t i = 1; i < navigation_chain.size(); ++i) {
-      const GURL url = navigation_chain[i];
-      if (i < blacklisted_urls.size() && blacklisted_urls[i]) {
-        factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-            url, threat_type, threat_type_metadata);
-      }
-      navigation_simulator->Redirect(url);
+    if (blacklisted_urls.size() != navigation_chain.size() ||
+        !blacklisted_urls.back()) {
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_SAFE;
+      threat_type_metadata = safe_browsing::ThreatPatternType::NONE;
     }
+    factory()->OnSafeBrowsingMatchComputed(
+        navigation_simulator->GetNavigationHandle(), threat_type,
+        threat_type_metadata);
     std::string suffix;
     ActivationList activation_list =
         GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata);
