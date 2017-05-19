@@ -1,3 +1,5 @@
+'use strict';
+
 self.addEventListener('fetch', event => {
     if (!event.request.url.match(/body-stream-with-invalid-chunk$/))
       return;
