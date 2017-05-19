@@ -89,7 +89,7 @@ public class BottomSheet
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
      */
-    private static final long BASE_ANIMATION_DURATION_MS = 218;
+    public static final long BASE_ANIMATION_DURATION_MS = 218;
 
     /** The amount of time it takes to transition sheet content in or out. */
     private static final long TRANSITION_DURATION_MS = 150;
@@ -1013,6 +1013,8 @@ public class BottomSheet
     public void setSheetState(@SheetState int state, boolean animate) {
         assert state != SHEET_STATE_SCROLLING && state != SHEET_STATE_NONE;
         mTargetState = state;
+
+        cancelAnimation();
 
         if (animate) {
             createSettleAnimation(state);
