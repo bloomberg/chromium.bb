@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL integration test on reset for a created-from-script form assert_equals: option should reset dirtyness to false expected false but got true
+Harness: the test ran to completion.
+
