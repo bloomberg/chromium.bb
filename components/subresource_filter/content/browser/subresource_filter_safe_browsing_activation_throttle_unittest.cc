@@ -82,6 +82,31 @@ class MockSubresourceFilterClient
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
 };
 
+// Throttle to call WillProcessResponse on the factory, which is otherwise
+// called by the ThrottleManager.
+class TestForwardingNavigationThrottle : public content::NavigationThrottle {
+ public:
+  explicit TestForwardingNavigationThrottle(content::NavigationHandle* handle)
+      : content::NavigationThrottle(handle) {}
+  ~TestForwardingNavigationThrottle() override {}
+
+  // content::NavigationThrottle:
+  content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
+      override {
+    content::WebContents* web_contents = navigation_handle()->GetWebContents();
+    ContentSubresourceFilterDriverFactory* factory =
+        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+    factory->WillProcessResponse(navigation_handle());
+    return content::NavigationThrottle::PROCEED;
+  }
+  const char* GetNameForLogging() override {
+    return "TestForwardingNavigationThrottle";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestForwardingNavigationThrottle);
+};
+
 std::string GetSuffixForList(const ActivationList& type) {
   switch (type) {
     case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
@@ -173,6 +198,8 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
         base::MakeUnique<SubresourceFilterSafeBrowsingActivationThrottle>(
             navigation_handle, test_io_task_runner_,
             fake_safe_browsing_database_));
+    navigation_handle->RegisterThrottleForTesting(
+        base::MakeUnique<TestForwardingNavigationThrottle>(navigation_handle));
   }
 
   content::NavigationThrottle::ThrottleCheckResult SimulateStart() {
