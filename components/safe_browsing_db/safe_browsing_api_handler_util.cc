@@ -53,10 +53,13 @@ void ReportUmaThreatSubType(SBThreatType threat_type,
 ThreatPatternType ParseThreatSubType(
     const base::DictionaryValue* match,
     SBThreatType threat_type) {
-  std::string pattern_key;
-  if (threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
+  if (threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER ||
+      threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
     return ThreatPatternType::NONE;
-  } else if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+  }
+
+  std::string pattern_key;
+  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
     pattern_key = "pha_pattern_type";
   } else {
     DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING);
@@ -113,12 +116,17 @@ std::string ParseUserPopulation(const base::DictionaryValue* match) {
     return population_id;
 }
 
+// TODO(vakh): The desktop implementation of |GetThreatSeverity| returns 0 for
+// the most severe case. Make this function consistent with the desktop
+// implementation.
 int GetThreatSeverity(int java_threat_num) {
   // Assign higher numbers to more severe threats.
   switch (java_threat_num) {
     case JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION:
-      return 3;
+      return 4;
     case JAVA_THREAT_TYPE_SOCIAL_ENGINEERING:
+      return 3;
+    case JAVA_THREAT_TYPE_UNWANTED_SOFTWARE:
       return 2;
     case JAVA_THREAT_TYPE_SUBRESOURCE_FILTER:
       return 1;
@@ -132,6 +140,8 @@ SBThreatType JavaToSBThreatType(int java_threat_num) {
   switch (java_threat_num) {
     case JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION:
       return SB_THREAT_TYPE_URL_MALWARE;
+    case JAVA_THREAT_TYPE_UNWANTED_SOFTWARE:
+      return SB_THREAT_TYPE_URL_UNWANTED;
     case JAVA_THREAT_TYPE_SOCIAL_ENGINEERING:
       return SB_THREAT_TYPE_URL_PHISHING;
     case JAVA_THREAT_TYPE_SUBRESOURCE_FILTER:
