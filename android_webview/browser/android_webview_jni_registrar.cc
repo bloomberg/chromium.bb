@@ -17,7 +17,7 @@
 #include "android_webview/browser/aw_metrics_service_client_impl.h"
 #include "android_webview/browser/aw_pdf_exporter.h"
 #include "android_webview/browser/aw_picture.h"
-#include "android_webview/browser/aw_quota_manager_bridge_impl.h"
+#include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_web_contents_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
