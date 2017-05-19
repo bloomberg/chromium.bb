@@ -237,6 +237,19 @@ class InputRouterImplTest : public testing::Test {
                                                   precise)));
   }
 
+  void SimulateWheelEventWithPhase(float x,
+                                   float y,
+                                   float dX,
+                                   float dY,
+                                   int modifiers,
+                                   bool precise,
+                                   WebMouseWheelEvent::Phase phase) {
+    WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
+        x, y, dX, dY, modifiers, precise);
+    wheel_event.phase = phase;
+    input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(wheel_event));
+  }
+
   void SimulateMouseEvent(WebInputEvent::Type type, int x, int y) {
     input_router_->SendMouseEvent(MouseEventWithLatencyInfo(
         SyntheticWebMouseEventBuilder::Build(type, x, y, 0)));
@@ -388,8 +401,17 @@ class InputRouterImplTest : public testing::Test {
 
   void UnhandledWheelEvent(bool wheel_scroll_latching_enabled) {
     // Simulate wheel events.
-    SimulateWheelEvent(0, 0, 0, -5, 0, false);   // sent directly
-    SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued
+    if (wheel_scroll_latching_enabled) {
+      SimulateWheelEventWithPhase(
+          0, 0, 0, -5, 0, false,
+          WebMouseWheelEvent::kPhaseBegan);  // sent directly
+      SimulateWheelEventWithPhase(
+          0, 0, 0, -10, 0, false,
+          WebMouseWheelEvent::kPhaseChanged);  // enqueued
+    } else {
+      SimulateWheelEvent(0, 0, 0, -5, 0, false);   // sent directly
+      SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued
+    }
 
     // Check that only the first event was sent.
     EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -1098,11 +1120,10 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
 }
 #endif  // defined(USE_AURA)
 
-TEST_F(InputRouterImplTest, UnhandledWheelEventWithoutLatching) {
+TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   UnhandledWheelEvent(true);
 }
-TEST_F(InputRouterImplWheelScrollLatchingDisabledTest,
-       UnhandledWheelEventWithLatching) {
+TEST_F(InputRouterImplWheelScrollLatchingDisabledTest, UnhandledWheelEvent) {
   UnhandledWheelEvent(false);
 }
 
