@@ -8,7 +8,6 @@ Bug(intentional) harness-tests/timeout.html [ Timeout ]
 
 # TODO(qyearsley): Remove these lines and uncomment other test expectation
 # lines related to CSS tests (crbug.com/706118).
-crbug.com/706118 external/wpt/css/css-shapes-1 [ Skip ]
 crbug.com/706118 external/wpt/css/css-text-3 [ Skip ]
 crbug.com/706118 external/wpt/css/css-writing-modes-3 [ Skip ]
 
@@ -1362,17 +1361,17 @@ crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-locale.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-orphaned-word.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/midword-break-priority.html [ Pass ]
 
-#crbug.com/405389 external/wpt/css/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
-#crbug.com/424365 external/wpt/css/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
-#crbug.com/424365 external/wpt/css/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
-#crbug.com/441840 [ Linux Win ] external/wpt/css/css-shapes-1/shape-outside/values/shape-margin-001.html [ Failure ]
-#crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-circle-004.html [ Failure ]
-#crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-circle-005.html [ Failure ]
-#crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-ellipse-004.html [ Failure ]
-#crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-ellipse-005.html [ Failure ]
-#crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-inset-003.html [ Failure ]
-#crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
-#crbug.com/441840 [ Linux Win ] external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
+crbug.com/405389 external/wpt/css/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
+crbug.com/424365 external/wpt/css/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
+crbug.com/424365 external/wpt/css/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
+crbug.com/441840 [ Linux Win ] external/wpt/css/css-shapes-1/shape-outside/values/shape-margin-001.html [ Failure ]
+crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-circle-004.html [ Failure ]
+crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-circle-005.html [ Failure ]
+crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-ellipse-004.html [ Failure ]
+crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-ellipse-005.html [ Failure ]
+crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-inset-003.html [ Failure ]
+crbug.com/441840 external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
+crbug.com/441840 [ Linux Win ] external/wpt/css/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
 #crbug.com/306730 external/wpt/css/css-text-3/i18n/css3-text-line-break-jazh-136.html [ Failure ]
 #crbug.com/306730 external/wpt/css/css-text-3/i18n/css3-text-line-break-jazh-137.html [ Failure ]
@@ -1621,7 +1620,7 @@ crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 #crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes-3/text-baseline-vlr-007.xht [ Failure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
-#crbug.com/443615 [ Linux Win ] external/wpt/css/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
+crbug.com/443615 [ Linux Win ] external/wpt/css/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
 
 crbug.com/443379 external/wpt/gamepad/idlharness.html [ Failure Timeout ]
 
