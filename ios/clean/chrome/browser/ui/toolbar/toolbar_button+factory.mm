@@ -44,11 +44,13 @@
 }
 
 + (instancetype)tabSwitcherStripToolbarButton {
-  ToolbarButton* tabSwitcherStripButton =
-      [self toolbarButtonWithImageForNormalState:
-                [UIImage imageNamed:@"tabswitcher_open_tabs"]
-                        imageForHighlightedState:nil
-                           imageForDisabledState:nil];
+  ToolbarButton* tabSwitcherStripButton = [self
+      toolbarButtonWithImageForNormalState:NativeImage(
+                                               IDR_IOS_TOOLBAR_LIGHT_OVERVIEW)
+                  imageForHighlightedState:
+                      NativeImage(IDR_IOS_TOOLBAR_LIGHT_OVERVIEW_PRESSED)
+                     imageForDisabledState:
+                         NativeImage(IDR_IOS_TOOLBAR_LIGHT_OVERVIEW_DISABLED)];
   return tabSwitcherStripButton;
 }
 
@@ -63,9 +65,10 @@
 
 + (instancetype)toolsMenuToolbarButton {
   ToolbarButton* toolsMenuButton = [self
-      toolbarButtonWithImageForNormalState:[UIImage
-                                               imageNamed:@"tabswitcher_menu"]
-                  imageForHighlightedState:nil
+      toolbarButtonWithImageForNormalState:NativeImage(
+                                               IDR_IOS_TOOLBAR_LIGHT_TOOLS)
+                  imageForHighlightedState:
+                      NativeImage(IDR_IOS_TOOLBAR_LIGHT_TOOLS_PRESSED)
                      imageForDisabledState:nil];
   [toolsMenuButton setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -3, 0, 0)];
   return toolsMenuButton;
@@ -105,6 +108,16 @@
                      imageForDisabledState:
                          NativeImage(IDR_IOS_TOOLBAR_LIGHT_STOP_DISABLED)];
   return stopButton;
+}
+
++ (instancetype)starToolbarButton {
+  ToolbarButton* starButton =
+      [self toolbarButtonWithImageForNormalState:NativeImage(
+                                                     IDR_IOS_TOOLBAR_LIGHT_STAR)
+                        imageForHighlightedState:
+                            NativeImage(IDR_IOS_TOOLBAR_LIGHT_STAR_PRESSED)
+                           imageForDisabledState:nil];
+  return starButton;
 }
 
 @end
