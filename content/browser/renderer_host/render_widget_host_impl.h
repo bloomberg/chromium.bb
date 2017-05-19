@@ -53,6 +53,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/latency/latency_info.h"
 
+#if defined(OS_MACOSX)
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#endif
+
 class SkBitmap;
 struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;
@@ -67,12 +71,6 @@ struct WebCompositionUnderline;
 namespace cc {
 struct BeginFrameAck;
 }  // namespace cc
-
-#if defined(OS_MACOSX)
-namespace device {
-class PowerSaveBlocker;
-}  // namespace device
-#endif
 
 namespace gfx {
 class Image;
@@ -760,6 +758,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // process the messages. Virtual for tests.
   virtual void ProcessSwapMessages(std::vector<IPC::Message> messages);
 
+#if defined(OS_MACOSX)
+  device::mojom::WakeLockService* GetWakeLockService();
+#endif
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -957,7 +959,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   uint32_t last_received_content_source_id_ = 0;
 
 #if defined(OS_MACOSX)
-  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+  device::mojom::WakeLockServicePtr wake_lock_;
 #endif
 
   // These information are used to verify that the renderer does not misbehave
