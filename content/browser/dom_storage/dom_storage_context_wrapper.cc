@@ -19,14 +19,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
@@ -88,29 +86,14 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
   if (!profile_path.empty())
     data_path = profile_path.Append(local_partition_path);
 
-  scoped_refptr<base::SequencedTaskRunner> primary_sequence;
-  scoped_refptr<base::SequencedTaskRunner> commit_sequence;
-  if (GetContentClient()->browser()->ShouldRedirectDOMStorageTaskRunner()) {
-    // TaskPriority::USER_BLOCKING as an experiment because this is currently
-    // believed to be blocking synchronous IPCs from the renderers:
-    // http://crbug.com/665588 (yes we want to fix that bug, but are taking it
-    // as an opportunity to experiment with the scheduler).
-    base::TaskTraits dom_storage_traits = {
-        base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-        base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
-    primary_sequence =
-        base::CreateSequencedTaskRunnerWithTraits(dom_storage_traits);
-    commit_sequence =
-        base::CreateSequencedTaskRunnerWithTraits(dom_storage_traits);
-  } else {
-    base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
-    primary_sequence = worker_pool->GetSequencedTaskRunner(
-        worker_pool->GetNamedSequenceToken("dom_storage_primary"));
-    commit_sequence = worker_pool->GetSequencedTaskRunner(
-        worker_pool->GetNamedSequenceToken("dom_storage_commit"));
-  }
-  DCHECK(primary_sequence);
-  DCHECK(commit_sequence);
+  scoped_refptr<base::SequencedTaskRunner> primary_sequence =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+  scoped_refptr<base::SequencedTaskRunner> commit_sequence =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   context_ = new DOMStorageContextImpl(
       data_path.empty() ? data_path
