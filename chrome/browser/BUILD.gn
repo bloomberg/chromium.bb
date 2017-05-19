@@ -4704,6 +4704,7 @@ static_library("test_support_ui") {
     "ui/webui/signin/login_ui_test_utils.cc",
     "ui/webui/signin/login_ui_test_utils.h",
   ]
+  deps = []
 
   if (!is_android) {
     sources += [
@@ -4712,6 +4713,7 @@ static_library("test_support_ui") {
       "ui/webui/web_ui_test_handler.cc",
       "ui/webui/web_ui_test_handler.h",
     ]
+    deps += [ "//third_party/WebKit/public:blink_headers" ]
   }
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -4720,7 +4722,7 @@ static_library("test_support_ui") {
     "//net:test_support",
   ]
 
-  deps = [
+  deps += [
     "//components/metrics:test_support",
     "//components/password_manager/content/common:mojo_interfaces",
     "//components/password_manager/core/browser:test_support",

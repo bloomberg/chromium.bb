@@ -407,6 +407,8 @@ if (!is_component_build) {
   static_library("headless_renderer") {
     deps = [
       ":headless",
+      "//third_party/WebKit/public:blink_headers",
+      "//ui/base",
     ]
     sources = [
       "lib/browser/headless_web_contents_impl.cc",
@@ -416,7 +418,6 @@ if (!is_component_build) {
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]
-    deps += [ "//ui/base" ]
     if (enable_basic_printing) {
       deps += [ "//components/printing/renderer" ]
     }
