@@ -350,7 +350,7 @@ executable("sel_ldr") {
 
     # All executables must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).
-    "//build/config/sanitizers:deps",
+    "//build/config:exe_and_shlib_deps",
 
     "//build/win:default_exe_manifest",
   ]
