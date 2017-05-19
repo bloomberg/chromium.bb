@@ -10071,6 +10071,15 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_ALL_WINDOWS_FRONT_MAC" desc="The Mac menu item for bring all to front the window menu.">
           Bring All to Front
         </message>
+        <message name="IDS_DUPLICATE_TAB_MAC" desc="The Mac menu item for duplicating the selected tab(s).">
+          Duplicate Tab
+        </message>
+        <message name="IDS_MUTE_TAB_MAC" desc="The Mac menu item for muting the selected tab(s).">
+          Mute Tab
+        </message>
+        <message name="IDS_PIN_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
+          Pin Tab
+        </message>
         <!-- Help menu -->
         <message name="IDS_FEEDBACK_MAC" desc="The Mac menu item to report a bug in the Help menu.">
           Report an Issue...
