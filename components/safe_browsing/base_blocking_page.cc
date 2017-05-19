@@ -208,7 +208,7 @@ bool BaseBlockingPage::ShouldCreateNewNavigation() const {
 
 void BaseBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
-  sb_error_ui_->PopulateStringsForHTML(load_time_data);
+  sb_error_ui_->PopulateStringsForHtml(load_time_data);
 }
 
 void BaseBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
