@@ -824,7 +824,8 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
   if (parent_node && parent_node->hidden_by_backface_visibility) {
     node->hidden_by_backface_visibility = true;
     return;
-  } else if (node->double_sided) {
+  }
+  if (node->double_sided) {
     node->hidden_by_backface_visibility = false;
     return;
   }
