@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 473 tests; 302 PASS, 171 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 475 tests; 304 PASS, 171 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data… 
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar> 
@@ -265,6 +265,7 @@ FAIL Parsing: <http://[]> against <http://other.com/> assert_equals: failure sho
 FAIL Parsing: <http://[:]> against <http://other.com/> assert_equals: failure should set href to input expected "http://[:]" but got "http://[:]/"
 FAIL Parsing: <http://GOO 　goo.com> against <http://other.com/> assert_unreached: Expected URL to fail parsing Reached unreachable code
 PASS Parsing: <http://GOO​⁠﻿goo.com> against <http://other.com/> 
+PASS Parsing: <\0 http://example.com/ \r > against <about:blank> 
 PASS Parsing: <http://www.foo。bar.com> against <http://other.com/> 
 FAIL Parsing: <http://﷐zyx.com> against <http://other.com/> assert_equals: failure should set href to input expected "http://﷐zyx.com" but got "http://%EF%BF%BDzyx.com/"
 FAIL Parsing: <http://%ef%b7%90zyx.com> against <http://other.com/> assert_equals: failure should set href to input expected "http://%ef%b7%90zyx.com" but got "http://%EF%BF%BDzyx.com/"
@@ -430,6 +431,8 @@ FAIL Parsing: <C|> against <file://host/dir/file> assert_equals: href expected "
 FAIL Parsing: <C|#> against <file://host/dir/file> assert_equals: href expected "file:///C:#" but got "file:///C:/#"
 FAIL Parsing: <C|?> against <file://host/dir/file> assert_equals: href expected "file:///C:?" but got "file:///C:/?"
 PASS Parsing: <C|/> against <file://host/dir/file> 
+PASS Parsing: <C|
+/> against <file://host/dir/file> 
 PASS Parsing: <C|\> against <file://host/dir/file> 
 PASS Parsing: <C> against <file://host/dir/file> 
 FAIL Parsing: <C|a> against <file://host/dir/file> assert_equals: href expected "file://host/dir/C|a" but got "file:///C:/a"
