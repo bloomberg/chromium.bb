@@ -11,12 +11,6 @@ import("//printing/features/features.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
-declare_args() {
-  # Include code in the build that is only needed when using the video
-  # capture Mojo service, which is currently experimental.
-  enable_mojo_video_capture = false
-}
-
 source_set("browser") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
@@ -130,6 +124,8 @@ source_set("browser") {
     "//services/shape_detection/public/interfaces",
     "//services/ui/gpu/interfaces",
     "//services/ui/public/cpp/gpu",
+    "//services/video_capture/public/cpp",
+    "//services/video_capture/public/interfaces:constants",
     "//skia",
     "//sql",
     "//storage/browser",
@@ -1232,6 +1228,12 @@ source_set("browser") {
     "renderer_host/media/renderer_audio_output_stream_factory_context.h",
     "renderer_host/media/renderer_audio_output_stream_factory_context_impl.cc",
     "renderer_host/media/renderer_audio_output_stream_factory_context_impl.h",
+    "renderer_host/media/service_launched_video_capture_device.cc",
+    "renderer_host/media/service_launched_video_capture_device.h",
+    "renderer_host/media/service_video_capture_device_launcher.cc",
+    "renderer_host/media/service_video_capture_device_launcher.h",
+    "renderer_host/media/service_video_capture_provider.cc",
+    "renderer_host/media/service_video_capture_provider.h",
     "renderer_host/media/video_capture_controller.cc",
     "renderer_host/media/video_capture_controller.h",
     "renderer_host/media/video_capture_controller_event_handler.h",
@@ -1243,6 +1245,8 @@ source_set("browser") {
     "renderer_host/media/video_capture_manager.cc",
     "renderer_host/media/video_capture_manager.h",
     "renderer_host/media/video_capture_provider.h",
+    "renderer_host/media/video_capture_provider_switcher.cc",
+    "renderer_host/media/video_capture_provider_switcher.h",
     "renderer_host/native_web_keyboard_event_aura.cc",
     "renderer_host/native_web_keyboard_event_mac.mm",
     "renderer_host/offscreen_canvas_provider_impl.cc",
@@ -1625,22 +1629,6 @@ source_set("browser") {
       "//third_party/webrtc/media:rtc_media_base",
       "//third_party/webrtc/modules/desktop_capture:primitives",
       "//third_party/webrtc_overrides:init_webrtc",
-    ]
-  }
-
-  if (enable_mojo_video_capture) {
-    sources += [
-      "renderer_host/media/service_launched_video_capture_device.cc",
-      "renderer_host/media/service_launched_video_capture_device.h",
-      "renderer_host/media/service_video_capture_device_launcher.cc",
-      "renderer_host/media/service_video_capture_device_launcher.h",
-      "renderer_host/media/service_video_capture_provider.cc",
-      "renderer_host/media/service_video_capture_provider.h",
-    ]
-
-    deps += [
-      "//services/video_capture/public/cpp",
-      "//services/video_capture/public/interfaces:constants",
     ]
   }
 
