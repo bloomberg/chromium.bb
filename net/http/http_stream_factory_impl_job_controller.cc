@@ -782,17 +782,17 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
     // priority currently makes sense for preconnects. The priority for
     // preconnects is currently ignored (see RequestSocketsForPool()), but could
     // be used at some point for proxy resolution or something.
-    main_job_.reset(job_factory_->CreateAltSvcJob(
+    main_job_ = job_factory_->CreateAltSvcJob(
         this, PRECONNECT, session_, request_info_, IDLE, proxy_info_,
         server_ssl_config_, proxy_ssl_config_, destination, origin_url,
-        alternative_service, enable_ip_based_pooling_, session_->net_log()));
+        alternative_service, enable_ip_based_pooling_, session_->net_log());
     main_job_->Preconnect(num_streams_);
     return OK;
   }
-  main_job_.reset(job_factory_->CreateMainJob(
+  main_job_ = job_factory_->CreateMainJob(
       this, MAIN, session_, request_info_, priority_, proxy_info_,
       server_ssl_config_, proxy_ssl_config_, destination, origin_url,
-      enable_ip_based_pooling_, net_log_.net_log()));
+      enable_ip_based_pooling_, net_log_.net_log());
   // Alternative Service can only be set for HTTPS requests while Alternative
   // Proxy is set for HTTP requests.
   if (alternative_service.protocol != kProtoUnknown) {
@@ -806,11 +806,11 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
     ignore_result(
         ApplyHostMappingRules(request_info_.url, &alternative_destination));
 
-    alternative_job_.reset(job_factory_->CreateAltSvcJob(
+    alternative_job_ = job_factory_->CreateAltSvcJob(
         this, ALTERNATIVE, session_, request_info_, priority_, proxy_info_,
         server_ssl_config_, proxy_ssl_config_, alternative_destination,
         origin_url, alternative_service, enable_ip_based_pooling_,
-        net_log_.net_log()));
+        net_log_.net_log());
 
     main_job_is_blocked_ = true;
     alternative_job_->Start(request_->stream_type());
@@ -822,11 +822,11 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
       ProxyInfo alternative_proxy_info;
       alternative_proxy_info.UseProxyServer(alternative_proxy_server);
 
-      alternative_job_.reset(job_factory_->CreateAltProxyJob(
+      alternative_job_ = job_factory_->CreateAltProxyJob(
           this, ALTERNATIVE, session_, request_info_, priority_,
           alternative_proxy_info, server_ssl_config_, proxy_ssl_config_,
           destination, origin_url, alternative_proxy_server,
-          enable_ip_based_pooling_, net_log_.net_log()));
+          enable_ip_based_pooling_, net_log_.net_log());
 
       can_start_alternative_proxy_job_ = false;
       main_job_is_blocked_ = true;

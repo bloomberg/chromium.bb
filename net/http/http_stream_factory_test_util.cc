@@ -4,6 +4,8 @@
 
 #include "net/http/http_stream_factory_test_util.h"
 
+#include <utility>
+
 #include "net/proxy/proxy_info.h"
 
 using ::testing::_;
@@ -80,7 +82,7 @@ TestJobFactory::TestJobFactory()
 
 TestJobFactory::~TestJobFactory() {}
 
-HttpStreamFactoryImpl::Job* TestJobFactory::CreateMainJob(
+std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateMainJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
     HttpStreamFactoryImpl::JobType job_type,
     HttpNetworkSession* session,
@@ -96,15 +98,18 @@ HttpStreamFactoryImpl::Job* TestJobFactory::CreateMainJob(
   if (override_main_job_url_)
     origin_url = main_job_alternative_url_;
 
-  main_job_ = new MockHttpStreamFactoryImplJob(
+  auto main_job = base::MakeUnique<MockHttpStreamFactoryImplJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url,
       enable_ip_based_pooling, nullptr);
 
-  return main_job_;
+  // Keep raw pointer to Job but pass ownership.
+  main_job_ = main_job.get();
+
+  return std::move(main_job);
 }
 
-HttpStreamFactoryImpl::Job* TestJobFactory::CreateAltSvcJob(
+std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateAltSvcJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
     HttpStreamFactoryImpl::JobType job_type,
     HttpNetworkSession* session,
@@ -118,15 +123,18 @@ HttpStreamFactoryImpl::Job* TestJobFactory::CreateAltSvcJob(
     AlternativeService alternative_service,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  alternative_job_ = new MockHttpStreamFactoryImplJob(
+  auto alternative_job = base::MakeUnique<MockHttpStreamFactoryImplJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, alternative_service,
       ProxyServer(), enable_ip_based_pooling, nullptr);
 
-  return alternative_job_;
+  // Keep raw pointer to Job but pass ownership.
+  alternative_job_ = alternative_job.get();
+
+  return std::move(alternative_job);
 }
 
-HttpStreamFactoryImpl::Job* TestJobFactory::CreateAltProxyJob(
+std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateAltProxyJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
     HttpStreamFactoryImpl::JobType job_type,
     HttpNetworkSession* session,
@@ -140,12 +148,15 @@ HttpStreamFactoryImpl::Job* TestJobFactory::CreateAltProxyJob(
     const ProxyServer& alternative_proxy_server,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  alternative_job_ = new MockHttpStreamFactoryImplJob(
+  auto alternative_job = base::MakeUnique<MockHttpStreamFactoryImplJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, AlternativeService(),
       alternative_proxy_server, enable_ip_based_pooling, nullptr);
 
-  return alternative_job_;
+  // Keep raw pointer to Job but pass ownership.
+  alternative_job_ = alternative_job.get();
+
+  return std::move(alternative_job);
 }
 
 }  // namespace net

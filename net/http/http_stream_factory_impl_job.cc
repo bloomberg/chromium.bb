@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -1448,7 +1449,8 @@ HttpStreamFactoryImpl::JobFactory::JobFactory() {}
 
 HttpStreamFactoryImpl::JobFactory::~JobFactory() {}
 
-HttpStreamFactoryImpl::Job* HttpStreamFactoryImpl::JobFactory::CreateMainJob(
+std::unique_ptr<HttpStreamFactoryImpl::Job>
+HttpStreamFactoryImpl::JobFactory::CreateMainJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
     HttpStreamFactoryImpl::JobType job_type,
     HttpNetworkSession* session,
@@ -1461,13 +1463,14 @@ HttpStreamFactoryImpl::Job* HttpStreamFactoryImpl::JobFactory::CreateMainJob(
     GURL origin_url,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  return new HttpStreamFactoryImpl::Job(
+  return base::MakeUnique<HttpStreamFactoryImpl::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       enable_ip_based_pooling, net_log);
 }
 
-HttpStreamFactoryImpl::Job* HttpStreamFactoryImpl::JobFactory::CreateAltSvcJob(
+std::unique_ptr<HttpStreamFactoryImpl::Job>
+HttpStreamFactoryImpl::JobFactory::CreateAltSvcJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
     HttpStreamFactoryImpl::JobType job_type,
     HttpNetworkSession* session,
@@ -1481,13 +1484,13 @@ HttpStreamFactoryImpl::Job* HttpStreamFactoryImpl::JobFactory::CreateAltSvcJob(
     AlternativeService alternative_service,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  return new HttpStreamFactoryImpl::Job(
+  return base::MakeUnique<HttpStreamFactoryImpl::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       alternative_service, ProxyServer(), enable_ip_based_pooling, net_log);
 }
 
-HttpStreamFactoryImpl::Job*
+std::unique_ptr<HttpStreamFactoryImpl::Job>
 HttpStreamFactoryImpl::JobFactory::CreateAltProxyJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
     HttpStreamFactoryImpl::JobType job_type,
@@ -1502,7 +1505,7 @@ HttpStreamFactoryImpl::JobFactory::CreateAltProxyJob(
     const ProxyServer& alternative_proxy_server,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  return new HttpStreamFactoryImpl::Job(
+  return base::MakeUnique<HttpStreamFactoryImpl::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       AlternativeService(), alternative_proxy_server, enable_ip_based_pooling,
