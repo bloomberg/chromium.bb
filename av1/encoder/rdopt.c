@@ -4475,7 +4475,8 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   if (x->skip_chroma_rd) return is_cost_valid;
-  bsize = AOMMAX(BLOCK_8X8, bsize);
+  bsize = scale_chroma_bsize(mbmi->sb_type, xd->plane[1].subsampling_x,
+                             xd->plane[1].subsampling_y);
 #endif  // CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
