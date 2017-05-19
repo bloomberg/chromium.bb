@@ -45,6 +45,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/ColorChooser.h"
@@ -1136,12 +1137,15 @@ void ChromeClientImpl::HandleKeyboardEventOnTextField(
 
 void ChromeClientImpl::DidChangeValueInTextField(
     HTMLFormControlElement& element) {
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(element.GetDocument().GetFrame());
+  Document& doc = element.GetDocument();
+  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(doc.GetFrame());
   if (webframe->AutofillClient())
     webframe->AutofillClient()->TextFieldDidChange(
         WebFormControlElement(&element));
 
+  UseCounter::Count(doc, doc.IsSecureContext()
+                             ? UseCounter::kFieldEditInSecureContext
+                             : UseCounter::kFieldEditInNonSecureContext);
   web_view_->PageImportanceSignals()->SetHadFormInteraction();
 }
 
