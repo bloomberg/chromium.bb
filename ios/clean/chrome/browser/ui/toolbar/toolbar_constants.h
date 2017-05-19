@@ -9,7 +9,6 @@
 
 // Toolbar styling.
 extern const CGFloat kToolbarBackgroundBrightness;
-extern const CGFloat kToolbarTintColorBrightness;
 
 // Stackview constraints.
 extern const CGFloat kVerticalMargin;

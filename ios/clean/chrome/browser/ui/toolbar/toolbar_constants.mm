@@ -5,7 +5,6 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 
 const CGFloat kToolbarBackgroundBrightness = 242.0 / 255.0;
-const CGFloat kToolbarTintColorBrightness = 90.0 / 255.0;
 
 const CGFloat kVerticalMargin = 7.0f;
 const CGFloat kHorizontalMargin = 1.0f;

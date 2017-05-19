@@ -62,8 +62,6 @@
 - (void)viewDidLoad {
   self.view.backgroundColor =
       [UIColor colorWithWhite:kToolbarBackgroundBrightness alpha:1.0];
-  self.view.tintColor =
-      [UIColor colorWithWhite:kToolbarTintColorBrightness alpha:1.0];
   [self addChildViewController:self.locationBarViewController
                      toSubview:self.locationBarContainer];
   [self setUpToolbarStackView];
