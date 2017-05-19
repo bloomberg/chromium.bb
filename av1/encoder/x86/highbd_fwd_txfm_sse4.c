@@ -120,18 +120,6 @@ static INLINE void write_buffer_4x4(__m128i *res, tran_low_t *output) {
   _mm_store_si128((__m128i *)(output + 3 * 4), res[3]);
 }
 
-// Note:
-//  We implement av1_fwd_txfm2d_4x4(). This function is kept here since
-//  av1_highbd_fht4x4_c() is not removed yet
-void av1_highbd_fht4x4_sse4_1(const int16_t *input, tran_low_t *output,
-                              int stride, int tx_type) {
-  (void)input;
-  (void)output;
-  (void)stride;
-  (void)tx_type;
-  assert(0);
-}
-
 static void fadst4x4_sse4_1(__m128i *in, int bit) {
   const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi8 = _mm_set1_epi32(cospi[8]);

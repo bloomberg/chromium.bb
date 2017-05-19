@@ -255,6 +255,12 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   #inv txfm
+  add_proto qw/void av1_inv_txfm2d_add_4x8/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_8x4/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_8x16/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_16x8/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_16x32/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_32x16/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
   add_proto qw/void av1_inv_txfm2d_add_4x4/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
   specialize qw/av1_inv_txfm2d_add_4x4 sse4_1/;
   add_proto qw/void av1_inv_txfm2d_add_8x8/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
@@ -405,12 +411,21 @@ add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, in
 if (aom_config("CONFIG_DPCM_INTRA") eq "yes") {
   @sizes = (4, 8, 16, 32);
   foreach $size (@sizes) {
+    if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
+      add_proto "void", "av1_hbd_dpcm_ft$size", "const int16_t *input, int stride, TX_TYPE_1D tx_type, tran_low_t *output, int dir";
+    }
     add_proto "void", "av1_dpcm_ft$size", "const int16_t *input, int stride, TX_TYPE_1D tx_type, tran_low_t *output";
   }
 }
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   #fwd txfm
+  add_proto qw/void av1_fwd_txfm2d_4x8/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_fwd_txfm2d_8x4/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_fwd_txfm2d_8x16/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_fwd_txfm2d_16x8/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_fwd_txfm2d_16x32/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_fwd_txfm2d_32x16/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
   add_proto qw/void av1_fwd_txfm2d_4x4/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
   specialize qw/av1_fwd_txfm2d_4x4 sse4_1/;
   add_proto qw/void av1_fwd_txfm2d_8x8/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
@@ -484,35 +499,6 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   }
 
   # fdct functions
-  add_proto qw/void av1_highbd_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-  specialize qw/av1_highbd_fht4x4 sse4_1/;
-
-  add_proto qw/void av1_highbd_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht8x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht8x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht16x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht16x32/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht32x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht4x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht16x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht8x32/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht32x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
-  add_proto qw/void av1_highbd_fht32x32/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-
   if (aom_config("CONFIG_TX64X64") eq "yes") {
     add_proto qw/void av1_highbd_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
   }

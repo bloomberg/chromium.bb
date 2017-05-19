@@ -87,12 +87,20 @@ void fht8x8_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
 }
 
 #if CONFIG_HIGHBITDEPTH
+void fht8x8_10(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+  av1_fwd_txfm2d_8x8_c(in, out, stride, tx_type, 10);
+}
+
+void fht8x8_12(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+  av1_fwd_txfm2d_8x8_c(in, out, stride, tx_type, 12);
+}
+
 void iht8x8_10(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
-  av1_highbd_iht8x8_64_add_c(in, out, stride, tx_type, 10);
+  av1_inv_txfm2d_add_8x8_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 10);
 }
 
 void iht8x8_12(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
-  av1_highbd_iht8x8_64_add_c(in, out, stride, tx_type, 12);
+  av1_inv_txfm2d_add_8x8_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 12);
 }
 
 #endif  // CONFIG_HIGHBITDEPTH
@@ -534,6 +542,13 @@ class FwdTrans8x8HT : public FwdTrans8x8TestBase,
     fwd_txfm_ref = fht8x8_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
+#if CONFIG_HIGHBITDEPTH
+    switch (bit_depth_) {
+      case AOM_BITS_10: fwd_txfm_ref = fht8x8_10; break;
+      case AOM_BITS_12: fwd_txfm_ref = fht8x8_12; break;
+      default: fwd_txfm_ref = fht8x8_ref; break;
+    }
+#endif
   }
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
@@ -606,14 +621,14 @@ INSTANTIATE_TEST_CASE_P(
     C, FwdTrans8x8HT,
     ::testing::Values(
         make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, 0, AOM_BITS_8),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_10, 0, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_10, 1, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_10, 2, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_10, 3, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_12, 0, AOM_BITS_12),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_12, 1, AOM_BITS_12),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_12, 2, AOM_BITS_12),
-        make_tuple(&av1_highbd_fht8x8_c, &iht8x8_12, 3, AOM_BITS_12),
+        make_tuple(&fht8x8_10, &iht8x8_10, 0, AOM_BITS_10),
+        make_tuple(&fht8x8_10, &iht8x8_10, 1, AOM_BITS_10),
+        make_tuple(&fht8x8_10, &iht8x8_10, 2, AOM_BITS_10),
+        make_tuple(&fht8x8_10, &iht8x8_10, 3, AOM_BITS_10),
+        make_tuple(&fht8x8_12, &iht8x8_12, 0, AOM_BITS_12),
+        make_tuple(&fht8x8_12, &iht8x8_12, 1, AOM_BITS_12),
+        make_tuple(&fht8x8_12, &iht8x8_12, 2, AOM_BITS_12),
+        make_tuple(&fht8x8_12, &iht8x8_12, 3, AOM_BITS_12),
         make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, 1, AOM_BITS_8),
         make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, 2, AOM_BITS_8),
         make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, 3, AOM_BITS_8)));

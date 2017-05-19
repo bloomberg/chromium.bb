@@ -562,7 +562,7 @@ static void hbd_process_block_dpcm_vert(TX_SIZE tx_size, TX_TYPE_1D tx_type_1d,
       av1_get_hbd_dpcm_inv_txfm_add_func(tx1d_width);
   for (int r = 0; r < tx1d_height; ++r) {
     if (r > 0) memcpy(dst, dst - dst_stride, tx1d_width * sizeof(dst[0]));
-    inverse_tx(dqcoeff, 1, tx_type_1d, bd, dst);
+    inverse_tx(dqcoeff, 1, tx_type_1d, bd, dst, 1);
     dqcoeff += tx1d_width;
     dst += dst_stride;
   }
@@ -590,7 +590,7 @@ static void hbd_process_block_dpcm_horz(TX_SIZE tx_size, TX_TYPE_1D tx_type_1d,
       if (c > 0) dst[r * dst_stride] = dst[r * dst_stride - 1];
       tx_buff[r] = dqcoeff[r * tx1d_width];
     }
-    inverse_tx(tx_buff, dst_stride, tx_type_1d, bd, dst);
+    inverse_tx(tx_buff, dst_stride, tx_type_1d, bd, dst, 0);
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH

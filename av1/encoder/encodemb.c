@@ -1435,6 +1435,24 @@ static void quantize_scaler(int coeff, int16_t zbin, int16_t round_value,
   }
 }
 
+#if CONFIG_HIGHBITDEPTH
+typedef void (*hbd_dpcm_fwd_tx_func)(const int16_t *input, int stride,
+                                     TX_TYPE_1D tx_type, tran_low_t *output,
+                                     int dir);
+
+static hbd_dpcm_fwd_tx_func get_hbd_dpcm_fwd_tx_func(int tx_length) {
+  switch (tx_length) {
+    case 4: return av1_hbd_dpcm_ft4_c;
+    case 8: return av1_hbd_dpcm_ft8_c;
+    case 16: return av1_hbd_dpcm_ft16_c;
+    case 32:
+      return av1_hbd_dpcm_ft32_c;
+    // TODO(huisu): add support for TX_64X64.
+    default: assert(0); return NULL;
+  }
+}
+#endif  // CONFIG_HIGHBITDEPTH
+
 typedef void (*dpcm_fwd_tx_func)(const int16_t *input, int stride,
                                  TX_TYPE_1D tx_type, tran_low_t *output);
 
@@ -1539,7 +1557,7 @@ static void hbd_process_block_dpcm_vert(
     int16_t *src_diff, int diff_stride, tran_low_t *coeff, tran_low_t *qcoeff,
     tran_low_t *dqcoeff) {
   const int tx1d_width = tx_size_wide[tx_size];
-  dpcm_fwd_tx_func forward_tx = get_dpcm_fwd_tx_func(tx1d_width);
+  hbd_dpcm_fwd_tx_func forward_tx = get_hbd_dpcm_fwd_tx_func(tx1d_width);
   hbd_dpcm_inv_txfm_add_func inverse_tx =
       av1_get_hbd_dpcm_inv_txfm_add_func(tx1d_width);
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
@@ -1553,7 +1571,7 @@ static void hbd_process_block_dpcm_vert(
     // Subtraction.
     for (int c = 0; c < tx1d_width; ++c) src_diff[c] = src[c] - dst[c];
     // Forward transform.
-    forward_tx(src_diff, 1, tx_type_1d, coeff);
+    forward_tx(src_diff, 1, tx_type_1d, coeff, 1);
     // Quantization.
     for (int c = 0; c < tx1d_width; ++c) {
       quantize_scaler(coeff[c], p->zbin[q_idx], p->round[q_idx],
@@ -1562,7 +1580,7 @@ static void hbd_process_block_dpcm_vert(
       q_idx = 1;
     }
     // Inverse transform.
-    inverse_tx(dqcoeff, 1, tx_type_1d, bd, dst);
+    inverse_tx(dqcoeff, 1, tx_type_1d, bd, dst, 1);
     // Move to the next row.
     coeff += tx1d_width;
     qcoeff += tx1d_width;
@@ -1580,7 +1598,7 @@ static void hbd_process_block_dpcm_horz(
     int16_t *src_diff, int diff_stride, tran_low_t *coeff, tran_low_t *qcoeff,
     tran_low_t *dqcoeff) {
   const int tx1d_height = tx_size_high[tx_size];
-  dpcm_fwd_tx_func forward_tx = get_dpcm_fwd_tx_func(tx1d_height);
+  hbd_dpcm_fwd_tx_func forward_tx = get_hbd_dpcm_fwd_tx_func(tx1d_height);
   hbd_dpcm_inv_txfm_add_func inverse_tx =
       av1_get_hbd_dpcm_inv_txfm_add_func(tx1d_height);
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
@@ -1597,7 +1615,7 @@ static void hbd_process_block_dpcm_horz(
     }
     // Forward transform.
     tran_low_t tx_buff[64];
-    forward_tx(src_diff, diff_stride, tx_type_1d, tx_buff);
+    forward_tx(src_diff, diff_stride, tx_type_1d, tx_buff, 0);
     for (int r = 0; r < tx1d_height; ++r) coeff[r * tx1d_width] = tx_buff[r];
     // Quantization.
     for (int r = 0; r < tx1d_height; ++r) {
@@ -1609,7 +1627,7 @@ static void hbd_process_block_dpcm_horz(
     }
     // Inverse transform.
     for (int r = 0; r < tx1d_height; ++r) tx_buff[r] = dqcoeff[r * tx1d_width];
-    inverse_tx(tx_buff, dst_stride, tx_type_1d, bd, dst);
+    inverse_tx(tx_buff, dst_stride, tx_type_1d, bd, dst, 0);
     // Move to the next column.
     ++coeff, ++qcoeff, ++dqcoeff, ++src_diff, ++dst, ++src;
   }

@@ -255,12 +255,20 @@ void iht16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
 }
 
 #if CONFIG_HIGHBITDEPTH
+void fht16x16_10(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+  av1_fwd_txfm2d_16x16_c(in, out, stride, tx_type, 10);
+}
+
+void fht16x16_12(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+  av1_fwd_txfm2d_16x16_c(in, out, stride, tx_type, 12);
+}
+
 void iht16x16_10(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
-  av1_highbd_iht16x16_256_add_c(in, out, stride, tx_type, 10);
+  av1_inv_txfm2d_add_16x16_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 10);
 }
 
 void iht16x16_12(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
-  av1_highbd_iht16x16_256_add_c(in, out, stride, tx_type, 12);
+  av1_inv_txfm2d_add_16x16_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 12);
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
@@ -625,9 +633,18 @@ class Trans16x16HT : public Trans16x16TestBase,
     mask_ = (1 << bit_depth_) - 1;
 #if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
-      case AOM_BITS_10: inv_txfm_ref = iht16x16_10; break;
-      case AOM_BITS_12: inv_txfm_ref = iht16x16_12; break;
-      default: inv_txfm_ref = iht16x16_ref; break;
+      case AOM_BITS_10:
+        fwd_txfm_ref = fht16x16_10;
+        inv_txfm_ref = iht16x16_10;
+        break;
+      case AOM_BITS_12:
+        fwd_txfm_ref = fht16x16_12;
+        inv_txfm_ref = iht16x16_12;
+        break;
+      default:
+        fwd_txfm_ref = fht16x16_ref;
+        inv_txfm_ref = iht16x16_ref;
+        break;
     }
 #else
     inv_txfm_ref = iht16x16_ref;
@@ -767,14 +784,14 @@ INSTANTIATE_TEST_CASE_P(C, Trans16x16DCT,
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16HT,
     ::testing::Values(
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 0, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 1, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 2, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 3, AOM_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 0, AOM_BITS_12),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 1, AOM_BITS_12),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 2, AOM_BITS_12),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 3, AOM_BITS_12),
+        make_tuple(&fht16x16_10, &iht16x16_10, 0, AOM_BITS_10),
+        make_tuple(&fht16x16_10, &iht16x16_10, 1, AOM_BITS_10),
+        make_tuple(&fht16x16_10, &iht16x16_10, 2, AOM_BITS_10),
+        make_tuple(&fht16x16_10, &iht16x16_10, 3, AOM_BITS_10),
+        make_tuple(&fht16x16_12, &iht16x16_12, 0, AOM_BITS_12),
+        make_tuple(&fht16x16_12, &iht16x16_12, 1, AOM_BITS_12),
+        make_tuple(&fht16x16_12, &iht16x16_12, 2, AOM_BITS_12),
+        make_tuple(&fht16x16_12, &iht16x16_12, 3, AOM_BITS_12),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 0, AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),

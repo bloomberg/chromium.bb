@@ -67,4 +67,8 @@ static const tran_high_t sinpi_4_9 = 15212;
 // 16384 * sqrt(2)
 static const tran_high_t Sqrt2 = 23170;
 
+static INLINE tran_high_t fdct_round_shift(tran_high_t input) {
+  tran_high_t rv = ROUND_POWER_OF_TWO(input, DCT_CONST_BITS);
+  return rv;
+}
 #endif  // AOM_DSP_TXFM_COMMON_H_

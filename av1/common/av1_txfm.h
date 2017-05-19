@@ -120,11 +120,12 @@ static INLINE int get_max_bit(int x) {
 }
 
 // TODO(angiebird): implement SSE
-static INLINE void clamp_block(int16_t *block, int block_size, int stride,
-                               int low, int high) {
+static INLINE void clamp_block(int16_t *block, int block_size_row,
+                               int block_size_col, int stride, int low,
+                               int high) {
   int i, j;
-  for (i = 0; i < block_size; ++i) {
-    for (j = 0; j < block_size; ++j) {
+  for (i = 0; i < block_size_row; ++i) {
+    for (j = 0; j < block_size_col; ++j) {
       block[i * stride + j] = clamp(block[i * stride + j], low, high);
     }
   }
