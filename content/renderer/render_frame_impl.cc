@@ -2676,7 +2676,7 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
       isolate, BlinkConnectorJsWrapper::kModuleName,
       BlinkConnectorJsWrapper::Create(
           isolate, context,
-          RenderThreadImpl::current()->blink_platform_impl()->GetConnector())
+          RenderThreadImpl::current_blink_platform_impl()->GetConnector())
           .ToV8());
 }
 

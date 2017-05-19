@@ -264,6 +264,10 @@ uint32_t g_next_compositor_frame_sink_id = 1;
 // for tests which may indirectly send messages over this interface.
 mojom::RenderMessageFilter* g_render_message_filter_for_testing;
 
+// An implementation of RendererBlinkPlatformImpl which can be mocked out
+// for tests.
+RendererBlinkPlatformImpl* g_current_blink_platform_impl_for_testing;
+
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl>>::DestructorAtExit
@@ -567,9 +571,23 @@ mojom::RenderMessageFilter* RenderThreadImpl::current_render_message_filter() {
 }
 
 // static
+RendererBlinkPlatformImpl* RenderThreadImpl::current_blink_platform_impl() {
+  if (g_current_blink_platform_impl_for_testing)
+    return g_current_blink_platform_impl_for_testing;
+  DCHECK(current());
+  return current()->blink_platform_impl();
+}
+
+// static
 void RenderThreadImpl::SetRenderMessageFilterForTesting(
     mojom::RenderMessageFilter* render_message_filter) {
   g_render_message_filter_for_testing = render_message_filter;
+}
+
+// static
+void RenderThreadImpl::SetRendererBlinkPlatformImplForTesting(
+    RendererBlinkPlatformImpl* blink_platform_impl) {
+  g_current_blink_platform_impl_for_testing = blink_platform_impl;
 }
 
 // In single-process mode used for debugging, we don't pass a renderer client
