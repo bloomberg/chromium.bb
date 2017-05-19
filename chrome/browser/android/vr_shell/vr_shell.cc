@@ -258,6 +258,11 @@ void VrShell::NavigateBack() {
   Java_VrShellImpl_navigateBack(env, j_vr_shell_.obj());
 }
 
+void VrShell::ExitCct() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_exitCct(env, j_vr_shell_.obj());
+}
+
 void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   WaitForGlThread();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::OnTriggerEvent,

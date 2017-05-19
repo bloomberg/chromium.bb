@@ -57,6 +57,7 @@ class VrGLThread : public base::Thread,
       device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
   void NavigateBack() override;
+  void ExitCct() override;
 
   // UiInterface implementation (VrShell calling to the UI).
   void SetFullscreen(bool enabled) override;

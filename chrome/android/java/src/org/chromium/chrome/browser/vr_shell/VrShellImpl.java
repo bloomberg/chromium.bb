@@ -135,7 +135,7 @@ public class VrShellImpl
         getUiLayout().setCloseButtonListener(new Runnable() {
             @Override
             public void run() {
-                mDelegate.shutdownVr(false /* isPausing */, false /* showTransition */);
+                mDelegate.shutdownVr(true, false);
             }
         });
 
@@ -347,7 +347,13 @@ public class VrShellImpl
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
     @CalledByNative
     public void forceExitVr() {
-        mDelegate.shutdownVr(false /* isPausing */, true /* showTransition */);
+        mDelegate.showDoffAndExitVr();
+    }
+
+    // Exits CCT, returning to the app that opened it.
+    @CalledByNative
+    public void exitCct() {
+        mDelegate.exitCct();
     }
 
     @CalledByNative
