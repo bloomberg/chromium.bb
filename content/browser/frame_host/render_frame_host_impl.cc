@@ -3931,20 +3931,23 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
 class RenderFrameHostImpl::JavaInterfaceProvider
     : public service_manager::mojom::InterfaceProvider {
  public:
+  using BindCallback =
+      base::Callback<void(const std::string&, mojo::ScopedMessagePipeHandle)>;
+
   JavaInterfaceProvider(
-      const service_manager::BinderRegistry::Binder& bind_callback,
+      const BindCallback& bind_callback,
       service_manager::mojom::InterfaceProviderRequest request)
       : bind_callback_(bind_callback), binding_(this, std::move(request)) {}
   ~JavaInterfaceProvider() override = default;
 
  private:
-  // service_manager::mojom::INterfaceProvider:
+  // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle handle) override {
     bind_callback_.Run(interface_name, std::move(handle));
   }
 
-  service_manager::BinderRegistry::Binder bind_callback_;
+  const BindCallback bind_callback_;
   mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaInterfaceProvider);
