@@ -84,6 +84,7 @@ public class VrShellImpl
 
     private long mNativeVrShell;
 
+    private FrameLayout mRenderToSurfaceLayoutParent;
     private FrameLayout mRenderToSurfaceLayout;
     private Surface mSurface;
     private View mPresentationView;
@@ -168,12 +169,12 @@ public class VrShellImpl
                     mMotionEventSynthesizer = null;
                     if (tab.getNativePage() == null) {
                         nativeRestoreContentSurface(mNativeVrShell);
-                        mRenderToSurfaceLayout.setVisibility(View.INVISIBLE);
+                        mRenderToSurfaceLayoutParent.setVisibility(View.INVISIBLE);
                         mSurface = null;
                     }
                 }
                 if (tab.getNativePage() != null) {
-                    mRenderToSurfaceLayout.setVisibility(View.VISIBLE);
+                    mRenderToSurfaceLayoutParent.setVisibility(View.VISIBLE);
                     mNativePage = tab.getNativePage();
                     if (mSurface == null) mSurface = nativeTakeContentSurface(mNativeVrShell);
                     mRenderToSurfaceLayout.addView(mNativePage.getView(),
@@ -181,7 +182,7 @@ public class VrShellImpl
                                     LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                     mNativePage.getView().invalidate();
                     mMotionEventSynthesizer =
-                            new MotionEventSynthesizer(mNativePage.getView(), VrShellImpl.this);
+                            new MotionEventSynthesizer(mRenderToSurfaceLayout, VrShellImpl.this);
                 }
                 setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
                 if (tab.getNativePage() == null && tab.getContentViewCore() != null) {
@@ -236,7 +237,18 @@ public class VrShellImpl
                 return false;
             }
         };
-
+        // We need a parent for the RenderToSurfaceLayout because we want screen taps to only be
+        // routed to the GvrUiLayout, and not propagate through to the NativePage. So screen taps
+        // are handled by the RenderToSurfaceLayoutParent, while touch events generated from the VR
+        // controller are injected directly into the RenderToSurfaceLayout, bypassing the parent.
+        mRenderToSurfaceLayoutParent = new FrameLayout(mActivity) {
+            @Override
+            public boolean dispatchTouchEvent(MotionEvent event) {
+                getUiLayout().dispatchTouchEvent(event);
+                return true;
+            }
+        };
+        mRenderToSurfaceLayoutParent.setVisibility(View.INVISIBLE);
         mRenderToSurfaceLayout = new FrameLayout(mActivity) {
             @Override
             protected void dispatchDraw(Canvas canvas) {
@@ -246,13 +258,8 @@ public class VrShellImpl
                 super.dispatchDraw(surfaceCanvas);
                 mSurface.unlockCanvasAndPost(surfaceCanvas);
             }
-
-            @Override
-            public boolean dispatchTouchEvent(MotionEvent event) {
-                return true;
-            }
         };
-        mRenderToSurfaceLayout.setVisibility(View.INVISIBLE);
+        mRenderToSurfaceLayout.setVisibility(View.VISIBLE);
         // We need a pre-draw listener to invalidate the native page because scrolling usually
         // doesn't trigger an onDraw call, so our texture won't get updated.
         mRenderToSurfaceLayout.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
@@ -265,7 +272,8 @@ public class VrShellImpl
                 return true;
             }
         });
-        addView(mRenderToSurfaceLayout);
+        mRenderToSurfaceLayoutParent.addView(mRenderToSurfaceLayout);
+        addView(mRenderToSurfaceLayoutParent);
     }
 
     @Override
@@ -451,6 +459,7 @@ public class VrShellImpl
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }
+        if (mNativePage != null) UiUtils.removeViewFromParent(mNativePage.getView());
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mTabModelSelectorTabObserver.destroy();
         mTab.removeObserver(mTabObserver);
