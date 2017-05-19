@@ -14,7 +14,7 @@
 #include "android_webview/browser/aw_form_database.h"
 #include "android_webview/browser/aw_gl_functor.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
-#include "android_webview/browser/aw_metrics_service_client_impl.h"
+#include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_pdf_exporter.h"
 #include "android_webview/browser/aw_picture.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
