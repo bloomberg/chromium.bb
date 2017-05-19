@@ -770,10 +770,6 @@
     "label": "//services/ui/demo:mus_demo_unittests",
     "type": "windowed_test_launcher",
   },
-  "mus_ws_unittests": {
-    "label": "//services/ui/ws:mus_ws_unittests",
-    "type": "windowed_test_launcher",
-  },
   "nacl_helper_nonsfi_unittests": {
     "label": "//components/nacl/loader:nacl_helper_nonsfi_unittests",
     "type": "raw",
@@ -1045,6 +1041,10 @@
   "ui_junit_tests": {
     "label": "//ui/android:ui_junit_tests",
     "type": "junit_test",
+  },
+  "ui_service_unittests": {
+    "label": "//services/ui/ws:ui_service_unittests",
+    "type": "windowed_test_launcher",
   },
   "ui_struct_traits_unittests": {
     "label": "//services/ui/public/interfaces:ui_struct_traits_unittests",

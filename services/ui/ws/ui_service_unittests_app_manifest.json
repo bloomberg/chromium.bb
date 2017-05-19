@@ -1,5 +1,5 @@
 {
-  "name": "mus_ws_unittests_app",
+  "name": "ui_service_unittests_app",
   "display_name": "Mus Window Server Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -10,7 +10,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "mus_ws_unittests_app": [ "ui:window_tree_client" ],
+        "ui_service_unittests_app": [ "ui:window_tree_client" ],
         "ui": [
           "window_manager",
           "window_tree_host_factory"
