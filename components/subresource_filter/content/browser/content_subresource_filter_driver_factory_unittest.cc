@@ -734,9 +734,17 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
                                   "https://example.test"};
   for (auto* url : unsupported_urls) {
     SCOPED_TRACE(url);
+    ActivationDecision expected_decision =
+        ActivationDecision::UNSUPPORTED_SCHEME;
+    // We only log UNSUPPORTED_SCHEME if the navigation would have otherwise
+    // activated. Note that non http/s URLs will never match an activation list.
+    if (test_data.expected_activation_decision ==
+            ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET ||
+        test_data.activation_scope == ActivationScope::ACTIVATION_LIST) {
+      expected_decision = ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
+    }
     NavigateAndExpectActivation({test_data.url_matches_activation_list},
-                                {GURL(url)},
-                                ActivationDecision::UNSUPPORTED_SCHEME);
+                                {GURL(url)}, expected_decision);
   }
   for (auto* url : supported_urls) {
     SCOPED_TRACE(url);
