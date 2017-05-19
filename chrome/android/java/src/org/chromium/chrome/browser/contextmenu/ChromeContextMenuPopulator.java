@@ -651,15 +651,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     /**
-     * The valid url of a link is stored in the linkUrl of ContextMenuParams while the
-     * valid url of a image or video is stored in the srcUrl of ContextMenuParams.
-     * @param params The parameters used to decide the type of the content.
+     * Return the valid url of a ContextMenuParams.
+     * If the ContextMenuParams is an anchor and its linkUrl is not empty, returns the linkUrl.
+     * Otherwise returns the srcUrl.
+     * @param params The {@link ContextMenuParams} to check.
      */
     private String getUrl(ContextMenuParams params) {
-        if (params.isImage() || params.isVideo()) {
-            return params.getSrcUrl();
-        } else {
+        if (params.isAnchor()) {
             return params.getLinkUrl();
+        } else {
+            return params.getSrcUrl();
         }
     }
 }
