@@ -731,7 +731,6 @@ INSTANTIATE_TEST_CASE_P(IndexedDBBrowserTestInstantiation,
                         ::testing::Values("failGetBlobJournal",
                                           "get",
                                           "getAll",
-                                          "failWebkitGetDatabaseNames",
                                           "iterate",
                                           "failTransactionCommit",
                                           "clearObjectStore"));
