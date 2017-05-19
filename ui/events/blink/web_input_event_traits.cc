@@ -181,10 +181,6 @@ bool WebInputEventTraits::ShouldBlockEventStream(
     const WebInputEvent& event,
     bool raf_aligned_touch_enabled) {
   switch (event.GetType()) {
-    case WebInputEvent::kMouseDown:
-    case WebInputEvent::kMouseUp:
-    case WebInputEvent::kMouseEnter:
-    case WebInputEvent::kMouseLeave:
     case WebInputEvent::kContextMenu:
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollEnd:

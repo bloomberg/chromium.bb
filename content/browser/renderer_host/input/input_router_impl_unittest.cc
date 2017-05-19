@@ -1211,19 +1211,22 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
   ASSERT_LT(start_type, end_type);
   for (int i = start_type; i <= end_type; ++i) {
     WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
-    int expected_in_flight_event_count =
-        !ShouldBlockEventStream(GetEventWithType(type)) ? 0 : 1;
 
-    // Note: Only MouseMove ack is forwarded to the ack handler.
     SimulateMouseEvent(type, 0, 0);
     EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-    EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
-    EXPECT_EQ(expected_in_flight_event_count, client_->in_flight_event_count());
-    if (expected_in_flight_event_count) {
+
+    if (ShouldBlockEventStream(GetEventWithType(type))) {
+      EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+      EXPECT_EQ(1, client_->in_flight_event_count());
+
       SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-      uint32_t expected_ack_count = type == WebInputEvent::kMouseMove ? 1 : 0;
-      EXPECT_EQ(expected_ack_count, ack_handler_->GetAndResetAckCount());
+      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+      EXPECT_EQ(0, client_->in_flight_event_count());
+    } else {
+      // Note: events which don't block the event stream immediately receive
+      // synthetic ACKs.
+      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
       EXPECT_EQ(0, client_->in_flight_event_count());
     }
   }
