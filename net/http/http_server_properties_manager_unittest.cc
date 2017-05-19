@@ -225,9 +225,9 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
   }
 
   bool HasAlternativeService(const url::SchemeHostPort& server) {
-    const AlternativeServiceVector alternative_service_vector =
-        http_server_props_manager_->GetAlternativeServices(server);
-    return !alternative_service_vector.empty();
+    const AlternativeServiceInfoVector alternative_service_info_vector =
+        http_server_props_manager_->GetAlternativeServiceInfos(server);
+    return !alternative_service_info_vector.empty();
   }
 
   MockPrefDelegate* pref_delegate_;  // Owned by HttpServerPropertiesManager.
@@ -719,7 +719,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServices) {
+TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   ExpectPrefsUpdate(1);
   ExpectScheduleUpdatePrefsOnNetworkThread();
 
@@ -744,10 +744,11 @@ TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServices) {
   EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  AlternativeServiceVector alternative_service_vector =
-      http_server_props_manager_->GetAlternativeServices(spdy_server_mail);
-  ASSERT_EQ(1u, alternative_service_vector.size());
-  EXPECT_EQ(alternative_service, alternative_service_vector[0]);
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_props_manager_->GetAlternativeServiceInfos(spdy_server_mail);
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+  EXPECT_EQ(alternative_service,
+            alternative_service_info_vector[0].alternative_service);
 }
 
 TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
@@ -782,11 +783,13 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  AlternativeServiceVector alternative_service_vector =
-      http_server_props_manager_->GetAlternativeServices(spdy_server_mail);
-  ASSERT_EQ(2u, alternative_service_vector.size());
-  EXPECT_EQ(alternative_service1, alternative_service_vector[0]);
-  EXPECT_EQ(alternative_service2, alternative_service_vector[1]);
+  AlternativeServiceInfoVector alternative_service_info_vector2 =
+      http_server_props_manager_->GetAlternativeServiceInfos(spdy_server_mail);
+  ASSERT_EQ(2u, alternative_service_info_vector2.size());
+  EXPECT_EQ(alternative_service1,
+            alternative_service_info_vector2[0].alternative_service);
+  EXPECT_EQ(alternative_service2,
+            alternative_service_info_vector2[1].alternative_service);
 }
 
 TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
@@ -1138,11 +1141,12 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
       server_gurl = GURL(StringPrintf("https://www.google.com:%d", i));
     }
     url::SchemeHostPort server(server_gurl);
-    AlternativeServiceVector alternative_service_vector =
-        http_server_props_manager_->GetAlternativeServices(server);
-    ASSERT_EQ(1u, alternative_service_vector.size());
-    EXPECT_EQ(kProtoQUIC, alternative_service_vector[0].protocol);
-    EXPECT_EQ(i, alternative_service_vector[0].port);
+    AlternativeServiceInfoVector alternative_service_info_vector =
+        http_server_props_manager_->GetAlternativeServiceInfos(server);
+    ASSERT_EQ(1u, alternative_service_info_vector.size());
+    EXPECT_EQ(kProtoQUIC,
+              alternative_service_info_vector[0].alternative_service.protocol);
+    EXPECT_EQ(i, alternative_service_info_vector[0].alternative_service.port);
   }
 
   // Verify SupportsQuic.

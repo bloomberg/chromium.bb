@@ -262,12 +262,12 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   void VerifyBrokenAlternateProtocolMapping(const HttpRequestInfo& request_info,
                                             bool should_mark_broken) {
     const url::SchemeHostPort server(request_info.url);
-    const AlternativeServiceVector alternative_service_vector =
-        session_->http_server_properties()->GetAlternativeServices(server);
-    EXPECT_EQ(1u, alternative_service_vector.size());
+    const AlternativeServiceInfoVector alternative_service_info_vector =
+        session_->http_server_properties()->GetAlternativeServiceInfos(server);
+    EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(should_mark_broken,
               session_->http_server_properties()->IsAlternativeServiceBroken(
-                  alternative_service_vector[0]));
+                  alternative_service_info_vector[0].alternative_service));
   }
 
   TestJobFactory job_factory_;

@@ -191,10 +191,11 @@ void HttpServerPropertiesManager::MaybeForceHTTP11(const HostPortPair& server,
   http_server_properties_impl_->MaybeForceHTTP11(server, ssl_config);
 }
 
-AlternativeServiceVector HttpServerPropertiesManager::GetAlternativeServices(
+AlternativeServiceInfoVector
+HttpServerPropertiesManager::GetAlternativeServiceInfos(
     const url::SchemeHostPort& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->GetAlternativeServices(origin);
+  return http_server_properties_impl_->GetAlternativeServiceInfos(origin);
 }
 
 bool HttpServerPropertiesManager::SetAlternativeService(

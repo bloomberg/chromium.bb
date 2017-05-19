@@ -775,7 +775,8 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
 
   // Create an alternative job if alternative service is set up for this domain.
   const AlternativeService alternative_service =
-      GetAlternativeServiceFor(request_info_, delegate_, stream_type_);
+      GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_)
+          .alternative_service;
 
   if (is_preconnect_) {
     // Due to how the socket pools handle priorities and idle sockets, only IDLE
@@ -1013,27 +1014,30 @@ GURL HttpStreamFactoryImpl::JobController::ApplyHostMappingRules(
   return url;
 }
 
-AlternativeService
-HttpStreamFactoryImpl::JobController::GetAlternativeServiceFor(
+AlternativeServiceInfo
+HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoFor(
     const HttpRequestInfo& request_info,
     HttpStreamRequest::Delegate* delegate,
     HttpStreamRequest::StreamType stream_type) {
   if (!enable_alternative_services_)
-    return AlternativeService();
+    return AlternativeServiceInfo();
 
-  AlternativeService alternative_service =
-      GetAlternativeServiceForInternal(request_info, delegate, stream_type);
+  AlternativeServiceInfo alternative_service_info =
+      GetAlternativeServiceInfoInternal(request_info, delegate, stream_type);
   AlternativeServiceType type;
-  if (alternative_service.protocol == kProtoUnknown) {
+  if (alternative_service_info.alternative_service.protocol == kProtoUnknown) {
     type = NO_ALTERNATIVE_SERVICE;
-  } else if (alternative_service.protocol == kProtoQUIC) {
-    if (request_info.url.host_piece() == alternative_service.host) {
+  } else if (alternative_service_info.alternative_service.protocol ==
+             kProtoQUIC) {
+    if (request_info.url.host_piece() ==
+        alternative_service_info.alternative_service.host) {
       type = QUIC_SAME_DESTINATION;
     } else {
       type = QUIC_DIFFERENT_DESTINATION;
     }
   } else {
-    if (request_info.url.host_piece() == alternative_service.host) {
+    if (request_info.url.host_piece() ==
+        alternative_service_info.alternative_service.host) {
       type = NOT_QUIC_SAME_DESTINATION;
     } else {
       type = NOT_QUIC_DIFFERENT_DESTINATION;
@@ -1041,40 +1045,42 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceFor(
   }
   UMA_HISTOGRAM_ENUMERATION("Net.AlternativeServiceTypeForRequest", type,
                             MAX_ALTERNATIVE_SERVICE_TYPE);
-  return alternative_service;
+  return alternative_service_info;
 }
 
-AlternativeService
-HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
+AlternativeServiceInfo
+HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
     const HttpRequestInfo& request_info,
     HttpStreamRequest::Delegate* delegate,
     HttpStreamRequest::StreamType stream_type) {
   GURL original_url = request_info.url;
 
   if (!original_url.SchemeIs(url::kHttpsScheme))
-    return AlternativeService();
+    return AlternativeServiceInfo();
 
   url::SchemeHostPort origin(original_url);
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
-  const AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(origin);
-  if (alternative_service_vector.empty())
-    return AlternativeService();
+  const AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_properties.GetAlternativeServiceInfos(origin);
+  if (alternative_service_info_vector.empty())
+    return AlternativeServiceInfo();
 
   bool quic_advertised = false;
   bool quic_all_broken = true;
 
-  // First Alt-Svc that is not marked as broken.
-  AlternativeService first_alternative_service;
+  // First alternative service that is not marked as broken.
+  AlternativeServiceInfo first_alternative_service_info;
 
-  for (const AlternativeService& alternative_service :
-       alternative_service_vector) {
-    DCHECK(IsAlternateProtocolValid(alternative_service.protocol));
-    if (!quic_advertised && alternative_service.protocol == kProtoQUIC)
+  for (const AlternativeServiceInfo& alternative_service_info :
+       alternative_service_info_vector) {
+    DCHECK(IsAlternateProtocolValid(
+        alternative_service_info.alternative_service.protocol));
+    if (!quic_advertised &&
+        alternative_service_info.alternative_service.protocol == kProtoQUIC)
       quic_advertised = true;
     if (http_server_properties.IsAlternativeServiceBroken(
-            alternative_service)) {
+            alternative_service_info.alternative_service)) {
       HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
       continue;
     }
@@ -1087,21 +1093,24 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     // allow protocol upgrades to user-controllable ports.
     const int kUnrestrictedPort = 1024;
     if (!session_->params().enable_user_alternate_protocol_ports &&
-        (alternative_service.port >= kUnrestrictedPort &&
+        (alternative_service_info.alternative_service.port >=
+             kUnrestrictedPort &&
          origin.port() < kUnrestrictedPort))
       continue;
 
-    if (alternative_service.protocol == kProtoHTTP2) {
+    if (alternative_service_info.alternative_service.protocol == kProtoHTTP2) {
       if (!session_->params().enable_http2_alternative_service)
         continue;
 
       // Cache this entry if we don't have a non-broken Alt-Svc yet.
-      if (first_alternative_service.protocol == kProtoUnknown)
-        first_alternative_service = alternative_service;
+      if (first_alternative_service_info.alternative_service.protocol ==
+          kProtoUnknown)
+        first_alternative_service_info = alternative_service_info;
       continue;
     }
 
-    DCHECK_EQ(kProtoQUIC, alternative_service.protocol);
+    DCHECK_EQ(kProtoQUIC,
+              alternative_service_info.alternative_service.protocol);
     quic_all_broken = false;
     if (!session_->IsQuicEnabled())
       continue;
@@ -1119,24 +1128,26 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     ignore_result(ApplyHostMappingRules(original_url, &mapped_origin));
     QuicServerId server_id(mapped_origin, request_info.privacy_mode);
 
-    HostPortPair destination(alternative_service.host_port_pair());
+    HostPortPair destination(
+        alternative_service_info.alternative_service.host_port_pair());
     ignore_result(ApplyHostMappingRules(original_url, &destination));
 
     if (session_->quic_stream_factory()->CanUseExistingSession(server_id,
                                                                destination)) {
-      return alternative_service;
+      return alternative_service_info;
     }
 
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
-    if (first_alternative_service.protocol == kProtoUnknown)
-      first_alternative_service = alternative_service;
+    if (first_alternative_service_info.alternative_service.protocol ==
+        kProtoUnknown)
+      first_alternative_service_info = alternative_service_info;
   }
 
   // Ask delegate to mark QUIC as broken for the origin.
   if (quic_advertised && quic_all_broken && delegate != nullptr)
     delegate->OnQuicBroken();
 
-  return first_alternative_service;
+  return first_alternative_service_info;
 }
 
 bool HttpStreamFactoryImpl::JobController::
