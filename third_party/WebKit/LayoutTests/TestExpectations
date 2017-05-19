@@ -2198,7 +2198,6 @@ crbug.com/698077 inspector/sources/debugger/live-edit.html [ NeedsManualRebaseli
 crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsManualRebaseline ]
 
 # Working on getting the CSP tests going:
-crbug.com/694525 external/wpt/content-security-policy/base-uri [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/blink-contrib [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/blink-contrib-2 [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/embedded-enforcement/embedding_csp-header-invalid-format.html [ Skip ]
