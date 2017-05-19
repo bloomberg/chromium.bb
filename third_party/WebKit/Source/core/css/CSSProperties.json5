@@ -489,6 +489,7 @@
       converter: "ConvertFontVariationSettings",
       font: true,
       inherited: true,
+      interpolable: true,
       name_for_methods: "VariationSettings",
       priority: "High",
       runtime_flag: "CSSVariableFonts",
