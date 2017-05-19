@@ -101,10 +101,8 @@ class ContentSubresourceFilterDriverFactory
 
   // Returns whether a main-frame navigation to the given |url| satisfies the
   // activation |conditions| of a given configuration, except for |priority|.
-  // Pass |scheme_is_http_or_https| to avoid multiple string comparisons.
   bool DoesMainFrameURLSatisfyActivationConditions(
       const GURL& url,
-      bool scheme_is_http_or_https,
       const Configuration::ActivationConditions& conditions,
       ActivationList matched_list) const;
 
