@@ -79,12 +79,6 @@ LayerTreeImpl::LayerTreeImpl(
       background_color_(0),
       has_transparent_background_(false),
       last_scrolled_scroll_node_index_(ScrollTree::kInvalidNodeId),
-      overscroll_elasticity_layer_id_(Layer::INVALID_ID),
-      page_scale_layer_id_(Layer::INVALID_ID),
-      inner_viewport_container_layer_id_(Layer::INVALID_ID),
-      outer_viewport_container_layer_id_(Layer::INVALID_ID),
-      inner_viewport_scroll_layer_id_(Layer::INVALID_ID),
-      outer_viewport_scroll_layer_id_(Layer::INVALID_ID),
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
@@ -159,13 +153,13 @@ bool LayerTreeImpl::IsViewportLayerId(int id) const {
 #if DCHECK_IS_ON()
   // Ensure the LayerImpl viewport layer types correspond to the LayerTreeImpl's
   // viewport layers.
-  if (id == inner_viewport_container_layer_id_)
+  if (id == viewport_layer_ids_.inner_viewport_container)
     DCHECK(LayerById(id)->viewport_layer_type() == INNER_VIEWPORT_CONTAINER);
-  if (id == outer_viewport_container_layer_id_)
+  if (id == viewport_layer_ids_.outer_viewport_container)
     DCHECK(LayerById(id)->viewport_layer_type() == OUTER_VIEWPORT_CONTAINER);
-  if (id == inner_viewport_scroll_layer_id_)
+  if (id == viewport_layer_ids_.inner_viewport_scroll)
     DCHECK(LayerById(id)->viewport_layer_type() == INNER_VIEWPORT_SCROLL);
-  if (id == outer_viewport_scroll_layer_id_)
+  if (id == viewport_layer_ids_.outer_viewport_scroll)
     DCHECK(LayerById(id)->viewport_layer_type() == OUTER_VIEWPORT_SCROLL);
 #endif
   if (auto* layer = LayerById(id))
@@ -228,8 +222,8 @@ void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
     // For scrollbar purposes, a change to any of the four viewport layers
     // should affect the scrollbars tied to the outermost layers, which express
     // the sum of the entire viewport.
-    scroll_layer_id = outer_viewport_scroll_layer_id_;
-    clip_layer_id = InnerViewportContainerLayer()->id();
+    scroll_layer_id = viewport_layer_ids_.outer_viewport_scroll;
+    clip_layer_id = viewport_layer_ids_.inner_viewport_container;
   } else {
     // If the clip layer id was passed in, then look up the scroll layer, or
     // vice versa.
@@ -343,14 +337,6 @@ bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
   return layer_list_.empty() ? false : layer_list_[0] == layer;
 }
 
-LayerImpl* LayerTreeImpl::InnerViewportScrollLayer() const {
-  return LayerById(inner_viewport_scroll_layer_id_);
-}
-
-LayerImpl* LayerTreeImpl::OuterViewportScrollLayer() const {
-  return LayerById(outer_viewport_scroll_layer_id_);
-}
-
 gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
 
@@ -451,10 +437,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   // The page scale factor update can affect scrolling which requires that
   // these ids are set, so this must be before PushPageScaleFactorAndLimits.
-  target_tree->SetViewportLayersFromIds(
-      overscroll_elasticity_layer_id_, page_scale_layer_id_,
-      inner_viewport_container_layer_id_, outer_viewport_container_layer_id_,
-      inner_viewport_scroll_layer_id_, outer_viewport_scroll_layer_id_);
+  target_tree->SetViewportLayersFromIds(viewport_layer_ids_);
 
   // Active tree already shares the page_scale_factor object with pending
   // tree so only the limits need to be provided.
@@ -646,14 +629,6 @@ void LayerTreeImpl::SetFilterMutated(ElementId element_id,
   element_id_to_filter_animations_[element_id] = filters;
   if (property_trees()->effect_tree.OnFilterAnimated(element_id, filters))
     set_needs_update_draw_properties();
-}
-
-LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
-  return LayerById(inner_viewport_container_layer_id_);
-}
-
-LayerImpl* LayerTreeImpl::OuterViewportContainerLayer() const {
-  return LayerById(outer_viewport_container_layer_id_);
 }
 
 ScrollNode* LayerTreeImpl::CurrentlyScrollingNode() {
@@ -932,7 +907,7 @@ void LayerTreeImpl::DidUpdatePageScale() {
         ClampPageScaleFactorToLimits(current_page_scale_factor()));
 
   set_needs_update_draw_properties();
-  DidUpdateScrollState(inner_viewport_scroll_layer_id_);
+  DidUpdateScrollState(viewport_layer_ids_.inner_viewport_scroll);
 
   if (IsActiveTree() && layer_tree_host_impl_->ViewportMainScrollLayer()) {
     if (ScrollbarAnimationController* controller =
@@ -1000,34 +975,22 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   property_trees()->scroll_tree.ApplySentScrollDeltasFromAbortedCommit();
 }
 
-void LayerTreeImpl::SetViewportLayersFromIds(
-    int overscroll_elasticity_layer_id,
-    int page_scale_layer_id,
-    int inner_viewport_container_layer_id,
-    int outer_viewport_container_layer_id,
-    int inner_viewport_scroll_layer_id,
-    int outer_viewport_scroll_layer_id) {
-  overscroll_elasticity_layer_id_ = overscroll_elasticity_layer_id;
-  page_scale_layer_id_ = page_scale_layer_id;
-  inner_viewport_container_layer_id_ = inner_viewport_container_layer_id;
-  outer_viewport_container_layer_id_ = outer_viewport_container_layer_id;
-  inner_viewport_scroll_layer_id_ = inner_viewport_scroll_layer_id;
-  outer_viewport_scroll_layer_id_ = outer_viewport_scroll_layer_id;
+void LayerTreeImpl::SetViewportLayersFromIds(const ViewportLayerIds& ids) {
+  viewport_layer_ids_ = ids;
 
-  if (auto* inner_container = LayerById(inner_viewport_container_layer_id_))
+  // Set the viewport layer types.
+  if (auto* inner_container = InnerViewportContainerLayer())
     inner_container->SetViewportLayerType(INNER_VIEWPORT_CONTAINER);
-  if (auto* inner_scroll = LayerById(inner_viewport_scroll_layer_id_))
+  if (auto* inner_scroll = InnerViewportScrollLayer())
     inner_scroll->SetViewportLayerType(INNER_VIEWPORT_SCROLL);
-  if (auto* outer_container = LayerById(outer_viewport_container_layer_id_))
+  if (auto* outer_container = OuterViewportContainerLayer())
     outer_container->SetViewportLayerType(OUTER_VIEWPORT_CONTAINER);
-  if (auto* outer_scroll = LayerById(outer_viewport_scroll_layer_id_))
+  if (auto* outer_scroll = OuterViewportScrollLayer())
     outer_scroll->SetViewportLayerType(OUTER_VIEWPORT_SCROLL);
 }
 
 void LayerTreeImpl::ClearViewportLayers() {
-  SetViewportLayersFromIds(Layer::INVALID_ID, Layer::INVALID_ID,
-                           Layer::INVALID_ID, Layer::INVALID_ID,
-                           Layer::INVALID_ID, Layer::INVALID_ID);
+  SetViewportLayersFromIds(ViewportLayerIds());
 }
 
 // For unit tests, we use the layer's id as its element id.

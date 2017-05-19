@@ -42,7 +42,6 @@
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -603,10 +602,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
 
   // Test that page scale is updated even when we don't rebuild property trees.
   page_scale = 1.888f;
-  root_layer->layer_tree_impl()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, scroll_layer->test_properties()->parent->id(),
-      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
-      Layer::INVALID_ID);
+
+  LayerTreeImpl::ViewportLayerIds viewport_ids;
+  viewport_ids.page_scale = scroll_layer->test_properties()->parent->id();
+  root_layer->layer_tree_impl()->SetViewportLayersFromIds(viewport_ids);
   root_layer->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale);
   EXPECT_FALSE(root_layer->layer_tree_impl()->property_trees()->needs_rebuild);
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
@@ -4110,9 +4109,9 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
-  root->layer_tree_impl()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, page_scale->id(), Layer::INVALID_ID, Layer::INVALID_ID,
-      Layer::INVALID_ID, Layer::INVALID_ID);
+  LayerTreeImpl::ViewportLayerIds viewport_ids;
+  viewport_ids.page_scale = page_scale->id();
+  root->layer_tree_impl()->SetViewportLayersFromIds(viewport_ids);
   root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
   root->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale_factor);
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
@@ -8125,9 +8124,9 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
 
   // Make root the inner viewport scroll layer. This ensures the later call to
   // |SetViewportBoundsDelta| will be on a viewport layer.
-  host_impl.active_tree()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, Layer::INVALID_ID, Layer::INVALID_ID,
-      Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
+  LayerTreeImpl::ViewportLayerIds viewport_ids;
+  viewport_ids.inner_viewport_scroll = root->id();
+  host_impl.active_tree()->SetViewportLayersFromIds(viewport_ids);
 
   root->test_properties()->AddChild(
       LayerImpl::Create(host_impl.active_tree(), 2));

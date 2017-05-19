@@ -46,7 +46,6 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
-#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
@@ -1174,17 +1173,18 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
       event_listener_properties(EventListenerClass::kTouchEndOrCancel));
 
   if (page_scale_layer_ && inner_viewport_scroll_layer_) {
-    tree_impl->SetViewportLayersFromIds(
-        overscroll_elasticity_layer_ ? overscroll_elasticity_layer_->id()
-                                     : Layer::INVALID_ID,
-        page_scale_layer_->id(),
-        inner_viewport_container_layer_ ? inner_viewport_container_layer_->id()
-                                        : Layer::INVALID_ID,
-        outer_viewport_container_layer_ ? outer_viewport_container_layer_->id()
-                                        : Layer::INVALID_ID,
-        inner_viewport_scroll_layer_->id(),
-        outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
-                                     : Layer::INVALID_ID);
+    LayerTreeImpl::ViewportLayerIds ids;
+    if (overscroll_elasticity_layer_)
+      ids.overscroll_elasticity = overscroll_elasticity_layer_->id();
+    ids.page_scale = page_scale_layer_->id();
+    if (inner_viewport_container_layer_)
+      ids.inner_viewport_container = inner_viewport_container_layer_->id();
+    if (outer_viewport_container_layer_)
+      ids.outer_viewport_container = outer_viewport_container_layer_->id();
+    ids.inner_viewport_scroll = inner_viewport_scroll_layer_->id();
+    if (outer_viewport_scroll_layer_)
+      ids.outer_viewport_scroll = outer_viewport_scroll_layer_->id();
+    tree_impl->SetViewportLayersFromIds(ids);
     DCHECK(inner_viewport_scroll_layer_->IsContainerForFixedPositionLayers());
   } else {
     tree_impl->ClearViewportLayers();
