@@ -43,22 +43,22 @@ struct CC_EXPORT EffectNode {
 
   gfx::Size unscaled_mask_target_size;
 
-  bool has_render_surface;
-  bool has_copy_request;
-  bool hidden_by_backface_visibility;
-  bool double_sided;
-  bool is_drawn;
+  bool has_render_surface : 1;
+  bool has_copy_request : 1;
+  bool hidden_by_backface_visibility : 1;
+  bool double_sided : 1;
+  bool is_drawn : 1;
   // TODO(jaydasika) : Delete this after implementation of
   // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)
-  bool subtree_hidden;
-  bool has_potential_filter_animation;
-  bool has_potential_opacity_animation;
-  bool is_currently_animating_filter;
-  bool is_currently_animating_opacity;
+  bool subtree_hidden : 1;
+  bool has_potential_filter_animation : 1;
+  bool has_potential_opacity_animation : 1;
+  bool is_currently_animating_filter : 1;
+  bool is_currently_animating_opacity : 1;
   // We need to track changes to effects on the compositor to compute damage
   // rect.
-  bool effect_changed;
-  bool subtree_has_copy_request;
+  bool effect_changed : 1;
+  bool subtree_has_copy_request : 1;
   int transform_id;
   int clip_id;
 
