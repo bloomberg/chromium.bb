@@ -604,7 +604,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled"
+                    "name": "Enabled",
+                    "params": {
+                        "enable_warmup": "true"
+                    }
                 }
             ]
         }
