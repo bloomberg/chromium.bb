@@ -1266,7 +1266,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 14400,
+          "hard_timeout": 16200,
           "ignore_task_failure": false,
           "io_timeout": 3600
         }
@@ -1296,7 +1296,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 14400,
+          "hard_timeout": 16200,
           "ignore_task_failure": true,
           "io_timeout": 3600
         }
