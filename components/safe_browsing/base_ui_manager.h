@@ -63,7 +63,8 @@ class BaseUIManager
   // to the unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.
   virtual void MaybeReportSafeBrowsingHit(
-      const safe_browsing::HitReport& hit_report);
+      const safe_browsing::HitReport& hit_report,
+      content::WebContents* web_contents);
 
   // A convenience wrapper method for IsUrlWhitelistedOrPendingForWebContents.
   virtual bool IsWhitelisted(const UnsafeResource& resource);

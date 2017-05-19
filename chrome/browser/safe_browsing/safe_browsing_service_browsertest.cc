@@ -152,12 +152,12 @@ void SetProtocolConfigURLPrefix(const std::string& url_prefix,
 
 class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
  public:
-  void MaybeReportSafeBrowsingHit(
-      const safe_browsing::HitReport& hit_report) override {
+  void MaybeReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report,
+                                  content::WebContents* web_contents) override {
     EXPECT_FALSE(got_hit_report_);
     got_hit_report_ = true;
     hit_report_ = hit_report;
-    SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(hit_report);
+    SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(hit_report, web_contents);
   }
 
   bool got_hit_report_ = false;
