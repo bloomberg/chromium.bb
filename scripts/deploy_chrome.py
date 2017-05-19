@@ -270,9 +270,14 @@ class DeployChrome(object):
 
     new_dbus_checksums = self._GetDBusChecksums()
     if old_dbus_checksums != new_dbus_checksums:
-      logging.info('Detected change to D-Bus service files, rebooting.')
-      self._Reboot()
-      return
+      if self.options.target_dir == _CHROME_DIR:
+        logging.info('Detected change to D-Bus service files, rebooting.')
+        self._Reboot()
+        return
+      else:
+        logging.warn('Detected change in D-Bus service files, but target dir '
+                     'is not %s. D-Bus changes will not be picked up by '
+                     'dbus-daemon at boot time.', _CHROME_DIR)
 
     if self.options.startui:
       logging.info('Starting UI...')
@@ -324,7 +329,8 @@ class DeployChrome(object):
 
     This is used to determine if a reboot is required after deploying Chrome.
     """
-    result = self.device.RunCommand('md5sum /opt/google/chrome/dbus/*',
+    path = os.path.join(_CHROME_DIR, 'dbus/*')
+    result = self.device.RunCommand('md5sum ' + path,
                                     error_code_ok=True)
     return result.output
 
