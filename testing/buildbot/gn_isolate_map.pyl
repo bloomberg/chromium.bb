@@ -750,10 +750,6 @@
       "--service-overrides=../../chrome/app/mash/mash_service_overrides.json",
     ],
   },
-  "mus_clipboard_unittests": {
-    "label": "//services/ui/clipboard:mus_clipboard_unittests",
-    "type": "windowed_test_launcher",
-  },
   "mus_public_unittests": {
     "label": "//services/ui/public/cpp/tests:mus_public_unittests",
     "type": "windowed_test_launcher",
@@ -867,7 +863,7 @@
   },
   "service_unittests": {
     "label": "//services:service_unittests",
-    "type": "console_test_launcher",
+    "type": "windowed_test_launcher",
   },
   "setup_unittests": {
     "label": "//chrome/installer/setup:setup_unittests",
