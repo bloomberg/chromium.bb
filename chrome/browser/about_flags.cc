@@ -2769,6 +2769,10 @@ const FeatureEntry kFeatureEntries[] = {
          kSpeculativeResourcePrefetchingFeatureVariations,
          "SpeculativeResourcePrefetchingValidation")},
 
+    {"enable-off-main-thread-fetch", flag_descriptions::kOffMainThreadFetchName,
+     flag_descriptions::kOffMainThreadFetchDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kOffMainThreadFetch)},
+
 #if defined(OS_MACOSX)
     {"tab-strip-keyboard-focus", flag_descriptions::kTabStripKeyboardFocusName,
      flag_descriptions::kTabStripKeyboardFocusDescription, kOsMac,
