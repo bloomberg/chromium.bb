@@ -59,7 +59,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -948,55 +947,6 @@ LayoutRect FrameSelection::UnclippedBounds() const {
 
   view->UpdateLifecycleToLayoutClean();
   return LayoutRect(layout_selection_->SelectionBounds());
-}
-
-static inline HTMLFormElement* AssociatedFormElement(HTMLElement& element) {
-  if (isHTMLFormElement(element))
-    return &toHTMLFormElement(element);
-  return element.formOwner();
-}
-
-// Scans logically forward from "start", including any child frames.
-static HTMLFormElement* ScanForForm(Node* start) {
-  if (!start)
-    return 0;
-
-  for (HTMLElement& element : Traversal<HTMLElement>::StartsAt(
-           start->IsHTMLElement() ? ToHTMLElement(start)
-                                  : Traversal<HTMLElement>::Next(*start))) {
-    if (HTMLFormElement* form = AssociatedFormElement(element))
-      return form;
-
-    if (IsHTMLFrameElementBase(element)) {
-      Node* child_document = ToHTMLFrameElementBase(element).contentDocument();
-      if (HTMLFormElement* frame_result = ScanForForm(child_document))
-        return frame_result;
-    }
-  }
-  return 0;
-}
-
-// We look for either the form containing the current focus, or for one
-// immediately after it
-HTMLFormElement* FrameSelection::CurrentForm() const {
-  // Start looking either at the active (first responder) node, or where the
-  // selection is.
-  Node* start = GetDocument().FocusedElement();
-  if (!start)
-    start = ComputeVisibleSelectionInDOMTree().Start().AnchorNode();
-  if (!start)
-    return 0;
-
-  // Try walking up the node tree to find a form element.
-  for (HTMLElement* element =
-           Traversal<HTMLElement>::FirstAncestorOrSelf(*start);
-       element; element = Traversal<HTMLElement>::FirstAncestor(*element)) {
-    if (HTMLFormElement* form = AssociatedFormElement(*element))
-      return form;
-  }
-
-  // Try walking forward in the node tree to find a form element.
-  return ScanForForm(start);
 }
 
 void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
