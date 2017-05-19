@@ -68,6 +68,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
             gvr_context* gvr_api,
             bool initially_web_vr,
             bool reprojected_rendering,
+            bool daydream_support,
             UiScene* scene);
   ~VrShellGl() override;
 
@@ -242,6 +243,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
   bool surfaceless_rendering_;
+  bool daydream_support_;
 
   std::unique_ptr<VrController> controller_;
 

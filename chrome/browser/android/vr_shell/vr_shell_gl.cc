@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr_shell/fps_meter.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
@@ -196,15 +197,28 @@ double NowSeconds() {
   return (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
 }
 
+void LoadControllerModelTask(
+    base::WeakPtr<VrShellGl> weak_vr_shell_gl,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  auto controller_model = VrControllerModel::LoadFromResources();
+  if (controller_model) {
+    task_runner->PostTask(
+        FROM_HERE, base::Bind(&VrShellGl::SetControllerModel, weak_vr_shell_gl,
+                              base::Passed(&controller_model)));
+  }
+}
+
 }  // namespace
 
 VrShellGl::VrShellGl(VrBrowserInterface* browser,
                      gvr_context* gvr_api,
                      bool initially_web_vr,
                      bool reprojected_rendering,
+                     bool daydream_support,
                      UiScene* scene)
     : web_vr_mode_(initially_web_vr),
       surfaceless_rendering_(reprojected_rendering),
+      daydream_support_(daydream_support),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       browser_(browser),
@@ -305,6 +319,13 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   OnVSync();
 
   ready_to_draw_ = true;
+
+  if (daydream_support_) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BACKGROUND},
+        base::Bind(LoadControllerModelTask, weak_ptr_factory_.GetWeakPtr(),
+                   task_runner_));
+  }
 }
 
 void VrShellGl::CreateContentSurface() {
@@ -458,9 +479,10 @@ void VrShellGl::InitializeRenderer() {
   render_size_headlocked_ = {render_size_headlocked.width,
                              render_size_headlocked.height};
 
-  swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapChain(specs)));
+  swap_chain_ =
+      base::MakeUnique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs));
 
-  vr_shell_renderer_.reset(new VrShellRenderer());
+  vr_shell_renderer_ = base::MakeUnique<VrShellRenderer>();
 
   // Allocate a buffer viewport for use in UI drawing. This isn't
   // initialized at this point, it'll be set from other viewport list

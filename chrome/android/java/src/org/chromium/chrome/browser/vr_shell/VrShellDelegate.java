@@ -477,6 +477,13 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 mVrDaydreamApi, mVrCoreVersionChecker, mActivity.getActivityTab());
     }
 
+    /**
+     * Returns whether the device has support for Daydream.
+     */
+    /* package */ boolean hasDaydreamSupport() {
+        return mVrSupportLevel == VR_DAYDREAM;
+    }
+
     private void maybeSetPresentResult(boolean result) {
         if (mNativeVrShellDelegate != 0 && mRequestedWebVr) {
             nativeSetPresentResult(mNativeVrShellDelegate, result);
