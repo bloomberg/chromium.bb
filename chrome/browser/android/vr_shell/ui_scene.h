@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "device/vr/vr_types.h"
 
 namespace base {
@@ -57,7 +58,8 @@ class UiScene {
 
   const std::vector<std::unique_ptr<UiElement>>& GetUiElements() const;
 
-  UiElement* GetUiElementById(int element_id);
+  UiElement* GetUiElementById(int element_id) const;
+  UiElement* GetUiElementByDebugId(UiElementDebugId debug_id) const;
 
   std::vector<const UiElement*> GetWorldElements() const;
   std::vector<const UiElement*> GetOverlayElements() const;

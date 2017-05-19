@@ -17,6 +17,7 @@
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "chrome/browser/android/vr_shell/ui_elements/url_bar.h"
 #include "chrome/browser/android/vr_shell/ui_elements/video_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
@@ -92,6 +93,7 @@ UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
   CreateScreenDimmer();
 
   ConfigureScene();
+  ConfigureSecurityWarnings();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -114,6 +116,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   // TODO(mthiesse): Programatically compute the proper texture size for these
   // textured UI elements.
   element = base::MakeUnique<PermanentSecurityWarning>(512);
+  element->set_debug_id(kWebVrPermanentHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
   element->set_size({kPermanentWarningWidth, kPermanentWarningHeight, 1});
@@ -129,6 +132,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   scene_->AddUiElement(std::move(element));
 
   element = base::MakeUnique<TransientSecurityWarning>(1024);
+  element->set_debug_id(kWebVrTransientHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
   element->set_size({kTransientWarningWidth, kTransientWarningHeight, 1});
@@ -289,6 +293,7 @@ void UiSceneManager::CreateCloseButton() {
   std::unique_ptr<Button> element = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnCloseButtonClicked, base::Unretained(this)),
       base::MakeUnique<CloseButtonTexture>());
+  element->set_debug_id(kCloseButton);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
   element->set_translation(
@@ -308,6 +313,7 @@ void UiSceneManager::SetWebVrMode(bool web_vr) {
     return;
   web_vr_mode_ = web_vr;
   ConfigureScene();
+  ConfigureSecurityWarnings();
 }
 
 void UiSceneManager::ConfigureScene() {
