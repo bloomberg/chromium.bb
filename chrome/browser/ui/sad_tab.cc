@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/sad_tab.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -62,10 +63,19 @@ constexpr char kCategoryTagCrash[] = "Crash";
 
 bool ShouldShowFeedbackButton() {
 #if defined(GOOGLE_CHROME_BUILD)
-  const int kCrashesBeforeFeedbackIsDisplayed = 1;
+  const int kMinSecondsBetweenCrashesForFeedbackButton = 10;
 
-  static int total_crashes = 0;
-  return ++total_crashes > kCrashesBeforeFeedbackIsDisplayed;
+  static int64_t last_called_ts = 0;
+  base::TimeTicks last_called(base::TimeTicks::UnixEpoch());
+
+  if (last_called_ts)
+    last_called = base::TimeTicks::FromInternalValue(last_called_ts);
+
+  bool should_show = (base::TimeTicks().Now() - last_called).InSeconds() <
+                     kMinSecondsBetweenCrashesForFeedbackButton;
+
+  last_called_ts = base::TimeTicks().Now().ToInternalValue();
+  return should_show;
 #else
   return false;
 #endif
