@@ -173,9 +173,12 @@ class CONTENT_EXPORT RenderThreadImpl
       std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler);
   static RenderThreadImpl* current();
   static mojom::RenderMessageFilter* current_render_message_filter();
+  static RendererBlinkPlatformImpl* current_blink_platform_impl();
 
   static void SetRenderMessageFilterForTesting(
       mojom::RenderMessageFilter* render_message_filter);
+  static void SetRendererBlinkPlatformImplForTesting(
+      RendererBlinkPlatformImpl* blink_platform_impl);
 
   ~RenderThreadImpl() override;
   void Shutdown() override;
