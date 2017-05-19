@@ -123,7 +123,7 @@ class BaseSafeBrowsingErrorUI {
   GURL request_url() const { return request_url_; }
   GURL main_frame_url() const { return main_frame_url_; }
 
-  virtual void PopulateStringsForHTML(
+  virtual void PopulateStringsForHtml(
       base::DictionaryValue* load_time_data) = 0;
   virtual void HandleCommand(SecurityInterstitialCommands command) = 0;
 

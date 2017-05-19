@@ -78,7 +78,7 @@ SafeBrowsingLoudErrorUI::~SafeBrowsingLoudErrorUI() {
   controller()->metrics_helper()->RecordShutdownMetrics();
 }
 
-void SafeBrowsingLoudErrorUI::PopulateStringsForHTML(
+void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
     base::DictionaryValue* load_time_data) {
   DCHECK(load_time_data);
 
