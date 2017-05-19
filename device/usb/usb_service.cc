@@ -43,6 +43,9 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
 
 void UsbService::Observer::WillDestroyUsbService() {}
 
+// Declare storage for this constexpr.
+constexpr base::TaskTraits UsbService::kBlockingTaskTraits;
+
 // static
 std::unique_ptr<UsbService> UsbService::Create() {
 #if defined(OS_ANDROID)
@@ -64,9 +67,7 @@ std::unique_ptr<UsbService> UsbService::Create() {
 // static
 scoped_refptr<base::SequencedTaskRunner>
 UsbService::CreateBlockingTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  return base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits);
 }
 
 UsbService::~UsbService() {

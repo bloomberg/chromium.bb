@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace device {
@@ -49,10 +50,16 @@ class UsbService : public base::NonThreadSafe {
     virtual void WillDestroyUsbService();
   };
 
+  // These task traits are to be used for posting blocking tasks to the task
+  // scheduler.
+  static constexpr base::TaskTraits kBlockingTaskTraits = {
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+
   // Returns nullptr when initialization fails.
   static std::unique_ptr<UsbService> Create();
 
-  // Creates a SequencedTaskRunner appropriate for blocking I/O operations.
+  // Creates a SequencedTaskRunner with kBlockingTaskTraits.
   static scoped_refptr<base::SequencedTaskRunner> CreateBlockingTaskRunner();
 
   virtual ~UsbService();
