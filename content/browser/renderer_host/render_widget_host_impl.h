@@ -33,6 +33,7 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -99,6 +100,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputRouterClient,
       public InputAckHandler,
       public TouchEmulatorClient,
+      public NON_EXPORTED_BASE(SyntheticGestureController::Delegate),
       public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
       public IPC::Listener {
  public:
@@ -578,6 +580,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return last_frame_metadata_;
   }
 
+  // SyntheticGestureController::Delegate:
+  void RequestBeginFrameForSynthesizedInput(
+      base::OnceClosure begin_frame_callback) override;
+  bool HasGestureStopped() override;
+
   // cc::mojom::MojoCompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
@@ -636,8 +643,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void OnGpuSwapBuffersCompletedInternal(const ui::LatencyInfo& latency_info);
 
-  void RequestBeginFrameForSynthesizedInput(
-      base::OnceClosure begin_frame_callback);
 
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);

@@ -1313,10 +1313,7 @@ void RenderWidgetHostImpl::QueueSyntheticGesture(
   if (!synthetic_gesture_controller_ && view_) {
     synthetic_gesture_controller_ =
         base::MakeUnique<SyntheticGestureController>(
-            view_->CreateSyntheticGestureTarget(),
-            base::Bind(
-                &RenderWidgetHostImpl::RequestBeginFrameForSynthesizedInput,
-                base::Unretained(this)));
+            this, view_->CreateSyntheticGestureTarget());
   }
   if (synthetic_gesture_controller_) {
     synthetic_gesture_controller_->QueueSyntheticGesture(
@@ -1853,13 +1850,6 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
   }
 
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-}
-
-void RenderWidgetHostImpl::RequestBeginFrameForSynthesizedInput(
-    base::OnceClosure begin_frame_callback) {
-  DCHECK(view_);
-  begin_frame_callback_ = std::move(begin_frame_callback);
-  view_->OnSetNeedsFlushInput();
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -2546,6 +2536,17 @@ void RenderWidgetHostImpl::RequestMojoCompositorFrameSink(
   if (view_)
     view_->DidCreateNewRendererCompositorFrameSink(client.get());
   renderer_compositor_frame_sink_ = std::move(client);
+}
+
+void RenderWidgetHostImpl::RequestBeginFrameForSynthesizedInput(
+    base::OnceClosure begin_frame_callback) {
+  DCHECK(view_);
+  begin_frame_callback_ = std::move(begin_frame_callback);
+  view_->OnSetNeedsFlushInput();
+}
+
+bool RenderWidgetHostImpl::HasGestureStopped() {
+  return !input_router_->HasPendingEvents();
 }
 
 void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
