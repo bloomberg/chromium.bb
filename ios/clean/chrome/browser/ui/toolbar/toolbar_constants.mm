@@ -17,3 +17,5 @@ const CGFloat kLocationBarShadowRadius = 0.0f;
 const CGFloat kLocationBarShadowOpacity = 0.2f;
 
 const CGFloat kProgressBarHeight = 2.0f;
+
+const CGFloat kToolbarButtonWidth = 42.0f;
