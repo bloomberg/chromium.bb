@@ -1199,7 +1199,7 @@ void PaintLayerCompositor::EnsureRootLayer() {
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       scroll_layer_->SetElementId(CompositorElementIdFromDOMNodeId(
           DOMNodeIds::IdForNode(&layout_view_.GetDocument()),
-          CompositorElementIdNamespace::kScroll));
+          CompositorElementIdNamespace::kRootScroll));
     }
 
     // Hook them up
