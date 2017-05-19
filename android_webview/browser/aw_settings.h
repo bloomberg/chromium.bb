@@ -28,6 +28,8 @@ class AwSettings : public content::WebContentsObserver {
   AwSettings(JNIEnv* env, jobject obj, content::WebContents* web_contents);
   ~AwSettings() override;
 
+  bool GetJavaScriptCanOpenWindowsAutomatically();
+
   // Called from Java. Methods with "Locked" suffix require that the settings
   // access lock is held during their execution.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -70,6 +72,7 @@ class AwSettings : public content::WebContentsObserver {
   void WebContentsDestroyed() override;
 
   bool renderer_prefs_initialized_;
+  bool javascript_can_open_windows_automatically_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

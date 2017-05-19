@@ -385,8 +385,6 @@ const char kWebKitMinimumFontSize[] = "webkit.webprefs.minimum_font_size";
 const char kWebKitMinimumLogicalFontSize[] =
     "webkit.webprefs.minimum_logical_font_size";
 const char kWebKitJavascriptEnabled[] = "webkit.webprefs.javascript_enabled";
-const char kWebKitJavascriptCanOpenWindowsAutomatically[] =
-    "webkit.webprefs.javascript_can_open_windows_automatically";
 const char kWebKitLoadsImagesAutomatically[] =
     "webkit.webprefs.loads_images_automatically";
 const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";

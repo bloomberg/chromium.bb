@@ -271,9 +271,6 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
       opener_frame.GetDocument()->IsSandboxed(kSandboxPopups))
     return;
 
-  if (!LocalDOMWindow::AllowPopUp(opener_frame))
-    return;
-
   if (policy == kNavigationPolicyCurrentTab)
     policy = kNavigationPolicyNewForegroundTab;
 
