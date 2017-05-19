@@ -2551,6 +2551,11 @@ const char kVrCustomTabBrowsingName[] = "Enable Custom Tab browsing in VR.";
 const char kVrCustomTabBrowsingDescription[] =
     "Allow browsing with a VR headset in a Custom Tab if available for this "
     "device.";
+
+const char kWebVrAutopresentName[] = "Enable WebVr auto presentation";
+
+const char kWebVrAutopresentDescription[] =
+    "Allows auto presentation of WebVr content from trusted first-party apps";
 #endif  // BUILDFLAG(ENABLE_VR)
 #endif  // defined(OS_ANDROID)
 

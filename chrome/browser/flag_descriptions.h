@@ -947,6 +947,9 @@ extern const char kEnableVrShellDescription[];
 extern const char kVrCustomTabBrowsingName[];
 extern const char kVrCustomTabBrowsingDescription[];
 
+extern const char kWebVrAutopresentName[];
+extern const char kWebVrAutopresentDescription[];
+
 #endif  // BUILDFLAG(ENABLE_VR)
 
 extern const char kEnableWebapk[];
