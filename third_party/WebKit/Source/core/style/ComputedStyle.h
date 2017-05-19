@@ -1646,12 +1646,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   void SetWidows(short w) { SET_VAR(rare_inherited_data_, widows_, w); }
 
   // overflow-wrap (aka word-wrap)
-  static EOverflowWrap InitialOverflowWrap() { return kNormalOverflowWrap; }
+  static EOverflowWrap InitialOverflowWrap() { return EOverflowWrap::kNormal; }
   EOverflowWrap OverflowWrap() const {
     return static_cast<EOverflowWrap>(rare_inherited_data_->overflow_wrap_);
   }
   void SetOverflowWrap(EOverflowWrap b) {
-    SET_VAR(rare_inherited_data_, overflow_wrap_, b);
+    SET_VAR(rare_inherited_data_, overflow_wrap_, static_cast<unsigned>(b));
   }
 
   // quotes
@@ -3367,7 +3367,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   bool BreakWords() const {
     return (WordBreak() == kBreakWordBreak ||
-            OverflowWrap() == kBreakOverflowWrap) &&
+            OverflowWrap() == EOverflowWrap::kBreakWord) &&
            WhiteSpace() != EWhiteSpace::kPre &&
            WhiteSpace() != EWhiteSpace::kNowrap;
   }
