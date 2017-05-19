@@ -16,9 +16,14 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace IPC {
+class Message;
+}  // namespace IPC
+
 namespace content {
 
 class ResourceDispatcher;
+class ThreadSafeSender;
 
 // This class is used while fetching resource requests on workers (dedicated
 // worker and shared worker) when off-main-thread-fetch is enabled. This class
@@ -40,6 +45,9 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   void SetDataSaverEnabled(bool) override;
   bool IsDataSaverEnabled() const override;
   blink::WebURL FirstPartyForCookies() const override;
+  void DidRunContentWithCertificateErrors(const blink::WebURL& url) override;
+  void DidDisplayContentWithCertificateErrors(
+      const blink::WebURL& url) override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
   void SetControllerServiceWorker(int64_t controller_version_id) override;
@@ -56,6 +64,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   void set_is_secure_context(bool flag);
 
  private:
+  bool Send(IPC::Message* message);
+
   mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info_;
   int service_worker_provider_id_ = kInvalidServiceWorkerProviderId;
   bool is_controlled_by_service_worker_ = false;
@@ -71,6 +81,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   // is called from the browser process via mojo IPC.
   int controller_version_id_ = kInvalidServiceWorkerVersionId;
 
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   bool is_data_saver_enabled_ = false;
   int parent_frame_id_ = MSG_ROUTING_NONE;
   GURL first_party_for_cookies_;

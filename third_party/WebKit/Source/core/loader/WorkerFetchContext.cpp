@@ -6,6 +6,7 @@
 
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -15,6 +16,8 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMixedContent.h"
+#include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
@@ -188,6 +191,25 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 
   if (web_context_->IsDataSaverEnabled())
     request.SetHTTPHeaderField("Save-Data", "on");
+}
+
+void WorkerFetchContext::DispatchDidReceiveResponse(
+    unsigned long identifier,
+    const ResourceResponse& response,
+    WebURLRequest::FrameType frame_type,
+    WebURLRequest::RequestContext request_context,
+    Resource* resource,
+    ResourceResponseType) {
+  if (response.HasMajorCertificateErrors()) {
+    WebMixedContentContextType context_type =
+        WebMixedContent::ContextTypeFromRequestContext(
+            request_context, false /* strictMixedContentCheckingForPlugin */);
+    if (context_type == WebMixedContentContextType::kBlockable) {
+      web_context_->DidRunContentWithCertificateErrors(response.Url());
+    } else {
+      web_context_->DidDisplayContentWithCertificateErrors(response.Url());
+    }
+  }
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
