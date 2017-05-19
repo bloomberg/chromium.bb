@@ -912,20 +912,28 @@ void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
 }
 
 void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
-  // On Android, where the VisualViewport supplies scrollbars, we need to
-  // remove the PLSA's scrollbars. In general, this would be problematic as
-  // that can cause layout but this should only ever apply with overlay
-  // scrollbars.
-  if (!Box().GetFrame()->GetSettings() ||
-      !Box().GetFrame()->GetSettings()->GetViewportEnabled())
-    return;
+  // Being the global root scroller will affect clipping size due to browser
+  // controls behavior so we need to update compositing based on updated clip
+  // geometry.
+  if (Box().GetNode()->IsElementNode()) {
+    ToElement(Box().GetNode())->SetNeedsCompositingUpdate();
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+      Box().SetNeedsPaintPropertyUpdate();
+  }
 
-  bool needs_horizontal_scrollbar;
-  bool needs_vertical_scrollbar;
-  ComputeScrollbarExistence(needs_horizontal_scrollbar,
-                            needs_vertical_scrollbar);
-  SetHasHorizontalScrollbar(needs_horizontal_scrollbar);
-  SetHasVerticalScrollbar(needs_vertical_scrollbar);
+  // On Android, where the VisualViewport supplies scrollbars, we need to
+  // remove the PLSA's scrollbars if we become the global root scroller.
+  // In general, this would be problematic as that can cause layout but this
+  // should only ever apply with overlay scrollbars.
+  if (Box().GetFrame()->GetSettings() &&
+      Box().GetFrame()->GetSettings()->GetViewportEnabled()) {
+    bool needs_horizontal_scrollbar;
+    bool needs_vertical_scrollbar;
+    ComputeScrollbarExistence(needs_horizontal_scrollbar,
+                              needs_vertical_scrollbar);
+    SetHasHorizontalScrollbar(needs_horizontal_scrollbar);
+    SetHasVerticalScrollbar(needs_vertical_scrollbar);
+  }
 }
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {
