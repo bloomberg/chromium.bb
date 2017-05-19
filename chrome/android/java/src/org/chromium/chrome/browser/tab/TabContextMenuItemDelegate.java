@@ -260,6 +260,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
             intent.putExtra(
                     Browser.EXTRA_APPLICATION_ID, mTab.getApplicationContext().getPackageName());
             IntentHandler.addTrustedIntentExtras(intent);
+            IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         }
         IntentUtils.safeStartActivity(mTab.getActivity(), intent);
     }

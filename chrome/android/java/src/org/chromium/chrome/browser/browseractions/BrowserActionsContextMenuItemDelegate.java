@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.browseractions;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,6 +17,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -36,7 +39,12 @@ public class BrowserActionsContextMenuItemDelegate {
      * Called when the {@code text} should be saved to the clipboard.
      * @param text The text to save to the clipboard.
      */
-    public void onSaveToClipboard(String text) {}
+    public void onSaveToClipboard(String text) {
+        ClipboardManager clipboardManager =
+                (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData data = ClipData.newPlainText("url", text);
+        clipboardManager.setPrimaryClip(data);
+    }
 
     /**
      * Called when the {@code linkUrl} should be opened in Chrome incognito tab.
@@ -50,6 +58,7 @@ public class BrowserActionsContextMenuItemDelegate {
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
         IntentHandler.addTrustedIntentExtras(intent);
+        IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         IntentUtils.safeStartActivity(mContext, intent);
     }
 

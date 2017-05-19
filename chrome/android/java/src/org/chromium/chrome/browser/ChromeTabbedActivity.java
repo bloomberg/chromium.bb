@@ -1157,8 +1157,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                                     intent, mIntentHandlingTimeMs);
                         }
                     } else {
-                        getTabCreator(true).launchUrl(
-                                url, TabLaunchType.FROM_LINK, intent, mIntentHandlingTimeMs);
+                        TabLaunchType launchType = IntentHandler.getTabLaunchType(intent);
+                        if (launchType != null) {
+                            getTabCreator(true).launchUrl(
+                                    url, launchType, intent, mIntentHandlingTimeMs);
+                        } else {
+                            getTabCreator(true).launchUrl(
+                                    url, TabLaunchType.FROM_LINK, intent, mIntentHandlingTimeMs);
+                        }
                     }
                     break;
                 default:
