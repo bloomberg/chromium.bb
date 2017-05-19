@@ -57,6 +57,7 @@ class DocumentMarkerControllerTest : public ::testing::Test {
 
   Text* CreateTextNode(const char*);
   void MarkNodeContents(Node*);
+  void MarkNodeContentsTextMatch(Node*);
   void SetBodyInnerHTML(const char*);
 
  private:
@@ -74,6 +75,15 @@ void DocumentMarkerControllerTest::MarkNodeContents(Node* node) {
   auto range = EphemeralRange::RangeOfContents(*node);
   MarkerController().AddMarker(range.StartPosition(), range.EndPosition(),
                                DocumentMarker::kSpelling);
+}
+
+void DocumentMarkerControllerTest::MarkNodeContentsTextMatch(Node* node) {
+  // Force layoutObjects to be created; TextIterator, which is used in
+  // DocumentMarkerControllerTest::addMarker(), needs them.
+  GetDocument().UpdateStyleAndLayout();
+  auto range = EphemeralRange::RangeOfContents(*node);
+  MarkerController().AddTextMatchMarker(range,
+                                        DocumentMarker::MatchStatus::kActive);
 }
 
 void DocumentMarkerControllerTest::SetBodyInnerHTML(const char* body_content) {
@@ -193,15 +203,15 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
   SetBodyInnerHTML("<div style='margin: 100px'>foo</div>");
   Element* div = ToElement(GetDocument().body()->firstChild());
-  MarkNodeContents(div);
+  MarkNodeContentsTextMatch(div);
   Vector<IntRect> rendered_rects =
-      MarkerController().RenderedRectsForMarkers(DocumentMarker::kSpelling);
+      MarkerController().RenderedRectsForMarkers(DocumentMarker::kTextMatch);
   EXPECT_EQ(1u, rendered_rects.size());
 
   div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
   GetDocument().UpdateStyleAndLayout();
   Vector<IntRect> new_rendered_rects =
-      MarkerController().RenderedRectsForMarkers(DocumentMarker::kSpelling);
+      MarkerController().RenderedRectsForMarkers(DocumentMarker::kTextMatch);
   EXPECT_EQ(1u, new_rendered_rects.size());
   EXPECT_NE(rendered_rects[0], new_rendered_rects[0]);
 }
