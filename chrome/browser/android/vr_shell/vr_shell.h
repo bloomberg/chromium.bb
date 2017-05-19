@@ -225,6 +225,7 @@ class VrShell : public device::PresentingGvrDelegate,
   bool reprojected_rendering_;
 
   jobject content_surface_ = nullptr;
+  bool taken_surface_ = false;
   base::CancelableClosure poll_capturing_media_task_;
   bool is_capturing_audio_ = false;
   bool is_capturing_video_ = false;

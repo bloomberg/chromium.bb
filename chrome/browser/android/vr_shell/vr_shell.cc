@@ -393,6 +393,10 @@ void VrShell::SetSubmitClient(
 base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  if (!content_surface_) {
+    return base::android::ScopedJavaGlobalRef<jobject>(env, nullptr);
+  }
+  taken_surface_ = true;
   compositor_->SurfaceChanged(nullptr);
   base::android::ScopedJavaGlobalRef<jobject> surface(env, content_surface_);
   content_surface_ = nullptr;
@@ -401,6 +405,10 @@ base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
 
 void VrShell::RestoreContentSurface(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj) {
+  // Don't try to restore the surface if we haven't successfully taken it yet.
+  if (!taken_surface_)
+    return;
+  taken_surface_ = false;
   WaitForGlThread();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::CreateContentSurface,
                                        gl_thread_->GetVrShellGl()));
@@ -415,9 +423,9 @@ void VrShell::SetHistoryButtonsEnabled(JNIEnv* env,
 
 void VrShell::ContentSurfaceChanged(jobject surface) {
   content_surface_ = surface;
-  compositor_->SurfaceChanged(surface);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_contentSurfaceChanged(env, j_vr_shell_.obj());
+  compositor_->SurfaceChanged(content_surface_);
 }
 
 void VrShell::GvrDelegateReady() {
