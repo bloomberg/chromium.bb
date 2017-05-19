@@ -409,6 +409,7 @@ public class VrShellImpl
         if (mSurface != null || mNativePage == null) return;
         mSurface = nativeTakeContentSurface(mNativeVrShell);
         mNativePage.getView().invalidate();
+        mRenderToSurfaceLayout.invalidate();
     }
 
     @Override
