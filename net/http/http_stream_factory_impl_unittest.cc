@@ -319,10 +319,11 @@ class WebSocketStreamCreateHelper
  public:
   ~WebSocketStreamCreateHelper() override {}
 
-  WebSocketHandshakeStreamBase* CreateBasicStream(
+  std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
-    return new WebSocketBasicHandshakeStream(std::move(connection));
+    return base::MakeUnique<WebSocketBasicHandshakeStream>(
+        std::move(connection));
   }
 };
 

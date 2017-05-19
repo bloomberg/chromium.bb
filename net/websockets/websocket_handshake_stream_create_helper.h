@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   // WebSocketHandshakeStreamBase::CreateHelper methods
 
   // Creates a WebSocketBasicHandshakeStream.
-  WebSocketHandshakeStreamBase* CreateBasicStream(
+  std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy) override;
 

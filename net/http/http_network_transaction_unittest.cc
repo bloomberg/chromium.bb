@@ -15411,11 +15411,11 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
 class FakeWebSocketStreamCreateHelper :
       public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  WebSocketHandshakeStreamBase* CreateBasicStream(
+  std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
-    return new FakeWebSocketBasicHandshakeStream(std::move(connection),
-                                                 using_proxy);
+    return base::MakeUnique<FakeWebSocketBasicHandshakeStream>(
+        std::move(connection), using_proxy);
   }
 
   ~FakeWebSocketStreamCreateHelper() override {}
