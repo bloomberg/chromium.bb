@@ -1838,6 +1838,17 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
         return
     self.fail("couldn't find generated background page for test app")
 
+  def testIFrameWithExtensionsSource(self):
+    crx_path = os.path.join(_TEST_DATA_DIR, 'frames_extension.crx')
+    driver = self.CreateDriver(
+        chrome_extensions=[self._PackExtension(crx_path)])
+    driver.Load(
+        ChromeDriverTest._http_server.GetUrl() +
+          '/chromedriver/iframe_extension.html')
+    driver.SwitchToFrame('testframe')
+    element = driver.FindElement('id', 'p1')
+    self.assertEqual('Its a frame with extension source', element.GetText())
+
   def testDontExecuteScriptsInContentScriptContext(self):
     # This test extension has a content script which runs in all frames (see
     # https://developer.chrome.com/extensions/content_scripts) which causes each
