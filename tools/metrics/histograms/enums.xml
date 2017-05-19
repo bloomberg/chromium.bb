@@ -36630,6 +36630,7 @@ from previous Chrome versions.
   <int value="0" label="Closed by system"/>
   <int value="1" label="Closed by user"/>
   <int value="2" label="Clicked"/>
+  <int value="3" label="Manual navigation to the landing page"/>
 </enum>
 
 <enum name="WebUsbPermissionRevoked" type="int">
