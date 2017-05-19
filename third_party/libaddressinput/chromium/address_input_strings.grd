@@ -8,7 +8,7 @@ This file is a copy of third_party/libaddressinput/src/cpp/res/messages.grd,
 seasoned with information about translations from Chromium.
 
 The location of messages.h and en_messages.cc is defined in
-third_party/libaddressinput/libaddressinput.gyp.
+third_party/libaddressinput/BUILD.gn.
 -->
 <grit base_dir="." latest_public_release="0" current_release="1"
       output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
