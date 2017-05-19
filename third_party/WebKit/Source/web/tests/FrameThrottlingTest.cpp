@@ -833,6 +833,11 @@ TEST_P(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled) {
   frame_resource.Complete("throttled");
   CompositeFrame();
 
+  // Before the iframe is throttled, we should create all drawing items.
+  MockWebDisplayItemList display_items_not_throttled;
+  EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _, _)).Times(3);
+  PaintRecursively(WebView().RootGraphicsLayer(), &display_items_not_throttled);
+
   // Move the frame offscreen to throttle it and make sure it is backed by a
   // graphics layer.
   auto* frame_element =
@@ -846,11 +851,93 @@ TEST_P(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled) {
 
   // If painting of the iframe is throttled, we should only receive two
   // drawing items.
-  MockWebDisplayItemList display_items;
-  EXPECT_CALL(display_items, AppendDrawingItem(_, _, _)).Times(2);
+  MockWebDisplayItemList display_items_throttled;
+  EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _, _)).Times(2);
+  PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled);
+}
 
-  GraphicsLayer* layer = WebView().RootGraphicsLayer();
-  PaintRecursively(layer, &display_items);
+TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
+  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
+  WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+
+  // Create a hidden frame which is throttled.
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+  frame_resource.Complete(
+      "<div id=div style='will-change: transform; background: blue'>DIV</div>");
+  CompositeFrame();
+
+  auto* frame_element =
+      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+  // The inner div is composited.
+  auto* inner_div = frame_element->contentDocument()->getElementById("div");
+  EXPECT_NE(nullptr,
+            inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+
+  // Before the iframe is throttled, we should create all drawing items.
+  MockWebDisplayItemList display_items_not_throttled;
+  EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _, _)).Times(4);
+  PaintRecursively(WebView().RootGraphicsLayer(), &display_items_not_throttled);
+
+  // Move the frame offscreen to throttle it.
+  frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
+  EXPECT_FALSE(
+      frame_element->contentDocument()->View()->CanThrottleRendering());
+  CompositeFrame();
+  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
+  // The inner div should still be composited.
+  EXPECT_NE(nullptr,
+            inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+
+  // If painting of the iframe is throttled, we should only receive two
+  // drawing items.
+  MockWebDisplayItemList display_items_throttled;
+  EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _, _)).Times(2);
+  PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled);
+
+  // Remove compositing trigger of inner_div.
+  inner_div->setAttribute(styleAttr, "background: yellow; overflow: hidden");
+  // Do an unthrottled style and layout update, simulating the situation
+  // triggered by script style/layout access.
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  {
+    // And a throttled full lifecycle update.
+    DocumentLifecycle::AllowThrottlingScope throttling_scope(
+        GetDocument().Lifecycle());
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
+  // The inner div should still be composited because compositing update is
+  // throttled, though the inner_div's self-painting status has been updated.
+  EXPECT_FALSE(inner_div->GetLayoutBox()->Layer()->IsSelfPaintingLayer());
+  {
+    DisableCompositingQueryAsserts disabler;
+    EXPECT_NE(nullptr,
+              inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+  }
+
+  MockWebDisplayItemList display_items_throttled1;
+  EXPECT_CALL(display_items_throttled1, AppendDrawingItem(_, _, _)).Times(2);
+  PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled1);
+
+  // Move the frame back on screen.
+  frame_element->setAttribute(styleAttr, "");
+  CompositeFrame();
+  EXPECT_FALSE(
+      frame_element->contentDocument()->View()->CanThrottleRendering());
+  CompositeFrame();
+  // The inner div is no longer composited.
+  EXPECT_EQ(nullptr,
+            inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+
+  // After the iframe is unthrottled, we should create all drawing items.
+  MockWebDisplayItemList display_items_not_throttled1;
+  EXPECT_CALL(display_items_not_throttled1, AppendDrawingItem(_, _, _))
+      .Times(4);
+  PaintRecursively(WebView().RootGraphicsLayer(),
+                   &display_items_not_throttled1);
 }
 
 TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
