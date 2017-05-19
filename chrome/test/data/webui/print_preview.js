@@ -59,21 +59,6 @@ PrintPreviewWebUITest.prototype = {
   isAsync: true,
 
   /**
-   * @override
-   */
-  testGenPreamble: function() {
-    // Enable print as image for tests on non Windows/Mac.
-    GEN('#if !defined(OS_WINDOWS) && !defined(OS_MACOSX)');
-    GEN('  base::FeatureList::ClearInstanceForTesting();');
-    GEN('  std::unique_ptr<base::FeatureList>');
-    GEN('      feature_list(new base::FeatureList);');
-    GEN('  feature_list->InitializeFromCommandLine(');
-    GEN('      features::kPrintPdfAsImage.name, std::string());');
-    GEN('  base::FeatureList::SetInstance(std::move(feature_list));');
-    GEN('#endif');
-  },
-
-  /**
    * Stub out low-level functionality like the NativeLayer and
    * CloudPrintInterface.
    * @this {PrintPreviewWebUITest}
@@ -421,7 +406,9 @@ function getCddTemplate(printerId) {
 }
 
 function isPrintAsImageEnabled() {
-  return !cr.isWindows && !cr.isMac;
+  // Should be enabled by default on non Windows/Mac
+  return (!cr.isWindows && !cr.isMac &&
+          loadTimeData.getBoolean('printPdfAsImageEnabled'));
 }
 
 // Test restore settings with one destination.
@@ -491,21 +478,21 @@ TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreMultipleDestinations',
 
   // Look through the destinations. ID1, ID2, and ID3 should all be recent.
   var destinations = printPreview.destinationStore_.destinations_;
-  var ids_found = [];
+  var idsFound = [];
 
   for (var i = 0; i < destinations.length; i++) {
     if (!destinations[i])
       continue;
     if (destinations[i].isRecent)
-      ids_found.push(destinations[i].id);
+      idsFound.push(destinations[i].id);
   }
 
   // Make sure there were 3 recent destinations and that they are the correct
   // IDs.
-  assertEquals(3, ids_found.length);
-  assertNotEquals(-1, ids_found.indexOf("ID1"));
-  assertNotEquals(-1, ids_found.indexOf("ID2"));
-  assertNotEquals(-1, ids_found.indexOf("ID3"));
+  assertEquals(3, idsFound.length);
+  assertNotEquals(-1, idsFound.indexOf("ID1"));
+  assertNotEquals(-1, idsFound.indexOf("ID2"));
+  assertNotEquals(-1, idsFound.indexOf("ID3"));
 
   testDone();
 });

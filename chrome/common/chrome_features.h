@@ -158,7 +158,7 @@ extern const base::Feature kPrefService;
 extern const base::Feature kPreloadLockScreen;
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
 extern const base::Feature kPrintPdfAsImage;
 #endif
 
