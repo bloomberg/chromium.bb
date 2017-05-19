@@ -1906,8 +1906,6 @@ split_static_library("ui") {
         "views/toolbar/app_menu_button.cc",
         "views/toolbar/app_menu_button.h",
         "views/toolbar/app_menu_observer.h",
-        "views/toolbar/back_button.cc",
-        "views/toolbar/back_button.h",
         "views/toolbar/browser_actions_container.cc",
         "views/toolbar/browser_actions_container.h",
         "views/toolbar/extension_toolbar_menu_view.cc",
