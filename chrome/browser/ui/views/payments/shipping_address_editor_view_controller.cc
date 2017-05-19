@@ -35,32 +35,6 @@ namespace payments {
 
 namespace {
 
-// Converts a field type in string format as returned by
-// autofill::GetAddressComponents into the appropriate autofill::ServerFieldType
-// enum.
-autofill::ServerFieldType GetFieldTypeFromString(const std::string& type) {
-  if (type == autofill::kFullNameField)
-    return autofill::NAME_FULL;
-  if (type == autofill::kCompanyNameField)
-    return autofill::COMPANY_NAME;
-  if (type == autofill::kAddressLineField)
-    return autofill::ADDRESS_HOME_STREET_ADDRESS;
-  if (type == autofill::kDependentLocalityField)
-    return autofill::ADDRESS_HOME_DEPENDENT_LOCALITY;
-  if (type == autofill::kCityField)
-    return autofill::ADDRESS_HOME_CITY;
-  if (type == autofill::kStateField)
-    return autofill::ADDRESS_HOME_STATE;
-  if (type == autofill::kPostalCodeField)
-    return autofill::ADDRESS_HOME_ZIP;
-  if (type == autofill::kSortingCodeField)
-    return autofill::ADDRESS_HOME_SORTING_CODE;
-  if (type == autofill::kCountryField)
-    return autofill::ADDRESS_HOME_COUNTRY;
-  NOTREACHED();
-  return autofill::UNKNOWN_TYPE;
-}
-
 // size_t doesn't have a defined maximum value, so this is a trick to create one
 // as is done for std::string::npos.
 // http://www.cplusplus.com/reference/string/string/npos
@@ -334,7 +308,7 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
       else
         DCHECK_EQ(autofill::kShortField, field_length);
       autofill::ServerFieldType server_field_type =
-          GetFieldTypeFromString(field_type);
+          autofill::GetFieldTypeFromString(field_type);
       EditorField::ControlType control_type =
           EditorField::ControlType::TEXTFIELD;
       if (server_field_type == autofill::ADDRESS_HOME_COUNTRY ||
