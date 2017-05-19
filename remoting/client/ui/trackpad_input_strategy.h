@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_UI_DIRECT_INPUT_STRATEGY_H_
-#define REMOTING_CLIENT_UI_DIRECT_INPUT_STRATEGY_H_
+#ifndef REMOTING_CLIENT_UI_TRACKPAD_INPUT_STRATEGY_H_
+#define REMOTING_CLIENT_UI_TRACKPAD_INPUT_STRATEGY_H_
 
 #include "remoting/client/ui/input_strategy.h"
 
 namespace remoting {
 
-// This strategy directly translates all operations on the OpenGL view into
-// corresponding operations on the desktop. It doesn't maintain the cursor
-// positions separately -- the positions come from the location of the touch.
-class DirectInputStrategy : public InputStrategy {
+// This strategy simulate the trackpad's behavior. It keeps a visible cursor
+// with positions independent of the location of the touch events.
+class TrackpadInputStrategy : public InputStrategy {
  public:
-  DirectInputStrategy();
-  ~DirectInputStrategy() override;
+  TrackpadInputStrategy(const DesktopViewport& viewport);
+  ~TrackpadInputStrategy() override;
 
   // InputStrategy overrides.
-
   void HandleZoom(const ViewMatrix::Point& pivot,
                   float scale,
                   DesktopViewport* viewport) override;
@@ -41,12 +39,12 @@ class DirectInputStrategy : public InputStrategy {
   bool IsCursorVisible() const override;
 
  private:
-  ViewMatrix::Point cursor_position_{0.f, 0.f};
+  ViewMatrix::Point cursor_position_;
 
-  // TouchInputStrategy is neither copyable nor movable.
-  DirectInputStrategy(const DirectInputStrategy&) = delete;
-  DirectInputStrategy& operator=(const DirectInputStrategy&) = delete;
+  // TrackpadInputStrategy is neither copyable nor movable.
+  TrackpadInputStrategy(const TrackpadInputStrategy&) = delete;
+  TrackpadInputStrategy& operator=(const TrackpadInputStrategy&) = delete;
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_UI_DIRECT_INPUT_STRATEGY_H_
+#endif  // REMOTING_CLIENT_UI_TRACKPAD_INPUT_STRATEGY_H_
