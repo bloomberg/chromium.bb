@@ -1095,7 +1095,7 @@ std::unique_ptr<TracedValue> FrameView::AnalyzerCounters() {
   "blink,benchmark,rail," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")
 
 void FrameView::PerformLayout(bool in_subtree_layout) {
-  ASSERT(in_subtree_layout || layout_subtree_root_list_.IsEmpty());
+  DCHECK(in_subtree_layout || layout_subtree_root_list_.IsEmpty());
 
   int contents_height_before_layout =
       GetLayoutViewItem().DocumentRect().Height();
@@ -3268,7 +3268,7 @@ void FrameView::PaintTree() {
   TRACE_EVENT0("blink", "FrameView::paintTree");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Paint.UpdateTime");
 
-  ASSERT(GetFrame() == GetPage()->MainFrame() ||
+  DCHECK(GetFrame() == GetPage()->MainFrame() ||
          (!GetFrame().Tree().Parent()->IsLocalFrame()));
 
   LayoutViewItem view = GetLayoutViewItem();
