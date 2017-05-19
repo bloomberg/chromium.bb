@@ -9,6 +9,7 @@ namespace blink {
 struct SameSizeAsDisplayItem {
   virtual ~SameSizeAsDisplayItem() {}  // Allocate vtable pointer.
   void* pointer;
+  LayoutRect rect;
   int i;
 #ifndef NDEBUG
   WTF::String debug_string_;
@@ -244,6 +245,8 @@ void DisplayItem::DumpPropertiesAsDebugString(
     string_builder.Append(' ');
     string_builder.Append(ClientDebugString());
   }
+  string_builder.Append("\", visualRect: \"");
+  string_builder.Append(VisualRect().ToString());
   string_builder.Append("\", type: \"");
   string_builder.Append(TypeAsDebugString(GetType()));
   string_builder.Append('"');

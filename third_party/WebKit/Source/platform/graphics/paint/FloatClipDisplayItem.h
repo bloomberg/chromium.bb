@@ -23,7 +23,7 @@ class PLATFORM_EXPORT FloatClipDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:
@@ -48,7 +48,7 @@ class PLATFORM_EXPORT EndFloatClipDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:

@@ -26,7 +26,7 @@ void ClipDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void ClipDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   WebVector<SkRRect> web_rounded_rects(rounded_rect_clips_.size());
   for (size_t i = 0; i < rounded_rect_clips_.size(); ++i)
@@ -40,7 +40,7 @@ void EndClipDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndClipDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   list->AppendEndClipItem();
 }

@@ -118,7 +118,7 @@ class TestDisplayItem final : public DisplayItem {
       : DisplayItem(client, type, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const final { NOTREACHED(); }
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const final {
     NOTREACHED();
   }

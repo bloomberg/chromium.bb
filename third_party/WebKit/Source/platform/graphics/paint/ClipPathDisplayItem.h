@@ -21,7 +21,7 @@ class PLATFORM_EXPORT BeginClipPathDisplayItem final
         clip_path_(clip_path.GetSkPath()) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
   int NumberOfSlowPaths() const override;
@@ -46,7 +46,7 @@ class PLATFORM_EXPORT EndClipPathDisplayItem final
       : PairedEndDisplayItem(client, kEndClipPath, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:

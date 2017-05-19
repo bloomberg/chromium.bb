@@ -16,7 +16,7 @@ void BeginTransformDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginTransformDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   list->AppendTransformItem(AffineTransformToSkMatrix(transform_));
 }
@@ -36,7 +36,7 @@ void EndTransformDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndTransformDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   list->AppendEndTransformItem();
 }

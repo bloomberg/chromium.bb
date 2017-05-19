@@ -18,7 +18,7 @@ void BeginTransform3DDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginTransform3DDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   // TODO(jbroman): The compositor will need the transform origin separately.
   TransformationMatrix transform(transform_);
@@ -56,7 +56,7 @@ void EndTransform3DDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndTransform3DDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   list->AppendEndTransformItem();
 }

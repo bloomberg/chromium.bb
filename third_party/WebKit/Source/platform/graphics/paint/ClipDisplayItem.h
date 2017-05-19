@@ -33,7 +33,7 @@ class PLATFORM_EXPORT ClipDisplayItem final : public PairedBeginDisplayItem {
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:
@@ -60,7 +60,7 @@ class PLATFORM_EXPORT EndClipDisplayItem final : public PairedEndDisplayItem {
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:

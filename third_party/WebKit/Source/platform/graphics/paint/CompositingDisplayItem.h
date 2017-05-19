@@ -33,7 +33,7 @@ class PLATFORM_EXPORT BeginCompositingDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:
@@ -69,7 +69,7 @@ class PLATFORM_EXPORT EndCompositingDisplayItem final
       : PairedEndDisplayItem(client, kEndCompositing, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:
