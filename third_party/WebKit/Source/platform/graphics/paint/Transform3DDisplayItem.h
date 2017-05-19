@@ -26,7 +26,7 @@ class PLATFORM_EXPORT BeginTransform3DDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
   const TransformationMatrix& Transform() const { return transform_; }
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT EndTransform3DDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect&,
+  void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
  private:

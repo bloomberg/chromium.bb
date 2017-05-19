@@ -53,7 +53,7 @@ class PLATFORM_EXPORT DisplayItemClient {
 
   // The visual rect of this DisplayItemClient, in the object space of the
   // object that owns the GraphicsLayer, i.e. offset by
-  // offsetFromLayoutObjectWithSubpixelAccumulation().
+  // GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation().
   virtual LayoutRect VisualRect() const = 0;
 
   // This is declared here instead of in LayoutObject for verifying the

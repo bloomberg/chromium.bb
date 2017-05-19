@@ -140,11 +140,8 @@ class PLATFORM_EXPORT PaintController {
   }
   bool IsSkippingCache() const { return skipping_cache_count_; }
 
-  // Must be called when a painting is finished. |offsetFromLayoutObject| is the
-  // offset between the space of the GraphicsLayer which owns this
-  // PaintController and the coordinate space of the owning LayoutObject.
-  void CommitNewDisplayItems(
-      const LayoutSize& offset_from_layout_object = LayoutSize());
+  // Must be called when a painting is finished.
+  void CommitNewDisplayItems();
 
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to WebPaintController.
@@ -185,10 +182,8 @@ class PLATFORM_EXPORT PaintController {
   // the last commitNewDisplayItems(). Use with care.
   DisplayItemList& NewDisplayItemList() { return new_display_item_list_; }
 
-  void AppendDebugDrawingAfterCommit(
-      const DisplayItemClient&,
-      sk_sp<PaintRecord>,
-      const LayoutSize& offset_from_layout_object);
+  void AppendDebugDrawingAfterCommit(const DisplayItemClient&,
+                                     sk_sp<PaintRecord>);
 
   void ShowDebugData() const { ShowDebugDataInternal(false); }
 #ifndef NDEBUG

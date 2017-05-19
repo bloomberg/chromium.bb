@@ -277,8 +277,7 @@ IntRect GraphicsLayer::InterestRect() {
 void GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
   if (PaintWithoutCommit(interest_rect, disabled_mode)) {
-    GetPaintController().CommitNewDisplayItems(
-        OffsetFromLayoutObjectWithSubpixelAccumulation());
+    GetPaintController().CommitNewDisplayItems();
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
       sk_sp<PaintRecord> record = CaptureRecord();
       CheckPaintUnderInvalidations(record);
@@ -1282,8 +1281,7 @@ void GraphicsLayer::CheckPaintUnderInvalidations(
   recorder.beginRecording(rect);
   recorder.getRecordingCanvas()->drawBitmap(new_bitmap, rect.X(), rect.Y());
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
-  GetPaintController().AppendDebugDrawingAfterCommit(
-      *this, record, OffsetFromLayoutObjectWithSubpixelAccumulation());
+  GetPaintController().AppendDebugDrawingAfterCommit(*this, record);
 }
 
 }  // namespace blink
