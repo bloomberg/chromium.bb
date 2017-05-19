@@ -3447,7 +3447,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                               ApplyMotionPath) const;
 
  private:
-  void SetVisitedLinkColor(const Color&);
   void SetVisitedLinkBackgroundColor(const StyleColor& v) {
     SET_VAR(rare_non_inherited_data_, visited_link_background_color_, v);
   }
@@ -3602,7 +3601,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
       return StyleAutoColor::AutoColor();
     return StyleAutoColor(rare_inherited_data_->visited_link_caret_color_);
   }
-  Color VisitedLinkColor() const;
   StyleColor VisitedLinkBackgroundColor() const {
     return rare_non_inherited_data_->visited_link_background_color_;
   }

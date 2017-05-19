@@ -253,7 +253,7 @@
     {
       name: "VisitedLinkColor",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "external",
       field_type_path: "platform/graphics/Color",
       field_group: "inherited",
       default_value: "Color::kBlack",
