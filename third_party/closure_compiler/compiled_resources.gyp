@@ -20,7 +20,6 @@
       'target_name': 'compiled_resources',
       'type': 'none',
       'dependencies': [
-        '../../ui/file_manager/file_manager/foreground/js/compiled_resources.gyp:*',
       ],
     },
   ]
