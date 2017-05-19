@@ -273,6 +273,13 @@ static void ConfigureRequest(
 }
 
 inline void ImageLoader::DispatchErrorEvent() {
+  // There can be cases where DispatchErrorEvent() is called when there is
+  // already a scheduled error event for the previous load attempt.
+  // In such cases we cancel the previous event and then re-schedule a new
+  // error event here. crbug.com/722500
+  if (has_pending_error_event_)
+    ErrorEventSender().CancelEvent(this);
+
   has_pending_error_event_ = true;
   ErrorEventSender().DispatchEventSoon(this);
 }
@@ -679,12 +686,7 @@ void ImageLoader::DispatchPendingLoadEvent() {
 }
 
 void ImageLoader::DispatchPendingErrorEvent() {
-  // Currently this if condition is needed because there can be multiple
-  // in-flight error event tasks and we process only the first here.
-  // crbug.com/722500
-  // TODO(hiroshige): Replace this with |CHECK(has_pending_load_event_)|.
-  if (!has_pending_error_event_)
-    return;
+  CHECK(has_pending_error_event_);
   has_pending_error_event_ = false;
 
   if (GetElement()->GetDocument().GetFrame())
