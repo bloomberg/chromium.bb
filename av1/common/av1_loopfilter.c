@@ -1412,9 +1412,6 @@ static void get_filter_level_and_masks_non420(
     const int skip_border_4x4_r =
         ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
 
-    TX_SIZE tx_size_c = txsize_horz_map[tx_size];
-    TX_SIZE tx_size_r = txsize_vert_map[tx_size];
-
     int tx_size_mask = 0;
     const int c_step = (c >> ss_x);
     const int r_step = (r >> ss_y);
@@ -1436,12 +1433,15 @@ static void get_filter_level_and_masks_non420(
 #endif
 
 #if CONFIG_VAR_TX
-    tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
-    tx_size_c =
+    TX_SIZE tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
+    TX_SIZE tx_size_c =
         AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
 
     cm->above_txfm_context[mi_col + c] = tx_size;
     cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
+#else
+    TX_SIZE tx_size_c = txsize_horz_map[tx_size];
+    TX_SIZE tx_size_r = txsize_vert_map[tx_size];
 #endif  // CONFIG_VAR_TX
 
     if (tx_size_c == TX_32X32)

@@ -939,7 +939,7 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
     case 32: max_tx_size = TX_32X32; break;
     case 16: max_tx_size = TX_16X16; break;
     case 8: max_tx_size = TX_8X8; break;
-    default: assert(0);
+    default: assert(max_tx_size == max_txsize_lookup[bsize]); assert(0);
   }
 
   if (max_tx_size >= TX_8X8) {
