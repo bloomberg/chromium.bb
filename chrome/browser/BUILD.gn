@@ -3764,6 +3764,7 @@ split_static_library("browser") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
+      "//ui/base:fullscreen_win",
     ]
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]
