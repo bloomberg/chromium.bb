@@ -730,16 +730,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
       other.inherited_data_->font_.LoadingCustomFonts())
     return true;
 
-  if (inherited_data_.Get() != other.inherited_data_.Get()) {
-    if (inherited_data_->line_height_ != other.inherited_data_->line_height_ ||
-        inherited_data_->font_ != other.inherited_data_->font_ ||
-        inherited_data_->horizontal_border_spacing_ !=
-            other.inherited_data_->horizontal_border_spacing_ ||
-        inherited_data_->vertical_border_spacing_ !=
-            other.inherited_data_->vertical_border_spacing_)
-      return true;
-  }
-
   if (BoxDirection() != other.BoxDirection() ||
       RtlOrdering() != other.RtlOrdering() ||
       GetTextAlign() != other.GetTextAlign() ||
