@@ -44,6 +44,7 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_render_frame_id(parent_frame_id_);
+  extra_data->set_initiated_in_secure_context(is_secure_context_);
   request.SetExtraData(extra_data);
 
   if (!IsControlledByServiceWorker() &&
@@ -86,6 +87,10 @@ void WorkerFetchContextImpl::set_parent_frame_id(int id) {
 void WorkerFetchContextImpl::set_first_party_for_cookies(
     const blink::WebURL& first_party_for_cookies) {
   first_party_for_cookies_ = first_party_for_cookies;
+}
+
+void WorkerFetchContextImpl::set_is_secure_context(bool flag) {
+  is_secure_context_ = flag;
 }
 
 void WorkerFetchContextImpl::SetControllerServiceWorker(
