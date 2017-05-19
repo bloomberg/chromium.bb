@@ -388,9 +388,9 @@ int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
   return cul_level;
 }
 
-static void update_txb_context(int plane, int block, int blk_row, int blk_col,
-                               BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                               void *arg) {
+void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
+                              BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                              void *arg) {
   struct tokenize_b_args *const args = arg;
   const AV1_COMP *cpi = args->cpi;
   const AV1_COMMON *cm = &cpi->common;
@@ -412,9 +412,9 @@ static void update_txb_context(int plane, int block, int blk_row, int blk_col,
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
 }
 
-static void update_and_record_txb_context(int plane, int block, int blk_row,
-                                          int blk_col, BLOCK_SIZE plane_bsize,
-                                          TX_SIZE tx_size, void *arg) {
+void av1_update_and_record_txb_context(int plane, int block, int blk_row,
+                                       int blk_col, BLOCK_SIZE plane_bsize,
+                                       TX_SIZE tx_size, void *arg) {
   struct tokenize_b_args *const args = arg;
   const AV1_COMP *cpi = args->cpi;
   const AV1_COMMON *cm = &cpi->common;
@@ -575,10 +575,10 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   if (!dry_run) {
     td->counts->skip[ctx][0] += skip_inc;
     av1_foreach_transformed_block(xd, bsize, mi_row, mi_col,
-                                  update_and_record_txb_context, &arg);
+                                  av1_update_and_record_txb_context, &arg);
   } else if (dry_run == DRY_RUN_NORMAL) {
-    av1_foreach_transformed_block(xd, bsize, mi_row, mi_col, update_txb_context,
-                                  &arg);
+    av1_foreach_transformed_block(xd, bsize, mi_row, mi_col,
+                                  av1_update_txb_context_b, &arg);
   } else {
     printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
     assert(0);

@@ -23,6 +23,9 @@
 
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encoder.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.c"
+#endif
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
 
@@ -622,6 +625,18 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
 
   if (tx_size == plane_tx_size) {
     plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
+#if CONFIG_LV_MAP
+    if (!dry_run) {
+      av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
+                                        plane_bsize, tx_size, arg);
+    } else if (dry_run == DRY_RUN_NORMAL) {
+      av1_update_txb_context_b(plane, block, blk_row, blk_col, plane_bsize,
+                               tx_size, arg);
+    } else {
+      printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
+      assert(0);
+    }
+#else
     if (!dry_run)
       tokenize_b(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
     else if (dry_run == DRY_RUN_NORMAL)
@@ -629,6 +644,7 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
                             tx_size, arg);
     else if (dry_run == DRY_RUN_COSTCOEFFS)
       cost_coeffs_b(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
+#endif
   } else {
     // Half the block size in transform block unit.
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -659,7 +675,11 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_LV_MAP
+  (void)t;
+#else
   TOKENEXTRA *t_backup = *t;
+#endif
   const int ctx = av1_get_skip_context(xd);
   const int skip_inc =
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
@@ -670,21 +690,24 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   if (mbmi->skip) {
     if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
     reset_skip_context(xd, bsize);
+#if !CONFIG_LV_MAP
     if (dry_run) *t = t_backup;
+#endif
     return;
   }
 
-  if (!dry_run)
-    td->counts->skip[ctx][0] += skip_inc;
+  if (!dry_run) td->counts->skip[ctx][0] += skip_inc;
+#if !CONFIG_LV_MAP
   else
     *t = t_backup;
+#endif
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y)) {
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || !CONFIG_LV_MAP
       if (!dry_run) {
         (*t)->token = EOSB_TOKEN;
         (*t)++;
@@ -717,10 +740,12 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
       }
     }
 
+#if !CONFIG_LV_MAP
     if (!dry_run) {
       (*t)->token = EOSB_TOKEN;
       (*t)++;
     }
+#endif
   }
   if (rate) *rate += arg.this_rate;
 }

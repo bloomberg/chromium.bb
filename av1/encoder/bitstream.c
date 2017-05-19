@@ -1129,7 +1129,81 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
 }
 #endif  // !CONFIG_PVG
 
-#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE && !CONFIG_LV_MAP
+#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
+#if CONFIG_LV_MAP
+static void pack_txb_tokens(aom_writer *w,
+#if CONFIG_LV_MAP
+                            AV1_COMMON *cm,
+#endif  // CONFIG_LV_MAP
+                            const TOKENEXTRA **tp,
+                            const TOKENEXTRA *const tok_end,
+#if CONFIG_PVQ || CONFIG_LV_MAP
+                            MACROBLOCK *const x,
+#endif
+                            MACROBLOCKD *xd, MB_MODE_INFO *mbmi, int plane,
+                            BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth,
+                            int block, int blk_row, int blk_col,
+                            TX_SIZE tx_size, TOKEN_STATS *token_stats) {
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
+  const int tx_row = blk_row >> (1 - pd->subsampling_y);
+  const int tx_col = blk_col >> (1 - pd->subsampling_x);
+  TX_SIZE plane_tx_size;
+  const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+
+  if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
+
+  plane_tx_size =
+      plane ? uv_txsize_lookup[bsize][mbmi->inter_tx_size[tx_row][tx_col]][0][0]
+            : mbmi->inter_tx_size[tx_row][tx_col];
+
+  if (tx_size == plane_tx_size) {
+    TOKEN_STATS tmp_token_stats;
+    init_token_stats(&tmp_token_stats);
+
+#if !CONFIG_PVQ
+    tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
+    uint16_t eob = x->mbmi_ext->eobs[plane][block];
+    TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
+                        x->mbmi_ext->dc_sign_ctx[plane][block] };
+    av1_write_coeffs_txb(cm, xd, w, block, plane, tcoeff, eob, &txb_ctx);
+#else
+    pack_pvq_tokens(w, x, xd, plane, bsize, tx_size);
+#endif
+#if CONFIG_RD_DEBUG
+    token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
+    token_stats->cost += tmp_token_stats.cost;
+#endif
+  } else {
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const int bsl = tx_size_wide_unit[sub_txs];
+    int i;
+
+    assert(bsl > 0);
+
+    for (i = 0; i < 4; ++i) {
+      const int offsetr = blk_row + (i >> 1) * bsl;
+      const int offsetc = blk_col + (i & 0x01) * bsl;
+      const int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
+
+      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+
+      pack_txb_tokens(w,
+#if CONFIG_LV_MAP
+                      cm,
+#endif
+                      tp, tok_end,
+#if CONFIG_PVQ || CONFIG_LV_MAP
+                      x,
+#endif
+                      xd, mbmi, plane, plane_bsize, bit_depth, block, offsetr,
+                      offsetc, sub_txs, token_stats);
+      block += step;
+    }
+  }
+}
+#else  // CONFIG_LV_MAP
 static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                             const TOKENEXTRA *const tok_end,
 #if CONFIG_PVQ
@@ -1189,7 +1263,8 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     }
   }
 }
-#endif
+#endif  // CONFIG_LV_MAP
+#endif  // CONFIG_VAR_TX
 
 static void write_segment_id(aom_writer *w, const struct segmentation *seg,
                              struct segmentation_probs *segp, int segment_id) {
@@ -2604,22 +2679,16 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         const int bkh = tx_size_high_unit[max_tx_size];
         for (row = 0; row < num_4x4_h; row += bkh) {
           for (col = 0; col < num_4x4_w; col += bkw) {
+            pack_txb_tokens(w,
 #if CONFIG_LV_MAP
-            tran_low_t *tcoeff =
-                BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
-            uint16_t eob = x->mbmi_ext->eobs[plane][block];
-            TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
-                                x->mbmi_ext->dc_sign_ctx[plane][block] };
-            av1_write_coeffs_txb(cm, xd, w, block, plane, tcoeff, eob,
-                                 &txb_ctx);
-#else
-            pack_txb_tokens(w, tok, tok_end,
-#if CONFIG_PVQ
+                            cm,
+#endif
+                            tok, tok_end,
+#if CONFIG_PVQ || CONFIG_LV_MAP
                             x,
 #endif
                             xd, mbmi, plane, plane_bsize, cm->bit_depth, block,
                             row, col, max_tx_size, &token_stats);
-#endif  // CONFIG_LV_MAP
             block += step;
           }
         }

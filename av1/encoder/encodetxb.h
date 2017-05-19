@@ -39,6 +39,14 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
                             const int mi_row, const int mi_col);
 void av1_write_txb_probs(AV1_COMP *cpi, aom_writer *w);
 
+void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
+                              BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                              void *arg);
+
+void av1_update_and_record_txb_context(int plane, int block, int blk_row,
+                                       int blk_col, BLOCK_SIZE plane_bsize,
+                                       TX_SIZE tx_size, void *arg);
+
 #if CONFIG_TXK_SEL
 int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                             int block, int blk_row, int blk_col,
