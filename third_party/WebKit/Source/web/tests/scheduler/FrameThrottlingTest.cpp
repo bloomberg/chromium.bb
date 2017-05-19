@@ -65,7 +65,10 @@ class FrameThrottlingTest : public SimTest,
                             public ::testing::WithParamInterface<bool>,
                             private ScopedRootLayerScrollingForTest {
  protected:
-  FrameThrottlingTest() : ScopedRootLayerScrollingForTest(GetParam()) {
+  FrameThrottlingTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
+
+  void SetUp() override {
+    SimTest::SetUp();
     WebView().Resize(WebSize(640, 480));
   }
 
