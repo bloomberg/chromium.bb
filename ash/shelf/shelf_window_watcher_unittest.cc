@@ -16,7 +16,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_aura.h"
 #include "ash/wm_window.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window.h"

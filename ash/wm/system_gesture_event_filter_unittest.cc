@@ -14,7 +14,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_aura.h"
 #include "ash/wm_window.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

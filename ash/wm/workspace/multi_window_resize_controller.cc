@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
