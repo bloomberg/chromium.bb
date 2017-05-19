@@ -10,8 +10,10 @@
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/button.h"
+#include "chrome/browser/android/vr_shell/ui_elements/exit_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
+#include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/url_bar.h"
@@ -31,6 +33,10 @@ static constexpr float kPermanentWarningHeight = 0.070f;
 static constexpr float kPermanentWarningWidth = 0.224f;
 static constexpr float kTransientWarningHeight = 0.160;
 static constexpr float kTransientWarningWidth = 0.512;
+
+static constexpr float kExitWarningDistance = 0.6;
+static constexpr float kExitWarningHeight = 0.160;
+static constexpr float kExitWarningWidth = 0.512;
 
 static constexpr float kContentDistance = 2.5;
 static constexpr float kContentWidth = 0.96 * kContentDistance;
@@ -82,11 +88,24 @@ UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
   CreateUrlBar();
   if (in_cct_)
     CreateCloseButton();
+  CreateScreenDimmer();
 
   ConfigureScene();
 }
 
 UiSceneManager::~UiSceneManager() {}
+
+void UiSceneManager::CreateScreenDimmer() {
+  std::unique_ptr<UiElement> element;
+  element = base::MakeUnique<ScreenDimmer>();
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_visible(false);
+  element->set_hit_testable(false);
+  element->set_is_overlay(true);
+  screen_dimmer_ = element.get();
+  scene_->AddUiElement(std::move(element));
+}
 
 void UiSceneManager::CreateSecurityWarnings() {
   std::unique_ptr<UiElement> element;
@@ -118,6 +137,18 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
   transient_security_warning_ = element.get();
+  scene_->AddUiElement(std::move(element));
+
+  element = base::MakeUnique<ExitWarning>(1024);
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_size({kExitWarningWidth, kExitWarningHeight, 1});
+  element->set_scale({kExitWarningDistance, kExitWarningDistance, 1});
+  element->set_translation({0, 0, -kExitWarningDistance});
+  element->set_visible(false);
+  element->set_hit_testable(false);
+  element->set_lock_to_fov(true);
+  exit_warning_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
 
@@ -271,6 +302,9 @@ void UiSceneManager::SetWebVrMode(bool web_vr) {
 }
 
 void UiSceneManager::ConfigureScene() {
+  exit_warning_->SetEnabled(scene_->is_exiting());
+  screen_dimmer_->SetEnabled(scene_->is_exiting());
+
   // Controls (URL bar, loading progress, etc).
   bool controls_visible = !web_vr_mode_ && !fullscreen_;
   for (UiElement* element : control_elements_) {
@@ -369,6 +403,13 @@ void UiSceneManager::SetLoading(bool loading) {
 
 void UiSceneManager::SetLoadProgress(float progress) {
   loading_indicator_->SetLoadProgress(progress);
+}
+
+void UiSceneManager::SetIsExiting() {
+  if (scene_->is_exiting())
+    return;
+  scene_->set_is_exiting();
+  ConfigureScene();
 }
 
 void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,

@@ -307,6 +307,11 @@
       </message>
     </if>
 
+    <!-- VR browser -->
+    <message name="IDS_PAGE_INFO_VR_BROWSER_UNSUPPORTED_MODE" desc="This text is displayed as a large toast to inform the user that they cannot currently browse in VR and they will soon exit VR mode.">
+      This page contains features not yet supported in VR. Exiting...
+    </message>
+
     <!-- WebVR -->
     <message name="IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_TRANSIENT" desc="Text that is displayed temporarily as a large toast on first entering a WebVR page over non-secure transport.">
       Your connection to this site is not private. To exit VR mode at any time, remove headset and press back.

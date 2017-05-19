@@ -69,6 +69,9 @@ vr_shell::VrShell* g_instance;
 constexpr base::TimeDelta poll_media_access_interval_ =
     base::TimeDelta::FromSecondsD(0.01);
 
+constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
+    base::TimeDelta::FromSeconds(5);
+
 void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
   if (contents && contents->GetRenderWidgetHostView()) {
     // TODO(asimjour) Contents should not be aware of VR mode. Instead, we
@@ -542,6 +545,14 @@ void VrShell::ExitFullscreen() {
   if (web_contents_ && web_contents_->IsFullscreen()) {
     web_contents_->ExitFullscreen(false);
   }
+}
+
+void VrShell::ExitVrDueToUnsupportedMode() {
+  ui_->SetIsExiting();
+  main_thread_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
+      kExitVrDueToUnsupportedModeDelay);
 }
 
 void VrShell::OnVRVsyncProviderRequest(
