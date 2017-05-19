@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
@@ -22,6 +23,10 @@ service_test("service_unittests") {
     "//services/resource_coordinator:tests",
     "//services/shape_detection:tests",
   ]
+
+  if (use_aura) {
+    deps += [ "//services/ui/clipboard:tests" ]
+  }
 
   if (is_android) {
     deps += [
@@ -48,6 +53,10 @@ catalog("service_unittests_catalog") {
     "//services/preferences:tests_catalog",
     "//services/video_capture:tests_catalog",
   ]
+
+  if (use_aura) {
+    catalog_deps += [ "//services/ui/clipboard:tests_catalog" ]
+  }
 }
 
 if (is_android) {
