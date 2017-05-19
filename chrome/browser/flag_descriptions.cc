@@ -2164,6 +2164,13 @@ const char kWebPaymentsModifiersDescription[] =
     "when instruments are switched, and send modified payment method "
     "specific data to the payment app.";
 
+const char kXGEOVisibleNetworksName[] = "Enable XGEO Visible Networks";
+
+const char kXGEOVisibleNetworksDescription[] =
+    "If location permissions are granted, include visible networks in the XGEO "
+    "Header for omnibox queries. This will only happen if location is not "
+    "fresh or not available (for example, due to a cold start).";
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

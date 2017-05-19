@@ -2604,6 +2604,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-payments-modifiers", flag_descriptions::kWebPaymentsModifiersName,
      flag_descriptions::kWebPaymentsModifiersDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebPaymentsModifiers)},
+    {"xgeo-visible-networks", flag_descriptions::kXGEOVisibleNetworksName,
+     flag_descriptions::kXGEOVisibleNetworksDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kXGEOVisibleNetworks)},
 #endif  // !defined(OS_ANDROID)
     {"cross-process-guests",
      flag_descriptions::kCrossProcessGuestViewIsolationName,

@@ -1085,6 +1085,9 @@ extern const char kUseNewDoodleApiDescription[];
 extern const char kWebPaymentsModifiersName[];
 extern const char kWebPaymentsModifiersDescription[];
 
+extern const char kXGEOVisibleNetworksName[];
+extern const char kXGEOVisibleNetworksDescription[];
+
 // Non-Android ----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
