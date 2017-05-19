@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
       static_cast<ValidatingTextfield*>(dialog_view()->GetViewByID(
           static_cast<int>(autofill::CREDIT_CARD_NAME_FULL)));
   EXPECT_TRUE(textfield);
-  EXPECT_TRUE(textfield->invalid());
+  EXPECT_FALSE(textfield->IsValid());
 }
 
 }  // namespace payments

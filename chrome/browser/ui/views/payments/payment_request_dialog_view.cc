@@ -84,6 +84,10 @@ PaymentRequestDialogView::PaymentRequestDialogView(
 
 PaymentRequestDialogView::~PaymentRequestDialogView() {}
 
+void PaymentRequestDialogView::RequestFocus() {
+  view_stack_->RequestFocus();
+}
+
 ui::ModalType PaymentRequestDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }

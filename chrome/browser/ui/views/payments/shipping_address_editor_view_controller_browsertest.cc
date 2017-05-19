@@ -492,12 +492,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
 
   // One shipping address is available, but it's not selected.
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
   EXPECT_EQ(1U, request->state()->shipping_profiles().size());
   EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
 
+  test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressSectionScreen();
 
   ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
@@ -545,6 +547,52 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(1U, request->state()->shipping_profiles().size());
   EXPECT_EQ(request->state()->shipping_profiles().back(),
             request->state()->selected_shipping_profile());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       FocusFirstInvalidField_Name) {
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+
+  test_region_data_loader_.set_synchronous_callback(true);
+  OpenShippingAddressEditorScreen();
+
+  // We know that the name field is always the first one in a shipping address.
+  views::Textfield* textfield = static_cast<views::Textfield*>(
+      dialog_view()->GetViewByID(static_cast<int>(autofill::NAME_FULL)));
+  DCHECK(textfield);
+  EXPECT_TRUE(textfield->text().empty());
+  EXPECT_TRUE(textfield->invalid());
+  EXPECT_TRUE(textfield->HasFocus());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       FocusFirstInvalidField_NotName) {
+  // Add address with the name set, so that another view takes focus.
+  autofill::AutofillProfile profile;
+  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                  base::ASCIIToUTF16(kNameFull), "fr_CA");
+  AddAutofillProfile(profile);
+
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+  test_region_data_loader_.set_synchronous_callback(true);
+  OpenShippingAddressSectionScreen();
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
+
+  views::Textfield* textfield = static_cast<views::Textfield*>(
+      dialog_view()->GetViewByID(static_cast<int>(autofill::NAME_FULL)));
+  DCHECK(textfield);
+  EXPECT_FALSE(textfield->text().empty());
+  EXPECT_FALSE(textfield->invalid());
+  EXPECT_FALSE(textfield->HasFocus());
+
+  // Since we can't easily tell which field is after name, let's just make sure
+  // that a view has focus. Unfortunately, we can't cast it to a specific type
+  // that we could query for validity (it could be either text or combobox).
+  EXPECT_NE(textfield->GetFocusManager()->GetFocusedView(), nullptr);
 }
 
 }  // namespace payments
