@@ -343,11 +343,3 @@ android_aar_prebuilt("google_play_services_vision_java") {
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
   ignore_manifest = true
 }
-
-# TODO(paulmiller): Replace this with a proper target after rolling to a GMS
-# version which has vision-common.
-java_group("google_play_services_vision_common_java") {
-  deps = [
-    ":google_play_services_vision_java",
-  ]
-}
