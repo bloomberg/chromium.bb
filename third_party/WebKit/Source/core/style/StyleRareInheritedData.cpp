@@ -81,7 +81,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       text_security_(
           static_cast<unsigned>(ComputedStyle::InitialTextSecurity())),
       user_modify_(static_cast<unsigned>(EUserModify::kReadOnly)),
-      word_break_(ComputedStyle::InitialWordBreak()),
+      word_break_(static_cast<unsigned>(ComputedStyle::InitialWordBreak())),
       overflow_wrap_(
           static_cast<unsigned>(ComputedStyle::InitialOverflowWrap())),
       line_break_(static_cast<unsigned>(LineBreak::kAuto)),

@@ -1485,16 +1485,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EWordBreak e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kNormalWordBreak:
+    case EWordBreak::kNormal:
       value_id_ = CSSValueNormal;
       break;
-    case kBreakAllWordBreak:
+    case EWordBreak::kBreakAll:
       value_id_ = CSSValueBreakAll;
       break;
-    case kBreakWordBreak:
+    case EWordBreak::kBreakWord:
       value_id_ = CSSValueBreakWord;
       break;
-    case kKeepAllWordBreak:
+    case EWordBreak::kKeepAll:
       value_id_ = CSSValueKeepAll;
       break;
   }
@@ -1504,19 +1504,19 @@ template <>
 inline EWordBreak CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueBreakAll:
-      return kBreakAllWordBreak;
+      return EWordBreak::kBreakAll;
     case CSSValueBreakWord:
-      return kBreakWordBreak;
+      return EWordBreak::kBreakWord;
     case CSSValueNormal:
-      return kNormalWordBreak;
+      return EWordBreak::kNormal;
     case CSSValueKeepAll:
-      return kKeepAllWordBreak;
+      return EWordBreak::kKeepAll;
     default:
       break;
   }
 
   NOTREACHED();
-  return kNormalWordBreak;
+  return EWordBreak::kNormal;
 }
 
 template <>
