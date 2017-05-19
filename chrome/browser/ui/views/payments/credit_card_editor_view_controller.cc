@@ -187,7 +187,8 @@ std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NUMBER,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER),
-       EditorField::LengthHint::HINT_SHORT, /* required= */ true},
+       EditorField::LengthHint::HINT_SHORT, /* required= */ true,
+       EditorField::ControlType::TEXTFIELD_NUMBER},
       {autofill::CREDIT_CARD_NAME_FULL,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD),
        EditorField::LengthHint::HINT_SHORT, /* required= */ true},

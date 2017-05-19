@@ -362,7 +362,7 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
       autofill::PHONE_HOME_WHOLE_NUMBER,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_PHONE),
       EditorField::LengthHint::HINT_SHORT, /*required=*/true,
-      EditorField::ControlType::TEXTFIELD);
+      EditorField::ControlType::TEXTFIELD_NUMBER);
 }
 
 void ShippingAddressEditorViewController::OnDataChanged(bool synchronous) {
