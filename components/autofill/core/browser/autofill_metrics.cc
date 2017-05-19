@@ -1142,7 +1142,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   builder->AddMetric(internal::kUKMAutofillFormSubmittedStateMetricName,
                      static_cast<int>(state));
   if (form_parsed_timestamp_.is_null())
-    DCHECK_EQ(state, NON_FILLABLE_FORM_OR_NEW_DATA);
+    DCHECK(state == NON_FILLABLE_FORM_OR_NEW_DATA ||
+           state == FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS)
+        << state;
   else
     builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
                        MillisecondsSinceFormParsed());
