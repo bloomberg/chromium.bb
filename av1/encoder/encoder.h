@@ -768,7 +768,7 @@ static INLINE const YV12_BUFFER_CONFIG *get_upsampled_ref(
   return &cpi->upsampled_ref_bufs[buf_idx].buf;
 }
 
-#if CONFIG_EXT_REFS
+#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
   MV_REFERENCE_FRAME ref_frame;
   AV1_COMMON *const cm = &cpi->common;
