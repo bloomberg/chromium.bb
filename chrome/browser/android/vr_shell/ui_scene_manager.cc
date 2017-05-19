@@ -13,6 +13,7 @@
 #include "chrome/browser/android/vr_shell/ui_elements/exit_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
+#include "chrome/browser/android/vr_shell/ui_elements/screen_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
@@ -159,7 +160,7 @@ void UiSceneManager::CreateSystemIndicators() {
   // indicators is defined.
   element = base::MakeUnique<AudioCaptureIndicator>(512);
   element->set_id(AllocateId());
-  element->set_translation({-0.3, 0.8, -1.9});
+  element->set_translation({-0.3, 0.8, -kContentDistance + 0.1});
   element->set_size({0.5, 0, 1});
   element->set_visible(false);
   audio_capture_indicator_ = element.get();
@@ -167,10 +168,18 @@ void UiSceneManager::CreateSystemIndicators() {
 
   element = base::MakeUnique<VideoCaptureIndicator>(512);
   element->set_id(AllocateId());
-  element->set_translation({0.3, 0.8, -1.9});
+  element->set_translation({0.3, 0.8, -kContentDistance + 0.1});
   element->set_size({0.5, 0, 1});
   element->set_visible(false);
   video_capture_indicator_ = element.get();
+  scene_->AddUiElement(std::move(element));
+
+  element = base::MakeUnique<ScreenCaptureIndicator>(512);
+  element->set_id(AllocateId());
+  element->set_translation({0.0, 0.65, -kContentDistance + 0.1});
+  element->set_size({0.4, 0, 1});
+  element->set_visible(false);
+  screen_capture_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
 

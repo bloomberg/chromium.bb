@@ -850,6 +850,7 @@ component("ash") {
     "//components/signin/core/account_id",
     "//components/ui_devtools",
     "//components/user_manager",
+    "//components/vector_icons",
     "//components/wallpaper",
     "//device/bluetooth",
     "//gpu/command_buffer/client",

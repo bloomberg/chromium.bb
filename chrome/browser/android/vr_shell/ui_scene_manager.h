@@ -75,6 +75,7 @@ class UiSceneManager {
   UiElement* main_content_ = nullptr;
   UiElement* audio_capture_indicator_ = nullptr;
   UiElement* video_capture_indicator_ = nullptr;
+  UiElement* screen_capture_indicator_ = nullptr;
   UiElement* screen_dimmer_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
