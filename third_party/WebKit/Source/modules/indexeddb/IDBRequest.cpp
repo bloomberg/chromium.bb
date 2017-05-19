@@ -141,11 +141,6 @@ std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {
   return callbacks;
 }
 
-void IDBRequest::WebCallbacksDestroyed() {
-  DCHECK(web_callbacks_);
-  web_callbacks_ = nullptr;
-}
-
 void IDBRequest::Abort() {
   DCHECK(!request_aborted_);
   if (!GetExecutionContext())
@@ -475,14 +470,18 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
   if (set_transaction_active)
     transaction_->SetActive(true);
 
+  // The request must be unregistered from the transaction before the event
+  // handler is invoked, because the handler can call an IDBCursor method that
+  // reuses this request, like continue() or advance(). http://crbug.com/724109
+  // describes the consequences of getting this wrong.
+  if (transaction_ && ready_state_ == DONE)
+    transaction_->UnregisterRequest(this);
+
   did_throw_in_event_handler_ = false;
   DispatchEventResult dispatch_result =
       IDBEventDispatcher::Dispatch(event, targets);
 
   if (transaction_) {
-    if (ready_state_ == DONE)
-      transaction_->UnregisterRequest(this);
-
     // Possibly abort the transaction. This must occur after unregistering (so
     // this request doesn't receive a second error) and before deactivating
     // (which might trigger commit).
@@ -548,7 +547,7 @@ void IDBRequest::EnqueueEvent(Event* event) {
 
   // Keep track of enqueued events in case we need to abort prior to dispatch,
   // in which case these must be cancelled. If the events not dispatched for
-  // other reasons they must be removed from this list via dequeueEvent().
+  // other reasons they must be removed from this list via DequeueEvent().
   if (event_queue->EnqueueEvent(event))
     enqueued_events_.push_back(event);
 }
