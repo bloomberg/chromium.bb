@@ -60,6 +60,7 @@ class UiScene {
   UiElement* GetUiElementById(int element_id);
 
   std::vector<const UiElement*> GetWorldElements() const;
+  std::vector<const UiElement*> GetOverlayElements() const;
   std::vector<const UiElement*> GetHeadLockedElements() const;
   bool HasVisibleHeadLockedElements() const;
 
@@ -70,6 +71,9 @@ class UiScene {
 
   bool GetWebVrRenderingEnabled() const;
   void SetWebVrRenderingEnabled(bool enabled);
+
+  bool is_exiting() const { return is_exiting_; }
+  void set_is_exiting();
 
   void OnGLInitialized();
 
@@ -83,6 +87,7 @@ class UiScene {
   float background_distance_ = 10.0f;
   bool webvr_rendering_enabled_ = true;
   bool gl_initialized_ = false;
+  bool is_exiting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

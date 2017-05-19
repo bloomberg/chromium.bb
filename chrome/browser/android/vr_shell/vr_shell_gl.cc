@@ -18,9 +18,8 @@
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
-#include "chrome/browser/android/vr_shell/ui_scene_manager.h"
+#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
-#include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
@@ -521,6 +520,13 @@ void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
+  if (scene_->is_exiting()) {
+    // When we're exiting, we don't show the reticle and the only input
+    // processing we do is to handle immediate exits.
+    SendImmediateExitRequestIfNecessary();
+    return;
+  }
+
   HandleWebVrCompatibilityClick();
 
   gfx::Vector3dF ergo_neutral_pose;
@@ -784,6 +790,19 @@ void VrShellGl::SendTap(UiElement* target,
   }
 }
 
+void VrShellGl::SendImmediateExitRequestIfNecessary() {
+  gvr::ControllerButton buttons[] = {
+      gvr::kControllerButtonClick, gvr::kControllerButtonApp,
+      gvr::kControllerButtonHome,
+  };
+  for (size_t i = 0; i < arraysize(buttons); ++i) {
+    if (controller_->ButtonUpHappened(buttons[i]) ||
+        controller_->ButtonDownHappened(buttons[i])) {
+      browser_->ForceExitVr();
+    }
+  }
+}
+
 void VrShellGl::GetVisualTargetElement(
     const gfx::Vector3dF& controller_direction,
     gfx::Vector3dF& eye_to_target,
@@ -1000,6 +1019,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
 
   DrawWorldElements(head_pose);
+  DrawOverlayElements(head_pose);
 
   frame.Unbind();
 
@@ -1055,8 +1075,23 @@ void VrShellGl::DrawWorldElements(const vr::Mat4f& head_pose) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   std::vector<const UiElement*> elements = scene_->GetWorldElements();
+  const bool draw_reticle = !(scene_->is_exiting() || ShouldDrawWebVr());
   DrawUiView(head_pose, elements, render_size_primary_,
-             kViewportListPrimaryOffset, !ShouldDrawWebVr());
+             kViewportListPrimaryOffset, draw_reticle);
+}
+
+void VrShellGl::DrawOverlayElements(const vr::Mat4f& head_pose) {
+  std::vector<const UiElement*> elements = scene_->GetOverlayElements();
+  if (elements.empty())
+    return;
+
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_FALSE);
+
+  const bool draw_reticle = false;
+  DrawUiView(head_pose, elements, render_size_primary_,
+             kViewportListPrimaryOffset, draw_reticle);
 }
 
 void VrShellGl::DrawHeadLockedElements() {
@@ -1070,6 +1105,10 @@ void VrShellGl::DrawHeadLockedElements() {
   buffer_viewport_list_->SetBufferViewport(
       kViewportListHeadlockedOffset + GVR_RIGHT_EYE,
       *headlocked_right_viewport_);
+
+  glEnable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1086,7 +1125,7 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
                            bool draw_reticle) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
 
-  auto elementsInDrawOrder = GetElementsInDrawOrder(head_pose, elements);
+  auto sorted_elements = GetElementsInDrawOrder(head_pose, elements);
 
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
@@ -1110,7 +1149,7 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
 
     vr::MatrixMul(perspective_matrix, eye_view_matrix, &view_proj_matrix);
 
-    DrawElements(view_proj_matrix, elementsInDrawOrder, draw_reticle);
+    DrawElements(view_proj_matrix, sorted_elements, draw_reticle);
     if (draw_reticle) {
       DrawLaser(view_proj_matrix);
       DrawController(view_proj_matrix);

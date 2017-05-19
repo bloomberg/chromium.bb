@@ -70,6 +70,7 @@ class VrGLThread : public base::Thread,
   void SetVideoCapturingIndicator(bool enabled) override;
   void SetScreenCapturingIndicator(bool enabled) override;
   void SetAudioCapturingIndicator(bool enabled) override;
+  void SetIsExiting() override;
 
  protected:
   void Init() override;

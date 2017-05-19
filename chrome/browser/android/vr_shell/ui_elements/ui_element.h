@@ -145,6 +145,10 @@ class UiElement : public WorldRectangle {
   bool lock_to_fov() const { return lock_to_fov_; }
   void set_lock_to_fov(bool lock) { lock_to_fov_ = lock; }
 
+  // If true should be drawn in the world viewport, but over all other elements.
+  bool is_overlay() const { return is_overlay_; }
+  void set_is_overlay(bool is_overlay) { is_overlay_ = is_overlay; }
+
   // The computed lock to the FoV, incorporating lock of parent objects.
   bool computed_lock_to_fov() const { return computed_lock_to_fov_; }
   void set_computed_lock_to_fov(bool computed_lock) {
@@ -255,6 +259,10 @@ class UiElement : public WorldRectangle {
 
   // The computed lock to the FoV, incorporating lock of parent objects.
   bool computed_lock_to_fov_ = false;
+
+  // If true, then this element will be drawn in the world viewport, but above
+  // all other elements.
+  bool is_overlay_ = false;
 
   // The size of the object.  This does not affect children.
   gfx::Vector3dF size_ = {1.0f, 1.0f, 1.0f};

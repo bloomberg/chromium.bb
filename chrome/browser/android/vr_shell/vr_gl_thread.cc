@@ -185,6 +185,12 @@ void VrGLThread::SetScreenCapturingIndicator(bool enabled) {
                             weak_scene_manager_, enabled));
 }
 
+void VrGLThread::SetIsExiting() {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetIsExiting,
+                                                weak_scene_manager_));
+}
+
 void VrGLThread::CleanUp() {
   scene_manager_.reset();
   vr_shell_gl_.reset();
