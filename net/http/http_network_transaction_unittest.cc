@@ -15224,20 +15224,21 @@ class FakeStreamFactory : public HttpStreamFactory {
     return last_stream_request_;
   }
 
-  HttpStreamRequest* RequestStream(const HttpRequestInfo& info,
-                                   RequestPriority priority,
-                                   const SSLConfig& server_ssl_config,
-                                   const SSLConfig& proxy_ssl_config,
-                                   HttpStreamRequest::Delegate* delegate,
-                                   bool enable_ip_based_pooling,
-                                   bool enable_alternative_services,
-                                   const NetLogWithSource& net_log) override {
-    FakeStreamRequest* fake_request = new FakeStreamRequest(priority, delegate);
+  std::unique_ptr<HttpStreamRequest> RequestStream(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      bool enable_ip_based_pooling,
+      bool enable_alternative_services,
+      const NetLogWithSource& net_log) override {
+    auto fake_request = base::MakeUnique<FakeStreamRequest>(priority, delegate);
     last_stream_request_ = fake_request->AsWeakPtr();
-    return fake_request;
+    return std::move(fake_request);
   }
 
-  HttpStreamRequest* RequestBidirectionalStreamImpl(
+  std::unique_ptr<HttpStreamRequest> RequestBidirectionalStreamImpl(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
@@ -15250,7 +15251,7 @@ class FakeStreamFactory : public HttpStreamFactory {
     return nullptr;
   }
 
-  HttpStreamRequest* RequestWebSocketHandshakeStream(
+  std::unique_ptr<HttpStreamRequest> RequestWebSocketHandshakeStream(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
@@ -15260,10 +15261,10 @@ class FakeStreamFactory : public HttpStreamFactory {
       bool enable_ip_based_pooling,
       bool enable_alternative_services,
       const NetLogWithSource& net_log) override {
-    FakeStreamRequest* fake_request =
-        new FakeStreamRequest(priority, delegate, create_helper);
+    auto fake_request =
+        base::MakeUnique<FakeStreamRequest>(priority, delegate, create_helper);
     last_stream_request_ = fake_request->AsWeakPtr();
-    return fake_request;
+    return std::move(fake_request);
   }
 
   void PreconnectStreams(int num_streams,

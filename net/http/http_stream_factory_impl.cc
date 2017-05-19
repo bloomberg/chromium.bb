@@ -4,8 +4,8 @@
 
 #include "net/http/http_stream_factory_impl.h"
 
-#include <string>
 #include <tuple>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -45,7 +45,7 @@ HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
                           job_controller_set_.size());
 }
 
-HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
+std::unique_ptr<HttpStreamRequest> HttpStreamFactoryImpl::RequestStream(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
@@ -61,7 +61,8 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
       enable_alternative_services, net_log);
 }
 
-HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
+std::unique_ptr<HttpStreamRequest>
+HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
@@ -79,7 +80,8 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
       enable_alternative_services, net_log);
 }
 
-HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamImpl(
+std::unique_ptr<HttpStreamRequest>
+HttpStreamFactoryImpl::RequestBidirectionalStreamImpl(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
@@ -97,7 +99,7 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamImpl(
       enable_alternative_services, net_log);
 }
 
-HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
+std::unique_ptr<HttpStreamRequest> HttpStreamFactoryImpl::RequestStreamInternal(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
@@ -117,11 +119,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
       enable_alternative_services, server_ssl_config, proxy_ssl_config);
   JobController* job_controller_raw_ptr = job_controller.get();
   job_controller_set_.insert(std::move(job_controller));
-  Request* request = job_controller_raw_ptr->Start(
-      delegate, websocket_handshake_stream_create_helper, net_log, stream_type,
-      priority);
-
-  return request;
+  return job_controller_raw_ptr->Start(delegate,
+                                       websocket_handshake_stream_create_helper,
+                                       net_log, stream_type, priority);
 }
 
 void HttpStreamFactoryImpl::PreconnectStreams(
