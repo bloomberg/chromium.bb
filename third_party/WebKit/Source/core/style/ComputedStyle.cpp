@@ -1420,14 +1420,8 @@ void ComputedStyle::SetListStyleImage(StyleImage* v) {
 Color ComputedStyle::GetColor() const {
   return inherited_data_->color_;
 }
-Color ComputedStyle::VisitedLinkColor() const {
-  return inherited_data_->visited_link_color_;
-}
 void ComputedStyle::SetColor(const Color& v) {
   SET_VAR(inherited_data_, color_, v);
-}
-void ComputedStyle::SetVisitedLinkColor(const Color& v) {
-  SET_VAR(inherited_data_, visited_link_color_, v);
 }
 
 FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
