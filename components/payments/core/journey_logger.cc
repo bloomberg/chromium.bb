@@ -8,7 +8,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/ukm/ukm_entry_builder.h"
 #include "components/ukm/ukm_service.h"
 
@@ -224,7 +223,7 @@ void JourneyLogger::RecordCanMakePaymentEffectOnCompletion(
 }
 
 void JourneyLogger::RecordUrlKeyedMetrics(CompletionStatus completion_status) {
-  if (!autofill::IsUkmLoggingEnabled() || !ukm_service_ || !url_.is_valid())
+  if (!ukm_service_ || !url_.is_valid())
     return;
 
   // Record the Checkout Funnel UKM.
