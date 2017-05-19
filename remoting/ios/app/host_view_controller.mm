@@ -82,6 +82,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   // the surface is not ready to handle the transformation matrix.
   // Call onSurfaceChanged here to cover that case.
   [_client surfaceChanged:self.view.frame];
+
+  // TODO(yuweih): This should be loaded from and stored into user defaults.
+  _client.gestureInterpreter->SetInputMode(
+      remoting::GestureInterpreter::DIRECT_INPUT_MODE);
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -211,6 +215,23 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                                               style:UIAlertActionStyleDefault
                                             handler:showKeyboardHandler]];
   }
+
+  remoting::GestureInterpreter::InputMode currentInputMode =
+      _client.gestureInterpreter->GetInputMode();
+  NSString* switchInputModeTitle =
+      currentInputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE
+          ? @"Trackpad Mode"
+          : @"Touch Mode";
+  void (^switchInputModeHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+    _client.gestureInterpreter->SetInputMode(
+        currentInputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE
+            ? remoting::GestureInterpreter::TRACKPAD_INPUT_MODE
+            : remoting::GestureInterpreter::DIRECT_INPUT_MODE);
+  };
+  [alert addAction:[UIAlertAction actionWithTitle:switchInputModeTitle
+                                            style:UIAlertActionStyleDefault
+                                          handler:switchInputModeHandler]];
+
   void (^disconnectHandler)(UIAlertAction*) = ^(UIAlertAction*) {
     [_client disconnectFromHost];
     [self dismissViewControllerAnimated:YES completion:nil];

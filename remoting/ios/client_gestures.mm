@@ -14,6 +14,18 @@
 #include "base/logging.h"
 #include "remoting/client/ui/gesture_interpreter.h"
 
+remoting::GestureInterpreter::GestureState toGestureState(
+    UIGestureRecognizerState state) {
+  switch (state) {
+    case UIGestureRecognizerStateBegan:
+      return remoting::GestureInterpreter::GESTURE_BEGAN;
+    case UIGestureRecognizerStateChanged:
+      return remoting::GestureInterpreter::GESTURE_CHANGED;
+    default:
+      return remoting::GestureInterpreter::GESTURE_ENDED;
+  }
+}
+
 @implementation ClientGestures
 
 - (instancetype)initWithView:(UIView*)view client:(RemotingClient*)client {
@@ -125,12 +137,11 @@
 // Resize the view of the desktop - Zoom in/out.  This can occur during a Pan.
 - (IBAction)pinchGestureTriggered:(UIPinchGestureRecognizer*)sender {
   // LOG_TRACE(INFO) << "pinchGestureTriggered";
-  if ([sender state] == UIGestureRecognizerStateChanged) {
-    CGPoint pivot = [sender locationInView:_view];
-    _client.gestureInterpreter->Pinch(pivot.x, pivot.y, sender.scale);
+  CGPoint pivot = [sender locationInView:_view];
+  _client.gestureInterpreter->Zoom(pivot.x, pivot.y, sender.scale,
+                                   toGestureState([sender state]));
 
-    sender.scale = 1.0;  // reset scale so next iteration is a relative ratio
-  }
+  sender.scale = 1.0;  // reset scale so next iteration is a relative ratio
 }
 
 - (IBAction)tapGestureTriggered:(UITapGestureRecognizer*)sender {
@@ -274,18 +285,8 @@
 // Click-Drag mouse operation.  This can occur during a Pan.
 - (IBAction)longPressGestureTriggered:(UILongPressGestureRecognizer*)sender {
   CGPoint touchPoint = [sender locationInView:_view];
-  remoting::GestureInterpreter::GestureState state;
-  switch ([sender state]) {
-    case UIGestureRecognizerStateBegan:
-      state = remoting::GestureInterpreter::GESTURE_BEGAN;
-      break;
-    case UIGestureRecognizerStateChanged:
-      state = remoting::GestureInterpreter::GESTURE_CHANGED;
-      break;
-    default:
-      state = remoting::GestureInterpreter::GESTURE_ENDED;
-  }
-  _client.gestureInterpreter->LongPress(touchPoint.x, touchPoint.y, state);
+  _client.gestureInterpreter->Drag(touchPoint.x, touchPoint.y,
+                                   toGestureState([sender state]));
 
   // LOG_TRACE(INFO) << "longPressGestureTriggered";
   // if ([sender state] == UIGestureRecognizerStateBegan) {
