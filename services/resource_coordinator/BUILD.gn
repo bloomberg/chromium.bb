@@ -55,11 +55,13 @@ source_set("tests") {
     "memory/coordinator/coordinator_impl_unittest.cc",
     "memory/coordinator/process_map_unittest.cc",
     "public/cpp/memory/process_local_dump_manager_impl_unittest.cc",
+    "public/cpp/tracing/chrome_trace_event_agent_unittest.cc",
   ]
 
   deps = [
     ":lib",
     "//base",
+    "//base/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//testing/gtest",
