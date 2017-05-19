@@ -355,7 +355,7 @@
   <message name="IDS_AUTOFILL_SELECT" desc="The string to display in comboboxes when nothing got selected yet.">
     Select
   </message>
-  <message name="IDS_AUTOFILL_ADD_BILLING_ADDRESS" desc="The string to display in comboboxes when no billing addresses are available.">
-    Add a billing address
+  <message name="IDS_AUTOFILL_NO_SAVED_ADDRESS" desc="The string to display in comboboxes when no addresses are available.">
+    No saved addresses
   </message>
 </grit-part>

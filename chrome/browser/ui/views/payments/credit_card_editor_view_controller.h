@@ -61,6 +61,7 @@ class CreditCardEditorViewController : public EditorViewController {
 
  protected:
   // PaymentRequestSheetController:
+  void FillContentView(views::View* content_view) override;
   base::string16 GetSheetTitle() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
