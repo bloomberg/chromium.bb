@@ -1009,7 +1009,7 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       diff.SetNeedsRecomputeOverflow();
   }
 
-  if (!Border().VisualOverflowEqual(other.Border()))
+  if (!BorderVisualOverflowEqual(other))
     diff.SetNeedsRecomputeOverflow();
 
   if (!diff.NeedsFullPaintInvalidation()) {
@@ -1378,8 +1378,7 @@ void ComputedStyle::SetBoxShadow(RefPtr<ShadowList> s) {
   rare_non_inherited_data_.Access()->box_shadow_ = std::move(s);
 }
 
-static FloatRoundedRect::Radii CalcRadiiFor(const BorderData& border,
-                                            const LengthSize& top_left,
+static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
                                             const LengthSize& top_right,
                                             const LengthSize& bottom_left,
                                             const LengthSize& bottom_right,
@@ -1420,10 +1419,9 @@ FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     bool include_logical_right_edge) const {
   FloatRoundedRect rounded_rect(PixelSnappedIntRect(border_rect));
   if (HasBorderRadius()) {
-    FloatRoundedRect::Radii radii =
-        CalcRadiiFor(Border(), BorderTopLeftRadius(), BorderTopRightRadius(),
-                     BorderBottomLeftRadius(), BorderBottomRightRadius(),
-                     border_rect.Size());
+    FloatRoundedRect::Radii radii = CalcRadiiFor(
+        BorderTopLeftRadius(), BorderTopRightRadius(), BorderBottomLeftRadius(),
+        BorderBottomRightRadius(), border_rect.Size());
     rounded_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(),
                                      include_logical_left_edge,
                                      include_logical_right_edge);
@@ -2369,33 +2367,33 @@ LayoutRectOutsets ComputedStyle::ImageOutsets(
 }
 
 void ComputedStyle::SetBorderImageSource(StyleImage* image) {
-  if (Border().image_.GetImage() == image)
+  if (BorderImage().GetImage() == image)
     return;
-  surround_data_.Access()->border_.image_.SetImage(image);
+  MutableBorderImageInternal().SetImage(image);
 }
 
 void ComputedStyle::SetBorderImageSlices(const LengthBox& slices) {
-  if (Border().image_.ImageSlices() == slices)
+  if (BorderImage().ImageSlices() == slices)
     return;
-  surround_data_.Access()->border_.image_.SetImageSlices(slices);
+  MutableBorderImageInternal().SetImageSlices(slices);
 }
 
 void ComputedStyle::SetBorderImageSlicesFill(bool fill) {
-  if (Border().image_.Fill() == fill)
+  if (BorderImage().Fill() == fill)
     return;
-  surround_data_.Access()->border_.image_.SetFill(fill);
+  MutableBorderImageInternal().SetFill(fill);
 }
 
 void ComputedStyle::SetBorderImageWidth(const BorderImageLengthBox& slices) {
-  if (Border().image_.BorderSlices() == slices)
+  if (BorderImage().BorderSlices() == slices)
     return;
-  surround_data_.Access()->border_.image_.SetBorderSlices(slices);
+  MutableBorderImageInternal().SetBorderSlices(slices);
 }
 
 void ComputedStyle::SetBorderImageOutset(const BorderImageLengthBox& outset) {
-  if (Border().image_.Outset() == outset)
+  if (BorderImage().Outset() == outset)
     return;
-  surround_data_.Access()->border_.image_.SetOutset(outset);
+  MutableBorderImageInternal().SetOutset(outset);
 }
 
 bool ComputedStyle::BorderObscuresBackground() const {
