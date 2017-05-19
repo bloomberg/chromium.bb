@@ -83,6 +83,9 @@ _autoserv_proc_count_metric = ts_mon.GaugeMetric(
 _sysmon_proc_count_metric = ts_mon.GaugeMetric(
     'dev/proc/sysmon_count',
     description='Number of sysmon processes currently running.')
+_apache_proc_count_metric = ts_mon.GaugeMetric(
+    'dev/proc/apache_count',
+    description='Number of apache processes currently running.')
 _load_average_metric = ts_mon.FloatMetric(
     'dev/proc/load_average',
     description='Number of processes currently '
@@ -193,17 +196,22 @@ def collect_mem_info():
 def collect_proc_info():
   autoserv_count = 0
   sysmon_count = 0
+  apache_count = 0
   total = 0
   for proc in psutil.process_iter():
     if _is_parent_autoserv(proc):
       autoserv_count += 1
     elif _is_sysmon(proc):
       sysmon_count += 1
+    elif _is_apache(proc):
+      apache_count += 1
     total += 1
   logger.debug('autoserv_count: %s', autoserv_count)
   logger.debug('sysmon_count: %s', sysmon_count)
+  logger.debug('apache_count: %s', apache_count)
   _autoserv_proc_count_metric.set(autoserv_count)
   _sysmon_proc_count_metric.set(sysmon_count)
+  _apache_proc_count_metric.set(apache_count)
   _proc_count_metric.set(total)
 
 
@@ -218,6 +226,11 @@ def _is_autoserv(proc):
   # be named autoserv exactly and start with a shebang that is /usr/bin/python,
   # NOT /bin/env
   return proc.name() == 'autoserv'
+
+
+def _is_apache(proc):
+  """Return whether a proc is an apache2 process."""
+  return proc.name() == 'apache2'
 
 
 def _is_sysmon(proc):
