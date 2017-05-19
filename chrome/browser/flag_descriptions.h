@@ -481,6 +481,9 @@ extern const char kOfflineAutoReloadDescription[];
 extern const char kOfflineAutoReloadVisibleOnlyName[];
 extern const char kOfflineAutoReloadVisibleOnlyDescription[];
 
+extern const char kOffMainThreadFetchName[];
+extern const char kOffMainThreadFetchDescription[];
+
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 

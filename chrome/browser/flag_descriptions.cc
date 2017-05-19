@@ -97,6 +97,12 @@ const char kSpeculativePrefetchDescription[] =
     R"*("Learning" means that only the database construction is enabled, )*"
     R"*("Prefetching" that learning and prefetching are enabled.)*";
 
+const char kOffMainThreadFetchName[] = "Off-main-thread fetch for Web Workers";
+
+const char kOffMainThreadFetchDescription[] =
+    "If enabled, the resource fetches from worker threads will not be blocked "
+    "by the busy main thread.";
+
 //  Force Tablet Mode
 
 const char kForceTabletModeName[] = "Force Tablet Mode";
