@@ -278,7 +278,7 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
       new gpu::CommandExecutor(command_buffer.get(), decoder.get(),
                                decoder.get()));
 
-  decoder->set_command_buffer_service(command_buffer.get());
+  decoder->set_engine(command_executor.get());
 
   gl::GLContextAttribs context_attribs;
   context_attribs.gpu_preference = gl::PreferDiscreteGpu;

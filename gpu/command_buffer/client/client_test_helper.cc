@@ -20,25 +20,49 @@ using ::testing::Invoke;
 
 namespace gpu {
 
-FakeCommandBufferServiceBase::FakeCommandBufferServiceBase() : put_offset_(0) {}
+MockCommandBufferBase::MockCommandBufferBase() : put_offset_(0) {}
 
-FakeCommandBufferServiceBase::~FakeCommandBufferServiceBase() {}
+MockCommandBufferBase::~MockCommandBufferBase() {}
 
-CommandBuffer::State FakeCommandBufferServiceBase::GetState() {
+CommandBuffer::State MockCommandBufferBase::GetLastState() {
   return state_;
 }
 
-void FakeCommandBufferServiceBase::SetGetOffset(int32_t get_offset) {
+void MockCommandBufferBase::SetGetOffset(int32_t get_offset) {
   state_.get_offset = get_offset;
 }
 
-void FakeCommandBufferServiceBase::SetReleaseCount(uint64_t release_count) {
+void MockCommandBufferBase::SetReleaseCount(uint64_t release_count) {
   state_.release_count = release_count;
+}
+
+CommandBuffer::State MockCommandBufferBase::WaitForTokenInRange(int32_t start,
+                                                                int32_t end) {
+  return state_;
+}
+
+CommandBuffer::State MockCommandBufferBase::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
+    int32_t start,
+    int32_t end) {
+  EXPECT_EQ(set_get_buffer_count, state_.set_get_buffer_count);
+  if (state_.get_offset != put_offset_) {
+    state_.get_offset = put_offset_;
+    OnFlush();
+  }
+  return state_;
+}
+
+void MockCommandBufferBase::SetGetBuffer(int transfer_buffer_id) {
+  ++state_.set_get_buffer_count;
+  state_.get_offset = 0;
+  put_offset_ = 0;
+  state_.token = 10000;  // All token checks in the tests should pass.
 }
 
 // Get's the Id of the next transfer buffer that will be returned
 // by CreateTransferBuffer. This is useful for testing expected ids.
-int32_t FakeCommandBufferServiceBase::GetNextFreeTransferBufferId() {
+int32_t MockCommandBufferBase::GetNextFreeTransferBufferId() {
   for (size_t ii = 0; ii < arraysize(transfer_buffer_buffers_); ++ii) {
     if (!transfer_buffer_buffers_[ii].get()) {
       return kTransferBufferBaseId + ii;
@@ -47,16 +71,9 @@ int32_t FakeCommandBufferServiceBase::GetNextFreeTransferBufferId() {
   return -1;
 }
 
-void FakeCommandBufferServiceBase::SetGetBufferHelper(int transfer_buffer_id) {
-  ++state_.set_get_buffer_count;
-  state_.get_offset = 0;
-  put_offset_ = 0;
-  state_.token = 10000;  // All token checks in the tests should pass.
-}
-
-scoped_refptr<gpu::Buffer>
-FakeCommandBufferServiceBase::CreateTransferBufferHelper(size_t size,
-                                                         int32_t* id) {
+scoped_refptr<gpu::Buffer> MockCommandBufferBase::CreateTransferBuffer(
+    size_t size,
+    int32_t* id) {
   *id = GetNextFreeTransferBufferId();
   if (*id >= 0) {
     int32_t ndx = *id - kTransferBufferBaseId;
@@ -68,46 +85,44 @@ FakeCommandBufferServiceBase::CreateTransferBufferHelper(size_t size,
   return GetTransferBuffer(*id);
 }
 
-void FakeCommandBufferServiceBase::DestroyTransferBufferHelper(int32_t id) {
+void MockCommandBufferBase::DestroyTransferBufferHelper(int32_t id) {
   DCHECK_GE(id, kTransferBufferBaseId);
   DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   id -= kTransferBufferBaseId;
   transfer_buffer_buffers_[id] = NULL;
 }
 
-scoped_refptr<Buffer> FakeCommandBufferServiceBase::GetTransferBuffer(
-    int32_t id) {
-  if ((id < kTransferBufferBaseId) ||
-      (id >= kTransferBufferBaseId + kMaxTransferBuffers))
-    return nullptr;
+scoped_refptr<Buffer> MockCommandBufferBase::GetTransferBuffer(int32_t id) {
+  DCHECK_GE(id, kTransferBufferBaseId);
+  DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   return transfer_buffer_buffers_[id - kTransferBufferBaseId];
 }
 
-void FakeCommandBufferServiceBase::FlushHelper(int32_t put_offset) {
+void MockCommandBufferBase::FlushHelper(int32_t put_offset) {
   put_offset_ = put_offset;
 }
 
-void FakeCommandBufferServiceBase::SetToken(int32_t token) {
+void MockCommandBufferBase::SetToken(int32_t token) {
   state_.token = token;
 }
 
-void FakeCommandBufferServiceBase::SetParseError(error::Error error) {
+void MockCommandBufferBase::SetParseError(error::Error error) {
   state_.error = error;
 }
 
-void FakeCommandBufferServiceBase::SetContextLostReason(
+void MockCommandBufferBase::SetContextLostReason(
     error::ContextLostReason reason) {
   state_.context_lost_reason = reason;
 }
 
-int32_t FakeCommandBufferServiceBase::GetPutOffset() {
+int32_t MockCommandBufferBase::GetPutOffset() {
   return put_offset_;
 }
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef _MSC_VER
-const int32_t FakeCommandBufferServiceBase::kTransferBufferBaseId;
-const int32_t FakeCommandBufferServiceBase::kMaxTransferBuffers;
+const int32_t MockCommandBufferBase::kTransferBufferBaseId;
+const int32_t MockCommandBufferBase::kMaxTransferBuffers;
 #endif
 
 MockClientCommandBuffer::MockClientCommandBuffer() {
@@ -115,39 +130,6 @@ MockClientCommandBuffer::MockClientCommandBuffer() {
 }
 
 MockClientCommandBuffer::~MockClientCommandBuffer() {}
-
-CommandBuffer::State MockClientCommandBuffer::GetLastState() {
-  return GetState();
-}
-
-CommandBuffer::State MockClientCommandBuffer::WaitForTokenInRange(int32_t start,
-                                                                  int32_t end) {
-  return GetState();
-}
-
-CommandBuffer::State MockClientCommandBuffer::WaitForGetOffsetInRange(
-    uint32_t set_get_buffer_count,
-    int32_t start,
-    int32_t end) {
-  State state = GetState();
-  EXPECT_EQ(set_get_buffer_count, state.set_get_buffer_count);
-  if (state.get_offset != GetPutOffset()) {
-    SetGetOffset(GetPutOffset());
-    OnFlush();
-    state = GetState();
-  }
-  return state;
-}
-
-void MockClientCommandBuffer::SetGetBuffer(int transfer_buffer_id) {
-  SetGetBufferHelper(transfer_buffer_id);
-}
-
-scoped_refptr<gpu::Buffer> MockClientCommandBuffer::CreateTransferBuffer(
-    size_t size,
-    int32_t* id) {
-  return CreateTransferBufferHelper(size, id);
-}
 
 void MockClientCommandBuffer::Flush(int32_t put_offset) {
   FlushHelper(put_offset);
@@ -159,8 +141,8 @@ void MockClientCommandBuffer::OrderingBarrier(int32_t put_offset) {
 
 void MockClientCommandBuffer::DelegateToFake() {
   ON_CALL(*this, DestroyTransferBuffer(_))
-      .WillByDefault(Invoke(
-          this, &FakeCommandBufferServiceBase::DestroyTransferBufferHelper));
+      .WillByDefault(
+          Invoke(this, &MockCommandBufferBase::DestroyTransferBufferHelper));
 }
 
 MockClientCommandBufferMockFlush::MockClientCommandBufferMockFlush() {
@@ -172,7 +154,7 @@ MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() {}
 void MockClientCommandBufferMockFlush::DelegateToFake() {
   MockClientCommandBuffer::DelegateToFake();
   ON_CALL(*this, Flush(_))
-      .WillByDefault(Invoke(this, &FakeCommandBufferServiceBase::FlushHelper));
+      .WillByDefault(Invoke(this, &MockCommandBufferBase::FlushHelper));
 }
 
 MockClientGpuControl::MockClientGpuControl() {}

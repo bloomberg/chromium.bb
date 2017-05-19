@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "base/numerics/safe_math.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/cmd_buffer_engine.h"
 
 namespace gpu {
 namespace {
@@ -127,19 +127,17 @@ bool CommonDecoder::Bucket::GetAsStrings(
 }
 
 CommonDecoder::CommonDecoder()
-    : command_buffer_service_(nullptr),
-      max_bucket_size_(kDefaultMaxBucketSize) {}
+    : engine_(NULL), max_bucket_size_(kDefaultMaxBucketSize) {}
 
 CommonDecoder::~CommonDecoder() {}
 
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int data_offset,
                                             unsigned int data_size) {
-  CHECK(command_buffer_service_);
-  scoped_refptr<gpu::Buffer> buffer =
-      command_buffer_service_->GetTransferBuffer(shm_id);
+  CHECK(engine_);
+  scoped_refptr<gpu::Buffer> buffer = engine_->GetSharedMemoryBuffer(shm_id);
   if (!buffer.get())
-    return nullptr;
+    return NULL;
   return buffer->GetDataAddress(data_offset, data_size);
 }
 
@@ -147,19 +145,17 @@ void* CommonDecoder::GetAddressAndSize(unsigned int shm_id,
                                        unsigned int data_offset,
                                        unsigned int minimum_size,
                                        unsigned int* data_size) {
-  CHECK(command_buffer_service_);
-  scoped_refptr<gpu::Buffer> buffer =
-      command_buffer_service_->GetTransferBuffer(shm_id);
+  CHECK(engine_);
+  scoped_refptr<gpu::Buffer> buffer = engine_->GetSharedMemoryBuffer(shm_id);
   if (!buffer.get() || buffer->GetRemainingSize(data_offset) < minimum_size)
-    return nullptr;
+    return NULL;
   return buffer->GetDataAddressAndSize(data_offset, data_size);
 }
 
 unsigned int CommonDecoder::GetSharedMemorySize(unsigned int shm_id,
                                                 unsigned int offset) {
-  CHECK(command_buffer_service_);
-  scoped_refptr<gpu::Buffer> buffer =
-      command_buffer_service_->GetTransferBuffer(shm_id);
+  CHECK(engine_);
+  scoped_refptr<gpu::Buffer> buffer = engine_->GetSharedMemoryBuffer(shm_id);
   if (!buffer.get())
     return 0;
   return buffer->GetRemainingSize(offset);
@@ -167,7 +163,7 @@ unsigned int CommonDecoder::GetSharedMemorySize(unsigned int shm_id,
 
 scoped_refptr<gpu::Buffer> CommonDecoder::GetSharedMemoryBuffer(
     unsigned int shm_id) {
-  return command_buffer_service_->GetTransferBuffer(shm_id);
+  return engine_->GetSharedMemoryBuffer(shm_id);
 }
 
 const char* CommonDecoder::GetCommonCommandName(
@@ -237,7 +233,7 @@ error::Error CommonDecoder::HandleSetToken(uint32_t immediate_data_size,
                                            const volatile void* cmd_data) {
   const volatile cmd::SetToken& args =
       *static_cast<const volatile cmd::SetToken*>(cmd_data);
-  command_buffer_service_->SetToken(args.token);
+  engine_->set_token(args.token);
   return error::kNoError;
 }
 

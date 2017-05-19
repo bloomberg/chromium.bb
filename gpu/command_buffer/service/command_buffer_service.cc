@@ -57,13 +57,16 @@ CommandBufferService::CommandBufferService(
 CommandBufferService::~CommandBufferService() {}
 
 CommandBufferService::State CommandBufferService::GetLastState() {
-  // generation_ is not incremented for all changes, notably high-frequency ones
-  // (like get offset updates). However we want to make sure we increment the
-  // generation before sending the new state to a command buffer client (either
-  // through IPC or via the shared state), so that it can update its internal
-  // structures.
-  ++generation_;
-  return GetState();
+  State state;
+  state.get_offset = get_offset_;
+  state.token = token_;
+  state.release_count = release_count_;
+  state.error = error_;
+  state.context_lost_reason = context_lost_reason_;
+  state.generation = ++generation_;
+  state.set_get_buffer_count = set_get_buffer_count_;
+
+  return state;
 }
 
 void CommandBufferService::UpdateState() {
@@ -133,19 +136,6 @@ void CommandBufferService::SetSharedStateBuffer(
       static_cast<CommandBufferSharedState*>(shared_state_buffer_->GetMemory());
 
   UpdateState();
-}
-
-CommandBufferService::State CommandBufferService::GetState() {
-  State state;
-  state.get_offset = get_offset_;
-  state.token = token_;
-  state.release_count = release_count_;
-  state.error = error_;
-  state.context_lost_reason = context_lost_reason_;
-  state.generation = generation_;
-  state.set_get_buffer_count = set_get_buffer_count_;
-
-  return state;
 }
 
 void CommandBufferService::SetGetOffset(int32_t get_offset) {

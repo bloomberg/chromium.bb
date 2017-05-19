@@ -67,6 +67,7 @@ class ProgramCache;
 class ShaderTranslatorCache;
 }
 
+class CommandBufferServiceBase;
 class GpuMemoryBufferManager;
 class CommandExecutor;
 class ImageFactory;
@@ -316,7 +317,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   uint64_t flushed_fence_sync_release_;
 
   // Accessed on both threads:
-  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<CommandBufferServiceBase> command_buffer_;
   base::Lock command_buffer_lock_;
   base::WaitableEvent flush_event_;
   scoped_refptr<Service> service_;

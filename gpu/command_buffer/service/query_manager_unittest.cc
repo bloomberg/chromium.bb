@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -32,10 +32,12 @@ namespace gles2 {
 
 class QueryManagerTest : public GpuServiceTest {
  public:
+  static const int32_t kSharedMemoryId = 401;
   static const uint32_t kSharedMemoryOffset = 132;
+  static const int32_t kSharedMemory2Id = 402;
   static const uint32_t kSharedMemory2Offset = 232;
   static const size_t kSharedBufferSize = 2048;
-  static const int32_t kInvalidSharedMemoryId = -1;
+  static const int32_t kInvalidSharedMemoryId = 403;
   static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
   static const uint32_t kInitialResult = 0xBDBDBDBDu;
   static const uint8_t kInitialMemoryValue = 0xBDu;
@@ -56,21 +58,14 @@ class QueryManagerTest : public GpuServiceTest {
     decoder_.reset();
     manager_->Destroy(false);
     manager_.reset();
-    command_buffer_service_.reset();
+    engine_.reset();
     GpuServiceTest::TearDown();
   }
 
   void SetUpMockGL(const char* extension_expectations) {
-    command_buffer_service_.reset(new FakeCommandBufferServiceBase());
-    scoped_refptr<gpu::Buffer> buffer =
-        command_buffer_service_->CreateTransferBufferHelper(kSharedBufferSize,
-                                                            &shared_memory_id_);
-    memset(buffer->memory(), kInitialMemoryValue, kSharedBufferSize);
-    buffer = command_buffer_service_->CreateTransferBufferHelper(
-        kSharedBufferSize, &shared_memory2_id_);
-    memset(buffer->memory(), kInitialMemoryValue, kSharedBufferSize);
+    engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockGLES2Decoder());
-    decoder_->set_command_buffer_service(command_buffer_service_.get());
+    decoder_->set_engine(engine_.get());
     TestHelper::SetupFeatureInfoInitExpectations(
         gl_.get(), extension_expectations);
     EXPECT_CALL(*decoder_.get(), GetGLContext())
@@ -107,11 +102,49 @@ class QueryManagerTest : public GpuServiceTest {
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<QueryManager> manager_;
 
-  int32_t shared_memory_id_ = 0;
-  int32_t shared_memory2_id_ = 0;
-
  private:
-  std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
+  class MockCommandBufferEngine : public CommandBufferEngine {
+   public:
+    MockCommandBufferEngine() {
+      std::unique_ptr<base::SharedMemory> shared_memory(
+          new base::SharedMemory());
+      shared_memory->CreateAndMapAnonymous(kSharedBufferSize);
+      valid_buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory),
+                                                 kSharedBufferSize);
+
+      std::unique_ptr<base::SharedMemory> shared_memory2(
+          new base::SharedMemory());
+      shared_memory2->CreateAndMapAnonymous(kSharedBufferSize);
+      valid_buffer2_ = MakeBufferFromSharedMemory(std::move(shared_memory2),
+                                                  kSharedBufferSize);
+
+      ClearSharedMemory();
+    }
+
+    ~MockCommandBufferEngine() override {}
+
+    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32_t shm_id) override {
+      switch (shm_id) {
+        case kSharedMemoryId: return valid_buffer_;
+        case kSharedMemory2Id: return valid_buffer2_;
+        default: return invalid_buffer_;
+      }
+    }
+
+    void ClearSharedMemory() {
+      memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
+      memset(valid_buffer2_->memory(), kInitialMemoryValue, kSharedBufferSize);
+    }
+
+    void set_token(int32_t token) override { DCHECK(false); }
+
+   private:
+    scoped_refptr<gpu::Buffer> valid_buffer_;
+    scoped_refptr<gpu::Buffer> valid_buffer2_;
+    scoped_refptr<gpu::Buffer> invalid_buffer_;
+  };
+
+  std::unique_ptr<MockCommandBufferEngine> engine_;
 };
 
 class QueryManagerManualSetupTest : public QueryManagerTest {
@@ -123,7 +156,9 @@ class QueryManagerManualSetupTest : public QueryManagerTest {
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
+const int32_t QueryManagerTest::kSharedMemoryId;
 const uint32_t QueryManagerTest::kSharedMemoryOffset;
+const int32_t QueryManagerTest::kSharedMemory2Id;
 const uint32_t QueryManagerTest::kSharedMemory2Offset;
 const size_t QueryManagerTest::kSharedBufferSize;
 const int32_t QueryManagerTest::kInvalidSharedMemoryId;
@@ -140,8 +175,8 @@ TEST_F(QueryManagerTest, Basic) {
   EXPECT_FALSE(manager_->HavePendingQueries());
   // Check we can create a Query.
   scoped_refptr<QueryManager::Query> query(
-      CreateQuery(GL_ANY_SAMPLES_PASSED_EXT, kClient1Id, shared_memory_id_,
-                  kSharedMemoryOffset, kService1Id));
+      CreateQuery(GL_ANY_SAMPLES_PASSED_EXT, kClient1Id,
+                  kSharedMemoryId, kSharedMemoryOffset, kService1Id));
   ASSERT_TRUE(query.get() != NULL);
   // Check we can get the same Query.
   EXPECT_EQ(query.get(), manager_->GetQuery(kClient1Id));
@@ -165,8 +200,8 @@ TEST_F(QueryManagerTest, Destroy) {
 
   // Create Query.
   scoped_refptr<QueryManager::Query> query(
-      CreateQuery(GL_ANY_SAMPLES_PASSED_EXT, kClient1Id, shared_memory_id_,
-                  kSharedMemoryOffset, kService1Id));
+      CreateQuery(GL_ANY_SAMPLES_PASSED_EXT, kClient1Id,
+                  kSharedMemoryId, kSharedMemoryOffset, kService1Id));
   ASSERT_TRUE(query.get() != NULL);
   EXPECT_CALL(*gl_, DeleteQueries(1, ::testing::Pointee(kService1Id)))
       .Times(1)
@@ -185,15 +220,15 @@ TEST_F(QueryManagerTest, QueryBasic) {
 
   // Create Query.
   scoped_refptr<QueryManager::Query> query(
-      CreateQuery(kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset,
-                  kService1Id));
+      CreateQuery(kTarget, kClient1Id,
+                  kSharedMemoryId, kSharedMemoryOffset, kService1Id));
   ASSERT_TRUE(query.get() != NULL);
 
   EXPECT_TRUE(query->IsValid());
   EXPECT_FALSE(query->IsDeleted());
   EXPECT_FALSE(query->IsPending());
   EXPECT_EQ(kTarget, query->target());
-  EXPECT_EQ(shared_memory_id_, query->shm_id());
+  EXPECT_EQ(kSharedMemoryId, query->shm_id());
   EXPECT_EQ(kSharedMemoryOffset, query->shm_offset());
 }
 
@@ -209,13 +244,13 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
 
   // Create Query.
   scoped_refptr<QueryManager::Query> query(
-      CreateQuery(kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset,
-                  kService1Id));
+      CreateQuery(kTarget, kClient1Id,
+                  kSharedMemoryId, kSharedMemoryOffset, kService1Id));
   ASSERT_TRUE(query.get() != NULL);
 
   // Setup shared memory like client would.
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   ASSERT_TRUE(sync != NULL);
   sync->Reset();
 
@@ -272,21 +307,24 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
 
   // Setup shared memory like client would.
   QuerySync* sync1 = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync1) * 3);
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync1) * 3);
   ASSERT_TRUE(sync1 != NULL);
   QuerySync* sync2 = sync1 + 1;
   QuerySync* sync3 = sync2 + 1;
 
   // Create Queries.
   scoped_refptr<QueryManager::Query> query1(
-      CreateQuery(kTarget, kClient1Id, shared_memory_id_,
-                  kSharedMemoryOffset + sizeof(*sync1) * 0, kService1Id));
+      CreateQuery(kTarget, kClient1Id,
+                  kSharedMemoryId, kSharedMemoryOffset + sizeof(*sync1) * 0,
+                  kService1Id));
   scoped_refptr<QueryManager::Query> query2(
-      CreateQuery(kTarget, kClient2Id, shared_memory_id_,
-                  kSharedMemoryOffset + sizeof(*sync1) * 1, kService2Id));
+      CreateQuery(kTarget, kClient2Id,
+                  kSharedMemoryId, kSharedMemoryOffset + sizeof(*sync1) * 1,
+                  kService2Id));
   scoped_refptr<QueryManager::Query> query3(
-      CreateQuery(kTarget, kClient3Id, shared_memory_id_,
-                  kSharedMemoryOffset + sizeof(*sync1) * 2, kService3Id));
+      CreateQuery(kTarget, kClient3Id,
+                  kSharedMemoryId, kSharedMemoryOffset + sizeof(*sync1) * 2,
+                  kService3Id));
   ASSERT_TRUE(query1.get() != NULL);
   ASSERT_TRUE(query2.get() != NULL);
   ASSERT_TRUE(query3.get() != NULL);
@@ -405,8 +443,8 @@ TEST_F(QueryManagerTest, ProcessPendingBadSharedMemoryOffset) {
 
   // Create Query.
   scoped_refptr<QueryManager::Query> query(
-      CreateQuery(kTarget, kClient1Id, shared_memory_id_,
-                  kInvalidSharedMemoryOffset, kService1Id));
+      CreateQuery(kTarget, kClient1Id,
+                  kSharedMemoryId, kInvalidSharedMemoryOffset, kService1Id));
   ASSERT_TRUE(query.get() != NULL);
 
   // Queue it
@@ -432,8 +470,8 @@ TEST_F(QueryManagerTest, ExitWithPendingQuery) {
 
   // Create Query.
   scoped_refptr<QueryManager::Query> query(
-      CreateQuery(kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset,
-                  kService1Id));
+      CreateQuery(kTarget, kClient1Id,
+                  kSharedMemoryId, kSharedMemoryOffset, kService1Id));
   ASSERT_TRUE(query.get() != NULL);
 
   // Queue it
@@ -460,7 +498,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
       .WillOnce(SetArgPointee<1>(kService1Id))
       .RetiresOnSaturation();
   QueryManager::Query* query = manager->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_ANY_SAMPLES_PASSED_EXT, kService1Id))
@@ -494,7 +532,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
       .WillOnce(SetArgPointee<1>(kService1Id))
       .RetiresOnSaturation();
   QueryManager::Query* query = manager->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))
@@ -527,7 +565,7 @@ TEST_F(QueryManagerTest, ARBOcclusionPauseResume) {
       .WillOnce(SetArgPointee<1>(kService1Id))
       .RetiresOnSaturation();
   QueryManager::Query* query = manager->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))
@@ -568,7 +606,7 @@ TEST_F(QueryManagerTest, ARBOcclusionPauseResume) {
   EXPECT_TRUE(query->IsFinished());
 
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   EXPECT_EQ(1u, sync->result);
 
   // Make sure new query still works.
@@ -610,7 +648,7 @@ TEST_F(QueryManagerTest, TimeElapsedQuery) {
       base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   fake_timing_queries.ExpectGPUTimerQuery(*gl_, true);
@@ -625,7 +663,7 @@ TEST_F(QueryManagerTest, TimeElapsedQuery) {
   EXPECT_TRUE(query->IsFinished());
 
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   const uint64_t expected_result =
       100u * base::Time::kNanosecondsPerMicrosecond;
   EXPECT_EQ(expected_result, sync->result);
@@ -642,7 +680,7 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
       base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   fake_timing_queries.ExpectGPUTimerQuery(*gl_, true);
@@ -667,7 +705,7 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
   EXPECT_TRUE(query->IsFinished());
 
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   const uint64_t expected_result =
       300u * base::Time::kNanosecondsPerMicrosecond;
   EXPECT_EQ(expected_result, sync->result);
@@ -698,9 +736,10 @@ TEST_F(QueryManagerManualSetupTest, TimeElapsedDisjoint) {
   SetUpMockGL("GL_EXT_disjoint_timer_query");
 
   DisjointValueSync* disjoint_sync =
-      decoder_->GetSharedMemoryAs<DisjointValueSync*>(
-          shared_memory2_id_, kSharedMemory2Offset, sizeof(*disjoint_sync));
-  manager_->SetDisjointSync(shared_memory2_id_, kSharedMemory2Offset);
+      decoder_->GetSharedMemoryAs<DisjointValueSync*>(kSharedMemory2Id,
+                                                      kSharedMemory2Offset,
+                                                      sizeof(*disjoint_sync));
+  manager_->SetDisjointSync(kSharedMemory2Id, kSharedMemory2Offset);
 
   const uint32_t current_disjoint_value = disjoint_sync->GetDisjointCount();
   ASSERT_EQ(0u, current_disjoint_value);
@@ -710,7 +749,7 @@ TEST_F(QueryManagerManualSetupTest, TimeElapsedDisjoint) {
   const base::subtle::Atomic32 kSubmitCount = 123;
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   // Disjoint happening before the query should not trigger a disjoint event.
@@ -747,7 +786,7 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
       base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   const uint64_t expected_result =
@@ -758,7 +797,7 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
   EXPECT_TRUE(manager_->ProcessPendingQueries(false));
 
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   EXPECT_EQ(expected_result, sync->result);
 
   manager_->Destroy(false);
@@ -774,7 +813,7 @@ TEST_F(QueryManagerTest, TimeStampQueryPending) {
       base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   const uint64_t expected_result =
@@ -788,7 +827,7 @@ TEST_F(QueryManagerTest, TimeStampQueryPending) {
   EXPECT_TRUE(manager_->ProcessPendingQueries(false));
 
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   EXPECT_EQ(expected_result, sync->result);
 
   manager_->Destroy(false);
@@ -802,9 +841,10 @@ TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
   SetUpMockGL("GL_EXT_disjoint_timer_query");
 
   DisjointValueSync* disjoint_sync =
-      decoder_->GetSharedMemoryAs<DisjointValueSync*>(
-          shared_memory2_id_, kSharedMemory2Offset, sizeof(*disjoint_sync));
-  manager_->SetDisjointSync(shared_memory2_id_, kSharedMemory2Offset);
+      decoder_->GetSharedMemoryAs<DisjointValueSync*>(kSharedMemory2Id,
+                                                      kSharedMemory2Offset,
+                                                      sizeof(*disjoint_sync));
+  manager_->SetDisjointSync(kSharedMemory2Id, kSharedMemory2Offset);
 
   const uint32_t current_disjoint_value = disjoint_sync->GetDisjointCount();
   ASSERT_EQ(0u, current_disjoint_value);
@@ -814,7 +854,7 @@ TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
   const base::subtle::Atomic32 kSubmitCount = 123;
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   // Disjoint happening before the query should not trigger a disjoint event.
@@ -847,9 +887,10 @@ TEST_F(QueryManagerManualSetupTest, DisjointContinualTest) {
   SetUpMockGL("GL_EXT_disjoint_timer_query");
 
   DisjointValueSync* disjoint_sync =
-      decoder_->GetSharedMemoryAs<DisjointValueSync*>(
-          shared_memory2_id_, kSharedMemory2Offset, sizeof(*disjoint_sync));
-  manager_->SetDisjointSync(shared_memory2_id_, kSharedMemory2Offset);
+      decoder_->GetSharedMemoryAs<DisjointValueSync*>(kSharedMemory2Id,
+                                                      kSharedMemory2Offset,
+                                                      sizeof(*disjoint_sync));
+  manager_->SetDisjointSync(kSharedMemory2Id, kSharedMemory2Offset);
 
   const uint32_t current_disjoint_value = disjoint_sync->GetDisjointCount();
   ASSERT_EQ(0u, current_disjoint_value);
@@ -864,7 +905,7 @@ TEST_F(QueryManagerManualSetupTest, DisjointContinualTest) {
   const base::subtle::Atomic32 kSubmitCount = 123;
 
   QueryManager::Query* query = manager_->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
@@ -891,12 +932,12 @@ TEST_F(QueryManagerTest, GetErrorQuery) {
       new QueryManager(decoder_.get(), feature_info.get()));
 
   QueryManager::Query* query = manager->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   // Setup shared memory like client would.
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
-      shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
   ASSERT_TRUE(sync != NULL);
   sync->Reset();
 
@@ -935,7 +976,7 @@ TEST_F(QueryManagerTest, OcclusionQuery) {
       .WillOnce(SetArgPointee<1>(kService1Id))
       .RetiresOnSaturation();
   QueryManager::Query* query = manager->CreateQuery(
-      kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset);
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
   ASSERT_TRUE(query != NULL);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))

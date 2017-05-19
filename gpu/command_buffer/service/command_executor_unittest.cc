@@ -23,6 +23,24 @@ using testing::Return;
 using testing::Sequence;
 using testing::SetArgPointee;
 
+namespace {
+
+class FakeCommandBufferServiceBase : public MockCommandBufferBase {
+ public:
+  FakeCommandBufferServiceBase() {}
+  ~FakeCommandBufferServiceBase() override {}
+
+  void Flush(int32_t put_offset) override { FlushHelper(put_offset); }
+  void OrderingBarrier(int32_t put_offset) override { FlushHelper(put_offset); }
+  void DestroyTransferBuffer(int32_t id) override {
+    DestroyTransferBufferHelper(id);
+  }
+
+  void OnFlush() override {}
+};
+
+}  // anonymous namespace
+
 // Test fixture for CommandExecutor test - Creates a mock AsyncAPIInterface, and
 // a fixed size memory buffer. Also provides a simple API to create a
 // CommandExecutor.
@@ -57,20 +75,20 @@ class CommandExecutorTest : public testing::Test {
   }
   CommandExecutor* executor() { return executor_.get(); }
 
-  int32_t GetGet() { return command_buffer_->GetState().get_offset; }
+  int32_t GetGet() { return command_buffer_->GetLastState().get_offset; }
   int32_t GetPut() { return command_buffer_->GetPutOffset(); }
 
   error::Error SetPutAndProcessAllCommands(int32_t put) {
-    command_buffer_->FlushHelper(put);
+    command_buffer_->Flush(put);
     EXPECT_EQ(put, GetPut());
     executor_->PutChanged();
-    return command_buffer_->GetState().error;
+    return command_buffer_->GetLastState().error;
   }
 
   int32_t SetNewGetBuffer(size_t size) {
     int32_t id = 0;
-    buffer_ = command_buffer_->CreateTransferBufferHelper(size, &id);
-    command_buffer_->SetGetBufferHelper(id);
+    buffer_ = command_buffer_->CreateTransferBuffer(size, &id);
+    command_buffer_->SetGetBuffer(id);
     executor_->SetGetBuffer(id);
     return id;
   }
@@ -289,6 +307,22 @@ TEST_F(CommandExecutorTest, SetBuffer) {
   // The put and get should have reset to 0.
   EXPECT_EQ(0, GetGet());
   EXPECT_EQ(0, GetPut());
+}
+
+TEST_F(CommandExecutorTest, CanGetSharedMemory) {
+  MakeExecutor(3);
+  int32_t id = 0;
+  size_t size = 0x1234;
+  scoped_refptr<Buffer> buffer =
+      command_buffer()->CreateTransferBuffer(size, &id);
+
+  EXPECT_EQ(buffer, executor()->GetSharedMemoryBuffer(id));
+}
+
+TEST_F(CommandExecutorTest, SetTokenForwardsToCommandBuffer) {
+  MakeExecutor(3);
+  executor()->set_token(7);
+  EXPECT_EQ(7, command_buffer()->GetLastState().token);
 }
 
 }  // namespace gpu

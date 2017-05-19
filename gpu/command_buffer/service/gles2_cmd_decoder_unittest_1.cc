@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
+#include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -53,8 +54,9 @@ template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GenerateMipmap, 0>(
     bool valid) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      kSharedMemoryId, kSharedMemoryOffset);
   if (valid) {
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
@@ -110,8 +112,9 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::CopyTexSubImage2D, 0>(
     bool valid) {
   if (valid) {
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-    DoTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, 16, 16, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, shared_memory_id_, kSharedMemoryOffset);
+    DoTexImage2D(
+        GL_TEXTURE_2D, 2, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        kSharedMemoryId, kSharedMemoryOffset);
   }
 };
 
