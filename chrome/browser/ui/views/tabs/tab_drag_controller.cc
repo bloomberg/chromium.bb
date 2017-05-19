@@ -44,7 +44,6 @@
 #include "ash/shell.h"                   // nogncheck
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"  // nogncheck
 #include "ash/wm/window_state.h"  // nogncheck
-#include "ash/wm/window_state_aura.h"  // nogncheck
 #include "ui/wm/core/coordinate_conversion.h"  // nogncheck
 #endif
 
