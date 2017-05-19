@@ -793,8 +793,7 @@ bool AutofillMetrics::LogUkm(
     const GURL& url,
     const std::string& ukm_entry_name,
     const std::vector<std::pair<const char*, int>>& metrics) {
-  if (!IsUkmLoggingEnabled() || !ukm_service || !url.is_valid() ||
-      metrics.empty()) {
+  if (!ukm_service || !url.is_valid() || metrics.empty()) {
     return false;
   }
 
@@ -1035,7 +1034,7 @@ AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
     const GURL& url) {
-  if (!IsUkmLoggingEnabled() || ukm_service_ == nullptr)
+  if (ukm_service_ == nullptr)
     return;
 
   url_ = url;
@@ -1158,7 +1157,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::UpdateSourceURL(
 }
 
 bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
-  return IsUkmLoggingEnabled() && ukm_service_ && url_.is_valid();
+  return ukm_service_ && url_.is_valid();
 }
 
 int64_t
