@@ -41,7 +41,8 @@ suite('selectItem', function() {
     action = bookmarks.actions.selectItem('4', false, true, store.data);
 
     assertDeepEquals(['2', '8', '4'], action.items);
-    assertDeepEquals('4', action.anchor);
+    // Shift-selection doesn't change anchor.
+    assertDeepEquals('2', action.anchor);
   });
 
   test('can shift-select in search results', function() {

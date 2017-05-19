@@ -149,6 +149,7 @@ cr.define('bookmarks.actions', function() {
   function selectItem(id, add, range, state) {
     var anchor = state.selection.anchor;
     var toSelect = [];
+    var newAnchor = id;
 
     // TODO(tsergeant): Make it possible to deselect items by ctrl-clicking them
     // again.
@@ -159,6 +160,10 @@ cr.define('bookmarks.actions', function() {
       var anchorIndex = displayedList.indexOf(anchor);
       if (anchorIndex == -1)
         anchorIndex = selectedIndex;
+
+      // When performing a range selection, don't change the anchor from what
+      // was used in this selection.
+      newAnchor = displayedList[anchorIndex];
 
       var startIndex = Math.min(anchorIndex, selectedIndex);
       var endIndex = Math.max(anchorIndex, selectedIndex);
@@ -172,7 +177,7 @@ cr.define('bookmarks.actions', function() {
     return {
       name: 'select-items',
       add: add,
-      anchor: id,
+      anchor: newAnchor,
       items: toSelect,
     };
   }

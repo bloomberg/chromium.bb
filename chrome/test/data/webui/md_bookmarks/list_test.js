@@ -51,7 +51,7 @@ suite('<bookmarks-list>', function() {
 
     assertEquals('select-items', store.lastAction.name);
     assertTrue(store.lastAction.add);
-    assertEquals('5', store.lastAction.anchor);
+    assertEquals('1', store.lastAction.anchor);
     assertDeepEquals(['1', '3', '5'], store.lastAction.items);
   });
 
