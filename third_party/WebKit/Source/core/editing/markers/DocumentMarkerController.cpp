@@ -608,9 +608,10 @@ void DocumentMarkerController::RepaintMarkers(
   }
 }
 
-bool DocumentMarkerController::SetMarkersActive(const EphemeralRange& range,
-                                                bool active) {
-  if (!PossiblyHasMarkers(DocumentMarker::AllMarkers()))
+bool DocumentMarkerController::SetTextMatchMarkersActive(
+    const EphemeralRange& range,
+    bool active) {
+  if (!PossiblyHasMarkers(DocumentMarker::kTextMatch))
     return false;
 
   DCHECK(!markers_.IsEmpty());
@@ -629,15 +630,16 @@ bool DocumentMarkerController::SetMarkersActive(const EphemeralRange& range,
   for (Node& node : range.Nodes()) {
     int start_offset = node == start_container ? container_start_offset : 0;
     int end_offset = node == end_container ? container_end_offset : INT_MAX;
-    marker_found |= SetMarkersActive(&node, start_offset, end_offset, active);
+    marker_found |=
+        SetTextMatchMarkersActive(&node, start_offset, end_offset, active);
   }
   return marker_found;
 }
 
-bool DocumentMarkerController::SetMarkersActive(Node* node,
-                                                unsigned start_offset,
-                                                unsigned end_offset,
-                                                bool active) {
+bool DocumentMarkerController::SetTextMatchMarkersActive(Node* node,
+                                                         unsigned start_offset,
+                                                         unsigned end_offset,
+                                                         bool active) {
   MarkerLists* markers = markers_.at(node);
   if (!markers)
     return false;

@@ -228,13 +228,13 @@ TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
   Position end_b_element = ToPositionInDOMTree(ephemeral_range.EndPosition());
   const EphemeralRange range(start_b_element, end_b_element);
   // Try to make active a marker that doesn't exist.
-  EXPECT_FALSE(MarkerController().SetMarkersActive(range, true));
+  EXPECT_FALSE(MarkerController().SetTextMatchMarkersActive(range, true));
 
   // Add a marker and try it once more.
   MarkerController().AddTextMatchMarker(range,
                                         DocumentMarker::MatchStatus::kInactive);
   EXPECT_EQ(1u, MarkerController().Markers().size());
-  EXPECT_TRUE(MarkerController().SetMarkersActive(range, true));
+  EXPECT_TRUE(MarkerController().SetTextMatchMarkersActive(range, true));
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveStartOfMarker) {
