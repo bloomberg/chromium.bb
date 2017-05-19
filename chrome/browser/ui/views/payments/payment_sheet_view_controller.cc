@@ -347,40 +347,6 @@ class PaymentSheetRowBuilder {
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetRowBuilder);
 };
 
-std::unique_ptr<views::View> CreateCheckingSpinnerView() {
-  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
-
-  std::unique_ptr<views::Throbber> throbber =
-      base::MakeUnique<views::Throbber>();
-  throbber->Start();
-  std::unique_ptr<views::GridLayout> layout =
-      base::MakeUnique<views::GridLayout>(container.get());
-  views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
-  throbber_columns->AddPaddingColumn(0.5, 0);
-  throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
-                              views::GridLayout::Alignment::TRAILING, 0,
-                              views::GridLayout::SizeType::USE_PREF, 0, 0);
-  throbber_columns->AddPaddingColumn(0.5, 0);
-
-  views::ColumnSet* label_columns = layout->AddColumnSet(1);
-  label_columns->AddPaddingColumn(0.5, 0);
-  label_columns->AddColumn(views::GridLayout::Alignment::CENTER,
-                           views::GridLayout::Alignment::LEADING, 0,
-                           views::GridLayout::SizeType::USE_PREF, 0, 0);
-  label_columns->AddPaddingColumn(0.5, 0);
-
-  layout->StartRow(0.5, 0);
-  layout->AddView(throbber.release());
-
-  layout->StartRow(0.5, 1);
-  layout->AddView(new views::Label(
-      l10n_util::GetStringUTF16(IDS_PAYMENTS_CHECKING_OPTION)));
-
-  container->SetLayoutManager(layout.release());
-
-  return container;
-}
-
 }  // namespace
 
 PaymentSheetViewController::PaymentSheetViewController(
@@ -389,8 +355,7 @@ PaymentSheetViewController::PaymentSheetViewController(
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog),
       pay_button_(nullptr),
-      widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()),
-      current_update_reason_(PaymentRequestSpec::UpdateReason::NONE) {
+      widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {
   spec->AddObserver(this);
   state->AddObserver(this);
 }
@@ -400,14 +365,7 @@ PaymentSheetViewController::~PaymentSheetViewController() {
   state()->RemoveObserver(this);
 }
 
-void PaymentSheetViewController::OnStartUpdating(
-    PaymentRequestSpec::UpdateReason reason) {
-  current_update_reason_ = reason;
-  UpdateContentView();
-}
-
 void PaymentSheetViewController::OnSpecUpdated() {
-  current_update_reason_ = PaymentRequestSpec::UpdateReason::NONE;
   UpdateContentView();
 }
 
@@ -653,11 +611,6 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateShippingSectionContent() {
-  if (current_update_reason_ ==
-      PaymentRequestSpec::UpdateReason::SHIPPING_ADDRESS) {
-    return CreateCheckingSpinnerView();
-  }
-
   autofill::AutofillProfile* profile = state()->selected_shipping_profile();
   if (!profile)
     return base::MakeUnique<views::Label>(base::string16());
@@ -905,13 +858,10 @@ PaymentSheetViewController::CreateShippingOptionRow() {
     if (selected_option) {
       // 1.2 Show the selected shipping option.
       std::unique_ptr<views::View> option_row_content =
-          current_update_reason_ ==
-                  PaymentRequestSpec::UpdateReason::SHIPPING_OPTION
-              ? CreateCheckingSpinnerView()
-              : CreateShippingOptionLabel(
-                    selected_option,
-                    spec()->GetFormattedCurrencyAmount(selected_option->amount),
-                    /*emphasize_label=*/false);
+          CreateShippingOptionLabel(
+              selected_option,
+              spec()->GetFormattedCurrencyAmount(selected_option->amount),
+              /*emphasize_label=*/false);
       return builder.Id(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)
           .CreateWithChevron(std::move(option_row_content), nullptr);
     } else {
