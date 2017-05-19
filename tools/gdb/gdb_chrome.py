@@ -14,6 +14,12 @@ Add this to your gdb by amending your ~/.gdbinit as follows:
 Use
   (gdb) p /r any_variable
 to print |any_variable| without using any printers.
+
+To interactively type Python for development of the printers:
+  (gdb) python foo = gdb.parse_and_eval('bar')
+to put the C++ value 'bar' in the current scope into a Python variable 'foo'.
+Then you can interact with that variable:
+  (gdb) python print foo['impl_']
 """
 
 import datetime
@@ -238,6 +244,20 @@ class ManualConstructorPrinter(object):
     def to_string(self):
         return self.val['space_'].cast(self.val.type.template_argument(0))
 pp_set.add_printer('base::ManualConstructor', '^base::ManualConstructor<.*>$', ManualConstructorPrinter)
+
+
+class FlatMapPrinter(object):
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        # It would be nice to match the output of std::map which is a little
+        # nicer than printing the vector of pairs. But iterating over it in
+        # Python is much more complicated and this output is reasonable.
+        # (Without this printer, a flat_map will output 7 lines of internal
+        # template goop before the vector contents.)
+        return 'base::flat_map with ' + str(self.val['impl_']['body_'])
+pp_set.add_printer('base::flat_map', '^base::flat_map<.*>$', FlatMapPrinter)
 
 
 class ValuePrinter(object):
