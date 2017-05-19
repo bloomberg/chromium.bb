@@ -933,7 +933,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  int sub8x8_inter = (bw < 4) || (bh < 4);
+  int sub8x8_inter = bsize < BLOCK_8X8 && plane;
   const int row_start = (block_size_high[bsize] == 4) ? -1 : 0;
   const int col_start = (block_size_wide[bsize] == 4) ? -1 : 0;
 
