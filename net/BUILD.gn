@@ -3322,6 +3322,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/parse_certificate_unittest/extensions_empty_sequence.pem",
     "data/parse_certificate_unittest/extensions_not_sequence.pem",
     "data/parse_certificate_unittest/extensions_real.pem",
+    "data/parse_certificate_unittest/inhibit_any_policy.pem",
     "data/parse_certificate_unittest/key_usage.pem",
     "data/parse_certificate_unittest/policies.pem",
     "data/parse_certificate_unittest/policy_constraints_empty.pem",
