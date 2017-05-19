@@ -23,6 +23,7 @@ enum RemoteCallResultStatus {
 // Threat types as per the Java code.
 // This must match those in GMS's SafeBrowsingThreat.java.
 enum JavaThreatTypes {
+  JAVA_THREAT_TYPE_UNWANTED_SOFTWARE = 3,
   JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION = 4,
   JAVA_THREAT_TYPE_SOCIAL_ENGINEERING = 5,
   JAVA_THREAT_TYPE_SUBRESOURCE_FILTER = 13,
