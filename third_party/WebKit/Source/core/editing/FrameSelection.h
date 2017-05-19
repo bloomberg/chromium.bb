@@ -51,7 +51,6 @@ class LocalFrame;
 class FrameCaret;
 class GranularityStrategy;
 class GraphicsContext;
-class HTMLFormElement;
 class SelectionEditor;
 class LayoutSelection;
 class TextIteratorBehavior;
@@ -233,8 +232,6 @@ class CORE_EXPORT FrameSelection final
   // The bounds are clipped to the viewport as this is what callers expect.
   LayoutRect Bounds() const;
   LayoutRect UnclippedBounds() const;
-
-  HTMLFormElement* CurrentForm() const;
 
   // TODO(tkent): This function has a bug that scrolling doesn't work well in
   // a case of RangeSelection. crbug.com/443061
