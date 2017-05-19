@@ -24,16 +24,6 @@
 namespace blink {
 namespace {
 
-// Adjusts {@code offset} to the clearance line.
-void AdjustToClearance(const WTF::Optional<LayoutUnit>& clearance_offset,
-                       NGLogicalOffset* offset) {
-  DCHECK(offset);
-  if (clearance_offset) {
-    offset->block_offset =
-        std::max(clearance_offset.value(), offset->block_offset);
-  }
-}
-
 // Returns if a child may be affected by its clear property. I.e. it will
 // actually clear a float.
 bool ClearanceMayAffectLayout(
@@ -654,8 +644,8 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   }
 
   space_builder
-      .SetClearanceOffset(
-          GetClearanceOffset(constraint_space_->Exclusions(), child_style))
+      .SetClearanceOffset(GetClearanceOffset(constraint_space_->Exclusions(),
+                                             child_style.Clear()))
       .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
       .SetTextDirection(child_style.Direction());
 

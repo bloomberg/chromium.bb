@@ -270,7 +270,6 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip 
 
 ### external/wpt/css/CSS2/floats-clear
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-001.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-002.xht [ Skip ]
@@ -282,11 +281,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-appl
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-008.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-012.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-015.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-002.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-003.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-004.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-005.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-006.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-001a.xht [ Skip ]
@@ -631,7 +625,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containin
 #### external/wpt/css/CSS2/normal-flow
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-002.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-contexts-011.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-contexts-015.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Skip ]
@@ -1019,9 +1012,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-overflow-hidden-contai
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-overhangs-root.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reinsertion-failure.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it-2.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it-3.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-when-adjacent-to-line-breaks-2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-when-adjacent-to-line-breaks.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent-rl.html [ Skip ]
