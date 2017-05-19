@@ -1187,9 +1187,7 @@ public class AwSettingsTest extends AwTestBase {
                     + "    function tryOpenWindow() {"
                     + "        var newWindow = window.open('about:blank');"
                     + "        if (newWindow) {"
-                    + "          newWindow.document.write("
-                    + "             '<html><head><title>" + POPUP_ENABLED
-                    + "</title></head></html>');"
+                    + "          document.title = '" + POPUP_ENABLED + "';"
                     + "        } else {"
                     + "          document.title = '" + POPUP_BLOCKED + "';"
                     + "        }"
@@ -2243,7 +2241,18 @@ public class AwSettingsTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptPopupsWithTwoViews() throws Throwable {
-        ViewPair views = createViews();
+        final ViewPair views = createViews();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                AwSettings awSettings = views.getContents0().getSettings();
+                awSettings.setSupportMultipleWindows(true);
+                awSettings = views.getContents1().getSettings();
+                awSettings.setSupportMultipleWindows(true);
+            }
+        });
+        views.getClient0().getOnCreateWindowHelper().setReturnValue(true);
+        views.getClient1().getOnCreateWindowHelper().setReturnValue(true);
         runPerViewSettingsTest(
                 new AwSettingsJavaScriptPopupsTestHelper(views.getContainer0(), views.getClient0()),
                 new AwSettingsJavaScriptPopupsTestHelper(

@@ -2336,9 +2336,7 @@ void TestRunner::DidCloseChooser() {
 }
 
 void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  delegate_->Preferences()->java_script_can_open_windows_automatically =
-      !block_popups;
-  delegate_->ApplyPreferences();
+  delegate_->SetPopupBlockingEnabled(block_popups);
 }
 
 void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {

@@ -2620,8 +2620,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->default_encoding = prefs->GetString(prefs::kDefaultCharset);
 
-  web_prefs->javascript_can_open_windows_automatically =
-      prefs->GetBoolean(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
   web_prefs->dom_paste_enabled =
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
   web_prefs->tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);

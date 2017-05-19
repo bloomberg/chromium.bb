@@ -112,3 +112,5 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplyBluetoothManualChooserEvents,
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_SendBluetoothManualChooserEvent,
                     std::string /* event */,
                     std::string /* argument */)
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetPopupBlockingEnabled,
+                    bool /* block_popups */)

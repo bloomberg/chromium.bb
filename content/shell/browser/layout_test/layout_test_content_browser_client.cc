@@ -54,6 +54,11 @@ LayoutTestContentBrowserClient::GetLayoutTestBrowserContext() {
   return static_cast<LayoutTestBrowserContext*>(browser_context());
 }
 
+void LayoutTestContentBrowserClient::SetPopupBlockingEnabled(
+    bool block_popups) {
+  block_popups_ = block_popups;
+}
+
 LayoutTestNotificationManager*
 LayoutTestContentBrowserClient::GetLayoutTestNotificationManager() {
   return layout_test_notification_manager_.get();
@@ -147,6 +152,24 @@ void LayoutTestContentBrowserClient::GetQuotaSettings(
 PlatformNotificationService*
 LayoutTestContentBrowserClient::GetPlatformNotificationService() {
   return layout_test_notification_manager_.get();
+}
+
+bool LayoutTestContentBrowserClient::CanCreateWindow(
+    content::RenderFrameHost* opener,
+    const GURL& opener_url,
+    const GURL& opener_top_level_frame_url,
+    const GURL& source_origin,
+    content::mojom::WindowContainerType container_type,
+    const GURL& target_url,
+    const content::Referrer& referrer,
+    const std::string& frame_name,
+    WindowOpenDisposition disposition,
+    const blink::mojom::WindowFeatures& features,
+    bool user_gesture,
+    bool opener_suppressed,
+    bool* no_javascript_access) {
+  *no_javascript_access = false;
+  return !block_popups_ || user_gesture;
 }
 
 }  // namespace content

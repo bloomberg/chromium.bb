@@ -107,7 +107,6 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void SetInlineTextBoxAccessibilityEnabled(bool) override;
   void SetInertVisualViewport(bool) override;
   void SetJavaScriptCanAccessClipboard(bool) override;
-  void SetJavaScriptCanOpenWindowsAutomatically(bool) override;
   void SetJavaScriptEnabled(bool) override;
   void SetLoadsImagesAutomatically(bool) override;
   void SetLoadWithOverviewMode(bool) override;
