@@ -3292,6 +3292,8 @@ WebSize WebViewImpl::ContentsPreferredMinimumSize() {
       !document->documentElement()->GetLayoutBox())
     return WebSize();
 
+  // Needed for computing MinPreferredWidth.
+  FontCachePurgePreventer fontCachePurgePreventer;
   int width_scaled = document->GetLayoutViewItem()
                          .MinPreferredLogicalWidth()
                          .Round();  // Already accounts for zoom.
