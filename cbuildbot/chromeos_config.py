@@ -2215,6 +2215,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_experimental_boards = frozenset([
+      'caroline',
       'cave',
       'cobblepot',
       'fizz',
@@ -2258,6 +2259,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_hwtest_boards = frozenset([
+      'caroline',
       'cave',
       'elm',
       'kevin',
@@ -2289,7 +2291,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       ('winky',         'kip'),
       ('elm',           None),
       ('kevin',         None),
-      ('cave',          None),
+      ('cave',          'caroline'),
       ('link',          None),
   ])
 
@@ -2946,6 +2948,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      'caroline',
       'scarlet',
   ])
 
