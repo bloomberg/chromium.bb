@@ -122,12 +122,13 @@ const char kForceTabletModeClamshell[] = "Clamshell";
 const char kForceTabletModeAuto[] = "Auto (default)";
 
 //  Print Preview features
-
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 const char kPrintPdfAsImageName[] = "Print Pdf as Image";
 
 const char kPrintPdfAsImageDescription[] =
     "If enabled, an option to print PDF files as images will be available "
     "in print preview.";
+#endif
 
 #if !defined(DISABLE_NACL)
 
