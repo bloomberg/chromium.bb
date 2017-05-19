@@ -1537,6 +1537,26 @@
             ]
         }
     ],
+    "NTPCondensedLayout": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "condensed_tile_layout_for_small_screens_enabled": "true"
+                    },
+                    "enable_features": [
+                        "NTPCondensedLayout",
+                        "NTPCondensedTileLayout",
+                        "NTPShowGoogleGInOmnibox"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPLaunchAfterInactivity": [
         {
             "platforms": [

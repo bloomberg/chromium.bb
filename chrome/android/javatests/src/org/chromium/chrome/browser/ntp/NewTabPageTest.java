@@ -390,6 +390,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("disable-features=NTPCondensedLayout")
     public void testSetSearchProviderHasLogo() throws Throwable {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
@@ -434,6 +435,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("disable-features=NTPCondensedLayout")
     public void testPlaceholder() {
         final NewTabPageView ntpView = mNtp.getNewTabPageView();
         final View logoView = ntpView.findViewById(R.id.search_provider_logo);
