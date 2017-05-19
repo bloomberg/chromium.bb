@@ -92,8 +92,8 @@ class CommandBufferServiceLocked : public CommandBufferService {
 };
 
 // Test fixture for CommandBufferHelper test - Creates a CommandBufferHelper,
-// using a CommandBufferServiceLocked with a mock AsyncAPIInterface for its
-// interface (calling it directly, not through the RPC mechanism).
+// using a CommandBufferEngine with a mock AsyncAPIInterface for its interface
+// (calling it directly, not through the RPC mechanism).
 class CommandBufferHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -115,7 +115,7 @@ class CommandBufferHelperTest : public testing::Test {
     command_buffer_->SetGetBufferChangeCallback(base::Bind(
         &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
 
-    api_mock_->set_command_buffer_service(command_buffer_.get());
+    api_mock_->set_engine(executor_.get());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);

@@ -325,7 +325,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                 service_->discardable_manager());
 
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
-  decoder_->set_command_buffer_service(command_buffer.get());
 
   executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get(),
                                       decoder_.get()));
@@ -333,6 +332,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_ = std::move(command_buffer);
 
+  decoder_->set_engine(executor_.get());
 
   if (!surface_.get()) {
     if (params.is_offscreen) {

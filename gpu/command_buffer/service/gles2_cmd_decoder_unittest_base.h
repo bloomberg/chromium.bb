@@ -11,10 +11,10 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
-#include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_context_mock.h"
@@ -72,7 +72,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   }
 
   void ClearSharedMemory() {
-    memset(shared_memory_base_, kInitialMemoryValue, kSharedBufferSize);
+    engine_->ClearSharedMemory();
   }
 
   void SetUp() override;
@@ -484,7 +484,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   bool IsObjectHelper(GLuint client_id) {
     Result* result = static_cast<Result*>(shared_memory_address_);
     Command cmd;
-    cmd.Init(client_id, shared_memory_id_, kSharedMemoryOffset);
+    cmd.Init(client_id, kSharedMemoryId, kSharedMemoryOffset);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     bool isObject = static_cast<bool>(*result);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -529,10 +529,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLuint kServiceDefaultTransformFeedbackId = 312;
   static const GLuint kServiceSyncId = 313;
 
+  static const int32_t kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;
-  static const int32_t kInvalidSharedMemoryId =
-      FakeCommandBufferServiceBase::kTransferBufferBaseId - 1;
+  static const int32_t kInvalidSharedMemoryId = 402;
   static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
   static const uint32_t kInitialResult = 0xBDBDBDBDu;
   static const uint8_t kInitialMemoryValue = 0xBDu;
@@ -667,7 +667,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   GLuint client_transformfeedback_id_;
   GLuint client_sync_id_;
 
-  int32_t shared_memory_id_;
+  uint32_t shared_memory_id_;
   uint32_t shared_memory_offset_;
   void* shared_memory_address_;
   void* shared_memory_base_;
@@ -704,6 +704,25 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   int shader_language_version_;
 
  private:
+  class MockCommandBufferEngine : public CommandBufferEngine {
+   public:
+    MockCommandBufferEngine();
+
+    ~MockCommandBufferEngine() override;
+
+    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32_t shm_id) override;
+
+    void ClearSharedMemory() {
+      memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
+    }
+
+    void set_token(int32_t token) override;
+
+   private:
+    scoped_refptr<gpu::Buffer> valid_buffer_;
+    scoped_refptr<gpu::Buffer> invalid_buffer_;
+  };
+
   // MockGLStates is used to track GL states and emulate driver
   // behaviors on top of MockGLInterface.
   class MockGLStates {
@@ -745,7 +764,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void SetupInitStateManualExpectations(bool es3_capable);
   void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
 
-  std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
+  std::unique_ptr<::testing::StrictMock<MockCommandBufferEngine>> engine_;
   GpuPreferences gpu_preferences_;
   ServiceDiscardableManager discardable_manager_;
   scoped_refptr<ContextGroup> group_;

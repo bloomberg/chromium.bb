@@ -19,13 +19,8 @@ namespace gpu {
 
 class TransferBufferManager;
 
-class GPU_EXPORT CommandBufferServiceBase {
+class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
  public:
-  virtual ~CommandBufferServiceBase() {}
-
-  // Gets the current state of the service.
-  virtual CommandBuffer::State GetState() = 0;
-
   // Sets the current get offset. This can be called from any thread.
   virtual void SetGetOffset(int32_t get_offset) = 0;
 
@@ -53,8 +48,7 @@ class GPU_EXPORT CommandBufferServiceBase {
 
 // An object that implements a shared memory command buffer and a synchronous
 // API to manage the put and get pointers.
-class GPU_EXPORT CommandBufferService : public CommandBuffer,
-                                        public CommandBufferServiceBase {
+class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
  public:
   typedef base::Callback<bool(int32_t)> GetBufferChangedCallback;
   explicit CommandBufferService(TransferBufferManager* transfer_buffer_manager);
@@ -73,7 +67,6 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer,
   void DestroyTransferBuffer(int32_t id) override;
 
   // CommandBufferServiceBase implementation:
-  State GetState() override;
   void SetGetOffset(int32_t get_offset) override;
   void SetReleaseCount(uint64_t release_count) override;
   scoped_refptr<Buffer> GetTransferBuffer(int32_t id) override;

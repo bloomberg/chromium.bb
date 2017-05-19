@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
@@ -591,8 +592,16 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
   // access
   if (init) {
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-    DoTexImage2D(GL_TEXTURE_2D, 0, kFormat, kWidth, kHeight, 0, kFormat,
-                 GL_UNSIGNED_BYTE, shared_memory_id_, kSharedMemoryOffset);
+    DoTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 kFormat,
+                 kWidth,
+                 kHeight,
+                 0,
+                 kFormat,
+                 GL_UNSIGNED_BYTE,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
     DoBindFramebuffer(
         GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
     DoFramebufferTexture2D(GL_FRAMEBUFFER,
@@ -611,9 +620,9 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
       kWidth, kHeight, kBytesPerPixel, kSrcPixels, kSrcPixels, kPackAlignment);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
   void* dest = &result[1];
 
@@ -716,9 +725,9 @@ TEST_P(GLES2DecoderTest, ReadPixels) {
       kWidth, kHeight, kBytesPerPixel, kSrcPixels, kSrcPixels, kPackAlignment);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
   void* dest = &result[1];
   EXPECT_CALL(*gl_, GetError())
@@ -779,9 +788,9 @@ TEST_P(GLES3DecoderTest, ReadPixelsBufferBound) {
   EXPECT_CALL(*gl_, ReadPixels(_, _, _, _, _, _, _)).Times(0);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
 
   DoBindBuffer(GL_PIXEL_PACK_BUFFER, client_buffer_id_, kServiceBufferId);
@@ -845,9 +854,9 @@ TEST_P(GLES3DecoderTest, ReadPixelsPixelPackBufferMapped) {
 
   std::vector<int8_t> mapped_data(size);
 
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = shared_memory_id_;
+  uint32_t data_shm_id = kSharedMemoryId;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
   EXPECT_CALL(*gl_,
@@ -1103,9 +1112,9 @@ TEST_P(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
                          kPackAlignment);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
   void* dest = &result[1];
   EXPECT_CALL(*gl_, GetError())
@@ -1169,9 +1178,9 @@ TEST_P(GLES2DecoderTest, ReadPixelsOutOfRange) {
 TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   EXPECT_CALL(*gl_, ReadPixels(_, _, _, _, _, _, _)).Times(0);
   ReadPixels cmd;
@@ -1283,9 +1292,9 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   Result* result = GetSharedMemoryAs<Result*>();
   const GLsizei kWidth = 4;
   const GLsizei kHeight = 4;
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
 
   EXPECT_CALL(*gl_, GetError())
@@ -1393,9 +1402,9 @@ TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsync) {
   Result* result = GetSharedMemoryAs<Result*>();
   const GLsizei kWidth = 4;
   const GLsizei kHeight = 4;
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   char* pixels = reinterpret_cast<char*>(result + 1);
 
@@ -1422,9 +1431,9 @@ TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsyncModifyCommand) {
   Result* result = GetSharedMemoryAs<Result*>();
   const GLsizei kWidth = 4;
   const GLsizei kHeight = 4;
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   char* pixels = reinterpret_cast<char*>(result + 1);
 
@@ -1451,9 +1460,9 @@ TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsyncChangePackAlignment) {
   Result* result = GetSharedMemoryAs<Result*>();
   const GLsizei kWidth = 1;
   const GLsizei kHeight = 4;
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   char* pixels = reinterpret_cast<char*>(result + 1);
 
@@ -2468,9 +2477,9 @@ TEST_P(GLES2DecoderTest, ReadPixelsGLError) {
   GLsizei height = 4;
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -2601,9 +2610,9 @@ TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
       .RetiresOnSaturation();
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   ReadPixels cmd;
   cmd.Init(0,
@@ -2641,8 +2650,16 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DValidInternalFormat) {
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, 0, format,
-               type, shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               internal_format,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -2699,8 +2716,16 @@ TEST_P(GLES3DecoderManualInitTest, CopyTexImage2DValidInternalFormat_FloatEXT) {
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, GL_RGBA16F, width, height, 0, format, type,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               GL_RGBA16F,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -2756,8 +2781,16 @@ TEST_P(GLES3DecoderManualInitTest,
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, GL_RGBA8, width, height, 0, format, type,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               GL_RGBA8,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -2800,8 +2833,16 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat) {
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, GL_RG8, width, height, 0, format, type,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               GL_RG8,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -2841,8 +2882,16 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_Float) {
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, GL_RGBA8, width, height, 0, format, type,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               GL_RGBA8,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -2885,8 +2934,16 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_Integer) {
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, GL_RG8UI, width, height, 0, format, type,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               GL_RG8UI,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -2929,8 +2986,16 @@ TEST_P(GLES3DecoderTest, CopyTexImage2DInvalidInternalFormat_sRGB) {
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
   DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, level, GL_RGB, width, height, 0, format, type,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(GL_TEXTURE_2D,
+               level,
+               GL_RGB,
+               width,
+               height,
+               0,
+               format,
+               type,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
@@ -3009,9 +3074,9 @@ TEST_P(GLES2DecoderManualInitTest,
       .RetiresOnSaturation();
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   ReadPixels cmd;
   cmd.Init(0,
@@ -3543,7 +3608,7 @@ TEST_P(GLES3DecoderTest, DiscardFramebufferEXTUseCorrectTarget) {
       .RetiresOnSaturation();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_ + 1, kServiceTextureId + 1);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               shared_memory_id_, kSharedMemoryOffset);
+               kSharedMemoryId, kSharedMemoryOffset);
   DoFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
                          GL_COLOR_ATTACHMENT0,
                          GL_TEXTURE_2D,
@@ -3670,8 +3735,9 @@ TEST_P(GLES2DecoderManualInitTest,
 TEST_P(GLES2DecoderTest, ImplementationReadColorFormatAndType) {
   ClearSharedMemory();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               shared_memory_id_, kSharedMemoryOffset);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      kSharedMemoryId, kSharedMemoryOffset);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoFramebufferTexture2D(GL_FRAMEBUFFER,
