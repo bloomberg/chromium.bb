@@ -2917,7 +2917,6 @@ interface IDBFactory
     method constructor
     method deleteDatabase
     method open
-    method webkitGetDatabaseNames
 interface IDBIndex
     attribute @@toStringTag
     getter keyPath

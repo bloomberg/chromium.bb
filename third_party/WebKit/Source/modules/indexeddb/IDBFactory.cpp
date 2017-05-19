@@ -63,30 +63,9 @@ static bool IsContextValid(ExecutionContext* context) {
   return true;
 }
 
-IDBRequest* IDBFactory::getDatabaseNames(ScriptState* script_state,
-                                         ExceptionState& exception_state) {
-  IDB_TRACE("IDBFactory::getDatabaseNames");
-  if (!IsContextValid(ExecutionContext::From(script_state)))
-    return nullptr;
-  if (!ExecutionContext::From(script_state)
-           ->GetSecurityOrigin()
-           ->CanAccessDatabase()) {
-    exception_state.ThrowSecurityError(
-        "access to the Indexed Database API is denied in this context.");
-    return nullptr;
-  }
-
+IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state) {
   IDBRequest* request =
       IDBRequest::Create(script_state, IDBAny::CreateNull(), nullptr);
-
-  if (!IndexedDBClient::From(ExecutionContext::From(script_state))
-           ->AllowIndexedDB(ExecutionContext::From(script_state),
-                            "Database Listing")) {
-    request->EnqueueResponse(
-        DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
-    return request;
-  }
-
   Platform::Current()->IdbFactory()->GetDatabaseNames(
       request->CreateWebCallbacks().release(),
       WebSecurityOrigin(
@@ -153,23 +132,6 @@ IDBOpenDBRequest* IDBFactory::open(ScriptState* script_state,
 IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* script_state,
                                              const String& name,
                                              ExceptionState& exception_state) {
-  return DeleteDatabaseInternal(script_state, name, exception_state,
-                                /*force_close=*/false);
-}
-
-IDBOpenDBRequest* IDBFactory::CloseConnectionsAndDeleteDatabase(
-    ScriptState* script_state,
-    const String& name,
-    ExceptionState& exception_state) {
-  return DeleteDatabaseInternal(script_state, name, exception_state,
-                                /*force_close=*/true);
-}
-
-IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
-    ScriptState* script_state,
-    const String& name,
-    ExceptionState& exception_state,
-    bool force_close) {
   IDB_TRACE("IDBFactory::deleteDatabase");
   IDBDatabase::RecordApiCallsHistogram(kIDBDeleteDatabaseCall);
   if (!IsContextValid(ExecutionContext::From(script_state)))
@@ -182,6 +144,18 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     return nullptr;
   }
 
+  return DeleteDatabaseInternal(script_state, name, /*force_close=*/false);
+}
+
+IDBOpenDBRequest* IDBFactory::CloseConnectionsAndDeleteDatabase(
+    ScriptState* script_state,
+    const String& name) {
+  return DeleteDatabaseInternal(script_state, name, /*force_close=*/true);
+}
+
+IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(ScriptState* script_state,
+                                                     const String& name,
+                                                     bool force_close) {
   IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
       script_state, nullptr, 0, IDBDatabaseMetadata::kDefaultVersion);
 

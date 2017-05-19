@@ -378,10 +378,6 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "for more details.",
           milestoneString(M62));
 
-    case UseCounter::kV8IDBFactory_WebkitGetDatabaseNames_Method:
-      return willBeRemoved("indexedDB.webkitGetDatabaseNames()", M60,
-                           "5725741740195840");
-
     case UseCounter::kVibrateWithoutUserGesture:
       return willBeRemoved(
           "A call to navigator.vibrate without user tap on the frame or any "
