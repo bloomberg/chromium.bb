@@ -462,18 +462,7 @@ void DocumentMarkerController::InvalidateRectsForMarkersInNode(
 void DocumentMarkerController::InvalidateRectsForAllMarkers() {
   for (auto& node_markers : markers_) {
     const Node& node = *node_markers.key;
-    for (auto& marker_list : *node_markers.value) {
-      if (!marker_list || marker_list->IsEmpty())
-        continue;
-
-      const HeapVector<Member<RenderedDocumentMarker>>& markers_in_list =
-          marker_list->GetMarkers();
-      for (DocumentMarker* marker : markers_in_list)
-        ToRenderedDocumentMarker(marker)->Invalidate();
-
-      if (markers_in_list.front()->GetType() == DocumentMarker::kTextMatch)
-        InvalidatePaintForTickmarks(node);
-    }
+    InvalidateRectsForMarkersInNode(node);
   }
 }
 
