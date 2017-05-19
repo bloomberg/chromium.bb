@@ -21254,6 +21254,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1956349722" label="disable-smooth-scrolling"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
+  <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
@@ -22160,6 +22161,7 @@ from previous Chrome versions.
   <int value="1359972809" label="enable-gesture-deletion"/>
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1361073386" label="ContentSuggestionsNotifications:enabled"/>
+  <int value="1363136936" label="VrCustomTabBrowsing:enabled"/>
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>

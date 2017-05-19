@@ -312,7 +312,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private static boolean activitySupportsVrBrowsing(Activity activity) {
-        return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity;
+        if (activity instanceof ChromeTabbedActivity) return true;
+        if (activity instanceof CustomTabActivity) {
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_CUSTOM_TAB_BROWSING);
+        }
+        return false;
     }
 
     /**

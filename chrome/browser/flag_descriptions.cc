@@ -587,12 +587,16 @@ const char kWebvrDescription[] =
     "Enabling this option allows web applications to access experimental "
     "Virtual Reality APIs.";
 
+#if BUILDFLAG(ENABLE_VR)
+
 const char kWebvrExperimentalRenderingName[] =
     "WebVR experimental rendering optimizations";
 
 const char kWebvrExperimentalRenderingDescription[] =
     "Enabling this option activates experimental rendering path "
     "optimizations for WebVR.";
+
+#endif  // BUILDFLAG(ENABLE_VR)
 
 const char kGamepadExtensionsName[] = "Gamepad Extensions";
 
@@ -2522,12 +2526,18 @@ const char kVibrateRequiresUserGestureDescription[] =
     "the frame or any embedded frame.";
 
 #if defined(OS_ANDROID)
-
+#if BUILDFLAG(ENABLE_VR)
 const char kEnableVrShellName[] = "Enable Chrome VR.";
 
 const char kEnableVrShellDescription[] =
     "Allow browsing with a VR headset if available for this device.";
 
+const char kVrCustomTabBrowsingName[] = "Enable Custom Tab browsing in VR.";
+
+const char kVrCustomTabBrowsingDescription[] =
+    "Allow browsing with a VR headset in a Custom Tab if available for this "
+    "device.";
+#endif  // BUILDFLAG(ENABLE_VR)
 #endif  // defined(OS_ANDROID)
 
 //  Web payments
