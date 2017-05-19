@@ -14,6 +14,8 @@ component("resource_coordinator_cpp") {
     "resource_coordinator_features.h",
     "resource_coordinator_interface.cc",
     "resource_coordinator_interface.h",
+    "tracing/chrome_trace_event_agent.cc",
+    "tracing/chrome_trace_event_agent.h",
   ]
 
   defines = [ "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_IMPLEMENTATION" ]
