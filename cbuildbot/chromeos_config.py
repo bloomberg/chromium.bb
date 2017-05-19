@@ -2750,7 +2750,9 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   hw_test_list = HWTestList(ge_build_config)
 
   _chrome_informational_hwtest_boards = frozenset([
+      'caroline',
       'peach_pit',
+      'reks',
       'tricky',
   ])
 
