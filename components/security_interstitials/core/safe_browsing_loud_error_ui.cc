@@ -13,14 +13,14 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace security_interstitials {
 namespace {
 
-// URL for the Help Center article on Safe Browsing warnings.
-const char kLearnMore[] =
-    "https://support.google.com/chrome/?p=cpn_safe_browsing";
+// URL for the Help Center
+const char kLearnMore[] = "https://support.google.com/chrome/";
 
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
@@ -165,6 +165,8 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
       controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
       GURL learn_more_url(kLearnMore);
+      learn_more_url = net::AppendQueryParameter(
+          learn_more_url, "p", get_help_center_article_link());
       learn_more_url =
           google_util::AppendGoogleLocaleParam(learn_more_url, app_locale());
       controller()->OpenUrlInCurrentTab(learn_more_url);
