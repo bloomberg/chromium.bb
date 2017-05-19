@@ -268,13 +268,6 @@ const struct av1_token av1_coef_encodings[ENTROPY_TOKENS] = {
 };
 #endif  // !CONFIG_EC_MULTISYMBOL
 
-struct tokenize_b_args {
-  const AV1_COMP *cpi;
-  ThreadData *td;
-  TOKENEXTRA **tp;
-  int this_rate;
-};
-
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {

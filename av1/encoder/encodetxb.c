@@ -373,12 +373,6 @@ int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   return cost;
 }
 
-typedef struct TxbParams {
-  const AV1_COMP *cpi;
-  ThreadData *td;
-  int rate;
-} TxbParams;
-
 int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
                                 const SCAN_ORDER *scan_order, int eob) {
   const int16_t *scan = scan_order->scan;
@@ -397,7 +391,7 @@ int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
 static void update_txb_context(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                void *arg) {
-  TxbParams *const args = arg;
+  struct tokenize_b_args *const args = arg;
   const AV1_COMP *cpi = args->cpi;
   const AV1_COMMON *cm = &cpi->common;
   ThreadData *const td = args->td;
@@ -421,7 +415,7 @@ static void update_txb_context(int plane, int block, int blk_row, int blk_col,
 static void update_and_record_txb_context(int plane, int block, int blk_row,
                                           int blk_col, BLOCK_SIZE plane_bsize,
                                           TX_SIZE tx_size, void *arg) {
-  TxbParams *const args = arg;
+  struct tokenize_b_args *const args = arg;
   const AV1_COMP *cpi = args->cpi;
   const AV1_COMMON *cm = &cpi->common;
   ThreadData *const td = args->td;
@@ -568,7 +562,7 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   const int ctx = av1_get_skip_context(xd);
   const int skip_inc =
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
-  struct TxbParams arg = { cpi, td, 0 };
+  struct tokenize_b_args arg = { cpi, td, NULL, 0 };
   (void)rate;
   (void)mi_row;
   (void)mi_col;

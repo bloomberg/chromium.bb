@@ -58,6 +58,13 @@ int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 struct AV1_COMP;
 struct ThreadData;
 
+struct tokenize_b_args {
+  const struct AV1_COMP *cpi;
+  struct ThreadData *td;
+  TOKENEXTRA **tp;
+  int this_rate;
+};
+
 typedef enum {
   OUTPUT_ENABLED = 0,
   DRY_RUN_NORMAL,
