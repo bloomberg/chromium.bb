@@ -557,7 +557,7 @@ group("gn_all") {
       deps +=
           [ "//chrome/installer/mini_installer:next_version_mini_installer" ]
     }
-  } else if (!is_android && !is_ios) {
+  } else if (!is_android && !is_ios && !is_fuchsia) {
     deps += [ "//breakpad:symupload($host_toolchain)" ]
   }
 

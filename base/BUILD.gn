@@ -1105,7 +1105,7 @@ component("base") {
       "base_paths_win.h",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_fuchsia) {
       sources += [ "base_paths_posix.cc" ]
     }
   }
@@ -1228,6 +1228,17 @@ component("base") {
   # Chromeos.
   if (is_chromeos) {
     sources += [ "power_monitor/power_monitor_device_source_chromeos.cc" ]
+  }
+
+  if (is_fuchsia) {
+    sources -= [
+      "debug/stack_trace_posix.cc",
+      "message_loop/message_pump_libevent.cc",
+      "message_loop/message_pump_libevent.h",
+      "process/kill_posix.cc",
+      "process/launch_posix.cc",
+      "process/process_posix.cc",
+    ]
   }
 
   # NaCl.
@@ -1442,7 +1453,7 @@ component("base") {
       "winmm.lib",
     ]
     all_dependent_configs += [ ":base_win_linker_flags" ]
-  } else if (!is_nacl || is_nacl_nonsfi) {
+  } else if ((!is_nacl && !is_fuchsia) || is_nacl_nonsfi) {
     # Non-Windows.
     deps += [ "//base/third_party/libevent" ]
   }
@@ -2337,7 +2348,7 @@ test("base_unittests") {
     sources -= [ "message_loop/message_pump_glib_unittest.cc" ]
   }
 
-  if (is_posix && !is_ios) {
+  if (is_posix && !is_ios && !is_fuchsia) {
     sources += [ "message_loop/message_pump_libevent_unittest.cc" ]
     deps += [ "//base/third_party/libevent" ]
   }
