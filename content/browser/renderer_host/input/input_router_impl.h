@@ -230,8 +230,8 @@ class CONTENT_EXPORT InputRouterImpl
 
   // A queue of the mouse move events sent to the renderer. Similar
   // to |key_queue_|.
-  typedef std::deque<MouseEventWithLatencyInfo> MouseMoveQueue;
-  MouseMoveQueue mouse_move_queue_;
+  typedef std::deque<MouseEventWithLatencyInfo> MouseEventQueue;
+  MouseEventQueue mouse_event_queue_;
 
   // A queue of keyboard events. We can't trust data from the renderer so we
   // stuff key events into a queue and pop them out on ACK, feeding our copy
