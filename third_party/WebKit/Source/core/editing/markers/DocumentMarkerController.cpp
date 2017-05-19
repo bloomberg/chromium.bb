@@ -395,6 +395,10 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
 
 Vector<IntRect> DocumentMarkerController::RenderedRectsForMarkers(
     DocumentMarker::MarkerType marker_type) {
+  // Only TextMatch markers can have rendered rects
+  // TODO(rlanday): remove marker_type parameter
+  DCHECK_EQ(marker_type, DocumentMarker::kTextMatch);
+
   Vector<IntRect> result;
 
   if (!PossiblyHasMarkers(marker_type))
@@ -410,17 +414,18 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForMarkers(
     if (!node.isConnected())
       continue;
     MarkerLists* markers = node_iterator->value.Get();
-    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
-      DocumentMarkerList* const list = ListForType(markers, type);
-      if (!list || list->IsEmpty() || type != marker_type)
-        continue;
+    DocumentMarkerList* const list =
+        ListForType(markers, DocumentMarker::kTextMatch);
+    if (!list || list->IsEmpty())
+      continue;
 
-      for (RenderedDocumentMarker* rendered_marker : list->GetMarkers()) {
-        UpdateMarkerRenderedRectIfNeeded(node, *rendered_marker);
-        if (!rendered_marker->IsRendered())
-          continue;
-        result.push_back(rendered_marker->RenderedRect());
-      }
+    for (DocumentMarker* marker : list->GetMarkers()) {
+      RenderedDocumentMarker* const rendered_marker =
+          ToRenderedDocumentMarker(marker);
+      UpdateMarkerRenderedRectIfNeeded(node, *rendered_marker);
+      if (!rendered_marker->IsRendered())
+        continue;
+      result.push_back(rendered_marker->RenderedRect());
     }
   }
 
@@ -445,18 +450,17 @@ void DocumentMarkerController::InvalidateRectsForMarkersInNode(
     const Node& node) {
   MarkerLists* markers = markers_.at(&node);
 
-  for (auto& marker_list : *markers) {
-    if (!marker_list || marker_list->IsEmpty())
-      continue;
+  const DocumentMarkerList* const marker_list =
+      ListForType(markers, DocumentMarker::kTextMatch);
+  if (!marker_list || marker_list->IsEmpty())
+    return;
 
-    const HeapVector<Member<RenderedDocumentMarker>>& markers_in_list =
-        marker_list->GetMarkers();
-    for (auto& marker : markers_in_list)
-      marker->Invalidate();
+  const HeapVector<Member<DocumentMarker>>& markers_in_list =
+      marker_list->GetMarkers();
+  for (auto& marker : markers_in_list)
+    ToRenderedDocumentMarker(marker)->Invalidate();
 
-    if (markers_in_list.front()->GetType() == DocumentMarker::kTextMatch)
-      InvalidatePaintForTickmarks(node);
-  }
+  InvalidatePaintForTickmarks(node);
 }
 
 void DocumentMarkerController::InvalidateRectsForAllMarkers() {
@@ -640,7 +644,7 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(Node* node,
   if (!list)
     return false;
 
-  const HeapVector<Member<RenderedDocumentMarker>>& markers_in_list =
+  const HeapVector<Member<DocumentMarker>>& markers_in_list =
       list->GetMarkers();
   // TODO(rlanday): this assumes that the markers are stored in sorted order.
   // This method should probably eventually be implemented by a
@@ -679,7 +683,7 @@ void DocumentMarkerController::ShowMarkers() const {
     MarkerLists* markers = markers_.at(node);
     for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
       DocumentMarkerList* const list = ListForType(markers, type);
-      const HeapVector<Member<RenderedDocumentMarker>>& markers_in_list =
+      const HeapVector<Member<DocumentMarker>>& markers_in_list =
           list->GetMarkers();
       for (const DocumentMarker* marker : markers_in_list) {
         builder.Append(" ");
