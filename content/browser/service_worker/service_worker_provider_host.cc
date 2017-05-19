@@ -541,7 +541,7 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
 
-  std::unique_ptr<ServiceWorkerProviderHost> new_provider_host =
+  std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
       base::WrapUnique(new ServiceWorkerProviderHost(
           process_id(), frame_id(), provider_id(), provider_type(),
           is_parent_frame_secure(), context_, dispatcher_host()));
@@ -565,24 +565,22 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   provider_id_ = kInvalidServiceWorkerProviderId;
   provider_type_ = SERVICE_WORKER_PROVIDER_UNKNOWN;
   dispatcher_host_ = nullptr;
-  return new_provider_host;
+  return provisional_host;
 }
 
 void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
-    int new_process_id,
-    int new_frame_id,
-    int new_provider_id,
-    ServiceWorkerProviderType new_provider_type,
-    ServiceWorkerDispatcherHost* new_dispatcher_host) {
+    ServiceWorkerProviderHost* provisional_host) {
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, new_process_id);
-  DCHECK_NE(MSG_ROUTING_NONE, new_frame_id);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, provisional_host->process_id());
+  DCHECK_NE(MSG_ROUTING_NONE, provisional_host->frame_id());
 
   render_thread_id_ = kDocumentMainThreadId;
-  provider_id_ = new_provider_id;
-  provider_type_ = new_provider_type;
+  provider_id_ = provisional_host->provider_id();
+  provider_type_ = provisional_host->provider_type();
 
-  FinalizeInitialization(new_process_id, new_frame_id, new_dispatcher_host);
+  FinalizeInitialization(provisional_host->process_id(),
+                         provisional_host->frame_id(),
+                         provisional_host->dispatcher_host());
 }
 
 // PlzNavigate

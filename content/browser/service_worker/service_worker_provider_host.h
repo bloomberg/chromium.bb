@@ -241,12 +241,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Methods to support cross site navigations.
   std::unique_ptr<ServiceWorkerProviderHost> PrepareForCrossSiteTransfer();
-  void CompleteCrossSiteTransfer(
-      int new_process_id,
-      int new_frame_id,
-      int new_provider_id,
-      ServiceWorkerProviderType new_provider_type,
-      ServiceWorkerDispatcherHost* dispatcher_host);
+  void CompleteCrossSiteTransfer(ServiceWorkerProviderHost* provisional_host);
   ServiceWorkerDispatcherHost* dispatcher_host() const {
     return dispatcher_host_;
   }
