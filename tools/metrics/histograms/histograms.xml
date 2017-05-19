@@ -75822,6 +75822,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Toolbar.ShowToolsMenuResponsiveness" units="ms">
+  <owner>peterlaurens@chromium.org</owner>
+  <summary>
+    Number of milliseconds passed between the event that triggers the
+    presentation of the tools menu (the main menu of actions accessed from the
+    toolbar), and the actual appearance of the menu on screen. Includes the
+    animation duration.
+  </summary>
+</histogram>
+
 <histogram name="TopSites.NumberOfApplyBlacklist">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of times TopSitesImpl::ApplyBlacklist is called.</summary>
