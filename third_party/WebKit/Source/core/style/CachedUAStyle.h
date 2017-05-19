@@ -61,6 +61,29 @@ class CachedUAStyle {
                 other.BorderBottomColorIsCurrentColor());
   }
 
+  bool BorderWidthEquals(const ComputedStyle& other) const {
+    return (border_left_width == other.BorderLeftWidth() &&
+            border_right_width == other.BorderRightWidth() &&
+            border_top_width == other.BorderTopWidth() &&
+            border_bottom_width == other.BorderBottomWidth());
+  }
+
+  bool BorderRadiiEquals(const ComputedStyle& other) const {
+    return top_left_ == other.BorderTopLeftRadius() &&
+           top_right_ == other.BorderTopRightRadius() &&
+           bottom_left_ == other.BorderBottomLeftRadius() &&
+           bottom_right_ == other.BorderBottomRightRadius();
+  }
+
+  bool BorderStyleEquals(const ComputedStyle& other) const {
+    return (
+        border_left_style == static_cast<unsigned>(other.BorderLeftStyle()) &&
+        border_right_style == static_cast<unsigned>(other.BorderRightStyle()) &&
+        border_top_style == static_cast<unsigned>(other.BorderTopStyle()) &&
+        border_bottom_style ==
+            static_cast<unsigned>(other.BorderBottomStyle()));
+  }
+
   BorderData border;
   LengthSize top_left_;
   LengthSize top_right_;
@@ -74,6 +97,10 @@ class CachedUAStyle {
   bool border_right_color_is_current_color;
   bool border_top_color_is_current_color;
   bool border_bottom_color_is_current_color;
+  unsigned border_left_style : 4;    // EBorderStyle
+  unsigned border_right_style : 4;   // EBorderStyle
+  unsigned border_top_style : 4;     // EBorderStyle
+  unsigned border_bottom_style : 4;  // EBorderStyle
   float border_left_width;
   float border_right_width;
   float border_top_width;
@@ -100,6 +127,10 @@ class CachedUAStyle {
             style->BorderTopColorIsCurrentColor()),
         border_bottom_color_is_current_color(
             style->BorderBottomColorIsCurrentColor()),
+        border_left_style(static_cast<unsigned>(style->BorderLeftStyle())),
+        border_right_style(static_cast<unsigned>(style->BorderRightStyle())),
+        border_top_style(static_cast<unsigned>(style->BorderTopStyle())),
+        border_bottom_style(static_cast<unsigned>(style->BorderBottomStyle())),
         border_left_width(style->BorderLeftWidth()),
         border_right_width(style->BorderRightWidth()),
         border_top_width(style->BorderTopWidth()),

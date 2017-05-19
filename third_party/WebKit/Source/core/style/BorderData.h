@@ -25,7 +25,6 @@
 #ifndef BorderData_h
 #define BorderData_h
 
-#include "core/style/BorderStyle.h"
 #include "core/style/NinePieceImage.h"
 #include "platform/LengthSize.h"
 #include "platform/geometry/IntRect.h"
@@ -40,23 +39,11 @@ class BorderData {
  public:
   BorderData() {}
 
-  bool HasBorder() const {
-    return left_.NonZero() || right_.NonZero() || top_.NonZero() ||
-           bottom_.NonZero();
-  }
-
   bool HasBorderFill() const { return image_.HasImage() && image_.Fill(); }
 
-  bool operator==(const BorderData& o) const {
-    return left_ == o.left_ && right_ == o.right_ && top_ == o.top_ &&
-           bottom_ == o.bottom_ && image_ == o.image_;
-  }
+  bool operator==(const BorderData& o) const { return image_ == o.image_; }
 
-  bool VisuallyEqual(const BorderData& o) const {
-    return left_.VisuallyEqual(o.left_) && right_.VisuallyEqual(o.right_) &&
-           top_.VisuallyEqual(o.top_) && bottom_.VisuallyEqual(o.bottom_) &&
-           image_ == o.image_;
-  }
+  bool VisuallyEqual(const BorderData& o) const { return image_ == o.image_; }
 
   bool VisualOverflowEqual(const BorderData& o) const {
     return image_.Outset() == o.image_.Outset();
@@ -64,19 +51,10 @@ class BorderData {
 
   bool operator!=(const BorderData& o) const { return !(*this == o); }
 
-  const BorderStyle& Left() const { return left_; }
-  const BorderStyle& Right() const { return right_; }
-  const BorderStyle& Top() const { return top_; }
-  const BorderStyle& Bottom() const { return bottom_; }
 
   const NinePieceImage& GetImage() const { return image_; }
 
  private:
-  BorderStyle left_;
-  BorderStyle right_;
-  BorderStyle top_;
-  BorderStyle bottom_;
-
   NinePieceImage image_;
 };
 
