@@ -51,20 +51,32 @@ struct CC_EXPORT EffectNode {
   // TODO(jaydasika) : Delete this after implementation of
   // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)
   bool subtree_hidden : 1;
+  // Whether this node has a potentially running (i.e., irrespective
+  // of exact timeline) filter animation.
   bool has_potential_filter_animation : 1;
+  // Whether this node has a potentially running (i.e., irrespective
+  // of exact timeline) opacity animation.
   bool has_potential_opacity_animation : 1;
+  // Whether this node has a currently running filter animation.
   bool is_currently_animating_filter : 1;
+  // Whether this node has a currently running opacity animation.
   bool is_currently_animating_opacity : 1;
-  // We need to track changes to effects on the compositor to compute damage
-  // rect.
+  // Whether this node's effect has been changed since the last
+  // frame. Needed in order to compute damage rect.
   bool effect_changed : 1;
   bool subtree_has_copy_request : 1;
+  // The transform node index of the transform to apply to this effect
+  // node's content when rendering to a surface.
   int transform_id;
+  // The clip node index of the clip to apply to this effect node's
+  // content when rendering to a surface.
   int clip_id;
 
   // This is the id of the ancestor effect node that induces a
   // RenderSurfaceImpl.
   int target_id;
+  // The layer id of the mask layer, if any, to apply to this effect
+  // node's content when rendering to a surface.
   int mask_layer_id;
   int closest_ancestor_with_copy_request_id;
 
