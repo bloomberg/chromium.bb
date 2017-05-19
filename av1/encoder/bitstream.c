@@ -3370,7 +3370,14 @@ static void encode_restoration_mode(AV1_COMMON *cm,
     rsi = &cm->rst_info[p];
     switch (rsi->frame_restoration_type) {
       case RESTORE_NONE: aom_wb_write_bit(wb, 0); break;
-      case RESTORE_WIENER: aom_wb_write_bit(wb, 1); break;
+      case RESTORE_WIENER:
+        aom_wb_write_bit(wb, 1);
+        aom_wb_write_bit(wb, 0);
+        break;
+      case RESTORE_SGRPROJ:
+        aom_wb_write_bit(wb, 1);
+        aom_wb_write_bit(wb, 1);
+        break;
       default: assert(0);
     }
   }
@@ -3483,6 +3490,7 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   }
   for (p = 1; p < MAX_MB_PLANE; ++p) {
     set_default_wiener(&ref_wiener_info);
+    set_default_sgrproj(&ref_sgrproj_info);
     rsi = &cm->rst_info[p];
     if (rsi->frame_restoration_type == RESTORE_WIENER) {
       for (i = 0; i < ntiles_uv; ++i) {
@@ -3491,6 +3499,15 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
                     RESTORE_NONE_WIENER_PROB);
         if (rsi->restoration_type[i] != RESTORE_NONE) {
           write_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, wb);
+        }
+      }
+    } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+      for (i = 0; i < ntiles_uv; ++i) {
+        if (ntiles_uv > 1)
+          aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
+                    RESTORE_NONE_SGRPROJ_PROB);
+        if (rsi->restoration_type[i] != RESTORE_NONE) {
+          write_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, wb);
         }
       }
     } else if (rsi->frame_restoration_type != RESTORE_NONE) {

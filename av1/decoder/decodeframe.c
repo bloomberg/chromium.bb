@@ -2460,8 +2460,13 @@ static void decode_restoration_mode(AV1_COMMON *cm,
         aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
   }
   for (p = 1; p < MAX_MB_PLANE; ++p) {
-    cm->rst_info[p].frame_restoration_type =
-        aom_rb_read_bit(rb) ? RESTORE_WIENER : RESTORE_NONE;
+    rsi = &cm->rst_info[p];
+    if (aom_rb_read_bit(rb)) {
+      rsi->frame_restoration_type =
+          aom_rb_read_bit(rb) ? RESTORE_SGRPROJ : RESTORE_WIENER;
+    } else {
+      rsi->frame_restoration_type = RESTORE_NONE;
+    }
   }
 
   cm->rst_info[0].restoration_tilesize = RESTORATION_TILESIZE_MAX;
@@ -2594,6 +2599,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   }
   for (p = 1; p < MAX_MB_PLANE; ++p) {
     set_default_wiener(&ref_wiener_info);
+    set_default_sgrproj(&ref_sgrproj_info);
     rsi = &cm->rst_info[p];
     if (rsi->frame_restoration_type == RESTORE_WIENER) {
       for (i = 0; i < ntiles_uv; ++i) {
@@ -2607,6 +2613,21 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
           read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
         }
       }
+    } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+      for (i = 0; i < ntiles_uv; ++i) {
+        if (ntiles_uv > 1)
+          rsi->restoration_type[i] =
+              aom_read(rb, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)
+                  ? RESTORE_SGRPROJ
+                  : RESTORE_NONE;
+        else
+          rsi->restoration_type[i] = RESTORE_SGRPROJ;
+        if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
+          read_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, rb);
+        }
+      }
+    } else if (rsi->frame_restoration_type != RESTORE_NONE) {
+      assert(0);
     }
   }
 }
