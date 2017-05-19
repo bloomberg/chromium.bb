@@ -3213,9 +3213,6 @@ crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Fa
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
 crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pass Timeout ]
 
-crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ NeedsRebaseline ]
-crbug.com/646010 virtual/disable-spinvalidation/paint/selection/text-selection-newline-rtl-double-linebreak.html [ NeedsRebaseline ]
-
 # Sheriff failures 2017-05-17
 # Crashes
 crbug.com/723841 http/tests/dom/script-module-load-incomplete-no-crash.html [ Skip ]
