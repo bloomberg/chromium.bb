@@ -915,7 +915,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
   assert(IMPLIES(is_intrabc, !is_compound));
 #endif  // CONFIG_INTRABC
 #if CONFIG_GLOBAL_MOTION
-  int is_global[2];
+  int is_global[2] = { 0, 0 };
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
     is_global[ref] = is_global_mv_block(mi, block, wm->wmtype);
@@ -988,7 +988,6 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
               pd->pre[ref].buf0 + scaled_buffer_offset(c_offset, r_offset,
                                                        ref_buf->buf->uv_stride,
                                                        &ref_buf->sf);
-
           pd->pre[ref].width = ref_buf->buf->uv_crop_width;
           pd->pre[ref].height = ref_buf->buf->uv_crop_height;
           pd->pre[ref].stride = ref_buf->buf->uv_stride;
@@ -1018,7 +1017,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           warp_types.global_warp_allowed = is_global[ref];
 #endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_WARPED_MOTION
-          warp_types.local_warp_allowed = mi->mbmi.motion_mode == WARPED_CAUSAL;
+          warp_types.local_warp_allowed =
+              this_mbmi->motion_mode == WARPED_CAUSAL;
 #endif  // CONFIG_WARPED_MOTION
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
@@ -1065,8 +1065,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
                 pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y,
                 sf, b4_w, b4_h, &conv_params, this_mbmi->interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-                &warp_types, ((mi_x + MI_SIZE * col) >> pd->subsampling_x) + x,
-                ((mi_y + MI_SIZE * row) >> pd->subsampling_y) + y, plane, ref,
+                &warp_types, (mi_x >> pd->subsampling_x) + x,
+                (mi_y >> pd->subsampling_y) + y, plane, ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR
                 mi_col_offset, mi_row_offset,
