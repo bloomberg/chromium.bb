@@ -82,11 +82,8 @@ SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
-  if (!database_client_)
-    return content::NavigationThrottle::PROCEED;
-
   // No need to defer the navigation if the check already happened.
-  if (check_results_.back().finished) {
+  if (!database_client_ || check_results_.back().finished) {
     NotifyResult();
     return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
   }
@@ -132,14 +129,22 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
 
   using subresource_filter::ContentSubresourceFilterDriverFactory;
 
-  const SubresourceFilterSafeBrowsingClient::CheckResult& result =
-      check_results_.back();
   ContentSubresourceFilterDriverFactory* driver_factory =
       ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
   DCHECK(driver_factory);
 
-  driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
-      navigation_handle()->GetURL(), result.threat_type, result.pattern_type);
+  const SubresourceFilterSafeBrowsingClient::CheckResult& result =
+      check_results_.back();
+  auto threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_SAFE;
+  auto pattern_type = safe_browsing::ThreatPatternType::NONE;
+  if (database_client_) {
+    DCHECK(!check_results_.empty());
+    DCHECK(check_results_.back().finished);
+    threat_type = result.threat_type;
+    pattern_type = result.pattern_type;
+  }
+  driver_factory->OnSafeBrowsingMatchComputed(navigation_handle(), threat_type,
+                                              pattern_type);
 
   base::TimeDelta delay = defer_time_.is_null()
                               ? base::TimeDelta::FromMilliseconds(0)
