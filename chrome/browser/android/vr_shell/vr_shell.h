@@ -113,6 +113,7 @@ class VrShell : public device::PresentingGvrDelegate,
                     jint id);
   void OnContentPaused(bool paused);
   void NavigateBack();
+  void ExitCct();
   base::android::ScopedJavaGlobalRef<jobject> TakeContentSurface(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

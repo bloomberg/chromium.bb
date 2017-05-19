@@ -114,6 +114,11 @@ void VrGLThread::NavigateBack() {
       FROM_HERE, base::Bind(&VrShell::NavigateBack, weak_vr_shell_));
 }
 
+void VrGLThread::ExitCct() {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::ExitCct, weak_vr_shell_));
+}
+
 void VrGLThread::SetFullscreen(bool enabled) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetFullscreen,

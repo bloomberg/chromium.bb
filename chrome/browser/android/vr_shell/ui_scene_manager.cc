@@ -415,7 +415,9 @@ void UiSceneManager::SetIsExiting() {
 void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
                                               bool can_go_forward) {}
 
-void UiSceneManager::OnCloseButtonClicked() {}
+void UiSceneManager::OnCloseButtonClicked() {
+  browser_->ExitCct();
+}
 
 int UiSceneManager::AllocateId() {
   return next_available_id_++;

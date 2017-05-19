@@ -119,6 +119,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     // headset on, but we haven't switched into VR mode yet.
     // See further documentation here: https://developers.google.com/vr/daydream/guides/vr-entry
     private boolean mDonSucceeded;
+    // Best effort whether or not the system was in VR when Chrome launched.
+    private Boolean mInVrAtChromeLaunch;
+    private boolean mShowingDaydreamDoff;
+    private boolean mExitingCct;
     private boolean mPaused;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private Integer mRestoreOrientation = null;
@@ -141,9 +145,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             if (activity == null) return;
             getInstance(activity).mDonSucceeded = true;
             if (sInstance.mPaused) {
+                if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
                 ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
                         .moveTaskToFront(activity.getTaskId(), 0);
             } else {
+                if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = true;
                 // If a WebVR app calls requestPresent in response to the displayactivate event
                 // after the DON flow completes, the DON flow is skipped, meaning our app won't be
                 // paused when daydream fires our BroadcastReceiver, so onResume won't be called.
@@ -420,14 +426,35 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 assert mPaused;
                 break;
             case ActivityState.RESUMED:
-                assert !mInVr;
+                assert !mInVr || mShowingDaydreamDoff;
+                if (mInVr && activity != mActivity) {
+                    if (mShowingDaydreamDoff) {
+                        onExitVrResult(true);
+                    } else {
+                        // We should never reach this state currently, but just in case...
+                        assert false;
+                        shutdownVr(true, false);
+                    }
+                }
                 if (!activitySupportsPresentation(activity)) return;
-                mActivity = (ChromeActivity) activity;
+                swapHostActivity((ChromeActivity) activity);
                 resumeVr();
                 break;
             default:
                 break;
         }
+    }
+
+    // Called when an activity that supports VR is resumed, and attaches VrShellDelegate to that
+    // activity.
+    private void swapHostActivity(ChromeActivity activity) {
+        assert mActivity != null;
+        mActivity = activity;
+        mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi(mActivity);
+        if (mNativeVrShellDelegate == 0 || mNonPresentingGvrContext == null) return;
+        shutdownNonPresentingNativeContext();
+        nativeUpdateNonPresentingContext(
+                mNativeVrShellDelegate, createNonPresentingNativeContext());
     }
 
     /**
@@ -630,9 +657,13 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @CalledByNative
     private boolean exitWebVRPresent() {
         if (!mInVr) return false;
-        mVrShell.setWebVrModeEnabled(false);
         if (!isVrShellEnabled(mVrSupportLevel) || !activitySupportsVrBrowsing(mActivity)) {
-            shutdownVr(false /* isPausing */, true /* showTransition */);
+            if (mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+                mShowingDaydreamDoff = true;
+                return false;
+            }
+            mVrShell.setWebVrModeEnabled(false);
+            shutdownVr(true, false);
         }
         return true;
     }
@@ -640,9 +671,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private void resumeVr() {
         mPaused = false;
 
-        // TODO(mthiesse): If we ever support staying in VR while paused, make sure to call resume
-        // on VrShell.
-        assert !mInVr;
+        assert !mInVr || mShowingDaydreamDoff;
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
@@ -660,6 +689,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                     if (!mPaused) registerDaydreamIntent(mVrDaydreamApi, mActivity);
                 }
             });
+        }
+
+        if (mInVr) {
+            mVrShell.resume();
+            return;
         }
 
         if (mVrDaydreamApi.isDaydreamCurrentViewer()
@@ -701,24 +735,39 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         if (mNativeVrShellDelegate != 0) nativeOnPause(mNativeVrShellDelegate);
 
+        if (mShowingDaydreamDoff) {
+            mVrShell.pause();
+            return;
+        }
+
         // TODO(mthiesse): When VR Shell lives in its own activity, and integrates with Daydream
         // home, pause instead of exiting VR here. For now, because VR Apps shouldn't show up in the
         // non-VR recents, and we don't want ChromeTabbedActivity disappearing, exit VR.
-        shutdownVr(true /* isPausing */, false /* showTransition */);
+        shutdownVr(true, true);
     }
 
     private boolean onBackPressedInternal() {
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return false;
         if (!mInVr) return false;
-        shutdownVr(false /* isPausing */, false /* showTransition */);
+        shutdownVr(true, false);
         return true;
     }
 
     private void onExitVrResult(boolean success) {
         assert mVrSupportLevel != VR_NOT_AVAILABLE;
+
+        // We may have manually handled the exit early by swapping to another Chrome activity that
+        // supports VR while in the DOFF activity. If that happens we want to exit early when the
+        // real DOFF flow calls us back.
+        if (!mShowingDaydreamDoff) return;
+
         // For now, we don't handle re-entering VR when exit fails, so keep trying to exit.
         if (!success && mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) return;
-        mVrClassesWrapper.setVrModeEnabled(mActivity, false);
+
+        mShowingDaydreamDoff = false;
+        shutdownVr(true, false);
+        if (mExitingCct) ((CustomTabActivity) mActivity).finishAndClose(false);
+        mExitingCct = false;
     }
 
     @CalledByNative
@@ -755,21 +804,15 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     /**
      * Exits VR Shell, performing all necessary cleanup.
      */
-    /* package */ void shutdownVr(boolean isPausing, boolean showTransition) {
+    /* package */ void shutdownVr(boolean setVrMode, boolean canReenter) {
         if (!mInVr) return;
+        if (mShowingDaydreamDoff) {
+            onExitVrResult(true);
+            return;
+        }
         mInVr = false;
         mRequestedWebVr = false;
-        // Transition screen is not available for Cardboard only (non-Daydream) devices.
-        // TODO(bshe): Fix this once b/33490788 is fixed.
-        boolean transition = mVrSupportLevel == VR_DAYDREAM && showTransition;
-        if (!isPausing) {
-            if (!transition || !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrClassesWrapper.setVrModeEnabled(mActivity, false);
-            }
-        } else {
-            mVrClassesWrapper.setVrModeEnabled(mActivity, false);
-            mLastVrExit = SystemClock.uptimeMillis();
-        }
+        mLastVrExit = canReenter ? SystemClock.uptimeMillis() : 0;
 
         // The user has exited VR.
         RecordUserAction.record("VR.DOFF");
@@ -779,6 +822,29 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         removeVrViews();
         destroyVrShell();
         mActivity.getFullscreenManager().setPositionsForTabToNonFullscreen();
+        if (setVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
+    }
+
+    /* package */ void showDoffAndExitVr() {
+        if (mShowingDaydreamDoff) return;
+        if (mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+            mShowingDaydreamDoff = true;
+            return;
+        }
+        shutdownVr(true, false);
+    }
+
+    /* package */ void exitCct() {
+        if (mShowingDaydreamDoff) return;
+        assert mActivity instanceof CustomTabActivity;
+        if (mInVrAtChromeLaunch != null && !mInVrAtChromeLaunch) {
+            if (mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+                mExitingCct = true;
+                mShowingDaydreamDoff = true;
+                return;
+            }
+        }
+        ((CustomTabActivity) mActivity).finishAndClose(false);
     }
 
     private static boolean isVrCoreCompatible(
@@ -884,7 +950,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(null);
             mVrShell.teardown();
             mVrShell = null;
-            mActivity.getCompositorViewHolder().onExitVr(mTabModelSelector);
+            if (mActivity.getCompositorViewHolder() != null) {
+                mActivity.getCompositorViewHolder().onExitVr(mTabModelSelector);
+            }
             mTabModelSelector = null;
         }
     }
@@ -923,7 +991,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     private void destroy() {
         if (sInstance == null) return;
-        shutdownVr(true, false);
+        shutdownVr(false, false);
         if (mNativeVrShellDelegate != 0) nativeDestroy(mNativeVrShellDelegate);
         mNativeVrShellDelegate = 0;
         ApplicationStatus.unregisterActivityStateListener(this);
@@ -938,5 +1006,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             double intervalSeconds);
     private native void nativeOnPause(long nativeVrShellDelegate);
     private native void nativeOnResume(long nativeVrShellDelegate);
+    private native void nativeUpdateNonPresentingContext(long nativeVrShellDelegate, long context);
     private native void nativeDestroy(long nativeVrShellDelegate);
 }
