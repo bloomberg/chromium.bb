@@ -53,5 +53,5 @@ test(() => {
       testRunner.execCommand('selectAll');
     },
     'foo<div contenteditable>^bar|</div><a href="http://www.example.com">baz</a>')
-}, 'User-triggered SelectAll selects entire document when there is unfocused range selection shown in contenteditable div');
+}, 'User-triggered SelectAll extends existing selection when there is unfocused range selection shown in contenteditable div');
 </script>
