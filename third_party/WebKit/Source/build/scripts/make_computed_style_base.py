@@ -148,7 +148,7 @@ class Field(object):
         # TODO(nainar): Method name generation is inconsistent. Fix.
         self.getter_method_name = getter_method_name
         self.setter_method_name = setter_method_name
-        self.internal_getter_method_name = method_name(join_name(getter_method_name, 'Internal'))
+        self.internal_getter_method_name = method_name(join_name(self.name, 'Internal'))
         self.internal_mutable_method_name = method_name(join_name('Mutable', name_for_methods, 'Internal'))
         self.internal_setter_method_name = method_name(join_name(setter_method_name, 'Internal'))
         self.initial_method_name = initial_method_name

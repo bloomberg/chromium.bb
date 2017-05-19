@@ -1416,7 +1416,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return TextDecoration::kNone;
   }
   TextDecoration GetTextDecoration() const {
-    return static_cast<TextDecoration>(GetTextDecorationInternal());
+    return static_cast<TextDecoration>(TextDecorationInternal());
   }
   void SetTextDecoration(TextDecoration v) { SetTextDecorationInternal(v); }
 
