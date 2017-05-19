@@ -277,6 +277,12 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // (crbug.com/723553)
   // https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-2.1.2
   worker_fetch_context->set_first_party_for_cookies(url_);
+  // TODO(horo): Currently we treat the worker context as secure if the origin
+  // of the shared worker script url is secure. But according to the spec, if
+  // the creation context is not secure, we should treat the worker as
+  // non-secure. crbug.com/723575
+  // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
+  worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   if (web_network_provider) {
     ServiceWorkerNetworkProvider* network_provider =
         ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
