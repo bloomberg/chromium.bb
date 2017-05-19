@@ -1885,10 +1885,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
-#if defined(OS_ANDROID)
-      autofill::switches::kDisableAccessorySuggestionView,
-      autofill::switches::kEnableAccessorySuggestionView,
-#endif
       autofill::switches::kDisablePasswordGeneration,
       autofill::switches::kEnablePasswordGeneration,
       autofill::switches::kEnableSingleClickAutofill,

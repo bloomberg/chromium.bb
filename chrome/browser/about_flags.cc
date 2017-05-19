@@ -39,6 +39,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -849,6 +850,40 @@ kAutofillCreditCardPopupLayoutFeatureVariations[] = {
      kAutofillCreditCardPopupLayoutFeatureVariationExpanded,
      arraysize(kAutofillCreditCardPopupLayoutFeatureVariationExpanded),
      nullptr}};
+
+const FeatureEntry::FeatureParam
+    kAutofillKeyboardAccessoryFeatureVariationAnimationDuration[] = {
+        {autofill::kAutofillKeyboardAccessoryAnimationDurationKey, "1000"}};
+
+const FeatureEntry::FeatureParam
+    kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth[] = {
+        {autofill::kAutofillKeyboardAccessoryLimitLabelWidthKey, "true"}};
+
+const FeatureEntry::FeatureParam
+    kAutofillKeyboardAccessoryFeatureVariationShowHint[] = {
+        {autofill::kAutofillKeyboardAccessoryHintKey, "true"}};
+
+const FeatureEntry::FeatureParam
+    kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint[] = {
+        {autofill::kAutofillKeyboardAccessoryAnimationDurationKey, "1000"},
+        {autofill::kAutofillKeyboardAccessoryHintKey, "true"}};
+
+const FeatureEntry::FeatureVariation
+    kAutofillKeyboardAccessoryFeatureVariations[] = {
+        {"Animate", kAutofillKeyboardAccessoryFeatureVariationAnimationDuration,
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationAnimationDuration),
+         nullptr},
+        {"Limit label width",
+         kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth,
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth),
+         nullptr},
+        {"Show hint", kAutofillKeyboardAccessoryFeatureVariationShowHint,
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationShowHint),
+         nullptr},
+        {"Animate with hint",
+         kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint,
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint),
+         nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::FeatureParam
@@ -1968,12 +2003,12 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kDataSaverPromptChoices)},
 #endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
-    {"enable-autofill-keyboard-accessory-view",
+    {"autofill-keyboard-accessory-view",
      flag_descriptions::kAutofillAccessoryViewName,
      flag_descriptions::kAutofillAccessoryViewDescription, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(
-         autofill::switches::kEnableAccessorySuggestionView,
-         autofill::switches::kDisableAccessorySuggestionView)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::kAutofillKeyboardAccessory,
+                                    kAutofillKeyboardAccessoryFeatureVariations,
+                                    "AutofillKeyboardAccessoryVariations")},
 #endif  // OS_ANDROID
 #if defined(OS_WIN)
     {"try-supported-channel-layouts",
