@@ -289,8 +289,8 @@ void LocalFrame::Init() {
 }
 
 void LocalFrame::SetView(FrameView* view) {
-  ASSERT(!view_ || view_ != view);
-  ASSERT(!GetDocument() || !GetDocument()->IsActive());
+  DCHECK(!view_ || view_ != view);
+  DCHECK(!GetDocument() || !GetDocument()->IsActive());
 
   GetEventHandler().Clear();
 
@@ -649,8 +649,8 @@ FloatSize LocalFrame::ResizePageRectsKeepingRatio(
     result_size.SetWidth(floorf(expected_size.Width()));
     result_size.SetHeight(floorf(result_size.Width() * ratio));
   } else {
-    ASSERT(fabs(original_size.Height()) >
-           std::numeric_limits<float>::epsilon());
+    DCHECK_GT(fabs(original_size.Height()),
+              std::numeric_limits<float>::epsilon());
     float ratio = original_size.Width() / original_size.Height();
     result_size.SetHeight(floorf(expected_size.Height()));
     result_size.SetWidth(floorf(result_size.Height() * ratio));
