@@ -35,6 +35,7 @@
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
+#include "chrome/browser/android/contextualsearch/contextual_search_ranker_logger_impl.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/contextualsearch/ctr_suppression.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
@@ -289,6 +290,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"ContextualSearchContext", RegisterContextualSearchContext},
     {"ContextualSearchManager", RegisterContextualSearchManager},
+    {"ContextualSearchRankerLoggerImpl",
+     RegisterContextualSearchRankerLoggerImpl},
     {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
     {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},
