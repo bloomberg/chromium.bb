@@ -327,7 +327,7 @@ class ChromePrintContext : public PrintContext {
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
       return;
 
-    ComputePageRects(FloatRect(FloatPoint(0, 0), page_size_in_pixels));
+    ComputePageRects(page_size_in_pixels);
 
     const float page_width = page_size_in_pixels.Width();
     size_t num_pages = PageRects().size();
@@ -464,9 +464,10 @@ class ChromePluginPrintContext final : public ChromePrintContext {
     return 1.0;
   }
 
-  void ComputePageRects(const FloatRect& print_rect) override {
-    print_params_.print_content_area = IntRect(print_rect);
-    page_rects_.Fill(IntRect(print_rect), plugin_->PrintBegin(print_params_));
+  void ComputePageRects(const FloatSize& print_size) override {
+    IntRect rect(FloatRect(FloatPoint(0, 0), print_size));
+    print_params_.print_content_area = rect;
+    page_rects_.Fill(rect, plugin_->PrintBegin(print_params_));
   }
 
   void ComputePageRectsWithPageSize(
@@ -1409,11 +1410,10 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
     print_context_ = new ChromePrintContext(GetFrame());
   }
 
-  FloatRect rect(0, 0,
-                 static_cast<float>(print_params.print_content_area.width),
+  FloatSize size(static_cast<float>(print_params.print_content_area.width),
                  static_cast<float>(print_params.print_content_area.height));
-  print_context_->BeginPrintMode(rect.Width(), rect.Height());
-  print_context_->ComputePageRects(rect);
+  print_context_->BeginPrintMode(size.Width(), size.Height());
+  print_context_->ComputePageRects(size);
 
   return static_cast<int>(print_context_->PageCount());
 }

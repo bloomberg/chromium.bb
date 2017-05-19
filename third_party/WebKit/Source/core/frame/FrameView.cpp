@@ -3071,9 +3071,8 @@ void FrameView::SetupPrintContext() {
   bool is_us = DefaultLanguage() == "en-US";
   int width = is_us ? kLetterPortraitPageWidth : kA4PortraitPageWidth;
   int height = is_us ? kLetterPortraitPageHeight : kA4PortraitPageHeight;
-  FloatRect page_rect(0, 0, width, height);
-  print_context_->BeginPrintMode(page_rect.Width(), page_rect.Height());
-  print_context_->ComputePageRects(page_rect);
+  print_context_->BeginPrintMode(width, height);
+  print_context_->ComputePageRects(FloatSize(width, height));
   DispatchEventsForPrintingOnAllFrames();
 }
 
