@@ -1583,6 +1583,8 @@ class CORE_EXPORT UseCounter {
     kPostMessageOutgoingWouldBeBlockedByConnectSrc = 1974,
     kPostMessageIncomingWouldBeBlockedByConnectSrc = 1975,
     kPaymentRequestNetworkNameInSupportedMethods = 1976,
+    kCrossOriginPropertyAccess = 1977,
+    kCrossOriginPropertyAccessFromOpener = 1978,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

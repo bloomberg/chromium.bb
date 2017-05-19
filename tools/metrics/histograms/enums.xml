@@ -14983,6 +14983,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1974" label="PostMessageOutgoingWouldBeBlockedByConnectSrc"/>
   <int value="1975" label="PostMessageIncomingWouldBeBlockedByConnectSrc"/>
   <int value="1976" label="PaymentRequestNetworkNameInSupportedMethods"/>
+  <int value="1977" label="CrossOriginPropertyAccess"/>
+  <int value="1978" label="CrossOriginPropertyAccessFromOpener"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
