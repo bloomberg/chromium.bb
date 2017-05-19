@@ -105,7 +105,10 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
@@ -1509,14 +1512,8 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   // MacOS version of underlying GrabViewSnapshot() blocks while
   // display/GPU are in a power-saving mode, so make sure display
   // does not go to sleep for the duration of reading a snapshot.
-  if (pending_browser_snapshots_.empty()) {
-    DCHECK(!power_save_blocker_);
-    power_save_blocker_.reset(new device::PowerSaveBlocker(
-        device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-        device::PowerSaveBlocker::kReasonOther, "GetSnapshot",
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
-  }
+  if (pending_browser_snapshots_.empty())
+    GetWakeLockService()->RequestWakeLock();
 #endif
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
@@ -2473,7 +2470,7 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
   }
 #if defined(OS_MACOSX)
   if (pending_browser_snapshots_.empty())
-    power_save_blocker_.reset();
+    GetWakeLockService()->CancelWakeLock();
 #endif
 }
 
@@ -2642,5 +2639,30 @@ void RenderWidgetHostImpl::ProcessSwapMessages(
       rph->OnBadMessageReceived(*i);
   }
 }
+
+#if defined(OS_MACOSX)
+device::mojom::WakeLockService* RenderWidgetHostImpl::GetWakeLockService() {
+  // Here is a lazy binding, and will not reconnect after connection error.
+  if (!wake_lock_) {
+    device::mojom::WakeLockServiceRequest request =
+        mojo::MakeRequest(&wake_lock_);
+    // In some testing contexts, the service manager connection isn't
+    // initialized.
+    if (ServiceManagerConnection::GetForProcess()) {
+      service_manager::Connector* connector =
+          ServiceManagerConnection::GetForProcess()->GetConnector();
+      DCHECK(connector);
+      device::mojom::WakeLockProviderPtr wake_lock_provider;
+      connector->BindInterface(device::mojom::kServiceName,
+                               mojo::MakeRequest(&wake_lock_provider));
+      wake_lock_provider->GetWakeLockWithoutContext(
+          device::mojom::WakeLockType::PreventDisplaySleep,
+          device::mojom::WakeLockReason::ReasonOther, "GetSnapshot",
+          std::move(request));
+    }
+  }
+  return wake_lock_.get();
+}
+#endif
 
 }  // namespace content
