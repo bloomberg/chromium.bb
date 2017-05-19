@@ -477,8 +477,10 @@ cr.define('bookmarks', function() {
       // below based on mouse position etc.
       this.dropDestination_ =
           this.calculateDropDestination_(e.clientY, overElement);
-      if (!this.dropDestination_)
+      if (!this.dropDestination_) {
+        this.dropIndicator_.finish();
         return;
+      }
 
       if (e.dataTransfer) {
         e.dataTransfer.dropEffect =
