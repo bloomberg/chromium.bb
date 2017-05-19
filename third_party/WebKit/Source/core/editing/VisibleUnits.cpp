@@ -4145,8 +4145,12 @@ static Vector<RectType> ComputeTextBounds(const EphemeralRange& range) {
   return result;
 }
 
-Vector<IntRect> ComputeTextRects(const EphemeralRange& range) {
-  return ComputeTextBounds<IntRect>(range);
+IntRect ComputeTextRect(const EphemeralRange& range) {
+  IntRect result;
+  const Vector<IntRect>& rects = ComputeTextBounds<IntRect>(range);
+  for (const IntRect& rect : rects)
+    result.Unite(rect);
+  return result;
 }
 
 Vector<FloatQuad> ComputeTextQuads(const EphemeralRange& range) {

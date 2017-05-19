@@ -1441,11 +1441,7 @@ Node* Range::PastLastNode() const {
 }
 
 IntRect Range::BoundingBox() const {
-  IntRect result;
-  const Vector<IntRect>& rects = ComputeTextRects(EphemeralRange(this));
-  for (const IntRect& rect : rects)
-    result.Unite(rect);
-  return result;
+  return ComputeTextRect(EphemeralRange(this));
 }
 
 // TODO(tanvir.rizvi): We will replace Range::TextQuads with
