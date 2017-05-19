@@ -21,8 +21,8 @@ function sensor_mocks(mojo) {
   return define('Generic Sensor API mocks', [
     'mojo/public/js/core',
     'mojo/public/js/bindings',
-    'device/generic_sensor/public/interfaces/sensor_provider.mojom',
-    'device/generic_sensor/public/interfaces/sensor.mojom',
+    'services/device/public/interfaces/sensor_provider.mojom',
+    'services/device/public/interfaces/sensor.mojom',
     'services/device/public/interfaces/constants.mojom',
   ], (core, bindings, sensor_provider, sensor, deviceConstants) => {
 

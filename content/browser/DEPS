@@ -21,7 +21,6 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",
   "+device/gamepad", # For gamepad API
-  "+device/generic_sensor",  # For sensors service.
   "+device/geolocation",
   "+device/nfc",
   "+device/power_save_blocker",
