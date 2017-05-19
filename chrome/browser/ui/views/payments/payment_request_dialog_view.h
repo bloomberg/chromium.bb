@@ -104,6 +104,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowErrorMessage() override;
 
   // PaymentRequestSpec::Observer:
+  void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
   void OnSpecUpdated() override;
 
   void Pay();
