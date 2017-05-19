@@ -57,6 +57,13 @@ constexpr double kMultiplyFactor = 1.5;
 constexpr double kJitterFactor = 0.1;           // +/- 10% jitter
 constexpr int64_t kMaxDelayMS = 8 * 60 * 1000;  // 8 minutes
 
+// Helper function. Returns true if we are using Hands Off Enrollment.
+bool UsingHandsOffEnrollment() {
+  return policy::DeviceCloudPolicyManagerChromeOS::
+             GetZeroTouchEnrollmentMode() ==
+         policy::ZeroTouchEnrollmentMode::HANDS_OFF;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -277,7 +284,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
     Show();
   } else {
     view_->ShowEnrollmentStatus(status);
-    if (WizardController::UsingHandsOffEnrollment())
+    if (UsingHandsOffEnrollment())
       AutomaticRetry();
   }
 }
@@ -286,7 +293,7 @@ void EnrollmentScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
   RecordEnrollmentErrorMetrics();
   view_->ShowOtherError(error);
-  if (WizardController::UsingHandsOffEnrollment())
+  if (UsingHandsOffEnrollment())
     AutomaticRetry();
 }
 
@@ -361,7 +368,7 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
   retry_backoff_->InformOfRequest(true);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
-  if (WizardController::UsingHandsOffEnrollment()) {
+  if (UsingHandsOffEnrollment()) {
     OnConfirmationClosed();
   } else {
     view_->ShowEnrollmentStatus(
