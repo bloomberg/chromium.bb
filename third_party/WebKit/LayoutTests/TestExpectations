@@ -123,6 +123,8 @@ crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ 
 # This test fails only when spv2 is enabled.
 crbug.com/719533 compositing/overflow/absolute-element-in-isolated-composited-ancestor.html [ Failure ]
 
+crbug.com/724567 fast/spatial-navigation/snav-z-index.html [ Pass Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
