@@ -67,6 +67,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -8703,6 +8704,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigate main tab to a b.com URL that will not commit.
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  NavigationHandleObserver handle_observer(shell()->web_contents(), stall_url);
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
   shell()->LoadURL(stall_url);
   EXPECT_TRUE(delayer.WaitForRequestStart());
@@ -8719,6 +8721,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Since the navigation above didn't commit, the b.com RenderViewHost in the
   // main tab should still not be active.
   EXPECT_FALSE(rvh->is_active());
+  EXPECT_EQ(net::ERR_ABORTED, handle_observer.net_error_code());
 
   // Navigate popup to b.com to recreate the b.com process.  When creating
   // opener proxies, |rvh| should be reused as a swapped out RVH.  In

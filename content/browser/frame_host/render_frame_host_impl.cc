@@ -960,6 +960,8 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
   // The renderer process is gone, so this frame can no longer be loading.
+  if (navigation_handle_)
+    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
   ResetLoadingState();
 
   // Any future UpdateState or UpdateTitle messages from this or a recreated
@@ -2927,6 +2929,12 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
   if (IsBrowserSideNavigationEnabled() && !for_navigation) {
     // Cancel any pending navigations, to avoid their navigation commit/fail
     // event from wiping out the is_waiting_for_beforeunload_ack_ state.
+    if (frame_tree_node_->navigation_request() &&
+        frame_tree_node_->navigation_request()->navigation_handle()) {
+      frame_tree_node_->navigation_request()
+          ->navigation_handle()
+          ->set_net_error_code(net::ERR_ABORTED);
+    }
     frame_tree_node_->ResetNavigationRequest(false, true);
   }
 
@@ -3156,6 +3164,8 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
+  if (navigation_handle_)
+    DCHECK_NE(net::OK, navigation_handle_->GetNetErrorCode());
   frame_tree_node_->ResetNavigationRequest(true, true);
 }
 

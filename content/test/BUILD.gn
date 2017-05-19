@@ -88,6 +88,8 @@ static_library("test_support") {
     "../public/test/mock_render_thread.h",
     "../public/test/mock_resource_context.cc",
     "../public/test/mock_resource_context.h",
+    "../public/test/navigation_handle_observer.cc",
+    "../public/test/navigation_handle_observer.h",
     "../public/test/navigation_simulator.cc",
     "../public/test/navigation_simulator.h",
     "../public/test/ppapi_test_utils.cc",
