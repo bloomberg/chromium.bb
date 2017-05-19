@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -17,6 +18,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/FrameTree.h"
 #include "modules/credentialmanager/Credential.h"
+#include "modules/credentialmanager/CredentialCreationOptions.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/credentialmanager/CredentialRequestOptions.h"
 #include "modules/credentialmanager/FederatedCredential.h"
@@ -199,6 +201,41 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
       WebCredential::Create(credential->GetPlatformCredential());
   CredentialManagerClient::From(ExecutionContext::From(script_state))
       ->DispatchStore(*web_credential, new NotificationCallbacks(resolver));
+  return promise;
+}
+
+ScriptPromise CredentialsContainer::create(
+    ScriptState* script_state,
+    const CredentialCreationOptions& options,
+    ExceptionState& exception_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  if (!CheckBoilerplate(resolver))
+    return promise;
+
+  // TODO(http://crbug.com/715077): Generalize this check when 'publicKey'
+  // becomes a supported option.
+  if (!(options.hasPassword() ^ options.hasFederated())) {
+    resolver->Reject(DOMException::Create(kNotSupportedError,
+                                          "Only 'password' and 'federated' "
+                                          "credential types are currently "
+                                          "supported."));
+    return promise;
+  }
+
+  if (options.hasPassword()) {
+    if (options.password().isPasswordCredentialData()) {
+      resolver->Resolve(PasswordCredential::Create(
+          options.password().getAsPasswordCredentialData(), exception_state));
+    } else {
+      resolver->Resolve(PasswordCredential::Create(
+          options.password().getAsHTMLFormElement(), exception_state));
+    }
+  } else {
+    resolver->Resolve(
+        FederatedCredential::Create(options.federated(), exception_state));
+  }
+
   return promise;
 }
 

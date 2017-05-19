@@ -580,6 +580,7 @@ interface Credential
 interface CredentialsContainer
     attribute @@toStringTag
     method constructor
+    method create
     method get
     method requireUserMediation
     method store

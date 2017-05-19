@@ -6,12 +6,15 @@ PASS CredentialsContainer interface: existence and properties of interface proto
 PASS CredentialsContainer interface: existence and properties of interface prototype object's "constructor" property 
 PASS CredentialsContainer interface: operation get(CredentialRequestOptions) 
 PASS CredentialsContainer interface: operation store(Credential) 
+PASS CredentialsContainer interface: operation create(CredentialCreationOptions) 
 PASS CredentialsContainer interface: operation requireUserMediation() 
 PASS CredentialsContainer interface: navigator.credentials must inherit property "get" with the proper type (0) 
 PASS CredentialsContainer interface: calling get(CredentialRequestOptions) on navigator.credentials with too few arguments must throw TypeError 
 PASS CredentialsContainer interface: navigator.credentials must inherit property "store" with the proper type (1) 
 PASS CredentialsContainer interface: calling store(Credential) on navigator.credentials with too few arguments must throw TypeError 
-PASS CredentialsContainer interface: navigator.credentials must inherit property "requireUserMediation" with the proper type (2) 
+PASS CredentialsContainer interface: navigator.credentials must inherit property "create" with the proper type (2) 
+PASS CredentialsContainer interface: calling create(CredentialCreationOptions) on navigator.credentials with too few arguments must throw TypeError 
+PASS CredentialsContainer interface: navigator.credentials must inherit property "requireUserMediation" with the proper type (3) 
 PASS PasswordCredential interface: existence and properties of interface object 
 PASS PasswordCredential interface object length 
 PASS PasswordCredential interface object name 
