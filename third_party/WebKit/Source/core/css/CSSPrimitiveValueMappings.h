@@ -194,47 +194,10 @@ inline ColumnSpan CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EBorderStyle e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EBorderStyle::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case EBorderStyle::kHidden:
-      value_id_ = CSSValueHidden;
-      break;
-    case EBorderStyle::kInset:
-      value_id_ = CSSValueInset;
-      break;
-    case EBorderStyle::kGroove:
-      value_id_ = CSSValueGroove;
-      break;
-    case EBorderStyle::kRidge:
-      value_id_ = CSSValueRidge;
-      break;
-    case EBorderStyle::kOutset:
-      value_id_ = CSSValueOutset;
-      break;
-    case EBorderStyle::kDotted:
-      value_id_ = CSSValueDotted;
-      break;
-    case EBorderStyle::kDashed:
-      value_id_ = CSSValueDashed;
-      break;
-    case EBorderStyle::kSolid:
-      value_id_ = CSSValueSolid;
-      break;
-    case EBorderStyle::kDouble:
-      value_id_ = CSSValueDouble;
-      break;
-  }
-}
-
-template <>
 inline EBorderStyle CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueAuto)  // Valid for CSS outline-style
     return EBorderStyle::kDotted;
-  return (EBorderStyle)(value_id_ - CSSValueNone);
+  return detail::cssValueIDToPlatformEnumGenerated<EBorderStyle>(value_id_);
 }
 
 template <>

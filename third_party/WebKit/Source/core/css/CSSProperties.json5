@@ -685,10 +685,12 @@
     },
     {
       name: "border-bottom-style",
-      initial: "InitialBorderStyle",
       type_name: "EBorderStyle",
-      keywords: ["none"],
+      field_template: "keyword",
+      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      default_value: "none",
       typedom_types: ["Image"],
+      field_group: "surround",
     },
     {
       name: "border-bottom-width",
@@ -755,10 +757,12 @@
     },
     {
       name: "border-left-style",
-      initial: "InitialBorderStyle",
       type_name: "EBorderStyle",
-      keywords: ["none"],
+      field_template: "keyword",
+      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      default_value: "none",
       typedom_types: ["Image"],
+      field_group: "surround",
     },
     {
       name: "border-left-width",
@@ -785,10 +789,12 @@
     },
     {
       name: "border-right-style",
-      initial: "InitialBorderStyle",
       type_name: "EBorderStyle",
-      keywords: ["none"],
       typedom_types: ["Image"],
+      field_template: "keyword",
+      default_value: "none",
+      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      field_group: "surround",
     },
     {
       name: "border-right-width",
@@ -837,10 +843,12 @@
     },
     {
       name: "border-top-style",
-      initial: "InitialBorderStyle",
       type_name: "EBorderStyle",
-      keywords: ["none"],
+      field_template: "keyword",
+      default_value: "none",
+      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
       typedom_types: ["Image"],
+      field_group: "surround",
     },
     {
       name: "border-top-width",
@@ -2259,7 +2267,7 @@
     },
     {
       name: "column-rule-style",
-      initial: "InitialBorderStyle",
+      initial: "InitialColumnRuleStyle",
       type_name: "EBorderStyle",
     },
     {

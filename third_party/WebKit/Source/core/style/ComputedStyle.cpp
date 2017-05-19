@@ -859,10 +859,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     const ComputedStyle& other) const {
   if (Visibility() != other.Visibility() ||
       PrintColorAdjust() != other.PrintColorAdjust() ||
-      InsideLink() != other.InsideLink() ||
-      !Border().VisuallyEqual(other.Border()) || !RadiiEqual(other) ||
-      !BorderColorVisuallyEquals(other) || !BorderSizeEquals(other) ||
-      *background_data_ != *other.background_data_)
+      InsideLink() != other.InsideLink() || !BorderVisuallyEqual(other) ||
+      !RadiiEqual(other) || *background_data_ != *other.background_data_)
     return true;
 
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
