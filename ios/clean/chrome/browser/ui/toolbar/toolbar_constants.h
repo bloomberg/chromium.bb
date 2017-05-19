@@ -25,4 +25,7 @@ extern const CGFloat kLocationBarShadowOpacity;
 // Progress Bar Height.
 extern const CGFloat kProgressBarHeight;
 
+// Toolbar Buttons.
+extern const CGFloat kToolbarButtonWidth;
+
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONSTANTS_H_
