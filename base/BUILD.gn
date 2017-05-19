@@ -924,9 +924,6 @@ component("base") {
     "time/tick_clock.h",
     "time/time.cc",
     "time/time.h",
-    "time/time_mac.cc",
-    "time/time_posix.cc",
-    "time/time_win.cc",
     "timer/elapsed_timer.cc",
     "timer/elapsed_timer.h",
     "timer/hi_res_timer_manager.h",
@@ -1356,6 +1353,7 @@ component("base") {
       "power_monitor/power_monitor_device_source_win.cc",
       "profiler/win32_stack_frame_unwinder.cc",
       "profiler/win32_stack_frame_unwinder.h",
+      "time/time_win.cc",
     ]
 
     sources -= [
@@ -1463,6 +1461,8 @@ component("base") {
     sources += [
       "mac/scoped_typeref.h",
       "power_monitor/power_monitor_device_source_mac.mm",
+      "time/time_conversion_posix.cc",
+      "time/time_mac.cc",
     ]
 
     libs = [
@@ -1608,10 +1608,28 @@ component("base") {
       "process/memory_stubs.cc",
       "strings/sys_string_conversions_mac.mm",
       "threading/platform_thread_mac.mm",
+      "time/time_conversion_posix.cc",
       "time/time_mac.cc",
     ]
 
     set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  # Fuchsia.
+  if (is_fuchsia) {
+    sources += [
+      "time/time_conversion_posix.cc",
+      "time/time_exploded_posix.cc",
+      "time/time_fuchsia.cc",
+    ]
+  }
+
+  if (is_posix && !is_fuchsia && !is_mac && !is_ios) {
+    sources += [
+      "time/time_conversion_posix.cc",
+      "time/time_exploded_posix.cc",
+      "time/time_now_posix.cc",
+    ]
   }
 
   if (is_posix && !is_mac && !is_ios && !is_android && !is_chromeos) {
