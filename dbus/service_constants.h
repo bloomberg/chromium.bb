@@ -233,6 +233,7 @@ const char kBluetoothPluginInterface[] = "org.chromium.BluetoothDevice";
 
 // Bluetooth Device plugin methods.
 const char kGetConnInfo[] = "GetConnInfo";
+const char kSetLEConnectionParameters[] = "SetLEConnectionParameters";
 }  // namespace bluetooth_plugin_device
 
 namespace bluetooth_adapter {
