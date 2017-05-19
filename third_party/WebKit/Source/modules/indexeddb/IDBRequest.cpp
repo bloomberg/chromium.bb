@@ -57,7 +57,7 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
   IDBRequest* request = new IDBRequest(script_state, source, transaction);
   request->SuspendIfNeeded();
   // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
-  // are not associated with transactions.
+  // do not have an associated transaction.
   if (transaction)
     transaction->RegisterRequest(request);
   return request;
@@ -394,10 +394,8 @@ bool IDBRequest::HasPendingActivity() const {
 void IDBRequest::ContextDestroyed(ExecutionContext*) {
   if (ready_state_ == PENDING) {
     ready_state_ = kEarlyDeath;
-    if (transaction_) {
+    if (transaction_)
       transaction_->UnregisterRequest(this);
-      transaction_.Clear();
-    }
   }
 
   enqueued_events_.clear();
