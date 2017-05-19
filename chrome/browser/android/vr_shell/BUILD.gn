@@ -72,6 +72,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "ui_elements/transient_security_warning.h",
       "ui_elements/ui_element.cc",
       "ui_elements/ui_element.h",
+      "ui_elements/ui_element_debug_id.h",
       "ui_elements/url_bar.cc",
       "ui_elements/url_bar.h",
       "ui_elements/video_capture_indicator.cc",

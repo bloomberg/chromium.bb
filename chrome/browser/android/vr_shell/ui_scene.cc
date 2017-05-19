@@ -121,9 +121,19 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
   }
 }
 
-UiElement* UiScene::GetUiElementById(int element_id) {
+UiElement* UiScene::GetUiElementById(int element_id) const {
   for (const auto& element : ui_elements_) {
     if (element->id() == element_id) {
+      return element.get();
+    }
+  }
+  return nullptr;
+}
+
+UiElement* UiScene::GetUiElementByDebugId(UiElementDebugId debug_id) const {
+  DCHECK(debug_id != UiElementDebugId::kNone);
+  for (const auto& element : ui_elements_) {
+    if (element->debug_id() == debug_id) {
       return element.get();
     }
   }

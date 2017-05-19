@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "device/vr/vr_types.h"
 
 namespace base {
@@ -235,6 +236,10 @@ class UiElement : public WorldRectangle {
   bool dirty() const { return dirty_; }
   void set_dirty(bool dirty) { dirty_ = dirty; }
 
+  // A flag usable during transformation calculates to avoid duplicate work.
+  UiElementDebugId debug_id() const { return debug_id_; }
+  void set_debug_id(UiElementDebugId debug_id) { debug_id_ = debug_id; }
+
   // By default, sets an element to be visible or not. This may be overridden to
   // allow finer control of element visibility.
   virtual void SetEnabled(bool enabled);
@@ -248,7 +253,7 @@ class UiElement : public WorldRectangle {
   int parent_id_ = -1;
 
   // If true, this object will be visible.
-  bool visible_ = true;
+  bool visible_ = false;
 
   // If false, the reticle will not hit the element, even if visible.
   bool hit_testable_ = true;
@@ -306,6 +311,9 @@ class UiElement : public WorldRectangle {
 
   // A flag usable during transformation calculates to avoid duplicate work.
   bool dirty_ = false;
+
+  // An identifier used for testing and debugging, in lieu of a string.
+  UiElementDebugId debug_id_ = UiElementDebugId::kNone;
 
   Transform transform_;
 
