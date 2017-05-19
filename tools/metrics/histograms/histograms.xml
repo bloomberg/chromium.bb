@@ -423,6 +423,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ActivityTracker.Collect.UncleanShutdownCount" units="count">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Number of unclean shutdowns, as derived from the stability instrumentation.
+    Logged each time stability file collection is performed.
+  </summary>
+</histogram>
+
+<histogram name="ActivityTracker.Collect.UncleanSystemCount" units="count">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Number of unclean shutdowns that can potentially be attributed to system
+    instability. This should be smaller or equal to UncleanShutdownCount. Logged
+    each time stability file collection is performed.
+  </summary>
+</histogram>
+
 <histogram name="ActivityTracker.Collect.WriteDumpStatus"
     enum="ActivityTrackerWriteDumpStatus">
   <owner>manzagop@chromium.org</owner>
