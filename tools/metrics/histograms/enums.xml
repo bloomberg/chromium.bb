@@ -11098,6 +11098,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="405" label="FILE_MANAGER_PRIVATE_ON_APPS_UPDATED"/>
   <int value="406" label="ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_START"/>
   <int value="407" label="ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_STOP"/>
+  <int value="408" label="MEDIA_PERCEPTION_PRIVATE_ON_MEDIA_PERCEPTION"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -12321,6 +12322,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1171" label="AUTOTESTPRIVATE_GETPLAYSTORESTATE"/>
   <int value="1172" label="AUTOTESTPRIVATE_SETPLAYSTOREENABLED"/>
   <int value="1173" label="APP_CURRENTWINDOWINTERNAL_SETACTIVATEONPOINTER"/>
+  <int value="1174" label="MEDIAPERCEPTIONPRIVATE_GETSTATE"/>
+  <int value="1175" label="MEDIAPERCEPTIONPRIVATE_SETSTATE"/>
+  <int value="1176" label="MEDIAPERCEPTIONPRIVATE_GETDIAGNOSTICS"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">
@@ -12747,6 +12751,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="201" label="kNetworkingOnc"/>
   <int value="202" label="kVirtualKeyboard"/>
   <int value="203" label="kNetworkingCastPrivate"/>
+  <int value="204" label="kMediaPerceptionPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
