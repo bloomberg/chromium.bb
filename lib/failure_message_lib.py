@@ -10,8 +10,12 @@ import collections
 import json
 import re
 
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
+from chromite.lib import hwtest_results
+from chromite.lib import patch as cros_patch
+from chromite.lib import portage_util
 
 
 # These keys must exist as column names from failureView in cidb.
@@ -530,59 +534,58 @@ class BuildFailureMessage(object):
     """Check if all of the failures are package build failures."""
     return self.MatchesFailureType(failures_lib.PackageBuildFailure.__name__)
 
-  def FindPackageBuildFailureSuspects(self, changes, sanity):
-    """Figure out what changes probably caused our failures.
+  def FindSuspectedChanges(self, changes, build_root, failed_hwtests, sanity):
+    """Find and return suspected changes.
 
-    We use a fairly simplistic algorithm to calculate breakage: If you changed
-    a package, and that package broke, you probably broke the build. If there
-    were multiple changes to a broken package, we fail them all.
-
-    Some safeguards are implemented to ensure that bad changes are kicked out:
-      1) Changes to overlays (e.g. ebuilds, eclasses, etc.) are always kicked
-         out if the build fails.
-      2) If a package fails that nobody changed, we kick out all of the
-         changes.
-      3) If any failures occur that we can't explain, we kick out all of the
-         changes.
+    Suspected changes are CLs that probably caused failures and will be
+    rejected. This method analyzes every failure message and returns a set of
+    changes as suspects.
+    1) if a failure message is a PackageBuildFailure, get suspects for the build
+    failure. If there're failed packages without assigned suspects, blame all
+    changes when sanity is True.
+    2) if a failure message is a TEST failure, get suspects for the HWTest
+    failure. If there're failed HWTests without assigned suspects, blame all
+    changes when sanity is True.
+    3) If a failure message is neither PackagebuildFailure nor HWTestFailure,
+    we can't explain the failure and so blame all changes when sanity is True.
 
     It is certainly possible to trick this algorithm: If one developer submits
     a change to libchromeos that breaks the power_manager, and another developer
     submits a change to the power_manager at the same time, only the
     power_manager change will be kicked out. That said, in that situation, the
-    libchromeos change will likely be kicked out on the next run, thanks to
-    safeguard #2 above.
+    libchromeos change will likely be kicked out on the next run when the next
+    run fails power_manager but dosen't include any changes from power_manager.
 
     Args:
-      changes: List of changes to examine.
+      changes: A list of cros_patch.GerritPatch instances.
+      build_root: The path to the build root.
+      failed_hwtests: A list of name of failed hwtests got from CIDB (see the
+        return type of HWTestResultManager.GetFailedHWTestsFromCIDB), or None.
       sanity: The sanity checker builder passed and the tree was open when
-              the build started.
+        the build started and ended.
 
     Returns:
-      Set of changes that likely caused the failure.
+      A set of cros_patch.GerritPatch instances as suspects.
     """
-    # Import portage_util here to avoid circular imports.
-    # portage_util -> parallel -> failures_lib
-    from chromite.lib import portage_util
-    blame_everything = False
     suspects = set()
+    blame_everything = False
     for failure in self.failure_messages:
-      # Only look at PackageBuildFailure objects.
-      failed_packages = []
-
       if failure.exception_type == failures_lib.PackageBuildFailure.__name__:
-        failed_packages = failure.GetFailedPackages()
+        # Find suspects for PackageBuildFailure
+        build_suspects, no_assignee_packages = (
+            self.FindPackageBuildFailureSuspects(changes, failure))
+        suspects.update(build_suspects)
+        blame_everything = blame_everything or no_assignee_packages
+      elif failure.exception_category == constants.EXCEPTION_CATEGORY_TEST:
+        # Find suspects for HWTestFailure
+        hwtest_supects, no_assignee_hwtests = (
+            hwtest_results.HWTestResultManager.FindHWTestFailureSuspects(
+                changes, build_root, failed_hwtests))
+        suspects.update(hwtest_supects)
+        blame_everything = blame_everything or no_assignee_hwtests
       else:
+        # Unknown failures, blame everything
         blame_everything = True
-
-      for package in failed_packages:
-        failed_projects = portage_util.FindWorkonProjects([package])
-        blame_assigned = False
-        for change in changes:
-          if change.project in failed_projects:
-            blame_assigned = True
-            suspects.add(change)
-        if not blame_assigned:
-          blame_everything = True
 
     # Only do broad-brush blaming if the tree is sane.
     if sanity:
@@ -594,3 +597,43 @@ class BuildFailureMessage(object):
                         if '/overlays/' in change.project)
 
     return suspects
+
+  def FindPackageBuildFailureSuspects(self, changes, failure):
+    """Find suspects for a PackageBuild failure.
+
+    If a change touched a package and that package broke, this change is one of
+    the suspects; if multiple changes touched one failed package, all these
+    changes will be returned as suspects.
+
+    Args:
+      changes: A list of cros_patch.GerritPatch instances.
+      failure: An instance of StageFailureMessage(or its sub-class).
+
+    Returns:
+      A pair of suspects and no_assignee_packages. suspects is a set of
+      cros_patch.GerritPatch instances as suspects. no_assignee_packages is True
+      when there're failed packages without assigned suspects; else,
+      no_assignee_packages is False.
+    """
+    suspects = set()
+    no_assignee_packages = False
+    packages_with_assignee = set()
+    failed_packages = failure.GetFailedPackages()
+    for package in failed_packages:
+      failed_projects = portage_util.FindWorkonProjects([package])
+      for change in changes:
+        if change.project in failed_projects:
+          suspects.add(change)
+          packages_with_assignee.add(package)
+
+    if suspects:
+      logging.info('Find suspects for BuildPackages failures: %s',
+                   cros_patch.GetChangesAsString(suspects))
+
+    packages_without_assignee = set(failed_packages) - packages_with_assignee
+    if packages_without_assignee:
+      logging.info('Didn\'t find changes to blame for failed packages: %s',
+                   list(packages_without_assignee))
+      no_assignee_packages = True
+
+    return suspects, no_assignee_packages

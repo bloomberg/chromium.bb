@@ -7,9 +7,13 @@
 from __future__ import print_function
 
 import collections
+import os
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import git
+from chromite.lib import patch as cros_patch
+
 
 HWTEST_RESULT_COLUMNS = ['id', 'build_id', 'test_name', 'status']
 
@@ -50,6 +54,7 @@ class HWTestResult(_hwTestResult):
 
     names = test_name.split('.')
     return names[0]
+
 
 class HWTestResultManager(object):
   """Class to manage HWTest results."""
@@ -95,3 +100,77 @@ class HWTestResultManager(object):
 
     logging.info('Found failed tests: %s ', failed_tests)
     return failed_tests
+
+  @classmethod
+  def GetFailedHwtestsAffectedByChange(cls, change, manifest, failed_hwtests):
+    """Get failed HWtests which could be affected by the given change.
+
+    Args:
+      change: An instance of cros_patch.GerritPatch.
+      manifest: An instance of ManifestCheckout.
+      failed_hwtests: A list of normalized name of failed hwtests got from CIDB
+        (see the return type of HWTestResultManager.GetFailedHWTestsFromCIDB).
+
+    Returns:
+      A list of failed hwtest names (strings) which are likely to be affected by
+      the change.
+    """
+    assert failed_hwtests
+    checkout = change.GetCheckout(manifest)
+
+    assigned_failed_hwtests = set()
+    if checkout:
+      git_repo = checkout.GetPath(absolute=True)
+      for path in change.GetDiffStatus(git_repo):
+        root, _ = os.path.splitext(path)
+        touched_dirs = root.split(os.sep)
+        for touched_dir in touched_dirs:
+          if touched_dir in failed_hwtests:
+            logging.info('Change %s changed path %s which may be relevant to '
+                         'the failed HWTest %s', change, path, touched_dir)
+            assigned_failed_hwtests.add(touched_dir)
+
+    return assigned_failed_hwtests
+
+  @classmethod
+  def FindHWTestFailureSuspects(cls, changes, build_root, failed_hwtests):
+    """Find suspects for HWTest failures.
+
+    Args:
+      changes: A list of cros_patch.GerritPatch instances.
+      build_root: The path to the build root.
+      failed_hwtests: A list of names of failed hwtests got from CIDB (see the
+        return type of HWTestResultManager.GetFailedHWTestsFromCIDB), or None.
+
+    Returns:
+      A pair of suspects and no_assignee_hwtests. suspects is a set of
+      cros_patch.GerritPatch instances. no_assignee_hwtests is True when there
+      are failed hwtests without assigned suspects; else False.
+    """
+    suspects = set()
+    no_assignee_hwtests = False
+
+    if not failed_hwtests:
+      logging.info('No failed HWTests, skip finding HWTest failure suspects')
+      return suspects, no_assignee_hwtests
+
+    manifest = git.ManifestCheckout.Cached(build_root)
+    hwtests_with_assignee = set()
+    for change in changes:
+      assigned = cls.GetFailedHwtestsAffectedByChange(
+          change, manifest, failed_hwtests)
+      if assigned:
+        hwtests_with_assignee.update(assigned)
+        suspects.add(change)
+
+    if suspects:
+      logging.info('Found suspects for HWTest failures: %s',
+                   cros_patch.GetChangesAsString(suspects))
+
+    hwtests_without_assignee = failed_hwtests - hwtests_with_assignee
+    if hwtests_without_assignee:
+      logging.info('Didn\'t find changes to blame for failed HWtests: %s',
+                   hwtests_without_assignee)
+      no_assignee_hwtests = True
+
+    return suspects, no_assignee_hwtests

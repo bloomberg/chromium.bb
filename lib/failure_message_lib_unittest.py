@@ -11,6 +11,8 @@ import mock
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import failure_message_lib
+from chromite.lib import hwtest_results
+from chromite.lib import patch_unittest
 from chromite.lib import portage_util
 
 
@@ -149,6 +151,23 @@ class FailureMessageHelper(object):
     return failure_message_lib.CompoundFailureMessage(
         stage_failure, extra_info=extra_info,
         stage_prefix_name=stage_prefix_name)
+
+  @classmethod
+  def GetTestFailureMessage(
+      cls,
+      failure_id=5,
+      build_stage_id=0,
+      outer_failure_id=None,
+      exception_type='TestFailure',
+      exception_message='** HWTest failed (code 1) **',
+      exception_category=constants.EXCEPTION_CATEGORY_TEST,
+      extra_info=None,
+      stage_name='HWTest'):
+    stage_failure = StageFailureHelper.GetStageFailure(
+        failure_id, build_stage_id, outer_failure_id, exception_type,
+        exception_message, exception_category, extra_info, stage_name)
+
+    return failure_message_lib.StageFailureMessage(stage_failure)
 
   @classmethod
   def GetBuildFailureMessageWithMixedMsgs(cls):
@@ -380,7 +399,7 @@ class FailureMessageManagerTests(cros_test_lib.TestCase):
     inner_failure_ids = [n_f.failure_id for n_f in f.inner_failures]
     self.assertItemsEqual([2, 3], inner_failure_ids)
 
-class BuildFailureMessageTests(cros_test_lib.MockTestCase):
+class BuildFailureMessageTests(patch_unittest.MockPatchBase):
   """Tests for BuildFailureMessage."""
 
   def ConstructBuildFailureMessage(self, message_summary="message_summary",
@@ -555,67 +574,179 @@ class BuildFailureMessageTests(cros_test_lib.MockTestCase):
     self.assertTrue(build_failure.IsPackageBuildFailure())
 
   def _GetMockChanges(self):
-    mock_change_1 = mock.Mock(project='chromiumos/overlays/chromiumos-overlay')
-    mock_change_2 = mock.Mock(project='chromiumos/overlays/chromiumos-overlay')
-    mock_change_3 = mock.Mock(project='chromiumos/chromite')
-    return [mock_change_1, mock_change_2, mock_change_3]
+    mock_change_1 = self.MockPatch(
+        project='chromiumos/overlays/chromiumos-overlay')
+    mock_change_2 = self.MockPatch(
+        project='chromiumos/overlays/chromiumos-overlay')
+    mock_change_3 = self.MockPatch(project='chromiumos/chromite')
+    mock_change_4 = self.MockPatch(project='chromeos/chromeos-admin')
+    return [mock_change_1, mock_change_2, mock_change_3, mock_change_4]
 
-  def testFindPackageBuildFailureSuspectsOnPackageBuildFailures(self):
-    """Test FindPackageBuildFailureSuspects on PackageBuildFailures."""
-    self.PatchObject(portage_util, 'FindWorkonProjects',
-                     return_value='chromiumos/overlays/chromiumos-overlay')
-    changes = self._GetMockChanges()
-
+  def _CreateBuildFailure(self):
     f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=1)
     f_2 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=2)
     f_3 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=3)
     failures = (failure_message_lib.FailureMessageManager.ReconstructMessages(
         [f_1, f_2, f_3]))
-    build_failure = self.ConstructBuildFailureMessage(
+    return self.ConstructBuildFailureMessage(
         failure_messages=failures)
 
-    suspects = build_failure.FindPackageBuildFailureSuspects(changes, True)
-    self.assertItemsEqual([changes[0], changes[1]], suspects)
-
-    suspects = build_failure.FindPackageBuildFailureSuspects(changes, False)
-    self.assertItemsEqual([changes[0], changes[1]], suspects)
-
-  def testFindPackageBuildFailureSuspectsWithoutAssignees(self):
-    """Test FindPackageBuildFailureSuspects without assignee changes."""
-    self.PatchObject(portage_util, 'FindWorkonProjects',
-                     return_value='chromiumos/third_party/autotest')
+  def testFindPackageBuildFailureSuspectsReturnsSuspects(self):
+    """Test FindPackageBuildFailureSuspects which returns suspects."""
     changes = self._GetMockChanges()
-
     f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=1)
-    f_2 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=2)
-    f_3 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=3)
-    failures = (failure_message_lib.FailureMessageManager.ReconstructMessages(
-        [f_1, f_2, f_3]))
-    build_failure = self.ConstructBuildFailureMessage(
-        failure_messages=failures)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
 
-    suspects = build_failure.FindPackageBuildFailureSuspects(changes, True)
-    self.assertItemsEqual(changes, suspects)
-
-    suspects = build_failure.FindPackageBuildFailureSuspects(changes, False)
-    self.assertItemsEqual([], suspects)
-
-  def testFindPackageBuildFailureSuspectsOnUnknownFailures(self):
-    """Test FindPackageBuildFailureSuspects on unknown failures."""
     self.PatchObject(portage_util, 'FindWorkonProjects',
                      return_value='chromiumos/overlays/chromiumos-overlay')
-    changes = self._GetMockChanges()
-
-    f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=1)
-    f_2 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=2)
-    f_3 = FailureMessageHelper.GetStageFailureMessage(failure_id=3)
-    failures = (failure_message_lib.FailureMessageManager.ReconstructMessages(
-        [f_1, f_2, f_3]))
-    build_failure = self.ConstructBuildFailureMessage(
-        failure_messages=failures)
-
-    suspects = build_failure.FindPackageBuildFailureSuspects(changes, True)
-    self.assertItemsEqual(changes, suspects)
-
-    suspects = build_failure.FindPackageBuildFailureSuspects(changes, False)
+    suspects, no_assignee_packages = (
+        build_failure.FindPackageBuildFailureSuspects(changes, f_1))
     self.assertItemsEqual([changes[0], changes[1]], suspects)
+    self.assertFalse(no_assignee_packages)
+
+    self.PatchObject(portage_util, 'FindWorkonProjects',
+                     return_value='chromiumos/chromite')
+    suspects, no_assignee_packages = (
+        build_failure.FindPackageBuildFailureSuspects(changes, f_1))
+    self.assertItemsEqual([changes[2]], suspects)
+    self.assertFalse(no_assignee_packages)
+
+  def testFindPackageBuildFailureSuspectsNoSuspects(self):
+    """Test FindPackageBuildFailureSuspects which returns empty suspects."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=1)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+    self.PatchObject(portage_util, 'FindWorkonProjects',
+                     return_value='chromiumos/third_party/kernel')
+    suspects, no_assignee_packages = (
+        build_failure.FindPackageBuildFailureSuspects(changes, f_1))
+
+    self.assertEqual(suspects, set())
+    self.assertTrue(no_assignee_packages)
+
+  def testFindPackageBuildFailureSuspectsNoFailedPackages(self):
+    """Test FindPackageBuildFailureSuspects without FailedPackages."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(
+        failure_id=1, extra_info=None)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+
+    self.PatchObject(portage_util, 'FindWorkonProjects',
+                     return_value='chromiumos/overlays/chromiumos-overlay')
+    suspects, no_assignee_packages = (
+        build_failure.FindPackageBuildFailureSuspects(changes, f_1))
+
+    self.assertEqual(suspects, set())
+    self.assertFalse(no_assignee_packages)
+
+  def testFindSuspectedChangesOnPackageBuildFailuresNotBlameEverything(self):
+    """Test FindSuspectedChanges on PackageBuildFailures not BlameEverything."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=1)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+    mock_find = self.PatchObject(failure_message_lib.BuildFailureMessage,
+                                 'FindPackageBuildFailureSuspects',
+                                 return_value=({changes[2]}, False))
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, mock.Mock(), mock.Mock(), True)
+    self.assertItemsEqual(suspects, changes[0: 3])
+    mock_find.assert_called_once_with(changes, f_1)
+
+    mock_find.reset_mock()
+    suspects = build_failure.FindSuspectedChanges(
+        changes, mock.Mock(), mock.Mock(), False)
+    self.assertItemsEqual(suspects, changes[2:3])
+    mock_find.assert_called_once_with(changes, f_1)
+
+  def testFindSuspectedChangesOnPackageBuildFailuresBlameEverything(self):
+    """Test FindSuspectedChanges on PackageBuildFailures and BlameEverything."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetPackageBuildFailureMessage(failure_id=1)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+    mock_find = self.PatchObject(failure_message_lib.BuildFailureMessage,
+                                 'FindPackageBuildFailureSuspects',
+                                 return_value=({changes[2]}, True))
+    suspects = build_failure.FindSuspectedChanges(
+        changes, mock.Mock(), mock.Mock(), True)
+    self.assertItemsEqual(suspects, changes)
+    mock_find.assert_called_once_with(changes, f_1)
+    mock_find.reset_mock()
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, mock.Mock(), mock.Mock(), False)
+    self.assertItemsEqual(suspects, changes[2:3])
+    mock_find.assert_called_once_with(changes, f_1)
+
+  def testFindSuspectedChangesOnHWTestFailuresNotBlameEverything(self):
+    """Test FindSuspectedChanges on HWTestFailures do not blame everything."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetTestFailureMessage(failure_id=1)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+    mock_find = self.PatchObject(hwtest_results.HWTestResultManager,
+                                 'FindHWTestFailureSuspects',
+                                 return_value=({changes[2]}, False))
+
+    build_root = mock.Mock()
+    failed_hwtests = mock.Mock()
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, build_root, failed_hwtests, True)
+    self.assertItemsEqual(suspects, changes[0:3])
+    mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
+
+    mock_find.reset_mock()
+    suspects = build_failure.FindSuspectedChanges(
+        changes, build_root, failed_hwtests, False)
+    self.assertItemsEqual(suspects, changes[2:3])
+    mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
+
+  def testFindSuspectedChangesOnHWTestFailuresBlameEverything(self):
+    """Test FindSuspectedChanges on HWTestFailures and blame everything."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetTestFailureMessage(failure_id=1)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+    mock_find = self.PatchObject(hwtest_results.HWTestResultManager,
+                                 'FindHWTestFailureSuspects',
+                                 return_value=({changes[2]}, True))
+    build_root = mock.Mock()
+    failed_hwtests = mock.Mock()
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, build_root, failed_hwtests, True)
+    self.assertItemsEqual(suspects, changes)
+    mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
+    mock_find.reset_mock()
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, build_root, failed_hwtests, False)
+    self.assertItemsEqual(suspects, changes[2:3])
+    mock_find.assert_called_once_with(changes, build_root, failed_hwtests)
+
+  def testFindSuspectedChangesOnUnknownFailures(self):
+    """Test FindSuspectedChanges on unknown failures."""
+    changes = self._GetMockChanges()
+    f_1 = FailureMessageHelper.GetStageFailureMessage(failure_id=1)
+    build_failure = self.ConstructBuildFailureMessage(failure_messages=[f_1])
+    mock_find_build_failure = self.PatchObject(
+        failure_message_lib.BuildFailureMessage,
+        'FindPackageBuildFailureSuspects',
+        return_value=({changes[2]}, True))
+    mock_find_hwtest_failure = self.PatchObject(
+        hwtest_results.HWTestResultManager,
+        'FindHWTestFailureSuspects',
+        return_value=({changes[2]}, False))
+    build_root = mock.Mock()
+    failed_hwtests = mock.Mock()
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, build_root, failed_hwtests, True)
+    self.assertItemsEqual(suspects, changes)
+    mock_find_build_failure.assert_not_called()
+    mock_find_hwtest_failure.assert_not_called()
+
+    suspects = build_failure.FindSuspectedChanges(
+        changes, build_root, failed_hwtests, False)
+    self.assertItemsEqual(suspects, set())
+    mock_find_build_failure.assert_not_called()
+    mock_find_hwtest_failure.assert_not_called()
