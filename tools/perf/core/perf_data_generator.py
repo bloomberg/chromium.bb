@@ -294,6 +294,33 @@ def get_waterfall_config():
         ]
       }
     ])
+
+  waterfall = add_tester(
+    waterfall, 'Android One Perf', 'android-nexus7v2', 'android',
+    swarming=[
+      {
+       'os': 'Android',
+       'android_devices': '1',
+       'pool': 'Chrome-perf',
+       'device_ids': [
+           'build17-b1--device1', 'build17-b1--device2', 'build17-b1--device3',
+           'build17-b1--device4', 'build17-b1--device5', 'build17-b1--device6',
+           'build17-b1--device7',
+           'build18-b1--device1', 'build18-b1--device2', 'build18-b1--device3',
+           'build18-b1--device4', 'build18-b1--device5', 'build18-b1--device6',
+           'build18-b1--device7',
+           'build47-b1--device1', 'build47-b1--device2', 'build47-b1--device3',
+           'build47-b1--device4', 'build47-b1--device5', 'build47-b1--device6',
+           'build47-b1--device7',
+          ],
+       'perf_tests': [
+         ('tracing_perftests', 'build17-b1--device2'),
+         ('gpu_perftests', 'build18-b1--device2'),
+         ('cc_perftests', 'build47-b1--device2'),
+        ]
+      }
+    ])
+
   waterfall = add_tester(
     waterfall, 'Win 10 High-DPI Perf', 'win-high-dpi', 'win',
     swarming=[
