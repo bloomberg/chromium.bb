@@ -121,6 +121,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)[::prefs::kDefaultCharset] =
       settings_private::PrefType::PREF_TYPE_STRING;
+#if defined(OS_MACOSX)
+  (*s_whitelist)[::prefs::kWebkitTabsToLinks] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+#endif
 
   // On startup.
   (*s_whitelist)[::prefs::kRestoreOnStartup] =

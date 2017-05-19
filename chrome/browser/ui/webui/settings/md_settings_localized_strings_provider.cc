@@ -350,6 +350,10 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
 #endif
+#if defined(OS_MACOSX)
+    // TODO(dbeam): use an IDS_SETTINGS_* string instead.
+    {"tabsToLinks", IDS_OPTIONS_TABS_TO_LINKS_PREF},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
