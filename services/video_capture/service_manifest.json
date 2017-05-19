@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "production": [ "*" ],
+        "capture": [ "video_capture::mojom::DeviceFactoryProvider" ],
         "tests": [ "*" ]
       },
       "requires": {
