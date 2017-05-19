@@ -17,9 +17,9 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "services/device/generic_sensor/platform_sensor.h"
-#include "services/device/generic_sensor/platform_sensor_provider.h"
-#include "services/device/generic_sensor/sensor_provider_impl.h"
+#include "device/generic_sensor/platform_sensor.h"
+#include "device/generic_sensor/platform_sensor_provider.h"
+#include "device/generic_sensor/sensor_provider_impl.h"
 
 namespace content {
 
