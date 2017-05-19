@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/cma/backend/android/audio_sink_manager.h"
 #include "chromecast/media/cma/backend/android/media_pipeline_backend_android.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -69,6 +70,7 @@ AudioDecoderAndroid::AudioDecoderAndroid(MediaPipelineBackendAndroid* backend)
       rate_shifter_output_(
           ::media::AudioBus::Create(kNumChannels, kDefaultFramesPerBuffer)),
       current_pts_(kInvalidTimestamp),
+      sink_(AudioSinkAndroid::kSinkTypeJavaBased),
       pending_output_frames_(kNoPendingOutput),
       volume_multiplier_(1.0f),
       pool_(new ::media::AudioBufferMemoryPool()),
@@ -113,9 +115,8 @@ bool AudioDecoderAndroid::Start(int64_t start_pts) {
   TRACE_FUNCTION_ENTRY0();
   current_pts_ = start_pts;
   DCHECK(IsValidConfig(config_));
-  sink_.reset(new AudioSinkAndroid(this, config_.samples_per_second,
-                                   backend_->Primary(), backend_->DeviceId(),
-                                   backend_->ContentType()));
+  sink_.Reset(this, config_.samples_per_second, backend_->Primary(),
+              backend_->DeviceId(), backend_->ContentType());
   sink_->SetVolumeMultiplier(volume_multiplier_);
   // Create decoder_ if necessary. This can happen if Stop() was called, and
   // SetConfig() was not called since then.
@@ -132,7 +133,7 @@ void AudioDecoderAndroid::Stop() {
   LOG(INFO) << __func__ << ":";
   TRACE_FUNCTION_ENTRY0();
   decoder_.reset();
-  sink_.reset();
+  sink_.Reset();
   rate_shifter_.reset();
   weak_factory_.InvalidateWeakPtrs();
 
@@ -261,10 +262,8 @@ bool AudioDecoderAndroid::SetConfig(const AudioConfig& config) {
   if (sink_ && changed_sample_rate) {
     // Destroy the old input first to ensure that the sink output sample rate
     // is updated.
-    sink_.reset();
-    sink_.reset(new AudioSinkAndroid(this, config.samples_per_second,
-                                     backend_->Primary(), backend_->DeviceId(),
-                                     backend_->ContentType()));
+    sink_.Reset(this, config.samples_per_second, backend_->Primary(),
+                backend_->DeviceId(), backend_->ContentType());
     sink_->SetVolumeMultiplier(volume_multiplier_);
     pending_output_frames_ = kNoPendingOutput;
   }

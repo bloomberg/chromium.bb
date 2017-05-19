@@ -25,7 +25,7 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 
-class AudioSinkAndroidAudioTrackImpl {
+class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
  public:
   enum State {
     kStateUninitialized,   // No data has been queued yet.
@@ -40,14 +40,6 @@ class AudioSinkAndroidAudioTrackImpl {
   // buffer larger than this size and feed it in in smaller chunks.
   static const int kDirectBufferSize = 512 * 1024;
 
-  AudioSinkAndroidAudioTrackImpl(AudioSinkAndroid::Delegate* delegate,
-                                 int input_samples_per_second,
-                                 bool primary,
-                                 const std::string& device_id,
-                                 AudioContentType content_type);
-
-  ~AudioSinkAndroidAudioTrackImpl();
-
   static bool RegisterJni(JNIEnv* env);
 
   // Called from Java so that we can cache the addresses of the Java-managed
@@ -58,17 +50,19 @@ class AudioSinkAndroidAudioTrackImpl {
       const base::android::JavaParamRef<jobject>& pcm_byte_buffer,
       const base::android::JavaParamRef<jobject>& timestamp_byte_buffer);
 
-  // Feeds data through JNI into the AudioTrack. The data must be in planar
-  // float format.
-  void WritePcm(scoped_refptr<DecoderBufferBase> data);
-
-  // Sets the pause state of this stream.
-  void SetPaused(bool paused);
-
-  // Sets the volume multiplier for this stream. If |multiplier| < 0, sets the
-  // volume multiplier to 0. If |multiplier| > 1, sets the volume multiplier
-  // to 1.
-  void SetVolumeMultiplier(float multiplier);
+  // AudioSinkAndroid implementation
+  void WritePcm(scoped_refptr<DecoderBufferBase> data) override;
+  void SetPaused(bool paused) override;
+  void SetVolumeMultiplier(float multiplier) override;
+  void SetContentTypeVolume(float volume, int fade_ms) override;
+  void SetMuted(bool muted) override;
+  float EffectiveVolume() const override;
+  // Getters
+  int input_samples_per_second() const override;
+  bool primary() const override;
+  std::string device_id() const override;
+  AudioContentType content_type() const override;
+  const char* GetContentTypeName() const override;
 
   // Prevents any further calls to the delegate (ie, called when the delegate
   // is being destroyed).
@@ -77,6 +71,16 @@ class AudioSinkAndroidAudioTrackImpl {
   State state() const { return state_; }
 
  private:
+  friend class ManagedAudioSink;
+
+  AudioSinkAndroidAudioTrackImpl(AudioSinkAndroid::Delegate* delegate,
+                                 int input_samples_per_second,
+                                 bool primary,
+                                 const std::string& device_id,
+                                 AudioContentType content_type);
+
+  ~AudioSinkAndroidAudioTrackImpl() override;
+
   void FinalizeOnFeederThread();
 
   void FeedData();
@@ -95,11 +99,21 @@ class AudioSinkAndroidAudioTrackImpl {
   void SignalError(AudioSinkAndroid::SinkError error);
   void PostError(AudioSinkAndroid::SinkError error);
 
-  AudioSinkAndroid::Delegate* const delegate_;
+  void UpdateVolume();
+
+  // Config parameters provided into c'tor.
+  Delegate* const delegate_;
   const int input_samples_per_second_;
   const bool primary_;
   const std::string device_id_;
   const AudioContentType content_type_;
+
+  float stream_volume_multiplier_;
+  float type_volume_multiplier_;
+  float mute_volume_multiplier_;
+  // TODO(ckuiper): Use this to configure the fading logic in Android's audio
+  // subsystem.
+  int fade_ms_;
 
   // Java AudioSinkAudioTrackImpl instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_sink_audiotrack_impl_;
@@ -125,8 +139,6 @@ class AudioSinkAndroidAudioTrackImpl {
   uint64_t* direct_rendering_delay_address_;
 
   State state_;
-
-  float stream_volume_multiplier_;
 
   scoped_refptr<DecoderBufferBase> pending_data_;
   int pending_data_bytes_already_fed_;

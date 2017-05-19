@@ -13,12 +13,13 @@ source_set("cast_media_android") {
     "audio_sink_android.h",
     "audio_sink_android_audiotrack_impl.cc",
     "audio_sink_android_audiotrack_impl.h",
-    "audio_sink_android_dummy_impl.cc",
-    "audio_sink_android_dummy_impl.h",
+    "audio_sink_manager.cc",
+    "audio_sink_manager.h",
     "cast_media_android.cc",
     "media_codec_support_cast_audio.cc",
     "media_pipeline_backend_android.cc",
     "media_pipeline_backend_android.h",
+    "volume_control_android.cc",
   ]
 
   deps = [
