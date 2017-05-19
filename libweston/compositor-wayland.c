@@ -2319,7 +2319,8 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		b->parent.compositor =
 			wl_registry_bind(registry, name,
-					 &wl_compositor_interface, 1);
+					 &wl_compositor_interface,
+					 MIN(version, 4));
 	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
 		b->parent.xdg_shell =
 			wl_registry_bind(registry, name,
