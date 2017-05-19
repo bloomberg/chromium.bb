@@ -416,6 +416,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   bool is_fullscreen() { return is_fullscreen_; }
 
+  bool wheel_scroll_latching_enabled() {
+    return wheel_scroll_latching_enabled_;
+  }
+
   // Exposed for testing.
   virtual bool IsChildFrameForTesting() const;
   virtual cc::SurfaceId SurfaceIdForTesting() const;
@@ -454,6 +458,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // GetTextInputManager(). It also becomes nullptr when TextInputManager is
   // destroyed before the RWHV is destroyed.
   TextInputManager* text_input_manager_;
+
+  const bool wheel_scroll_latching_enabled_;
 
  private:
   gfx::Rect current_display_area_;

@@ -220,6 +220,11 @@ bool WebInputEventTraits::ShouldBlockEventStream(
       // Touch move events may be non-blocking but are always explicitly
       // acknowledge by the renderer so they block the event stream.
       return true;
+
+    case WebInputEvent::kMouseWheel:
+      return static_cast<const WebMouseWheelEvent&>(event).dispatch_type ==
+             WebInputEvent::kBlocking;
+
     default:
       return true;
   }
