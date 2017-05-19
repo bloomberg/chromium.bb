@@ -614,18 +614,6 @@
       ]
     },
     {
-      "name": "lakitu-gpu",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "lakitu_next",
       "configs": [
         {
