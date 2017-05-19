@@ -793,10 +793,8 @@ void FrameView::CalculateScrollbarModesFromOverflowStyle(
     v_mode = kScrollbarAlwaysOn;
 }
 
-void FrameView::CalculateScrollbarModes(
-    ScrollbarMode& h_mode,
-    ScrollbarMode& v_mode,
-    ScrollbarModesCalculationStrategy strategy) const {
+void FrameView::CalculateScrollbarModes(ScrollbarMode& h_mode,
+                                        ScrollbarMode& v_mode) const {
 #define RETURN_SCROLLBAR_MODE(mode) \
   {                                 \
     h_mode = v_mode = mode;         \
@@ -814,7 +812,7 @@ void FrameView::CalculateScrollbarModes(
     RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
 
   // Scrollbars can be disabled by FrameView::setCanHaveScrollbars.
-  if (!can_have_scrollbars_ && strategy != kRulesFromWebContentOnly)
+  if (!can_have_scrollbars_)
     RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
 
   // This will be the LayoutObject for either the body element or the html
@@ -2765,8 +2763,7 @@ FrameView::ScrollingReasons FrameView::GetScrollingReasons() const {
   // Cover #3 and #4.
   ScrollbarMode horizontal_mode;
   ScrollbarMode vertical_mode;
-  CalculateScrollbarModes(horizontal_mode, vertical_mode,
-                          kRulesFromWebContentOnly);
+  CalculateScrollbarModes(horizontal_mode, vertical_mode);
   if (horizontal_mode == kScrollbarAlwaysOff &&
       vertical_mode == kScrollbarAlwaysOff)
     return kNotScrollableExplicitlyDisabled;

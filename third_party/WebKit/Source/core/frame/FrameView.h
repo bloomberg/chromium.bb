@@ -362,11 +362,8 @@ class CORE_EXPORT FrameView final
   bool IsScrollable() const override;
   bool IsProgrammaticallyScrollable() override;
 
-  enum ScrollbarModesCalculationStrategy { kRulesFromWebContentOnly, kAnyRule };
-  void CalculateScrollbarModes(
-      ScrollbarMode& h_mode,
-      ScrollbarMode& v_mode,
-      ScrollbarModesCalculationStrategy = kAnyRule) const;
+  void CalculateScrollbarModes(ScrollbarMode& h_mode,
+                               ScrollbarMode& v_mode) const;
 
   IntPoint LastKnownMousePosition() const override;
   bool ShouldSetCursor() const;
