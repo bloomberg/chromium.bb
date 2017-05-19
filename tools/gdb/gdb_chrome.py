@@ -231,6 +231,48 @@ class TimePrinter(object):
 pp_set.add_printer('base::Time', '^base::Time$', TimePrinter)
 
 
+class ManualConstructorPrinter(object):
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return self.val['space_'].cast(self.val.type.template_argument(0))
+pp_set.add_printer('base::ManualConstructor', '^base::ManualConstructor<.*>$', ManualConstructorPrinter)
+
+
+class ValuePrinter(object):
+    def __init__(self, val):
+        self.val = val
+
+    def get_type(self):
+        return self.val['type_']
+
+    def to_string(self):
+        typestr = str(self.get_type())
+        # Trim prefix to just get the emum short name.
+        typestr = typestr[typestr.rfind(':') + 1: ]
+
+        if typestr == 'NONE':
+            return 'base::Value of type NONE'
+        if typestr == 'BOOLEAN':
+            valuestr = self.val['bool_value_']
+        if typestr == 'INTEGER':
+            valuestr = self.val['int_value_']
+        if typestr == 'DOUBLE':
+            valuestr = self.val['double_value_']
+        if typestr == 'STRING':
+            valuestr = self.val['string_value_']
+        if typestr == 'BINARY':
+            valuestr = self.val['binary_value_']
+        if typestr == 'DICTIONARY':
+            valuestr = self.val['dict_']
+        if typestr == 'LIST':
+            valuestr = self.val['list_']
+
+        return "base::Value of type %s = %s" % (typestr, str(valuestr))
+pp_set.add_printer('base::Value', '^base::(List|Dictionary|)Value$', ValuePrinter)
+
+
 class IpcMessagePrinter(Printer):
     def header(self):
         return self.val['header_'].cast(
