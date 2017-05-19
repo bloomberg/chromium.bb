@@ -14351,6 +14351,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.Parallelizable.DownloadTime" units="ms">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The download time for a parallelizable download.</summary>
+</histogram>
+
+<histogram name="Download.Parallelizable.FileSize" units="KB">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The download size of a parallelizable download.</summary>
+</histogram>
+
 <histogram base="true" name="Download.ParallelizableDownloadBandwidth"
     units="bytes/second">
   <owner>qinmin@chromium.org</owner>
