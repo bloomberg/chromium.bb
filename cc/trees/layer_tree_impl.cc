@@ -207,6 +207,8 @@ void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
   if (!IsActiveTree())
     return;
 
+  DCHECK(lifecycle().AllowsPropertyTreeAccess());
+
   // The scroll_clip_layer Layer properties should be up-to-date.
   // TODO(pdr): This DCHECK fails on existing tests but should be enabled.
   // DCHECK(lifecycle().AllowsLayerPropertyAccess());
