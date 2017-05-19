@@ -63,6 +63,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // calls FillContentView again to re-populate it with updated views.
   void UpdateContentView();
 
+  // Update the focus to |focused_view|.
+  void UpdateFocus(views::View* focused_view);
+
   // View controllers should call this if they have modified some layout aspect
   // (e.g., made it taller or shorter), and want to relayout the whole pane.
   void RelayoutPane();

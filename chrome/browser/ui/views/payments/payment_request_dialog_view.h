@@ -86,6 +86,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
                            PaymentRequestDialogView::ObserverForTest* observer);
   ~PaymentRequestDialogView() override;
 
+  // views::View
+  void RequestFocus() override;
+
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
   views::View* GetInitiallyFocusedView() override;

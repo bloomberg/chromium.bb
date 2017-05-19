@@ -53,9 +53,15 @@ void ValidatingCombobox::OnComboboxModelChanged(
   delegate_->ComboboxModelChanged(this);
 }
 
+bool ValidatingCombobox::IsValid() {
+  bool valid = delegate_->IsValidCombobox(this);
+  SetInvalid(!valid);
+  return valid;
+}
+
 void ValidatingCombobox::Validate() {
-  // ValidateCombobox may have side-effects, such as displaying errors.
-  SetInvalid(!delegate_->ValidateCombobox(this));
+  // ComboboxValueChanged may have side-effects, such as displaying errors.
+  SetInvalid(!delegate_->ComboboxValueChanged(this));
 }
 
 }  // namespace payments

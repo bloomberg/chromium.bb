@@ -405,14 +405,12 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
 
   bool success = true;
   for (const auto& field : text_fields()) {
-    // Force a blur in case the value was left untouched.
-    field.first->OnBlur();
     // ValidatingTextfield* is the key, EditorField is the value.
-    if (field.first->invalid()) {
-      success = false;
-    } else {
+    if (field.first->IsValid()) {
       success = profile->SetInfo(autofill::AutofillType(field.second.type),
                                  field.first->text(), locale);
+    } else {
+      success = false;
     }
     LOG_IF(ERROR, !success && !ignore_errors)
         << "Can't setinfo(" << field.second.type << ", " << field.first->text();
@@ -425,12 +423,12 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     // The country has already been dealt with.
     if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY)
       continue;
-    if (combobox->invalid()) {
-      success = false;
-    } else {
+    if (combobox->IsValid()) {
       success = profile->SetInfo(
           autofill::AutofillType(field.second.type),
           combobox->GetTextForRow(combobox->selected_index()), locale);
+    } else {
+      success = false;
     }
     LOG_IF(ERROR, !success && !ignore_errors)
         << "Can't setinfo(" << field.second.type << ", "
@@ -472,13 +470,31 @@ ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ~ShippingAddressValidationDelegate() {}
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    ValidateTextfield(views::Textfield* textfield) {
-  return ValidateValue(textfield->text());
+    IsValidTextfield(views::Textfield* textfield) {
+  return ValidateValue(textfield->text(), nullptr);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    ValidateCombobox(views::Combobox* combobox) {
-  return ValidateValue(combobox->GetTextForRow(combobox->selected_index()));
+    IsValidCombobox(views::Combobox* combobox) {
+  return ValidateValue(combobox->GetTextForRow(combobox->selected_index()),
+                       nullptr);
+}
+
+bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
+    TextfieldValueChanged(views::Textfield* textfield) {
+  base::string16 error_message;
+  bool is_valid = ValidateValue(textfield->text(), &error_message);
+  controller_->DisplayErrorMessageForField(field_, error_message);
+  return is_valid;
+}
+
+bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
+    ComboboxValueChanged(views::Combobox* combobox) {
+  base::string16 error_message;
+  bool is_valid = ValidateValue(
+      combobox->GetTextForRow(combobox->selected_index()), &error_message);
+  controller_->DisplayErrorMessageForField(field_, error_message);
+  return is_valid;
 }
 
 void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
@@ -487,29 +503,27 @@ void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    ValidateValue(const base::string16& value) {
+    ValidateValue(const base::string16& value, base::string16* error_message) {
   if (!value.empty()) {
     if (field_.type == autofill::PHONE_HOME_WHOLE_NUMBER &&
         controller_->chosen_country_index_ < controller_->countries_.size() &&
         !autofill::IsValidPhoneNumber(
             value, controller_->countries_[controller_->chosen_country_index_]
                        .first)) {
-      controller_->DisplayErrorMessageForField(
-          field_, l10n_util::GetStringUTF16(
-                      IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE));
+      if (error_message) {
+        *error_message = l10n_util::GetStringUTF16(
+            IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE);
+      }
       return false;
     }
     // As long as other field types are non-empty, they are valid.
-    controller_->DisplayErrorMessageForField(field_, base::ASCIIToUTF16(""));
     return true;
   }
-  bool is_required_valid = !field_.required;
-  const base::string16 displayed_message =
-      is_required_valid ? base::ASCIIToUTF16("")
-                        : l10n_util::GetStringUTF16(
-                              IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
-  controller_->DisplayErrorMessageForField(field_, displayed_message);
-  return is_required_valid;
+  if (error_message && field_.required) {
+    *error_message = l10n_util::GetStringUTF16(
+        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+  }
+  return !field_.required;
 }
 
 }  // namespace payments

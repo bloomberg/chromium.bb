@@ -114,9 +114,11 @@ class EditorViewController : public PaymentRequestSheetController,
  protected:
   // Create a header view to be inserted before all fields.
   virtual std::unique_ptr<views::View> CreateHeaderView();
-  // Create a custom view for the specified |type|.
+  // |focusable_field| is to be set with a pointer to the view that should get
+  // default focus within the custom view.
   virtual std::unique_ptr<views::View> CreateCustomFieldView(
-      autofill::ServerFieldType type);
+      autofill::ServerFieldType type,
+      views::View** focusable_field);
   // Create an extra view to go to the right of the field with |type|, which
   // can either be a textfield, combobox, or custom view.
   virtual std::unique_ptr<views::View> CreateExtraViewForField(
@@ -164,8 +166,12 @@ class EditorViewController : public PaymentRequestSheetController,
   // Adds some views to |layout|, to represent an input field and its labels.
   // |field| is the field definition, which contains the label and the hint
   // about the length of the input field. A placeholder error label is also
-  // added (see implementation).
-  void CreateInputField(views::GridLayout* layout, const EditorField& field);
+  // added (see implementation). Returns the input view for this field that
+  // could be used as the initial focused and set |valid| with false if the
+  // initial value of the field is not valid.
+  views::View* CreateInputField(views::GridLayout* layout,
+                                const EditorField& field,
+                                bool* valid);
 
   // Returns the widest column width of across all extra views of a certain
   // |size| type.
@@ -180,8 +186,8 @@ class EditorViewController : public PaymentRequestSheetController,
   // Tracks the relationship between a field and its error label.
   ErrorLabelMap error_labels_;
 
-  // The first label in the editor, used to set the initial focus.
-  views::View* first_field_view_;
+  // The input field view in the editor used to set the initial focus.
+  views::View* initial_focus_field_view_;
 
   // Identifies where to go back when the editing completes successfully.
   BackNavigationType back_navigation_type_;

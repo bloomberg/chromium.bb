@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request.h"
@@ -252,6 +254,20 @@ void PaymentRequestSheetController::UpdateContentView() {
   content_view_->RemoveAllChildViews(true);
   FillContentView(content_view_);
   RelayoutPane();
+}
+
+void PaymentRequestSheetController::UpdateFocus(views::View* focused_view) {
+  DialogViewID sheet_id;
+  if (GetSheetId(&sheet_id)) {
+    SheetView* sheet_view = static_cast<SheetView*>(
+        dialog()->GetViewByID(static_cast<int>(sheet_id)));
+    // This will be null on first call since it's not been set until CreateView
+    // returns, and the first call to UpdateContentView comes from CreateView.
+    if (sheet_view) {
+      sheet_view->SetFirstFocusableView(focused_view);
+      dialog()->RequestFocus();
+    }
+  }
 }
 
 void PaymentRequestSheetController::RelayoutPane() {

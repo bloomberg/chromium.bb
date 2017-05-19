@@ -390,6 +390,8 @@ void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
   // SetSelectedIndex doesn't trigger a perform action notification, which is
   // needed to update the valid state.
   address_combobox->SetSelectedRow(index);
+  // But it needs to be blured at least once.
+  address_combobox->OnBlur();
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::
@@ -405,12 +407,55 @@ CreditCardEditorViewController::CreditCardValidationDelegate::
     ~CreditCardValidationDelegate() {}
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
-    ValidateTextfield(views::Textfield* textfield) {
-  return ValidateValue(textfield->text());
+    IsValidTextfield(views::Textfield* textfield) {
+  return ValidateValue(textfield->text(), nullptr);
 }
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
-    ValidateCombobox(views::Combobox* combobox) {
+    IsValidCombobox(views::Combobox* combobox) {
+  return ValidateCombobox(combobox, nullptr);
+}
+
+bool CreditCardEditorViewController::CreditCardValidationDelegate::
+    TextfieldValueChanged(views::Textfield* textfield) {
+  base::string16 error_message;
+  bool is_valid = ValidateValue(textfield->text(), &error_message);
+  controller_->DisplayErrorMessageForField(field_, error_message);
+  return is_valid;
+}
+
+bool CreditCardEditorViewController::CreditCardValidationDelegate::
+    ComboboxValueChanged(views::Combobox* combobox) {
+  base::string16 error_message;
+  bool is_valid = ValidateCombobox(combobox, nullptr);
+  controller_->DisplayErrorMessageForField(field_, error_message);
+  return is_valid;
+}
+
+bool CreditCardEditorViewController::CreditCardValidationDelegate::
+    ValidateValue(const base::string16& value, base::string16* error_message) {
+  if (!value.empty()) {
+    base::string16 local_error_message;
+    bool is_valid =
+        field_.type == autofill::CREDIT_CARD_NUMBER
+            ? autofill::IsValidCreditCardNumberForBasicCardNetworks(
+                  value, supported_card_networks_, &local_error_message)
+            : autofill::IsValidForType(value, field_.type,
+                                       &local_error_message);
+    if (error_message)
+      *error_message = local_error_message;
+    return is_valid;
+  }
+
+  if (error_message && field_.required) {
+    *error_message = l10n_util::GetStringUTF16(
+        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+  }
+  return !field_.required;
+}
+
+bool CreditCardEditorViewController::CreditCardValidationDelegate::
+    ValidateCombobox(views::Combobox* combobox, base::string16* error_message) {
   // The billing address ID is the selected item identifier and not the combobox
   // value itself.
   if (field_.type == kBillingAddressType) {
@@ -418,31 +463,17 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
     // addresses when choosing them as billing addresses.
     autofill::AddressComboboxModel* model =
         static_cast<autofill::AddressComboboxModel*>(combobox->model());
-    return !model->GetItemIdentifierAt(combobox->selected_index()).empty();
+    if (model->GetItemIdentifierAt(combobox->selected_index()).empty()) {
+      if (error_message) {
+        *error_message =
+            l10n_util::GetStringUTF16(IDS_PAYMENTS_BILLING_ADDRESS_REQUIRED);
+      }
+      return false;
+    }
+    return true;
   }
-  return ValidateValue(combobox->GetTextForRow(combobox->selected_index()));
-}
-
-bool CreditCardEditorViewController::CreditCardValidationDelegate::
-    ValidateValue(const base::string16& value) {
-  if (!value.empty()) {
-    base::string16 error_message;
-    bool is_valid =
-        field_.type == autofill::CREDIT_CARD_NUMBER
-            ? autofill::IsValidCreditCardNumberForBasicCardNetworks(
-                  value, supported_card_networks_, &error_message)
-            : autofill::IsValidForType(value, field_.type, &error_message);
-    controller_->DisplayErrorMessageForField(field_, error_message);
-    return is_valid;
-  }
-
-  bool is_required_valid = !field_.required;
-  const base::string16 displayed_message =
-      is_required_valid ? base::ASCIIToUTF16("")
-                        : l10n_util::GetStringUTF16(
-                              IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
-  controller_->DisplayErrorMessageForField(field_, displayed_message);
-  return is_required_valid;
+  return ValidateValue(combobox->GetTextForRow(combobox->selected_index()),
+                       error_message);
 }
 
 bool CreditCardEditorViewController::GetSheetId(DialogViewID* sheet_id) {

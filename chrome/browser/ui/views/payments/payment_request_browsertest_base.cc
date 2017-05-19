@@ -592,8 +592,9 @@ void PaymentRequestBrowserTestBase::SelectBillingAddress(
   ASSERT_NE(address_combobox, nullptr);
   autofill::AddressComboboxModel* address_combobox_model(
       static_cast<autofill::AddressComboboxModel*>(address_combobox->model()));
-  address_combobox->SetSelectedIndex(
+  address_combobox->SetSelectedRow(
       address_combobox_model->GetIndexOfIdentifier(billing_address_id));
+  address_combobox->OnBlur();
 }
 
 bool PaymentRequestBrowserTestBase::IsEditorTextfieldInvalid(

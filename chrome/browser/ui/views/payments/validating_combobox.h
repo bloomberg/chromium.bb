@@ -34,6 +34,9 @@ class ValidatingCombobox : public views::Combobox,
   // ui::ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override;
 
+  // Identifies whether the current content if valid or not.
+  bool IsValid();
+
  private:
   // Will call to the ValidationDelegate to validate the contents of the
   // combobox.
