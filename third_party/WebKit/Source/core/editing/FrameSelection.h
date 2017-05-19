@@ -128,7 +128,7 @@ class CORE_EXPORT FrameSelection final
       TextAffinity,
       SelectionDirectionalMode = SelectionDirectionalMode::kNonDirectional,
       FrameSelection::SetSelectionOptions = kCloseTyping | kClearTypingStyle);
-  void SelectAll();
+  void SelectAll(EUserTriggered = kNotUserTriggered);
   void Clear();
   bool IsHidden() const;
 
