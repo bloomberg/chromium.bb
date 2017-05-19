@@ -136,7 +136,7 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
   TestJobFactory();
   ~TestJobFactory() override;
 
-  HttpStreamFactoryImpl::Job* CreateMainJob(
+  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateMainJob(
       HttpStreamFactoryImpl::Job::Delegate* delegate,
       HttpStreamFactoryImpl::JobType job_type,
       HttpNetworkSession* session,
@@ -150,7 +150,7 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
-  HttpStreamFactoryImpl::Job* CreateAltSvcJob(
+  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltSvcJob(
       HttpStreamFactoryImpl::Job::Delegate* delegate,
       HttpStreamFactoryImpl::JobType job_type,
       HttpNetworkSession* session,
@@ -165,7 +165,7 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
-  HttpStreamFactoryImpl::Job* CreateAltProxyJob(
+  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltProxyJob(
       HttpStreamFactoryImpl::Job::Delegate* delegate,
       HttpStreamFactoryImpl::JobType job_type,
       HttpNetworkSession* session,
