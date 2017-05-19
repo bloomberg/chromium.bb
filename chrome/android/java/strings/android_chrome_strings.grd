@@ -1727,6 +1727,23 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Refreshing page
       </message>
 
+      <!-- Browser Action strings -->
+      <message name="IDS_BROWSER_ACTIONS_OPEN_IN_BACKGROUND" desc="Browser Actions menu item to open the selected link in a Chrome tab in the background. [CHAR-LIMIT=30]">
+        Open in new Chrome tab
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB" desc="Browser Actions menu item to open the selected link in a Chrome incognito tab. [CHAR-LIMIT=30]">
+        Open in incognito tab
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_SAVE_LINK_AS" desc="Browser Actions menu item to download the page of the selected link. [CHAR-LIMIT=30]">
+        Download page
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_COPY_ADDRESS" desc="Browser Actions menu item to copy the url address of the selected link. [CHAR-LIMIT=30]">
+        Copy link
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_SHARE" desc="Browser Actions menu item to share the url address of the selected link. [CHAR-LIMIT=30]">
+        Share...
+      </message>
+
       <!-- App banner strings -->
       <message name="IDS_APP_BANNER_INSTALLING" desc="Button text indicating that an application is being installed. [CHAR-LIMIT=25]">
         Installing…
