@@ -93028,7 +93028,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="VRSessionVideoTime"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="WebApkType">
+<histogram_suffixes name="WebApkType" separator=".">
   <suffix name="BrowserApk" label="Installed by Chrome"/>
   <suffix name="UnboundApk" label="Not installed by Chrome"/>
   <affected-histogram name="WebApk.ShellApkVersion"/>
