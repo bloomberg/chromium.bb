@@ -17,13 +17,6 @@ TestWebStateObserver::TestWebStateObserver(WebState* web_state)
     : WebStateObserver(web_state) {}
 TestWebStateObserver::~TestWebStateObserver() = default;
 
-void TestWebStateObserver::ProvisionalNavigationStarted(const GURL& url) {
-  start_provisional_navigation_info_ =
-      base::MakeUnique<web::TestStartProvisionalNavigationInfo>();
-  start_provisional_navigation_info_->web_state = web_state();
-  start_provisional_navigation_info_->url = url;
-}
-
 void TestWebStateObserver::NavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
   commit_navigation_info_ = base::MakeUnique<web::TestCommitNavigationInfo>();
@@ -63,6 +56,19 @@ void TestWebStateObserver::NavigationItemChanged() {
   navigation_item_changed_info_ =
       base::MakeUnique<web::TestNavigationItemChangedInfo>();
   navigation_item_changed_info_->web_state = web_state();
+}
+
+void TestWebStateObserver::DidStartNavigation(NavigationContext* navigation) {
+  ASSERT_TRUE(!navigation->IsErrorPage() || !navigation->IsSameDocument());
+  did_start_navigation_info_ =
+      base::MakeUnique<web::TestDidStartNavigationInfo>();
+  did_start_navigation_info_->web_state = web_state();
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          navigation->GetWebState(), navigation->GetUrl());
+  context->SetIsSameDocument(navigation->IsSameDocument());
+  context->SetIsErrorPage(navigation->IsErrorPage());
+  did_start_navigation_info_->context = std::move(context);
 }
 
 void TestWebStateObserver::DidFinishNavigation(NavigationContext* navigation) {

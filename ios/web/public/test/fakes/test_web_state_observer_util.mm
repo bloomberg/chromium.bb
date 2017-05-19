@@ -7,6 +7,8 @@
 #include "ios/web/public/web_state/navigation_context.h"
 
 namespace web {
+TestDidStartNavigationInfo::TestDidStartNavigationInfo() {}
+TestDidStartNavigationInfo::~TestDidStartNavigationInfo() = default;
 TestDidFinishNavigationInfo::TestDidFinishNavigationInfo() {}
 TestDidFinishNavigationInfo::~TestDidFinishNavigationInfo() = default;
 }  // namespace web
