@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -65,20 +66,21 @@ class MEDIA_EXPORT AudioDebugFileWriter {
   class AudioFileWriter;
 
   // Deleter for AudioFileWriter.
-  struct OnThreadDeleter {
+  struct OnSequenceDeleter {
    public:
-    OnThreadDeleter();
-    OnThreadDeleter(const OnThreadDeleter& other);
-    OnThreadDeleter(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-    ~OnThreadDeleter();
+    OnSequenceDeleter();
+    OnSequenceDeleter(OnSequenceDeleter&& other);
+    OnSequenceDeleter& operator=(OnSequenceDeleter&&);
+    OnSequenceDeleter(scoped_refptr<base::SequencedTaskRunner> task_runner);
+    ~OnSequenceDeleter();
     void operator()(AudioFileWriter* ptr) const;
 
    private:
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> task_runner_;
   };
 
   using AudioFileWriterUniquePtr =
-      std::unique_ptr<AudioFileWriter, OnThreadDeleter>;
+      std::unique_ptr<AudioFileWriter, OnSequenceDeleter>;
 
   AudioFileWriterUniquePtr file_writer_;
   base::SequenceChecker client_sequence_checker_;
