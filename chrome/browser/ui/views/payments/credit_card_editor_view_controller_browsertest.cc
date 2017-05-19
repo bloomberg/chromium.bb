@@ -485,14 +485,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        CreateNewBillingAddress) {
   autofill::CreditCard card = autofill::test::GetCreditCard();
-  // Make sure to clear billing address.
+  // Make sure to clear billing address and have none available.
   card.set_billing_address_id("");
   AddCreditCard(card);
 
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
-  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
-  AddAutofillProfile(billing_profile);
 
   InvokePaymentRequestUI();
 
@@ -506,6 +504,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW);
+  // Billing address combobox must be disabled since there are no saved address.
+  views::View* billing_address_combobox = dialog_view()->GetViewByID(
+      static_cast<int>(autofill::ADDRESS_BILLING_LINE1));
+  ASSERT_NE(nullptr, billing_address_combobox);
+  EXPECT_FALSE(billing_address_combobox->enabled());
+
   // Click to open the address editor
   ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnDialogViewAndWait(DialogViewID::ADD_BILLING_ADDRESS_BUTTON);

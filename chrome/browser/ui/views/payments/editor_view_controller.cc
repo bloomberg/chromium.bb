@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>

@@ -335,6 +335,20 @@ CreditCardEditorViewController::GetComboboxModelForType(
   return std::unique_ptr<ui::ComboboxModel>();
 }
 
+void CreditCardEditorViewController::FillContentView(
+    views::View* content_view) {
+  EditorViewController::FillContentView(content_view);
+  // We need to search from the content view here, since the dialog may not have
+  // the content view added to it yet.
+  views::Combobox* combobox = static_cast<views::Combobox*>(
+      content_view->GetViewByID(kBillingAddressType));
+  // When the combobox has a single item, it's because it has no addresses
+  // (otherwise, it would have the select header, and a separator before the
+  // first address to choose from).
+  DCHECK(combobox);
+  combobox->SetEnabled(combobox->GetRowCount() > 1);
+}
+
 base::string16 CreditCardEditorViewController::GetSheetTitle() {
   if (!credit_card_to_edit_)
     return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
