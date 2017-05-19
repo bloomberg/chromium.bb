@@ -190,11 +190,11 @@
       field_group: "box",
     },
     {
-      name: "border",
+      name: "border-image",
       field_template: "storage_only",
-      field_type_path: "core/style/BorderData",
+      field_type_path: "core/style/NinePieceImage",
       field_group: "surround",
-      default_value: "BorderData()",
+      default_value: "NinePieceImage()",
     },
     {
       name: "Background",

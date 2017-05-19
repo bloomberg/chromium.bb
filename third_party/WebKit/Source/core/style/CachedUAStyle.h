@@ -84,7 +84,6 @@ class CachedUAStyle {
             static_cast<unsigned>(other.BorderBottomStyle()));
   }
 
-  BorderData border;
   LengthSize top_left_;
   LengthSize top_right_;
   LengthSize bottom_left_;
@@ -105,13 +104,13 @@ class CachedUAStyle {
   float border_right_width;
   float border_top_width;
   float border_bottom_width;
+  NinePieceImage border_image;
   FillLayer background_layers;
   StyleColor background_color;
 
  private:
   explicit CachedUAStyle(const ComputedStyle* style)
-      : border(style->Border()),
-        top_left_(style->BorderTopLeftRadius()),
+      : top_left_(style->BorderTopLeftRadius()),
         top_right_(style->BorderTopRightRadius()),
         bottom_left_(style->BorderBottomLeftRadius()),
         bottom_right_(style->BorderBottomRightRadius()),
@@ -135,6 +134,7 @@ class CachedUAStyle {
         border_right_width(style->BorderRightWidth()),
         border_top_width(style->BorderTopWidth()),
         border_bottom_width(style->BorderBottomWidth()),
+        border_image(style->BorderImage()),
         background_layers(style->BackgroundLayers()),
         background_color(style->BackgroundColor()) {}
 };

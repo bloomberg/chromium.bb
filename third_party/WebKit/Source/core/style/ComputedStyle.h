@@ -115,7 +115,6 @@ using std::max;
 class FilterOperations;
 
 class AppliedTextDecoration;
-class BorderData;
 struct BorderEdge;
 class CSSAnimationData;
 class CSSTransitionData;
@@ -429,35 +428,29 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // Border properties.
   // -webkit-border-image
   static NinePieceImage InitialNinePieceImage() { return NinePieceImage(); }
-  const NinePieceImage& BorderImage() const {
-    return surround_data_->border_.GetImage();
-  }
-  void SetBorderImage(const NinePieceImage& b) {
-    SET_VAR(surround_data_, border_.image_, b);
-  }
+  const NinePieceImage& BorderImage() const { return BorderImageInternal(); }
+  void SetBorderImage(const NinePieceImage& b) { SetBorderImageInternal(b); }
 
   // border-image-slice
   const LengthBox& BorderImageSlices() const {
-    return surround_data_->border_.GetImage().ImageSlices();
+    return BorderImage().ImageSlices();
   }
   void SetBorderImageSlices(const LengthBox&);
 
   // border-image-source
   static StyleImage* InitialBorderImageSource() { return 0; }
-  StyleImage* BorderImageSource() const {
-    return surround_data_->border_.GetImage().GetImage();
-  }
+  StyleImage* BorderImageSource() const { return BorderImage().GetImage(); }
   void SetBorderImageSource(StyleImage*);
 
   // border-image-width
   const BorderImageLengthBox& BorderImageWidth() const {
-    return surround_data_->border_.GetImage().BorderSlices();
+    return BorderImage().BorderSlices();
   }
   void SetBorderImageWidth(const BorderImageLengthBox&);
 
   // border-image-outset
   const BorderImageLengthBox& BorderImageOutset() const {
-    return surround_data_->border_.GetImage().Outset();
+    return BorderImage().Outset();
   }
   void SetBorderImageOutset(const BorderImageLengthBox&);
 
@@ -2787,10 +2780,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   LayoutRectOutsets BorderImageOutsets() const {
     return ImageOutsets(BorderImage());
   }
-  bool BorderImageSlicesFill() const { return Border().GetImage().Fill(); }
+  bool BorderImageSlicesFill() const { return BorderImage().Fill(); }
 
   void SetBorderImageSlicesFill(bool);
-  const BorderData& Border() const { return surround_data_->border_; }
   const BorderValue BorderLeft() const {
     return BorderValue(BorderLeftStyle(), BorderLeftColor(), BorderLeftWidth(),
                        OutlineStyleIsAuto());
@@ -2826,7 +2818,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   float BorderOverWidth() const;
   float BorderUnderWidth() const;
 
-  bool HasBorderFill() const { return Border().HasBorderFill(); }
+  bool HasBorderFill() const {
+    return BorderImage().HasImage() && BorderImage().Fill();
+  }
   bool HasBorder() const {
     return BorderLeftNonZero() || BorderRightNonZero() || BorderTopNonZero() ||
            BorderBottomNonZero();
@@ -2938,6 +2932,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            BorderImage() == o.BorderImage();
   }
 
+  bool BorderVisualOverflowEqual(const ComputedStyle& o) const {
+    return BorderImage().Outset() == o.BorderImage().Outset();
+  }
+
   void ResetBorder() {
     ResetBorderImage();
     ResetBorderTop();
@@ -2955,32 +2953,26 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SetBorderTopWidth(3);
     SetBorderTopColorInternal(0);
     SetBorderTopColorInternal(true);
-    SetBorderTopStyle(EBorderStyle::kNone);
   }
   void ResetBorderRight() {
     SetBorderRightStyle(EBorderStyle::kNone);
     SetBorderRightWidth(3);
     SetBorderRightColorInternal(0);
     SetBorderRightColorInternal(true);
-    SetBorderRightStyle(EBorderStyle::kNone);
   }
   void ResetBorderBottom() {
     SetBorderBottomStyle(EBorderStyle::kNone);
     SetBorderBottomWidth(3);
     SetBorderBottomColorInternal(0);
     SetBorderBottomColorInternal(true);
-    SetBorderBottomStyle(EBorderStyle::kNone);
   }
   void ResetBorderLeft() {
     SetBorderLeftStyle(EBorderStyle::kNone);
     SetBorderLeftWidth(3);
     SetBorderLeftColorInternal(0);
     SetBorderLeftColorInternal(true);
-    SetBorderLeftStyle(EBorderStyle::kNone);
   }
-  void ResetBorderImage() {
-    SET_VAR(surround_data_, border_.image_, NinePieceImage());
-  }
+  void ResetBorderImage() { SetBorderImageInternal(NinePieceImage()); }
 
   void SetBorderRadius(const LengthSize& s) {
     SetBorderTopLeftRadius(s);

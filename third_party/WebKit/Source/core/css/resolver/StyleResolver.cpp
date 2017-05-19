@@ -1957,7 +1957,7 @@ bool StyleResolver::HasAuthorBackground(const StyleResolverState& state) {
 bool StyleResolver::HasAuthorBorder(const StyleResolverState& state) {
   const CachedUAStyle* cached_ua_style = state.GetCachedUAStyle();
   return cached_ua_style &&
-         (cached_ua_style->border != state.Style()->Border() ||
+         (cached_ua_style->border_image != state.Style()->BorderImage() ||
           !cached_ua_style->BorderColorEquals(*state.Style()) ||
           !cached_ua_style->BorderWidthEquals(*state.Style()) ||
           !cached_ua_style->BorderRadiiEquals(*state.Style()) ||
