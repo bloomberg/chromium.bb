@@ -779,6 +779,9 @@ Shell::~Shell() {
   shell_port_.reset();
   session_controller_->RemoveObserver(this);
   wallpaper_delegate_.reset();
+  // NightLightController depeneds on the PrefService and must be destructed
+  // before it. crbug.com/724231.
+  night_light_controller_ = nullptr;
   pref_service_ = nullptr;
   shell_delegate_.reset();
 
