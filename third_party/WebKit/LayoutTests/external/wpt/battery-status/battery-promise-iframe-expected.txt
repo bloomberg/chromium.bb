@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS iframe has a different Navigator object thus getting another battery promise 
+FAIL setting src of an iframe with initial about:blank makes same Navigator object and battery promise assert_equals: navigator objects shall be same expected object "[object Navigator]" but got object "[object Navigator]"
+PASS setting src of an iframe with initial frame makes its Navigator object vary thus getting another battery promise 
+Harness: the test ran to completion.
+

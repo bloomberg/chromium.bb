@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL DTLS client uses odd data channel IDs promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
-FAIL DTLS server uses even data channel IDs promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
-Harness: the test ran to completion.
-

@@ -122,7 +122,7 @@ function indexeddb_test(upgrade_func, open_func, description, options) {
         indexedDB.deleteDatabase(db.name);
       });
       var tx = open.transaction;
-      upgrade_func(t, db, tx, open);
+      upgrade_func(t, db, tx);
     });
     if (options.upgrade_will_abort) {
       open.onsuccess = t.unreached_func('open should not succeed');
@@ -131,7 +131,7 @@ function indexeddb_test(upgrade_func, open_func, description, options) {
       open.onsuccess = t.step_func(function() {
         var db = open.result;
         if (open_func)
-          open_func(t, db, open);
+          open_func(t, db);
       });
     }
   }, description);
