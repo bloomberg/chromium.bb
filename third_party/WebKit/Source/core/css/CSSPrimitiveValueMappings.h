@@ -877,13 +877,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(Hyphens e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kHyphensAuto:
+    case Hyphens::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kHyphensManual:
+    case Hyphens::kManual:
       value_id_ = CSSValueManual;
       break;
-    case kHyphensNone:
+    case Hyphens::kNone:
       value_id_ = CSSValueNone;
       break;
   }
@@ -893,17 +893,17 @@ template <>
 inline Hyphens CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kHyphensAuto;
+      return Hyphens::kAuto;
     case CSSValueManual:
-      return kHyphensManual;
+      return Hyphens::kManual;
     case CSSValueNone:
-      return kHyphensNone;
+      return Hyphens::kNone;
     default:
       break;
   }
 
   NOTREACHED();
-  return kHyphensManual;
+  return Hyphens::kManual;
 }
 
 template <>

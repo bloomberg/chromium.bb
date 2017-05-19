@@ -969,7 +969,7 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
   float width_measurement_at_last_break_opportunity = 0;
 
   Hyphenation* hyphenation = auto_wrap_ ? style.GetHyphenation() : nullptr;
-  bool disable_soft_hyphen = style.GetHyphens() == kHyphensNone;
+  bool disable_soft_hyphen = style.GetHyphens() == Hyphens::kNone;
   float hyphen_width = 0;
   bool is_line_empty = line_info_.IsEmpty();
 

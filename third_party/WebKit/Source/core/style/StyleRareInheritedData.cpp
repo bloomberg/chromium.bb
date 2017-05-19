@@ -87,7 +87,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       line_break_(static_cast<unsigned>(LineBreak::kAuto)),
       user_select_(static_cast<unsigned>(ComputedStyle::InitialUserSelect())),
       speak_(static_cast<unsigned>(ESpeak::kNormal)),
-      hyphens_(kHyphensManual),
+      hyphens_(static_cast<unsigned>(Hyphens::kManual)),
       text_emphasis_fill_(kTextEmphasisFillFilled),
       text_emphasis_mark_(kTextEmphasisMarkNone),
       text_emphasis_position_(kTextEmphasisPositionOver),
