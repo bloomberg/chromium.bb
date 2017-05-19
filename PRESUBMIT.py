@@ -1732,7 +1732,7 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
         for decl in useless_fwd_decls:
           if input_api.re.search(r'\b%s\b' % decl, line[1:]):
             results.append(output_api.PresubmitPromptWarning(
-              '%s: %s forward declaration is becoming useless' %
+              '%s: %s forward declaration is no longer needed' %
               (f.LocalPath(), decl)))
             useless_fwd_decls.remove(decl)
 
