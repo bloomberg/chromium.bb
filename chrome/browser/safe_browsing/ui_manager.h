@@ -70,9 +70,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  If |post_data| is
   // non-empty, the request will be sent as a POST instead of a GET.
-  // Will report only for UMA || is_extended_reporting.
-  void MaybeReportSafeBrowsingHit(
-      const safe_browsing::HitReport& hit_report) override;
+  void MaybeReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report,
+                                  content::WebContents* web_contents) override;
 
   // Report permission action to SafeBrowsing servers. Can only be called on UI
   // thread.
@@ -107,6 +106,11 @@ class SafeBrowsingUIManager : public BaseUIManager {
 
   // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
   void ShowBlockingPageForResource(const UnsafeResource& resource) override;
+
+  // Helper method to ensure hit reports are only sent when the user has
+  // opted in to extended reporting and is not currently in incognito mode.
+  static bool ShouldSendHitReport(const HitReport& hit_report,
+                                  content::WebContents* web_contents);
 
  private:
   friend class SafeBrowsingUIManagerTest;
