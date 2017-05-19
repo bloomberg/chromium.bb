@@ -2015,6 +2015,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVrCustomTabBrowsingName,
      flag_descriptions::kVrCustomTabBrowsingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVrCustomTabBrowsing)},
+    {"enable-webvr-autopresent", flag_descriptions::kWebVrAutopresentName,
+     flag_descriptions::kWebVrAutopresentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kWebVrAutopresent)},
 #endif  // OS_ANDROID
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)

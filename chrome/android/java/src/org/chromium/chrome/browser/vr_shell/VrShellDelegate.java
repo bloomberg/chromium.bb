@@ -42,11 +42,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 
 import java.lang.annotation.Retention;
@@ -81,6 +83,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({VR_NOT_AVAILABLE, VR_CARDBOARD, VR_DAYDREAM})
     private @interface VrSupportLevel {}
+
+    private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
+    private static final String DAYDREAM_HOME_PACKAGE = "com.google.android.vr.home";
 
     // Linter and formatter disagree on how the line below should be formatted.
     /* package */
@@ -131,6 +136,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private long mLastVrExit;
     private boolean mListeningForWebVrActivate;
     private boolean mListeningForWebVrActivateBeforePause;
+    // Whether or not we should autopresent WebVr. If this is set, it means that a first
+    // party app has asked us to autopresent WebVr content and we're waiting for the WebVr
+    // content to call requestPresent.
+    private boolean mAutopresentWebVr;
 
     private static final class VrBroadcastReceiver extends BroadcastReceiver {
         private final WeakReference<ChromeActivity> mTargetActivity;
@@ -315,6 +324,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private static boolean activitySupportsPresentation(Activity activity) {
         return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity
                 || activity instanceof WebappActivity;
+    }
+
+    private static boolean activitySupportsAutopresentation(Activity activity) {
+        return activity instanceof ChromeTabbedActivity;
     }
 
     private static boolean activitySupportsVrBrowsing(Activity activity) {
@@ -561,6 +574,33 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
     }
 
+    private boolean launchInVr() {
+        assert mActivity != null && mVrSupportLevel != VR_NOT_AVAILABLE;
+        return mVrDaydreamApi.launchInVr(getEnterVrPendingIntent(mActivity));
+    }
+
+    private void onAutopresentIntent() {
+        // Autopresent intents are only expected from trusted first party apps while
+        // we're not in vr.
+        assert !mInVr;
+        mAutopresentWebVr = true;
+    }
+
+    /**
+     * This is called every time ChromeActivity gets a new intent.
+     */
+    public static void onNewIntent(Intent intent) {
+        if (IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
+                && activitySupportsAutopresentation(
+                           ApplicationStatus.getLastTrackedFocusedActivity())
+                && IntentHandler.isIntentFromTrustedApp(intent, DAYDREAM_HOME_PACKAGE)) {
+            VrShellDelegate instance = getInstance();
+            if (instance == null) return;
+            instance.onAutopresentIntent();
+        }
+    }
+
     @Override
     public void onSystemUiVisibilityChange(int visibility) {
         if (mInVr && !isWindowModeCorrectForVr()) {
@@ -615,6 +655,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @CalledByNative
     private void presentRequested() {
         mRequestedWebVr = true;
+        mAutopresentWebVr = false;
         switch (enterVrInternal()) {
             case ENTER_VR_NOT_NECESSARY:
                 mVrShell.setWebVrModeEnabled(true);
@@ -653,7 +694,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             // the device is at LANDSCAPE orientation once it is finished. So here we use SENSOR to
             // avoid forcing LANDSCAPE orientation in order to have a smoother transition.
             setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-            if (!mVrDaydreamApi.launchInVr(getEnterVrPendingIntent(mActivity))) {
+            if (!launchInVr()) {
                 restoreWindowMode();
                 return ENTER_VR_CANCELLED;
             }
@@ -803,6 +844,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mListeningForWebVrActivate = listening;
         if (listening && !mPaused) {
             registerDaydreamIntent(mVrDaydreamApi, mActivity);
+            if (mAutopresentWebVr) {
+                // Dispatch vrdisplayactivate so that the WebVr page can call requestPresent
+                // to start presentation.
+                // TODO(ymalik): There will be a delay between when we're asked to autopresent and
+                // when the WebVr site calls requestPresent. In this time, the user sees 2D Chrome
+                // UI which is suboptimal.
+                nativeDisplayActivate(mNativeVrShellDelegate);
+            }
         } else {
             unregisterDaydreamIntent(mVrDaydreamApi);
         }
@@ -819,6 +868,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
         mInVr = false;
         mRequestedWebVr = false;
+        mAutopresentWebVr = false;
         mLastVrExit = canReenter ? SystemClock.uptimeMillis() : 0;
 
         // The user has exited VR.

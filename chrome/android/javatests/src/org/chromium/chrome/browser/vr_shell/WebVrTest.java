@@ -57,6 +57,7 @@ public class WebVrTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mFirstTabCvc = mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         mFirstTabWebContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        Assert.assertFalse("VrShellDelegate is in VR", VrShellDelegate.isInVr());
     }
 
     /**
