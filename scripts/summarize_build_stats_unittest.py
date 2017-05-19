@@ -192,7 +192,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                                                       internal=True)],
           },
           'rejections': 10,
-          'total_builds': 4,
+          'total_builds': 5,
           'first_build_num': 1,
           'last_build_num': 4,
           'last_build_id': mock.ANY,

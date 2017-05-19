@@ -55,7 +55,8 @@ class FakeCIDBConnection(object):
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
-                  important=None, buildbucket_id=None):
+                  important=None, buildbucket_id=None, milestone_version=None,
+                  platform_version=None):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
@@ -81,7 +82,9 @@ class FakeCIDBConnection(object):
            'finish_time': datetime.datetime.now(),
            'important': important,
            'buildbucket_id': buildbucket_id,
-           'final': False}
+           'final': False,
+           'milestone_version': milestone_version,
+           'platform_version': platform_version}
     self.buildTable.append(row)
     return build_id
 
@@ -412,12 +415,13 @@ class FakeCIDBConnection(object):
 
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      starting_build_number=None, milestone_version=None):
+                      starting_build_number=None, milestone_version=None,
+                      platform_version=None):
     """Returns the build history for the given |build_config|."""
     builds = [b for b in self.buildTable
               if b['build_config'] == build_config]
     # Reverse sort as that's what's expected.
-    builds = sorted(builds[-num_results:], reverse=True)
+    builds = sorted(builds, reverse=True)
 
     # Filter results.
     if ignore_build_id is not None:
@@ -435,9 +439,32 @@ class FakeCIDBConnection(object):
                 if b['build_number'] >= starting_build_number]
     if milestone_version is not None:
       builds = [b for b in builds
-                if b['milestone_version'] == milestone_version]
+                if b.get('milestone_version') == milestone_version]
+    if platform_version is not None:
+      builds = [b for b in builds
+                if b.get('platform_version') == platform_version]
 
-    return builds
+    if num_results != -1:
+      return builds[:num_results]
+    else:
+      return builds
+
+  def GetPlatformVersions(self, build_config, num_results=-1,
+                          starting_milestone_version=None):
+    """Get the platform versions for a build_config."""
+    builds = [b for b in self.buildTable
+              if b['build_config'] == build_config]
+
+    if starting_milestone_version is not None:
+      builds = [b for b in builds if int(b.get('milestone_version')) >=
+                int(starting_milestone_version)]
+
+    versions = [b['platform_version'] for b in builds]
+
+    if num_results != -1:
+      return versions[:num_results]
+    else:
+      return versions
 
   def GetTimeToDeadline(self, build_id):
     """Gets the time remaining until deadline."""

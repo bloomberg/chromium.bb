@@ -133,7 +133,7 @@ class ManifestVersionedSyncCompletionStage(
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
 
-    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
         self._run.config.overlays,
         self._run.ConstructDashboardURL(),
@@ -146,7 +146,7 @@ class ManifestVersionedSyncCompletionStage(
       An instance of build_failure_message.BuildFailureMessage.
     """
     failure_messages = results_lib.Results.GetStageFailureMessage()
-    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
         self._run.config.overlays,
         self._run.ConstructDashboardURL(),
@@ -1005,7 +1005,7 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
         failure_message_lib.FailureMessageManager.ConstructStageFailureMessages(
             stage_failures))
 
-    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
         self._run.config.overlays,
         self._run.ConstructDashboardURL(),
@@ -1014,7 +1014,7 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
   def GetBuildFailureMessageFromResults(self):
     """Returns message summarizing the failures from result_lib.Results."""
     failure_messages = results_lib.Results.GetStageFailureMessage()
-    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
         self._run.config.overlays,
         self._run.ConstructDashboardURL(),

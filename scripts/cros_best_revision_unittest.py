@@ -13,7 +13,7 @@ from chromite.lib import builder_status_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import gs_unittest
+from chromite.lib import fake_cidb
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import tree_status
@@ -25,7 +25,9 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Common set up method for all tests."""
-    self.committer = cros_best_revision.ChromeCommitter(self.tempdir, False)
+    self.db = fake_cidb.FakeCIDBConnection()
+    self.committer = cros_best_revision.ChromeCommitter(
+        self.tempdir, self.db, False)
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
     self.pass_status = builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_PASSED, None)
@@ -39,18 +41,35 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
 class ChromeGSTest(BaseChromeCommitterTest):
   """Test cros_best_revision.ChromeCommitter version filtering."""
 
-  def testGetLatestCanaryVersions(self):
+  def testGetLatestCanaryVersionsFromCIDB(self):
     """Test that we correctly filter out non-canary and older versions."""
-    output = '\n'.join(['2910.0.1', '2900.0.0', '2908.0.0', '2909.0.0',
-                        '2910.0.0'])
+    builder = 'master-release'
+    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+                        'host', milestone_version='60',
+                        platform_version='2905.0.0')
+    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+                        'host', milestone_version='60',
+                        platform_version='2910.0.1')
+    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+                        'host', milestone_version='60',
+                        platform_version='2900.0.0')
+    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+                        'host', milestone_version='60',
+                        platform_version='2908.0.0')
+    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+                        'host',
+                        milestone_version='60', platform_version='2909.0.0')
+    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+                        'host', milestone_version='60',
+                        platform_version='2910.0.0')
+
     # Only return 2 -- the 2 newest canary results.
     cros_best_revision.ChromeCommitter._CANDIDATES_TO_CONSIDER = 2
     expected_output = ['2910.0.0', '2909.0.0']
 
     self.committer._old_lkgm = '2905.0.0'
-    with gs_unittest.GSContextMock() as gs_mock:
-      gs_mock.AddCmdResult(partial_mock.In('ls'), output=output)
-      versions = self.committer._GetLatestCanaryVersions()
+
+    versions = self.committer._GetLatestCanaryVersionsFromCIDB()
     self.assertEqual(versions, expected_output)
 
 
@@ -76,14 +95,15 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     for canary, results in zip(self.canaries, all_results):
       for version, status in zip(self.versions, results):
         expected[(canary, version)] = status
-    def _GetBuilderStatus(canary, version, **_):
+    # pylint: disable=unused-argument
+    def _GetBuilderStatus(db, canary, version, **_):
       return expected[(canary, version)]
-    self.PatchObject(self.committer, '_GetLatestCanaryVersions',
+    self.PatchObject(self.committer, '_GetLatestCanaryVersionsFromCIDB',
                      return_value=self.versions)
     self.PatchObject(self.committer, 'GetCanariesForChromeLKGM',
                      return_value=self.canaries)
     self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+                     'GetBuilderStatusFromCIDB',
                      side_effect=_GetBuilderStatus)
     self.committer.FindNewLKGM()
     self.assertTrue(self.committer._lkgm, lkgm)

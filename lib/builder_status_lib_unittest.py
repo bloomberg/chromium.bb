@@ -27,9 +27,28 @@ failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper
 stage_failure_helper = failure_message_lib_unittest.StageFailureHelper
 
 
+def ConstructFailureMessages(build_config):
+  """Helper method to construct failure messages."""
+  entry_1 = stage_failure_helper.GetStageFailure(
+      build_config=build_config, failure_id=1)
+  entry_2 = stage_failure_helper.GetStageFailure(
+      build_config=build_config, failure_id=2, outer_failure_id=1)
+  entry_3 = stage_failure_helper.GetStageFailure(
+      build_config=build_config, failure_id=3, outer_failure_id=1)
+  failure_entries = [entry_1, entry_2, entry_3]
+  failure_messages = (
+      failure_message_lib.FailureMessageManager.ConstructStageFailureMessages(
+          failure_entries))
+
+  return failure_messages
+
+
 # pylint: disable=protected-access
 class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
   """Tests for BuilderStatusManager."""
+
+  def setUp(self):
+    self.db = fake_cidb.FakeCIDBConnection()
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""
@@ -54,6 +73,75 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
     self.assertEqual(passed_input_status.AsFlatDict(),
                      passed_output_status.AsFlatDict())
     self.assertTrue(empty_string_status.Failed())
+
+  def testCreateBuildFailureMessageWithMessages(self):
+    """Test CreateBuildFailureMessage with stage failure messages."""
+    overlays = constants.PRIVATE_OVERLAYS
+    dashboard_url = 'http://fake_dashboard_url'
+    slave = 'cyan-paladin'
+    failure_messages = ConstructFailureMessages(slave)
+
+    build_msg = (
+        builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
+            slave, overlays, dashboard_url, failure_messages))
+
+    self.assertTrue('stage failed' in build_msg.message_summary)
+    self.assertTrue(build_msg.internal)
+    self.assertEqual(build_msg.builder, slave)
+
+  def testCreateBuildFailureMessageWithoutMessages(self):
+    """Test CreateBuildFailureMessage without stage failure messages."""
+    overlays = constants.PUBLIC_OVERLAYS
+    dashboard_url = 'http://fake_dashboard_url'
+    slave = 'cyan-paladin'
+
+    build_msg = (
+        builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
+            slave, overlays, dashboard_url, None))
+
+    self.assertTrue('cbuildbot failed' in build_msg.message_summary)
+    self.assertFalse(build_msg.internal)
+    self.assertEqual(build_msg.builder, slave)
+
+  def testGetBuilderStatusFromCIDBOnFailedStatus(self):
+    """Test GetBuilderStatusFromCIDB On Failed Status."""
+    build_config = 'master-release'
+    build_id = self.db.InsertBuild(
+        build_config, constants.WATERFALL_INTERNAL, 1, build_config, 'host1',
+        status=constants.BUILDER_STATUS_FAILED, milestone_version='60',
+        platform_version='9462.0.0')
+    stage_id = self.db.InsertBuildStage(
+        build_id, 'BuildPackages', status='fail')
+    self.db.InsertFailure(
+        stage_id, 'PackageBuildFailure',
+        'Packages failed in ./build_packages: sys-apps/flashrom',
+        exception_category='build')
+
+    builder_status = (
+        builder_status_lib.BuilderStatusManager.GetBuilderStatusFromCIDB(
+            self.db, build_config, '9462.0.0'))
+    self.assertEqual(builder_status.status, constants.BUILDER_STATUS_FAILED)
+
+  def testGetBuilderStatusFromCIDBOnMissingStatus(self):
+    """Test GetBuilderStatusFromCIDB On Missing Status."""
+    build_config = 'master-release'
+    builder_status = (
+        builder_status_lib.BuilderStatusManager.GetBuilderStatusFromCIDB(
+            self.db, build_config, '9462.0.0'))
+    self.assertEqual(builder_status.status, constants.BUILDER_STATUS_MISSING)
+
+  def testGetBuilderStatusFromCIDBOnPassedStatus(self):
+    """Test GetBuilderStatusFromCIDB On Passed Status."""
+    build_config = 'master-release'
+    self.db.InsertBuild(
+        build_config, constants.WATERFALL_INTERNAL, 1, build_config, 'host1',
+        status=constants.BUILDER_STATUS_PASSED, milestone_version='60',
+        platform_version='9462.0.0')
+    builder_status = (
+        builder_status_lib.BuilderStatusManager.GetBuilderStatusFromCIDB(
+            self.db, build_config, '9462.0.0'))
+    self.assertEqual(builder_status.status, constants.BUILDER_STATUS_PASSED)
+
 
 class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   """Tests for SlaveBuilderStatus."""
@@ -330,31 +418,6 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     status_2 = manager._GetStatus('completed_canceled', cidb_info_dict, None)
     self.assertEqual(status_2, constants.BUILDER_STATUS_INFLIGHT)
 
-  def testCreateBuildFailureMessageWithMessages(self):
-    """Test CreateBuildFailureMessage with stage failure messages."""
-    overlays = constants.PRIVATE_OVERLAYS
-    dashboard_url = 'http://fake_dashboard_url'
-    failure_messages = self._ConstructFailureMessages(self.slave_1)
-
-    build_msg = builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
-        self.slave_1, overlays, dashboard_url, failure_messages)
-
-    self.assertTrue('stage failed' in build_msg.message_summary)
-    self.assertTrue(build_msg.internal)
-    self.assertEqual(build_msg.builder, self.slave_1)
-
-  def testCreateBuildFailureMessageWithoutMessages(self):
-    """Test CreateBuildFailureMessage without stage failure messages."""
-    overlays = constants.PUBLIC_OVERLAYS
-    dashboard_url = 'http://fake_dashboard_url'
-
-    build_msg = builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
-        self.slave_1, overlays, dashboard_url, None)
-
-    self.assertTrue('cbuildbot failed' in build_msg.message_summary)
-    self.assertFalse(build_msg.internal)
-    self.assertEqual(build_msg.builder, self.slave_1)
-
   def test_GetDashboardUrlWithBuildbucket(self):
     """Test _GetDashboardUrl with Buildbucket info."""
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
@@ -384,25 +447,11 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     dashboard_url = manager._GetDashboardUrl(self.slave_1, {}, None)
     self.assertIsNone(dashboard_url)
 
-  def _ConstructFailureMessages(self, build_config):
-    entry_1 = stage_failure_helper.GetStageFailure(
-        build_config=build_config, failure_id=1)
-    entry_2 = stage_failure_helper.GetStageFailure(
-        build_config=build_config, failure_id=2, outer_failure_id=1)
-    entry_3 = stage_failure_helper.GetStageFailure(
-        build_config=build_config, failure_id=3, outer_failure_id=1)
-    failure_entries = [entry_1, entry_2, entry_3]
-    failure_messages = (
-        failure_message_lib.FailureMessageManager.ConstructStageFailureMessages(
-            failure_entries))
-
-    return failure_messages
-
   def testGetMessageOnFailedBuilds(self):
     """Test _GetMessage on failed builds."""
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
     manager = self.ConstructBuilderStatusManager()
-    failure_messages = self._ConstructFailureMessages(self.slave_1)
+    failure_messages = ConstructFailureMessages(self.slave_1)
     slave_failures_dict = {self.slave_1: failure_messages}
     message = manager._GetMessage(
         self.slave_1, constants.BUILDER_STATUS_FAILED, 'dashboard_url',

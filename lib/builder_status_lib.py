@@ -157,6 +157,81 @@ class BuilderStatusManager(object):
 
     return BuilderStatusManager._UnpickleBuildStatus(output)
 
+  @classmethod
+  def CreateBuildFailureMessage(cls, build_config, overlays, dashboard_url,
+                                failure_messages):
+    """Creates a message summarizing the failures.
+
+    Args:
+      build_config: Build config name (string) of a slave build.
+      overlays: The overlays used for the build.
+      dashboard_url: The URL of the build.
+      failure_messages: A list of stage failure messages (instances of
+        StageFailureMessage or its sub-classes) of the given build.
+
+    Returns:
+      A build_failure_message.BuildFailureMessage object.
+    """
+    internal = overlays in [constants.PRIVATE_OVERLAYS,
+                            constants.BOTH_OVERLAYS]
+    details = []
+
+    if failure_messages:
+      for x in failure_messages:
+        details.append('The %s stage failed: %s' % (
+            x.stage_name, x.exception_message))
+
+    if not details:
+      details = ['cbuildbot failed']
+
+    # reason does not include builder name or URL. This is mainly for
+    # populating the "failure message" column in the stats sheet.
+    reason = ' '.join(details)
+    details.append('in %s' % dashboard_url)
+    msg_summary = '%s: %s' % (build_config, ' '.join(details))
+
+    return build_failure_message.BuildFailureMessage(
+        msg_summary, failure_messages, internal, reason, build_config)
+
+  @classmethod
+  def GetBuilderStatusFromCIDB(cls, db, build_config, version):
+    """Get BuilderStatus from CIDB tables.
+
+    Args:
+      db: An instance of cidb.CIDBConnection.
+      build_config: The build config (string) of the build to get builder status
+      version: The platform_version (string) of the build to get builder status.
+
+    Retuns:
+      An instance of BuilderStatus.
+    """
+    builds = db.GetBuildHistory(build_config, 1, platform_version=version)
+
+    if builds:
+      build = builds[0]
+      status = build['status']
+      build_id = build['id']
+      dashboard_url = tree_status.ConstructDashboardURL(
+          build['waterfall'],
+          build['builder_name'],
+          build['build_number'])
+
+      failure_message = None
+      if status == constants.BUILDER_STATUS_FAILED:
+        stage_failures = db.GetBuildsFailures([build_id])
+        failure_message_mgr = failure_message_lib.FailureMessageManager
+        stage_failure_messages = (
+            failure_message_mgr.ConstructStageFailureMessages(stage_failures))
+        overlays = site_config[build_config].overlays
+        failure_message = BuilderStatusManager.CreateBuildFailureMessage(
+            build_config, overlays, dashboard_url, stage_failure_messages)
+
+      return BuilderStatus(status, failure_message,
+                           dashboard_url=dashboard_url)
+    else:
+      return BuilderStatus(constants.BUILDER_STATUS_MISSING, None)
+
+
 class SlaveBuilderStatus(object):
   """Operations to manage slave BuilderStatus.
 
@@ -294,42 +369,6 @@ class SlaveBuilderStatus(object):
       # If no entry found in CIDB, get the buildbot url from Buildbucket.
       return buildbucket_info_dict[build_config].url
 
-  @staticmethod
-  def CreateBuildFailureMessage(build_config, overlays, dashboard_url,
-                                failure_messages):
-    """Creates a message summarizing the failures.
-
-    Args:
-      build_config: Build config name (string) of a slave build.
-      overlays: The overlays used for the build.
-      dashboard_url: The URL of the build.
-      failure_messages: A list of stage failure messages (instances of
-        StageFailureMessage or its sub-classes) of the given build.
-
-    Returns:
-      A build_failure_message.BuildFailureMessage object.
-    """
-    internal = overlays in [constants.PRIVATE_OVERLAYS,
-                            constants.BOTH_OVERLAYS]
-    details = []
-
-    if failure_messages:
-      for x in failure_messages:
-        details.append('The %s stage failed: %s' % (
-            x.stage_name, x.exception_message))
-
-    if not details:
-      details = ['cbuildbot failed']
-
-    # reason does not include builder name or URL. This is mainly for
-    # populating the "failure message" column in the stats sheet.
-    reason = ' '.join(details)
-    details.append('in %s' % dashboard_url)
-    msg_summary = '%s: %s' % (build_config, ' '.join(details))
-
-    return build_failure_message.BuildFailureMessage(
-        msg_summary, failure_messages, internal, reason, build_config)
-
   def _GetMessage(self, build_config, status, dashboard_url,
                   slave_failures_dict):
     """Get BuildFailureMessage of a given build.
@@ -349,7 +388,7 @@ class SlaveBuilderStatus(object):
       failure_messages = slave_failures_dict.get(build_config)
       overlays = site_config[build_config].overlays
 
-      return self.CreateBuildFailureMessage(
+      return BuilderStatusManager.CreateBuildFailureMessage(
           build_config, overlays, dashboard_url, failure_messages)
 
   def GetBuilderStatusForBuild(self, build_config):
