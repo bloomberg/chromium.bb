@@ -159,6 +159,17 @@ constexpr int kLetterPortraitPageHeight = 792;
 
 namespace blink {
 
+namespace {
+
+void SetNeedsCompositingUpdate(blink::LayoutViewItem layout_view_item,
+                               blink::CompositingUpdateType update_type) {
+  if (PaintLayerCompositor* compositor =
+          !layout_view_item.IsNull() ? layout_view_item.Compositor() : nullptr)
+    compositor->SetNeedsCompositingUpdate(update_type);
+}
+
+}  // namespace
+
 using namespace HTMLNames;
 
 // The maximum number of updatePlugins iterations that should be done before
@@ -1704,6 +1715,9 @@ void FrameView::ViewportSizeChanged(bool width_changed, bool height_changed) {
     }
   }
 
+  if (frame_->IsMainFrame())
+    frame_->GetPage()->GlobalRootScrollerController().DidResizeViewport();
+
   ShowOverlayScrollbars();
 
   if (RuntimeEnabledFeatures::inertTopControlsEnabled() && GetLayoutView() &&
@@ -2936,11 +2950,18 @@ FrameView* FrameView::ParentFrameView() const {
 }
 
 void FrameView::DidChangeGlobalRootScroller() {
-  if (!frame_->GetSettings() || !frame_->GetSettings()->GetViewportEnabled())
-    return;
+  // Being the global root scroller will affect clipping size due to browser
+  // controls behavior so we need to update compositing based on updated clip
+  // geometry.
+  LayoutViewItem view = GetLayoutViewItem();
+  SetNeedsCompositingUpdate(view, kCompositingUpdateAfterGeometryChange);
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    SetNeedsPaintPropertyUpdate();
 
-  // Avoid drawing two sets of scrollbars when visual viewport is enabled.
-  VisualViewportScrollbarsChanged();
+  // Avoid drawing two sets of scrollbars when visual viewport provides
+  // scrollbars.
+  if (frame_->GetSettings() && frame_->GetSettings()->GetViewportEnabled())
+    VisualViewportScrollbarsChanged();
 }
 
 // TODO(pdr): This logic is similar to adjustScrollbarExistence and the common
@@ -4807,13 +4828,6 @@ IntPoint FrameView::ConvertFromContainingFrameViewBaseToScrollbar(
   // Scrollbars won't be transformed within us
   new_point.MoveBy(-scrollbar.Location());
   return new_point;
-}
-
-static void SetNeedsCompositingUpdate(LayoutViewItem layout_view_item,
-                                      CompositingUpdateType update_type) {
-  if (PaintLayerCompositor* compositor =
-          !layout_view_item.IsNull() ? layout_view_item.Compositor() : nullptr)
-    compositor->SetNeedsCompositingUpdate(update_type);
 }
 
 void FrameView::SetParentVisible(bool visible) {
