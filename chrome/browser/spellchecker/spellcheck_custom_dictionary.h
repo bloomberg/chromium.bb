@@ -12,8 +12,11 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error.h"
@@ -216,6 +219,10 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
 
   // A post-startup task to fix the invalid custom dictionary file.
   base::CancelableClosure fix_invalid_file_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to create weak pointers for an instance of this class.
   base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
