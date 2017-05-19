@@ -1444,12 +1444,6 @@ IntRect Range::BoundingBox() const {
   return ComputeTextRect(EphemeralRange(this));
 }
 
-// TODO(tanvir.rizvi): We will replace Range::TextQuads with
-// ComputeTextQuads(in VisibleUnits) and get rid of Range::TextQuads.
-void Range::TextQuads(Vector<FloatQuad>& quads) const {
-  quads.AppendVector(ComputeTextQuads(EphemeralRange(this)));
-}
-
 bool AreRangesEqual(const Range* a, const Range* b) {
   if (a == b)
     return true;
