@@ -2192,7 +2192,6 @@ crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/modu
 # imported if the test passed or if the results for testharness tests
 # were matched on pass/fail but not exact error messages.
 crbug.com/688854 external/wpt/hr-time/window-worker-time-origin.html [ Failure ]
-crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
 
 crbug.com/698077 inspector/sources/debugger/debugger-scripts.html [ NeedsManualRebaseline ]
 crbug.com/698077 inspector/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
@@ -2326,7 +2325,6 @@ crbug.com/713587 external/wpt/css/css-ui-3/caret-color-006.html [ Skip ]
 crbug.com/655458 crbug.com/721814 external/wpt/mediacapture-image/idlharness.html [ Skip ]
 crbug.com/655458 crbug.com/721814 external/wpt/WebCryptoAPI/idlharness.html [ Skip ]
 crbug.com/655458 crbug.com/721814 external/wpt/WebCryptoAPI/idlharness.https.html [ Skip ]
-crbug.com/626703 external/wpt/web-nfc/idlharness.https.html [ Skip ]
 
 crbug.com/723740 mojo/module-loading.html [ Timeout ]
 crbug.com/723740 mojo/module-loading-manual-deps-loading.html [ Timeout ]
@@ -2338,11 +2336,6 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/performance-timeline/po-observe.html [ Timeout ]
-crbug.com/626703 external/wpt/resource-timing/resource-timing.html [ Timeout ]
-crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
-crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
-crbug.com/626703 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Timeout ]
 crbug.com/626703 [ Android Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 [ Android Mac ] external/wpt/pointerevents/pointerevent_disabled_form_control-manual.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes-manual.html [ Timeout ]
@@ -2352,6 +2345,7 @@ crbug.com/626703 external/wpt/content-security-policy/connect-src/connect-src-ev
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-first-letter-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui-3/box-sizing-026.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ Skip ]
 crbug.com/626703 external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
@@ -2456,6 +2450,8 @@ crbug.com/626703 external/wpt/streams/readable-streams/templated.sharedworker.ht
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 external/wpt/uievents/interface/click-event-manual.htm [ Timeout ]
 crbug.com/626703 external/wpt/uievents/interface/dblclick-event-manual.htm [ Timeout ]
+crbug.com/626703 external/wpt/uievents/keyboard/key-101en-us-manual.html [ Skip ]
+crbug.com/626703 external/wpt/uievents/keyboard/key-102fr-fr-manual.html [ Skip ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/retrospective-exponentialRampToValueAtTime.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/retrospective-linearRampToValueAtTime.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/retrospective-setTargetAtTime.html [ Timeout ]

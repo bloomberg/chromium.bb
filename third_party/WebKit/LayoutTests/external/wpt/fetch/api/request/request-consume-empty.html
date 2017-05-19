@@ -11,14 +11,14 @@
   </head>
   <body>
     <script>
-    function checkBodyText(test, request) {
+    function checkBodyText(request) {
       return request.text().then(function(bodyAsText) {
         assert_equals(bodyAsText, "", "Resolved value should be empty");
         assert_false(request.bodyUsed);
       });
     }
 
-    function checkBodyBlob(test, request) {
+    function checkBodyBlob(request) {
       return request.blob().then(function(bodyAsBlob) {
         var promise = new Promise(function(resolve, reject) {
           var reader = new FileReader();
@@ -37,14 +37,14 @@
       });
     }
 
-    function checkBodyArrayBuffer(test, request) {
+    function checkBodyArrayBuffer(request) {
       return request.arrayBuffer().then(function(bodyAsArrayBuffer) {
         assert_equals(bodyAsArrayBuffer.byteLength, 0, "Resolved value should be empty");
         assert_false(request.bodyUsed);
       });
     }
 
-    function checkBodyJSON(test, request) {
+    function checkBodyJSON(request) {
       return request.json().then(
         function(bodyAsJSON) {
           assert_unreached("JSON parsing should fail");
@@ -54,34 +54,27 @@
         });
     }
 
-    function checkBodyFormData(test, request) {
+    function checkBodyFormData(request) {
       return request.formData().then(function(bodyAsFormData) {
         assert_true(bodyAsFormData instanceof FormData, "Should receive a FormData");
         assert_false(request.bodyUsed);
      });
     }
 
-    function checkBodyFormDataError(test, request) {
-      return promise_rejects(test, new TypeError(), request.formData()).then(function() {
-        assert_false(request.bodyUsed);
-      });
-    }
-
-    function checkRequestWithNoBody(bodyType, checkFunction, headers = []) {
+    function checkRequestWithNoBody(bodyType, checkFunction) {
       promise_test(function(test) {
-        var request = new Request("", {"method": "POST", "headers": headers});
+        var request = new Request("", {"method": "POST"});
         assert_false(request.bodyUsed);
-        return checkFunction(test, request);
+        return checkFunction(request);
       }, "Consume request's body as " + bodyType);
     }
 
+    var formData = new FormData();
     checkRequestWithNoBody("text", checkBodyText);
     checkRequestWithNoBody("blob", checkBodyBlob);
     checkRequestWithNoBody("arrayBuffer", checkBodyArrayBuffer);
-    checkRequestWithNoBody("json (error case)", checkBodyJSON);
-    checkRequestWithNoBody("formData with correct multipart type (error case)", checkBodyFormDataError, [["Content-Type", 'multipart/form-data; boundary="boundary"']]);
-    checkRequestWithNoBody("formData with correct urlencoded type", checkBodyFormData, [["Content-Type", "application/x-www-form-urlencoded;charset=UTF-8"]]);
-    checkRequestWithNoBody("formData without correct type (error case)", checkBodyFormDataError);
+    checkRequestWithNoBody("json", checkBodyJSON);
+    checkRequestWithNoBody("formData", checkBodyFormData);
 
     function checkRequestWithEmptyBody(bodyType, body, asText) {
       promise_test(function(test) {
