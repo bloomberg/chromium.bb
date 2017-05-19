@@ -37,6 +37,9 @@ Polymer({
 
     /** @private */
     isFolder_: Boolean,
+
+    /** @private */
+    openItemUrl_: String,
   },
 
   observers: [
@@ -90,6 +93,7 @@ Polymer({
    */
   onMenuButtonClick_: function(e) {
     e.stopPropagation();
+    e.preventDefault();
     this.dispatch(bookmarks.actions.selectItem(
         this.itemId, false, false, this.getState()));
     this.fire('open-item-menu', {
@@ -116,6 +120,10 @@ Polymer({
   /** @private */
   onItemChanged_: function() {
     this.isFolder_ = !this.item_.url;
+    if (this.item_.url)
+      this.openItemUrl_ = this.item_.url;
+    else
+      this.openItemUrl_ = 'chrome://bookmarks/?id=' + this.itemId;
   },
 
   /**
@@ -133,26 +141,25 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {MouseEvent} e
    * @private
    */
   onClick_: function(e) {
     this.dispatch(bookmarks.actions.selectItem(
         this.itemId, e.ctrlKey, e.shiftKey, this.getState()));
     e.stopPropagation();
+    e.preventDefault();
   },
 
   /**
-   * @param {Event} e
+   * @param {MouseEvent} e
    * @private
    */
   onDblClick_: function(e) {
-    if (!this.item_.url) {
-      this.dispatch(
-          bookmarks.actions.selectFolder(this.item_.id, this.getState().nodes));
-    } else {
-      chrome.tabs.create({url: this.item_.url});
-    }
+    var commandManager = bookmarks.CommandManager.getInstance();
+    var itemSet = this.getState().selection.items;
+    if (commandManager.canExecute(Command.OPEN, itemSet))
+      commandManager.handle(Command.OPEN, itemSet);
   },
 
   /**
