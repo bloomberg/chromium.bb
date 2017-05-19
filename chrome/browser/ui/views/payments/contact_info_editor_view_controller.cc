@@ -50,7 +50,8 @@ ContactInfoEditorViewController::GetFieldDefinitions() {
     fields.push_back(EditorField(
         autofill::PHONE_HOME_WHOLE_NUMBER,
         l10n_util::GetStringUTF16(IDS_PAYMENTS_PHONE_FIELD_IN_CONTACT_DETAILS),
-        EditorField::LengthHint::HINT_SHORT, /*required=*/true));
+        EditorField::LengthHint::HINT_SHORT, /*required=*/true,
+        EditorField::ControlType::TEXTFIELD_NUMBER));
   }
   if (spec()->request_payer_email()) {
     fields.push_back(EditorField(

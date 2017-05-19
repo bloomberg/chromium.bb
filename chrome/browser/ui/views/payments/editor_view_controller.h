@@ -44,7 +44,12 @@ class ValidatingTextfield;
 // Field definition for an editor field, used to build the UI.
 struct EditorField {
   enum class LengthHint : int { HINT_LONG, HINT_SHORT };
-  enum class ControlType : int { TEXTFIELD, COMBOBOX, CUSTOMFIELD };
+  enum class ControlType : int {
+    TEXTFIELD,
+    TEXTFIELD_NUMBER,
+    COMBOBOX,
+    CUSTOMFIELD
+  };
 
   EditorField(autofill::ServerFieldType type,
               base::string16 label,

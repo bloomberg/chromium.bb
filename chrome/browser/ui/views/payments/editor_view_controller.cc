@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
@@ -303,10 +304,13 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
   layout->AddView(label.release());
 
   constexpr int kInputFieldHeight = 28;
-  if (field.control_type == EditorField::ControlType::TEXTFIELD) {
+  if (field.control_type == EditorField::ControlType::TEXTFIELD ||
+      field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER) {
     ValidatingTextfield* text_field =
         new ValidatingTextfield(CreateValidationDelegate(field));
     text_field->SetText(GetInitialValueForType(field.type));
+    if (field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER)
+      text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
     text_field->set_controller(this);
     // Using autofill field type as a view ID (for testing).
     text_field->set_id(static_cast<int>(field.type));
