@@ -22,20 +22,6 @@ mojom("interfaces") {
   use_once_callback = false
 }
 
-mojom("generic_sensor") {
-  sources = [
-    "sensor.mojom",
-    "sensor_provider.mojom",
-  ]
-
-  public_deps = [
-    ":constants",
-  ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
-}
-
 mojom("constants") {
   sources = [
     "constants.mojom",
