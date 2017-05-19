@@ -3084,30 +3084,14 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
   int p;
-  RestorationInfo *rsi = &cm->rst_info[0];
-  switch (rsi->frame_restoration_type) {
-    case RESTORE_NONE:
-      aom_wb_write_bit(wb, 0);
-      aom_wb_write_bit(wb, 0);
-      break;
-    case RESTORE_WIENER:
-      aom_wb_write_bit(wb, 1);
-      aom_wb_write_bit(wb, 0);
-      break;
-    case RESTORE_SGRPROJ:
-      aom_wb_write_bit(wb, 1);
-      aom_wb_write_bit(wb, 1);
-      break;
-    case RESTORE_SWITCHABLE:
-      aom_wb_write_bit(wb, 0);
-      aom_wb_write_bit(wb, 1);
-      break;
-    default: assert(0);
-  }
-  for (p = 1; p < MAX_MB_PLANE; ++p) {
+  RestorationInfo *rsi;
+  for (p = 0; p < MAX_MB_PLANE; ++p) {
     rsi = &cm->rst_info[p];
     switch (rsi->frame_restoration_type) {
-      case RESTORE_NONE: aom_wb_write_bit(wb, 0); break;
+      case RESTORE_NONE:
+        aom_wb_write_bit(wb, 0);
+        aom_wb_write_bit(wb, 0);
+        break;
       case RESTORE_WIENER:
         aom_wb_write_bit(wb, 1);
         aom_wb_write_bit(wb, 0);
@@ -3116,15 +3100,19 @@ static void encode_restoration_mode(AV1_COMMON *cm,
         aom_wb_write_bit(wb, 1);
         aom_wb_write_bit(wb, 1);
         break;
+      case RESTORE_SWITCHABLE:
+        aom_wb_write_bit(wb, 0);
+        aom_wb_write_bit(wb, 1);
+        break;
       default: assert(0);
     }
   }
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    rsi = &cm->rst_info[0];
-    aom_wb_write_bit(wb, rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX);
-    if (rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX) {
+    aom_wb_write_bit(
+        wb, rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 2));
+    if (rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 2)) {
       aom_wb_write_bit(
           wb, rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 1));
     }
@@ -3219,7 +3207,6 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
 
   if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-    assert(plane == 0);
     aom_write_symbol(w, rsi->restoration_type[rtile_idx],
                      xd->tile_ctx->switchable_restore_cdf,
                      RESTORE_SWITCHABLE_TYPES);

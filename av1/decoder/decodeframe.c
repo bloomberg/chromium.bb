@@ -1669,34 +1669,30 @@ static void setup_segmentation(AV1_COMMON *const cm,
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
   int p;
-  RestorationInfo *rsi = &cm->rst_info[0];
-  if (aom_rb_read_bit(rb)) {
-    rsi->frame_restoration_type =
-        aom_rb_read_bit(rb) ? RESTORE_SGRPROJ : RESTORE_WIENER;
-  } else {
-    rsi->frame_restoration_type =
-        aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
-  }
-  for (p = 1; p < MAX_MB_PLANE; ++p) {
+  RestorationInfo *rsi;
+  for (p = 0; p < MAX_MB_PLANE; ++p) {
     rsi = &cm->rst_info[p];
     if (aom_rb_read_bit(rb)) {
       rsi->frame_restoration_type =
           aom_rb_read_bit(rb) ? RESTORE_SGRPROJ : RESTORE_WIENER;
     } else {
-      rsi->frame_restoration_type = RESTORE_NONE;
+      rsi->frame_restoration_type =
+          aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
     }
   }
-
   cm->rst_info[0].restoration_tilesize = RESTORATION_TILESIZE_MAX;
   cm->rst_info[1].restoration_tilesize = RESTORATION_TILESIZE_MAX;
   cm->rst_info[2].restoration_tilesize = RESTORATION_TILESIZE_MAX;
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    cm->rst_info[0].restoration_tilesize = RESTORATION_TILESIZE_MAX >> 2;
+    cm->rst_info[1].restoration_tilesize = RESTORATION_TILESIZE_MAX >> 2;
+    cm->rst_info[2].restoration_tilesize = RESTORATION_TILESIZE_MAX >> 2;
     rsi = &cm->rst_info[0];
-    rsi->restoration_tilesize >>= aom_rb_read_bit(rb);
-    if (rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX) {
-      rsi->restoration_tilesize >>= aom_rb_read_bit(rb);
+    rsi->restoration_tilesize <<= aom_rb_read_bit(rb);
+    if (rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 2)) {
+      rsi->restoration_tilesize <<= aom_rb_read_bit(rb);
     }
   }
   int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
@@ -1801,7 +1797,6 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
   SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
 
   if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-    assert(plane == 0);
     rsi->restoration_type[rtile_idx] =
         aom_read_symbol(r, xd->tile_ctx->switchable_restore_cdf,
                         RESTORE_SWITCHABLE_TYPES, ACCT_STR);
