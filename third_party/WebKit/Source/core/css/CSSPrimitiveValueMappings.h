@@ -1523,10 +1523,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EOverflowWrap e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kNormalOverflowWrap:
+    case EOverflowWrap::kNormal:
       value_id_ = CSSValueNormal;
       break;
-    case kBreakOverflowWrap:
+    case EOverflowWrap::kBreakWord:
       value_id_ = CSSValueBreakWord;
       break;
   }
@@ -1536,15 +1536,15 @@ template <>
 inline EOverflowWrap CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueBreakWord:
-      return kBreakOverflowWrap;
+      return EOverflowWrap::kBreakWord;
     case CSSValueNormal:
-      return kNormalOverflowWrap;
+      return EOverflowWrap::kNormal;
     default:
       break;
   }
 
   NOTREACHED();
-  return kNormalOverflowWrap;
+  return EOverflowWrap::kNormal;
 }
 
 template <>

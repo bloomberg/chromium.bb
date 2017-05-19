@@ -205,7 +205,7 @@ enum EWordBreak {
   kBreakWordBreak
 };
 
-enum EOverflowWrap { kNormalOverflowWrap, kBreakOverflowWrap };
+enum class EOverflowWrap { kNormal, kBreakWord };
 
 enum class LineBreak { kAuto, kLoose, kNormal, kStrict, kAfterWhiteSpace };
 

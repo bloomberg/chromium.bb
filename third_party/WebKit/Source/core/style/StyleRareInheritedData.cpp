@@ -82,7 +82,8 @@ StyleRareInheritedData::StyleRareInheritedData()
           static_cast<unsigned>(ComputedStyle::InitialTextSecurity())),
       user_modify_(static_cast<unsigned>(EUserModify::kReadOnly)),
       word_break_(ComputedStyle::InitialWordBreak()),
-      overflow_wrap_(ComputedStyle::InitialOverflowWrap()),
+      overflow_wrap_(
+          static_cast<unsigned>(ComputedStyle::InitialOverflowWrap())),
       line_break_(static_cast<unsigned>(LineBreak::kAuto)),
       user_select_(static_cast<unsigned>(ComputedStyle::InitialUserSelect())),
       speak_(static_cast<unsigned>(ESpeak::kNormal)),
