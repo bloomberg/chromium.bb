@@ -4044,8 +4044,6 @@ void RenderFrameImpl::DidFinishLoad() {
                          TRACE_EVENT_SCOPE_PROCESS);
   }
 
-  for (auto& observer : render_view_->observers())
-    observer.DidFinishLoad(frame_);
   for (auto& observer : observers_)
     observer.DidFinishLoad();
 
