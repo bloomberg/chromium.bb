@@ -191,7 +191,6 @@
     "_templates": {
         "android_pfq": {
             "_template": "android_pfq",
-            "android_gts_build_branch": "git_mnc-dev",
             "android_import_branch": "git_mnc-dr-arc-dev",
             "android_package": "android-container",
             "android_rev": "latest_release",
@@ -762,6 +761,7 @@
         },
         "nyc_android_pfq": {
             "_template": "nyc_android_pfq",
+            "android_gts_build_branch": "git_nyc-mr2-dev",
             "android_import_branch": "git_nyc-mr1-arc",
             "android_package": "android-container-nyc",
             "android_rev": "latest_release",

@@ -2040,7 +2040,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.generic_android_pfq,
       android_package='android-container',
       android_import_branch='git_mnc-dr-arc-dev',
-      android_gts_build_branch='git_mnc-dev',
   )
 
   # Template for Android NYC.
@@ -2049,7 +2048,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.generic_android_pfq,
       android_package='android-container-nyc',
       android_import_branch='git_nyc-mr1-arc',
-      # TODO(hidehiko): Add gts_build_branch for N.
+      android_gts_build_branch='git_nyc-mr2-dev',
   )
 
   # Mixin for masters.

@@ -400,7 +400,8 @@ ANDROID_BUILD_TARGETS = {
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
 }
 ANDROID_GTS_BUILD_TARGETS = {
-    'XTS': ('linux-xts', r'\.zip$'),
+    # "gts_arm64" is the build maintained by GMS team.
+    'XTS': ('linux-gts_arm64', r'\.zip$'),
 }
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
