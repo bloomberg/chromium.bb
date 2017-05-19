@@ -40,8 +40,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
       public QuicClientPushPromiseIndex::Delegate,
       public MultiplexedHttpStream {
  public:
-  QuicHttpStream(std::unique_ptr<QuicChromiumClientSession::Handle> session,
-                 HttpServerProperties* http_server_properties);
+  explicit QuicHttpStream(
+      std::unique_ptr<QuicChromiumClientSession::Handle> session);
 
   ~QuicHttpStream() override;
 
@@ -152,8 +152,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   }
 
   State next_state_;
-
-  HttpServerProperties* http_server_properties_;  // Unowned.
 
   std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
 
