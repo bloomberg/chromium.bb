@@ -82,31 +82,6 @@ class MockSubresourceFilterClient
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
 };
 
-// Throttle to call WillProcessResponse on the factory, which is otherwise
-// called by the ThrottleManager.
-class TestForwardingNavigationThrottle : public content::NavigationThrottle {
- public:
-  explicit TestForwardingNavigationThrottle(content::NavigationHandle* handle)
-      : content::NavigationThrottle(handle) {}
-  ~TestForwardingNavigationThrottle() override {}
-
-  // content::NavigationThrottle:
-  content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
-      override {
-    content::WebContents* web_contents = navigation_handle()->GetWebContents();
-    ContentSubresourceFilterDriverFactory* factory =
-        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-    factory->WillProcessResponse(navigation_handle());
-    return content::NavigationThrottle::PROCEED;
-  }
-  const char* GetNameForLogging() override {
-    return "TestForwardingNavigationThrottle";
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestForwardingNavigationThrottle);
-};
-
 std::string GetSuffixForList(const ActivationList& type) {
   switch (type) {
     case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
@@ -198,8 +173,6 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
         base::MakeUnique<SubresourceFilterSafeBrowsingActivationThrottle>(
             navigation_handle, test_io_task_runner_,
             fake_safe_browsing_database_));
-    navigation_handle->RegisterThrottleForTesting(
-        base::MakeUnique<TestForwardingNavigationThrottle>(navigation_handle));
   }
 
   content::NavigationThrottle::ThrottleCheckResult SimulateStart() {
@@ -267,6 +240,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   void ClearAllBlacklistedUrls() {
     fake_safe_browsing_database_->RemoveAllBlacklistedUrls();
   }
+
+  // With a null database the throttle becomes pass-through.
+  void UsePassThroughThrottle() { fake_safe_browsing_database_ = nullptr; }
 
   void RunUntilIdle() {
     test_io_task_runner_->RunUntilIdle();
@@ -355,6 +331,35 @@ class SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling
   DISALLOW_COPY_AND_ASSIGN(
       SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling);
 };
+
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
+       PassThroughThrottle) {
+  UsePassThroughThrottle();
+  CreateTestNavigationForMainFrame(GURL(kURL));
+  SimulateStartAndExpectProceed();
+  SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
+  SimulateCommitAndExpectProceed();
+  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
+
+  scoped_configuration()->ResetConfiguration(
+      Configuration(ActivationLevel::ENABLED, ActivationScope::ALL_SITES));
+  CreateTestNavigationForMainFrame(GURL(kURL));
+  SimulateStartAndExpectProceed();
+  SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
+  SimulateCommitAndExpectProceed();
+  EXPECT_EQ(ActivationDecision::ACTIVATED,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
+
+  scoped_configuration()->ResetConfiguration(
+      Configuration(ActivationLevel::ENABLED, ActivationScope::NO_SITES));
+  CreateTestNavigationForMainFrame(GURL(kURL));
+  SimulateStartAndExpectProceed();
+  SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
+  SimulateCommitAndExpectProceed();
+  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
+}
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListNotMatched_NoActivation) {
