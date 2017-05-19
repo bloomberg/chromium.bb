@@ -31,7 +31,6 @@
 namespace blink {
 
 class Element;
-class FloatRect;
 class FloatSize;
 class GraphicsContext;
 class IntRect;
@@ -64,9 +63,7 @@ class CORE_EXPORT PrintContext
   // FIXME: This means that CSS page breaks won't be on page boundary if the
   // size is different than what was passed to BeginPrintMode(). That's probably
   // not always desirable.
-  // FIXME: |print_rect| is only used to determine page aspect ratio,
-  // it would be better to pass a FloatSize with page dimensions instead.
-  virtual void ComputePageRects(const FloatRect& print_rect);
+  virtual void ComputePageRects(const FloatSize& print_size);
 
   // Deprecated. Page size computation is already in this class, clients
   // shouldn't be copying it.

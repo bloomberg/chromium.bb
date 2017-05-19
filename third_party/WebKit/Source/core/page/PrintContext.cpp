@@ -54,7 +54,7 @@ PrintContext::~PrintContext() {
   DCHECK(!is_printing_);
 }
 
-void PrintContext::ComputePageRects(const FloatRect& print_rect) {
+void PrintContext::ComputePageRects(const FloatSize& print_size) {
   page_rects_.clear();
 
   if (!IsFrameValid())
@@ -63,8 +63,7 @@ void PrintContext::ComputePageRects(const FloatRect& print_rect) {
   LayoutViewItem view = frame_->GetDocument()->GetLayoutViewItem();
   const IntRect& document_rect = view.DocumentRect();
   FloatSize page_size = frame_->ResizePageRectsKeepingRatio(
-      FloatSize(print_rect.Width(), print_rect.Height()),
-      FloatSize(document_rect.Width(), document_rect.Height()));
+      print_size, FloatSize(document_rect.Width(), document_rect.Height()));
   ComputePageRectsWithPageSizeInternal(page_size);
 }
 
