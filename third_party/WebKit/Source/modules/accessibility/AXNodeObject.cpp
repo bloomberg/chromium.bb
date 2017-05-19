@@ -1047,10 +1047,20 @@ bool AXNodeObject::IsMeter() const {
 }
 
 bool AXNodeObject::IsMultiSelectable() const {
-  bool multiselectable = false;
-  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kMultiselectable,
-                                    multiselectable)) {
-    return multiselectable;
+  switch (RoleValue()) {
+    case kGridRole:
+    case kTreeGridRole:
+    case kTreeRole:
+    case kListBoxRole:
+    case kTabListRole: {
+      bool multiselectable = false;
+      if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kMultiselectable,
+                                        multiselectable)) {
+        return multiselectable;
+      }
+    }
+    default:
+      break;
   }
 
   return isHTMLSelectElement(GetNode()) &&
