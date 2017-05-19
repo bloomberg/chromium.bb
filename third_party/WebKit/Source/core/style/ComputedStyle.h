@@ -1609,11 +1609,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   void SetColor(const Color&);
 
   // hyphens
-  static Hyphens InitialHyphens() { return kHyphensManual; }
+  static Hyphens InitialHyphens() { return Hyphens::kManual; }
   Hyphens GetHyphens() const {
     return static_cast<Hyphens>(rare_inherited_data_->hyphens_);
   }
-  void SetHyphens(Hyphens h) { SET_VAR(rare_inherited_data_, hyphens_, h); }
+  void SetHyphens(Hyphens h) {
+    SET_VAR(rare_inherited_data_, hyphens_, static_cast<unsigned>(h));
+  }
 
   // -webkit-hyphenate-character
   static const AtomicString& InitialHyphenationString() { return g_null_atom; }

@@ -1563,7 +1563,7 @@ AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
 }
 
 Hyphenation* ComputedStyle::GetHyphenation() const {
-  return GetHyphens() == kHyphensAuto
+  return GetHyphens() == Hyphens::kAuto
              ? GetFontDescription().LocaleOrDefault().GetHyphenation()
              : nullptr;
 }

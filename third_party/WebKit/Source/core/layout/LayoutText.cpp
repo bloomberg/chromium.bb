@@ -1135,7 +1135,7 @@ void LayoutText::ComputePreferredLogicalWidths(
 
   Hyphenation* hyphenation =
       style_to_use.AutoWrap() ? style_to_use.GetHyphenation() : nullptr;
-  bool disable_soft_hyphen = style_to_use.GetHyphens() == kHyphensNone;
+  bool disable_soft_hyphen = style_to_use.GetHyphens() == Hyphens::kNone;
   float max_word_width = 0;
   if (!hyphenation)
     max_word_width = std::numeric_limits<float>::infinity();

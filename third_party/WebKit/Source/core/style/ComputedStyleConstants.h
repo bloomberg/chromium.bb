@@ -287,7 +287,7 @@ enum EBackfaceVisibility {
 
 enum ELineClampType { kLineClampLineCount, kLineClampPercentage };
 
-enum Hyphens { kHyphensNone, kHyphensManual, kHyphensAuto };
+enum class Hyphens { kNone, kManual, kAuto };
 
 enum class ESpeak {
   kNone,
