@@ -45,11 +45,9 @@ std::unique_ptr<base::Value> NetLogQuicPushStreamCallback(
 }  // namespace
 
 QuicHttpStream::QuicHttpStream(
-    std::unique_ptr<QuicChromiumClientSession::Handle> session,
-    HttpServerProperties* http_server_properties)
+    std::unique_ptr<QuicChromiumClientSession::Handle> session)
     : MultiplexedHttpStream(std::move(session)),
       next_state_(STATE_NONE),
-      http_server_properties_(http_server_properties),
       stream_(nullptr),
       request_info_(nullptr),
       request_body_stream_(nullptr),
