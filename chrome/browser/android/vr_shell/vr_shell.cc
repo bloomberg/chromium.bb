@@ -85,17 +85,6 @@ void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
   }
 }
 
-void LoadControllerModelTask(
-    base::WeakPtr<VrShell> weak_vr_shell,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  auto controller_model = VrControllerModel::LoadFromComponent();
-  if (controller_model) {
-    main_thread_task_runner->PostTask(
-        FROM_HERE, base::Bind(&VrShell::SubmitControllerModel, weak_vr_shell,
-                              base::Passed(&controller_model)));
-  }
-}
-
 }  // namespace
 
 VrShell::VrShell(JNIEnv* env,
@@ -121,18 +110,12 @@ VrShell::VrShell(JNIEnv* env,
 
   gl_thread_ = base::MakeUnique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
-      for_web_vr, in_cct, reprojected_rendering_);
+      for_web_vr, in_cct, reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
   gl_thread_->StartWithOptions(options);
-
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(LoadControllerModelTask, weak_ptr_factory_.GetWeakPtr(),
-                 main_thread_task_runner_));
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -377,13 +360,6 @@ void VrShell::SubmitWebVRFrame(int16_t frame_index,
   PostToGlThread(FROM_HERE,
                  base::Bind(&VrShellGl::SubmitWebVRFrame,
                             gl_thread_->GetVrShellGl(), frame_index, mailbox));
-}
-
-void VrShell::SubmitControllerModel(std::unique_ptr<VrControllerModel> model) {
-  WaitForGlThread();
-  PostToGlThread(FROM_HERE,
-                 base::Bind(&VrShellGl::SetControllerModel,
-                            gl_thread_->GetVrShellGl(), base::Passed(&model)));
 }
 
 void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
@@ -640,6 +616,10 @@ void VrShell::RegisterGamepadDataFetcher(
     device::GvrGamepadDataFetcher* fetcher) {
   DVLOG(1) << __FUNCTION__ << "(" << fetcher << ")";
   gamepad_data_fetcher_ = fetcher;
+}
+
+bool VrShell::HasDaydreamSupport(JNIEnv* env) {
+  return Java_VrShellImpl_hasDaydreamSupport(env, j_vr_shell_.obj());
 }
 
 // ----------------------------------------------------------------------------

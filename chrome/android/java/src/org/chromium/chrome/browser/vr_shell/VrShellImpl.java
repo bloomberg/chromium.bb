@@ -537,6 +537,11 @@ public class VrShellImpl
     }
 
     @CalledByNative
+    public boolean hasDaydreamSupport() {
+        return mDelegate.hasDaydreamSupport();
+    }
+
+    @CalledByNative
     private void showTab(int id) {
         Tab tab = mActivity.getTabModelSelector().getTabById(id);
         if (tab == null) {

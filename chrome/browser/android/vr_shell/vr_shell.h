@@ -197,6 +197,8 @@ class VrShell : public device::PresentingGvrDelegate,
 
   void PollMediaAccessFlag();
 
+  bool HasDaydreamSupport(JNIEnv* env);
+
   bool vr_shell_enabled_;
 
   bool content_paused_ = false;
