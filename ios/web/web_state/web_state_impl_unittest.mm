@@ -347,7 +347,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   ASSERT_TRUE(observer->render_process_gone_info());
   EXPECT_EQ(web_state_.get(), observer->render_process_gone_info()->web_state);
 
-  // Test that ProvisionalNavigationStarted() is called.
+  // Test that DidFinishNavigation() is called.
   ASSERT_FALSE(observer->did_finish_navigation_info());
   const GURL url("http://test");
   std::unique_ptr<web::NavigationContext> context =
@@ -363,13 +363,16 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_FALSE(actual_context->IsErrorPage());
   EXPECT_FALSE(actual_context->GetResponseHeaders());
 
-  // Test that OnNavigationFinished() is called.
-  ASSERT_FALSE(observer->start_provisional_navigation_info());
+  // Test that DidStartNavigation() is called.
+  ASSERT_FALSE(observer->did_start_navigation_info());
   web_state_->OnNavigationStarted(context.get());
-  ASSERT_TRUE(observer->start_provisional_navigation_info());
-  EXPECT_EQ(web_state_.get(),
-            observer->start_provisional_navigation_info()->web_state);
-  EXPECT_EQ(url, observer->start_provisional_navigation_info()->url);
+  ASSERT_TRUE(observer->did_start_navigation_info());
+  EXPECT_EQ(web_state_.get(), observer->did_start_navigation_info()->web_state);
+  actual_context = observer->did_start_navigation_info()->context.get();
+  EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
+  EXPECT_FALSE(actual_context->IsSameDocument());
+  EXPECT_FALSE(actual_context->IsErrorPage());
+  EXPECT_FALSE(actual_context->GetResponseHeaders());
 
   // Test that NavigationItemsPruned() is called.
   ASSERT_FALSE(observer->navigation_items_pruned_info());

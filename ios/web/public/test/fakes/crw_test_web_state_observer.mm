@@ -19,9 +19,8 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 }
 
 @implementation CRWTestWebStateObserver {
-  // Arguments passed to |webState:didStartProvisionalNavigationForURL:|.
-  std::unique_ptr<web::TestStartProvisionalNavigationInfo>
-      _startProvisionalNavigationInfo;
+  // Arguments passed to |webState:didStartNavigation:|.
+  std::unique_ptr<web::TestDidStartNavigationInfo> _didStartNavigationInfo;
   // Arguments passed to |webState:didFinishNavigationForURL:|.
   std::unique_ptr<web::TestDidFinishNavigationInfo> _didFinishNavigationInfo;
   // Arguments passed to |webState:didCommitNavigationWithDetails:|.
@@ -59,8 +58,8 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::TestStartLoadingInfo> _startLoadingInfo;
 }
 
-- (web::TestStartProvisionalNavigationInfo*)startProvisionalNavigationInfo {
-  return _startProvisionalNavigationInfo.get();
+- (web::TestDidStartNavigationInfo*)didStartNavigationInfo {
+  return _didStartNavigationInfo.get();
 }
 
 - (web::TestDidFinishNavigationInfo*)didFinishNavigationInfo {
@@ -127,11 +126,16 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 #pragma mark CRWWebStateObserver methods -
 
 - (void)webState:(web::WebState*)webState
-    didStartProvisionalNavigationForURL:(const GURL&)URL {
-  _startProvisionalNavigationInfo =
-      base::MakeUnique<web::TestStartProvisionalNavigationInfo>();
-  _startProvisionalNavigationInfo->web_state = webState;
-  _startProvisionalNavigationInfo->url = URL;
+    didStartNavigation:(web::NavigationContext*)navigation {
+  ASSERT_TRUE(!navigation->IsErrorPage() || !navigation->IsSameDocument());
+  _didStartNavigationInfo = base::MakeUnique<web::TestDidStartNavigationInfo>();
+  _didStartNavigationInfo->web_state = webState;
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          navigation->GetWebState(), navigation->GetUrl());
+  context->SetIsSameDocument(navigation->IsSameDocument());
+  context->SetIsErrorPage(navigation->IsErrorPage());
+  _didStartNavigationInfo->context = std::move(context);
 }
 
 - (void)webState:(web::WebState*)webState

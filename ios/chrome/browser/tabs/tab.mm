@@ -1405,7 +1405,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)webState:(web::WebState*)webState
-    didStartProvisionalNavigationForURL:(const GURL&)URL {
+    didStartNavigation:(web::NavigationContext*)navigation {
   [self.dialogDelegate cancelDialogForTab:self];
   [_parentTabModel notifyTabChanged:self];
   [_openInController disable];

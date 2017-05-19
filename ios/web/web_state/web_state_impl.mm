@@ -671,9 +671,8 @@ bool WebStateImpl::HasOpener() const {
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
-  // TODO(crbug.com/713836): pass context to WebStateObserver callback.
   for (auto& observer : observers_)
-    observer.ProvisionalNavigationStarted(context->GetUrl());
+    observer.DidStartNavigation(context);
 }
 
 void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
