@@ -788,7 +788,7 @@ ALWAYS_INLINE bool BreakingContext::CanMidWordBreakBefore(LineLayoutText text) {
       const ComputedStyle& parent_style = parent.StyleRef();
       return parent_style.AutoWrap() &&
              ((parent_style.BreakWords() && !width_.CommittedWidth()) ||
-              parent_style.WordBreak() == kBreakAllWordBreak);
+              parent_style.WordBreak() == EWordBreak::kBreakAll);
     }
   }
   return false;
@@ -955,9 +955,9 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
                       curr_ws_ == EWhiteSpace::kPre);
   bool mid_word_break = false;
   bool break_all =
-      current_style_->WordBreak() == kBreakAllWordBreak && auto_wrap_;
+      current_style_->WordBreak() == EWordBreak::kBreakAll && auto_wrap_;
   bool keep_all =
-      current_style_->WordBreak() == kKeepAllWordBreak && auto_wrap_;
+      current_style_->WordBreak() == EWordBreak::kKeepAll && auto_wrap_;
   bool prohibit_break_inside = current_style_->HasTextCombine() &&
                                layout_text.IsCombineText() &&
                                LineLayoutTextCombine(layout_text).IsCombined();

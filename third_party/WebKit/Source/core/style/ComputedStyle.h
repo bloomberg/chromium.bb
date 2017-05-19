@@ -1769,12 +1769,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // word-break inherited (aka -epub-word-break)
-  static EWordBreak InitialWordBreak() { return kNormalWordBreak; }
+  static EWordBreak InitialWordBreak() { return EWordBreak::kNormal; }
   EWordBreak WordBreak() const {
     return static_cast<EWordBreak>(rare_inherited_data_->word_break_);
   }
   void SetWordBreak(EWordBreak b) {
-    SET_VAR(rare_inherited_data_, word_break_, b);
+    SET_VAR(rare_inherited_data_, word_break_, static_cast<unsigned>(b));
   }
 
   // -webkit-line-break
@@ -3368,7 +3368,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   bool BreakWords() const {
-    return (WordBreak() == kBreakWordBreak ||
+    return (WordBreak() == EWordBreak::kBreakWord ||
             OverflowWrap() == EOverflowWrap::kBreakWord) &&
            WhiteSpace() != EWhiteSpace::kPre &&
            WhiteSpace() != EWhiteSpace::kNowrap;

@@ -198,12 +198,7 @@ enum ObjectFit {
 
 // Word Break Values. Matches WinIE and CSS3
 
-enum EWordBreak {
-  kNormalWordBreak,
-  kBreakAllWordBreak,
-  kKeepAllWordBreak,
-  kBreakWordBreak
-};
+enum class EWordBreak { kNormal, kBreakAll, kKeepAll, kBreakWord };
 
 enum class EOverflowWrap { kNormal, kBreakWord };
 
