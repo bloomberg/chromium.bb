@@ -127,25 +127,28 @@ void ContentSubresourceFilterDriverFactory::OnSafeBrowsingMatchComputed(
   throttle_manager_->NotifyPageActivationComputed(navigation_handle, state);
 }
 
+// Be careful when modifying this method, as the order in which the
+// activation_decision_ is decided is very important and corresponds to UMA
+// metrics. In general we want to follow the pattern that
+// ACTIVATION_CONDITIONS_NOT_MET will always be logged if no configuration
+// matches this navigation. We log other decisions only if a configuration
+// matches and also would have activated.
 void ContentSubresourceFilterDriverFactory::
     ComputeActivationForMainFrameNavigation(
         content::NavigationHandle* navigation_handle,
         ActivationList matched_list) {
   const GURL& url(navigation_handle->GetURL());
 
-  if (!url.SchemeIsHTTPOrHTTPS()) {
-    activation_decision_ = ActivationDecision::UNSUPPORTED_SCHEME;
-    activation_options_ = Configuration::ActivationOptions();
-    return;
-  }
-
+  bool scheme_is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   const auto config_list = GetEnabledConfigurations();
   const auto highest_priority_activated_config =
       std::find_if(config_list->configs_by_decreasing_priority().begin(),
                    config_list->configs_by_decreasing_priority().end(),
-                   [&url, matched_list, this](const Configuration& config) {
+                   [&url, scheme_is_http_or_https, matched_list,
+                    this](const Configuration& config) {
                      return DoesMainFrameURLSatisfyActivationConditions(
-                         url, config.activation_conditions, matched_list);
+                         url, scheme_is_http_or_https,
+                         config.activation_conditions, matched_list);
                    });
 
   bool has_activated_config =
@@ -164,7 +167,18 @@ void ContentSubresourceFilterDriverFactory::
     return;
   }
 
-  activation_options_ = highest_priority_activated_config->activation_options;
+  const Configuration::ActivationOptions& activation_options =
+      highest_priority_activated_config->activation_options;
+
+  // Log UNSUPPORTED_SCHEME if we would have otherwise activated.
+  if (!scheme_is_http_or_https &&
+      activation_options.activation_level != ActivationLevel::DISABLED) {
+    activation_decision_ = ActivationDecision::UNSUPPORTED_SCHEME;
+    activation_options_ = Configuration::ActivationOptions();
+    return;
+  }
+
+  activation_options_ = activation_options;
   activation_decision_ =
       activation_options_.activation_level == ActivationLevel::DISABLED
           ? ActivationDecision::ACTIVATION_DISABLED
@@ -174,12 +188,18 @@ void ContentSubresourceFilterDriverFactory::
 bool ContentSubresourceFilterDriverFactory::
     DoesMainFrameURLSatisfyActivationConditions(
         const GURL& url,
+        bool scheme_is_http_or_https,
         const Configuration::ActivationConditions& conditions,
         ActivationList matched_list) const {
+  // scheme_is_http_or_https implies url.SchemeIsHTTPOrHTTPS().
+  DCHECK(!scheme_is_http_or_https || url.SchemeIsHTTPOrHTTPS());
   switch (conditions.activation_scope) {
     case ActivationScope::ALL_SITES:
       return true;
     case ActivationScope::ACTIVATION_LIST:
+      // ACTIVATION_LIST does not support non http/s URLs.
+      if (!scheme_is_http_or_https)
+        return false;
       if (conditions.activation_list == matched_list)
         return true;
       if (conditions.activation_list == ActivationList::PHISHING_INTERSTITIAL &&
