@@ -14986,6 +14986,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1977" label="CrossOriginPropertyAccess"/>
   <int value="1978" label="CrossOriginPropertyAccessFromOpener"/>
   <int value="1979" label="CredentialManagerCreate"/>
+  <int value="1980" label="WebDatabaseCreateDropFTS3Table"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
