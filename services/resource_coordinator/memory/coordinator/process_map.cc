@@ -15,28 +15,23 @@
 namespace memory_instrumentation {
 
 ProcessMap::ProcessMap(service_manager::Connector* connector) : binding_(this) {
-  if (connector) {
-    service_manager::mojom::ServiceManagerPtr service_manager;
-    connector->BindInterface(service_manager::mojom::kServiceName,
-                             &service_manager);
-    service_manager::mojom::ServiceManagerListenerPtr listener;
-    service_manager::mojom::ServiceManagerListenerRequest request(
-        mojo::MakeRequest(&listener));
-    service_manager->AddListener(std::move(listener));
-
-    binding_.Bind(std::move(request));
-  }
+  if (!connector)
+    return;  // Happens in unittests.
+  service_manager::mojom::ServiceManagerPtr service_manager;
+  connector->BindInterface(service_manager::mojom::kServiceName,
+                           &service_manager);
+  service_manager::mojom::ServiceManagerListenerPtr listener;
+  service_manager::mojom::ServiceManagerListenerRequest request(
+      mojo::MakeRequest(&listener));
+  service_manager->AddListener(std::move(listener));
+  binding_.Bind(std::move(request));
 }
 
 ProcessMap::~ProcessMap() {}
 
 void ProcessMap::OnInit(std::vector<RunningServiceInfoPtr> instances) {
-  // This callback should only be called with an empty model.
-  DCHECK(instances_.empty());
-  for (size_t i = 0; i < instances.size(); ++i) {
-    const service_manager::Identity& identity = instances[i]->identity;
-    instances_.emplace(identity, instances[i]->pid);
-  }
+  for (RunningServiceInfoPtr& instance : instances)
+    OnServiceCreated(std::move(instance));
 }
 
 void ProcessMap::OnServiceCreated(RunningServiceInfoPtr instance) {
@@ -53,16 +48,16 @@ void ProcessMap::OnServiceStarted(const service_manager::Identity& identity,
   instances_[identity] = pid;
 }
 
+void ProcessMap::OnServiceFailedToStart(const service_manager::Identity&) {}
+
 void ProcessMap::OnServiceStopped(const service_manager::Identity& identity) {
   instances_.erase(identity);
 }
 
 base::ProcessId ProcessMap::GetProcessId(
-    service_manager::Identity identity) const {
-  auto instance = instances_.find(identity);
-  if (instance == instances_.end())
-    return base::kNullProcessId;
-  return instance->second;
+    const service_manager::Identity& identity) const {
+  auto it = instances_.find(identity);
+  return it != instances_.end() ? it->second : base::kNullProcessId;
 }
 
 }  // namespace memory_instrumentation
