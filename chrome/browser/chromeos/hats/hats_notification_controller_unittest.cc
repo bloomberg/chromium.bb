@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_delegate.h"
@@ -42,31 +43,6 @@ using image_fetcher::ImageFetcherDelegate;
 namespace chromeos {
 
 namespace {
-
-class MockNetworkPortalDetector : public NetworkPortalDetector {
- public:
-  MockNetworkPortalDetector() {}
-  ~MockNetworkPortalDetector() override {}
-
-  MOCK_METHOD1(AddObserver,
-               void(chromeos::NetworkPortalDetector::Observer* observer));
-  MOCK_METHOD1(RemoveObserver,
-               void(chromeos::NetworkPortalDetector::Observer* observer));
-  MOCK_METHOD1(AddAndFireObserver,
-               void(chromeos::NetworkPortalDetector::Observer* observer));
-  MOCK_METHOD1(GetCaptivePortalState,
-               chromeos::NetworkPortalDetector::CaptivePortalState(
-                   const std::string& service_path));
-  MOCK_METHOD0(IsEnabled, bool());
-  MOCK_METHOD1(Enable, void(bool start_detection));
-  MOCK_METHOD0(StartDetectionIfIdle, bool());
-  MOCK_METHOD1(SetStrategy,
-               void(chromeos::PortalDetectorStrategy::StrategyId id));
-  MOCK_METHOD0(OnLockScreenRequest, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkPortalDetector);
-};
 
 class MockImageFetcher : public image_fetcher::ImageFetcher {
  public:
