@@ -3244,8 +3244,7 @@ void Document::DispatchUnloadEvents() {
 
       PageVisibilityState visibility_state = GetPageVisibilityState();
       load_event_progress_ = kUnloadVisibilityChangeInProgress;
-      if (visibility_state != kPageVisibilityStateHidden &&
-          RuntimeEnabledFeatures::visibilityChangeOnUnloadEnabled()) {
+      if (visibility_state != kPageVisibilityStateHidden) {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
         DispatchEvent(Event::CreateBubble(EventTypeNames::visibilitychange));
