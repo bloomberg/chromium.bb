@@ -65,9 +65,6 @@ class ContentSubresourceFilterDriverFactory
       safe_browsing::SBThreatType threat_type,
       safe_browsing::ThreatPatternType threat_type_metadata);
 
-  // Reloads the page and inserts the host of its URL to the whitelist.
-  void OnReloadRequested();
-
   // Returns the |ActivationDecision| for the current main frame
   // document.
   ActivationDecision GetActivationDecisionForLastCommittedPageLoad() const {

@@ -4,9 +4,7 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -214,22 +212,6 @@ bool ContentSubresourceFilterDriverFactory::
   }
   NOTREACHED();
   return false;
-}
-
-void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
-  UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
-  const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
-
-  // Only whitelist via content settings when using the experimental UI,
-  // otherwise could get into a situation where content settings cannot be
-  // adjusted.
-  if (base::FeatureList::IsEnabled(
-          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
-    client_->WhitelistByContentSettings(whitelist_url);
-  } else {
-    client_->WhitelistInCurrentWebContents(whitelist_url);
-  }
-  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {

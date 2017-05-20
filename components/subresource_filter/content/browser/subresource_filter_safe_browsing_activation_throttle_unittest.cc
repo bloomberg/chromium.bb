@@ -74,7 +74,6 @@ class MockSubresourceFilterClient
   MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
   MOCK_METHOD2(OnPageActivationComputed,
                bool(content::NavigationHandle*, bool));
-  MOCK_METHOD1(WhitelistByContentSettings, void(const GURL&));
   MOCK_METHOD1(WhitelistInCurrentWebContents, void(const GURL&));
   MOCK_METHOD0(GetRulesetDealer, VerifiedRulesetDealer::Handle*());
 
