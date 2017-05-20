@@ -1642,6 +1642,7 @@ split_static_library("browser") {
     "//media:media_features",
     "//media/cast:net",
     "//media/midi",
+    "//media/mojo:features",
     "//media/mojo/interfaces:remoting",
     "//mojo/common",
     "//mojo/edk/system",
@@ -4070,7 +4071,6 @@ split_static_library("browser") {
   }
 
   if (enable_mojo_media) {
-    configs += [ "//media/mojo/services:mojo_media_config" ]
     sources += [
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",

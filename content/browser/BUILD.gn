@@ -93,6 +93,7 @@ source_set("browser") {
     "//media/gpu/ipc/client",
     "//media/midi",
     "//media/midi:mojo",
+    "//media/mojo:features",
     "//media/mojo/interfaces",
     "//media/mojo/services",
     "//mojo/common",
@@ -2112,10 +2113,6 @@ source_set("browser") {
 
   if (is_linux) {
     deps += [ "//third_party/boringssl" ]
-  }
-
-  if (enable_mojo_media) {
-    configs += [ "//media/mojo/services:mojo_media_config" ]
   }
 
   if (use_ozone) {

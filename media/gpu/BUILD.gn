@@ -204,6 +204,8 @@ component("gpu") {
       "surface_texture_gl_owner.h",
     ]
 
+    deps += [ "//media/mojo:features" ]
+
     if (enable_webrtc) {
       deps += [ "//third_party/libyuv" ]
       sources += [
@@ -224,7 +226,6 @@ component("gpu") {
     # media service. See http://crbug.com/522298
     if (mojo_media_host == "gpu") {
       deps += [ "//media:cdm_manager" ]
-      configs += [ "//media/mojo/services:mojo_media_config" ]
     }
   }
 
