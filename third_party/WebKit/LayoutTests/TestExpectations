@@ -2280,6 +2280,8 @@ crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-query.html [ T
 crbug.com/711529 virtual/mojo-loading/http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 
+crbug.com/711529 http/tests/navigation/image-load-in-unload-handler.html [ Pass Timeout ]
+
 crbug.com/713587 external/wpt/css/css-ui-3/caret-color-006.html [ Skip ]
 
 # Automatically-added expectations for CSS tests which are temporarily
@@ -2336,6 +2338,10 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failure ]
+crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
+crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/accumulation-per-property.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-addIceCandidate.html [ Timeout ]
 crbug.com/626703 external/wpt/performance-timeline/po-observe.html [ Timeout ]
 crbug.com/626703 external/wpt/resource-timing/resource-timing.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
@@ -2720,6 +2726,7 @@ crbug.com/720545 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtm
 crbug.com/720545 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-6.htm [ Crash Pass ]
 crbug.com/720545 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-7.htm [ Crash Pass ]
 crbug.com/720545 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-9.htm [ Crash Pass ]
+crbug.com/720545 external/wpt/html/semantics/scripting-1/the-script-element/module/import-subgraph-404.html [ Crash Pass ]
 
 # Manual tests that have not been automated.
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
