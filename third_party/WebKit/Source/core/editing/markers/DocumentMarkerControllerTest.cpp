@@ -205,13 +205,13 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
   Element* div = ToElement(GetDocument().body()->firstChild());
   MarkNodeContentsTextMatch(div);
   Vector<IntRect> rendered_rects =
-      MarkerController().RenderedRectsForMarkers(DocumentMarker::kTextMatch);
+      MarkerController().RenderedRectsForTextMatchMarkers();
   EXPECT_EQ(1u, rendered_rects.size());
 
   div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
   GetDocument().UpdateStyleAndLayout();
   Vector<IntRect> new_rendered_rects =
-      MarkerController().RenderedRectsForMarkers(DocumentMarker::kTextMatch);
+      MarkerController().RenderedRectsForTextMatchMarkers();
   EXPECT_EQ(1u, new_rendered_rects.size());
   EXPECT_NE(rendered_rects[0], new_rendered_rects[0]);
 }

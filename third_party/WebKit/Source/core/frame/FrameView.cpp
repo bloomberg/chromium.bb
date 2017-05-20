@@ -2695,11 +2695,12 @@ void FrameView::InvalidatePaintForTickmarks() {
 }
 
 void FrameView::GetTickmarks(Vector<IntRect>& tickmarks) const {
-  if (!tickmarks_.IsEmpty())
+  if (!tickmarks_.IsEmpty()) {
     tickmarks = tickmarks_;
-  else
-    tickmarks = GetFrame().GetDocument()->Markers().RenderedRectsForMarkers(
-        DocumentMarker::kTextMatch);
+    return;
+  }
+  tickmarks =
+      GetFrame().GetDocument()->Markers().RenderedRectsForTextMatchMarkers();
 }
 
 void FrameView::SetInputEventsTransformForEmulation(
