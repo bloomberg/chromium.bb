@@ -1647,6 +1647,7 @@ test("content_unittests") {
       "//third_party/webrtc/base/task_queue_unittest.cc",
     ]
     deps += [
+      "//device/wake_lock/public/interfaces",
       "//third_party/opus",
       "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/api:rtc_stats_api",
