@@ -600,6 +600,7 @@ test("content_browsertests") {
     "../browser/accessibility/snapshot_ax_tree_browsertest.cc",
     "../browser/accessibility/touch_accessibility_aura_browsertest.cc",
     "../browser/background_sync/background_sync_browsertest.cc",
+    "../browser/battery_monitor_browsertest.cc",
     "../browser/blob_storage/blob_storage_browsertest.cc",
     "../browser/blob_storage/blob_url_browsertest.cc",
     "../browser/bookmarklet_browsertest.cc",
