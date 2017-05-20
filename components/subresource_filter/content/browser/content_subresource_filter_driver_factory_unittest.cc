@@ -178,7 +178,6 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
     return whitelisted_hosts_.count(handle->GetURL().host());
   }
 
-  void WhitelistByContentSettings(const GURL& url) override {}
   void WhitelistInCurrentWebContents(const GURL& url) override {
     ASSERT_TRUE(url.SchemeIsHTTPOrHTTPS());
     whitelisted_hosts_.insert(url.host());
