@@ -95,7 +95,7 @@ _net_io_duplex_metrics = (
   _IOMetric(metric=_net_errors_metric,
             up_counter_name='errout',
             down_counter_name='errin'),
-  _IOMetric(metric=_net_drop_up_metric,
+  _IOMetric(metric=_net_dropped_metric,
             up_counter_name='dropout',
             down_counter_name='dropin'),
 )
