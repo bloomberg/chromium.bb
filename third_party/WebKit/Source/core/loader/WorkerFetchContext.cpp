@@ -158,8 +158,10 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     const ResourceRequest& resource_request,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
-  // TODO(horo): Implement this.
-  return false;
+  // TODO(horo): We need more detailed check which is implemented in
+  // MixedContentChecker::ShouldBlockFetch().
+  return MixedContentChecker::IsMixedContent(
+      worker_global_scope_->GetSecurityOrigin(), url);
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader() {
