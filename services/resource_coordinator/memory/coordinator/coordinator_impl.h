@@ -24,6 +24,12 @@ class Connector;
 
 namespace memory_instrumentation {
 
+// Memory instrumentation service. It serves two purposes:
+// - Handles a registry of the processes that have a memory instrumentation
+//   client library instance (../../public/cpp/memory).
+// - Provides global (i.e. for all processes) memory snapshots on demand.
+//   Global snapshots are obtained by requesting in-process snapshots from each
+//   registered client and aggregating them.
 class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
  public:
   // The getter of the unique instance.
@@ -32,7 +38,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   CoordinatorImpl(bool initialize_memory_dump_manager,
                   service_manager::Connector* connector);
 
-  // Coordinator
+  // Binds a client library to this coordinator instance.
   void BindCoordinatorRequest(
       const service_manager::BindSourceInfo& source_info,
       mojom::CoordinatorRequest) override;
@@ -41,18 +47,29 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     return initialize_memory_dump_manager_;
   }
 
+  // mojom::Coordinator implementation.
+  void RegisterProcessLocalDumpManager(
+      mojom::ProcessLocalDumpManagerPtr process_manager) override;
+  void UnregisterProcessLocalDumpManager(
+      mojom::ProcessLocalDumpManager* process_manager);
+  void RequestGlobalMemoryDump(
+      const base::trace_event::MemoryDumpRequestArgs& args,
+      const RequestGlobalMemoryDumpCallback& callback) override;
+
  protected:
   // virtual for testing.
-  virtual service_manager::Identity GetDispatchContext() const;
+  virtual service_manager::Identity GetClientIdentityForCurrentRequest() const;
   ~CoordinatorImpl() override;
 
  private:
   friend std::default_delete<CoordinatorImpl>;  // For testing
   friend class CoordinatorImplTest;             // For testing
 
+  // Holds data for pending requests enqueued via RequestGlobalMemoryDump().
   struct QueuedMemoryDumpRequest {
-    QueuedMemoryDumpRequest(const base::trace_event::MemoryDumpRequestArgs args,
-                            const RequestGlobalMemoryDumpCallback callback);
+    QueuedMemoryDumpRequest(
+        const base::trace_event::MemoryDumpRequestArgs& args,
+        const RequestGlobalMemoryDumpCallback callback);
     ~QueuedMemoryDumpRequest();
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpCallback callback;
@@ -62,23 +79,15 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
         process_memory_dumps;
   };
 
-  using ProcessLocalDumpManagerEntry =
-      std::pair<mojom::ProcessLocalDumpManagerPtr, service_manager::Identity>;
+  // Holds the identy and remote reference of registered clients.
+  struct ClientInfo {
+    ClientInfo(const service_manager::Identity&,
+               mojom::ProcessLocalDumpManagerPtr);
+    ~ClientInfo();
 
-  // mojom::Coordinator
-  void RegisterProcessLocalDumpManager(
-      mojom::ProcessLocalDumpManagerPtr process_manager) override;
-
-  // Broadcasts a dump request to all the process-local managers registered and
-  // notifies when all of them have completed, or the global dump attempt
-  // failed. This is in the mojom::Coordinator interface.
-  void RequestGlobalMemoryDump(
-      const base::trace_event::MemoryDumpRequestArgs& args,
-      const RequestGlobalMemoryDumpCallback& callback) override;
-
-  // Called when a process-local manager gets disconnected.
-  void UnregisterProcessLocalDumpManager(
-      mojom::ProcessLocalDumpManager* process_manager);
+    const service_manager::Identity identity;
+    const mojom::ProcessLocalDumpManagerPtr client;
+  };
 
   // Callback of RequestProcessMemoryDump.
   void OnProcessMemoryDumpResponse(
@@ -92,19 +101,25 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
   mojo::BindingSet<mojom::Coordinator, service_manager::Identity> bindings_;
 
-  // Registered ProcessLocalDumpManagers.
-  std::map<mojom::ProcessLocalDumpManager*, ProcessLocalDumpManagerEntry>
-      process_managers_;
+  // Map of registered clients.
+  std::map<mojom::ProcessLocalDumpManager*, std::unique_ptr<ClientInfo>>
+      clients_;
 
-  // Pending process managers for RequestGlobalMemoryDump.
-  std::set<mojom::ProcessLocalDumpManager*> pending_process_managers_;
-  int failed_memory_dump_count_;
+  // Oustanding dump requests, enqueued via RequestGlobalMemoryDump().
   std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
+
+  // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
+  // set contains the subset of registerd |clients_| that have not yet replied
+  // to the local dump request (via RequestProcessMemoryDump()) .
+  std::set<mojom::ProcessLocalDumpManager*> pending_clients_for_current_dump_;
+
+  int failed_memory_dump_count_;
 
   const bool initialize_memory_dump_manager_;
 
   base::ThreadChecker thread_checker_;
 
+  // Maintains a map of service_manager::Identity -> pid for registered clients.
   std::unique_ptr<ProcessMap> process_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinatorImpl);

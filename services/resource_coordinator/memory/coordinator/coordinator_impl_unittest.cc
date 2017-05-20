@@ -17,11 +17,12 @@
 
 namespace memory_instrumentation {
 
-class CoordinatorImplFake : public CoordinatorImpl {
+class FakeCoordinatorImpl : public CoordinatorImpl {
  public:
-  CoordinatorImplFake() : CoordinatorImpl(false, nullptr) {}
-  ~CoordinatorImplFake() override {}
-  service_manager::Identity GetDispatchContext() const override {
+  FakeCoordinatorImpl() : CoordinatorImpl(false, nullptr) {}
+  ~FakeCoordinatorImpl() override {}
+  service_manager::Identity GetClientIdentityForCurrentRequest()
+      const override {
     return service_manager::Identity();
   }
 };
@@ -31,7 +32,7 @@ class CoordinatorImplTest : public testing::Test {
   CoordinatorImplTest() {}
   void SetUp() override {
     dump_response_args_ = {0U, false};
-    coordinator_.reset(new CoordinatorImplFake);
+    coordinator_.reset(new FakeCoordinatorImpl);
   }
 
   void TearDown() override { coordinator_.reset(); }
@@ -131,7 +132,7 @@ TEST_F(CoordinatorImplTest, FaultyProcessLocalManager) {
   base::RunLoop run_loop;
 
   MockDumpManager dump_manager_1(this, 1);
-  std::unique_ptr<MockDumpManager> dump_manager_2(new MockDumpManager(this, 0));
+  auto dump_manager_2 = base::MakeUnique<MockDumpManager>(this, 0);
   base::trace_event::MemoryDumpRequestArgs args = {
       3456, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
@@ -141,7 +142,7 @@ TEST_F(CoordinatorImplTest, FaultyProcessLocalManager) {
   // should detect that one of its clients is disconnected and claim the global
   // dump attempt has failed.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind([](std::unique_ptr<MockDumpManager> dm) {},
+      FROM_HERE, base::Bind([](std::unique_ptr<MockDumpManager>) {},
                             base::Passed(&dump_manager_2)));
 
   run_loop.Run();
