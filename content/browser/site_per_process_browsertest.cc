@@ -6413,14 +6413,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuTest) {
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 #endif
-  web_contents()->SendScreenRects();
 
-  content::TestNavigationObserver navigation_observer(shell()->web_contents());
   FrameTreeNode* child_node = root->child_at(0);
   GURL site_url(embedded_test_server()->GetURL(
       "baz.com", "/site_isolation/page-with-select.html"));
   NavigateFrameToURL(child_node, site_url);
-  navigation_observer.Wait();
+
+  web_contents()->SendScreenRects();
+
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
