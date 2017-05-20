@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/net/proxy_service_factory.h"
+#include "components/proxy_config/ios/proxy_service_factory.h"
 
 #include <utility>
 
@@ -11,8 +11,6 @@
 #include "ios/web/public/web_thread.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
-
-namespace ios {
 
 // static
 std::unique_ptr<net::ProxyConfigService>
@@ -57,5 +55,3 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
   proxy_service->set_quick_check_enabled(quick_check_enabled);
   return proxy_service;
 }
-
-}  // namespace ios

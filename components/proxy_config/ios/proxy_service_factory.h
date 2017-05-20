@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
-#define IOS_CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_PROXY_CONFIG_IOS_PROXY_SERVICE_FACTORY_H_
+#define COMPONENTS_PROXY_CONFIG_IOS_PROXY_SERVICE_FACTORY_H_
 
 #include <memory>
 
 #include "base/macros.h"
+#include "components/proxy_config/proxy_config_export.h"
 
 class PrefProxyConfigTracker;
 class PrefService;
@@ -20,9 +21,7 @@ class ProxyService;
 class URLRequestContext;
 }
 
-namespace ios {
-
-class ProxyServiceFactory {
+class PROXY_CONFIG_EXPORT ProxyServiceFactory {
  public:
   // Creates a ProxyConfigService that delivers the system preferences.
   static std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
@@ -50,6 +49,4 @@ class ProxyServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(ProxyServiceFactory);
 };
 
-}  // namespace ios
-
-#endif  // IOS_CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_PROXY_CONFIG_IOS_PROXY_SERVICE_FACTORY_H_
