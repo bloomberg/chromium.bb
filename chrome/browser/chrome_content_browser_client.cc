@@ -193,6 +193,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
+#include "media/mojo/features.h"
 #include "net/base/mime_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -382,14 +383,14 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 #endif
 
-#if defined(ENABLE_MOJO_MEDIA)
+#if BUILDFLAG(ENABLE_MOJO_MEDIA)
 #include "chrome/browser/media/output_protection_impl.h"
-#if defined(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
 #include "chrome/browser/media/android/cdm/media_drm_storage_factory.h"
 #endif
 #endif
 
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
@@ -3148,14 +3149,14 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
                  render_frame_host));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_MOJO_MEDIA)
+#if BUILDFLAG(ENABLE_MOJO_MEDIA)
   registry->AddInterface(
       base::Bind(&OutputProtectionImpl::Create, render_frame_host));
-#if defined(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
   registry->AddInterface(
       base::Bind(&chrome::CreateMediaDrmStorage, render_frame_host));
 #endif
-#endif  // defined(ENABLE_MOJO_MEDIA)
+#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA)
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToFrame(
@@ -3246,7 +3247,7 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
 
 void ChromeContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services) {
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::ServiceInfo info;
   info.factory = base::Bind(&media::CreateMediaService);
   services->insert(std::make_pair("media", info));
@@ -3281,7 +3282,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
-#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
   services->insert(std::make_pair("media",
                                   base::ASCIIToUTF16("Media Service")));
 #endif
