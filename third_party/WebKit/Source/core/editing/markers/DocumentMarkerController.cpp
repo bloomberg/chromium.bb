@@ -407,15 +407,9 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
   return result;
 }
 
-Vector<IntRect> DocumentMarkerController::RenderedRectsForMarkers(
-    DocumentMarker::MarkerType marker_type) {
-  // Only TextMatch markers can have rendered rects
-  // TODO(rlanday): remove marker_type parameter
-  DCHECK_EQ(marker_type, DocumentMarker::kTextMatch);
-
+Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
   Vector<IntRect> result;
-
-  if (!PossiblyHasMarkers(marker_type))
+  if (!PossiblyHasMarkers(DocumentMarker::kTextMatch))
     return result;
   DCHECK(!(markers_.IsEmpty()));
 

@@ -94,7 +94,7 @@ class CORE_EXPORT DocumentMarkerController final
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   DocumentMarkerVector Markers();
-  Vector<IntRect> RenderedRectsForMarkers(DocumentMarker::MarkerType);
+  Vector<IntRect> RenderedRectsForTextMatchMarkers();
   void UpdateMarkerRenderedRectIfNeeded(const Node&, RenderedDocumentMarker&);
   void InvalidateRectsForAllMarkers();
   void InvalidateRectsForMarkersInNode(const Node&);
