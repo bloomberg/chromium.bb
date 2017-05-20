@@ -2760,15 +2760,6 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(&HandleWebUI, &HandleWebUIReverse);
 }
 
-void ChromeContentBrowserClient::ClearCache(RenderFrameHost* rfh) {
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(
-          rfh->GetSiteInstance()->GetProcess()->GetBrowserContext());
-  remover->Remove(base::Time(), base::Time::Max(),
-                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
-                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
-}
-
 void ChromeContentBrowserClient::ClearSiteData(
     content::BrowserContext* browser_context,
     const url::Origin& origin,
