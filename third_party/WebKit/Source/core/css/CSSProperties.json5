@@ -2185,7 +2185,6 @@
       name: "-webkit-border-image",
       api_class: true,
       custom_value: true,
-      initial: "InitialNinePieceImage",
     },
     {
       name: "-webkit-border-vertical-spacing",

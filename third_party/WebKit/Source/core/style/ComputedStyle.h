@@ -426,11 +426,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Border properties.
-  // -webkit-border-image
-  static NinePieceImage InitialNinePieceImage() { return NinePieceImage(); }
-  const NinePieceImage& BorderImage() const { return BorderImageInternal(); }
-  void SetBorderImage(const NinePieceImage& b) { SetBorderImageInternal(b); }
-
   // border-image-slice
   const LengthBox& BorderImageSlices() const {
     return BorderImage().ImageSlices();
@@ -2972,7 +2967,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SetBorderLeftColorInternal(0);
     SetBorderLeftColorInternal(true);
   }
-  void ResetBorderImage() { SetBorderImageInternal(NinePieceImage()); }
 
   void SetBorderRadius(const LengthSize& s) {
     SetBorderTopLeftRadius(s);
