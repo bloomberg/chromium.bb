@@ -231,10 +231,6 @@
     this.onPipeConnectionError();
   };
 
-  Router.prototype.waitForNextMessageForTesting = function() {
-    this.connector_.waitForNextMessageForTesting();
-  };
-
   Router.prototype.onPeerAssociatedEndpointClosed = function(interfaceId,
       reason) {
     check(!internal.isMasterInterfaceId(interfaceId) || reason);

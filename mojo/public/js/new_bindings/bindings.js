@@ -128,11 +128,6 @@
     return this.proxy_;
   };
 
-  InterfacePtrController.prototype.waitForNextMessageForTesting = function() {
-    this.configureProxyIfNecessary_();
-    this.router_.waitForNextMessageForTesting();
-  };
-
   InterfacePtrController.prototype.configureProxyIfNecessary_ = function() {
     if (!this.handle_)
       return;
@@ -263,10 +258,6 @@
     this.router_.connector_.handle_ = null;
     this.close();
     return result;
-  };
-
-  Binding.prototype.waitForNextMessageForTesting = function() {
-    this.router_.waitForNextMessageForTesting();
   };
 
   // ---------------------------------------------------------------------------

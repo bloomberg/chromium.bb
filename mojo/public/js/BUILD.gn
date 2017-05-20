@@ -47,8 +47,6 @@ action("new_bindings") {
     # variable |mojoBindings| that the others need to refer to.
     "new_bindings/base.js",
 
-    "$interfaces_bindings_gen_dir/new_bindings/interface_control_messages.mojom.js",
-    "$interfaces_bindings_gen_dir/new_bindings/pipe_control_messages.mojom.js",
     "new_bindings/bindings.js",
     "new_bindings/buffer.js",
     "new_bindings/codec.js",
@@ -63,6 +61,10 @@ action("new_bindings") {
     "new_bindings/router.js",
     "new_bindings/unicode.js",
     "new_bindings/validator.js",
+
+    # These two needs to refer to codec.js.
+    "$interfaces_bindings_gen_dir/new_bindings/interface_control_messages.mojom.js",
+    "$interfaces_bindings_gen_dir/new_bindings/pipe_control_messages.mojom.js",
   ]
   compiled_file = "$target_gen_dir/mojo_bindings.js"
 
