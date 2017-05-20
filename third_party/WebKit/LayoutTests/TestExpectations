@@ -3163,8 +3163,8 @@ crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Fail
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
 
-crbug.com/708499 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout ]
-crbug.com/708499 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout ]
+crbug.com/708499 crbug.com/724817 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout Crash ]
+crbug.com/708499 crbug.com/724817 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout Crash ]
 
 crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
 
