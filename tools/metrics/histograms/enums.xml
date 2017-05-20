@@ -15995,15 +15995,14 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="FtpDataConnectionError" type="int">
-  <int value="0">Data connection successful</int>
-  <int value="1">Local firewall blocked the connection</int>
-  <int value="2">Connection timed out</int>
-  <int value="3">
-    Connection has been established, but then got broken (either reset or
-    aborted)
-  </int>
-  <int value="4">Connection has been refused</int>
-  <int value="20">Other kind of error</int>
+  <int value="0" label="Data connection successful"/>
+  <int value="1" label="Local firewall blocked the connection"/>
+  <int value="2" label="Connection timed out"/>
+  <int value="3"
+      label="Connection has been established, but then got broken (either
+             reset or aborted)"/>
+  <int value="4" label="Connection has been refused"/>
+  <int value="20" label="Other kind of error"/>
 </enum>
 
 <enum name="FtpServerType" type="int">
@@ -33431,9 +33430,7 @@ from previous Chrome versions.
   <int value="11" label="SELF_SIGNED: The cert is self-signed">
     This cause is recorded only for CERT_AUTHORITY_INVALID errors.
   </int>
-  <int value="12" label="EXPIRED_RECENTLY: Cert expired within last 28 days.">
-
-  </int>
+  <int value="12" label="EXPIRED_RECENTLY: Cert expired within last 28 days."/>
   <int value="13" label="LIKELY_SAME_DOMAIN: (Deprecated)">
     (Deprecated in favor of LIKELY_SAME_DOMAIN2)
   </int>
