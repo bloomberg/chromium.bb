@@ -191,7 +191,7 @@
     },
     {
       name: "border-image",
-      field_template: "storage_only",
+      field_template: "external",
       field_type_path: "core/style/NinePieceImage",
       field_group: "surround",
       default_value: "NinePieceImage()",
