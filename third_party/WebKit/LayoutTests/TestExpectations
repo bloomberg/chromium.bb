@@ -3116,16 +3116,6 @@ crbug.com/711493 external/wpt/XMLHttpRequest/send-authentication-prompt-2-manual
 # Sheriff failures 2017-02-03
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
 
-crbug.com/722724 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/forms/huge-mac-input-clamped-height.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/forms/huge-mac-input-clamped-width.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/forms/placeholder-position.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/forms/search/searchfield-heights.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] fast/replaced/width100percent-searchfield.html [ NeedsRebaseline ]
-crbug.com/722724 [ Mac ] transforms/transformed-focused-text-input.html [ NeedsRebaseline ]
-
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Timeout ]
