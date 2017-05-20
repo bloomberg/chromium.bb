@@ -95,6 +95,20 @@ Member<DocumentMarkerList>& DocumentMarkerController::ListForType(
 
 inline bool DocumentMarkerController::PossiblyHasMarkers(
     DocumentMarker::MarkerTypes types) {
+  if (markers_.IsEmpty()) {
+    // It's possible for markers_ to become empty through garbage collection if
+    // all its Nodes are GC'ed since we only hold weak references, in which case
+    // possibly_existing_marker_types_ isn't reset to 0 as it is in the other
+    // codepaths that remove from markers_. Therefore, we check for this case
+    // here.
+
+    // Alternatively, we could handle this case at the time the Node is GC'ed,
+    // but that operation is more performance-sensitive than anywhere
+    // PossiblyHasMarkers() is used.
+    possibly_existing_marker_types_ = 0;
+    return false;
+  }
+
   return possibly_existing_marker_types_.Intersects(types);
 }
 
