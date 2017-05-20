@@ -47,11 +47,11 @@ public class VideoCaptureCamera
         COLOR_TEMPERATURES_MAP.append(
                 2850, android.hardware.Camera.Parameters.WHITE_BALANCE_INCANDESCENT);
         COLOR_TEMPERATURES_MAP.append(
-                2940, android.hardware.Camera.Parameters.WHITE_BALANCE_WARM_FLUORESCENT);
+                2950, android.hardware.Camera.Parameters.WHITE_BALANCE_WARM_FLUORESCENT);
         COLOR_TEMPERATURES_MAP.append(
-                3000, android.hardware.Camera.Parameters.WHITE_BALANCE_TWILIGHT);
+                4250, android.hardware.Camera.Parameters.WHITE_BALANCE_FLUORESCENT);
         COLOR_TEMPERATURES_MAP.append(
-                4230, android.hardware.Camera.Parameters.WHITE_BALANCE_FLUORESCENT);
+                4600, android.hardware.Camera.Parameters.WHITE_BALANCE_TWILIGHT);
         COLOR_TEMPERATURES_MAP.append(
                 5500, android.hardware.Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
         COLOR_TEMPERATURES_MAP.append(
@@ -582,6 +582,7 @@ public class VideoCaptureCamera
             final int index = COLOR_TEMPERATURES_MAP.indexOfValue(parameters.getWhiteBalance());
             if (index >= 0) builder.setCurrentColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(index));
         }
+        builder.setStepColorTemperature(50);
 
         final List<String> flashModes = parameters.getSupportedFlashModes();
         if (flashModes != null) {
