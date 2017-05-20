@@ -34,26 +34,19 @@
 
   function reportValidationError(error) {
     if (gValidationErrorObserver) {
-      gValidationErrorObserver.setLastError(error);
+      gValidationErrorObserver.lastError = error;
+    } else {
+      console.warn('Invalid message: ' + error);
     }
   }
 
   var ValidationErrorObserverForTesting = (function() {
     function Observer() {
       this.lastError = validationError.NONE;
-      this.callback = null;
     }
 
-    Observer.prototype.setLastError = function(error) {
-      this.lastError = error;
-      if (this.callback) {
-        this.callback(error);
-      }
-    };
-
-    Observer.prototype.reset = function(error) {
+    Observer.prototype.reset = function() {
       this.lastError = validationError.NONE;
-      this.callback = null;
     };
 
     return {

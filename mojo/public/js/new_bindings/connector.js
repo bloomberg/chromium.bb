@@ -82,11 +82,6 @@
     this.errorHandler_ = handler;
   };
 
-  Connector.prototype.waitForNextMessageForTesting = function() {
-    // TODO(yzshen): Change the tests that use this method.
-    throw new Error("Not supported!");
-  };
-
   Connector.prototype.readMore_ = function(result) {
     for (;;) {
       if (this.paused_) {

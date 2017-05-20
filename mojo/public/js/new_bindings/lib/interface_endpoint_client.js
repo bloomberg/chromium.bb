@@ -47,8 +47,8 @@
       this.initControllerIfNecessary_();
     } else if (associationEvent ===
           internal.AssociationEvent.PEER_CLOSED_BEFORE_ASSOCIATION) {
-      timer.createOneShot(0, this.notifyError.bind(this,
-          this.handle_.disconnectReason()));
+      setTimeout(this.notifyError.bind(this, this.handle_.disconnectReason()),
+                 0);
     }
   };
 
