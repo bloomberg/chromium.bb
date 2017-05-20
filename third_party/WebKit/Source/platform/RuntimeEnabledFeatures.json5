@@ -988,10 +988,6 @@
       name: "VideoRotateToFullscreen",
     },
     {
-      name: "VisibilityChangeOnUnload",
-      status: "stable",
-    },
-    {
       name: "VisualViewportAPI",
       status: "experimental",
     },
