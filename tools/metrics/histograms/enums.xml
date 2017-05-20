@@ -36298,6 +36298,7 @@ from previous Chrome versions.
   <int value="1" label="Device no longer in range."/>
   <int value="2" label="Not found"/>
   <int value="3" label="No services"/>
+  <int value="4" label="Device disconnected"/>
 </enum>
 
 <enum name="WebBluetoothRequestDeviceOutcome" type="int">
