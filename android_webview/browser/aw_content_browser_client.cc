@@ -18,7 +18,6 @@
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
-#include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -438,15 +437,6 @@ void AwContentBrowserClient::ResourceDispatcherHostCreated() {
 
 net::NetLog* AwContentBrowserClient::GetNetLog() {
   return browser_context_->GetAwURLRequestContext()->GetNetLog();
-}
-
-void AwContentBrowserClient::ClearCache(content::RenderFrameHost* rfh) {
-  RemoveHttpDiskCache(rfh->GetProcess());
-}
-
-void AwContentBrowserClient::ClearCookies(content::RenderFrameHost* rfh) {
-  // TODO(boliu): Implement.
-  NOTIMPLEMENTED();
 }
 
 base::FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {
