@@ -2209,7 +2209,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   float TextAutosizingMultiplier() const {
-    return inherited_data_->text_autosizing_multiplier_;
+    return TextAutosizingMultiplierInternal();
   }
   void SetTextAutosizingMultiplier(float);
 

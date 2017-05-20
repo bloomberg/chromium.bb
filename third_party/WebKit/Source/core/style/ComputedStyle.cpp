@@ -1407,10 +1407,10 @@ void ComputedStyle::SetListStyleImage(StyleImage* v) {
 }
 
 Color ComputedStyle::GetColor() const {
-  return inherited_data_->color_;
+  return ColorInternal();
 }
 void ComputedStyle::SetColor(const Color& v) {
-  SET_VAR(inherited_data_, color_, v);
+  SetColorInternal(v);
 }
 
 FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
@@ -1657,10 +1657,10 @@ CSSTransitionData& ComputedStyle::AccessTransitions() {
 }
 
 const Font& ComputedStyle::GetFont() const {
-  return inherited_data_->font_;
+  return FontInternal();
 }
 const FontDescription& ComputedStyle::GetFontDescription() const {
-  return inherited_data_->font_.GetFontDescription();
+  return FontInternal().GetFontDescription();
 }
 float ComputedStyle::SpecifiedFontSize() const {
   return GetFontDescription().SpecifiedSize();
@@ -1853,15 +1853,15 @@ float ComputedStyle::LetterSpacing() const {
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
-  if (inherited_data_->font_.GetFontDescription() != v) {
-    inherited_data_.Access()->font_ = Font(v);
+  if (FontInternal().GetFontDescription() != v) {
+    SetFontInternal(Font(v));
     return true;
   }
   return false;
 }
 
 void ComputedStyle::SetFont(const Font& font) {
-  inherited_data_.Access()->font_ = font;
+  SetFontInternal(font);
 }
 
 bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
@@ -1874,10 +1874,10 @@ bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
 }
 
 const Length& ComputedStyle::SpecifiedLineHeight() const {
-  return inherited_data_->line_height_;
+  return LineHeightInternal();
 }
 Length ComputedStyle::LineHeight() const {
-  const Length& lh = inherited_data_->line_height_;
+  const Length& lh = LineHeightInternal();
   // Unlike getFontDescription().computedSize() and hence fontSize(), this is
   // recalculated on demand as we only store the specified line height.
   // FIXME: Should consider scaling the fixed part of any calc expressions
@@ -1893,7 +1893,7 @@ Length ComputedStyle::LineHeight() const {
 }
 
 void ComputedStyle::SetLineHeight(const Length& specified_line_height) {
-  SET_VAR(inherited_data_, line_height_, specified_line_height);
+  SetLineHeightInternal(specified_line_height);
 }
 
 int ComputedStyle::ComputedLineHeight() const {
@@ -1941,7 +1941,7 @@ void ComputedStyle::SetLetterSpacing(float letter_spacing) {
 }
 
 void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
-  SET_VAR(inherited_data_, text_autosizing_multiplier_, multiplier);
+  SetTextAutosizingMultiplierInternal(multiplier);
 
   float size = SpecifiedFontSize();
 
