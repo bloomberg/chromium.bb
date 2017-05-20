@@ -5389,6 +5389,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Blink.UseCounter.Extensions.Features" enum="FeatureObserver">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Count of how many page loads use various features for pages with a
+    chrome-extension:// URL only. The PageVisits bucket is incremented for each
+    page load, and the other buckets incremented at most once per PageVisit via
+    the WebCore::UserCounter class.
+  </summary>
+</histogram>
+
 <histogram name="Blink.UseCounter.Features" enum="FeatureObserver">
   <owner>rbyers@chromium.org</owner>
   <summary>
