@@ -2210,7 +2210,7 @@ void RenderThreadImpl::OnCreateNewSharedWorker(
   new EmbeddedSharedWorkerStub(
       params.url, params.name, params.content_security_policy,
       params.security_policy_type, params.creation_address_space,
-      params.pause_on_start, params.route_id);
+      params.pause_on_start, params.route_id, params.data_saver_enabled);
 }
 
 void RenderThreadImpl::OnMemoryPressure(

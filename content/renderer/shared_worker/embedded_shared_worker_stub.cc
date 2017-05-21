@@ -127,7 +127,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::WebContentSecurityPolicyType security_policy_type,
     blink::WebAddressSpace creation_address_space,
     bool pause_on_start,
-    int route_id)
+    int route_id,
+    bool data_saver_enabled)
     : route_id_(route_id), name_(name), url_(url) {
   RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::Create(this);
@@ -141,7 +142,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   impl_->StartWorkerContext(
       url, blink::WebString::FromUTF16(name_),
       blink::WebString::FromUTF16(content_security_policy),
-      security_policy_type, creation_address_space);
+      security_policy_type, creation_address_space, data_saver_enabled);
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
