@@ -96,8 +96,8 @@ class CORE_EXPORT DocumentMarkerController final
   DocumentMarkerVector Markers();
   Vector<IntRect> RenderedRectsForTextMatchMarkers();
   void UpdateMarkerRenderedRectIfNeeded(const Node&, RenderedDocumentMarker&);
-  void InvalidateRectsForAllMarkers();
-  void InvalidateRectsForMarkersInNode(const Node&);
+  void InvalidateRectsForAllTextMatchMarkers();
+  void InvalidateRectsForTextMatchMarkersInNode(const Node&);
 
   DECLARE_TRACE();
 

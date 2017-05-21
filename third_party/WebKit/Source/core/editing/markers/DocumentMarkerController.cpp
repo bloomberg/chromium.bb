@@ -454,7 +454,7 @@ void DocumentMarkerController::UpdateMarkerRenderedRectIfNeeded(
     UpdateMarkerRenderedRect(node, marker);
 }
 
-void DocumentMarkerController::InvalidateRectsForMarkersInNode(
+void DocumentMarkerController::InvalidateRectsForTextMatchMarkersInNode(
     const Node& node) {
   MarkerLists* markers = markers_.at(&node);
 
@@ -471,10 +471,10 @@ void DocumentMarkerController::InvalidateRectsForMarkersInNode(
   InvalidatePaintForTickmarks(node);
 }
 
-void DocumentMarkerController::InvalidateRectsForAllMarkers() {
+void DocumentMarkerController::InvalidateRectsForAllTextMatchMarkers() {
   for (auto& node_markers : markers_) {
     const Node& node = *node_markers.key;
-    InvalidateRectsForMarkersInNode(node);
+    InvalidateRectsForTextMatchMarkersInNode(node);
   }
 }
 
@@ -738,7 +738,7 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
     return;
   if (!node->GetLayoutObject())
     return;
-  InvalidateRectsForMarkersInNode(*node);
+  InvalidateRectsForTextMatchMarkersInNode(*node);
   // repaint the affected node
   node->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 }
