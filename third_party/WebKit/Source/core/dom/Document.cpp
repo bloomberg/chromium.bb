@@ -2279,7 +2279,7 @@ void Document::LayoutUpdated() {
   if (GetFrame() && GetFrame()->GetPage())
     GetFrame()->GetPage()->GetChromeClient().LayoutUpdated(GetFrame());
 
-  Markers().InvalidateRectsForAllMarkers();
+  Markers().InvalidateRectsForAllTextMatchMarkers();
 
   // The layout system may perform layouts with pending stylesheets. When
   // recording first layout time, we ignore these layouts, since painting is
