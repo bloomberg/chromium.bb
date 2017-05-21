@@ -4,9 +4,6 @@
 :: found in the LICENSE file.
 setlocal
 
-:: This is required with cygwin only.
-PATH=%~dp0;%PATH%
-
 :: Synchronize the root directory before deferring control back to gclient.py.
 call "%~dp0\update_depot_tools.bat"
 
