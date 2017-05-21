@@ -538,7 +538,7 @@ void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
   views::Textfield* cvc_field =
       static_cast<views::Textfield*>(delegate_->dialog_view()->GetViewByID(
           static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD)));
-  cvc_field->SetText(cvc);
+  cvc_field->InsertOrReplaceText(cvc);
 }
 
 void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(

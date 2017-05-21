@@ -379,11 +379,9 @@ bool PaymentRequestSheetController::GetSheetId(DialogViewID* sheet_id) {
 }
 
 bool PaymentRequestSheetController::PerformPrimaryButtonAction() {
-  if (primary_button_ && primary_button_->enabled()) {
+  if (primary_button_ && primary_button_->enabled())
     ButtonPressed(primary_button_.get(), DummyEvent());
-    return true;
-  }
-  return false;
+  return true;
 }
 
 }  // namespace payments
