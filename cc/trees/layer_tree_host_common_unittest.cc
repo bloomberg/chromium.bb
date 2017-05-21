@@ -6558,8 +6558,11 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomInnerViewportDelta) {
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
   scroller->SetScrollClipLayerId(root->id());
-  host()->RegisterViewportLayers(nullptr, root, root, nullptr, scroller,
-                                 nullptr);
+  LayerTreeHost::ViewportLayers viewport_layers;
+  viewport_layers.page_scale = root;
+  viewport_layers.inner_viewport_container = root;
+  viewport_layers.inner_viewport_scroll = scroller;
+  host()->RegisterViewportLayers(viewport_layers);
 
   LayerStickyPositionConstraint sticky_position;
   sticky_position.is_sticky = true;
@@ -6632,8 +6635,13 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
   host()->SetRootLayer(root);
   scroller->SetScrollClipLayerId(root->id());
   outer_viewport->SetScrollClipLayerId(outer_clip->id());
-  host()->RegisterViewportLayers(nullptr, root, root, outer_clip, scroller,
-                                 outer_viewport);
+  LayerTreeHost::ViewportLayers viewport_layers;
+  viewport_layers.page_scale = root;
+  viewport_layers.inner_viewport_container = root;
+  viewport_layers.outer_viewport_container = outer_clip;
+  viewport_layers.inner_viewport_scroll = scroller;
+  viewport_layers.outer_viewport_scroll = outer_viewport;
+  host()->RegisterViewportLayers(viewport_layers);
 
   LayerStickyPositionConstraint sticky_position;
   sticky_position.is_sticky = true;
@@ -8183,10 +8191,13 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
   outer_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
 
   host()->SetRootLayer(root);
-  host()->RegisterViewportLayers(nullptr, root, inner_viewport_container_layer,
-                                 outer_viewport_container_layer,
-                                 inner_viewport_scroll_layer,
-                                 outer_viewport_scroll_layer);
+  LayerTreeHost::ViewportLayers viewport_layers;
+  viewport_layers.page_scale = root;
+  viewport_layers.inner_viewport_container = inner_viewport_container_layer;
+  viewport_layers.outer_viewport_container = outer_viewport_container_layer;
+  viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;
+  viewport_layers.outer_viewport_scroll = outer_viewport_scroll_layer;
+  host()->RegisterViewportLayers(viewport_layers);
 
   scoped_refptr<Layer> fixed_to_inner = Layer::Create();
   scoped_refptr<Layer> fixed_to_outer = Layer::Create();
@@ -10013,8 +10024,11 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   parent5->SetBounds(gfx::Size(10, 10));
 
-  host()->RegisterViewportLayers(nullptr, page_scale_layer, root1, nullptr,
-                                 parent2, nullptr);
+  LayerTreeHost::ViewportLayers viewport_layers;
+  viewport_layers.page_scale = page_scale_layer;
+  viewport_layers.inner_viewport_container = root1;
+  viewport_layers.inner_viewport_scroll = parent2;
+  host()->RegisterViewportLayers(viewport_layers);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root1.get());
 
   const int kRootPropertyTreeNodeId = 0;
