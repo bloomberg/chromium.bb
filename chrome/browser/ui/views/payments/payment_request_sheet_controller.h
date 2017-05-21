@@ -135,6 +135,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // otherwise.
   bool PerformPrimaryButtonAction();
 
+  // Add the primary/secondary buttons to |container|.
+  void AddPrimaryButton(views::View* container);
+  void AddSecondaryButton(views::View* container);
+
   // All these are not owned. Will outlive this.
   PaymentRequestSpec* spec_;
   PaymentRequestState* state_;
