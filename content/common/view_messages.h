@@ -314,6 +314,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // The type (secure or nonsecure) of the context that created the worker.
   IPC_STRUCT_MEMBER(blink::WebSharedWorkerCreationContextType,
                     creation_context_type)
+
+  // Whether Data-Saver is enabled or not.
+  IPC_STRUCT_MEMBER(bool, data_saver_enabled)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Reply)
