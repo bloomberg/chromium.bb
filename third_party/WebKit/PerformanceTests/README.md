@@ -150,13 +150,15 @@ Example of tracing asynchronous tests:
 
 ## Running Tests
 
-** Running tests directly in browser **
+**Running tests directly in browser**
+
 Most of Blink Performance tests should be runnable by just open the test file
 directly in the browser. However, features like tracing metrics & HTML results
 viewer won't be supported.
 
-** Running tests with Telemetry **
-Assuming your current directory is chromium/src/, you can run tests with:
+**Running tests with Telemetry**
+
+Assuming your current directory is `chromium/src/`, you can run tests with:
 
 `./tools/perf/run_benchmark blink_perf [--test-path=<path to your tests>]`
 
