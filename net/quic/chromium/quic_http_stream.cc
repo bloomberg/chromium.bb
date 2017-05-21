@@ -313,14 +313,28 @@ int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
   if (stream_ == nullptr)
     return GetResponseStatus();
+
+  int rv = stream_->ReadInitialHeaders(
+      &response_header_block_,
+      base::Bind(&QuicHttpStream::OnReadResponseHeadersComplete,
+                 weak_factory_.GetWeakPtr()));
+
+  if (rv == ERR_IO_PENDING) {
+    // Still waiting for the response, return IO_PENDING.
+    CHECK(callback_.is_null());
+    callback_ = callback;
+    return ERR_IO_PENDING;
+  }
+
+  if (rv < 0)
+    return rv;
+
   // Check if we already have the response headers. If so, return synchronously.
   if (response_headers_received_)
     return OK;
 
-  // Still waiting for the response, return IO_PENDING.
-  CHECK(callback_.is_null());
-  callback_ = callback;
-  return ERR_IO_PENDING;
+  headers_bytes_received_ += rv;
+  return ProcessResponseHeaders(response_header_block_);
 }
 
 int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
@@ -432,12 +446,13 @@ void QuicHttpStream::SetPriority(RequestPriority priority) {
   priority_ = priority;
 }
 
-void QuicHttpStream::OnInitialHeadersAvailable(const SpdyHeaderBlock& headers,
-                                               size_t frame_len) {
+void QuicHttpStream::OnReadResponseHeadersComplete(int rv) {
+  DCHECK(callback_);
   DCHECK(!response_headers_received_);
-  headers_bytes_received_ += frame_len;
-
-  int rv = ProcessResponseHeaders(headers);
+  if (rv > 0) {
+    headers_bytes_received_ += rv;
+    rv = ProcessResponseHeaders(response_header_block_);
+  }
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     DoCallback(rv);
   }
