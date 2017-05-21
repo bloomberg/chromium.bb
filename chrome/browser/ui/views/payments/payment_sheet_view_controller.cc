@@ -125,33 +125,6 @@ class PreviewEliderLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(PreviewEliderLabel);
 };
 
-int ComputeWidestNameColumnViewWidth() {
-  // The name colums in each row should all have the same width, large enough to
-  // accomodate the longest piece of text they contain. Because of this, each
-  // row's GridLayout requires its first column to have a fixed width of the
-  // correct size. To measure the required size, layout a label with each
-  // section name, measure its width, then initialize |widest_column_width|
-  // with the largest value.
-  std::vector<int> section_names{
-      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME,
-      IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME,
-      IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME};
-
-  int widest_column_width = 0;
-
-  views::Label label(base::ASCIIToUTF16(""));
-  label.SetFontList(
-      label.font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  for (int name_id : section_names) {
-    label.SetText(l10n_util::GetStringUTF16(name_id));
-    widest_column_width = std::max(
-        label.GetPreferredSize().width(),
-        widest_column_width);
-  }
-
-  return widest_column_width;
-}
-
 std::unique_ptr<views::Button> CreatePaymentSheetRow(
     views::ButtonListener* listener,
     const base::string16& section_name,
@@ -159,8 +132,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
     std::unique_ptr<views::View> extra_content_view,
     std::unique_ptr<views::View> trailing_button,
     bool clickable,
-    bool extra_trailing_inset,
-    int name_column_width) {
+    bool extra_trailing_inset) {
   const int trailing_inset = extra_trailing_inset
                                  ? kPaymentRequestRowHorizontalInsets +
                                        kPaymentRequestRowExtraRightInset
@@ -175,15 +147,12 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the section name.
-  columns->AddColumn(views::GridLayout::LEADING,
-                     views::GridLayout::LEADING,
-                     0,
-                     views::GridLayout::FIXED,
-                     name_column_width,
-                     0);
+  constexpr int kNameColumnWidth = 112;
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                     views::GridLayout::FIXED, kNameColumnWidth, 0);
 
-  constexpr int kPaddingColumnsWidth = 25;
-  columns->AddPaddingColumn(0, kPaddingColumnsWidth);
+  constexpr int kPaddingAfterName = 32;
+  columns->AddPaddingColumn(0, kPaddingAfterName);
 
   // A column for the content.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
@@ -192,6 +161,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
+  constexpr int kPaddingColumnsWidth = 25;
   columns->AddPaddingColumn(0, kPaddingColumnsWidth);
   // A column for the trailing_button.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
@@ -199,6 +169,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
 
   layout->StartRow(0, 0);
   views::Label* name_label = new views::Label(section_name);
+  name_label->SetMultiLine(true);
   name_label->SetFontList(
       name_label->font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   layout->AddView(name_label);
@@ -228,11 +199,8 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
 class PaymentSheetRowBuilder {
  public:
   PaymentSheetRowBuilder(views::ButtonListener* listener,
-                         const base::string16& section_name,
-                         int name_column_width)
-      : listener_(listener),
-        section_name_(section_name),
-        name_column_width_(name_column_width) {}
+                         const base::string16& section_name)
+      : listener_(listener), section_name_(section_name) {}
 
   PaymentSheetRowBuilder& Tag(PaymentSheetViewControllerTags tag) {
     tag_ = static_cast<int>(tag);
@@ -268,7 +236,7 @@ class PaymentSheetRowBuilder {
     std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
         listener_, section_name_, std::move(content_view),
         std::move(extra_content_view), std::move(chevron),
-        /*clickable=*/true, /*extra_trailing_inset=*/true, name_column_width_);
+        /*clickable=*/true, /*extra_trailing_inset=*/true);
     section->set_tag(tag_);
     section->set_id(id_);
     return section;
@@ -333,15 +301,14 @@ class PaymentSheetRowBuilder {
     button->set_tag(tag_);
     button->set_id(id_);
     button->SetEnabled(button_enabled);
-    return CreatePaymentSheetRow(
-        listener_, section_name_, std::move(content_view), nullptr,
-        std::move(button), /*clickable=*/false,
-        /*extra_trailing_inset=*/false, name_column_width_);
+    return CreatePaymentSheetRow(listener_, section_name_,
+                                 std::move(content_view), nullptr,
+                                 std::move(button), /*clickable=*/false,
+                                 /*extra_trailing_inset=*/false);
   }
 
   views::ButtonListener* listener_;
   base::string16 section_name_;
-  int name_column_width_;
   int tag_;
   int id_;
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetRowBuilder);
@@ -353,8 +320,7 @@ PaymentSheetViewController::PaymentSheetViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(spec, state, dialog),
-      widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {
+    : PaymentRequestSheetController(spec, state, dialog) {
   spec->AddObserver(this);
   state->AddObserver(this);
 }
@@ -598,9 +564,8 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   inline_summary->SetLayoutManager(layout.release());
 
   PaymentSheetRowBuilder builder(
-      this,
-      l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME),
-      widest_name_column_view_width_);
+      this, l10n_util::GetStringUTF16(
+                IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON)
       .Id(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
 
@@ -638,8 +603,7 @@ PaymentSheetViewController::CreateShippingSectionContent() {
 std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
   std::unique_ptr<views::Button> section;
   PaymentSheetRowBuilder builder(
-      this, GetShippingAddressSectionString(spec()->shipping_type()),
-      widest_name_column_view_width_);
+      this, GetShippingAddressSectionString(spec()->shipping_type()));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON);
   if (state()->selected_shipping_profile()) {
     builder.Id(DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION);
@@ -699,10 +663,8 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
   PaymentInstrument* selected_instrument = state()->selected_instrument();
 
   PaymentSheetRowBuilder builder(
-      this,
-      l10n_util::GetStringUTF16(
-          IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
-      widest_name_column_view_width_);
+      this, l10n_util::GetStringUTF16(
+                IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON);
 
   if (selected_instrument) {
@@ -779,8 +741,7 @@ std::unique_ptr<views::Button>
 PaymentSheetViewController::CreateContactInfoRow() {
   PaymentSheetRowBuilder builder(
       this,
-      l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME),
-      widest_name_column_view_width_);
+      l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON);
 
   if (state()->selected_contact_profile()) {
@@ -843,8 +804,7 @@ PaymentSheetViewController::CreateShippingOptionRow() {
   // is one. It's not possible to select an option without selecting an address
   // first.
   PaymentSheetRowBuilder builder(
-      this, GetShippingOptionSectionString(spec()->shipping_type()),
-      widest_name_column_view_width_);
+      this, GetShippingOptionSectionString(spec()->shipping_type()));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_SHIPPING_OPTION_BUTTON);
 
   if (state()->selected_shipping_profile()) {
