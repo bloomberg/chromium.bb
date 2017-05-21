@@ -142,10 +142,10 @@ class Crossdev(object):
         target_tuple = toolchain.GetHostTuple()
       # Build the crossdev command.
       cmd = ['crossdev', '--show-target-cfg', '--ex-gdb']
-      if target in TARGET_GO_ENABLED:
-        cmd.extend(CROSSDEV_GO_ARGS)
       if target in TARGET_COMPILER_RT_ENABLED:
         cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
+      if target in TARGET_GO_ENABLED:
+        cmd.extend(CROSSDEV_GO_ARGS)
       if target in TARGET_LLVM_PKGS_ENABLED:
         for pkg in LLVM_PKGS_TABLE:
           cmd.extend(LLVM_PKGS_TABLE[pkg])
@@ -202,11 +202,11 @@ class Crossdev(object):
         if pkg == 'gdb':
           # Gdb does not have selectable versions.
           cmd.append('--ex-gdb')
+        elif pkg == 'ex_compiler-rt':
+          cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
         elif pkg == 'ex_go':
           # Go does not have selectable versions.
           cmd.extend(CROSSDEV_GO_ARGS)
-        elif pkg == 'ex_compiler-rt':
-          cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
         elif pkg in LLVM_PKGS_TABLE:
           cmd.extend(LLVM_PKGS_TABLE[pkg])
         elif pkg in cls.MANUAL_PKGS:
