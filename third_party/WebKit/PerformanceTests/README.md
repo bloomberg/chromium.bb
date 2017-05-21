@@ -5,8 +5,7 @@
 ## Overview
 
 Blink perf tests are used for micro benchmarking the surface of Blink that
-is exposed to the Web. They are the counterpart of [LayoutTests/]
-(https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_tests.md)
+is exposed to the Web. They are the counterpart of [LayoutTests/](../../../docs/testing/layout_tests.md)
 but for performance coverage.
 
 ## Writing Tests
@@ -49,6 +48,7 @@ In the case of `PerfTestRunner.measureRunsPerSecond`, each run invokes
 `test.run` multiple times.
 
 **Tracing support**
+
 When the test is run through Telemetry, you can also collect timing of trace
 events that happen during each run by specifying `tracingCategories` &
 `traceEventsToMeasure` in the test object. For example:
@@ -82,8 +82,10 @@ also compute the total CPU times for trace events  'A' & 'B' per `foo()` run:
 *   CPU times of trace events B: `[0.0, v3, v5]`
 
 Example tracing synchronous tests:
-[append-child-measure-time.html](TestData/append-child-measure-time.html)
-[simple-html-measure-page-load-time.html](TestData/simple-html-measure-page-load-time.html)
+
+*   [append-child-measure-time.html](TestData/append-child-measure-time.html)
+
+*   [simple-html-measure-page-load-time.html](TestData/simple-html-measure-page-load-time.html)
 
 
 ### Asynchronous Perf Tests
@@ -126,6 +128,7 @@ Once the number of run reaches `iterationCount` (6 in the example above), the
 `done` callback is invoked, setting the your test state to finished.
 
 **Tracing support**
+
 Like synchronous perf tests, tracing metrics are only available when you run
 your tests with Telemetry.
 
@@ -139,7 +142,9 @@ of trace events that happen during test runs in the fashion similar to the
 example of synchronous tracing test above.
 
 Example of tracing asynchronous tests:
+
 [color-changes-measure-frame-time.html](TestData/color-changes-measure-frame-time.html)
+
 [simple-blob-measure-async.html](TestData/simple-blob-measure-async.html)
 
 
@@ -152,7 +157,9 @@ viewer won't be supported.
 
 ** Running tests with Telemetry **
 Assuming your current directory is chromium/src/, you can run tests with:
+
 `./tools/perf/run_benchmark blink_perf [--test-path=<path to your tests>]`
 
 For information about all supported options, run:
+
 `./tools/perf/run_benchmark blink_perf --help`
