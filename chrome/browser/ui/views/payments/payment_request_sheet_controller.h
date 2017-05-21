@@ -127,6 +127,8 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // sets |sheet_id| to the desired value.
   virtual bool GetSheetId(DialogViewID* sheet_id);
 
+  views::Button* primary_button() { return primary_button_.get(); }
+
  private:
   // Called when the Enter accelerator is pressed. Perform the action associated
   // with the primary button and returns true if it's enabled, returns false
