@@ -193,6 +193,45 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   return std::move(row);
 }
 
+std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
+    const base::string16& currency,
+    const base::string16& amount,
+    bool disabled_color,
+    bool bold) {
+  std::unique_ptr<views::View> item_amount_line =
+      base::MakeUnique<views::View>();
+  std::unique_ptr<views::GridLayout> item_amount_layout =
+      base::MakeUnique<views::GridLayout>(item_amount_line.get());
+  views::ColumnSet* item_amount_columns = item_amount_layout->AddColumnSet(0);
+  item_amount_columns->AddColumn(views::GridLayout::LEADING,
+                                 views::GridLayout::LEADING, 0,
+                                 views::GridLayout::USE_PREF, 0, 0);
+  item_amount_columns->AddColumn(views::GridLayout::TRAILING,
+                                 views::GridLayout::LEADING, 1,
+                                 views::GridLayout::USE_PREF, 0, 0);
+
+  std::unique_ptr<views::Label> currency_label =
+      bold ? CreateBoldLabel(currency)
+           : base::MakeUnique<views::Label>(currency);
+  if (disabled_color) {
+    currency_label->SetDisabledColor(
+        currency_label->GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_LabelDisabledColor));
+    currency_label->SetEnabled(false);
+  }
+  std::unique_ptr<views::Label> amount_label =
+      bold ? CreateBoldLabel(amount) : base::MakeUnique<views::Label>(amount);
+  amount_label->SetMultiLine(true);
+  amount_label->SetAllowCharacterBreak(true);
+
+  item_amount_layout->StartRow(0, 0);
+  item_amount_layout->AddView(currency_label.release());
+  item_amount_layout->AddView(amount_label.release());
+
+  item_amount_line->SetLayoutManager(item_amount_layout.release());
+  return item_amount_line;
+}
+
 // A class used to build Payment Sheet Rows. Construct an instance of it, chain
 // calls to argument-setting functions, then call one of the CreateWith*
 // functions to create the row view.
@@ -501,7 +540,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 1,
                      views::GridLayout::USE_PREF, 0, 0);
   constexpr int kItemSummaryPriceFixedWidth = 96;
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING, 0,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 0,
                      views::GridLayout::FIXED, kItemSummaryPriceFixedWidth,
                      kItemSummaryPriceFixedWidth);
 
@@ -521,18 +560,14 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
     summary->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(summary.release());
 
-    base::string16 item_amount;
-    if (is_mixed_currency) {
-      // If the payment request has items in different currencies, always
-      // display the currency code.
-      item_amount = l10n_util::GetStringFUTF16(
-          IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
-          base::UTF8ToUTF16(spec()->GetFormattedCurrencyCode(items[i]->amount)),
-          spec()->GetFormattedCurrencyAmount(items[i]->amount));
-    } else {
-      item_amount = spec()->GetFormattedCurrencyAmount(items[i]->amount);
-    }
-    layout->AddView(new views::Label(item_amount));
+    layout->AddView(
+        CreateInlineCurrencyAmountItem(
+            is_mixed_currency
+                ? base::UTF8ToUTF16(
+                      spec()->GetFormattedCurrencyCode(items[i]->amount))
+                : base::string16(),
+            spec()->GetFormattedCurrencyAmount(items[i]->amount), true, false)
+            .release());
   }
 
   int hidden_item_count = items.size() - kMaxNumberOfItemsShown;
@@ -553,12 +588,11 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
           .release());
 
   layout->AddView(
-      CreateBoldLabel(l10n_util::GetStringFUTF16(
-                          IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
-                          base::UTF8ToUTF16(spec()->GetFormattedCurrencyCode(
-                              spec()->details().total->amount)),
-                          spec()->GetFormattedCurrencyAmount(
-                              spec()->details().total->amount)))
+      CreateInlineCurrencyAmountItem(
+          base::UTF8ToUTF16(spec()->GetFormattedCurrencyCode(
+              spec()->details().total->amount)),
+          spec()->GetFormattedCurrencyAmount(spec()->details().total->amount),
+          false, true)
           .release());
 
   inline_summary->SetLayoutManager(layout.release());
