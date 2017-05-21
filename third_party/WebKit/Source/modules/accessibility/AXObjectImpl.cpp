@@ -1135,7 +1135,7 @@ bool AXObjectImpl::SupportsRangeValue() const {
 }
 
 bool AXObjectImpl::SupportsSetSizeAndPosInSet() const {
-  AXObjectImpl* parent = ParentObject();
+  AXObjectImpl* parent = ParentObjectUnignored();
   if (!parent)
     return false;
 
@@ -1148,7 +1148,7 @@ bool AXObjectImpl::SupportsSetSizeAndPosInSet() const {
       (role == kRadioButtonRole) ||
       (role == kTabRole && parent_role == kTabListRole) ||
       (role == kTreeItemRole && parent_role == kTreeRole) ||
-      (role == kTreeItemRole && parent_role == kGroupRole)) {
+      (role == kTreeItemRole && parent_role == kTreeItemRole)) {
     return true;
   }
 
