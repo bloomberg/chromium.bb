@@ -153,6 +153,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/chromeos/default_touch_transform_setter.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
@@ -1059,7 +1060,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // TODO(sky): needs to to work for mus too.
   if (config == Config::CLASSIC) {
     touch_transformer_controller_.reset(new AshTouchTransformController(
-        display_configurator_.get(), display_manager_.get()));
+        display_configurator_.get(), display_manager_.get(),
+        base::MakeUnique<display::DefaultTouchTransformSetter>()));
   }
 
   keyboard_ui_ = shell_port_->CreateKeyboardUI();
