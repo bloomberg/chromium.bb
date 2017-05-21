@@ -553,6 +553,28 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   // there are more than 2 items in the details. The total label and amount
   // always follow.
   constexpr int kMaxNumberOfItemsShown = 2;
+  int hidden_item_count = items.size() - kMaxNumberOfItemsShown;
+  if (hidden_item_count > 0) {
+    layout->StartRow(0, 0);
+    std::unique_ptr<views::Label> label =
+        base::MakeUnique<views::Label>(l10n_util::GetPluralStringFUTF16(
+            IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
+    label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelDisabledColor));
+    label->SetEnabled(false);
+    layout->AddView(label.release());
+    if (is_mixed_currency) {
+      std::unique_ptr<views::Label> multiple_currency_label =
+          base::MakeUnique<views::Label>(l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MULTIPLE_CURRENCY_INDICATOR));
+      multiple_currency_label->SetDisabledColor(
+          multiple_currency_label->GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_LabelDisabledColor));
+      multiple_currency_label->SetEnabled(false);
+      layout->AddView(multiple_currency_label.release());
+    }
+  }
+
   for (size_t i = 0; i < items.size() && i < kMaxNumberOfItemsShown; ++i) {
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> summary =
@@ -568,18 +590,6 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
                 : base::string16(),
             spec()->GetFormattedCurrencyAmount(items[i]->amount), true, false)
             .release());
-  }
-
-  int hidden_item_count = items.size() - kMaxNumberOfItemsShown;
-  if (hidden_item_count > 0) {
-    layout->StartRow(0, 0);
-    std::unique_ptr<views::Label> label =
-        base::MakeUnique<views::Label>(l10n_util::GetPluralStringFUTF16(
-            IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
-    label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelDisabledColor));
-    label->SetEnabled(false);
-    layout->AddView(label.release());
   }
 
   layout->StartRow(0, 0);
