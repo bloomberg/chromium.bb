@@ -249,16 +249,16 @@ bool ScrollInDirection(Node* container, WebFocusType type) {
         dx = -pixels_per_line_step;
         break;
       case kWebFocusTypeRight:
-        ASSERT(container->GetLayoutBox()->ScrollWidth() >
-               (container->GetLayoutBox()->ScrollLeft() +
-                container->GetLayoutBox()->ClientWidth()));
+        DCHECK_GT(container->GetLayoutBox()->ScrollWidth(),
+                  (container->GetLayoutBox()->ScrollLeft() +
+                   container->GetLayoutBox()->ClientWidth()));
         dx = pixels_per_line_step;
         break;
       case kWebFocusTypeUp:
         dy = -pixels_per_line_step;
         break;
       case kWebFocusTypeDown:
-        ASSERT(container->GetLayoutBox()->ScrollHeight() -
+        DCHECK(container->GetLayoutBox()->ScrollHeight() -
                (container->GetLayoutBox()->ScrollTop() +
                 container->GetLayoutBox()->ClientHeight()));
         dy = pixels_per_line_step;
@@ -408,8 +408,9 @@ static LayoutRect RectToAbsoluteCoordinates(LocalFrame* initial_frame,
 }
 
 LayoutRect NodeRectInAbsoluteCoordinates(Node* node, bool ignore_border) {
-  ASSERT(node && node->GetLayoutObject() &&
-         !node->GetDocument().View()->NeedsLayout());
+  DCHECK(node);
+  DCHECK(node->GetLayoutObject());
+  DCHECK(!node->GetDocument().View()->NeedsLayout());
 
   if (node->IsDocumentNode())
     return FrameRectInAbsoluteCoordinates(ToDocument(node)->GetFrame());
@@ -624,7 +625,8 @@ void DistanceDataForNode(WebFocusType type,
 }
 
 bool CanBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate) {
-  ASSERT(candidate.visible_node && candidate.is_offscreen);
+  DCHECK(candidate.visible_node);
+  DCHECK(candidate.is_offscreen);
   LayoutRect candidate_rect = candidate.rect;
   for (Node& parent_node :
        NodeTraversal::AncestorsOf(*candidate.visible_node)) {
