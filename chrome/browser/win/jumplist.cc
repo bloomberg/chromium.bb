@@ -56,6 +56,14 @@ using JumpListData = JumpList::JumpListData;
 
 namespace {
 
+// The default maximum number of items to display in JumpList is 10.
+// https://msdn.microsoft.com/library/windows/desktop/dd378398.aspx
+// The "Most visited" and "Recently closed" category titles always take 2 slots.
+// For the remaining 8 slots, we allocate 5 slots to "most-visited" items and 3
+// slots to"recently-closed" items, respectively.
+constexpr size_t kMostVisitedItems = 5;
+constexpr size_t kRecentlyClosedItems = 3;
+
 // The number of updates to skip to alleviate the machine when a previous update
 // was too slow.
 constexpr int kUpdatesToSkipUnderHeavyLoad = 10;
@@ -222,12 +230,9 @@ JumpList::JumpList(Profile* profile)
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
-    // TopSites updates itself after a delay. This is especially noticable when
-    // your profile is empty. Ask TopSites to update itself when jumplist is
-    // initialized.
-    top_sites->SyncWithHistory();
     // Register as TopSitesObserver so that we can update ourselves when the
-    // TopSites changes.
+    // TopSites changes. TopSites updates itself after a delay. This is
+    // especially noticable when your profile is empty.
     top_sites->AddObserver(this);
   }
   tab_restore_service->AddObserver(this);
@@ -284,15 +289,12 @@ void JumpList::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& urls) {
   DCHECK(CalledOnValidThread());
 
-  // At most 9 JumpList items can be displayed for the "Most Visited"
-  // category.
-  const int kMostVistedCount = 9;
   {
     JumpListData* data = &jumplist_data_->data;
     base::AutoLock auto_lock(data->list_lock_);
     data->most_visited_pages_.clear();
 
-    for (size_t i = 0; i < urls.size() && i < kMostVistedCount; i++) {
+    for (size_t i = 0; i < urls.size() && i < kMostVisitedItems; i++) {
       const history::MostVisitedURL& url = urls[i];
       scoped_refptr<ShellLinkItem> link = CreateShellLink();
       std::string url_string = url.url.spec();
@@ -530,10 +532,18 @@ void JumpList::TopSitesChanged(history::TopSites* top_sites,
 }
 
 void JumpList::DeferredTopSitesChanged() {
+  DCHECK(CalledOnValidThread());
+
   if (updates_to_skip_ > 0) {
     --updates_to_skip_;
     return;
   }
+
+  // Opening the first tab in one session triggers a TopSite history sync.
+  // Delay this sync till the first tab is closed to allow the "recently closed"
+  // category from last session to stay longer.
+  if (!has_tab_closed_)
+    return;
 
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
@@ -546,9 +556,20 @@ void JumpList::DeferredTopSitesChanged() {
 }
 
 void JumpList::DeferredTabRestoreServiceChanged() {
+  DCHECK(CalledOnValidThread());
+
   if (updates_to_skip_ > 0) {
     --updates_to_skip_;
     return;
+  }
+
+  // Force a TopSite history sync when closing a first tab in one session.
+  if (!has_tab_closed_) {
+    has_tab_closed_ = true;
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile_);
+    if (top_sites)
+      top_sites->SyncWithHistory();
   }
 
   // Create a list of ShellLinkItems from the "Recently Closed" pages.
@@ -560,7 +581,7 @@ void JumpList::DeferredTabRestoreServiceChanged() {
   //   The title of the last URL.
   // * icon
   //   An empty string. This value is to be updated in OnFaviconDataAvailable().
-  const int kRecentlyClosedCount = 3;
+
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile_);
 
@@ -570,17 +591,17 @@ void JumpList::DeferredTabRestoreServiceChanged() {
     data->recently_closed_pages_.clear();
 
     for (const auto& entry : tab_restore_service->entries()) {
-      if (data->recently_closed_pages_.size() >= kRecentlyClosedCount)
+      if (data->recently_closed_pages_.size() >= kRecentlyClosedItems)
         break;
       switch (entry->type) {
         case sessions::TabRestoreService::TAB:
           AddTab(static_cast<const sessions::TabRestoreService::Tab&>(*entry),
-                 kRecentlyClosedCount, data);
+                 kRecentlyClosedItems, data);
           break;
         case sessions::TabRestoreService::WINDOW:
           AddWindow(
               static_cast<const sessions::TabRestoreService::Window&>(*entry),
-              kRecentlyClosedCount, data);
+              kRecentlyClosedItems, data);
           break;
       }
     }
@@ -711,37 +732,6 @@ bool JumpList::UpdateJumpList(
     return false;
   }
 
-  // The default maximum number of items to display in JumpList is 10.
-  // https://msdn.microsoft.com/library/windows/desktop/dd378398.aspx
-  // The "Most visited" category title always takes 1 of the JumpList slots if
-  // |most_visited_pages| isn't empty.
-  // The "Recently closed" category title will also take 1 if
-  // |recently_closed_pages| isn't empty.
-  // For the remaining slots, we allocate 5/8 (i.e., 5 slots if both categories
-  // present) to "most-visited" items and 3/8 (i.e., 3 slots if both categories
-  // present) to "recently-closed" items, respectively.
-  // Nevertheless, if there are not so many items in |recently_closed_pages|,
-  // we give the remaining slots to "most-visited" items.
-
-  const int kMostVisited = 50;
-  const int kRecentlyClosed = 30;
-  const int kTotal = kMostVisited + kRecentlyClosed;
-
-  // Adjust the available jumplist slots to account for the category titles.
-  size_t user_max_items_adjusted = jumplist_updater.user_max_items();
-  if (!most_visited_pages.empty())
-    --user_max_items_adjusted;
-  if (!recently_closed_pages.empty())
-    --user_max_items_adjusted;
-
-  size_t most_visited_items =
-      MulDiv(user_max_items_adjusted, kMostVisited, kTotal);
-  size_t recently_closed_items = user_max_items_adjusted - most_visited_items;
-  if (recently_closed_pages.size() < recently_closed_items) {
-    most_visited_items += recently_closed_items - recently_closed_pages.size();
-    recently_closed_items = recently_closed_pages.size();
-  }
-
   // Record the desired number of icons to create in this JumpList update.
   int icons_to_create = 0;
 
@@ -751,9 +741,9 @@ bool JumpList::UpdateJumpList(
         profile_dir, FILE_PATH_LITERAL("MostVisited"));
 
     UpdateIconFiles(icon_dir_most_visited, most_visited_pages,
-                    most_visited_items, JumpListCategory::kMostVisited);
+                    kMostVisitedItems, JumpListCategory::kMostVisited);
 
-    icons_to_create += std::min(most_visited_pages.size(), most_visited_items);
+    icons_to_create += std::min(most_visited_pages.size(), kMostVisitedItems);
   }
 
   // Update the icons for "Recently Closed" category of the JumpList if needed.
@@ -762,10 +752,10 @@ bool JumpList::UpdateJumpList(
         profile_dir, FILE_PATH_LITERAL("RecentClosed"));
 
     UpdateIconFiles(icon_dir_recent_closed, recently_closed_pages,
-                    recently_closed_items, JumpListCategory::kRecentlyClosed);
+                    kRecentlyClosedItems, JumpListCategory::kRecentlyClosed);
 
     icons_to_create +=
-        std::min(recently_closed_pages.size(), recently_closed_items);
+        std::min(recently_closed_pages.size(), kRecentlyClosedItems);
   }
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
@@ -781,14 +771,14 @@ bool JumpList::UpdateJumpList(
   // transaction.
   if (!jumplist_updater.AddCustomCategory(
           l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED),
-          most_visited_pages, most_visited_items)) {
+          most_visited_pages, kMostVisitedItems)) {
     return false;
   }
 
   // Update the "Recently Closed" category of the JumpList.
   if (!jumplist_updater.AddCustomCategory(
           l10n_util::GetStringUTF16(IDS_RECENTLY_CLOSED), recently_closed_pages,
-          recently_closed_items)) {
+          kRecentlyClosedItems)) {
     return false;
   }
 
