@@ -4424,9 +4424,11 @@ interface Navigator
     method webkitGetUserMedia
 interface NetworkInformation : EventTarget
     attribute @@toStringTag
+    getter downlink
     getter downlinkMax
     getter onchange
     getter ontypechange
+    getter rtt
     getter type
     method constructor
     setter onchange

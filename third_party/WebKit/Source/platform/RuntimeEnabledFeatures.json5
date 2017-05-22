@@ -649,8 +649,16 @@
       name: "NavigatorContentUtils",
     },
     {
+      name: "NetInfoDownlink",
+      status: "experimental",
+    },
+    {
       name: "NetInfoDownlinkMax",
       status: "stable",
+    },
+    {
+      name: "NetInfoRtt",
+      status: "experimental",
     },
     {
       name: "NetworkInformation",

@@ -2138,12 +2138,12 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
 }
 
 void RenderThreadImpl::OnNetworkQualityChanged(
-    double http_rtt_msec,
-    double transport_rtt_msec,
+    base::TimeDelta http_rtt,
+    base::TimeDelta transport_rtt,
     double downlink_throughput_kbps) {
   UMA_HISTOGRAM_BOOLEAN("NQE.RenderThreadNotified", true);
-  // TODO(tbansal): https://crbug.com/719108. Notify WebNetworkStateNotifier of
-  // the change in the network quality.
+  WebNetworkStateNotifier::SetNetworkQuality(http_rtt, transport_rtt,
+                                             downlink_throughput_kbps);
 }
 
 void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {
