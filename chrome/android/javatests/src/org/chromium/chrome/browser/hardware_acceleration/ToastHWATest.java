@@ -8,8 +8,16 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.Context;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
@@ -19,9 +27,13 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadTestBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.download.DownloadTestRule;
+import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityStart;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.widget.Toast;
@@ -31,8 +43,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Tests that toasts don't trigger HW acceleration.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-public class ToastHWATest extends DownloadTestBase {
+public class ToastHWATest implements CustomMainActivityStart {
+    @Rule
+    public DownloadTestRule mDownloadTestRule = new DownloadTestRule(this);
+
     private EmbeddedTestServer mTestServer;
 
     private static final String URL_PATH = "/chrome/test/data/android/google.html";
@@ -42,10 +62,8 @@ public class ToastHWATest extends DownloadTestBase {
 
     private static final String[] TEST_FILES = {IMAGE_NAME};
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -53,12 +71,13 @@ public class ToastHWATest extends DownloadTestBase {
             }
         });
 
-        deleteFilesInDownloadDirectory(TEST_FILES);
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mDownloadTestRule.deleteFilesInDownloadDirectory(TEST_FILES);
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -67,15 +86,16 @@ public class ToastHWATest extends DownloadTestBase {
         });
 
         mTestServer.stopAndDestroyServer();
-        deleteFilesInDownloadDirectory(TEST_FILES);
-        super.tearDown();
+        mDownloadTestRule.deleteFilesInDownloadDirectory(TEST_FILES);
     }
 
     @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    public void customMainActivityStart() throws InterruptedException {
+        mDownloadTestRule.startMainActivityOnBlankPage();
+        mDownloadTestRule.deleteFilesInDownloadDirectory(TEST_FILES);
     }
 
+    @Test
     @SmallTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     public void testNoRenderThread() throws Exception {
@@ -87,58 +107,64 @@ public class ToastHWATest extends DownloadTestBase {
      * @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
      * BUG=crbug.com/668217
     */
+    @Test
     @DisabledTest
     public void testDownloadingToast() throws Exception {
-        loadUrl(mTestServer.getURL(URL_PATH));
-        assertWaitForPageScaleFactorMatch(0.5f);
+        mDownloadTestRule.loadUrl(mTestServer.getURL(URL_PATH));
+        mDownloadTestRule.assertWaitForPageScaleFactorMatch(0.5f);
 
-        int callCount = getChromeDownloadCallCount();
+        int callCount = mDownloadTestRule.getChromeDownloadCallCount();
 
         // Download an image (shows 'Downloading...' toast)
-        Tab tab = getActivity().getActivityTab();
-        ContextMenuUtils.selectContextMenuItem(
-                getInstrumentation(), getActivity(), tab, IMAGE_ID, R.id.contextmenu_save_image);
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
+                mDownloadTestRule.getActivity(), tab, IMAGE_ID, R.id.contextmenu_save_image);
 
         // Wait for UI activity to settle
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Wait for download to finish
-        assertTrue(waitForChromeDownloadToFinish(callCount));
+        Assert.assertTrue(mDownloadTestRule.waitForChromeDownloadToFinish(callCount));
 
         Utils.assertNoRenderThread();
     }
 
+    @Test
     @SmallTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     public void testOpenedInBackgroundToast() throws Exception {
-        loadUrl(mTestServer.getURL(URL_PATH));
-        assertWaitForPageScaleFactorMatch(0.5f);
+        mDownloadTestRule.loadUrl(mTestServer.getURL(URL_PATH));
+        mDownloadTestRule.assertWaitForPageScaleFactorMatch(0.5f);
 
         // Open link in a new tab (shows 'Tab Opened In Background' toast)
-        Tab tab = getActivity().getActivityTab();
-        ContextMenuUtils.selectContextMenuItem(getInstrumentation(), getActivity(), tab, LINK_ID,
-                R.id.contextmenu_open_in_new_tab);
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
+                mDownloadTestRule.getActivity(), tab, LINK_ID, R.id.contextmenu_open_in_new_tab);
 
         // Wait for UI activity to settle
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         Utils.assertNoRenderThread();
     }
 
+    @Test
     @SmallTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     public void testToastNoAcceleration() throws Exception {
         // Toasts created on low-end devices shouldn't be HW accelerated.
-        assertFalse(isToastAcceleratedWithContext(getActivity()));
-        assertFalse(isToastAcceleratedWithContext(getActivity().getApplicationContext()));
+        Assert.assertFalse(isToastAcceleratedWithContext(mDownloadTestRule.getActivity()));
+        Assert.assertFalse(isToastAcceleratedWithContext(
+                mDownloadTestRule.getActivity().getApplicationContext()));
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testToastAcceleration() throws Exception {
         // Toasts created on high-end devices should be HW accelerated.
-        assertTrue(isToastAcceleratedWithContext(getActivity()));
-        assertTrue(isToastAcceleratedWithContext(getActivity().getApplicationContext()));
+        Assert.assertTrue(isToastAcceleratedWithContext(mDownloadTestRule.getActivity()));
+        Assert.assertTrue(isToastAcceleratedWithContext(
+                mDownloadTestRule.getActivity().getApplicationContext()));
     }
 
     private static boolean isToastAcceleratedWithContext(final Context context) throws Exception {

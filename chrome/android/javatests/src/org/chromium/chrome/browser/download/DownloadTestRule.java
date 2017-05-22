@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,17 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
 
+import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.ApplicationUtils;
 
 import java.io.File;
@@ -25,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Base case for tests that need to download a file.
+ * Custom TestRule for tests that need to download a file.
  *
  * This has to be a base class because some classes (like BrowserEvent) are exposed only
  * to children of ChromeActivityTestCaseBase. It is a very broken approach to sharing
@@ -33,14 +37,17 @@ import java.util.concurrent.TimeoutException;
  * and all of our test cases.
  *
  */
-public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private static final String TAG = "DownloadTestBase";
     private static final File DOWNLOAD_DIRECTORY =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     public static final long UPDATE_DELAY_MILLIS = 1000;
 
-    public DownloadTestBase() {
+    private final CustomMainActivityStart mActivityStart;
+
+    public DownloadTestRule(CustomMainActivityStart action) {
         super(ChromeActivity.class);
+        mActivityStart = action;
     }
 
     /**
@@ -74,9 +81,9 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
                     FileInputStream stream = new FileInputStream(new File(fullPath));
                     byte[] data = new byte[expectedContents.getBytes().length];
                     try {
-                        assertEquals(stream.read(data), data.length);
+                        Assert.assertEquals(stream.read(data), data.length);
                         String contents = new String(data);
-                        assertEquals(expectedContents, contents);
+                        Assert.assertEquals(expectedContents, contents);
                     } finally {
                         stream.close();
                     }
@@ -95,8 +102,8 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
      */
     public void checkLastDownload(String fileName) throws IOException {
         String lastDownload = getLastDownloadFile();
-        assertTrue(isSameDownloadFile(fileName, lastDownload));
-        assertTrue(hasDownload(lastDownload, null));
+        Assert.assertTrue(isSameDownloadFile(fileName, lastDownload));
+        Assert.assertTrue(hasDownload(lastDownload, null));
     }
 
     /**
@@ -114,7 +121,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
             String fileName = getPathFromCursor(cursor);
             manager.remove(id);
 
-            if (fileName != null) {  // Somehow fileName can be null for some entries.
+            if (fileName != null) { // Somehow fileName can be null for some entries.
                 // manager.remove does not remove downloaded file.
                 File localFile = new File(fileName);
                 if (localFile.exists()) {
@@ -156,7 +163,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
     private final CallbackHelper mHttpDownloadFinished = new CallbackHelper();
     private DownloadManagerService mSavedDownloadManagerService;
 
-    protected String getLastDownloadFile() {
+    public String getLastDownloadFile() {
         return new File(mLastDownloadFilePath).getName();
     }
 
@@ -164,13 +171,13 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
     // ex: google.png becomes google-23.png
     // This happens even when there is no other prior download with that name, it could be a bug.
     // TODO(jcivelli): investigate if we can isolate that behavior and file a bug to Android.
-    protected boolean isSameDownloadFile(String originalName, String downloadName) {
+    public boolean isSameDownloadFile(String originalName, String downloadName) {
         String fileName = originalName;
         String extension = "";
         int dotIndex = originalName.lastIndexOf('.');
         if (dotIndex != -1 && dotIndex < originalName.length()) {
             fileName = originalName.substring(0, dotIndex);
-            extension = originalName.substring(dotIndex);  // We include the '.'
+            extension = originalName.substring(dotIndex); // We include the '.'
         }
         return downloadName.startsWith(fileName) && downloadName.endsWith(extension);
     }
@@ -204,8 +211,20 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                setUp();
+                base.evaluate();
+                tearDown();
+            }
+        }, description);
+    }
+
+    private void setUp() throws Exception {
+        mActivityStart.customMainActivityStart();
+
         cleanUpAllDownloads();
 
         ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
@@ -223,8 +242,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         });
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    private void tearDown() throws Exception {
         cleanUpAllDownloads();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -233,16 +251,25 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
                 DownloadController.setDownloadNotificationService(mSavedDownloadManagerService);
             }
         });
-        super.tearDown();
     }
 
-    protected void deleteFilesInDownloadDirectory(String...filenames) {
+    public void deleteFilesInDownloadDirectory(String... filenames) {
         for (String filename : filenames) {
             final File fileToDelete = new File(DOWNLOAD_DIRECTORY, filename);
             if (fileToDelete.exists()) {
-                assertTrue("Could not delete file that would block this test",
-                        fileToDelete.delete());
+                Assert.assertTrue(
+                        "Could not delete file that would block this test", fileToDelete.delete());
             }
         }
+    }
+
+    /**
+     * Interface for Download tests to define actions that starts the activity.
+     *
+     * This method will be called in DownloadTestRule's setUp process, which means
+     * it would happen before Test class' own setUp() call
+     **/
+    public interface CustomMainActivityStart {
+        void customMainActivityStart() throws InterruptedException;
     }
 }
