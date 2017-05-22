@@ -42,6 +42,8 @@ source_set("payments") {
     "payment_request_view_controller.h",
     "payment_request_view_controller.mm",
     "payment_request_view_controller_actions.h",
+    "region_data_loader.h",
+    "region_data_loader.mm",
     "shipping_address_selection_coordinator.h",
     "shipping_address_selection_coordinator.mm",
     "shipping_address_selection_mediator.h",
@@ -149,6 +151,7 @@ source_set("unit_tests") {
     "payment_request_error_view_controller_unittest.mm",
     "payment_request_selector_view_controller_unittest.mm",
     "payment_request_view_controller_unittest.mm",
+    "region_data_loader_unittest.mm",
     "shipping_address_selection_coordinator_unittest.mm",
     "shipping_option_selection_coordinator_unittest.mm",
   ]
