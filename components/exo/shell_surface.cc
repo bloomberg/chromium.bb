@@ -16,7 +16,6 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1313,8 +1312,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
         break;
     }
 
-    resizer_ = ash::CreateWindowResizer(ash::WmWindow::Get(window),
-                                        GetMouseLocation(), component,
+    resizer_ = ash::CreateWindowResizer(window, GetMouseLocation(), component,
                                         aura::client::WINDOW_MOVE_SOURCE_MOUSE);
     if (!resizer_)
       return;

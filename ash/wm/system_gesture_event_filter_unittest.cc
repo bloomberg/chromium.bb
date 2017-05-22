@@ -417,8 +417,7 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   generator.GestureMultiFingerScroll(kTouchPoints, points, 120, kSteps, drag_x,
                                      0);
 
-  EXPECT_EQ(ash::wm::GetDefaultLeftSnappedWindowBoundsInParent(
-                ash::WmWindow::Get(toplevel_window))
+  EXPECT_EQ(ash::wm::GetDefaultLeftSnappedWindowBoundsInParent(toplevel_window)
                 .ToString(),
             toplevel_window->bounds().ToString());
 }
@@ -446,8 +445,7 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   int drag_x = work_area.right() - 20 - points[0].x();
   generator.GestureMultiFingerScroll(kTouchPoints, points, 120, kSteps, drag_x,
                                      0);
-  EXPECT_EQ(wm::GetDefaultRightSnappedWindowBoundsInParent(
-                WmWindow::Get(toplevel_window))
+  EXPECT_EQ(wm::GetDefaultRightSnappedWindowBoundsInParent(toplevel_window)
                 .ToString(),
             toplevel_window->bounds().ToString());
 }

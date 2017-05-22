@@ -444,14 +444,6 @@ ui::WindowShowState WmWindow::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
 }
 
-void WmWindow::SetPreMinimizedShowState(ui::WindowShowState show_state) {
-  window_->SetProperty(aura::client::kPreMinimizedShowStateKey, show_state);
-}
-
-ui::WindowShowState WmWindow::GetPreMinimizedShowState() const {
-  return window_->GetProperty(aura::client::kPreMinimizedShowStateKey);
-}
-
 void WmWindow::SetPreFullscreenShowState(ui::WindowShowState show_state) {
   // We should never store the ui::SHOW_STATE_MINIMIZED as the show state before
   // fullscreen.
