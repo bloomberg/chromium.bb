@@ -12,7 +12,7 @@ Points in this document are written as `(x,y)`, and rectangles are written as
 Views uses a coordinate system with `(0,0)` at the top-left, with increasing
 x-coordinates moving rightwards and increasing y-coordinates moving downwards.
 This is the same as the Windows and GTK coordinate systems, but *different from*
-the Cocoa coordinate system, which has `(0,0)` at the bottom-right. Coordinates
+the Cocoa coordinate system, which has `(0,0)` at the bottom-left. Coordinates
 in this document use the Views coordinate system.
 
 Views generally *take ownership* of objects passed to them even via raw
@@ -104,7 +104,7 @@ and a native window of some sort, which Views calls a **native widget**. Each
 Widget has a **root view**, which is a special subclass of View that helps with
 this bridging; the root view in turn has a single child view, called the
 Widget's **contents view**, which fills the entire root view. All other Views
-inside a given Widget are children of that Widget's content view.
+inside a given Widget are children of that Widget's contents view.
 
 Widgets have many responsibilities, including but not limited to:
 
@@ -117,7 +117,7 @@ For more details, see [widget.h].
 
 ### Client and Non-Client Views
 
-The content view of most Widgets is a **Non-Client View**, which is either a
+The contents view of most Widgets is a **Non-Client View**, which is either a
 [NonClientView] or one of its descendants. The Non-Client View has two children,
 which are the **Non-Client Frame View** (a [NonClientFrameView]) and the
 **Client View** (a [ClientView]). The non-client frame view is responsible for
@@ -130,12 +130,12 @@ affecting the client view.
 ## Dialogs
 
 A commonly-used type of client view is a **dialog client view**, which has a
-**content view**, optional buttons on the lower-right, and an optional extra
+**contents view**, optional buttons on the lower-right, and an optional extra
 view on the lower-left. Dialogs are usually created by subclassing
 [DialogDelegate] or [DialogDelegateView] and then calling
-`DialogDelegate::CreateDialogWidget`. The dialog's content view fills the entire
-top part of the widget's client view, and the bottom part is taken over by the
-dialog's buttons and extra view.
+`DialogDelegate::CreateDialogWidget`. The dialog's contents view fills the
+entire top part of the widget's client view, and the bottom part is taken over
+by the dialog's buttons and extra view.
 
 ## Bubbles
 
