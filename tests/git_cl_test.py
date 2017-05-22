@@ -982,10 +982,7 @@ class TestGitCl(TestCase):
     self.mock(sys, 'stdout', stdout)
     with self.assertRaises(SystemExitMock):
       git_cl.main(['upload', '--send-mail'])
-    self.assertEqual(
-        'Using 50% similarity for rename/copy detection. Override with '
-        '--similarity.\n',
-        stdout.getvalue())
+    self.assertEqual('', stdout.getvalue())
 
   def test_bug_on_cmd(self):
     self._run_reviewer_test(

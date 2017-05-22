@@ -324,9 +324,6 @@ def add_git_similarity(parser):
     else:
       _git_set_branch_config_value('git-find-copies', bool(options.find_copies))
 
-    print('Using %d%% similarity for rename/copy detection. '
-          'Override with --similarity.' % options.similarity)
-
     return options, args
   parser.parse_args = Parse
 
