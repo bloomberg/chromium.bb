@@ -354,7 +354,11 @@ static void set_offsets_supertx(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mode_info_offsets(cpi, x, xd, mi_row, mi_col, cm->dependent_horz_tiles);
+#else
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+#endif
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
   assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));
@@ -378,7 +382,12 @@ static void set_offsets_extend(const AV1_COMP *const cpi, ThreadData *td,
   const int mi_width = mi_size_wide[bsize_pred];
   const int mi_height = mi_size_high[bsize_pred];
 
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mode_info_offsets(cpi, x, xd, mi_row_ori, mi_col_ori,
+                        cm->dependent_horz_tiles);
+#else
   set_mode_info_offsets(cpi, x, xd, mi_row_ori, mi_col_ori);
+#endif
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.
