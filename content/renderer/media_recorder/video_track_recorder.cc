@@ -194,7 +194,8 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_YV12 ||
         video_frame->format() == media::PIXEL_FORMAT_ARGB ||
-        video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
+        video_frame->format() == media::PIXEL_FORMAT_YV12A ||
+        video_frame->format() == media::PIXEL_FORMAT_NV12)) {
     NOTREACHED() << media::VideoPixelFormatToString(video_frame->format());
     return;
   }
