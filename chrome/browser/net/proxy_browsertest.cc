@@ -30,6 +30,7 @@
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -363,7 +364,8 @@ IN_PROC_BROWSER_TEST_F(HangingPacRequestProxyScriptBrowserTest, Shutdown) {
   // best to be safe.
   HangingURLFetcherDelegate hanging_request_delegate;
   std::unique_ptr<net::URLFetcher> hanging_fetcher = net::URLFetcher::Create(
-      GURL("http://blah/"), net::URLFetcher::GET, &hanging_request_delegate);
+      GURL("http://blah/"), net::URLFetcher::GET, &hanging_request_delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   hanging_fetcher->SetRequestContext(browser()->profile()->GetRequestContext());
   hanging_fetcher->Start();
 
