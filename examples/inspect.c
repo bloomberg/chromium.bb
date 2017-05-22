@@ -193,7 +193,10 @@ const map_entry prediction_mode_map[] = {
   ENUM(D63_PRED),
 #if CONFIG_ALT_INTRA
   ENUM(SMOOTH_PRED),
-#endif
+#if CONFIG_SMOOTH_HV
+  ENUM(SMOOTH_V_PRED),  ENUM(SMOOTH_H_PRED),
+#endif  // CONFIG_SMOOTH_HV
+#endif  // CONFIG_ALT_INTRA
   ENUM(TM_PRED),        ENUM(NEARESTMV),
   ENUM(NEARMV),         ENUM(ZEROMV),
   ENUM(NEWMV),
