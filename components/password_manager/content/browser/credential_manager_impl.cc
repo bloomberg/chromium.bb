@@ -78,9 +78,11 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
 
   std::unique_ptr<autofill::PasswordForm> observed_form =
       CreateObservedPasswordFormFromOrigin(origin);
-  // Create a custom form fetcher with suppressed HTTP->HTTPS migration.
+  // Create a custom form fetcher without HTTP->HTTPS migration, as well as
+  // without fetching of suppressed HTTPS credentials on HTTP origins as the API
+  // is only available on HTTPS origins.
   auto form_fetcher = base::MakeUnique<FormFetcherImpl>(
-      PasswordStore::FormDigest(*observed_form), client_, false);
+      PasswordStore::FormDigest(*observed_form), client_, false, false);
   form_manager_ = base::MakeUnique<CredentialManagerPasswordFormManager>(
       client_, GetDriver(), *observed_form, std::move(form), this, nullptr,
       std::move(form_fetcher));
