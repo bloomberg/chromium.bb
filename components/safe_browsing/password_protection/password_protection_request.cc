@@ -124,13 +124,7 @@ void PasswordProtectionRequest::FillRequestProto() {
       break;
     }
     case LoginReputationClientRequest::PASSWORD_REUSE_EVENT: {
-      if (password_protection_service_->IsExtendedReporting() &&
-          !password_protection_service_->IsIncognito()) {
-        LoginReputationClientRequest::PasswordReuseEvent* password_reuse =
-            request_proto_->mutable_password_reuse_event();
-        password_reuse->add_password_reused_original_origins(saved_domain_);
-      }
-      // TODO(jialiul): Fill more password_reuse information.
+      // TODO(jialiul): Fill more password reuse related information when ready.
       break;
     }
     default:
