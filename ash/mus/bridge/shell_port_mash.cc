@@ -23,6 +23,7 @@
 #include "ash/mus/drag_window_resizer.h"
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/screen_mus.h"
+#include "ash/mus/touch_transform_setter_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -266,6 +267,13 @@ void ShellPortMash::SetDisplayWorkAreaInsets(WmWindow* window,
     return;
   }
   window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
+}
+
+std::unique_ptr<display::TouchTransformSetter>
+ShellPortMash::CreateTouchTransformDelegate() {
+  std::unique_ptr<TouchTransformSetterMus> delegate =
+      base::MakeUnique<TouchTransformSetterMus>(window_manager_->connector());
+  return delegate;
 }
 
 void ShellPortMash::LockCursor() {

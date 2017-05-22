@@ -26,6 +26,7 @@ namespace display {
 class Display;
 class ManagedDisplayInfo;
 class NativeDisplayDelegate;
+class TouchTransformSetter;
 }
 
 namespace gfx {
@@ -124,6 +125,13 @@ class ASH_EXPORT ShellPort {
   // Called when a modal window is removed. It will activate another modal
   // window if any, or remove modal screens on all displays.
   void OnModalWindowRemoved(aura::Window* removed);
+
+  // The return value from this is supplied to AshTouchTransformController; see
+  // it and TouchTransformSetter for details.
+  // TODO(sky): remove once simplified disable management enabled everywhere;
+  // http://crbug.com/718860.
+  virtual std::unique_ptr<display::TouchTransformSetter>
+  CreateTouchTransformDelegate() = 0;
 
   // For testing only: set simulation that a modal window is open
   void SimulateModalWindowOpenForTesting(bool modal_window_open) {

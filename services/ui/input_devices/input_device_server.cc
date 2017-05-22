@@ -12,9 +12,17 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
+#if defined(OS_CHROMEOS)
+#include "services/ui/input_devices/touch_device_server.h"
+#endif
+
 namespace ui {
 
-InputDeviceServer::InputDeviceServer() {}
+InputDeviceServer::InputDeviceServer() {
+#if defined(OS_CHROMEOS)
+  touch_device_server_ = base::MakeUnique<TouchDeviceServer>();
+#endif
+}
 
 InputDeviceServer::~InputDeviceServer() {
   if (manager_ && ui::DeviceDataManager::HasInstance()) {
@@ -40,6 +48,9 @@ void InputDeviceServer::AddInterface(
   registry->AddInterface<mojom::InputDeviceServer>(
       base::Bind(&InputDeviceServer::BindInputDeviceServerRequest,
                  base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  touch_device_server_->AddInterface(registry);
+#endif
 }
 
 void InputDeviceServer::AddObserver(
