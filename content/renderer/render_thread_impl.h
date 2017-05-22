@@ -23,6 +23,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/variations/child_process_field_trial_syncer.h"
@@ -569,8 +570,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;
-  void OnNetworkQualityChanged(double http_rtt_msec,
-                               double transport_rtt_msec,
+  void OnNetworkQualityChanged(base::TimeDelta http_rtt,
+                               base::TimeDelta transport_rtt,
                                double bandwidth_kbps) override;
   void SetWebKitSharedTimersSuspended(bool suspend) override;
   void UpdateScrollbarTheme(

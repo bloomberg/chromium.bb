@@ -648,9 +648,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onmessageerror
 [Worker] interface NetworkInformation : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter downlink
 [Worker]     getter downlinkMax
 [Worker]     getter onchange
 [Worker]     getter ontypechange
+[Worker]     getter rtt
 [Worker]     getter type
 [Worker]     method constructor
 [Worker]     setter onchange

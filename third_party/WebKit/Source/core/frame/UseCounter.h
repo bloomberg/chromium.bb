@@ -1600,6 +1600,8 @@ class CORE_EXPORT UseCounter {
     kCredentialManagerPasswordName = 1986,
     kCredentialManagerAdditionalData = 1987,
     kCredentialManagerCustomFetch = 1988,
+    kNetInfoRtt = 1989,
+    kNetInfoDownlink = 1990,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

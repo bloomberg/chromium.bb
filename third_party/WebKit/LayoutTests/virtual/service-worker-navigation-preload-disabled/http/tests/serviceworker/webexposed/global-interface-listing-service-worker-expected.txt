@@ -624,9 +624,11 @@ interface MessagePort : EventTarget
     setter onmessage
     setter onmessageerror
 interface NetworkInformation : EventTarget
+    getter downlink
     getter downlinkMax
     getter onchange
     getter ontypechange
+    getter rtt
     getter type
     method constructor
     setter onchange
