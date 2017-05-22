@@ -55,6 +55,7 @@
           "ui::mojom::Gpu",
           "ui::mojom::IMEServer",
           "ui::mojom::InputDeviceServer",
+          "ui::mojom::TouchDeviceServer",
           "ui::mojom::UserActivityMonitor",
           "ui::mojom::WindowManagerWindowTreeFactory"
         ],

@@ -12,4 +12,9 @@ mojom("input_devices") {
   public_deps = [
     "//ui/events/devices/mojo",
   ]
+
+  if (is_chromeos) {
+    sources += [ "touch_device_server.mojom" ]
+    public_deps += [ "//ui/display/manager/chromeos/mojo:interfaces" ]
+  }
 }

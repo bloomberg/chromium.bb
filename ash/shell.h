@@ -269,6 +269,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Registers all ash related prefs to the given |registry|.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns true if simplified display management should be enabled.
+  // TODO(sky): remove this; temporary until http://crbug.com/718860 is done.
+  static bool ShouldEnableSimplifiedDisplayManagement();
+
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
