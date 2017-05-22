@@ -3234,3 +3234,4 @@ crbug.com/723841 virtual/mojo-loading/http/tests/dom/script-module-load-incomple
 # Sheriff failures 2017-05-22
 crbug.com/725016 [ Win ] editing/selection/doubleclick-beside-cr-span.html [ Skip ]
 crbug.com/725016 [ Win ] fast/forms/number/number-stepup-stepdown-from-renderer.html [ Skip ]
+crbug.com/725016 [ Win ] storage/indexeddb/objectstore-keycursor.html [ Skip ]
