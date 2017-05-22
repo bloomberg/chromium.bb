@@ -1615,7 +1615,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1638,7 +1638,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1661,7 +1661,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1691,7 +1691,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   // Test that we sent the right value to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "3123",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "3123",
                  "08/17", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(7)));
 }
@@ -1732,7 +1732,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
   static const std::string kVisaSuggestion =
       std::string("Visa") + kUTF8MidlineEllipsis + "3456";
   static const std::string kMcSuggestion =
-      std::string("MasterCard") + kUTF8MidlineEllipsis + "8765";
+      std::string("Mastercard") + kUTF8MidlineEllipsis + "8765";
 #else
   static const std::string kVisaSuggestion = "*3456";
   static const std::string kMcSuggestion = "*8765";
@@ -1834,7 +1834,7 @@ TEST_F(AutofillManagerTest,
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1919,7 +1919,7 @@ TEST_F(AutofillManagerTest,
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1944,7 +1944,7 @@ TEST_F(AutofillManagerTest,
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1977,10 +1977,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "3456",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "3456",
                  "05/99", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(7)));
 }
@@ -2011,7 +2011,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
       kPageID2,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("MasterCard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -2712,7 +2712,7 @@ TEST_F(AutofillManagerTest, FillCreditCardForm_ExpiredCard) {
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
   field.autocomplete_attribute = "cc-name";
   form.fields.push_back(field);
-  std::vector<const char*> kCreditCardTypes = {"Visa", "Master Card", "AmEx",
+  std::vector<const char*> kCreditCardTypes = {"Visa", "Mastercard", "AmEx",
                                                "discover"};
   test::CreateTestSelectField("Card Type", "cardtype", "", kCreditCardTypes,
                               kCreditCardTypes, 4, &field);

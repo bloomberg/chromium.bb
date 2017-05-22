@@ -126,7 +126,7 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       }
     }
 
-    // Check for a credit card type (Visa, MasterCard, etc.) field.
+    // Check for a credit card type (Visa, Mastercard, etc.) field.
     // All CC type fields encountered so far have been of type select.
     if (!credit_card_field->type_ && LikelyCardTypeSelectField(scanner)) {
       credit_card_field->type_ = scanner->Cursor();
@@ -312,7 +312,7 @@ bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
     return false;
 
   // We set |ignore_whitespace| to true on these calls because this is actually
-  // a pretty common mistake; e.g., "Master Card" instead of "MasterCard".
+  // a pretty common mistake; e.g., "Master card" instead of "Mastercard".
   bool isSelect = (AutofillField::FindShortestSubstringMatchInSelect(
                        l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA), true,
                        field) >= 0) ||
