@@ -30,6 +30,7 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -640,8 +641,16 @@ void SVGImage::LoadCompleted() {
 
     case kWaitingForAsyncLoadCompletion:
       load_state_ = kLoadCompleted;
-      if (GetImageObserver())
-        GetImageObserver()->AsyncLoadCompleted(this);
+
+      // Because LoadCompleted() is called synchronously from
+      // Document::ImplicitClose(), we defer AsyncLoadCompleted() to avoid
+      // potential bugs and timing dependencies around ImplicitClose() and
+      // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
+      TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
+                            ToLocalFrame(page_->MainFrame()))
+          ->PostTask(BLINK_FROM_HERE,
+                     WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
+                               RefPtr<SVGImage>(this)));
       break;
 
     case kDataChangedNotStarted:
@@ -649,6 +658,11 @@ void SVGImage::LoadCompleted() {
       CHECK(false);
       break;
   }
+}
+
+void SVGImage::NotifyAsyncLoadCompleted() {
+  if (GetImageObserver())
+    GetImageObserver()->AsyncLoadCompleted(this);
 }
 
 Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
