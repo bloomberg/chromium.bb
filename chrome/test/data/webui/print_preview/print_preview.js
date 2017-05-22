@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ROOT_PATH = '../../../../';
+var ROOT_PATH = '../../../../../';
 
 /**
  * Test fixture for print preview WebUI testing.
@@ -47,7 +47,7 @@ PrintPreviewWebUITest.prototype = {
    * @type {string}
    * @override
    */
-  browsePrintPreload: 'print_preview_hello_world_test.html',
+  browsePrintPreload: 'print_preview/print_preview_hello_world_test.html',
 
   /** @override */
   runAccessibilityChecks: true,
@@ -67,45 +67,6 @@ PrintPreviewWebUITest.prototype = {
   preLoad: function() {
     window.isTest = true;
     window.addEventListener('DOMContentLoaded', function() {
-      /**
-       * Test version of the native layer.
-       * @constructor
-       * @extends {settings.TestBrowserProxy}
-       */
-      function NativeLayerStub() {
-        settings.TestBrowserProxy.call(this, [ 'getInitialSettings' ]);
-        this.eventTarget_ = new cr.EventTarget();
-        this.printStarted_ = false;
-        this.generateDraft_ = false;
-        this.initialSettings_ = null;
-      }
-      NativeLayerStub.prototype = {
-        __proto__: settings.TestBrowserProxy.prototype,
-        getEventTarget: function() { return this.eventTarget_; },
-        isPrintStarted: function() { return this.printStarted_; },
-        generateDraft: function() { return this.generateDraft_; },
-        getInitialSettings: function() {
-          this.methodCalled('getInitialSettings');
-          return Promise.resolve(this.initialSettings_);
-        },
-        previewReadyForTest: function() {},
-        startGetLocalDestinations: function() {},
-        startGetPrivetDestinations: function() {},
-        startGetExtensionDestinations: function() {},
-        startGetLocalDestinationCapabilities: function(destinationId) {},
-        startGetPreview: function(destination, printTicketStore, documentInfo,
-                                  generateDraft, requestId) {
-          this.generateDraft_ = generateDraft;
-        },
-        startHideDialog: function () {},
-        startPrint: function () { this.printStarted_ = true; }
-      };
-      var oldNativeLayerEventType = print_preview.NativeLayer.EventType;
-      var oldDuplexMode = print_preview.NativeLayer.DuplexMode;
-      print_preview.NativeLayer = NativeLayerStub;
-      print_preview.NativeLayer.EventType = oldNativeLayerEventType;
-      print_preview.NativeLayer.DuplexMode = oldDuplexMode;
-
       function CloudPrintInterfaceStub() {
         cr.EventTarget.call(this);
       }
@@ -129,6 +90,7 @@ PrintPreviewWebUITest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     ROOT_PATH + 'ui/webui/resources/js/util.js',
     ROOT_PATH + 'chrome/test/data/webui/settings/test_browser_proxy.js',
+    'native_layer_stub.js',
   ],
 
   /**
@@ -136,9 +98,10 @@ PrintPreviewWebUITest.prototype = {
    * |nativeLayer_| and |previewArea_|.
    */
   createPrintPreview: function() {
+    this.nativeLayer_ = new print_preview.NativeLayerStub();
+    print_preview.NativeLayer.setInstance(this.nativeLayer_);
     this.printPreview_ = new print_preview.PrintPreview();
-    this.nativeLayer_ = this.printPreview_.nativeLayer_;
-    this.previewArea_ = this.printPreview_.previewArea_;
+    this.previewArea_ = this.printPreview_.getPreviewArea();
   },
 
   /**
@@ -147,12 +110,9 @@ PrintPreviewWebUITest.prototype = {
    * already exist.
    */
   setInitialSettings: function() {
-    if (!this.printPreview_) {
-      this.printPreview_ = new print_preview.PrintPreview();
-      this.nativeLayer_ = this.printPreview_.nativeLayer_;
-      this.previewArea_ = this.printPreview_.previewArea_;
-    }
-    this.nativeLayer_.initialSettings_ = this.initialSettings_;
+    if (!this.printPreview_)
+      this.createPrintPreview();
+    this.nativeLayer_.setInitialSettings(this.initialSettings_);
     this.printPreview_.initialize();
     testing.Test.disableAnimationsAndTransitions();
     // Enable when failure is resolved.
@@ -291,7 +251,7 @@ PrintPreviewWebUITest.prototype = {
 // Test some basic assumptions about the print preview WebUI.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         var recentList =
@@ -323,7 +283,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
 TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
   this.setInitialSettings();
 
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -455,7 +415,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreLocalDestination',
             '"extensionName":""}]}';
 
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         testDone();
       });
@@ -502,7 +462,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreMultipleDestinations',
   this.initialSettings_.serializedAppStateStr_ = JSON.stringify(appState);
   this.setInitialSettings();
 
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         // Set capabilities for the three recently used destinations + 1 more
         this.setCapabilities(getCddTemplate('ID1'));
@@ -544,7 +504,7 @@ TEST_F('PrintPreviewWebUITest',
   this.initialSettings_.serializedDefaultDestinationSelectionRulesStr_ =
       '{"namePattern":".*Bar.*"}';
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -562,7 +522,7 @@ TEST_F('PrintPreviewWebUITest', 'TestSystemDialogLinkIsHiddenInAppKioskMode',
     this.initialSettings_.isInAppKioskMode_ = true;
 
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         if (cr.isChromeOS)
           assertEquals(null, $('system-dialog-link'));
@@ -580,7 +540,7 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   checkSectionVisible($('copies-settings'), false);
 
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         var device = getCddTemplate("FooDevice");
@@ -608,7 +568,7 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
   this.initialSettings_.systemDefaultDestinationId_ = 'Save as PDF';
   this.setInitialSettings();
 
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         var device = {
           printerId: 'Save as PDF',
@@ -662,7 +622,7 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
 // media size option.
 TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -701,7 +661,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
 TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -740,7 +700,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
 TEST_F('PrintPreviewWebUITest', 'ScalingUnchecksFitToPage', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -781,7 +741,7 @@ TEST_F('PrintPreviewWebUITest', 'ScalingUnchecksFitToPage', function() {
 TEST_F('PrintPreviewWebUITest', 'CheckNumCopiesPrintPreset', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -813,7 +773,7 @@ TEST_F('PrintPreviewWebUITest', 'CheckDuplexPrintPreset', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
   this.setInitialSettings();
 
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -842,7 +802,7 @@ TEST_F('PrintPreviewWebUITest', 'CheckDuplexPrintPreset', function() {
 // Make sure that custom margins controls are properly set up.
 TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -866,7 +826,7 @@ TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
 TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
     function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -899,7 +859,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
 TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
     function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -933,7 +893,7 @@ TEST_F('PrintPreviewWebUITest',
        'ZeroTopAndBottomMarginsHideHeaderFooter',
        function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -968,7 +928,7 @@ TEST_F('PrintPreviewWebUITest',
        'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
        function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -1000,7 +960,7 @@ TEST_F('PrintPreviewWebUITest',
 // Check header footer availability with small (label) page size.
 TEST_F('PrintPreviewWebUITest', 'SmallPaperSizeHeaderFooter', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         var device = getCddTemplate("FooDevice");
@@ -1045,7 +1005,7 @@ TEST_F('PrintPreviewWebUITest', 'SmallPaperSizeHeaderFooter', function() {
 // Test that the color settings, one option, standard monochrome.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsMonochrome', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1068,7 +1028,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsMonochrome', function() {
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomMonochrome',
     function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1091,7 +1051,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomMonochrome',
 // Test that the color settings, one option, standard color.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsColor', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1112,7 +1072,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsColor', function() {
 // Test that the color settings, one option, custom color.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomColor', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1134,7 +1094,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomColor', function() {
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsBothStandardDefaultColor',
     function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1161,7 +1121,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsBothStandardDefaultColor',
 TEST_F('PrintPreviewWebUITest',
     'TestColorSettingsBothStandardDefaultMonochrome', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1187,7 +1147,7 @@ TEST_F('PrintPreviewWebUITest',
 TEST_F('PrintPreviewWebUITest',
     'TestColorSettingsBothCustomDefaultColor', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1213,7 +1173,7 @@ TEST_F('PrintPreviewWebUITest',
 // capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsTrue', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -1232,7 +1192,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsTrue', function() {
 // capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsFalse', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         var device = getCddTemplate("FooDevice");
@@ -1256,13 +1216,13 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsFalse', function() {
 // Test that changing the selected printer updates the preview.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
 
         var previewGenerator = mock(print_preview.PreviewGenerator);
-        this.printPreview_.previewArea_.previewGenerator_ =
+        this.previewArea_.previewGenerator_ =
             previewGenerator.proxy();
 
         // The number of settings that can change due to a change in the
@@ -1292,7 +1252,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 // Test that error message is displayed when plugin doesn't exist.
 TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         var previewAreaEl = $('preview-area');
 
@@ -1322,7 +1282,7 @@ TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
 // Test custom localized paper names.
 TEST_F('PrintPreviewWebUITest', 'TestCustomPaperNames', function() {
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
 
@@ -1448,7 +1408,7 @@ TEST_F('PrintPreviewWebUITest', 'TestAdvancedSettings1Option', function() {
   var device = getCddTemplateWithAdvancedSettings("FooDevice");
   this.accessibilityIssuesAreErrors = false;
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setupAdvancedSettingsTest(device);
 
@@ -1486,7 +1446,7 @@ TEST_F('PrintPreviewWebUITest', 'TestAdvancedSettings2Options', function() {
   });
   this.accessibilityIssuesAreErrors = false;
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setupAdvancedSettingsTest(device);
 
@@ -1527,7 +1487,7 @@ TEST_F('PrintPreviewWebUITest', 'TestInitIssuesOneRequest', function() {
   this.setCapabilities(getCddTemplate('ID3'));
 
   // Use a real preview generator.
-  this.printPreview_.previewArea_.previewGenerator_ =
+  this.previewArea_.previewGenerator_ =
       new print_preview.PreviewGenerator(this.printPreview_.destinationStore_,
         this.printPreview_.printTicketStore_, this.nativeLayer_,
         this.printPreview_.documentInfo_);
@@ -1538,13 +1498,13 @@ TEST_F('PrintPreviewWebUITest', 'TestInitIssuesOneRequest', function() {
   // crbug.com/666595
   expectEquals(
       -1,
-      this.printPreview_.previewArea_.previewGenerator_.inFlightRequestId_);
+      this.previewArea_.previewGenerator_.inFlightRequestId_);
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         expectEquals(
             0,
-            this.printPreview_.previewArea_.previewGenerator_.
+            this.previewArea_.previewGenerator_.
                 inFlightRequestId_);
         testDone();
       }.bind(this));
@@ -1556,7 +1516,7 @@ TEST_F('PrintPreviewWebUITest', 'TestInitIssuesOneRequest', function() {
 TEST_F('PrintPreviewWebUITest', 'TestInvalidSettingsError', function() {
   // Setup
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));
@@ -1621,13 +1581,13 @@ TEST_F('PrintPreviewWebUITest', 'TestGenerateDraft', function() {
   this.createPrintPreview();
 
   // Use a real preview generator.
-  this.printPreview_.previewArea_.previewGenerator_ =
+  this.previewArea_.previewGenerator_ =
       new print_preview.PreviewGenerator(this.printPreview_.destinationStore_,
           this.printPreview_.printTicketStore_, this.nativeLayer_,
           this.printPreview_.documentInfo_);
 
   this.setInitialSettings();
-  this.printPreview_.nativeLayer_.whenCalled('getInitialSettings').then(
+  this.nativeLayer_.whenCalled('getInitialSettings').then(
       function() {
         this.setLocalDestinations();
         this.setCapabilities(getCddTemplate("FooDevice"));

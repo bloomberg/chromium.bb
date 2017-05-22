@@ -99,8 +99,6 @@ js2gtest("browser_tests_js_webui") {
     "net_internals/timeline_view.js",
     "ntp4.js",
     "polymer_browser_test_base.js",
-    "print_preview.js",
-    "print_preview_destination_search_test.js",
     "sandboxstatus_browsertest.js",
     "settings/advanced_page_browsertest.js",
     "settings/animation_browsertest.js",
@@ -149,8 +147,11 @@ js2gtest("browser_tests_js_webui") {
     sources -=
         [ "../../../browser/ui/webui/app_list/start_page_browsertest.js" ]
   }
-  if (!enable_print_preview) {
-    sources -= [ "print_preview.js" ]
+  if (enable_print_preview) {
+    sources += [
+      "print_preview/print_preview.js",
+      "print_preview/print_preview_destination_search_test.js",
+    ]
   }
   deps = [
     "//chrome/browser/ui",
