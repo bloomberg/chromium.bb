@@ -13941,8 +13941,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="958" label="BackspaceNavigatedBackAfterFormInteraction"/>
   <int value="959" label="CSPSourceWildcardWouldMatchExactHost"/>
   <int value="960" label="CredentialManagerGet"/>
-  <int value="961" label="CredentialManagerGetWithUI"/>
-  <int value="962" label="CredentialManagerGetWithoutUI"/>
+  <int value="961" label="CredentialManagerGetMediationOptional"/>
+  <int value="962" label="CredentialManagerGetMediationSilent"/>
   <int value="963" label="CredentialManagerStore"/>
   <int value="964" label="CredentialManagerRequireUserMediation"/>
   <int value="965" label="RequestAutocomplete"/>
@@ -14994,6 +14994,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1980" label="WebDatabaseCreateDropFTS3Table"/>
   <int value="1981" label="FieldEditInSecureContext"/>
   <int value="1982" label="FieldEditInNonSecureContext"/>
+  <int value="1983"
+      label="CredentialManagerCredentialRequestOptionsUnmediated"/>
+  <int value="1984" label="CredentialManagerGetMediationRequired"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">

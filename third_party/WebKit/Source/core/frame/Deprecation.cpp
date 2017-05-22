@@ -407,6 +407,12 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("SVGPathElement.getPathSegAtLength", M62,
                            "5638783282184192");
 
+    case UseCounter::kCredentialManagerCredentialRequestOptionsUnmediated:
+      return replacedWillBeRemoved(
+          "The boolean flag CredentialRequestOptions.unmediated",
+          "the CredentialRequestOptions.mediation enum", M62,
+          "6076479909658624");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();
