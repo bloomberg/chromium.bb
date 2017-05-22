@@ -35,7 +35,7 @@ void ForeignLayerDisplayItem::Replay(GraphicsContext&) const {
 }
 
 void ForeignLayerDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const IntRect&,
     WebDisplayItemList*) const {
   NOTREACHED();
 }

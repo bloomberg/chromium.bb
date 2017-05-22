@@ -14,6 +14,28 @@
 
 namespace blink {
 
+DisplayItem& DisplayItemList::AppendByMoving(DisplayItem& item) {
+#ifndef NDEBUG
+  String original_debug_string = item.AsDebugString();
+#endif
+  DCHECK(item.HasValidClient());
+  DisplayItem& result =
+      ContiguousContainer::AppendByMoving(item, item.DerivedSize());
+  // ContiguousContainer::appendByMoving() calls an in-place constructor
+  // on item which replaces it with a tombstone/"dead display item" that
+  // can be safely destructed but should never be used.
+  DCHECK(!item.HasValidClient());
+#ifndef NDEBUG
+  // Save original debug string in the old item to help debugging.
+  item.SetClientDebugString(original_debug_string);
+#endif
+  return result;
+}
+
+void DisplayItemList::AppendVisualRect(const IntRect& visual_rect) {
+  visual_rects_.push_back(visual_rect);
+}
+
 DisplayItemList::Range<DisplayItemList::iterator>
 DisplayItemList::ItemsInPaintChunk(const PaintChunk& paint_chunk) {
   return Range<iterator>(begin() + paint_chunk.begin_index,
@@ -76,9 +98,14 @@ std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
       }
 #endif
     }
-
-    json->SetString("visualRect", display_item.VisualRect().ToString());
-
+    if (HasVisualRect(i)) {
+      IntRect local_visual_rect = VisualRect(i);
+      json->SetString(
+          "visualRect",
+          String::Format("[%d,%d %dx%d]", local_visual_rect.X(),
+                         local_visual_rect.Y(), local_visual_rect.Width(),
+                         local_visual_rect.Height()));
+    }
     json_array->PushObject(std::move(json));
   }
   return json_array;

@@ -23,7 +23,7 @@ class PLATFORM_EXPORT BeginScrollDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
   const IntSize& CurrentOffset() const { return current_offset_; }
@@ -49,7 +49,7 @@ class PLATFORM_EXPORT EndScrollDisplayItem final : public PairedEndDisplayItem {
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:

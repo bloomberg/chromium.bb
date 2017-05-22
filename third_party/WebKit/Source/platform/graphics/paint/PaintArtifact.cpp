@@ -117,12 +117,14 @@ void PaintArtifact::Replay(const FloatRect& bounds,
 }
 
 DISABLE_CFI_PERF
-void PaintArtifact::AppendToWebDisplayItemList(
-    const LayoutSize& visual_rect_offset,
-    WebDisplayItemList* list) const {
+void PaintArtifact::AppendToWebDisplayItemList(WebDisplayItemList* list) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
-  for (const DisplayItem& item : display_item_list_)
-    item.AppendToWebDisplayItemList(visual_rect_offset, list);
+  size_t visual_rect_index = 0;
+  for (const DisplayItem& display_item : display_item_list_) {
+    display_item.AppendToWebDisplayItemList(
+        display_item_list_.VisualRect(visual_rect_index), list);
+    visual_rect_index++;
+  }
   list->SetIsSuitableForGpuRasterization(IsSuitableForGpuRasterization());
 }
 

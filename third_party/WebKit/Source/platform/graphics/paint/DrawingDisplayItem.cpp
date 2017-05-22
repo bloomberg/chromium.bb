@@ -19,14 +19,10 @@ void DrawingDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void DrawingDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize& visual_rect_offset,
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  if (record_) {
-    // Convert visual rect into the GraphicsLayer's coordinate space.
-    LayoutRect visual_rect = VisualRect();
-    visual_rect.Move(-visual_rect_offset);
-    list->AppendDrawingItem(EnclosingIntRect(visual_rect), record_);
-  }
+  if (record_)
+    list->AppendDrawingItem(visual_rect, record_);
 }
 
 bool DrawingDisplayItem::DrawsContent() const {
