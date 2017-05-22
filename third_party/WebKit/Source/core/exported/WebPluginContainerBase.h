@@ -32,7 +32,6 @@ class CORE_EXPORT WebPluginContainerBase
       NON_EXPORTED_BASE(public WebPluginContainer),
       public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerBase);
-  USING_PRE_FINALIZER(WebPluginContainerBase, DispatchDispose);
 
  public:
   virtual int PrintBegin(const WebPrintParams&) const = 0;
@@ -52,9 +51,6 @@ class CORE_EXPORT WebPluginContainerBase
                                  IntRect& unobscured_rect) = 0;
 
   DECLARE_VIRTUAL_TRACE();
-  // USING_PRE_FINALIZER does not allow for virtual dispatch from the finalizer
-  // method. Here we call Dispose() which does the correct virtual dispatch.
-  void DispatchDispose() { Dispose(); }
 
  protected:
   explicit WebPluginContainerBase(LocalFrame*);
