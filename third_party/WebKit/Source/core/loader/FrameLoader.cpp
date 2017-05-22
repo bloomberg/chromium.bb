@@ -1602,8 +1602,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
       !RequiredCSP().IsEmpty()) {
     // TODO(amalika): Strengthen this DCHECK that requiredCSP has proper format
     DCHECK(RequiredCSP().GetString().ContainsOnlyASCII());
-    resource_request.SetHTTPHeaderField(HTTPNames::Embedding_CSP,
-                                        RequiredCSP());
+    resource_request.SetHTTPHeaderField(HTTPNames::Required_CSP, RequiredCSP());
   }
 
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational

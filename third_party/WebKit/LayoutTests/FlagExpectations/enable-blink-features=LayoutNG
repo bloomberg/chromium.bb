@@ -5231,7 +5231,7 @@ crbug.com/591099 external/wpt/content-security-policy/child-src/child-src-confli
 crbug.com/591099 external/wpt/content-security-policy/child-src/child-src-cross-origin-load.sub.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/child-src/child-src-redirect-blocked.sub.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/embedded-enforcement/allow_csp_from-header.html [ Crash ]
-crbug.com/591099 external/wpt/content-security-policy/embedded-enforcement/embedding_csp-header.html [ Crash ]
+crbug.com/591099 external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/embedded-enforcement/subsumption_algorithm-general.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/embedded-enforcement/subsumption_algorithm-hashes.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/embedded-enforcement/subsumption_algorithm-host_sources-hosts.html [ Crash ]
