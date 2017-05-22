@@ -37,6 +37,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntRect.h"
@@ -359,9 +360,12 @@ bool CanScrollInDirection(const Node* container, WebFocusType type) {
 bool CanScrollInDirection(const LocalFrame* frame, WebFocusType type) {
   if (!frame->View())
     return false;
+  LayoutView* layoutView = frame->ContentLayoutObject();
+  if (!layoutView)
+    return false;
   ScrollbarMode vertical_mode;
   ScrollbarMode horizontal_mode;
-  frame->View()->CalculateScrollbarModes(horizontal_mode, vertical_mode);
+  layoutView->CalculateScrollbarModes(horizontal_mode, vertical_mode);
   if ((type == kWebFocusTypeLeft || type == kWebFocusTypeRight) &&
       kScrollbarAlwaysOff == horizontal_mode)
     return false;
