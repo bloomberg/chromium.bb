@@ -17,6 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.BrowserStartupController;
 
@@ -29,6 +30,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -109,6 +111,15 @@ class OriginVerifier {
     public void start(@NonNull Uri origin) {
         ThreadUtils.assertOnUiThread();
         mOrigin = origin;
+        if (!UrlConstants.HTTPS_SCHEME.equals(mOrigin.getScheme().toLowerCase(Locale.US))) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    originVerified(false);
+                }
+            });
+            return;
+        }
 
         // If this origin is cached as verified already, use that.
         Uri cachedOrigin = getCachedOriginIfExists();
