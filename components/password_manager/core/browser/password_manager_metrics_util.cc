@@ -186,6 +186,14 @@ void LogPasswordSuccessfulSubmissionIndicatorEvent(
           SUBMISSION_INDICATOR_EVENT_COUNT);
 }
 
+void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+    autofill::PasswordForm::SubmissionIndicatorEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent", event,
+      autofill::PasswordForm::SubmissionIndicatorEvent::
+          SUBMISSION_INDICATOR_EVENT_COUNT);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

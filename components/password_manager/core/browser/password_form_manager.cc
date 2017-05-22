@@ -411,6 +411,9 @@ void PasswordFormManager::Save() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsIncognito());
 
+  metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+      submitted_form_->submission_event);
+
   if ((user_action_ == kUserActionNone) &&
       DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
     SetUserAction(kUserActionChoose);
@@ -443,6 +446,8 @@ void PasswordFormManager::Save() {
 
 void PasswordFormManager::Update(
     const autofill::PasswordForm& credentials_to_update) {
+  metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+      submitted_form_->submission_event);
   if (observed_form_.IsPossibleChangePasswordForm()) {
     FormStructure form_structure(credentials_to_update.form_data);
     UploadPasswordVote(observed_form_, autofill::NEW_PASSWORD,
