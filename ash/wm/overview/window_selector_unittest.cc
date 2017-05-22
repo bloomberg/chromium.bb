@@ -1852,7 +1852,7 @@ TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   const gfx::Rect bounds(10, 10, 100, 100);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
   std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(WmWindow::Get(window.get()), gfx::Point(), HTCAPTION,
+      CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
                           aura::client::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
   gfx::Point location = resizer->GetInitialLocation();

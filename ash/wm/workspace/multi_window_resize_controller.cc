@@ -478,8 +478,7 @@ void MultiWindowResizeController::StartResize(
   wm::WindowState* window_state = wm::GetWindowState(windows_.window1);
   window_state->CreateDragDetails(location_in_parent, component,
                                   aura::client::WINDOW_MOVE_SOURCE_MOUSE);
-  window_resizer_.reset(WorkspaceWindowResizer::Create(
-      window_state, WmWindow::FromAuraWindows(windows)));
+  window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
 
   // Do not hide the resize widget while a drag is active.
   mouse_watcher_.reset();
@@ -503,7 +502,7 @@ void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
 
 void MultiWindowResizeController::CompleteResize() {
   window_resizer_->CompleteDrag();
-  window_resizer_->GetTarget()->GetWindowState()->DeleteDragDetails();
+  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.
@@ -526,7 +525,7 @@ void MultiWindowResizeController::CancelResize() {
   if (!window_resizer_)
     return;  // Happens if window was destroyed and we nuked the WindowResizer.
   window_resizer_->RevertDrag();
-  window_resizer_->GetTarget()->GetWindowState()->DeleteDragDetails();
+  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
   window_resizer_.reset();
   Hide();
 }
