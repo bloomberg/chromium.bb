@@ -6,6 +6,7 @@
 #define WebInputMethodControllerImpl_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
 #include "public/web/WebCompositionUnderline.h"
 #include "public/web/WebInputMethodController.h"
 
@@ -20,9 +21,10 @@ class WebString;
 
 class WebInputMethodControllerImpl : public WebInputMethodController {
   WTF_MAKE_NONCOPYABLE(WebInputMethodControllerImpl);
+  DISALLOW_NEW();
 
  public:
-  explicit WebInputMethodControllerImpl(WebLocalFrameImpl* owner_frame);
+  explicit WebInputMethodControllerImpl(WebLocalFrameImpl& web_frame);
   ~WebInputMethodControllerImpl() override;
 
   static WebInputMethodControllerImpl* FromFrame(LocalFrame*);
@@ -49,7 +51,7 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
   InputMethodController& GetInputMethodController() const;
   WebPlugin* FocusedPluginIfInputMethodSupported() const;
 
-  WeakMember<WebLocalFrameImpl> web_local_frame_;
+  const Member<WebLocalFrameImpl> web_frame_;
 };
 }  // namespace blink
 

@@ -1599,7 +1599,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       interface_provider_(interface_provider),
       interface_registry_(interface_registry),
       web_dev_tools_frontend_(0),
-      input_method_controller_(new WebInputMethodControllerImpl(this)),
+      input_method_controller_(*this),
       text_checker_client_(new TextCheckerClientImpl(this)),
       self_keep_alive_(this) {
   DCHECK(client_);
@@ -1631,6 +1631,7 @@ DEFINE_TRACE(WebLocalFrameImpl) {
   visitor->Trace(text_finder_);
   visitor->Trace(print_context_);
   visitor->Trace(context_menu_node_);
+  visitor->Trace(input_method_controller_);
   visitor->Trace(text_checker_client_);
   WebLocalFrameBase::Trace(visitor);
   // TODO(slangley): Call this from WebLocalFrameBase, once WebFrame is in core.
@@ -2563,9 +2564,8 @@ base::SingleThreadTaskRunner* WebLocalFrameImpl::UnthrottledTaskRunner() {
       ->ToSingleThreadTaskRunner();
 }
 
-WebInputMethodControllerImpl* WebLocalFrameImpl::GetInputMethodController()
-    const {
-  return input_method_controller_.get();
+WebInputMethodControllerImpl* WebLocalFrameImpl::GetInputMethodController() {
+  return &input_method_controller_;
 }
 
 void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,

@@ -26,21 +26,20 @@
 namespace blink {
 
 WebInputMethodControllerImpl::WebInputMethodControllerImpl(
-    WebLocalFrameImpl* web_local_frame)
-    : web_local_frame_(web_local_frame) {}
+    WebLocalFrameImpl& web_frame)
+    : web_frame_(&web_frame) {}
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() {}
 
 // static
 WebInputMethodControllerImpl* WebInputMethodControllerImpl::FromFrame(
     LocalFrame* frame) {
-  WebLocalFrameImpl* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame);
-  return web_local_frame_impl ? web_local_frame_impl->GetInputMethodController()
-                              : nullptr;
+  WebLocalFrameImpl* web_frame_impl = WebLocalFrameImpl::FromFrame(frame);
+  return web_frame_impl ? web_frame_impl->GetInputMethodController() : nullptr;
 }
 
 DEFINE_TRACE(WebInputMethodControllerImpl) {
-  visitor->Trace(web_local_frame_);
+  visitor->Trace(web_frame_);
 }
 
 bool WebInputMethodControllerImpl::SetComposition(
@@ -62,7 +61,7 @@ bool WebInputMethodControllerImpl::SetComposition(
 
   // Select the range to be replaced with the composition later.
   if (!replacement_range.IsNull())
-    web_local_frame_->SelectRange(replacement_range);
+    web_frame_->SelectRange(replacement_range);
 
   // We should verify the parent node of this IME composition node are
   // editable because JavaScript may delete a parent node of the composition
@@ -128,7 +127,7 @@ bool WebInputMethodControllerImpl::CommitText(
 
   // Select the range to be replaced with the composition later.
   if (!replacement_range.IsNull())
-    web_local_frame_->SelectRange(replacement_range);
+    web_frame_->SelectRange(replacement_range);
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -148,7 +147,7 @@ WebTextInputType WebInputMethodControllerImpl::TextInputType() {
 }
 
 LocalFrame* WebInputMethodControllerImpl::GetFrame() const {
-  return web_local_frame_->GetFrame();
+  return web_frame_->GetFrame();
 }
 
 InputMethodController& WebInputMethodControllerImpl::GetInputMethodController()
