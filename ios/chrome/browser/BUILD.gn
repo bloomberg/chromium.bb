@@ -237,6 +237,7 @@ source_set("unit_tests") {
 }
 
 source_set("browser_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "callback_counter.h",
     "callback_counter.mm",
