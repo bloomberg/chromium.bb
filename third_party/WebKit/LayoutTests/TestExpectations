@@ -1987,7 +1987,6 @@ crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-worker.htm
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
-crbug.com/538717 [ Win ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-worker.html [ Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure ]
 
@@ -2104,7 +2103,6 @@ crbug.com/705125 http/tests/w3c/webperf/submission/Intel/user-timing/test_user_t
 crbug.com/705125 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
-crbug.com/705125 http/tests/security/suborigins/crossorigin/suborigin-cors-xhr-failure-output.php [ Failure Pass ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/crossorigin/suborigin-cors-xhr-failure-output.php [ Failure Pass ]
 
 # This test fails with the stable release mode.
@@ -2207,8 +2205,6 @@ crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-query.html [ T
 crbug.com/711529 virtual/mojo-loading/http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 
-crbug.com/711529 http/tests/navigation/image-load-in-unload-handler.html [ Pass Timeout ]
-
 crbug.com/713587 external/wpt/css/css-ui-3/caret-color-006.html [ Skip ]
 
 # Automatically-added expectations for CSS tests which are temporarily
@@ -2267,7 +2263,6 @@ crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-sta
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ Failure ]
-crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failure ]
 crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/accumulation-per-property.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-addIceCandidate.html [ Timeout ]
@@ -2721,8 +2716,6 @@ crbug.com/658997 external/wpt/service-workers/service-worker/invalid-blobtype.ht
 crbug.com/658997 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/invalid-blobtype.https.html [ Skip ]
 crbug.com/658997 external/wpt/service-workers/service-worker/invalid-header.https.html [ Skip ]
 crbug.com/658997 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/invalid-header.https.html [ Skip ]
-crbug.com/658997 external/wpt/service-workers/service-worker/referer.https.html [ Pass Timeout ]
-crbug.com/658997 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/referer.https.html [ Pass Timeout ]
 
 # Added May 3 2017 for wpt import by jeffcarp
 crbug.com/655458 external/wpt/css/css-transforms-2/backface-visibility-hidden-001.html [ Skip ]
@@ -3089,10 +3082,6 @@ crbug.com/708499 crbug.com/724817 virtual/wheelscrolllatching/fast/compositor-wh
 
 crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
 
-# Sheriff failures 2017-04-19
-# Sheriff failure 2017-04-26
-crbug.com/713094 [ Win ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
-
 # Sheriff failures 2017-04-24
 crbug.com/714862 [ Android ] tables/mozilla/collapsing_borders/bug41262-3.html [ Failure ]
 
@@ -3106,7 +3095,6 @@ crbug.com/724027 [ Linux ] virtual/mojo-loading/http/tests/security/contentSecur
 crbug.com/724027 [ Linux ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Failure Pass Timeout ]
 
 # Sheriff failures 2017-05-16
-crbug.com/722849 [ Win ] inspector/animation/animation-transition-setTiming-crash.html [ Failure Pass ]
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
@@ -3148,6 +3136,7 @@ crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Fa
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
 crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pass Timeout ]
+crbug.com/713094 [ Win ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
 # Sheriff failures 2017-05-17
 # Crashes
