@@ -33,8 +33,6 @@ import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.widget.Toast;
 
@@ -54,8 +52,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsUiDelegate;
     private final TileGroup.Delegate mTileGroupDelegate;
-    private final BottomSheet mBottomSheet;
-    private final BottomSheetObserver mBottomSheetObserver;
+    private final SuggestionsSheetVisibilityChangeObserver mBottomSheetObserver;
 
     public SuggestionsBottomSheetContent(final ChromeActivity activity, final BottomSheet sheet,
             TabModelSelector tabModelSelector, SnackbarManager snackbarManager) {
@@ -94,30 +91,41 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 mContextMenuManager, mTileGroupDelegate);
         mRecyclerView.init(uiConfig, mContextMenuManager, adapter);
 
-        mBottomSheetObserver = new EmptyBottomSheetObserver() {
+        mBottomSheetObserver = new SuggestionsSheetVisibilityChangeObserver(this, activity) {
             @Override
             public void onSheetOpened() {
                 mRecyclerView.scrollToPosition(0);
-                prepareSuggestionsForReveal(adapter);
-
+                adapter.refreshSuggestions();
+                mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
                 mRecyclerView.getScrollEventReporter().reset();
 
                 if (ChromeFeatureList.isEnabled(
                             ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)) {
-                    updateContextualSuggestions(mBottomSheet.getActiveTab().getUrl());
+                    updateContextualSuggestions(sheet.getActiveTab().getUrl());
                 }
+
+                super.onSheetOpened();
             }
 
             @Override
-            public void onSheetClosed() {
+            public void onContentShown() {
+                SuggestionsMetrics.recordSurfaceVisible();
+            }
+
+            @Override
+            public void onContentHidden() {
                 SuggestionsMetrics.recordSurfaceHidden();
             }
 
+            @Override
+            public void onContentStateChanged(@BottomSheet.SheetState int contentState) {
+                if (contentState == BottomSheet.SHEET_STATE_HALF) {
+                    SuggestionsMetrics.recordSurfaceHalfVisible();
+                } else if (contentState == BottomSheet.SHEET_STATE_FULL) {
+                    SuggestionsMetrics.recordSurfaceFullyVisible();
+                }
+            }
         };
-        mBottomSheet = activity.getBottomSheet();
-        mBottomSheet.addObserver(mBottomSheetObserver);
-
-        if (mBottomSheet.isSheetOpen()) prepareSuggestionsForReveal(adapter);
 
         mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
         mShadowView.init(
@@ -169,7 +177,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     @Override
     public void destroy() {
-        mBottomSheet.removeObserver(mBottomSheetObserver);
+        mBottomSheetObserver.onDestroy();
         mSuggestionsUiDelegate.onDestroy();
         mTileGroupDelegate.destroy();
     }
@@ -177,13 +185,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     @Override
     public int getType() {
         return BottomSheetContentController.TYPE_SUGGESTIONS;
-    }
-
-    /** Called when the UI is revlealed, prepares the list of suggestions. */
-    private void prepareSuggestionsForReveal(NewTabPageAdapter adapter) {
-        adapter.refreshSuggestions();
-        mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
-        SuggestionsMetrics.recordSurfaceVisible();
     }
 
     private void updateContextualSuggestions(String url) {
