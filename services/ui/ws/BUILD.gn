@@ -226,9 +226,6 @@ group("tests") {
   deps = [
     ":ui_service_unittests",
   ]
-  if (!is_android) {
-    deps += [ "//services/ui/public/cpp/tests:mus_public_unittests" ]
-  }
 }
 
 service_test("ui_service_unittests") {

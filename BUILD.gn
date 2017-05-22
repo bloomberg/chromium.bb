@@ -595,8 +595,6 @@ group("gn_all") {
       "//mojo",
       "//services/navigation",
       "//services/ui/demo",
-      "//services/ui/demo:mus_demo_unittests",
-      "//services/ui/public/interfaces:ui_struct_traits_unittests",
       "//services/ui/ws:tests",
       "//ui/views/mus:views_mus_interactive_ui_tests",
       "//ui/views/mus:views_mus_unittests",
