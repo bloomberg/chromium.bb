@@ -12640,7 +12640,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       const int mi_col_offset = i;
       const MB_MODE_INFO *const above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
+      const BLOCK_SIZE a_bsize = AOMMAX(above_mbmi->sb_type, BLOCK_8X8);
       const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
       const int neighbor_bw = mi_step * MI_SIZE;
 
@@ -12714,7 +12714,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       const int mi_row_offset = i;
       const MB_MODE_INFO *const left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
+      const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
       const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
       const int neighbor_bh = mi_step * MI_SIZE;
 
