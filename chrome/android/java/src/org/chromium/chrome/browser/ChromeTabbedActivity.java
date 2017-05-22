@@ -589,7 +589,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public void onStartWithNative() {
         super.onStartWithNative();
         // If we don't have a current tab, show the overview mode.
-        if (getActivityTab() == null) mLayoutManager.showOverview(false);
+        if (getActivityTab() == null && !mLayoutManager.overviewVisible()) {
+            mLayoutManager.showOverview(false);
+        }
 
         resetSavedInstanceState();
     }
@@ -652,6 +654,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
                 mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder);
+                if (getBottomSheet() != null) {
+                    ((LayoutManagerChromePhone) mLayoutManager)
+                            .setForegroundTabAnimationDisabled(true);
+                }
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
             mLayoutManager.addOverviewModeObserver(this);
