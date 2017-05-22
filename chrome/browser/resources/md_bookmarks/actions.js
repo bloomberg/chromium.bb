@@ -141,19 +141,26 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {string} id
-   * @param {boolean} add
-   * @param {boolean} range
    * @param {BookmarksPageState} state
+   * @param {{
+   *     clear: boolean,
+   *     range: boolean,
+   *     toggle: boolean}} config Options for how the selection should change:
+   *   - clear: If true, clears the previous selection before adding this one
+   *   - range: If true, selects all items from the anchor to this item
+   *   - toggle: If true, toggles the selection state of the item. Cannot be
+   *     used with clear or range.
    * @return {!Action}
    */
-  function selectItem(id, add, range, state) {
+  function selectItem(id, state, config) {
+    assert(!config.toggle || !config.range);
+    assert(!config.toggle || !config.clear);
+
     var anchor = state.selection.anchor;
     var toSelect = [];
     var newAnchor = id;
 
-    // TODO(tsergeant): Make it possible to deselect items by ctrl-clicking them
-    // again.
-    if (range && anchor) {
+    if (config.range && anchor) {
       var displayedList = bookmarks.util.getDisplayedList(state);
       var selectedIndex = displayedList.indexOf(id);
       assert(selectedIndex != -1);
@@ -176,7 +183,8 @@ cr.define('bookmarks.actions', function() {
 
     return {
       name: 'select-items',
-      add: add,
+      clear: config.clear,
+      toggle: config.toggle,
       anchor: newAnchor,
       items: toSelect,
     };

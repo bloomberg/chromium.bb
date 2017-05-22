@@ -77,10 +77,9 @@ Polymer({
    */
   onContextMenu_: function(e) {
     e.preventDefault();
-    if (!this.isSelectedItem_) {
-      this.dispatch(bookmarks.actions.selectItem(
-          this.itemId, false, false, this.getState()));
-    }
+    if (!this.isSelectedItem_)
+      this.selectThisItem_();
+
     this.fire('open-item-menu', {
       x: e.clientX,
       y: e.clientY,
@@ -94,8 +93,7 @@ Polymer({
   onMenuButtonClick_: function(e) {
     e.stopPropagation();
     e.preventDefault();
-    this.dispatch(bookmarks.actions.selectItem(
-        this.itemId, false, false, this.getState()));
+    this.selectThisItem_();
     this.fire('open-item-menu', {
       targetElement: e.target,
     });
@@ -107,6 +105,15 @@ Polymer({
    */
   onMenuButtonDblClick_: function(e) {
     e.stopPropagation();
+  },
+
+  /** @private */
+  selectThisItem_: function() {
+    this.dispatch(bookmarks.actions.selectItem(this.itemId, this.getState(), {
+      clear: true,
+      range: false,
+      toggle: false,
+    }));
   },
 
   /** @private */
@@ -145,8 +152,15 @@ Polymer({
    * @private
    */
   onClick_: function(e) {
-    this.dispatch(bookmarks.actions.selectItem(
-        this.itemId, e.ctrlKey, e.shiftKey, this.getState()));
+    // Ignore double clicks so that Ctrl double-clicking an item won't deselect
+    // the item before opening.
+    if (e.detail != 2) {
+      this.dispatch(bookmarks.actions.selectItem(this.itemId, this.getState(), {
+        clear: !e.ctrlKey,
+        range: e.shiftKey,
+        toggle: e.ctrlKey && !e.shiftKey,
+      }));
+    }
     e.stopPropagation();
     e.preventDefault();
   },

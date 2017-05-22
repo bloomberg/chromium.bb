@@ -45,7 +45,11 @@ suite('<bookmarks-item>', function() {
   test('pressing the menu button selects the item', function() {
     MockInteractions.tap(item.$$('.more-vert-button'));
     assertDeepEquals(
-        bookmarks.actions.selectItem('2', false, false, store.data),
+        bookmarks.actions.selectItem('2', store.data, {
+          clear: true,
+          range: false,
+          toggle: false,
+        }),
         store.lastAction);
   });
 
@@ -57,7 +61,11 @@ suite('<bookmarks-item>', function() {
     item.isSelectedItem_ = false;
     item.dispatchEvent(new MouseEvent('contextmenu'));
     assertDeepEquals(
-        bookmarks.actions.selectItem('2', false, false, store.data),
+        bookmarks.actions.selectItem('2', store.data, {
+          clear: true,
+          range: false,
+          toggle: false,
+        }),
         store.lastAction);
   });
 
