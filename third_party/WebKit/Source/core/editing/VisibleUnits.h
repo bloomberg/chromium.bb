@@ -343,6 +343,7 @@ CORE_EXPORT Position SkipWhitespace(const Position&);
 CORE_EXPORT PositionInFlatTree SkipWhitespace(const PositionInFlatTree&);
 
 CORE_EXPORT IntRect ComputeTextRect(const EphemeralRange&);
+IntRect ComputeTextRect(const EphemeralRangeInFlatTree&);
 CORE_EXPORT Vector<FloatQuad> ComputeTextQuads(const EphemeralRange&);
 
 }  // namespace blink

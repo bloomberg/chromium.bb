@@ -230,6 +230,8 @@ class CORE_EXPORT FrameSelection final
   String SelectedTextForClipboard() const;
 
   // The bounds are clipped to the viewport as this is what callers expect.
+  // This returns last layouted selection bounds of LayoutSelection rather than
+  // SelectionEditor keeps.
   LayoutRect Bounds() const;
   LayoutRect UnclippedBounds() const;
 

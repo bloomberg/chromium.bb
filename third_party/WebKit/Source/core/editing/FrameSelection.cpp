@@ -949,6 +949,13 @@ LayoutRect FrameSelection::UnclippedBounds() const {
   return LayoutRect(layout_selection_->SelectionBounds());
 }
 
+static IntRect AbsoluteSelectionBoundsOf(
+    const VisibleSelectionInFlatTree& selection) {
+  return ComputeTextRect(
+      EphemeralRangeInFlatTree(selection.Start(), selection.end()));
+}
+
+// TODO(editing-dev): This should be done in FlatTree world.
 void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
                                      RevealExtentOption reveal_extent_option) {
   DCHECK(IsAvailable());
@@ -967,10 +974,11 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
       rect = LayoutRect(AbsoluteCaretBounds());
       break;
     case kRangeSelection:
-      rect = LayoutRect(reveal_extent_option == kRevealExtent
-                            ? AbsoluteCaretBoundsOf(CreateVisiblePosition(
-                                  ComputeVisibleSelectionInDOMTree().Extent()))
-                            : EnclosingIntRect(UnclippedBounds()));
+      rect = LayoutRect(
+          reveal_extent_option == kRevealExtent
+              ? AbsoluteCaretBoundsOf(CreateVisiblePosition(
+                    ComputeVisibleSelectionInDOMTree().Extent()))
+              : AbsoluteSelectionBoundsOf(ComputeVisibleSelectionInFlatTree()));
       break;
   }
 
