@@ -68,10 +68,6 @@
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
-#if defined(USE_AURA)
-#include "services/navigation/navigation.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -203,13 +199,6 @@ void ShellContentBrowserClient::RegisterInProcessServices(
     content::ServiceInfo info;
     info.factory = base::Bind(&media::CreateMediaServiceForTesting);
     services->insert(std::make_pair("media", info));
-  }
-#endif
-#if defined(USE_AURA)
-  {
-    content::ServiceInfo info;
-    info.factory = base::Bind(&navigation::CreateNavigationService);
-    services->insert(std::make_pair("navigation", info));
   }
 #endif
 }

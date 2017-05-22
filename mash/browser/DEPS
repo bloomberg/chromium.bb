@@ -1,4 +1,0 @@
-include_rules = [
-  "+content/public/common/service_names.mojom.h",
-  "+services/navigation/public",
-]

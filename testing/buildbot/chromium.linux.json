@@ -3983,12 +3983,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "navigation_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "net_unittests"
       },
       {
@@ -4648,12 +4642,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "native_theme_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "navigation_unittests"
       },
       {
         "swarming": {

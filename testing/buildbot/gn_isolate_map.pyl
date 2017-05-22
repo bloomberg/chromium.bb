@@ -768,10 +768,6 @@
     "type": "raw",
     "args": [],
   },
-  "navigation_unittests": {
-    "label": "//services/navigation:navigation_unittests",
-    "type": "windowed_test_launcher",
-  },
   "net_junit_tests": {
     "label": "//net/android:net_junit_tests",
     "type": "junit_test",

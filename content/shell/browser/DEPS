@@ -2,7 +2,6 @@ include_rules = [
   "-content/shell/browser/layout_test",
   "+components/keyed_service/content",
   "+device/geolocation",
-  "+services/navigation",
   "+services/service_manager/public/cpp",
 ]
 
