@@ -33,7 +33,7 @@
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
