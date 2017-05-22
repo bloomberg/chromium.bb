@@ -12,9 +12,11 @@ config("libwebp_config") {
 set_opt_level =
     !is_debug && is_posix && (current_cpu == "arm" || current_cpu == "arm64")
 
+# webp's dsp code can be built for all configurations. Skipping it when both
+# arm_use_neon and arm_optionally_use_neon are false will result in link errors
+# for its dsp init functions.
 use_dsp_neon =
-    current_cpu == "arm64" || (current_cpu == "arm" && arm_version >= 7 &&
-                               (arm_use_neon || arm_optionally_use_neon))
+    current_cpu == "arm64" || (current_cpu == "arm" && arm_version >= 7)
 
 source_set("libwebp_webp") {
   sources = [
