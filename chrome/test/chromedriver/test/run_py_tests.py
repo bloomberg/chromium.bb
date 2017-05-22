@@ -2236,7 +2236,7 @@ class ChromeDriverLogTest(ChromeDriverBaseTest):
   def testDisablingDriverLogsSuppressesChromeDriverLog(self):
     _, tmp_log_path = tempfile.mkstemp(prefix='chromedriver_log_')
     chromedriver_server = server.Server(
-        _CHROMEDRIVER_BINARY, log_path=tmp_log_path)
+        _CHROMEDRIVER_BINARY, log_path=tmp_log_path, verbose=False)
     try:
       driver = self.CreateDriver(
           chromedriver_server.GetUrl(), logging_prefs={'driver':'OFF'})
