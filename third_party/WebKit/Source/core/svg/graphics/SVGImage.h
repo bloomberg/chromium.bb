@@ -185,6 +185,7 @@ class CORE_EXPORT SVGImage final : public Image {
 
   Page* GetPageForTesting() { return page_; }
   void LoadCompleted();
+  void NotifyAsyncLoadCompleted();
 
   class SVGImageLocalFrameClient;
 
