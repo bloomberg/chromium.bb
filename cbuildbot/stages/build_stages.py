@@ -325,6 +325,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   option_name = 'build'
   def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
                afdo_use=False, update_metadata=False, **kwargs):
+    self._afdo_use = afdo_use
     if afdo_use:
       suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
     super(BuildPackagesStage, self).__init__(builder_run, board, suffix=suffix,
@@ -402,13 +403,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def _IsGomaUsable(self):
-    # We hit performance regression on release bots once, but the root cause
-    # is still unclear, because of missing logs.
-    # This temporarily guards to run goma on bots for now. The condition will
-    # be relaxed step-by-step, after logging mechanism for the future
-    # investigation is implemented.
-    # TODO(hidehiko): Enable on bots actually.
-    return False
+    # TODO(hidehiko): Currently, goma executor will crash on server if AFDO is
+    # used. Enable goma on those bots, when the issue is fixed.
+    return not self._afdo_use
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
