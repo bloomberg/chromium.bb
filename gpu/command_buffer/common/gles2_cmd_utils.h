@@ -257,7 +257,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
                               unsigned int elements_per_unit,
                               uint32_t* dst);
 
-  #include "../common/gles2_cmd_utils_autogen.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils_autogen.h"
 
  private:
   static std::string GetQualifiedEnumString(

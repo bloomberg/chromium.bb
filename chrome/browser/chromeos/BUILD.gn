@@ -1850,6 +1850,7 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//ui/chromeos/resources",

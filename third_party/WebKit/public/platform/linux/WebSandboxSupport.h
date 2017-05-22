@@ -31,9 +31,9 @@
 #ifndef WebSandboxSupport_h
 #define WebSandboxSupport_h
 
-#include "../WebCommon.h"
-#include "../WebString.h"
 #include "WebFallbackFont.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 

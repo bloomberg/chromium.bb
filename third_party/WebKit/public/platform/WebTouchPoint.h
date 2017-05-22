@@ -31,9 +31,9 @@
 #ifndef WebTouchPoint_h
 #define WebTouchPoint_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebFloatPoint.h"
-#include "../platform/WebPointerProperties.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebPointerProperties.h"
 
 namespace blink {
 
