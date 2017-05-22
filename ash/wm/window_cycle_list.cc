@@ -101,7 +101,7 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
   ~WindowPreviewView() override {}
 
   // views::View:
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     gfx::Size size = GetSizeForPreviewArea();
     size.Enlarge(0, window_title_->GetPreferredSize().height());
     return size;
@@ -291,7 +291,7 @@ class WindowCycleView : public views::WidgetDelegateView {
   }
 
   // views::WidgetDelegateView overrides:
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     return mirror_container_->GetPreferredSize();
   }
 

@@ -91,7 +91,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
       : controller_(controller), direction_(direction) {}
 
   // views::View overrides:
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     const bool vert = direction_ == LEFT_RIGHT;
     return gfx::Size(vert ? kShortSide : kLongSide,
                      vert ? kLongSide : kShortSide);
