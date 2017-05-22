@@ -117,7 +117,7 @@ window.VRCubeSea = (function () {
     "}"
   ].join("\n");
 
-  var CubeSea = function (gl, texture, gridSize, heavy) {
+  var CubeSea = function (gl, texture, gridSize, cubeScale, heavy) {
     this.gl = gl;
 
     if (!gridSize) {
@@ -152,6 +152,7 @@ window.VRCubeSea = (function () {
       }
 
       if (!size) size = 0.2;
+      if (cubeScale) size *= cubeScale;
       // Bottom
       var idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 1, idx + 2);

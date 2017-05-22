@@ -88,7 +88,10 @@ found in the LICENSE file.
 
       var heavyGpu = WGLUUrl.getBool('heavyGpu', false);
       var cubeCount = WGLUUrl.getInt('cubeCount', heavyGpu ? 12 : 10);
+      var cubeScale = WGLUUrl.getFloat('cubeScale', 1.0);
       var simulatedWorkTimeMs = WGLUUrl.getFloat('workTime', 0);
+      var renderScale = WGLUUrl.getFloat('renderScale', 1.0);
+      var latencyPatch = WGLUUrl.getBool('latencyPatch', false);
 
       // ================================
       // WebVR-specific code begins here.
@@ -119,7 +122,7 @@ found in the LICENSE file.
 
         var textureLoader = new WGLUTextureLoader(gl);
         var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
-        cubeSea = new VRCubeSea(gl, texture, cubeCount, heavyGpu);
+        cubeSea = new VRCubeSea(gl, texture, cubeCount, cubeScale, heavyGpu);
         var enablePerformanceMonitoring = WGLUUrl.getBool(
             'enablePerformanceMonitoring', false);
         stats = new WGLUStats(gl, enablePerformanceMonitoring);
@@ -206,8 +209,8 @@ found in the LICENSE file.
           var leftEye = vrDisplay.getEyeParameters("left");
           var rightEye = vrDisplay.getEyeParameters("right");
 
-          webglCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
-          webglCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+          webglCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2 * renderScale;
+          webglCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight) * renderScale;
         } else {
           webglCanvas.width = webglCanvas.offsetWidth * window.devicePixelRatio;
           webglCanvas.height = webglCanvas.offsetHeight * window.devicePixelRatio;
@@ -243,6 +246,22 @@ found in the LICENSE file.
 
             gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5, webglCanvas.height);
             cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats, t);
+
+            if (latencyPatch) {
+              // Draw a square overlay in the right eye with brightness
+              // proportional to the magnitude of the headset's angular
+              // velocity. This is intended for a hardware latency tester.
+              let VELOCITY_SCALE = 0.25;
+              let angularVelocity = vec3.len(frameData.pose.angularVelocity);
+              let brightness = Math.min(angularVelocity * VELOCITY_SCALE, 1.0);
+              gl.scissor(webglCanvas.width * 0.625, webglCanvas.height * 0.25,
+                         webglCanvas.width * 0.25, webglCanvas.height * 0.5);
+              gl.enable(gl.SCISSOR_TEST);
+              gl.clearColor(brightness, brightness, brightness, 1.0);
+              gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+              gl.disable(gl.SCISSOR_TEST);
+              gl.clearColor(0.1, 0.2, 0.3, 1.0);
+            }
 
             vrDisplay.submitFrame();
           } else {
