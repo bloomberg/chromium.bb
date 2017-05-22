@@ -1099,9 +1099,9 @@ void MediaRouterMojoImpl::RemoveInvalidRouteControllers(
 void MediaRouterMojoImpl::OnMediaControllerCreated(
     const MediaRoute::Id& route_id,
     bool success) {
-  // TODO(takumif): Record success/failure with UMA.
   DVLOG_WITH_INSTANCE(1) << "OnMediaControllerCreated: " << route_id
                          << (success ? " was successful." : " failed.");
+  MediaRouterMojoMetrics::RecordMediaRouteControllerCreationResult(success);
 }
 
 }  // namespace media_router

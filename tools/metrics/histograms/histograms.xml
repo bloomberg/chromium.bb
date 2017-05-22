@@ -29554,6 +29554,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of a request to join a route.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Provider.RouteControllerCreationOutcome"
+    enum="BooleanSuccess">
+  <owner>takumif@chromium.org</owner>
+  <summary>
+    Records whether the Media Route Provider succeeded or failed to create a
+    controller for a media route.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Provider.TerminateRoute.Result"
     enum="MediaRouteProviderResult">
   <owner>mfoltz@chromium.org</owner>
