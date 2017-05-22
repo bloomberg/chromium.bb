@@ -157,10 +157,7 @@ function setupEvents() {
     });
   }
 
-  // TODO(felt): This should be simplified once the Finch trial is no longer
-  // needed.
-  if (interstitialType == 'SAFEBROWSING' &&
-      loadTimeData.getBoolean('phishing') && $('report-error-link')) {
+  if ($('report-error-link')) {
     $('report-error-link').addEventListener('click', function(event) {
       sendCommand(SecurityInterstitialCommandId.CMD_REPORT_PHISHING_ERROR);
     });
