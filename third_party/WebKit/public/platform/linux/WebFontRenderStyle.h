@@ -31,7 +31,7 @@
 #ifndef WebFontRenderStyle_h
 #define WebFontRenderStyle_h
 
-#include "../WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

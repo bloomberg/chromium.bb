@@ -31,8 +31,8 @@
 #ifndef WebFallbackFont_h
 #define WebFallbackFont_h
 
-#include "../WebCString.h"
-#include "../WebCommon.h"
+#include "public/platform/WebCString.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

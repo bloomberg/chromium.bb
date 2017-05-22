@@ -364,6 +364,7 @@ component("headless") {
     deps += [
       "//components/crash/content/browser",
       "//components/security_state/content",
+      "//third_party/WebKit/public:blink_headers",
     ]
 
     if (enable_basic_printing) {
@@ -573,6 +574,14 @@ if (is_win) {
       "lib/browser/headless_content_browser_client.h",
       "public/headless_shell.h",
     ]
+    deps = [
+      ":headless",
+      "//content:sandbox_helper_win",
+      "//content/public/browser",
+      "//content/public/common",
+      "//net",
+      "//sandbox",
+    ]
 
     if (is_multi_dll_chrome) {
       defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
@@ -583,19 +592,8 @@ if (is_win) {
         "lib/headless_content_main_delegate.h",
         "lib/headless_content_main_delegate_win.cc",
       ]
+      deps += [ "//third_party/WebKit/public:blink_headers" ]
     }
-
-    deps = [
-      ":headless",
-      "//content/public/browser",
-      "//content/public/common",
-      "//net",
-    ]
-
-    deps += [
-      "//content:sandbox_helper_win",
-      "//sandbox",
-    ]
 
     configs += [ ":headless_implementation" ]
   }
@@ -613,6 +611,12 @@ if (is_win) {
       "app/shell_navigation_request.h",
       "public/headless_shell.h",
     ]
+    deps = [
+      ":headless_renderer",
+      "//content/public/child:child",
+      "//net",
+      "//ui/base",
+    ]
 
     if (is_multi_dll_chrome) {
       defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
@@ -623,14 +627,8 @@ if (is_win) {
         "lib/headless_content_main_delegate.h",
         "lib/headless_content_main_delegate_win.cc",
       ]
+      deps += [ "//third_party/WebKit/public:blink_headers" ]
     }
-
-    deps = [
-      ":headless_renderer",
-      "//content/public/child:child",
-      "//net",
-      "//ui/base",
-    ]
 
     configs += [ ":headless_implementation" ]
   }

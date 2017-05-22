@@ -308,7 +308,7 @@ static_assert(offsetof(UniformBlocksHeader, num_uniform_blocks) == 0,
 
 namespace cmds {
 
-#include "../common/gles2_cmd_format_autogen.h"
+#include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"
 
 #pragma pack(pop)
 

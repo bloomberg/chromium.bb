@@ -4715,7 +4715,6 @@ static_library("test_support_ui") {
       "ui/webui/web_ui_test_handler.cc",
       "ui/webui/web_ui_test_handler.h",
     ]
-    deps += [ "//third_party/WebKit/public:blink_headers" ]
   }
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -4731,6 +4730,7 @@ static_library("test_support_ui") {
     "//components/translate/content/common",
     "//skia",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }
 
