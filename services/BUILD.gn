@@ -25,7 +25,17 @@ service_test("service_unittests") {
   ]
 
   if (use_aura) {
-    deps += [ "//services/ui/clipboard:tests" ]
+    deps += [
+      "//services/ui/clipboard:tests",
+      "//services/ui/ime:tests",
+      "//services/ui/input_devices:tests",
+      "//services/ui/public/cpp/tests",
+      "//services/ui/public/interfaces:tests",
+    ]
+
+    if (is_linux && !is_chromeos) {
+      deps += [ "//services/ui/demo:tests" ]
+    }
   }
 
   if (is_android) {
@@ -55,7 +65,14 @@ catalog("service_unittests_catalog") {
   ]
 
   if (use_aura) {
-    catalog_deps += [ "//services/ui/clipboard:tests_catalog" ]
+    catalog_deps += [
+      "//services/ui/clipboard:tests_catalog",
+      "//services/ui/ime:tests_catalog",
+    ]
+
+    if (is_linux && !is_chromeos) {
+      catalog_deps += [ "//services/ui/demo:tests_catalog" ]
+    }
   }
 }
 
