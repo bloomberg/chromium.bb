@@ -62,12 +62,6 @@ struct EditorField {
         required(required),
         control_type(control_type) {}
 
-  struct Compare {
-    bool operator()(const EditorField& lhs, const EditorField& rhs) const {
-      return std::tie(lhs.type, lhs.label) < std::tie(rhs.type, rhs.label);
-    }
-  };
-
   // Data type in the field.
   autofill::ServerFieldType type;
   // Label to be shown alongside the field.
@@ -90,8 +84,7 @@ class EditorViewController : public PaymentRequestSheetController,
       std::unordered_map<ValidatingTextfield*, const EditorField>;
   using ComboboxMap =
       std::unordered_map<ValidatingCombobox*, const EditorField>;
-  using ErrorLabelMap =
-      std::map<const EditorField, views::View*, EditorField::Compare>;
+  using ErrorLabelMap = std::map<autofill::ServerFieldType, views::View*>;
 
   // Does not take ownership of the arguments, which should outlive this object.
   // |back_navigation_type| identifies what sort of back navigation should be
@@ -104,21 +97,26 @@ class EditorViewController : public PaymentRequestSheetController,
   ~EditorViewController() override;
 
   // Will display |error_message| alongside the input field represented by
-  // |field|.
-  void DisplayErrorMessageForField(const EditorField& field,
+  // field |type|.
+  void DisplayErrorMessageForField(autofill::ServerFieldType type,
                                    const base::string16& error_message);
 
   const ComboboxMap& comboboxes() const { return comboboxes_; }
   const TextFieldsMap& text_fields() const { return text_fields_; }
 
+  // Returns the View ID that can be used to lookup the input field for |type|.
+  static int GetInputFieldViewId(autofill::ServerFieldType type);
+
  protected:
   // Create a header view to be inserted before all fields.
   virtual std::unique_ptr<views::View> CreateHeaderView();
   // |focusable_field| is to be set with a pointer to the view that should get
-  // default focus within the custom view.
+  // default focus within the custom view. |valid| should be set to the initial
+  // validity state of the custom view.
   virtual std::unique_ptr<views::View> CreateCustomFieldView(
       autofill::ServerFieldType type,
-      views::View** focusable_field);
+      views::View** focusable_field,
+      bool* valid);
   // Create an extra view to go to the right of the field with |type|, which
   // can either be a textfield, combobox, or custom view.
   virtual std::unique_ptr<views::View> CreateExtraViewForField(
@@ -153,6 +151,11 @@ class EditorViewController : public PaymentRequestSheetController,
   // PaymentRequestSheetController:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   views::View* GetFirstFocusedView() override;
+
+  // Will create a combobox according to the |field| definition. Will also keep
+  // track of this field to populate the edited model on save.
+  std::unique_ptr<ValidatingCombobox> CreateComboboxForField(
+      const EditorField& field);
 
  private:
   // views::TextfieldController:

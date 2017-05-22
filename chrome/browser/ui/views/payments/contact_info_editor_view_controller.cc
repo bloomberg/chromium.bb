@@ -161,7 +161,7 @@ bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
     TextfieldValueChanged(views::Textfield* textfield) {
   base::string16 error_message;
   bool is_valid = ValidateTextfield(textfield, &error_message);
-  controller_->DisplayErrorMessageForField(field_, error_message);
+  controller_->DisplayErrorMessageForField(field_.type, error_message);
   return is_valid;
 }
 

@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
@@ -551,8 +552,9 @@ void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
 
 base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(
     autofill::ServerFieldType type) {
-  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  ValidatingTextfield* textfield =
+      static_cast<ValidatingTextfield*>(delegate_->dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(type)));
   DCHECK(textfield);
   return textfield->text();
 }
@@ -560,8 +562,9 @@ base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(
 void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
     const base::string16& value,
     autofill::ServerFieldType type) {
-  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  ValidatingTextfield* textfield =
+      static_cast<ValidatingTextfield*>(delegate_->dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(type)));
   DCHECK(textfield);
   textfield->SetText(value);
   textfield->OnContentsChanged();
@@ -570,8 +573,9 @@ void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
 
 base::string16 PaymentRequestBrowserTestBase::GetComboboxValue(
     autofill::ServerFieldType type) {
-  ValidatingCombobox* combobox = static_cast<ValidatingCombobox*>(
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  ValidatingCombobox* combobox =
+      static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
   return combobox->model()->GetItemAt(combobox->selected_index());
 }
@@ -579,8 +583,9 @@ base::string16 PaymentRequestBrowserTestBase::GetComboboxValue(
 void PaymentRequestBrowserTestBase::SetComboboxValue(
     const base::string16& value,
     autofill::ServerFieldType type) {
-  ValidatingCombobox* combobox = static_cast<ValidatingCombobox*>(
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  ValidatingCombobox* combobox =
+      static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
   combobox->SelectValue(value);
   combobox->OnContentsChanged();
@@ -589,8 +594,9 @@ void PaymentRequestBrowserTestBase::SetComboboxValue(
 
 void PaymentRequestBrowserTestBase::SelectBillingAddress(
     const std::string& billing_address_id) {
-  views::Combobox* address_combobox(static_cast<views::Combobox*>(
-      dialog_view()->GetViewByID(static_cast<int>(kBillingAddressType))));
+  views::Combobox* address_combobox(
+      static_cast<views::Combobox*>(dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(kBillingAddressType))));
   ASSERT_NE(address_combobox, nullptr);
   autofill::AddressComboboxModel* address_combobox_model(
       static_cast<autofill::AddressComboboxModel*>(address_combobox->model()));
@@ -601,16 +607,18 @@ void PaymentRequestBrowserTestBase::SelectBillingAddress(
 
 bool PaymentRequestBrowserTestBase::IsEditorTextfieldInvalid(
     autofill::ServerFieldType type) {
-  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  ValidatingTextfield* textfield =
+      static_cast<ValidatingTextfield*>(delegate_->dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(type)));
   DCHECK(textfield);
   return textfield->invalid();
 }
 
 bool PaymentRequestBrowserTestBase::IsEditorComboboxInvalid(
     autofill::ServerFieldType type) {
-  ValidatingCombobox* combobox = static_cast<ValidatingCombobox*>(
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  ValidatingCombobox* combobox =
+      static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
+          EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
   return combobox->invalid();
 }

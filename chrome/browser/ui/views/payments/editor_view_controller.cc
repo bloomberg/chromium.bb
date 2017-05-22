@@ -45,8 +45,9 @@ enum class EditorViewControllerTags : int {
   SAVE_BUTTON = kFirstTagValue,
 };
 
-std::unique_ptr<views::View> CreateErrorLabelView(const base::string16& error,
-                                                  const EditorField& field) {
+std::unique_ptr<views::View> CreateErrorLabelView(
+    const base::string16& error,
+    autofill::ServerFieldType type) {
   std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
 
   std::unique_ptr<views::BoxLayout> layout =
@@ -62,7 +63,7 @@ std::unique_ptr<views::View> CreateErrorLabelView(const base::string16& error,
   std::unique_ptr<views::Label> error_label =
       base::MakeUnique<views::Label>(error);
   error_label->set_id(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) +
-                      field.type);
+                      type);
   error_label->SetFontList(
       error_label->GetDefaultFontList().DeriveWithSizeDelta(-1));
   error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
@@ -86,17 +87,23 @@ EditorViewController::EditorViewController(
 EditorViewController::~EditorViewController() {}
 
 void EditorViewController::DisplayErrorMessageForField(
-    const EditorField& field,
+    autofill::ServerFieldType type,
     const base::string16& error_message) {
-  const auto& label_view_it = error_labels_.find(field);
+  const auto& label_view_it = error_labels_.find(type);
   DCHECK(label_view_it != error_labels_.end());
 
   label_view_it->second->RemoveAllChildViews(/*delete_children=*/true);
   if (!error_message.empty()) {
     label_view_it->second->AddChildView(
-        CreateErrorLabelView(error_message, field).release());
+        CreateErrorLabelView(error_message, type).release());
   }
   RelayoutPane();
+}
+
+// static
+int EditorViewController::GetInputFieldViewId(autofill::ServerFieldType type) {
+  return static_cast<int>(DialogViewID::INPUT_FIELD_TYPE_OFFSET) +
+         static_cast<int>(type);
 }
 
 std::unique_ptr<views::View> EditorViewController::CreateHeaderView() {
@@ -105,7 +112,8 @@ std::unique_ptr<views::View> EditorViewController::CreateHeaderView() {
 
 std::unique_ptr<views::View> EditorViewController::CreateCustomFieldView(
     autofill::ServerFieldType type,
-    views::View** focusable_field) {
+    views::View** focusable_field,
+    bool* valid) {
   return nullptr;
 }
 
@@ -172,6 +180,21 @@ views::View* EditorViewController::GetFirstFocusedView() {
   if (initial_focus_field_view_)
     return initial_focus_field_view_;
   return PaymentRequestSheetController::GetFirstFocusedView();
+}
+
+std::unique_ptr<ValidatingCombobox>
+EditorViewController::CreateComboboxForField(const EditorField& field) {
+  std::unique_ptr<ValidatingCombobox> combobox =
+      base::MakeUnique<ValidatingCombobox>(GetComboboxModelForType(field.type),
+                                           CreateValidationDelegate(field));
+  base::string16 initial_value = GetInitialValueForType(field.type);
+  if (!initial_value.empty())
+    combobox->SelectValue(initial_value);
+  // Using autofill field type as a view ID.
+  combobox->set_id(GetInputFieldViewId(field.type));
+  combobox->set_listener(this);
+  comboboxes_.insert(std::make_pair(combobox.get(), field));
+  return combobox;
 }
 
 void EditorViewController::ContentsChanged(views::Textfield* sender,
@@ -317,7 +340,6 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   layout->AddView(label.release());
 
   views::View* focusable_field = nullptr;
-
   constexpr int kInputFieldHeight = 28;
   if (field.control_type == EditorField::ControlType::TEXTFIELD ||
       field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER) {
@@ -328,7 +350,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
     text_field->set_controller(this);
     // Using autofill field type as a view ID (for testing).
-    text_field->set_id(static_cast<int>(field.type));
+    text_field->set_id(GetInputFieldViewId(field.type));
     text_fields_.insert(std::make_pair(text_field, field));
     focusable_field = text_field;
     *valid = text_field->IsValid();
@@ -337,29 +359,24 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
     layout->AddView(text_field, 1, 1, views::GridLayout::FILL,
                     views::GridLayout::FILL, 0, kInputFieldHeight);
   } else if (field.control_type == EditorField::ControlType::COMBOBOX) {
-    ValidatingCombobox* combobox = new ValidatingCombobox(
-        GetComboboxModelForType(field.type), CreateValidationDelegate(field));
-    base::string16 initial_value = GetInitialValueForType(field.type);
-    if (!initial_value.empty())
-      combobox->SelectValue(initial_value);
-    // Using autofill field type as a view ID.
-    combobox->set_id(static_cast<int>(field.type));
-    combobox->set_listener(this);
-    comboboxes_.insert(std::make_pair(combobox, field));
-    focusable_field = combobox;
+    std::unique_ptr<ValidatingCombobox> combobox =
+        CreateComboboxForField(field);
+
+    focusable_field = combobox.get();
     *valid = combobox->IsValid();
 
     // |combobox| will now be owned by |row|.
-    layout->AddView(combobox, 1, 1, views::GridLayout::FILL,
+    layout->AddView(combobox.release(), 1, 1, views::GridLayout::FILL,
                     views::GridLayout::FILL, 0, kInputFieldHeight);
   } else {
     // Custom field view will now be owned by |row|. And it must be valid since
     // the derived class specified a custom view for this field.
-    DCHECK(!focusable_field);
     std::unique_ptr<views::View> field_view =
-        CreateCustomFieldView(field.type, &focusable_field);
+        CreateCustomFieldView(field.type, &focusable_field, valid);
     DCHECK(field_view);
-    layout->AddView(field_view.release());
+
+    layout->AddView(field_view.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, kInputFieldHeight);
   }
 
   // If an extra view needs to go alongside the input field view, add it to the
@@ -373,7 +390,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   std::unique_ptr<views::View> error_label_view =
       base::MakeUnique<views::View>();
   error_label_view->SetLayoutManager(new views::FillLayout);
-  error_labels_[field] = error_label_view.get();
+  error_labels_[field.type] = error_label_view.get();
   layout->AddView(error_label_view.release());
 
   // Bottom padding for the row.
