@@ -15,6 +15,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
@@ -87,11 +89,20 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.d(TAG, "onConfigured");
             mPreviewSession = cameraCaptureSession;
             try {
-                // This line triggers the preview. No |listener| is registered, so we will not get
-                // notified of capture events, instead, CrImageReaderListener will trigger every
-                // time a downloaded image is ready. Since |handler| is null, we'll work on the
-                // current Thread Looper.
-                mPreviewSession.setRepeatingRequest(mPreviewRequest, null, null);
+                // This line triggers the preview. A |listener| is registered to receive the actual
+                // capture result details. A CrImageReaderListener will be triggered every time a
+                // downloaded image is ready. Since |handler| is null, we'll work on the current
+                // Thread Looper.
+                mPreviewSession.setRepeatingRequest(
+                        mPreviewRequest, new CameraCaptureSession.CaptureCallback() {
+                            @Override
+                            public void onCaptureCompleted(CameraCaptureSession session,
+                                    CaptureRequest request, TotalCaptureResult result) {
+                                mLastExposureTimeNs =
+                                        result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
+                            }
+                        }, null);
+
             } catch (CameraAccessException | SecurityException | IllegalStateException
                     | IllegalArgumentException ex) {
                 Log.e(TAG, "setRepeatingRequest: ", ex);
@@ -272,6 +283,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private int mPhotoHeight;
     private int mFocusMode = AndroidMeteringMode.CONTINUOUS;
     private int mExposureMode = AndroidMeteringMode.CONTINUOUS;
+    private long mLastExposureTimeNs;
     private MeteringRectangle mAreaOfInterest;
     private int mExposureCompensation;
     private int mWhiteBalanceMode = AndroidMeteringMode.CONTINUOUS;
@@ -397,11 +409,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
 
             // We need to configure by hand the exposure time when AE mode is off.  Set it to the
-            // middle of the allowed range. Further tuning will be done via |mIso|.
-            Range<Long> range = cameraCharacteristics.get(
-                    CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
-            requestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,
-                    range.getLower() + (range.getUpper() + range.getLower()) / 2 /* nanoseconds*/);
+            // last known exposure interval if known, otherwise set it to the middle of the allowed
+            // range. Further tuning will be done via |mIso| and |mExposureCompensation|.
+            if (mLastExposureTimeNs != 0) {
+                requestBuilder.set(
+                        CaptureRequest.SENSOR_EXPOSURE_TIME, mLastExposureTimeNs /* nanoseconds*/);
+            } else {
+                Range<Long> range = cameraCharacteristics.get(
+                        CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+                requestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,
+                        range.getLower()
+                                + (range.getUpper() + range.getLower()) / 2 /* nanoseconds*/);
+            }
 
         } else {
             requestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
