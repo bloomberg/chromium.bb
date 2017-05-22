@@ -207,14 +207,13 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   // more options. This is not ideal but it gets us an easy way to make a
   // modal window option selector. Replace this with a real menu later.
 
-  UIAlertController* alert =
-      [UIAlertController alertControllerWithTitle:@"Remote Settings"
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:@"Remote Settings"
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
 
   if ([self isKeyboardActive]) {
     void (^hideKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-      NSLog(@"Will hide keyboard.");
       [self hideKeyboard];
     };
     [alert addAction:[UIAlertAction actionWithTitle:@"Hide Keyboard"
@@ -222,7 +221,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                                             handler:hideKeyboardHandler]];
   } else {
     void (^showKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-      NSLog(@"Will show keyboard.");
       [self showKeyboard];
     };
     [alert addAction:[UIAlertAction actionWithTitle:@"Show Keyboard"
@@ -251,9 +249,23 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     [self dismissViewControllerAnimated:YES completion:nil];
   };
   [alert addAction:[UIAlertAction actionWithTitle:@"Disconnect"
-                                            style:UIAlertActionStyleCancel
+                                            style:UIAlertActionStyleDefault
                                           handler:disconnectHandler]];
 
+  void (^cancelHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+    [alert dismissViewControllerAnimated:YES completion:nil];
+  };
+  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                            style:UIAlertActionStyleCancel
+                                          handler:cancelHandler]];
+
+  alert.popoverPresentationController.sourceView = self.view;
+  // Target the alert menu at the top middle of the FAB.
+  alert.popoverPresentationController.sourceRect = CGRectMake(
+      _floatingButton.center.x, _floatingButton.frame.origin.y, 1.0, 1.0);
+
+  alert.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionDown;
   [self presentViewController:alert animated:YES completion:nil];
 }
 
