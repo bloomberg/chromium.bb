@@ -49341,6 +49341,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent"
+    enum="SubmissionIndicatorEvent">
+  <owner>dvadym@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The type of event that the Password Manager used for detecting a password
+    form submission when saving or updating a password. Recorded each time a
+    user accepts a password save/update prompt.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AccountChooserDialog"
     enum="AccountChooserDismissalReason">
   <obsolete>

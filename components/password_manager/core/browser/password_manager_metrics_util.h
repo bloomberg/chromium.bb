@@ -265,6 +265,11 @@ void LogShowedFormNotSecureWarningOnCurrentNavigation();
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
     autofill::PasswordForm::SubmissionIndicatorEvent event);
 
+// Log a password successful submission event for accepted by user password save
+// or update.
+void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+    autofill::PasswordForm::SubmissionIndicatorEvent event);
+
 }  // namespace metrics_util
 
 }  // namespace password_manager
