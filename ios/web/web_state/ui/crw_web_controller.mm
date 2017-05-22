@@ -81,7 +81,7 @@
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
-#include "ios/web/web_state/navigation_context_impl.h"
+#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
@@ -3102,7 +3102,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationContextImpl* navigationContext =
       [_navigationStates contextForNavigation:navigation];
-  navigationContext->SetIsErrorPage(true);
+  navigationContext->SetError(error);
 
   // Handles Frame Load Interrupted errors from WebView.
   if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&

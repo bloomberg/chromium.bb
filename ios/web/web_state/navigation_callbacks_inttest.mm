@@ -10,7 +10,7 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_int_test.h"
@@ -34,7 +34,7 @@ ACTION_P3(VerifyNewPageStartedContext, web_state, url, context) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->IsErrorPage());
+  EXPECT_FALSE((*context)->GetError());
   ASSERT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetPendingItem();
@@ -51,7 +51,7 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->IsErrorPage());
+  EXPECT_FALSE((*context)->GetError());
   ASSERT_TRUE((*context)->GetResponseHeaders());
   std::string mime_type;
   (*context)->GetResponseHeaders()->GetMimeType(&mime_type);
@@ -71,7 +71,7 @@ ACTION_P3(VerifySameDocumentStartedContext, web_state, url, context) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->IsErrorPage());
+  EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
 }
 
@@ -84,7 +84,7 @@ ACTION_P3(VerifySameDocumentFinishedContext, web_state, url, context) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_TRUE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->IsErrorPage());
+  EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
@@ -101,7 +101,7 @@ ACTION_P3(VerifyNewNativePageStartedContext, web_state, url, context) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->IsErrorPage());
+  EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetPendingItem();
@@ -117,7 +117,7 @@ ACTION_P3(VerifyNewNativePageFinishedContext, web_state, url, context) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->IsErrorPage());
+  EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();

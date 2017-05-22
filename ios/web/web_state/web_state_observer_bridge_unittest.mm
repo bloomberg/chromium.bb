@@ -10,7 +10,7 @@
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#include "ios/web/web_state/navigation_context_impl.h"
+#import "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
 #include "testing/platform_test.h"
 
@@ -55,7 +55,7 @@ TEST_F(WebStateObserverBridgeTest, DidStartNavigation) {
   ASSERT_TRUE(actual_context);
   EXPECT_EQ(&test_web_state_, actual_context->GetWebState());
   EXPECT_EQ(context->IsSameDocument(), actual_context->IsSameDocument());
-  EXPECT_EQ(context->IsErrorPage(), actual_context->IsErrorPage());
+  EXPECT_EQ(context->GetError(), actual_context->GetError());
   EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
   EXPECT_EQ(context->GetResponseHeaders(),
             actual_context->GetResponseHeaders());
@@ -78,7 +78,7 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
   ASSERT_TRUE(actual_context);
   EXPECT_EQ(&test_web_state_, actual_context->GetWebState());
   EXPECT_EQ(context->IsSameDocument(), actual_context->IsSameDocument());
-  EXPECT_EQ(context->IsErrorPage(), actual_context->IsErrorPage());
+  EXPECT_EQ(context->GetError(), actual_context->GetError());
   EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
   EXPECT_EQ(context->GetResponseHeaders(),
             actual_context->GetResponseHeaders());

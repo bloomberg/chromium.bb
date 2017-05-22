@@ -68,7 +68,7 @@ class WebStateObserver {
   // Called when a navigation finished in the WebState for the main frame. This
   // happens when a navigation is committed, aborted or replaced by a new one.
   // To know if the navigation has resulted in an error page, use
-  // NavigationContext::IsErrorPage().
+  // NavigationContext::GetError().
   //
   // If this is called because the navigation committed, then the document load
   // will still be ongoing in the WebState returned by |navigation_context|.

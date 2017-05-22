@@ -22,12 +22,11 @@
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
-#include "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
-#include "ios/web/web_state/navigation_context_impl.h"
+#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -360,7 +359,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
       observer->did_finish_navigation_info()->context.get();
   EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
   EXPECT_FALSE(actual_context->IsSameDocument());
-  EXPECT_FALSE(actual_context->IsErrorPage());
+  EXPECT_FALSE(actual_context->GetError());
   EXPECT_FALSE(actual_context->GetResponseHeaders());
 
   // Test that DidStartNavigation() is called.
@@ -371,7 +370,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   actual_context = observer->did_start_navigation_info()->context.get();
   EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
   EXPECT_FALSE(actual_context->IsSameDocument());
-  EXPECT_FALSE(actual_context->IsErrorPage());
+  EXPECT_FALSE(actual_context->GetError());
   EXPECT_FALSE(actual_context->GetResponseHeaders());
 
   // Test that NavigationItemsPruned() is called.
