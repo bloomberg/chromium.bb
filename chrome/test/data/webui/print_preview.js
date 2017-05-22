@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN('#include "base/feature_list.h"');
-GEN('#include "chrome/common/chrome_features.h"');
-
 /**
  * Test fixture for print preview WebUI testing.
  * @constructor
@@ -224,13 +221,6 @@ PrintPreviewWebUITest.prototype = {
   },
 
   /**
-   * Generate a real C++ class; don't typedef.
-   * @type {?string}
-   * @override
-   */
-  typedefCppFixture: null,
-
-  /**
    * @this {PrintPreviewWebUITest}
    * @override
    */
@@ -267,8 +257,6 @@ PrintPreviewWebUITest.prototype = {
         '#page-settings > .right-column > *');
   }
 };
-
-GEN('#include "chrome/test/data/webui/print_preview.h"');
 
 // Test some basic assumptions about the print preview WebUI.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {

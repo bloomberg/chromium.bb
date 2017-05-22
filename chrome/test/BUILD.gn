@@ -1777,8 +1777,6 @@ test("browser_tests") {
       "data/webui/history_ui_browsertest.h",
       "data/webui/ntp4_browsertest.cc",
       "data/webui/ntp4_browsertest.h",
-      "data/webui/print_preview.cc",
-      "data/webui/print_preview.h",
       "data/webui/webui_resource_browsertest.cc",
       "gpu/webgl_infobar_browsertest.cc",
       "ppapi/ppapi_browsertest.cc",
@@ -2559,8 +2557,6 @@ test("browser_tests") {
         "../browser/printing/print_preview_pdf_generated_browsertest.cc",
         "../browser/service_process/service_process_control_browsertest.cc",
         "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
-        "data/webui/print_preview.cc",
-        "data/webui/print_preview.h",
       ]
     }
     if (!enable_print_preview || is_mac || is_chromeos) {
