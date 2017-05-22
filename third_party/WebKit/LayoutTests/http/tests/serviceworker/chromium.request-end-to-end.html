@@ -1,9 +1,16 @@
 <!DOCTYPE html>
+<!-- This test is prefixed with `chromium.` because the equivalent version
+  available in Web Platform Tests contains additional assertions which Chromium
+  currently fails. This test should be persisted only to preserve test coverage
+  until such time as the upstream version can be made to pass. See
+  https://crbug.com/595993 -->
 <title>Service Worker: FetchEvent.request passed to onfetch</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
 <script>
+'use strict';
+
 promise_test(t => {
     var url = 'resources/request-end-to-end-worker.js';
     var scope = 'resources/blank.html';
@@ -27,6 +34,11 @@ promise_test(t => {
                         'TypeError.')
           assert_equals(result.credentials, 'include', 'request.credentials');
           assert_equals(result.redirect, 'manual', 'request.redirect');
+          // TODO(falken): Chromium should fail this assertion but currently
+          // passes it. The equivalent WPT test instead asserts:
+          //   assert_equals(result.headers['user-agent'], undefined);
+          // Once Chromium passes the WPT test assertion, this test file can be
+          // removed.
           assert_equals(result.headers['user-agent'], navigator.userAgent,
                         'User-Agent header');
           assert_equals(result.append_header_error, 'TypeError',

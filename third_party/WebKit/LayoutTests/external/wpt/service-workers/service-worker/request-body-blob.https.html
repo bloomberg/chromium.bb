@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>request body</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
+<title>request body blob</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script>
+'use strict';
 var resolve_done;
-var done_was_called = new Promise(resolve => resolve_done = resolve);
-// Called by the iframe when done.
-function done(result) { resolve_done(result); }
+var done;
+var done_was_called = new Promise(resolve => done = resolve);
 
 // This test creates an controlled iframe that does a request with a request
 // body blob. The service worker confirms it can read the blob and responds
@@ -22,6 +22,9 @@ promise_test(t => {
            return wait_for_state(t, reg.installing, 'activated');
          })
       .then(() => with_iframe(scope))
+      .then(frame => {
+          t.add_cleanup(() => frame.remove());
+        })
       .then(() => done_was_called)
       .then(result => assert_equals(result, 'Pass'));
   }, 'Service worker can read the request body blob');
