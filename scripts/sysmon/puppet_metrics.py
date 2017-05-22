@@ -16,7 +16,7 @@ from infra_libs import ts_mon
 
 logger = logging.getLogger(__name__)
 
-LAST_RUN_FILE = '/var/lib/puppet/state/last_run_summary.yaml'
+LAST_RUN_FILE = '/var/lib/cros_puppet/state/last_run_summary.yaml'
 
 _config_version_metric = ts_mon.GaugeMetric(
     'puppet/version/config',
