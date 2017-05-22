@@ -28,16 +28,20 @@ public class ChildConnectionAllocator {
     /** Factory interface. Used by tests to specialize created connections. */
     @VisibleForTesting
     protected interface ConnectionFactory {
-        ChildProcessConnection createConnection(ChildSpawnData spawnData,
-                ChildProcessConnection.DeathCallback deathCallback, String serviceClassName);
+        ChildProcessConnection createConnection(ChildSpawnData spawnData, String packageName,
+                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback,
+                String serviceClassName);
     }
 
     /** Default implementation of the ConnectionFactory that creates actual connections. */
     private static class ConnectionFactoryImpl implements ConnectionFactory {
-        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
-                ChildProcessConnection.DeathCallback deathCallback, String serviceClassName) {
-            return new ChildProcessConnection(spawnData.getContext(), deathCallback,
-                    serviceClassName, spawnData.getServiceBundle(), spawnData.getCreationParams());
+        @Override
+        public ChildProcessConnection createConnection(ChildSpawnData spawnData, String packageName,
+                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback,
+                String serviceClassName) {
+            return new ChildProcessConnection(spawnData.getContext(), deathCallback, packageName,
+                    bindAsExternalService, serviceClassName, spawnData.getServiceBundle(),
+                    spawnData.getCreationParams());
         }
     }
 
@@ -133,8 +137,9 @@ public class ChildConnectionAllocator {
     }
 
     // Allocates or enqueues. If there are no free slots, returns null and enqueues the spawn data.
-    public ChildProcessConnection allocate(ChildSpawnData spawnData,
-            ChildProcessConnection.DeathCallback deathCallback, boolean queueIfNoSlotAvailable) {
+    public ChildProcessConnection allocate(ChildSpawnData spawnData, String packageName,
+            boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback,
+            boolean queueIfNoSlotAvailable) {
         assert LauncherThread.runningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
@@ -146,8 +151,8 @@ public class ChildConnectionAllocator {
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
         String serviceClassName = mServiceClassName + slot;
-        mChildProcessConnections[slot] =
-                mConnectionFactory.createConnection(spawnData, deathCallback, serviceClassName);
+        mChildProcessConnections[slot] = mConnectionFactory.createConnection(
+                spawnData, packageName, bindAsExternalService, deathCallback, serviceClassName);
         Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
         return mChildProcessConnections[slot];
     }

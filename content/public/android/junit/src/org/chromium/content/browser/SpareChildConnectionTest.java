@@ -39,10 +39,11 @@ public class SpareChildConnectionTest {
         public ChildProcessConnection allocateBoundConnection(ChildSpawnData spawnData,
                 ChildProcessConnection.StartCallback startCallback, boolean queueIfNoneAvailable) {
             this.startCallback = startCallback;
-            connection =
-                    ChildProcessConnection.createUnboundConnectionForTesting(spawnData.getContext(),
-                            null /* deathCallback */, "TestSpareChild" /* className */,
-                            null /* childProcessCommonParameters */, spawnData.getCreationParams());
+            connection = ChildProcessConnection.createUnboundConnectionForTesting(
+                    spawnData.getContext(), null /* deathCallback */,
+                    spawnData.getCreationParams().getPackageNameForSandboxedService(),
+                    true /* bindAsExternalService */, "TestSpareChild" /* className */,
+                    null /* childProcessCommonParameters */, spawnData.getCreationParams());
             return connection;
         }
     }

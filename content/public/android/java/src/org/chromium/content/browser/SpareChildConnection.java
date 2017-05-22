@@ -89,7 +89,9 @@ public class SpareChildConnection {
         if (mConnection == null || mSandboxed != sandboxed
                 || mAlwaysInForegound != alwaysInForeground || mCreationParams != creationParams
                 || mConnectionStartCallback != null
-                || !mConnection.getPackageName().equals(getPackageName(mCreationParams, context))) {
+                || !mConnection.getPackageName().equals(
+                           ChildProcessLauncher.getPackageNameFromCreationParams(
+                                   context, mCreationParams, sandboxed))) {
             return null;
         }
 
@@ -131,10 +133,5 @@ public class SpareChildConnection {
         mConnection = null;
         mConnectionReady = false;
         mConnectionStartCallback = null;
-    }
-
-    private static String getPackageName(
-            ChildProcessCreationParams creationParams, Context context) {
-        return creationParams != null ? creationParams.getPackageName() : context.getPackageName();
     }
 }

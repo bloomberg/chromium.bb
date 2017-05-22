@@ -67,6 +67,12 @@ public class ChildProcessLauncher {
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
 
+    public static String getPackageNameFromCreationParams(
+            Context context, ChildProcessCreationParams params, boolean sandboxed) {
+        return (sandboxed && params != null) ? params.getPackageNameForSandboxedService()
+                                             : context.getPackageName();
+    }
+
     // Factory used by the SpareConnection to create the actual ChildProcessConnection.
     private static final SpareChildConnection.ConnectionFactory SANDBOXED_SPARE_CONNECTION_FATORY =
             new SpareChildConnection.ConnectionFactory() {
@@ -138,12 +144,14 @@ public class ChildProcessLauncher {
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
         final Context context = spawnData.getContext();
         final boolean inSandbox = spawnData.isInSandbox();
-        String packageName =
-                creationParams != null ? creationParams.getPackageName() : context.getPackageName();
+
+        String packageName = getPackageNameFromCreationParams(context, creationParams, inSandbox);
+        boolean bindAsExternalService = inSandbox && creationParams != null
+                && creationParams.getIsSandboxedSerivceExternal();
         ChildConnectionAllocator allocator =
                 getConnectionAllocator(context, packageName, inSandbox);
-        ChildProcessConnection connection =
-                allocator.allocate(spawnData, deathCallback, queueIfNoneAvailable);
+        ChildProcessConnection connection = allocator.allocate(
+                spawnData, packageName, bindAsExternalService, deathCallback, queueIfNoneAvailable);
         sConnectionsToAllocatorMap.put(connection, allocator);
         return connection;
     }
@@ -161,8 +169,8 @@ public class ChildProcessLauncher {
             boolean useStrongBinding = spawnData.isAlwaysInForeground();
             connection.start(useStrongBinding, startCallback);
 
-            String packageName = creationParams != null ? creationParams.getPackageName()
-                                                        : context.getPackageName();
+            String packageName =
+                    getPackageNameFromCreationParams(context, creationParams, inSandbox);
             if (inSandbox
                     && !getConnectionAllocator(context, packageName, true /* sandboxed */)
                                 .isFreeConnectionAvailable()) {
