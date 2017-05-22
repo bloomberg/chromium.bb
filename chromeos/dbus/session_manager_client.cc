@@ -737,12 +737,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void ArcInstanceStoppedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     bool clean = false;
-    if (!reader.PopBool(&clean)) {
+    std::string container_instance_id;
+    if (!reader.PopBool(&clean) || !reader.PopString(&container_instance_id)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
     for (auto& observer : observers_)
-      observer.ArcInstanceStopped(clean);
+      observer.ArcInstanceStopped(clean, container_instance_id);
   }
 
   // Called when the object is connected to the signal.
@@ -812,8 +813,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void OnStartArcInstanceSucceeded(const StartArcInstanceCallback& callback,
                                    dbus::Response* response) {
+    DCHECK(response);
+    dbus::MessageReader reader(response);
+    std::string container_instance_id;
+    if (!reader.PopString(&container_instance_id)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      if (!callback.is_null())
+        callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string());
+      return;
+    }
+
     if (!callback.is_null())
-      callback.Run(StartArcInstanceResult::SUCCESS);
+      callback.Run(StartArcInstanceResult::SUCCESS, container_instance_id);
   }
 
   void OnStartArcInstanceFailed(const StartArcInstanceCallback& callback,
@@ -824,7 +835,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
       callback.Run(response && response->GetErrorName() ==
                                    login_manager::dbus_error::kLowFreeDisk
                        ? StartArcInstanceResult::LOW_FREE_DISK_SPACE
-                       : StartArcInstanceResult::UNKNOWN_ERROR);
+                       : StartArcInstanceResult::UNKNOWN_ERROR,
+                   std::string());
     }
   }
 
@@ -1036,7 +1048,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                         bool disable_boot_completed_broadcast,
                         bool enable_vendor_privileged,
                         const StartArcInstanceCallback& callback) override {
-    callback.Run(StartArcInstanceResult::UNKNOWN_ERROR);
+    callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string());
   }
 
   void SetArcCpuRestriction(
