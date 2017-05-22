@@ -132,7 +132,6 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 
   const ThrottledTimeDomain* time_domain() const { return time_domain_.get(); }
 
-  // TODO(altimin): Remove it.
   static base::TimeTicks AlignedThrottledRunTime(
       base::TimeTicks unthrottled_runtime);
 

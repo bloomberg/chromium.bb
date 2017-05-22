@@ -6,8 +6,6 @@
 
 #include <cstdint>
 
-#include <iostream>  // FIXME
-
 #include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 
@@ -17,8 +15,7 @@ namespace scheduler {
 WakeUpBudgetPool::WakeUpBudgetPool(const char* name,
                                    BudgetPoolController* budget_pool_controller,
                                    base::TimeTicks now)
-    : BudgetPool(name, budget_pool_controller),
-      wake_up_interval_(base::TimeDelta::FromSecondsD(1.0)) {}
+    : BudgetPool(name, budget_pool_controller), wakeups_per_second_(1) {}
 
 WakeUpBudgetPool::~WakeUpBudgetPool() {}
 
@@ -26,12 +23,12 @@ QueueBlockType WakeUpBudgetPool::GetBlockType() const {
   return QueueBlockType::kNewTasksOnly;
 }
 
-void WakeUpBudgetPool::SetWakeUpRate(double wake_ups_per_second) {
-  wake_up_interval_ = base::TimeDelta::FromSecondsD(1 / wake_ups_per_second);
+void WakeUpBudgetPool::SetWakeUpRate(double wakeups_per_second) {
+  wakeups_per_second_ = wakeups_per_second;
 }
 
 void WakeUpBudgetPool::SetWakeUpDuration(base::TimeDelta duration) {
-  wake_up_duration_ = duration;
+  wakeup_duration_ = duration;
 }
 
 void WakeUpBudgetPool::RecordTaskRunTime(TaskQueue* queue,
@@ -40,42 +37,39 @@ void WakeUpBudgetPool::RecordTaskRunTime(TaskQueue* queue,
   budget_pool_controller_->UpdateQueueThrottlingState(end_time, queue);
 }
 
+base::Optional<base::TimeTicks> WakeUpBudgetPool::NextWakeUp() const {
+  if (!last_wakeup_)
+    return base::nullopt;
+  // Subtract 1 microsecond to work with time alignment in task queue throttler.
+  // This is needed due to alignment mechanism in task queue throttler --
+  // whole seconds need to be aligned to the next second to deal with immediate
+  // tasks correctly. By subtracting 1 microsecond we ensure that next wakeup
+  // gets aligned to a correct time.
+  return last_wakeup_.value() +
+         base::TimeDelta::FromSeconds(1 / wakeups_per_second_) -
+         base::TimeDelta::FromMicroseconds(1);
+}
+
 bool WakeUpBudgetPool::CanRunTasksAt(base::TimeTicks moment,
                                      bool is_wake_up) const {
-  if (!last_wake_up_)
+  if (!last_wakeup_)
     return false;
   // |is_wake_up| flag means that we're in the beginning of the wake-up and
   // |OnWakeUp| has just been called. This is needed to support backwards
-  // compability with old throttling mechanism (when |wake_up_duration| is zero)
+  // compability with old throttling mechanism (when |wakeup_duration| is zero)
   // and allow only one task to run.
-  if (last_wake_up_ == moment && is_wake_up)
+  if (last_wakeup_ == moment && is_wake_up)
     return true;
-  return moment < last_wake_up_.value() + wake_up_duration_;
+  return moment < last_wakeup_.value() + wakeup_duration_;
 }
-
-namespace {
-
-// Wrapper around base::TimeTicks::SnappedToNextTick which ensures that
-// the returned point is strictly in the future.
-base::TimeTicks SnapToNextTickStrict(base::TimeTicks moment,
-                                     base::TimeDelta interval) {
-  base::TimeTicks snapped =
-      moment.SnappedToNextTick(base::TimeTicks(), interval);
-  if (snapped == moment)
-    return moment + interval;
-  return snapped;
-}
-
-}  // namespace
 
 base::TimeTicks WakeUpBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
-  if (!last_wake_up_)
-    return SnapToNextTickStrict(desired_run_time, wake_up_interval_);
-  if (desired_run_time < last_wake_up_.value() + wake_up_duration_)
+  if (!last_wakeup_)
     return desired_run_time;
-  return SnapToNextTickStrict(std::max(desired_run_time, last_wake_up_.value()),
-                              wake_up_interval_);
+  if (desired_run_time < last_wakeup_.value() + wakeup_duration_)
+    return desired_run_time;
+  return std::max(desired_run_time, NextWakeUp().value());
 }
 
 void WakeUpBudgetPool::OnQueueNextWakeUpChanged(
@@ -86,7 +80,7 @@ void WakeUpBudgetPool::OnQueueNextWakeUpChanged(
 }
 
 void WakeUpBudgetPool::OnWakeUp(base::TimeTicks now) {
-  last_wake_up_ = now;
+  last_wakeup_ = now;
 }
 
 void WakeUpBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
@@ -94,13 +88,11 @@ void WakeUpBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
   state->BeginDictionary(name_);
 
   state->SetString("name", name_);
-  state->SetDouble("wake_up_interval_in_seconds",
-                   wake_up_interval_.InSecondsF());
-  state->SetDouble("wake_up_duration_in_seconds",
-                   wake_up_duration_.InSecondsF());
-  if (last_wake_up_) {
-    state->SetDouble("last_wake_up_seconds_ago",
-                     (now - last_wake_up_.value()).InSecondsF());
+  state->SetDouble("wakeups_per_second_rate", wakeups_per_second_);
+  state->SetDouble("wakeup_duration_in_seconds", wakeup_duration_.InSecondsF());
+  if (last_wakeup_) {
+    state->SetDouble("last_wakeup_seconds_ago",
+                     (now - last_wakeup_.value()).InSecondsF());
   }
   state->SetBoolean("is_enabled", is_enabled_);
 
