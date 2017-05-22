@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
-#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
 
 #include "base/process/process_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_totals.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace mojo {
 
@@ -132,4 +132,4 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 
 }  // namespace mojo
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_

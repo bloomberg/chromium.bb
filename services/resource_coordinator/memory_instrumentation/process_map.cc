@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/memory/coordinator/process_map.h"
+#include "services/resource_coordinator/memory_instrumentation/process_map.h"
 
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"

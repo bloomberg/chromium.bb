@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "services/resource_coordinator/memory/coordinator/process_map.h"
+#include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

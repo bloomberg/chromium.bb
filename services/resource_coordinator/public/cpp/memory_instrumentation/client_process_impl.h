@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_PROCESS_LOCAL_DUMP_MANAGER_IMPL_H_
-#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_PROCESS_LOCAL_DUMP_MANAGER_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_CLIENT_PROCESS_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_CLIENT_PROCESS_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
@@ -11,9 +11,9 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/cpp/memory/coordinator.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
@@ -26,9 +26,8 @@ namespace memory_instrumentation {
 // no Coordinator service in child processes. So, in a child process, the
 // local dump manager remotely connects to the Coordinator service. In the
 // browser process, it locally connects to the Coordinator service.
-class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
-    ProcessLocalDumpManagerImpl
-    : public NON_EXPORTED_BASE(mojom::ProcessLocalDumpManager) {
+class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
+    : public NON_EXPORTED_BASE(mojom::ClientProcess) {
  public:
   class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT Config {
    public:
@@ -73,18 +72,18 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
   void SetAsNonCoordinatorForTesting();
 
  private:
-  friend std::default_delete<ProcessLocalDumpManagerImpl>;  // For testing
-  friend class ProcessLocalDumpManagerImplTest;             // For testing
+  friend std::default_delete<ClientProcessImpl>;  // For testing
+  friend class ClientProcessImplTest;
 
-  ProcessLocalDumpManagerImpl(const Config& config);
-  ~ProcessLocalDumpManagerImpl() override;
+  ClientProcessImpl(const Config& config);
+  ~ClientProcessImpl() override;
 
-  // The ProcessLocalDumpManager interface. The coordinator calls this.
+  // mojom::ClientProcess implementation. The Coordinator calls this.
   void RequestProcessMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const RequestProcessMemoryDumpCallback& callback) override;
 
-  // Callback passed to base::MemoryDUmpManager::CreateProcessDump().
+  // Callback passed to base::MemoryDumpManager::CreateProcessDump().
   void OnProcessMemoryDumpDone(
       const RequestProcessMemoryDumpCallback&,
       uint64_t dump_guid,
@@ -99,16 +98,16 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
       mojom::GlobalMemoryDumpPtr global_memory_dump);
 
   mojom::CoordinatorPtr coordinator_;
-  mojo::Binding<mojom::ProcessLocalDumpManager> binding_;
+  mojo::Binding<mojom::ClientProcess> binding_;
   const Config config_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint64_t pending_memory_dump_guid_;
 
   base::Lock pending_memory_dump_guid_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProcessLocalDumpManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ClientProcessImpl);
 };
 
 }  // namespace memory_instrumentation
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_PROCESS_LOCAL_DUMP_MANAGER_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_CLIENT_PROCESS_IMPL_H_

@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom"
+mojom = "//services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom"
 
 public_headers = [
   "//base/trace_event/memory_dump_request_args.h",
   "//base/trace_event/process_memory_totals.h",
 ]
-traits_headers = [ "//services/resource_coordinator/public/cpp/memory/memory_instrumentation_struct_traits.h" ]
+traits_headers = [ "//services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation_struct_traits.h" ]
 deps = [
   "//base",
 ]

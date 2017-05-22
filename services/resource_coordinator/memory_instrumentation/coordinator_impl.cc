@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
+#include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
 #include <utility>
 
@@ -14,9 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
-#include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -70,10 +70,10 @@ CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager,
       initialize_memory_dump_manager_(initialize_memory_dump_manager) {
   if (initialize_memory_dump_manager) {
     // TODO(primiano): the current state where the coordinator also creates a
-    // client (ProcessLocalDumpManagerImpl) is contra-intuitive. BrowserMainLoop
+    // client (ClientProcessImpl) is contra-intuitive. BrowserMainLoop
     // should be doing this.
-    ProcessLocalDumpManagerImpl::CreateInstance(
-        ProcessLocalDumpManagerImpl::Config(this, mojom::ProcessType::BROWSER));
+    ClientProcessImpl::CreateInstance(
+        ClientProcessImpl::Config(this, mojom::ProcessType::BROWSER));
     base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
         mojom::kServiceTracingProcessId);
   }
@@ -94,14 +94,14 @@ service_manager::Identity CoordinatorImpl::GetClientIdentityForCurrentRequest()
 void CoordinatorImpl::BindCoordinatorRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::CoordinatorRequest request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
 
 void CoordinatorImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestGlobalMemoryDumpCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool another_dump_already_in_progress = !queued_memory_dump_requests_.empty();
 
   // If this is a periodic or peak memory dump request and there already is
@@ -137,61 +137,62 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
   PerformNextQueuedGlobalMemoryDump();
 }
 
-void CoordinatorImpl::RegisterProcessLocalDumpManager(
-    mojom::ProcessLocalDumpManagerPtr process_manager) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  process_manager.set_connection_error_handler(
-      base::Bind(&CoordinatorImpl::UnregisterProcessLocalDumpManager,
-                 base::Unretained(this), process_manager.get()));
-  mojom::ProcessLocalDumpManager* key = process_manager.get();
+void CoordinatorImpl::RegisterClientProcess(
+    mojom::ClientProcessPtr client_process_ptr) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  mojom::ClientProcess* client_process = client_process_ptr.get();
+  client_process_ptr.set_connection_error_handler(
+      base::Bind(&CoordinatorImpl::UnregisterClientProcess,
+                 base::Unretained(this), client_process));
   auto client_info = base::MakeUnique<ClientInfo>(
-      GetClientIdentityForCurrentRequest(), std::move(process_manager));
-  auto iterator_and_inserted = clients_.emplace(key, std::move(client_info));
+      GetClientIdentityForCurrentRequest(), std::move(client_process_ptr));
+  auto iterator_and_inserted =
+      clients_.emplace(client_process, std::move(client_info));
   DCHECK(iterator_and_inserted.second);
 }
 
-void CoordinatorImpl::UnregisterProcessLocalDumpManager(
-    mojom::ProcessLocalDumpManager* process_manager) {
-  // Check if we are waiting for an ack from this process-local manager.
-  if (pending_clients_for_current_dump_.count(process_manager)) {
+void CoordinatorImpl::UnregisterClientProcess(
+    mojom::ClientProcess* client_process) {
+  // Check if we are waiting for an ack from this client process.
+  if (pending_clients_for_current_dump_.count(client_process)) {
     DCHECK(!queued_memory_dump_requests_.empty());
     OnProcessMemoryDumpResponse(
-        process_manager, queued_memory_dump_requests_.front().args.dump_guid,
+        client_process, queued_memory_dump_requests_.front().args.dump_guid,
         false /* success */, nullptr /* process_memory_dump */);
   }
-  size_t num_deleted = clients_.erase(process_manager);
+  size_t num_deleted = clients_.erase(client_process);
   DCHECK(num_deleted == 1);
 }
 
 void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!queued_memory_dump_requests_.empty());
   const base::trace_event::MemoryDumpRequestArgs& args =
       queued_memory_dump_requests_.front().args;
 
   // No need to treat the service process different than other processes. The
-  // service process will register itself as a ProcessLocalDumpManager and
-  // will be treated like other process-local managers.
+  // service process will register itself as a ClientProcess and
+  // will be treated like other client processes.
   pending_clients_for_current_dump_.clear();
   failed_memory_dump_count_ = 0;
   for (const auto& kv : clients_) {
-    const mojom::ProcessLocalDumpManagerPtr& client = kv.second->client;
-    pending_clients_for_current_dump_.insert(client.get());
+    mojom::ClientProcess* client = kv.second->client.get();
+    pending_clients_for_current_dump_.insert(client);
     auto callback = base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
-                               base::Unretained(this), client.get());
+                               base::Unretained(this), client);
     client->RequestProcessMemoryDump(args, callback);
   }
-  // Run the callback in case there are no process-local managers.
+  // Run the callback in case there are no client processes registered.
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
 }
 
 void CoordinatorImpl::OnProcessMemoryDumpResponse(
-    mojom::ProcessLocalDumpManager* process_manager,
+    mojom::ClientProcess* client_process,
     uint64_t dump_guid,
     bool success,
     mojom::ProcessMemoryDumpPtr process_memory_dump) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  auto it = pending_clients_for_current_dump_.find(process_manager);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto it = pending_clients_for_current_dump_.find(client_process);
 
   if (queued_memory_dump_requests_.empty() ||
       queued_memory_dump_requests_.front().args.dump_guid != dump_guid ||
@@ -201,7 +202,7 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
   }
   if (process_memory_dump) {
     base::ProcessId pid = base::kNullProcessId;
-    auto it = clients_.find(process_manager);
+    auto it = clients_.find(client_process);
     if (it != clients_.end()) {
       pid = process_map_->GetProcessId(it->second->identity);
     }
@@ -296,7 +297,7 @@ CoordinatorImpl::QueuedMemoryDumpRequest::~QueuedMemoryDumpRequest() {}
 
 CoordinatorImpl::ClientInfo::ClientInfo(
     const service_manager::Identity& identity,
-    mojom::ProcessLocalDumpManagerPtr client)
+    mojom::ClientProcessPtr client)
     : identity(identity), client(std::move(client)) {}
 CoordinatorImpl::ClientInfo::~ClientInfo() {}
 
