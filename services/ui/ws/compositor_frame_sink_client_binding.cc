@@ -37,9 +37,9 @@ void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
                                                 std::move(frame));
 }
 
-void CompositorFrameSinkClientBinding::BeginFrameDidNotSwap(
+void CompositorFrameSinkClientBinding::DidNotProduceFrame(
     const cc::BeginFrameAck& ack) {
-  compositor_frame_sink_->BeginFrameDidNotSwap(ack);
+  compositor_frame_sink_->DidNotProduceFrame(ack);
 }
 
 void CompositorFrameSinkClientBinding::EvictCurrentSurface() {

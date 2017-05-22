@@ -3306,8 +3306,8 @@ class LastObserverTracker : public cc::FakeExternalBeginFrameSource::Client {
 }  // namespace
 
 // Tests that BeginFrameAcks are forwarded correctly from the
-// SwapCompositorFrame and OnBeginFrameDidNotSwap IPCs through
-// DelegatedFrameHost and its CompositorFrameSinkSupport.
+// SwapCompositorFrame and OnDidNotProduceFrame IPCs through DelegatedFrameHost
+// and its CompositorFrameSinkSupport.
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -3354,9 +3354,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
         cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 6u);
     source.TestOnBeginFrame(args);
 
-    // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
+    // Explicit ack through OnDidNotProduceFrame is forwarded.
     cc::BeginFrameAck ack(source_id, 6, 4, false);
-    view_->OnBeginFrameDidNotSwap(ack);
+    view_->OnDidNotProduceFrame(ack);
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
   }
 
@@ -3413,10 +3413,10 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
         BEGINFRAME_FROM_HERE, source_id, 11u);
     source.TestOnBeginFrame(args);
 
-    // Explicit ack through OnBeginFrameDidNotSwap is forwarded with invalid
+    // Explicit ack through OnDidNotProduceFrame is forwarded with invalid
     // latest_confirmed_sequence_number.
     cc::BeginFrameAck ack(source_id, 11, 11, false);
-    view_->OnBeginFrameDidNotSwap(ack);
+    view_->OnDidNotProduceFrame(ack);
     ack.latest_confirmed_sequence_number =
         cc::BeginFrameArgs::kInvalidFrameNumber;
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
@@ -3444,9 +3444,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
         BEGINFRAME_FROM_HERE, source_id, 13u);
     source.TestOnBeginFrame(args);
 
-    // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
+    // Explicit ack through OnDidNotProduceFrame is forwarded.
     cc::BeginFrameAck ack(source_id, 13, 13, false);
-    view_->OnBeginFrameDidNotSwap(ack);
+    view_->OnDidNotProduceFrame(ack);
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
   }
 

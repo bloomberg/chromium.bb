@@ -589,7 +589,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
-  void BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
   void EvictCurrentSurface() override {}
 
  protected:
@@ -651,7 +651,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnRequestMove(const gfx::Rect& pos);
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
-  void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   void OnSetCursor(const WebCursor& cursor);
