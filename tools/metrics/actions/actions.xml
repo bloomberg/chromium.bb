@@ -16089,6 +16089,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Suggestions.FirstTimeSurfaceVisible">
+  <owner>finkm@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <description>
+    Recorded right before Suggestions.SurfaceVisible when this is the first time
+    a suggestions surface is made visible to the user on that device.
+  </description>
+</action>
+
 <action name="Suggestions.ScrolledAfterOpen">
   <owner>dgn@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
