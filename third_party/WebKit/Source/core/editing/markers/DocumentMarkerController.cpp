@@ -33,6 +33,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
@@ -201,23 +202,10 @@ void DocumentMarkerController::RemoveMarkersInRange(
 
 static void UpdateMarkerRenderedRect(const Node& node,
                                      RenderedDocumentMarker& marker) {
-  Range* range = Range::Create(node.GetDocument());
-  // The offsets of the marker may be out-dated, so check for exceptions.
-  DummyExceptionStateForTesting exception_state;
-  range->setStart(&const_cast<Node&>(node), marker.StartOffset(),
-                  exception_state);
-  if (!exception_state.HadException()) {
-    range->setEnd(&const_cast<Node&>(node), marker.EndOffset(),
-                  IGNORE_EXCEPTION_FOR_TESTING);
-  }
-  if (!exception_state.HadException()) {
-    // TODO(yosin): Once we have a |EphemeralRange| version of |boundingBox()|,
-    // we should use it instead of |Range| version.
-    marker.SetRenderedRect(LayoutRect(range->BoundingBox()));
-  } else {
-    marker.NullifyRenderedRect();
-  }
-  range->Dispose();
+  const Position startPosition(&const_cast<Node&>(node), marker.StartOffset());
+  const Position endPostion(&const_cast<Node&>(node), marker.EndOffset());
+  EphemeralRange range(startPosition, endPostion);
+  marker.SetRenderedRect(LayoutRect(ComputeTextRect(range)));
 }
 
 // Markers are stored in order sorted by their start offset.
