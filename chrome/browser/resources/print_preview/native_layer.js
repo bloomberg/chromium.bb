@@ -80,6 +80,27 @@ cr.define('print_preview', function() {
     this.eventTarget_ = new cr.EventTarget();
   }
 
+  /** @private {?print_preview.NativeLayer} */
+  var currentInstance = null;
+
+  /**
+   * @return {!print_preview.NativeLayer} The singleton instance.
+   * Creates a new NativeLayer if the current instance is not set.
+   */
+  NativeLayer.getInstance = function() {
+    if (currentInstance == null)
+      currentInstance = new NativeLayer();
+    return assert(currentInstance);
+  };
+
+  /**
+   * @param {!print_preview.NativeLayer} instance The NativeLayer instance
+   *     to set for print preview construction.
+   */
+  NativeLayer.setInstance = function(instance) {
+    currentInstance = instance;
+  };
+
   /**
    * Event types dispatched from the Chromium native layer.
    * @enum {string}

@@ -55,7 +55,7 @@ cr.define('print_preview', function() {
      * @type {!print_preview.NativeLayer}
      * @private
      */
-    this.nativeLayer_ = new print_preview.NativeLayer();
+    this.nativeLayer_ = print_preview.NativeLayer.getInstance();
 
     /**
      * Event target that contains information about the logged in user.
@@ -324,6 +324,12 @@ cr.define('print_preview', function() {
 
   PrintPreview.prototype = {
     __proto__: print_preview.Component.prototype,
+    /**
+     * @return {!print_preview.PreviewArea} The preview area. Used for tests.
+     */
+    getPreviewArea: function() {
+      return this.previewArea_;
+    },
 
     /** Sets up the page and print preview by getting the printer list. */
     initialize: function() {

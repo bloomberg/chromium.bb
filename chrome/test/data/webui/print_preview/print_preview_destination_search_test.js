@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ROOT_PATH = '../../../../';
+var ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
         [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
@@ -26,6 +26,7 @@ PrintPreviewDestinationSearchTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
       ROOT_PATH + 'chrome/test/data/webui/settings/test_browser_proxy.js',
+      'native_layer_stub.js',
     ]),
 
 };
@@ -41,50 +42,6 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
     var invitationStore_;
     var destinationStore_;
     var userInfo_;
-
-    /**
-     * Test version of the native layer.
-     * TODO (rbpotter): Merge this with NativeLayerStub() from print_preview.js
-     * and put into a separate file.
-     * @constructor
-     * @extends {settings.TestBrowserProxy}
-     */
-    function NativeLayerStub() {
-      settings.TestBrowserProxy.call(this, [ 'setupPrinter' ]);
-      this.destinationToWatch_ = '';
-      this.eventTarget_ = mock(cr.EventTarget);
-      this.getLocalDestinationCapabilitiesCallCount_ = 0;
-      this.setupPrinterResponse_ = null;
-      this.shouldReject_ = false;
-    }
-
-    NativeLayerStub.prototype = {
-      __proto__: settings.TestBrowserProxy.prototype,
-      didGetCapabilitiesOnce: function(destinationId) {
-        return (destinationId == this.destinationToWatch_ &&
-                this.getLocalDestinationCapabilitiesCallCount_ == 1);
-      },
-      getEventTarget: function() { return this.eventTarget_; },
-      setDestinationToWatch: function(destinationId) {
-        this.destinationToWatch_ = destinationId;
-        this.getLocalDestinationCapabilitiesCallCount_ = 0;
-      },
-      setSetupPrinterResponse: function(reject, response) {
-        this.shouldReject_ = reject;
-        this.setupPrinterResponse_ = response;
-      },
-      setupPrinter: function(printerId) {
-        this.methodCalled('setupPrinter', printerId);
-        return this.shouldReject_ ?
-            Promise.reject(this.setupPrinterResponse_) :
-            Promise.resolve(this.setupPrinterResponse_);
-      },
-      startGetLocalDestinationCapabilities: function(destinationId) {
-        if (destinationId == this.destinationToWatch_)
-          this.getLocalDestinationCapabilitiesCallCount_++;
-      },
-    };
-    NativeLayerStub.EventType = print_preview.NativeLayer.EventType;
 
     function getCaps() {
       return {
@@ -193,16 +150,15 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
 
     setup(function() {
       Mock4JS.clearMocksToVerify();
-      nativeLayer_ = new NativeLayerStub();
-      var nativeLayerEventTarget = nativeLayer_.getEventTarget();
+      nativeLayer_ = new print_preview.NativeLayerStub();
+      var nativeLayerEventTarget = mock(cr.EventTarget);
+      nativeLayer_.setEventTarget(nativeLayerEventTarget.proxy());
       nativeLayerEventTarget.expects(atLeastOnce())
           .addEventListener(ANYTHING, ANYTHING, ANYTHING);
 
       invitationStore_ = new print_preview.InvitationStore();
-      var nativeLayerProxy = nativeLayer_;
-      nativeLayerProxy.eventTarget_ = nativeLayerEventTarget.proxy();
       destinationStore_ = new print_preview.DestinationStore(
-          nativeLayerProxy, new print_preview.UserInfo(),
+          nativeLayer_, new print_preview.UserInfo(),
           new print_preview.AppState());
       userInfo_ = new print_preview.UserInfo();
 
