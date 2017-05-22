@@ -8,9 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.ServiceInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -21,9 +18,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -150,8 +144,6 @@ public class ChildProcessConnection {
         }
     }
 
-    // TODO(mnaganov): Get rid of it after the release of the next Android SDK.
-    private static final Map<ComponentName, Boolean> sNeedsExtrabindFlagsMap = new HashMap<>();
     private final Context mContext;
     private final ChildProcessConnection.DeathCallback mDeathCallback;
     private final ComponentName mServiceName;
@@ -226,28 +218,28 @@ public class ChildProcessConnection {
     // Set to true once unbind() was called.
     private boolean mUnbound;
 
-    protected ChildProcessConnection(Context context, DeathCallback deathCallback,
-            String serviceClassName, Bundle childProcessCommonParameters,
-            ChildProcessCreationParams creationParams) {
-        this(context, deathCallback, serviceClassName, childProcessCommonParameters, creationParams,
-                true /* doBind */);
+    ChildProcessConnection(Context context, DeathCallback deathCallback, String packageName,
+            boolean bindAsExternalService, String serviceClassName,
+            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
+        this(context, deathCallback, packageName, bindAsExternalService, serviceClassName,
+                childProcessCommonParameters, creationParams, true /* doBind */);
     }
 
-    private ChildProcessConnection(Context context, DeathCallback deathCallback,
-            String serviceClassName, Bundle childProcessCommonParameters,
-            ChildProcessCreationParams creationParams, boolean doBind) {
+    private ChildProcessConnection(Context context, DeathCallback deathCallback, String packageName,
+            boolean bindAsExternalService, String serviceClassName,
+            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams,
+            boolean doBind) {
         assert LauncherThread.runningOnLauncherThread();
         mContext = context;
         mDeathCallback = deathCallback;
-        String packageName =
-                creationParams != null ? creationParams.getPackageName() : context.getPackageName();
-        mServiceName = new ComponentName(packageName, serviceClassName);
-        mChildProcessCommonParameters = childProcessCommonParameters;
         mCreationParams = creationParams;
+        mServiceName = new ComponentName(packageName, serviceClassName);
+
+        mChildProcessCommonParameters = childProcessCommonParameters;
 
         if (doBind) {
             int defaultFlags = Context.BIND_AUTO_CREATE
-                    | (shouldBindAsExportedService() ? Context.BIND_EXTERNAL_SERVICE : 0);
+                    | (bindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
             mInitialBinding = createServiceConnection(defaultFlags);
             mModerateBinding = createServiceConnection(defaultFlags);
             mStrongBinding = createServiceConnection(defaultFlags | Context.BIND_IMPORTANT);
@@ -267,8 +259,7 @@ public class ChildProcessConnection {
 
     public final String getPackageName() {
         assert LauncherThread.runningOnLauncherThread();
-        return mCreationParams != null ? mCreationParams.getPackageName()
-                                       : mContext.getPackageName();
+        return mServiceName.getPackageName();
     }
 
     public final IChildProcessService getService() {
@@ -608,30 +599,6 @@ public class ChildProcessConnection {
         }
     }
 
-    protected boolean shouldBindAsExportedService() {
-        assert LauncherThread.runningOnLauncherThread();
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && mCreationParams != null
-                && mCreationParams.getIsExternalService()
-                && isExportedService(getContext(), getServiceName());
-    }
-
-    private static boolean isExportedService(Context context, ComponentName serviceName) {
-        Boolean isExported = sNeedsExtrabindFlagsMap.get(serviceName);
-        if (isExported != null) {
-            return isExported;
-        }
-        boolean result = false;
-        try {
-            PackageManager packageManager = context.getPackageManager();
-            ServiceInfo serviceInfo = packageManager.getServiceInfo(serviceName, 0);
-            result = serviceInfo.exported;
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Could not retrieve info about service %s", serviceName, e);
-        }
-        sNeedsExtrabindFlagsMap.put(serviceName, Boolean.valueOf(result));
-        return result;
-    }
-
     @VisibleForTesting
     protected ChildServiceConnection createServiceConnection(int bindFlags) {
         assert LauncherThread.runningOnLauncherThread();
@@ -646,9 +613,11 @@ public class ChildProcessConnection {
     /** Creates a connection with no service bindings. */
     @VisibleForTesting
     static ChildProcessConnection createUnboundConnectionForTesting(Context context,
-            DeathCallback deathCallback, String serviceClassName,
-            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-        return new ChildProcessConnection(context, deathCallback, serviceClassName,
-                childProcessCommonParameters, creationParams, false /* doBind */);
+            DeathCallback deathCallback, String packageName, boolean bindAsExternalService,
+            String serviceClassName, Bundle childProcessCommonParameters,
+            ChildProcessCreationParams creationParams) {
+        return new ChildProcessConnection(context, deathCallback, packageName,
+                bindAsExternalService, serviceClassName, childProcessCommonParameters,
+                creationParams, false /* doBind */);
     }
 }

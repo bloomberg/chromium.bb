@@ -624,8 +624,9 @@ public class ChildProcessLauncherTest {
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                String packageName = creationParams != null ? creationParams.getPackageName()
-                                                            : context.getPackageName();
+                String packageName = creationParams != null
+                        ? creationParams.getPackageNameForSandboxedService()
+                        : context.getPackageName();
                 ChildConnectionAllocator allocator = ChildProcessLauncher.getConnectionAllocator(
                         context, packageName, inSandbox);
 
