@@ -8,12 +8,13 @@ import sys
 
 from telemetry.core import discover
 from telemetry import story
+from telemetry.story import expectations
 
 
 # Import all submodules' PageSet classes.
 start_dir = os.path.dirname(os.path.abspath(__file__))
 top_level_dir = os.path.dirname(start_dir)
-base_classes = [story.StorySet, story.expectations.StoryExpectations]
+base_classes = [story.StorySet, expectations.StoryExpectations]
 
 for base_class in base_classes:
   for cls in discover.DiscoverClasses(
