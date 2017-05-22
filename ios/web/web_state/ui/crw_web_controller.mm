@@ -1862,6 +1862,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
       params.url, params.referrer, params.transition_type,
       navigationInitiationType, params.user_agent_override_option);
 
+  // Mark pending item as created from hash change if necessary. This is needed
+  // because window.hashchange message may not arrive on time.
+  web::NavigationItemImpl* pendingItem = self.sessionController.pendingItem;
+  if (pendingItem) {
+    GURL lastCommittedURL = _webStateImpl->GetLastCommittedURL();
+    GURL pendingURL = pendingItem->GetURL();
+    if (lastCommittedURL != pendingURL &&
+        lastCommittedURL.EqualsIgnoringRef(pendingURL)) {
+      pendingItem->SetIsCreatedFromHashChange(true);
+    }
+  }
+
   web::NavigationItemImpl* addedItem = self.currentNavItem;
   DCHECK(addedItem);
   if (params.extra_headers)
