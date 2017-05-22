@@ -206,6 +206,8 @@ extern const base::Feature kCrosCompUpdates;
 extern const base::Feature kCrOSComponent;
 #endif  // defined(OS_CHROMEOS)
 
+extern const base::Feature kPageLoadMetricsMojofication;
+
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
