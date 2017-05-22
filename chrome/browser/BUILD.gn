@@ -2581,6 +2581,7 @@ split_static_library("browser") {
     ]
     deps += [
       "//components/printing/browser",
+      "//components/printing/service/public/interfaces",
       "//printing",
     ]
 
