@@ -48172,6 +48172,26 @@
         }
       },
       {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1626",
+              "id": "build126-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 9000,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
         "args": [
           "power.idle_platform",
           "-v",
@@ -59448,6 +59468,26 @@
         }
       },
       {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "id": "build132-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 9000,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
         "args": [
           "power.idle_platform",
           "-v",
@@ -65082,6 +65122,26 @@
           "expiration": 36000,
           "hard_timeout": 9000,
           "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build8-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 9000,
+          "ignore_task_failure": false,
           "io_timeout": 3600
         }
       },
@@ -82080,6 +82140,26 @@
         }
       },
       {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "id": "build103-m1",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 9000,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
         "args": [
           "power.idle_platform",
           "-v",
@@ -93476,6 +93556,26 @@
         }
       },
       {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "id": "build94-m1",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 9000,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
         "args": [
           "power.idle_platform",
           "-v",
@@ -99150,6 +99250,26 @@
           "expiration": 36000,
           "hard_timeout": 9000,
           "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "102b:0532",
+              "id": "build187-m1",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 9000,
+          "ignore_task_failure": false,
           "io_timeout": 3600
         }
       },
