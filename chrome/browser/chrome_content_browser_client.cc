@@ -2121,19 +2121,6 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   return allow;
 }
 
-bool ChromeContentBrowserClient::AllowSaveLocalState(
-    content::ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  content_settings::CookieSettings* cookie_settings =
-      io_data->GetCookieSettings();
-  ContentSetting setting = cookie_settings->GetDefaultCookieSetting(NULL);
-
-  // TODO(bauerb): Should we also disallow local state if the default is BLOCK?
-  // Could we even support per-origin settings?
-  return setting != CONTENT_SETTING_SESSION_ONLY;
-}
-
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
@@ -2243,19 +2230,6 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
 
   return allow;
 }
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-bool ChromeContentBrowserClient::AllowWebRTCIdentityCache(
-    const GURL& url,
-    const GURL& first_party_url,
-    content::ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  content_settings::CookieSettings* cookie_settings =
-      io_data->GetCookieSettings();
-  return cookie_settings->IsCookieAccessAllowed(url, first_party_url);
-}
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 ChromeContentBrowserClient::AllowWebBluetoothResult
 ChromeContentBrowserClient::AllowWebBluetooth(
