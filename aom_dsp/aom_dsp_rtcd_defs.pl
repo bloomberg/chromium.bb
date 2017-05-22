@@ -740,13 +740,13 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 if (aom_config("CONFIG_EXT_INTER") eq "yes") {
   foreach (@block_sizes) {
     ($w, $h) = @$_;
-    add_proto qw/unsigned int/, "aom_masked_compound_sad${w}x${h}", "const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask";
+    add_proto qw/unsigned int/, "aom_masked_sad${w}x${h}", "const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask";
   }
 
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     foreach (@block_sizes) {
       ($w, $h) = @$_;
-      add_proto qw/unsigned int/, "aom_highbd_masked_compound_sad${w}x${h}", "const uint8_t *src8, int src_stride, const uint8_t *ref8, int ref_stride, const uint8_t *second_pred8, const uint8_t *msk, int msk_stride, int invert_mask";
+      add_proto qw/unsigned int/, "aom_highbd_masked_sad${w}x${h}", "const uint8_t *src8, int src_stride, const uint8_t *ref8, int ref_stride, const uint8_t *second_pred8, const uint8_t *msk, int msk_stride, int invert_mask";
     }
   }
 }
@@ -1045,14 +1045,14 @@ if (aom_config("CONFIG_EXT_INTER") eq "yes") {
 #
   foreach (@block_sizes) {
     ($w, $h) = @$_;
-    add_proto qw/unsigned int/, "aom_masked_compound_sub_pixel_variance${w}x${h}", "const uint8_t *src, int src_stride, int xoffset, int yoffset, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse";
+    add_proto qw/unsigned int/, "aom_masked_sub_pixel_variance${w}x${h}", "const uint8_t *src, int src_stride, int xoffset, int yoffset, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse";
   }
 
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-    foreach $bd ("_", "_10_", "_12_") {
+    foreach $bd ("_8_", "_10_", "_12_") {
       foreach (@block_sizes) {
         ($w, $h) = @$_;
-        add_proto qw/unsigned int/, "aom_highbd${bd}masked_compound_sub_pixel_variance${w}x${h}", "const uint8_t *src, int src_stride, int xoffset, int yoffset, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse";
+        add_proto qw/unsigned int/, "aom_highbd${bd}masked_sub_pixel_variance${w}x${h}", "const uint8_t *src, int src_stride, int xoffset, int yoffset, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse";
       }
     }
   }

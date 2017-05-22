@@ -177,30 +177,30 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
 
 /* checks if (r, c) has better score than previous best */
 #if CONFIG_EXT_INTER
-#define CHECK_BETTER(v, r, c)                                              \
-  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                  \
-    MV this_mv = { r, c };                                                 \
-    v = mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost, error_per_bit);     \
-    if (second_pred == NULL)                                               \
-      thismse = vfp->svf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),   \
-                         src_address, src_stride, &sse);                   \
-    else if (mask)                                                         \
-      thismse = vfp->mcsvf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
-                           src_address, src_stride, second_pred, mask,     \
-                           mask_stride, invert_mask, &sse);                \
-    else                                                                   \
-      thismse = vfp->svaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),  \
-                          src_address, src_stride, &sse, second_pred);     \
-    v += thismse;                                                          \
-    if (v < besterr) {                                                     \
-      besterr = v;                                                         \
-      br = r;                                                              \
-      bc = c;                                                              \
-      *distortion = thismse;                                               \
-      *sse1 = sse;                                                         \
-    }                                                                      \
-  } else {                                                                 \
-    v = INT_MAX;                                                           \
+#define CHECK_BETTER(v, r, c)                                             \
+  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                 \
+    MV this_mv = { r, c };                                                \
+    v = mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost, error_per_bit);    \
+    if (second_pred == NULL)                                              \
+      thismse = vfp->svf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),  \
+                         src_address, src_stride, &sse);                  \
+    else if (mask)                                                        \
+      thismse = vfp->msvf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
+                          src_address, src_stride, second_pred, mask,     \
+                          mask_stride, invert_mask, &sse);                \
+    else                                                                  \
+      thismse = vfp->svaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
+                          src_address, src_stride, &sse, second_pred);    \
+    v += thismse;                                                         \
+    if (v < besterr) {                                                    \
+      besterr = v;                                                        \
+      br = r;                                                             \
+      bc = c;                                                             \
+      *distortion = thismse;                                              \
+      *sse1 = sse;                                                        \
+    }                                                                     \
+  } else {                                                                \
+    v = INT_MAX;                                                          \
   }
 #else
 #define CHECK_BETTER(v, r, c)                                             \
@@ -224,7 +224,7 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
   } else {                                                                \
     v = INT_MAX;                                                          \
   }
-#endif
+#endif  // CONFIG_EXT_INTER
 
 #define CHECK_BETTER0(v, r, c) CHECK_BETTER(v, r, c)
 
@@ -272,7 +272,7 @@ static INLINE const uint8_t *upre(const uint8_t *buf, int stride, int r,
   } else {                                                             \
     v = INT_MAX;                                                       \
   }
-#endif
+#endif  // CONFIG_EXT_INTER
 
 #define FIRST_LEVEL_CHECKS                                       \
   {                                                              \
@@ -861,9 +861,9 @@ int av1_find_best_sub_pixel_tree(
                                src_address, src_stride, &sse);
 #if CONFIG_EXT_INTER
           else if (mask)
-            thismse = vfp->mcsvf(pre_address, y_stride, sp(tc), sp(tr),
-                                 src_address, src_stride, second_pred, mask,
-                                 mask_stride, invert_mask, &sse);
+            thismse = vfp->msvf(pre_address, y_stride, sp(tc), sp(tr),
+                                src_address, src_stride, second_pred, mask,
+                                mask_stride, invert_mask, &sse);
 #endif
           else
             thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
@@ -910,9 +910,9 @@ int av1_find_best_sub_pixel_tree(
                              src_stride, &sse);
 #if CONFIG_EXT_INTER
         else if (mask)
-          thismse = vfp->mcsvf(pre_address, y_stride, sp(tc), sp(tr),
-                               src_address, src_stride, second_pred, mask,
-                               mask_stride, invert_mask, &sse);
+          thismse = vfp->msvf(pre_address, y_stride, sp(tc), sp(tr),
+                              src_address, src_stride, second_pred, mask,
+                              mask_stride, invert_mask, &sse);
 #endif
         else
           thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
@@ -1389,9 +1389,9 @@ int av1_get_mvpred_mask_var(const MACROBLOCK *x, const MV *best_mv,
   const MV mv = { best_mv->row * 8, best_mv->col * 8 };
   unsigned int unused;
 
-  return vfp->mcsvf(what->buf, what->stride, 0, 0,
-                    get_buf_from_mv(in_what, best_mv), in_what->stride,
-                    second_pred, mask, mask_stride, invert_mask, &unused) +
+  return vfp->msvf(what->buf, what->stride, 0, 0,
+                   get_buf_from_mv(in_what, best_mv), in_what->stride,
+                   second_pred, mask, mask_stride, invert_mask, &unused) +
          (use_mvcost ? mv_err_cost(&mv, center_mv, x->nmvjointcost, x->mvcost,
                                    x->errorperbit)
                      : 0);
@@ -2362,7 +2362,7 @@ int av1_refining_search_sad(MACROBLOCK *x, MV *ref_mv, int error_per_bit,
 }
 
 // This function is called when we do joint motion search in comp_inter_inter
-// mode.
+// mode, or when searching for one component of an ext-inter compound mode.
 int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const aom_variance_fn_ptr_t *fn_ptr,
 #if CONFIG_EXT_INTER
@@ -2384,9 +2384,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
            x->mv_limits.row_min, x->mv_limits.row_max);
 #if CONFIG_EXT_INTER
   if (mask)
-    best_sad = fn_ptr->mcsdf(what->buf, what->stride,
-                             get_buf_from_mv(in_what, best_mv), in_what->stride,
-                             second_pred, mask, mask_stride, invert_mask) +
+    best_sad = fn_ptr->msdf(what->buf, what->stride,
+                            get_buf_from_mv(in_what, best_mv), in_what->stride,
+                            second_pred, mask, mask_stride, invert_mask) +
                mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
   else
 #endif
@@ -2406,9 +2406,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
         unsigned int sad;
 #if CONFIG_EXT_INTER
         if (mask)
-          sad = fn_ptr->mcsdf(what->buf, what->stride,
-                              get_buf_from_mv(in_what, &mv), in_what->stride,
-                              second_pred, mask, mask_stride, invert_mask);
+          sad = fn_ptr->msdf(what->buf, what->stride,
+                             get_buf_from_mv(in_what, &mv), in_what->stride,
+                             second_pred, mask, mask_stride, invert_mask);
         else
 #endif
           sad = fn_ptr->sdaf(what->buf, what->stride,
