@@ -229,7 +229,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                                      cc::CompositorFrame frame) = 0;
 
-  virtual void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {}
+  virtual void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) {}
   virtual void OnSurfaceChanged(const cc::SurfaceInfo& surface_info) {}
 
   // This method exists to allow removing of displayed graphics, after a new

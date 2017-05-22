@@ -33,7 +33,7 @@ class CompositorFrameSinkClientBinding
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
   void EvictCurrentSurface() override;
 
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;

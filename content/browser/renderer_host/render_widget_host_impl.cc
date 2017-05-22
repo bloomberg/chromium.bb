@@ -558,7 +558,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginFrameDidNotSwap, BeginFrameDidNotSwap)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidNotProduceFrame, DidNotProduceFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
@@ -1929,13 +1929,13 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
   }
 }
 
-void RenderWidgetHostImpl::BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {
+void RenderWidgetHostImpl::DidNotProduceFrame(const cc::BeginFrameAck& ack) {
   // |has_damage| is not transmitted.
   cc::BeginFrameAck modified_ack = ack;
   modified_ack.has_damage = false;
 
   if (view_)
-    view_->OnBeginFrameDidNotSwap(modified_ack);
+    view_->OnDidNotProduceFrame(modified_ack);
 }
 
 void RenderWidgetHostImpl::OnUpdateRect(

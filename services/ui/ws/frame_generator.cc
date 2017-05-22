@@ -82,7 +82,7 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
       begin_frame_args.source_id, begin_frame_args.sequence_number,
       begin_frame_args.sequence_number, false);
   if (begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
-    compositor_frame_sink_->BeginFrameDidNotSwap(current_begin_frame_ack_);
+    compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack_);
     return;
   }
 

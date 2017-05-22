@@ -46,8 +46,11 @@ class TestClientBinding : public cc::mojom::MojoCompositorFrameSink,
                              cc::CompositorFrame frame) override {
     ++frames_submitted_;
     last_frame_ = std::move(frame);
-    begin_frame_source_->DidFinishFrame(this,
-                                        last_frame_.metadata.begin_frame_ack);
+    last_begin_frame_ack_ = last_frame_.metadata.begin_frame_ack;
+  }
+
+  void DidNotProduceFrame(const cc::BeginFrameAck& ack) override {
+    last_begin_frame_ack_ = ack;
   }
 
   void SetNeedsBeginFrame(bool needs_begin_frame) override {
@@ -59,11 +62,6 @@ class TestClientBinding : public cc::mojom::MojoCompositorFrameSink,
       begin_frame_source_->AddObserver(this);
     } else
       begin_frame_source_->RemoveObserver(this);
-  }
-
-  void BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override {
-    if (observing_begin_frames_)
-      begin_frame_source_->DidFinishFrame(this, ack);
   }
 
   void EvictCurrentSurface() override {}
@@ -94,6 +92,10 @@ class TestClientBinding : public cc::mojom::MojoCompositorFrameSink,
 
   int frames_submitted() const { return frames_submitted_; }
 
+  const cc::BeginFrameAck& last_begin_frame_ack() const {
+    return last_begin_frame_ack_;
+  }
+
  private:
   cc::mojom::MojoCompositorFrameSinkClient* sink_client_;
   cc::BeginFrameArgs last_begin_frame_args_;
@@ -101,6 +103,7 @@ class TestClientBinding : public cc::mojom::MojoCompositorFrameSink,
   cc::BeginFrameSource* begin_frame_source_ = nullptr;
   bool observing_begin_frames_ = false;
   int frames_submitted_ = 0;
+  cc::BeginFrameAck last_begin_frame_ack_;
 };
 
 class FrameGeneratorTest : public testing::Test {
@@ -149,8 +152,8 @@ class FrameGeneratorTest : public testing::Test {
 
   int NumberOfFramesReceived() const { return binding_->frames_submitted(); }
 
-  const cc::BeginFrameAck& LastBeginFrameAck() {
-    return begin_frame_source_->LastAckForObserver(binding_);
+  const cc::BeginFrameAck& LastBeginFrameAck() const {
+    return binding_->last_begin_frame_ack();
   }
 
   const cc::CompositorFrameMetadata& LastMetadata() const {
