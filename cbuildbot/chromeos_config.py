@@ -2264,7 +2264,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline',
       'cave',
       'elm',
-      'kevin',
       'kip',
       'link',
       'lumpy',
@@ -2292,9 +2291,17 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       ('nyan_big',      'nyan_kitty'),
       ('winky',         'kip'),
       ('elm',           None),
-      ('kevin',         None),
       ('cave',          'caroline'),
       ('link',          None),
+  ])
+
+  # To further spread out load for ARC++ (cheets) testing, we assign
+  # specific boards to handle the arc-bvt-cq test suite.  These boards
+  # should be separate from the BVT boards, above.
+  _paladin_cheets_hwtest_boards = frozenset([
+      'cyan',
+      'veyron_minnie',
+      'kevin',
   ])
 
   # Jetstream devices run unique hw tests
@@ -2305,12 +2312,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_moblab_hwtest_boards = frozenset([
       'guado_moblab',
-  ])
-
-  # *-cheets devices run a different suite
-  _paladin_cheets_hwtest_boards = frozenset([
-      'cyan',
-      'veyron_minnie',
   ])
 
   _paladin_chroot_replace_boards = frozenset([
