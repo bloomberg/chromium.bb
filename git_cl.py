@@ -1592,6 +1592,16 @@ class Changelist(object):
       base_branch = self.GetCommonAncestorWithUpstream()
       git_diff_args = [base_branch, 'HEAD']
 
+    # Warn about Rietveld deprecation for initial uploads to Rietveld.
+    if not self.IsGerrit() and not self.GetIssue():
+      print('=====================================')
+      print('NOTICE: Rietveld is being deprecated. '
+            'You can upload changes to Gerrit with')
+      print('  git cl upload --gerrit')
+      print('or set Gerrit to be your default code review tool with')
+      print('  git config gerrit.host true')
+      print('=====================================')
+
     # Fast best-effort checks to abort before running potentially
     # expensive hooks if uploading is likely to fail anyway. Passing these
     # checks does not guarantee that uploading will not fail.

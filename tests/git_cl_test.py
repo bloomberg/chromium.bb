@@ -982,7 +982,15 @@ class TestGitCl(TestCase):
     self.mock(sys, 'stdout', stdout)
     with self.assertRaises(SystemExitMock):
       git_cl.main(['upload', '--send-mail'])
-    self.assertEqual('', stdout.getvalue())
+    self.assertEqual(
+        '=====================================\n'
+        'NOTICE: Rietveld is being deprecated. '
+        'You can upload changes to Gerrit with\n'
+        '  git cl upload --gerrit\n'
+        'or set Gerrit to be your default code review tool with\n'
+        '  git config gerrit.host true\n'
+        '=====================================\n',
+        stdout.getvalue())
 
   def test_bug_on_cmd(self):
     self._run_reviewer_test(
