@@ -68,6 +68,7 @@ def RunSteps(api, use_pkg, pkg_files, pkg_dirs, ver_files, install_mode):
     pkg = api.cipd.PackageDefinition('infra/fake-package', root, install_mode)
     for fullpath in pkg_files:
       pkg.add_file(api.path.abs_to_path(fullpath))
+    pkg.add_dir(root)
     for obj in pkg_dirs:
       pkg.add_dir(api.path.abs_to_path(obj.get('path', '')),
                   obj.get('exclusions'))

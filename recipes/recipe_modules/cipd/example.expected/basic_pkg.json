@@ -286,7 +286,7 @@
       "cipd",
       "create",
       "-pkg-def",
-      "{\"data\": [{\"file\": \"a/path/to/file.py\"}, {\"file\": \"some_config.cfg\"}, {\"dir\": \"directory\", \"exclude\": []}, {\"dir\": \"other_dir\", \"exclude\": [\".*\\\\.pyc\"]}], \"install_mode\": \"\", \"package\": \"infra/fake-package\", \"root\": \"[START_DIR]/some_subdir\"}",
+      "{\"data\": [{\"file\": \"a/path/to/file.py\"}, {\"file\": \"some_config.cfg\"}, {\"dir\": \".\", \"exclude\": []}, {\"dir\": \"directory\", \"exclude\": []}, {\"dir\": \"other_dir\", \"exclude\": [\".*\\\\.pyc\"]}], \"install_mode\": \"\", \"package\": \"infra/fake-package\", \"root\": \"[START_DIR]/some_subdir\"}",
       "-json-output",
       "/path/to/tmp/json",
       "-service-account-json",
