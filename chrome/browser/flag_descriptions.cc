@@ -2360,6 +2360,12 @@ const char kEnableContentSuggestionsNewFaviconServerDescription[] =
     "If enabled, the content suggestions (on the NTP) will get favicons from a "
     "new favicon server.";
 
+const char kEnableFaviconsFromWebManifestName[] =
+    "Load favicons from Web Manifests";
+
+const char kEnableFaviconsFromWebManifestDescription[] =
+    "Fetch Web Manifests on page load to read favicons from them.";
+
 const char kEnableNtpMostLikelyFaviconsFromServerName[] =
     "Download favicons for NTP tiles from Google.";
 
