@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
@@ -30,9 +30,7 @@ class MEDIA_EXPORT AudioDebugFileWriter {
   // Number of channels and sample rate are used from |params|, the other
   // parameters are ignored. The number of channels in the data passed to
   // Write() must match |params|.
-  AudioDebugFileWriter(
-      const AudioParameters& params,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  AudioDebugFileWriter(const AudioParameters& params);
 
   virtual ~AudioDebugFileWriter();
 
@@ -86,7 +84,9 @@ class MEDIA_EXPORT AudioDebugFileWriter {
   base::SequenceChecker client_sequence_checker_;
 
   // The task runner to do file output operations on.
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   DISALLOW_COPY_AND_ASSIGN(AudioDebugFileWriter);
 };
