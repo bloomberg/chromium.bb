@@ -87,6 +87,7 @@ found in the LICENSE file.
       var vrPresentButton = null;
 
       var heavyGpu = WGLUUrl.getBool('heavyGpu', false);
+      var cubeCount = WGLUUrl.getInt('cubeCount', heavyGpu ? 12 : 10);
       var simulatedWorkTimeMs = WGLUUrl.getFloat('workTime', 0);
 
       // ================================
@@ -118,7 +119,7 @@ found in the LICENSE file.
 
         var textureLoader = new WGLUTextureLoader(gl);
         var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
-        cubeSea = new VRCubeSea(gl, texture, heavyGpu ? 12 : 10, heavyGpu);
+        cubeSea = new VRCubeSea(gl, texture, cubeCount, heavyGpu);
         var enablePerformanceMonitoring = WGLUUrl.getBool(
             'enablePerformanceMonitoring', false);
         stats = new WGLUStats(gl, enablePerformanceMonitoring);
