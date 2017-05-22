@@ -705,8 +705,8 @@ class CORE_EXPORT UseCounter {
     kBackspaceNavigatedBackAfterFormInteraction = 958,
     kCSPSourceWildcardWouldMatchExactHost = 959,
     kCredentialManagerGet = 960,
-    kCredentialManagerGetWithUI = 961,
-    kCredentialManagerGetWithoutUI = 962,
+    kCredentialManagerGetMediationOptional = 961,
+    kCredentialManagerGetMediationSilent = 962,
     kCredentialManagerStore = 963,
     kCredentialManagerRequireUserMediation = 964,
     // The above items are available in M47 branch.
@@ -1594,6 +1594,8 @@ class CORE_EXPORT UseCounter {
     kWebDatabaseCreateDropFTS3Table = 1980,
     kFieldEditInSecureContext = 1981,
     kFieldEditInNonSecureContext = 1982,
+    kCredentialManagerCredentialRequestOptionsUnmediated = 1983,
+    kCredentialManagerGetMediationRequired = 1984,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

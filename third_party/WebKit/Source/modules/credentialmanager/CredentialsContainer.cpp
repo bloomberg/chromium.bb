@@ -16,6 +16,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/page/FrameTree.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/CredentialCreationOptions.h"
@@ -30,6 +31,7 @@
 #include "public/platform/WebCredential.h"
 #include "public/platform/WebCredentialManagerClient.h"
 #include "public/platform/WebCredentialManagerError.h"
+#include "public/platform/WebCredentialMediationRequirement.h"
 #include "public/platform/WebFederatedCredential.h"
 #include "public/platform/WebPasswordCredential.h"
 
@@ -170,6 +172,27 @@ ScriptPromise CredentialsContainer::get(
   if (!CheckBoilerplate(resolver))
     return promise;
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  // Set the default mediation option if none is provided.
+  // If both 'unmediated' and 'mediation' are set log a warning if they are
+  // contradicting.
+  // Also sets 'mediation' appropriately when only 'unmediated' is set.
+  // TODO(http://crbug.com/715077): Remove this when 'unmediated' is removed.
+  String mediation = "optional";
+  if (options.hasUnmediated() && !options.hasMediation()) {
+    mediation = options.unmediated() ? "silent" : "optional";
+  } else if (options.hasMediation()) {
+    mediation = options.mediation();
+    if (options.hasUnmediated() &&
+        ((options.unmediated() && options.mediation() != "silent") ||
+         (!options.unmediated() && options.mediation() != "optional"))) {
+      context->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
+          "mediation: '" + options.mediation() + "' overrides unmediated: " +
+              (options.unmediated() ? "true" : "false") + "."));
+    }
+  }
+
   Vector<KURL> providers;
   if (options.hasFederated() && options.federated().hasProviders()) {
     for (const auto& string : options.federated().providers()) {
@@ -179,14 +202,26 @@ ScriptPromise CredentialsContainer::get(
     }
   }
 
-  UseCounter::Count(ExecutionContext::From(script_state),
-                    options.unmediated()
-                        ? UseCounter::kCredentialManagerGetWithoutUI
-                        : UseCounter::kCredentialManagerGetWithUI);
+  WebCredentialMediationRequirement requirement;
 
-  CredentialManagerClient::From(ExecutionContext::From(script_state))
-      ->DispatchGet(options.unmediated(), options.password(), providers,
-                    new RequestCallbacks(resolver));
+  if (mediation == "silent") {
+    UseCounter::Count(context,
+                      UseCounter::kCredentialManagerGetMediationSilent);
+    requirement = WebCredentialMediationRequirement::kSilent;
+  } else if (mediation == "optional") {
+    UseCounter::Count(context,
+                      UseCounter::kCredentialManagerGetMediationOptional);
+    requirement = WebCredentialMediationRequirement::kOptional;
+  } else {
+    DCHECK_EQ("required", mediation);
+    UseCounter::Count(context,
+                      UseCounter::kCredentialManagerGetMediationRequired);
+    requirement = WebCredentialMediationRequirement::kRequired;
+  }
+
+  CredentialManagerClient::From(context)->DispatchGet(
+      requirement, options.password(), providers,
+      new RequestCallbacks(resolver));
   return promise;
 }
 

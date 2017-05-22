@@ -49696,6 +49696,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.GetMediated" enum="CredentialManagerGetResult">
+  <obsolete>
+    Deprecated as of 05/2017. This metric has been replaced by
+    PasswordManager.MediationOptional.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <summary>
     Tracks result of navigator.credentials.get() with unmediated=false. That is
@@ -49705,6 +49709,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.GetUnmediated"
     enum="CredentialManagerGetResult">
+  <obsolete>
+    Deprecated as of 05/2017. This metric has been replaced by
+    PasswordManager.MediationSilent.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <summary>
     Tracks result of navigator.credentials.get() with unmediated=true. That is
@@ -49828,6 +49836,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="LoginDatabaseInitError">
   <owner>vasilii@chromium.org</owner>
   <summary>An error on LoginDatabase initialization.</summary>
+</histogram>
+
+<histogram name="PasswordManager.MediationOptional"
+    enum="CredentialManagerGetResult">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Tracks result of navigator.credentials.get() with
+    mediation=&quot;optional&quot;. That is the result of account chooser.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.MediationRequired"
+    enum="CredentialManagerGetResult">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Tracks result of navigator.credentials.get() with
+    mediation=&quot;required&quot;. That is the result of forced account
+    chooser.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.MediationSilent"
+    enum="CredentialManagerGetResult">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Tracks result of navigator.credentials.get() with
+    mediation=&quot;silent&quot;. That is the result of auto sign-in.
+  </summary>
 </histogram>
 
 <histogram name="PasswordManager.MultiAccountPasswordUpdateAction"
