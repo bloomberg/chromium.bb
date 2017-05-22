@@ -780,7 +780,14 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
     return;
   }
   ScriptState::Scope scope(script_state);
-  IDBRequest* idb_request = idb_factory->GetDatabaseNames(script_state);
+  DummyExceptionStateForTesting exception_state;
+  IDBRequest* idb_request =
+      idb_factory->GetDatabaseNames(script_state, exception_state);
+  if (exception_state.HadException()) {
+    request_callback->sendFailure(
+        Response::Error("Could not obtain database names."));
+    return;
+  }
   idb_request->addEventListener(
       EventTypeNames::success,
       GetDatabaseNamesCallback::Create(
@@ -1014,8 +1021,14 @@ void InspectorIndexedDBAgent::deleteDatabase(
     return;
   }
   ScriptState::Scope scope(script_state);
+  DummyExceptionStateForTesting exception_state;
   IDBRequest* idb_request = idb_factory->CloseConnectionsAndDeleteDatabase(
-      script_state, database_name);
+      script_state, database_name, exception_state);
+  if (exception_state.HadException()) {
+    request_callback->sendFailure(
+        Response::Error("Could not delete database."));
+    return;
+  }
   idb_request->addEventListener(
       EventTypeNames::success,
       DeleteCallback::Create(std::move(request_callback),

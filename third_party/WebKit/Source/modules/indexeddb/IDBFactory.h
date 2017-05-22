@@ -61,9 +61,10 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
             ExceptionState&);
 
   // These are not exposed to the web applications and only used by DevTools.
-  IDBRequest* GetDatabaseNames(ScriptState*);
+  IDBRequest* GetDatabaseNames(ScriptState*, ExceptionState&);
   IDBOpenDBRequest* CloseConnectionsAndDeleteDatabase(ScriptState*,
-                                                      const String& name);
+                                                      const String& name,
+                                                      ExceptionState&);
 
  private:
   IDBFactory();
@@ -75,6 +76,7 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
 
   IDBOpenDBRequest* DeleteDatabaseInternal(ScriptState*,
                                            const String& name,
+                                           ExceptionState&,
                                            bool);
 };
 
