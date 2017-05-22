@@ -422,13 +422,7 @@ bool AwContentBrowserClient::CanCreateWindow(
   if (no_javascript_access) {
     *no_javascript_access = false;
   }
-
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(opener);
-  AwSettings* settings = AwSettings::FromWebContents(web_contents);
-
-  return (settings && settings->GetJavaScriptCanOpenWindowsAutomatically()) ||
-         user_gesture;
+  return true;
 }
 
 void AwContentBrowserClient::ResourceDispatcherHostCreated() {

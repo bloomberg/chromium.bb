@@ -84,7 +84,6 @@ class BlinkTestRunner : public RenderViewObserver,
                                       bool is_wpt_mode) override;
   test_runner::TestPreferences* Preferences() override;
   void ApplyPreferences() override;
-  void SetPopupBlockingEnabled(bool block_popups) override;
   virtual std::string makeURLErrorDescription(const blink::WebURLError& error);
   void UseUnfortunateSynchronousResizeMode(bool enable) override;
   void EnableAutoResizeMode(const blink::WebSize& min_size,

@@ -399,11 +399,6 @@ void BlinkTestRunner::ApplyPreferences() {
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
 
-void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  Send(
-      new ShellViewHostMsg_SetPopupBlockingEnabled(routing_id(), block_popups));
-}
-
 std::string BlinkTestRunner::makeURLErrorDescription(const WebURLError& error) {
   std::string domain = error.domain.Utf8();
   int code = error.reason;

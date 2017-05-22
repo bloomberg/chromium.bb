@@ -453,6 +453,9 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   Frame* target_frame = GetDocument().GetFrame()->FindFrameForNavigation(
       submission->Target(), *GetDocument().GetFrame());
   if (!target_frame) {
+    if (!LocalDOMWindow::AllowPopUp(*GetDocument().GetFrame()) &&
+        !UserGestureIndicator::ProcessingUserGesture())
+      return;
     target_frame = GetDocument().GetFrame();
   } else {
     submission->ClearTarget();

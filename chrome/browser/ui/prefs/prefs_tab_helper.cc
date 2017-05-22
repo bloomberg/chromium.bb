@@ -85,6 +85,7 @@ const char* const kPrefsToObserve[] = {
   prefs::kWebKitForceEnableZoom,
   prefs::kWebKitPasswordEchoEnabled,
 #endif
+  prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
   prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitLoadsImagesAutomatically,
   prefs::kWebKitMinimumFontSize,
@@ -520,6 +521,8 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.javascript_enabled);
   registry->RegisterBooleanPref(prefs::kWebKitWebSecurityEnabled,
                                 pref_defaults.web_security_enabled);
+  registry->RegisterBooleanPref(
+      prefs::kWebKitJavascriptCanOpenWindowsAutomatically, true);
   registry->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
                                 pref_defaults.loads_images_automatically);
   registry->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
