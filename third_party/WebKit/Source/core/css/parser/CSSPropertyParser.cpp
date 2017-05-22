@@ -1011,9 +1011,9 @@ static CSSValue* ConsumePrefixedBackgroundBox(CSSPropertyID property,
   return nullptr;
 }
 
-static CSSValue* ConsumeBackgroundSize(CSSPropertyID unresolved_property,
-                                       CSSParserTokenRange& range,
-                                       CSSParserMode css_parser_mode) {
+static CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
+                                       CSSParserMode css_parser_mode,
+                                       bool use_legacy_parsing) {
   if (IdentMatches<CSSValueContain, CSSValueCover>(range.Peek().Id()))
     return ConsumeIdent(range);
 
@@ -1029,7 +1029,7 @@ static CSSValue* ConsumeBackgroundSize(CSSPropertyID unresolved_property,
     else
       vertical = ConsumeLengthOrPercent(range, css_parser_mode, kValueRangeAll,
                                         UnitlessQuirk::kForbid);
-  } else if (unresolved_property == CSSPropertyAliasWebkitBackgroundSize) {
+  } else if (use_legacy_parsing) {
     // Legacy syntax: "-webkit-background-size: 10px" is equivalent to
     // "background-size: 10px 10px".
     vertical = horizontal;
@@ -1075,9 +1075,12 @@ static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
                                                                CSSValueBottom>(
           range, context->Mode());
     case CSSPropertyBackgroundSize:
-    case CSSPropertyAliasWebkitBackgroundSize:
     case CSSPropertyWebkitMaskSize:
-      return ConsumeBackgroundSize(unresolved_property, range, context->Mode());
+      return ConsumeBackgroundSize(range, context->Mode(),
+                                   false /* use_legacy_parsing */);
+    case CSSPropertyAliasWebkitBackgroundSize:
+      return ConsumeBackgroundSize(range, context->Mode(),
+                                   true /* use_legacy_parsing */);
     case CSSPropertyBackgroundColor:
       return ConsumeColor(range, context->Mode());
     default:
@@ -2698,7 +2701,8 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
                    property == CSSPropertyWebkitMaskSize) {
           if (!ConsumeSlashIncludingWhitespace(range_))
             continue;
-          value = ConsumeBackgroundSize(property, range_, context_->Mode());
+          value = ConsumeBackgroundSize(range_, context_->Mode(),
+                                        false /* use_legacy_parsing */);
           if (!value ||
               !parsed_longhand[i - 1])  // Position must have been
                                         // parsed in the current layer.
