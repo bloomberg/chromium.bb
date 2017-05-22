@@ -850,6 +850,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method blob
 [Worker]     method clone
 [Worker]     method constructor
+[Worker]     method formData
 [Worker]     method json
 [Worker]     method text
 [Worker] interface Response
@@ -869,6 +870,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method blob
 [Worker]     method clone
 [Worker]     method constructor
+[Worker]     method formData
 [Worker]     method json
 [Worker]     method text
 [Worker] interface ServiceWorkerRegistration : EventTarget

@@ -5249,6 +5249,7 @@ interface Request
     method blob
     method clone
     method constructor
+    method formData
     method json
     method text
 interface ResizeObserver
@@ -5279,6 +5280,7 @@ interface Response
     method blob
     method clone
     method constructor
+    method formData
     method json
     method text
 interface SVGAElement : SVGGraphicsElement
