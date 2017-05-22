@@ -53,6 +53,16 @@ const char kEidForNextTimeQuantum[] = "\x56\x78";
 const char kWrongEid[] = "\xff\xff";
 const int64_t kEidPeriodMs = 60 * 1000 * 15;  // 15 minutes.
 
+std::vector<cryptauth::BeaconSeed> CreateBeaconSeeds() {
+  std::vector<cryptauth::BeaconSeed> beacon_seeds;
+  cryptauth::BeaconSeed seed;
+  seed.set_data("\xab\xcd");
+  seed.set_start_time_millis(0);
+  seed.set_end_time_millis(10000000);
+  beacon_seeds.push_back(seed);
+  return beacon_seeds;
+}
+
 class MockBluetoothLowEnergyConnectionFinder;
 class FakeEidGenerator : public cryptauth::BackgroundEidGenerator {
  public:
@@ -76,6 +86,7 @@ class MockBluetoothLowEnergyConnectionFinder
       : BluetoothLowEnergyConnectionFinder(
             cryptauth::CreateLERemoteDeviceForTest(),
             kBLEGattServiceUUID,
+            CreateBeaconSeeds(),
             base::MakeUnique<FakeEidGenerator>(this),
             nullptr) {}
 

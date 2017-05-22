@@ -355,7 +355,6 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
           enrollment_manager->GetUserPrivateKey(),
           proximity_auth_client_->CreateSecureMessageDelegate()));
       remote_device_loader_->Load(
-          true /* should_load_beacon_seeds */,
           base::Bind(&ProximityAuthWebUIHandler::OnRemoteDevicesLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
       return;

@@ -105,7 +105,6 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
       GetCryptAuthEnrollmentManager()->GetUserPrivateKey(),
       proximity_auth_client()->CreateSecureMessageDelegate()));
   remote_device_loader_->Load(
-      true /* should_load_beacon_seeds */,
       base::Bind(&EasyUnlockServiceRegular::OnRemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }

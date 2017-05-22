@@ -8,30 +8,6 @@
 
 namespace cryptauth {
 
-namespace {
-
-// Returns true if both vectors are BeaconSeeds are equal.
-bool AreBeaconSeedsEqual(const std::vector<BeaconSeed> beacon_seeds1,
-                         const std::vector<BeaconSeed> beacon_seeds2) {
-  if (beacon_seeds1.size() != beacon_seeds2.size()) {
-    return false;
-  }
-
-  for (size_t i = 0; i < beacon_seeds1.size(); ++i) {
-    const BeaconSeed& seed1 = beacon_seeds1[i];
-    const BeaconSeed& seed2 = beacon_seeds2[i];
-    if (seed1.start_time_millis() != seed2.start_time_millis() ||
-        seed1.end_time_millis() != seed2.end_time_millis() ||
-        seed1.data() != seed2.data()) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-}  // namespace
-
 RemoteDevice::RemoteDevice() {}
 
 RemoteDevice::RemoteDevice(const std::string& user_id,
@@ -51,12 +27,6 @@ RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
 
 RemoteDevice::~RemoteDevice() {}
 
-void RemoteDevice::LoadBeaconSeeds(
-    const std::vector<BeaconSeed>& beacon_seeds) {
-  this->are_beacon_seeds_loaded = true;
-  this->beacon_seeds = beacon_seeds;
-}
-
 std::string RemoteDevice::GetDeviceId() const {
   std::string to_return;
   base::Base64Encode(public_key, &to_return);
@@ -68,21 +38,12 @@ std::string RemoteDevice::GetTruncatedDeviceIdForLogs() const {
 }
 
 bool RemoteDevice::operator==(const RemoteDevice& other) const {
-  // Only compare |beacon_seeds| if they are loaded.
-  bool are_beacon_seeds_equal = false;
-  if (are_beacon_seeds_loaded) {
-    are_beacon_seeds_equal =
-        other.are_beacon_seeds_loaded &&
-        AreBeaconSeedsEqual(beacon_seeds, other.beacon_seeds);
-  } else {
-    are_beacon_seeds_equal = !other.are_beacon_seeds_loaded;
-  }
-
-  return user_id == other.user_id && name == other.name &&
-         public_key == other.public_key &&
-         bluetooth_address == other.bluetooth_address &&
-         persistent_symmetric_key == other.persistent_symmetric_key &&
-         sign_in_challenge == other.sign_in_challenge && are_beacon_seeds_equal;
+  return user_id == other.user_id
+      && name == other.name
+      && public_key == other.public_key
+      && bluetooth_address == other.bluetooth_address
+      && persistent_symmetric_key == other.persistent_symmetric_key
+      && sign_in_challenge == other.sign_in_challenge;
 }
 
 bool RemoteDevice::operator<(const RemoteDevice& other) const {
