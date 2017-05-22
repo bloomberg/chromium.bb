@@ -43,7 +43,6 @@ class ValidatingCombobox : public views::Combobox,
   void Validate();
 
   std::unique_ptr<ValidationDelegate> delegate_;
-  bool was_blurred_ = false;
   bool being_removed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ValidatingCombobox);

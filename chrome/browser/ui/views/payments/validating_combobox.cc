@@ -23,11 +23,9 @@ ValidatingCombobox::~ValidatingCombobox() {}
 void ValidatingCombobox::OnBlur() {
   Combobox::OnBlur();
 
-  // The first validation should be on a blur. The subsequent validations will
-  // occur when the content changes. Do not validate if the view is being
-  // removed.
-  if (!was_blurred_ && !being_removed_) {
-    was_blurred_ = true;
+  // Validations will occur when the content changes. Do not validate if the
+  // view is being removed.
+  if (!being_removed_) {
     Validate();
   }
 }
@@ -39,11 +37,6 @@ void ValidatingCombobox::ViewHierarchyChanged(
 }
 
 void ValidatingCombobox::OnContentsChanged() {
-  // Validation on every keystroke only happens if the field has been validated
-  // before as part of a blur.
-  if (!was_blurred_)
-    return;
-
   Validate();
 }
 

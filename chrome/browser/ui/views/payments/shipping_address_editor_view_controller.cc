@@ -164,7 +164,7 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
 void ShippingAddressEditorViewController::OnPerformAction(
     views::Combobox* sender) {
   EditorViewController::OnPerformAction(sender);
-  if (sender->id() != autofill::ADDRESS_HOME_COUNTRY)
+  if (sender->id() != GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
     return;
   DCHECK_GE(sender->selected_index(), 0);
   if (chosen_country_index_ != static_cast<size_t>(sender->selected_index())) {
@@ -180,8 +180,9 @@ void ShippingAddressEditorViewController::UpdateEditorView() {
   EditorViewController::UpdateEditorView();
   if (chosen_country_index_ > 0UL &&
       chosen_country_index_ < countries_.size()) {
-    views::Combobox* country_combo_box = static_cast<views::Combobox*>(
-        dialog()->GetViewByID(autofill::ADDRESS_HOME_COUNTRY));
+    views::Combobox* country_combo_box =
+        static_cast<views::Combobox*>(dialog()->GetViewByID(
+            GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY)));
     DCHECK(country_combo_box);
     DCHECK_EQ(countries_.size(),
               static_cast<size_t>(country_combo_box->GetRowCount()));
@@ -360,8 +361,9 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
   const std::string& locale = state()->GetApplicationLocale();
   // The country must be set first, because the profile uses the country to
   // interpret some of the data (e.g., phone numbers) passed to SetInfo.
-  views::Combobox* combobox = static_cast<views::Combobox*>(
-      dialog()->GetViewByID(autofill::ADDRESS_HOME_COUNTRY));
+  views::Combobox* combobox =
+      static_cast<views::Combobox*>(dialog()->GetViewByID(
+          GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY)));
   // The combobox can be null when saving to temporary profile while updating
   // the view.
   if (combobox) {
@@ -395,7 +397,7 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     // ValidatingCombobox* is the key, EditorField is the value.
     ValidatingCombobox* combobox = field.first;
     // The country has already been dealt with.
-    if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY)
+    if (combobox->id() == GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
       continue;
     if (combobox->IsValid()) {
       success = profile->SetInfo(
@@ -415,7 +417,7 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
 
 void ShippingAddressEditorViewController::OnComboboxModelChanged(
     views::Combobox* combobox) {
-  if (combobox->id() != autofill::ADDRESS_HOME_STATE)
+  if (combobox->id() != GetInputFieldViewId(autofill::ADDRESS_HOME_STATE))
     return;
   autofill::RegionComboboxModel* model =
       static_cast<autofill::RegionComboboxModel*>(combobox->model());
@@ -458,7 +460,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     TextfieldValueChanged(views::Textfield* textfield) {
   base::string16 error_message;
   bool is_valid = ValidateValue(textfield->text(), &error_message);
-  controller_->DisplayErrorMessageForField(field_, error_message);
+  controller_->DisplayErrorMessageForField(field_.type, error_message);
   return is_valid;
 }
 
@@ -467,7 +469,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
   base::string16 error_message;
   bool is_valid = ValidateValue(
       combobox->GetTextForRow(combobox->selected_index()), &error_message);
-  controller_->DisplayErrorMessageForField(field_, error_message);
+  controller_->DisplayErrorMessageForField(field_.type, error_message);
   return is_valid;
 }
 
