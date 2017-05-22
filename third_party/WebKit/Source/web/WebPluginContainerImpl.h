@@ -61,6 +61,8 @@ struct WebPrintParams;
 struct WebPrintPresetOptions;
 
 class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
+  USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);
+
  public:
   static WebPluginContainerImpl* Create(HTMLPlugInElement* element,
                                         WebPlugin* web_plugin) {
@@ -173,6 +175,9 @@ class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void DidFailLoading(const ResourceError&) override;
 
   DECLARE_VIRTUAL_TRACE();
+  // USING_PRE_FINALIZER does not allow for virtual dispatch from the finalizer
+  // method. Here we call Dispose() which does the correct virtual dispatch.
+  void PreFinalize() { Dispose(); }
   void Dispose() override;
 
  private:
