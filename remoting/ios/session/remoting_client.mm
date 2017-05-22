@@ -20,6 +20,7 @@
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
+#include "remoting/client/input/keyboard_interpreter.h"
 #include "remoting/client/ui/gesture_interpreter.h"
 #include "remoting/client/ui/renderer_proxy.h"
 #include "remoting/ios/session/remoting_client_session_delegate.h"
@@ -42,7 +43,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
   std::unique_ptr<remoting::RendererProxy> _renderer;
   std::unique_ptr<remoting::GestureInterpreter> _gestureInterpreter;
-  //  std::unique_ptr<remoting::KeyboardInterpreter> _keyboardInterpreter;
+  std::unique_ptr<remoting::KeyboardInterpreter> _keyboardInterpreter;
 }
 @end
 
@@ -131,11 +132,10 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
       _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
       [_displayHandler CreateVideoRenderer], audioPlayer, info,
       client_auth_config));
-
   _renderer = [_displayHandler CreateRendererProxy];
-
   _gestureInterpreter.reset(
       new remoting::GestureInterpreter(_renderer.get(), _session.get()));
+  _keyboardInterpreter.reset(new remoting::KeyboardInterpreter(_session.get()));
 
   _session->Connect();
 }
@@ -176,6 +176,10 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 
 - (remoting::GestureInterpreter*)gestureInterpreter {
   return _gestureInterpreter.get();
+}
+
+- (remoting::KeyboardInterpreter*)keyboardInterpreter {
+  return _keyboardInterpreter.get();
 }
 
 #pragma mark - ChromotingSession::Delegate
