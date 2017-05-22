@@ -2067,6 +2067,8 @@ split_static_library("ui") {
       "webui/signin/signin_error_ui.h",
       "webui/signin/signin_supervised_user_import_handler.cc",
       "webui/signin/signin_supervised_user_import_handler.h",
+      "webui/signin/signin_web_dialog_ui.cc",
+      "webui/signin/signin_web_dialog_ui.h",
       "webui/signin/sync_confirmation_handler.cc",
       "webui/signin/sync_confirmation_handler.h",
       "webui/signin/sync_confirmation_ui.cc",
