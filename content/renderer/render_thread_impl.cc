@@ -1019,11 +1019,6 @@ IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
   return sync_message_filter();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetIOTaskRunner() {
-  return ChildProcess::current()->io_task_runner();
-}
-
 void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   ChildThreadImpl::GetRouter()->AddRoute(routing_id, listener);
   auto it = pending_frame_creates_.find(routing_id);
@@ -1535,6 +1530,11 @@ void RenderThreadImpl::OnAssociatedInterfaceRequest(
     associated_interfaces_.BindRequest(name, std::move(handle));
   else
     ChildThreadImpl::OnAssociatedInterfaceRequest(name, std::move(handle));
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetIOTaskRunner() {
+  return ChildProcess::current()->io_task_runner();
 }
 
 bool RenderThreadImpl::IsGpuRasterizationForced() {

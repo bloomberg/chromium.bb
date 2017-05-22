@@ -379,6 +379,10 @@
 #include "chrome/browser/media/cast_remoting_connector.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
+#endif
+
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 #endif
@@ -3273,9 +3277,13 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  services->insert(std::make_pair("media",
-                                  base::ASCIIToUTF16("Media Service")));
+#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+  services->emplace("media", base::ASCIIToUTF16("Media Service"));
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  services->emplace(printing::mojom::kServiceName,
+                    base::ASCIIToUTF16("PDF Compositor Service"));
 #endif
 }
 
@@ -3312,6 +3320,9 @@ ChromeContentBrowserClient::GetExtraServiceManifests() {
         {nacl::kNaClBrokerServiceName, IDR_NACL_BROKER_MANIFEST},
 #endif  // defined(OS_WIN)
 #endif  // !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_PRINTING)
+        {printing::mojom::kServiceName, IDR_PDF_COMPOSITOR_MANIFEST},
+#endif
   });
 }
 
