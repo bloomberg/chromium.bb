@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_MEMORY_INSTRUMENTATION_PUBLIC_CPP_COORDINATOR_H_
-#define SERVICES_MEMORY_INSTRUMENTATION_PUBLIC_CPP_COORDINATOR_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_COORDINATOR_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_COORDINATOR_H_
 
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -23,4 +23,4 @@ class Coordinator {
 
 }  // namespace memory_instrumentation
 
-#endif  // SERVICES_MEMORY_INSTRUMENTATION_PUBLIC_CPP_COORDINATOR_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_COORDINATOR_H_

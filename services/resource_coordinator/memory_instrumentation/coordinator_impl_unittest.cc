@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
+#include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
@@ -12,7 +13,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace memory_instrumentation {
@@ -37,12 +38,11 @@ class CoordinatorImplTest : public testing::Test {
 
   void TearDown() override { coordinator_.reset(); }
 
-  void RegisterProcessLocalDumpManager(
-      mojom::ProcessLocalDumpManagerPtr process_manager) {
+  void RegisterClientProcess(mojom::ClientProcessPtr client_process) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CoordinatorImpl::RegisterProcessLocalDumpManager,
+        FROM_HERE, base::Bind(&CoordinatorImpl::RegisterClientProcess,
                               base::Unretained(coordinator_.get()),
-                              base::Passed(&process_manager)));
+                              base::Passed(&client_process)));
   }
 
   void RequestGlobalMemoryDump(base::trace_event::MemoryDumpRequestArgs args,
@@ -76,18 +76,17 @@ class CoordinatorImplTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-class MockDumpManager : public mojom::ProcessLocalDumpManager {
+class MockClientProcess : public mojom::ClientProcess {
  public:
-  MockDumpManager(CoordinatorImplTest* test_coordinator, int expected_calls)
+  MockClientProcess(CoordinatorImplTest* test_coordinator, int expected_calls)
       : binding_(this), expected_calls_(expected_calls) {
     // Register to the coordinator.
-    mojom::ProcessLocalDumpManagerPtr process_manager;
-    binding_.Bind(mojo::MakeRequest(&process_manager));
-    test_coordinator->RegisterProcessLocalDumpManager(
-        std::move(process_manager));
+    mojom::ClientProcessPtr client_process;
+    binding_.Bind(mojo::MakeRequest(&client_process));
+    test_coordinator->RegisterClientProcess(std::move(client_process));
   }
 
-  ~MockDumpManager() override { EXPECT_EQ(0, expected_calls_); }
+  ~MockClientProcess() override { EXPECT_EQ(0, expected_calls_); }
 
   void RequestProcessMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
@@ -97,11 +96,12 @@ class MockDumpManager : public mojom::ProcessLocalDumpManager {
   }
 
  private:
-  mojo::Binding<mojom::ProcessLocalDumpManager> binding_;
+  mojo::Binding<mojom::ClientProcess> binding_;
   int expected_calls_;
 };
 
-TEST_F(CoordinatorImplTest, NoProcessLocalManagers) {
+// Tests that the global dump is acked even in absence of clients.
+TEST_F(CoordinatorImplTest, NoClients) {
   base::RunLoop run_loop;
   base::trace_event::MemoryDumpRequestArgs args = {
       1234, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -112,11 +112,12 @@ TEST_F(CoordinatorImplTest, NoProcessLocalManagers) {
   EXPECT_TRUE(dump_response_args_.success);
 }
 
-TEST_F(CoordinatorImplTest, SeveralProcessLocalManagers) {
+// Nominal behavior: several clients contributing to the global dump.
+TEST_F(CoordinatorImplTest, SeveralClients) {
   base::RunLoop run_loop;
 
-  MockDumpManager dump_manager_1(this, 1);
-  MockDumpManager dump_manager_2(this, 1);
+  MockClientProcess client_process_1(this, 1);
+  MockClientProcess client_process_2(this, 1);
   base::trace_event::MemoryDumpRequestArgs args = {
       2345, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
@@ -128,22 +129,25 @@ TEST_F(CoordinatorImplTest, SeveralProcessLocalManagers) {
   EXPECT_TRUE(dump_response_args_.success);
 }
 
-TEST_F(CoordinatorImplTest, FaultyProcessLocalManager) {
+// Tests that a global dump is completed even if a client disconnects (e.g. due
+// to a crash) while a global dump is happening.
+TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
   base::RunLoop run_loop;
 
-  MockDumpManager dump_manager_1(this, 1);
-  auto dump_manager_2 = base::MakeUnique<MockDumpManager>(this, 0);
+  MockClientProcess client_process_1(this, 1);
+  auto client_process_2 = base::MakeUnique<MockClientProcess>(this, 0);
   base::trace_event::MemoryDumpRequestArgs args = {
       3456, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
   RequestGlobalMemoryDump(args, run_loop.QuitClosure());
-  // One of the process-local managers dies after a global dump is requested and
+
+  // One of the client processes dies after a global dump is requested and
   // before it receives the corresponding process dump request. The coordinator
   // should detect that one of its clients is disconnected and claim the global
   // dump attempt has failed.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind([](std::unique_ptr<MockDumpManager>) {},
-                            base::Passed(&dump_manager_2)));
+      FROM_HERE, base::Bind([](std::unique_ptr<MockClientProcess>) {},
+                            base::Passed(&client_process_2)));
 
   run_loop.Run();
 

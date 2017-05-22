@@ -79,10 +79,10 @@ struct GlobalMemoryDump {
   array<ProcessMemoryDump> process_dumps;
 };
 
-// This is the interface implemented by the client library. This allows a
-// remote process to contribute to memory-infra dumps. There should be at
+// This is the interface implemented by the per-process client library. This
+// allows a process to contribute to memory-infra dumps. There should be at
 // most one instance of this per hosting process.
-interface ProcessLocalDumpManager {
+interface ClientProcess {
   // When |success| == true the dump is appended in the process-local trace
   // buffer of the target process and an ACK. A summary of the dump is also
   // returned in case of success.
@@ -90,15 +90,16 @@ interface ProcessLocalDumpManager {
       (uint64 dump_guid, bool success, ProcessMemoryDump? process_memory_dump);
 };
 
-// The memory-infra service implements this interface.
+// The memory-infra service implements this interface. There is one instance for
+// the whole system. The coordinator maintains a list of registered client
+// processes and polls them whenever a global dump is required.
 interface Coordinator {
-  // Used to register a client library to obtain a process-local dump from it
-  // when RequestGlobalMemoryDump() is called.
-  RegisterProcessLocalDumpManager(ProcessLocalDumpManager local_manager);
+  // Registers a client process.
+  RegisterClientProcess(ClientProcess client_process);
 
-  // Broadcasts a dump request to all registered client libraries, injects the
+  // Broadcasts a dump request to all registered client processes, injects the
   // dump in the trace buffer (if tracing is enabled) and returns a summarized
-  // dump back if args.dump_type == SUMMARY_ONLY.
+  // dump back (if args.dump_type == SUMMARY_ONLY).
   RequestGlobalMemoryDump(RequestArgs args) =>
       (uint64 dump_guid, bool success, GlobalMemoryDump? global_memory_dump);
 };

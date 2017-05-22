@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -12,8 +12,8 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/resource_coordinator/public/cpp/memory/coordinator.h"
-#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -30,8 +30,7 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  void RegisterProcessLocalDumpManager(
-      mojom::ProcessLocalDumpManagerPtr process_manager) override {}
+  void RegisterClientProcess(mojom::ClientProcessPtr) override {}
 
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
@@ -43,18 +42,16 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
   mojo::BindingSet<mojom::Coordinator> bindings_;
 };
 
-class ProcessLocalDumpManagerImplTest : public testing::Test {
+class ClientProcessImplTest : public testing::Test {
  public:
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop());
-    coordinator_.reset(new MockCoordinator());
-    mdm_.reset(new MemoryDumpManager());
-    MemoryDumpManager::SetInstanceForTesting(mdm_.get());
+    message_loop_ = base::MakeUnique<base::MessageLoop>();
+    coordinator_ = base::MakeUnique<MockCoordinator>();
+    mdm_ = MemoryDumpManager::CreateInstanceForTesting();
     auto process_type = mojom::ProcessType::OTHER;
-    ProcessLocalDumpManagerImpl::Config config(coordinator_.get(),
-                                               process_type);
-    local_manager_impl_.reset(new ProcessLocalDumpManagerImpl(config));
-    local_manager_impl_->SetAsNonCoordinatorForTesting();
+    ClientProcessImpl::Config config(coordinator_.get(), process_type);
+    client_process_.reset(new ClientProcessImpl(config));
+    client_process_->SetAsNonCoordinatorForTesting();
 
     // Enable tracing.
     std::string category_filter = "-*,";
@@ -71,9 +68,8 @@ class ProcessLocalDumpManagerImplTest : public testing::Test {
 
   void TearDown() override {
     base::trace_event::TraceLog::GetInstance()->SetDisabled();
-    MemoryDumpManager::SetInstanceForTesting(nullptr);
     mdm_.reset();
-    local_manager_impl_.reset();
+    client_process_.reset();
     coordinator_.reset();
     message_loop_.reset();
   }
@@ -96,7 +92,7 @@ class ProcessLocalDumpManagerImplTest : public testing::Test {
   void SequentiallyRequestGlobalDumps(int num_requests) {
     MemoryDumpManager::GetInstance()->RequestGlobalDump(
         MemoryDumpType::EXPLICITLY_TRIGGERED, MemoryDumpLevelOfDetail::LIGHT,
-        base::Bind(&ProcessLocalDumpManagerImplTest::OnGlobalMemoryDumpDone,
+        base::Bind(&ClientProcessImplTest::OnGlobalMemoryDumpDone,
                    base::Unretained(this), num_requests - 1));
   }
 
@@ -108,13 +104,13 @@ class ProcessLocalDumpManagerImplTest : public testing::Test {
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<MockCoordinator> coordinator_;
   std::unique_ptr<MemoryDumpManager> mdm_;
-  std::unique_ptr<ProcessLocalDumpManagerImpl> local_manager_impl_;
+  std::unique_ptr<ClientProcessImpl> client_process_;
 };
 
 // Makes several global dump requests each after receiving the ACK for the
 // previous one. There should be no throttling and all requests should be
 // forwarded to the coordinator.
-TEST_F(ProcessLocalDumpManagerImplTest, NonOverlappingMemoryDumpRequests) {
+TEST_F(ClientProcessImplTest, NonOverlappingMemoryDumpRequests) {
   base::RunLoop run_loop;
   expected_callback_calls_ = 3;
   quit_closure_ = run_loop.QuitClosure();
@@ -126,7 +122,7 @@ TEST_F(ProcessLocalDumpManagerImplTest, NonOverlappingMemoryDumpRequests) {
 // Makes several global dump requests without waiting for previous requests to
 // finish. Only the first request should make it to the coordinator. The rest
 // should be cancelled.
-TEST_F(ProcessLocalDumpManagerImplTest, OverlappingMemoryDumpRequests) {
+TEST_F(ClientProcessImplTest, OverlappingMemoryDumpRequests) {
   base::RunLoop run_loop;
   expected_callback_calls_ = 3;
   quit_closure_ = run_loop.QuitClosure();

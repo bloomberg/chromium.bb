@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_PROCESS_MAP_H_
-#define SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_PROCESS_MAP_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_MEMORY_INSTRUMENTATION_PROCESS_MAP_H_
+#define SERVICES_RESOURCE_COORDINATOR_MEMORY_INSTRUMENTATION_PROCESS_MAP_H_
 
 #include <map>
 #include <vector>
@@ -55,4 +55,4 @@ class ProcessMap : public service_manager::mojom::ServiceManagerListener {
 };
 
 }  // namespace memory_instrumentation
-#endif  // SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_PROCESS_MAP_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_MEMORY_INSTRUMENTATION_PROCESS_MAP_H_

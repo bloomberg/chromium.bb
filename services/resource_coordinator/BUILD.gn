@@ -16,10 +16,10 @@ source_set("lib") {
     "coordination_unit/coordination_unit_impl.h",
     "coordination_unit/coordination_unit_provider_impl.cc",
     "coordination_unit/coordination_unit_provider_impl.h",
-    "memory/coordinator/coordinator_impl.cc",
-    "memory/coordinator/coordinator_impl.h",
-    "memory/coordinator/process_map.cc",
-    "memory/coordinator/process_map.h",
+    "memory_instrumentation/coordinator_impl.cc",
+    "memory_instrumentation/coordinator_impl.h",
+    "memory_instrumentation/process_map.cc",
+    "memory_instrumentation/process_map.h",
     "resource_coordinator_service.cc",
     "resource_coordinator_service.h",
   ]
@@ -52,9 +52,9 @@ source_set("tests") {
 
   sources = [
     "coordination_unit/coordination_unit_impl_unittest.cc",
-    "memory/coordinator/coordinator_impl_unittest.cc",
-    "memory/coordinator/process_map_unittest.cc",
-    "public/cpp/memory/process_local_dump_manager_impl_unittest.cc",
+    "memory_instrumentation/coordinator_impl_unittest.cc",
+    "memory_instrumentation/process_map_unittest.cc",
+    "public/cpp/memory_instrumentation/client_process_impl_unittest.cc",
     "public/cpp/tracing/chrome_trace_event_agent_unittest.cc",
   ]
 
