@@ -869,8 +869,7 @@ YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
                                           YV12_BUFFER_CONFIG *scaled) {
-  if (cm->mi_cols * MI_SIZE != unscaled->y_width ||
-      cm->mi_rows * MI_SIZE != unscaled->y_height) {
+  if (cm->width != unscaled->y_width || cm->height != unscaled->y_height) {
 #if CONFIG_HIGHBITDEPTH
     resize_and_extend_frame(unscaled, scaled, (int)cm->bit_depth);
 #else
