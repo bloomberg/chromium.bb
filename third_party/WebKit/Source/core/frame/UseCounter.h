@@ -1596,6 +1596,10 @@ class CORE_EXPORT UseCounter {
     kFieldEditInNonSecureContext = 1982,
     kCredentialManagerCredentialRequestOptionsUnmediated = 1983,
     kCredentialManagerGetMediationRequired = 1984,
+    kCredentialManagerIdName = 1985,
+    kCredentialManagerPasswordName = 1986,
+    kCredentialManagerAdditionalData = 1987,
+    kCredentialManagerCustomFetch = 1988,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

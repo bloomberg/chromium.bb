@@ -413,6 +413,18 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "the CredentialRequestOptions.mediation enum", M62,
           "6076479909658624");
 
+    case UseCounter::kCredentialManagerIdName:
+    case UseCounter::kCredentialManagerPasswordName:
+    case UseCounter::kCredentialManagerAdditionalData:
+    case UseCounter::kCredentialManagerCustomFetch:
+      return String::Format(
+          "Passing 'PasswordCredential' objects into 'fetch(..., { "
+          "credentials: ... })' is deprecated, and will be removed in %s. See "
+          "https://www.chromestatus.com/features/5689327799500800 for more "
+          "details and https://www.chromium.org/developers/"
+          "recent-changes-credential-management-api for migration suggestions.",
+          milestoneString(M62));
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

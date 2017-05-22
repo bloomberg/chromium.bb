@@ -4688,6 +4688,7 @@ interface PasswordCredential : Credential
     getter iconURL
     getter idName
     getter name
+    getter password
     getter passwordName
     method constructor
     setter additionalData
