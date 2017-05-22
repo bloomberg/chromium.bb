@@ -277,14 +277,13 @@ IN_PROC_BROWSER_TEST_P(SigninProfileAppsPolicyPerChannelTest,
                    ->GetInstalledExtension(kTrivialExtensionId));
 }
 
-// TODO(emaxx): Add the STABLE option once the scoped feature channel bug is
-// fixed (https://crrev.com/2854293003).
 INSTANTIATE_TEST_CASE_P(,
                         SigninProfileAppsPolicyPerChannelTest,
                         testing::Values(version_info::Channel::UNKNOWN,
                                         version_info::Channel::CANARY,
                                         version_info::Channel::DEV,
-                                        version_info::Channel::BETA));
+                                        version_info::Channel::BETA,
+                                        version_info::Channel::STABLE));
 
 namespace {
 
