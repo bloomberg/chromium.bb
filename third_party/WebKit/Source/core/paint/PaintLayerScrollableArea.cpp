@@ -666,18 +666,13 @@ bool PaintLayerScrollableArea::UserInputScrollable(
     return true;
 
   if (Box().IsLayoutView()) {
-    if (LocalFrame* frame = Box().GetFrame()) {
-      if (FrameView* frame_view = frame->View()) {
-        ScrollbarMode h_mode;
-        ScrollbarMode v_mode;
-        frame_view->CalculateScrollbarModes(h_mode, v_mode);
-        if (orientation == kHorizontalScrollbar &&
-            h_mode == kScrollbarAlwaysOff)
-          return false;
-        if (orientation == kVerticalScrollbar && v_mode == kScrollbarAlwaysOff)
-          return false;
-      }
-    }
+    ScrollbarMode h_mode;
+    ScrollbarMode v_mode;
+    ToLayoutView(Box()).CalculateScrollbarModes(h_mode, v_mode);
+    if (orientation == kHorizontalScrollbar && h_mode == kScrollbarAlwaysOff)
+      return false;
+    if (orientation == kVerticalScrollbar && v_mode == kScrollbarAlwaysOff)
+      return false;
   }
 
   EOverflow overflow_style = (orientation == kHorizontalScrollbar)
@@ -1291,21 +1286,17 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
   // values, due to which we are destroying the scrollbars that were already
   // present.
   if (Box().IsLayoutView()) {
-    if (LocalFrame* frame = Box().GetFrame()) {
-      if (FrameView* frame_view = frame->View()) {
-        ScrollbarMode h_mode;
-        ScrollbarMode v_mode;
-        frame_view->CalculateScrollbarModes(h_mode, v_mode);
-        if (h_mode == kScrollbarAlwaysOn)
-          needs_horizontal_scrollbar = true;
-        else if (h_mode == kScrollbarAlwaysOff)
-          needs_horizontal_scrollbar = false;
-        if (v_mode == kScrollbarAlwaysOn)
-          needs_vertical_scrollbar = true;
-        else if (v_mode == kScrollbarAlwaysOff)
-          needs_vertical_scrollbar = false;
-      }
-    }
+    ScrollbarMode h_mode;
+    ScrollbarMode v_mode;
+    ToLayoutView(Box()).CalculateScrollbarModes(h_mode, v_mode);
+    if (h_mode == kScrollbarAlwaysOn)
+      needs_horizontal_scrollbar = true;
+    else if (h_mode == kScrollbarAlwaysOff)
+      needs_horizontal_scrollbar = false;
+    if (v_mode == kScrollbarAlwaysOn)
+      needs_vertical_scrollbar = true;
+    else if (v_mode == kScrollbarAlwaysOff)
+      needs_vertical_scrollbar = false;
   }
 }
 
@@ -1780,7 +1771,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet(bool has_overflow) {
   if (Box().IsLayoutView()) {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
-    frame_view->CalculateScrollbarModes(h_mode, v_mode);
+    ToLayoutView(Box()).CalculateScrollbarModes(h_mode, v_mode);
     if (h_mode == kScrollbarAlwaysOff && v_mode == kScrollbarAlwaysOff)
       has_overflow = false;
   }
