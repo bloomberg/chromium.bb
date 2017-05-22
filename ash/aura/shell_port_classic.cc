@@ -37,7 +37,6 @@
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
-#include "ui/display/manager/chromeos/default_touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/native_display_delegate.h"
 
@@ -117,13 +116,6 @@ void ShellPortClassic::SetDisplayWorkAreaInsets(WmWindow* window,
   Shell::Get()
       ->window_tree_host_manager()
       ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
-}
-
-std::unique_ptr<display::TouchTransformSetter>
-ShellPortClassic::CreateTouchTransformDelegate() {
-  std::unique_ptr<display::DefaultTouchTransformSetter> delegate =
-      base::MakeUnique<display::DefaultTouchTransformSetter>();
-  return delegate;
 }
 
 void ShellPortClassic::LockCursor() {
