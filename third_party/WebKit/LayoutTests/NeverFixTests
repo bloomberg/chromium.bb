@@ -226,11 +226,12 @@ webaudio/codec-tests/aac [ WontFix ]
 external/wpt/accelerometer [ WontFix ]
 external/wpt/assumptions [ WontFix ]
 external/wpt/clear-site-data [ WontFix ]
+external/wpt/css/css-transforms-2 [ WontFix ]
 external/wpt/css-values [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
+external/wpt/longtask-timing [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
-external/wpt/longtask-timing [ WontFix ]
 
 # Temporary disabling of all encrypted-media WPT tests while enabling
 # https only. Once the switch is complete (and the WPT tests renamed so they
