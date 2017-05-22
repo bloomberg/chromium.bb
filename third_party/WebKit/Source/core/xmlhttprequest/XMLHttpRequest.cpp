@@ -1638,8 +1638,6 @@ void XMLHttpRequest::NotifyParserStopped() {
 
   ClearVariablesForLoading();
 
-  response_document_->CheckCompleted();
-
   if (!response_document_->WellFormed())
     response_document_ = nullptr;
 
