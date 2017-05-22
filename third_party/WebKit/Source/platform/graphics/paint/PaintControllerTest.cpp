@@ -30,6 +30,10 @@ class PaintControllerTestBase : public ::testing::Test {
  public:
   PaintControllerTestBase() : paint_controller_(PaintController::Create()) {}
 
+  IntRect VisualRect(const PaintArtifact& paint_artifact, size_t index) {
+    return paint_artifact.GetDisplayItemList().VisualRect(index);
+  }
+
  protected:
   PaintController& GetPaintController() { return *paint_controller_; }
 
@@ -63,7 +67,7 @@ class TestDisplayItem final : public DisplayItem {
       : DisplayItem(client, type, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const final { NOTREACHED(); }
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const final {
     NOTREACHED();
   }
@@ -1881,6 +1885,18 @@ TEST_F(PaintControllerTestBase, SmallPaintControllerHasOnePaintChunk) {
   EXPECT_EQ(1u, paint_chunks[0].end_index);
 }
 
+TEST_F(PaintControllerTestBase, PaintArtifactWithVisualRects) {
+  FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+
+  GraphicsContext context(GetPaintController());
+  DrawRect(context, client, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+
+  GetPaintController().CommitNewDisplayItems(LayoutSize(20, 30));
+  const auto& paint_artifact = GetPaintController().GetPaintArtifact();
+  ASSERT_EQ(1u, paint_artifact.GetDisplayItemList().size());
+  EXPECT_EQ(IntRect(-20, -30, 200, 100), VisualRect(paint_artifact, 0));
+}
+
 void DrawPath(GraphicsContext& context,
               DisplayItemClient& client,
               DisplayItem::Type type,
@@ -1907,7 +1923,7 @@ TEST_F(PaintControllerTestBase, IsSuitableForGpuRasterizationSinglePath) {
   FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
   GraphicsContext context(GetPaintController());
   DrawPath(context, client, kBackgroundDrawingType, 1);
-  GetPaintController().CommitNewDisplayItems();
+  GetPaintController().CommitNewDisplayItems(LayoutSize());
   EXPECT_TRUE(
       GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
 }
@@ -1918,7 +1934,7 @@ TEST_F(PaintControllerTestBase,
   GraphicsContext context(GetPaintController());
 
   DrawPath(context, client, kBackgroundDrawingType, 50);
-  GetPaintController().CommitNewDisplayItems();
+  GetPaintController().CommitNewDisplayItems(LayoutSize());
   EXPECT_FALSE(
       GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
 }
@@ -1933,7 +1949,7 @@ TEST_F(PaintControllerTestBase,
     DrawPath(context, client, kBackgroundDrawingType, 50);
 
   GetPaintController().EndSkippingCache();
-  GetPaintController().CommitNewDisplayItems();
+  GetPaintController().CommitNewDisplayItems(LayoutSize());
   EXPECT_FALSE(
       GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
 }
@@ -1945,7 +1961,7 @@ TEST_F(PaintControllerTestBase,
   {
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
-    GetPaintController().CommitNewDisplayItems();
+    GetPaintController().CommitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(GetPaintController()
                      .GetPaintArtifact()
                      .IsSuitableForGpuRasterization());
@@ -1956,7 +1972,7 @@ TEST_F(PaintControllerTestBase,
   {
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
-    GetPaintController().CommitNewDisplayItems();
+    GetPaintController().CommitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(GetPaintController()
                      .GetPaintArtifact()
                      .IsSuitableForGpuRasterization());
@@ -1970,7 +1986,7 @@ TEST_F(PaintControllerTestBase,
   {
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
-    GetPaintController().CommitNewDisplayItems();
+    GetPaintController().CommitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(GetPaintController()
                      .GetPaintArtifact()
                      .IsSuitableForGpuRasterization());
@@ -1979,7 +1995,7 @@ TEST_F(PaintControllerTestBase,
   {
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
-    GetPaintController().CommitNewDisplayItems();
+    GetPaintController().CommitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(GetPaintController()
                      .GetPaintArtifact()
                      .IsSuitableForGpuRasterization());
@@ -1997,13 +2013,13 @@ TEST_F(
     SubsequenceRecorder subsequence_recorder(context, container);
     DrawPath(context, client, kBackgroundDrawingType, 50);
   }
-  GetPaintController().CommitNewDisplayItems();
+  GetPaintController().CommitNewDisplayItems(LayoutSize());
   EXPECT_FALSE(
       GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
 
   EXPECT_TRUE(
       SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, container));
-  GetPaintController().CommitNewDisplayItems();
+  GetPaintController().CommitNewDisplayItems(LayoutSize());
   EXPECT_FALSE(
       GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
 
@@ -2034,7 +2050,7 @@ TEST_F(PaintControllerTestBase,
              FloatRect(0, 0, 100, 100));
     for (int j = 0; j < 50; ++j)
       GetPaintController().CreateAndAppend<EndClipPathDisplayItem>(client);
-    GetPaintController().CommitNewDisplayItems();
+    GetPaintController().CommitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(GetPaintController()
                      .GetPaintArtifact()
                      .IsSuitableForGpuRasterization());

@@ -16,7 +16,7 @@ void FloatClipDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void FloatClipDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
   list->AppendFloatClipItem(clip_rect_);
 }
@@ -26,7 +26,7 @@ void EndFloatClipDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndFloatClipDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
   list->AppendEndFloatClipItem();
 }

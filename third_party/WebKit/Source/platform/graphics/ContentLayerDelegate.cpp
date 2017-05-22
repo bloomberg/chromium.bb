@@ -90,7 +90,6 @@ void ContentLayerDelegate::PaintContents(
     graphics_layer_->Paint(nullptr, disabled_mode);
 
   paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
-      graphics_layer_->OffsetFromLayoutObjectWithSubpixelAccumulation(),
       web_display_item_list);
 
   paint_controller.SetDisplayItemConstructionIsDisabled(false);

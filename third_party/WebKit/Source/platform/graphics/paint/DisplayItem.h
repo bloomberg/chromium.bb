@@ -20,7 +20,7 @@
 namespace blink {
 
 class GraphicsContext;
-class LayoutSize;
+class IntRect;
 class WebDisplayItemList;
 
 class PLATFORM_EXPORT DisplayItem {
@@ -199,7 +199,6 @@ class PLATFORM_EXPORT DisplayItem {
 
   DisplayItem(const DisplayItemClient& client, Type type, size_t derived_size)
       : client_(&client),
-        visual_rect_(client.VisualRect()),
         type_(type),
         derived_size_(derived_size),
         skipped_cache_(false)
@@ -234,12 +233,6 @@ class PLATFORM_EXPORT DisplayItem {
     DCHECK(client_);
     return *client_;
   }
-
-  // This equals to Client().VisualRect() as long as the client is alive and is
-  // not invalidated. Otherwise it saves the previous visual rect of the client.
-  // See DisplayItemClient::VisualRect() about its coordinate space.
-  const LayoutRect& VisualRect() const { return visual_rect_; }
-
   Type GetType() const { return type_; }
 
   // Size of this object in memory, used to move it with memcpy.
@@ -253,11 +246,9 @@ class PLATFORM_EXPORT DisplayItem {
   void SetSkippedCache() { skipped_cache_ = true; }
   bool SkippedCache() const { return skipped_cache_; }
 
-  // Appends this display item to the WebDisplayItemList, if applicable.
-  // |visual_rect_offset| is the offset between the space of the GraphicsLayer
-  // which owns the display item and the coordinate space of VisualRect().
-  // TODO(wangxianzhu): Remove the parameter for slimming paint v2.
-  virtual void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,
+  // TODO(wkorman): Only DrawingDisplayItem needs the visual rect argument.
+  // Consider refactoring class hierarchy to make this more explicit.
+  virtual void AppendToWebDisplayItemList(const IntRect&,
                                           WebDisplayItemList*) const {}
 
 // See comments of enum Type for usage of the following macros.
@@ -360,7 +351,6 @@ class PLATFORM_EXPORT DisplayItem {
   // constructed at the source location.
   template <typename T, unsigned alignment>
   friend class ContiguousContainer;
-  friend class DisplayItemList;
 
   DisplayItem()
       : client_(nullptr),
@@ -369,8 +359,6 @@ class PLATFORM_EXPORT DisplayItem {
         skipped_cache_(false) {}
 
   const DisplayItemClient* client_;
-  LayoutRect visual_rect_;
-
   static_assert(kTypeLast < (1 << 16),
                 "DisplayItem::Type should fit in 16 bits");
   const Type type_ : 16;

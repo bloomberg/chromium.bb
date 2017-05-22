@@ -32,31 +32,26 @@ class PLATFORM_EXPORT DisplayItemList
   DisplayItemList(size_t initial_size_bytes)
       : ContiguousContainer(kMaximumDisplayItemSize, initial_size_bytes) {}
   DisplayItemList(DisplayItemList&& source)
-      : ContiguousContainer(std::move(source)) {}
+      : ContiguousContainer(std::move(source)),
+        visual_rects_(std::move(source.visual_rects_)) {}
 
   DisplayItemList& operator=(DisplayItemList&& source) {
     ContiguousContainer::operator=(std::move(source));
+    visual_rects_ = std::move(source.visual_rects_);
     return *this;
   }
 
-  DisplayItem& AppendByMoving(DisplayItem& item) {
-#ifndef NDEBUG
-    String original_debug_string = item.AsDebugString();
-#endif
-    DCHECK(item.HasValidClient());
-    DisplayItem& result =
-        ContiguousContainer::AppendByMoving(item, item.DerivedSize());
-    // ContiguousContainer::AppendByMoving() calls an in-place constructor
-    // on item which replaces it with a tombstone/"dead display item" that
-    // can be safely destructed but should never be used.
-    DCHECK(!item.HasValidClient());
-#ifndef NDEBUG
-    // Save original debug string in the old item to help debugging.
-    item.SetClientDebugString(original_debug_string);
-#endif
-    item.visual_rect_ = result.visual_rect_;
-    return result;
+  DisplayItem& AppendByMoving(DisplayItem&);
+
+  bool HasVisualRect(size_t index) const {
+    return index < visual_rects_.size();
   }
+  IntRect VisualRect(size_t index) const {
+    DCHECK(HasVisualRect(index));
+    return visual_rects_[index];
+  }
+
+  void AppendVisualRect(const IntRect& visual_rect);
 
   // Useful for iterating with a range-based for loop.
   template <typename Iterator>
@@ -86,6 +81,9 @@ class PLATFORM_EXPORT DisplayItemList
   std::unique_ptr<JSONArray> SubsequenceAsJSON(size_t begin_index,
                                                size_t end_index,
                                                JsonFlags options) const;
+
+ private:
+  Vector<IntRect> visual_rects_;
 };
 
 }  // namespace blink
