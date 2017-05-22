@@ -300,10 +300,8 @@ void AudioDebugFileWriter::AudioFileWriter::CreateRecordingFile(
               << file_.error_details();
 }
 
-AudioDebugFileWriter::AudioDebugFileWriter(
-    const AudioParameters& params,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : params_(params), file_task_runner_(std::move(file_task_runner)) {
+AudioDebugFileWriter::AudioDebugFileWriter(const AudioParameters& params)
+    : params_(params) {
   client_sequence_checker_.DetachFromSequence();
 }
 
