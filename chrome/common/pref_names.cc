@@ -444,9 +444,6 @@ const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
 // in fullscreen. Mac only.
 const char kShowFullscreenToolbar[] = "browser.show_fullscreen_toolbar";
 
-// TODO(spqchan): Remove this, see crbug.com/590827.
-// This is being migrated to kShowFullscreenToolbar.
-const char kHideFullscreenToolbar[] = "browser.hide_fullscreen_toolbar";
 #endif
 
 // Boolean which specifies whether we should ask the user if we should download
