@@ -415,8 +415,11 @@ cr.define('bookmarks', function() {
           draggedNodes.indexOf(dragId) == -1) {
         store.dispatch(bookmarks.actions.deselectItems());
         if (!isBookmarkFolderNode(dragElement)) {
-          store.dispatch(
-              bookmarks.actions.selectItem(dragId, true, false, state));
+          store.dispatch(bookmarks.actions.selectItem(dragId, state, {
+            clear: false,
+            range: false,
+            toggle: false,
+          }));
         }
         draggedNodes = [dragId];
       }
