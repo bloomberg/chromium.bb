@@ -3032,9 +3032,6 @@ void Document::ImplicitClose() {
 
   load_event_progress_ = kLoadEventInProgress;
 
-  ScriptableDocumentParser* parser = GetScriptableDocumentParser();
-  well_formed_ = parser && parser->WellFormed();
-
   // We have to clear the parser, in case someone document.write()s from the
   // onLoad event handler, as in Radar 3206524.
   DetachParser();
@@ -5499,6 +5496,9 @@ void Document::FinishedParsing() {
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
   // a queued task, which will do a checkpoint anyway. https://crbug.com/425790
   Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+
+  ScriptableDocumentParser* parser = GetScriptableDocumentParser();
+  well_formed_ = parser && parser->WellFormed();
 
   if (LocalFrame* frame = this->GetFrame()) {
     // Don't update the layout tree if we haven't requested the main resource
