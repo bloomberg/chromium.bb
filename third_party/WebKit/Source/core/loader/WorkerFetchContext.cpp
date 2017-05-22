@@ -116,7 +116,10 @@ SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
 }
 
 SecurityContext* WorkerFetchContext::GetParentSecurityContext() const {
-  // TODO(horo): Implement this.
+  // This method was introduced to check the parent frame's security context
+  // while loading iframe document resources. So this method is not suitable for
+  // workers.
+  NOTREACHED();
   return nullptr;
 }
 
@@ -134,11 +137,14 @@ void WorkerFetchContext::DispatchDidBlockRequest(
 }
 
 void WorkerFetchContext::ReportLocalLoadFailed(const KURL&) const {
-  // TODO(horo): Implement this.
+  // Threre is no way to load local files from worker thread.
+  NOTREACHED();
 }
 
 bool WorkerFetchContext::ShouldBypassMainWorldCSP() const {
-  // TODO(horo): Implement this.
+  // This method was introduced to bypass the page's CSP while running the
+  // script from an isolated world (ex: Chrome extensions). But worker threads
+  // doesn't have any isolated world. So we can just return false.
   return false;
 }
 
