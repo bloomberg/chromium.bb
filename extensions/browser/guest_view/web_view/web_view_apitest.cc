@@ -50,9 +50,7 @@ const char kEmptyResponsePath[] = "/close-socket";
 const char kRedirectResponsePath[] = "/server-redirect";
 const char kRedirectResponseFullPath[] = "/guest_redirect.html";
 const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
-const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestServerPort[] = "testServer.port";
-const char kTestWebSocketPort[] = "testWebSocketPort";
 
 // Handles |request| by serving a redirect response if the |User-Agent| is
 // foobar.
@@ -143,9 +141,6 @@ void WebViewAPITest::LaunchApp(const std::string& app_location) {
   PathService::Get(DIR_TEST_DATA, &test_data_dir);
   test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
 
-  test_config_.SetString(kTestDataDirectory,
-                         net::FilePathToFileURL(test_data_dir).spec());
-
   const Extension* extension = extension_system_->LoadApp(test_data_dir);
   ASSERT_TRUE(extension);
   extension_system_->LaunchApp(extension->id());
@@ -186,8 +181,6 @@ void WebViewAPITest::SetUpOnMainThread() {
   AppShellTest::SetUpOnMainThread();
 
   TestGetConfigFunction::set_test_config_state(&test_config_);
-  base::FilePath test_data_dir;
-  test_config_.SetInteger(kTestWebSocketPort, 0);
 }
 
 void WebViewAPITest::StartTestServer(const std::string& app_location) {
