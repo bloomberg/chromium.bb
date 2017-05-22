@@ -40,7 +40,9 @@ _GCLIENT_SCHEMA = schema.Schema({
     schema.Optional('deps'): {schema.Optional(basestring): basestring},
 
     # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
-    schema.Optional('deps_os'): {basestring: {basestring: basestring}},
+    schema.Optional('deps_os'): {
+        basestring: {basestring: schema.Or(basestring, None)}
+    },
 
     # Hooks executed after gclient sync (unless suppressed), or explicitly
     # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
