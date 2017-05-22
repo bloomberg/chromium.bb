@@ -98,16 +98,6 @@ copy("mash_catalog") {
   ]
 }
 
-group("browser") {
-  testonly = true
-
-  deps = [
-    ":all",
-    "//mash/browser",
-    "//mash/webtest",
-  ]
-}
-
 if (is_chromeos) {
   # TODO(jamescook): Move these tests into //ash/mus.
   test("mash_unittests") {

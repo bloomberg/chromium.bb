@@ -291,7 +291,6 @@
     'nacl_loader_unittests.exe',
     'native_theme_unittests.exe',
     'navigation.exe',
-    'navigation_unittests.exe',
     'net_perftests.exe',
     'net_unittests.exe',
     'next_version_mini_installer.exe',
