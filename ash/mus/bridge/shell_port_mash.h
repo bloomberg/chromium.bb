@@ -72,6 +72,8 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   bool IsInUnifiedModeIgnoreMirroring() const override;
   void SetDisplayWorkAreaInsets(WmWindow* window,
                                 const gfx::Insets& insets) override;
+  std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
+      override;
   void LockCursor() override;
   void UnlockCursor() override;
   void ShowCursor() override;
