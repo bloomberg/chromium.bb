@@ -8,6 +8,8 @@ import logging
 import os
 import urllib
 
+from webkitpy.w3c.common import CHROMIUM_WPT_DIR
+
 _log = logging.getLogger(__name__)
 URL_BASE = 'https://chromium-review.googlesource.com'
 
@@ -135,6 +137,42 @@ class GerritCL(object):
         )
 
     def get_patch(self):
-        """Gets patch for latest revision of CL."""
-        path = '/changes/{change_id}/revisions/current/patch'.format(change_id=self.change_id)
-        return base64.b64decode(self.api.get(path, raw=True))
+        """Gets patch for latest revision of CL.
+
+        Filtered to only contain diffs for changes in WPT.
+        """
+        path = '/changes/%s/revisions/current/patch' % self.change_id
+        patch = base64.b64decode(self.api.get(path, raw=True))
+        patch = self.filter_transform_patch(patch)
+
+        return patch
+
+    def filter_transform_patch(self, patch):
+        """Filters a patch for only exportable changes.
+
+        This method expects a `git diff`-formatted patch.
+        """
+        filtered_patch = []
+
+        # Patch begins with message, always applicable.
+        in_exportable_diff = True
+
+        for line in patch.splitlines():
+            # If we're not changing files, continue same behavior.
+            if not line.startswith('diff --git'):
+                if in_exportable_diff:
+                    filtered_patch.append(line)
+                continue
+
+            # File is being changed, detect if it's exportable.
+            if CHROMIUM_WPT_DIR in line:
+                in_exportable_diff = True
+                filtered_patch.append(line)
+            else:
+                in_exportable_diff = False
+
+        # Join into string, newline at end is required.
+        if not filtered_patch[-1].strip():
+            filtered_patch = filtered_patch[:-1]
+        patch = '\n'.join(filtered_patch) + '\n'
+        return patch.replace(CHROMIUM_WPT_DIR, '')
