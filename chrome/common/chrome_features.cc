@@ -376,6 +376,10 @@ const base::Feature kCrOSComponent{"CrOSComponent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+// Enables or disables Page Load Metrics using mojo IPC.
+const base::Feature kPageLoadMetricsMojofication{
+    "PLMMojofication", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool PrefServiceEnabled() {
   return base::FeatureList::IsEnabled(features::kPrefService) ||
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
