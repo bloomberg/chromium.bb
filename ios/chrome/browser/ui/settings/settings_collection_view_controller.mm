@@ -1006,14 +1006,24 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (void)didFinishSignin:(BOOL)signedIn {
   _signinInteractionController = nil;
+  // The sign-in is done. The sign-in promo cell or account cell can be
+  // reloaded.
+  [self reloadData];
 }
 
 #pragma mark NotificationBridgeDelegate
 
 - (void)onSignInStateChanged {
-  // Sign in state changes are rare. Just reload the entire collection when this
-  // happens.
-  [self reloadData];
+  // While the sign-in interaction controller is presented, the collection view
+  // should not be updated. Otherwise, it would lead to have an UI glitch either
+  // while the interaction controller is appearing or while it is disappearing.
+  // The collection view will be reloaded once the animation is finished. See:
+  // -[SettingsCollectionViewController didFinishSignin:].
+  if (!_signinInteractionController) {
+    // Sign in state changes are rare. Just reload the entire collection when
+    // this happens.
+    [self reloadData];
+  }
 }
 
 #pragma mark SettingsControllerProtocol
@@ -1130,6 +1140,20 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (void)configureSigninPromoViewWithNewIdentity:(BOOL)newIdentity
                                    configurator:(SigninPromoViewConfigurator*)
                                                     configurator {
+  if (_signinInteractionController) {
+    // When sign-in is started in a cold state (no default account), the sign-in
+    // interaction controller does the sign-in and then asks for sync
+    // authorization. If the user cancels this operation, the controller
+    // signs-out from this new account, and then disappears while removing the
+    // new account asynchronously.
+    // This leads to an UI glitch. The interaction controller disappears before
+    // the newly added account is removed. The user can see the sign-in promo in
+    // warm state quickly before being replaced by the cold state sign-in promo.
+    // To avoid this UI glitch, all notifications from the mediator should be
+    // ignored, while the sign-in is in progress to avoid showing the warm
+    // state.
+    return;
+  }
   if (![self.collectionViewModel hasItemForItemType:ItemTypeSigninPromo
                                   sectionIdentifier:SectionIdentifierSignIn]) {
     return;
