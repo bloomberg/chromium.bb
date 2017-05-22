@@ -2675,9 +2675,6 @@
   </if>
 
   <!-- Users Page -->
-  <message name="IDS_SETTINGS_USERS" desc="Name of the settings page which manages users on the device.">
-    Manage other users
-  </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">
       These settings may only be modified by the owner:

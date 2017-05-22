@@ -1882,10 +1882,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   }
 }
 
+#if defined(OS_CHROMEOS)
 void AddUsersStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-    {"usersPageTitle", IDS_SETTINGS_USERS},
-#if defined(OS_CHROMEOS)
     {"usersModifiedByOwnerLabel", IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL},
     {"guestBrowsingLabel", IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL},
     {"settingsManagedLabel", IDS_SETTINGS_USERS_MANAGED_LABEL},
@@ -1895,11 +1894,11 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
     {"deviceOwnerLabel", IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL},
     {"addUsers", IDS_SETTINGS_USERS_ADD_USERS},
     {"addUsersEmail", IDS_SETTINGS_USERS_ADD_USERS_EMAIL},
-#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }
+#endif
 
 #if !defined(OS_CHROMEOS)
 void AddSystemStrings(content::WebUIDataSource* html_source) {
@@ -2064,7 +2063,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
-  AddUsersStrings(html_source);
   AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
@@ -2077,6 +2075,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
   AddOncStrings(html_source);
+  AddUsersStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);
   AddImportDataStrings(html_source);
