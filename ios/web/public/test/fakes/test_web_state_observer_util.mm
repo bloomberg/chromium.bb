@@ -4,7 +4,7 @@
 
 #import "ios/web/public/test/fakes/test_web_state_observer_util.h"
 
-#include "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/navigation_context.h"
 
 namespace web {
 TestDidStartNavigationInfo::TestDidStartNavigationInfo() {}

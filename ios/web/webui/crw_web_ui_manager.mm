@@ -19,7 +19,7 @@
 #include "ios/web/grit/ios_web_resources.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/webui/crw_web_ui_page_builder.h"
