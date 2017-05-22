@@ -170,6 +170,13 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     DLOG(ERROR) << __func__ << " Could not create VEA";
     return false;
   }
+
+  if (!encoder_worker_thread_.Start()) {
+    encoder_.reset();
+    DLOG(ERROR) << "Failed spawning encoder worker thread.";
+    return false;
+  }
+
   input_format_ = input_format;
   input_visible_size_ = input_visible_size;
   // Attempt to set up performing encoding tasks on IO thread, if supported
@@ -178,11 +185,6 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     filter_ = new MessageFilter(this, host_route_id_);
     stub_->channel()->AddFilter(filter_.get());
     encode_task_runner_ = io_task_runner_;
-  }
-
-  if (!encoder_worker_thread_.Start()) {
-    DLOG(ERROR) << "Failed spawning encoder worker thread.";
-    return false;
   }
   encoder_worker_task_runner_ = encoder_worker_thread_.task_runner();
   return true;
