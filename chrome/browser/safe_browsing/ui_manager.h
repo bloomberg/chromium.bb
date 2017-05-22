@@ -67,11 +67,12 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // protocol buffer, so the service can send it over.
   void SendSerializedThreatDetails(const std::string& serialized) override;
 
-  // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
-  // to the server. Can only be called on UI thread.  If |post_data| is
-  // non-empty, the request will be sent as a POST instead of a GET.
-  void MaybeReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report,
-                                  content::WebContents* web_contents) override;
+  // Report hits to unsafe contents (malware, phishing, unsafe download URL)
+  // to the server. Can only be called on UI thread.  The hit report will
+  // only be sent if the user has enabled SBER and is not in incognito mode.
+  void MaybeReportSafeBrowsingHit(
+      const safe_browsing::HitReport& hit_report,
+      const content::WebContents* web_contents) override;
 
   // Report permission action to SafeBrowsing servers. Can only be called on UI
   // thread.
@@ -110,7 +111,7 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.
   static bool ShouldSendHitReport(const HitReport& hit_report,
-                                  content::WebContents* web_contents);
+                                  const content::WebContents* web_contents);
 
  private:
   friend class SafeBrowsingUIManagerTest;
