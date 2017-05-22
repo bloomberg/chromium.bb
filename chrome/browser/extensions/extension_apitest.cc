@@ -156,7 +156,6 @@ void ExtensionApiTest::SetUpOnMainThread() {
   test_config_.reset(new base::DictionaryValue());
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
-  test_config_->SetInteger(kTestWebSocketPort, 0);
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }
