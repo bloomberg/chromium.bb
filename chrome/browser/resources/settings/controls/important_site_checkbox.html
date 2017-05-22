@@ -23,27 +23,24 @@
         @apply(--settings-secondary-unchecked);
       }
 
-      .important-site-label {
-        display: inline-block;
-      }
-
       .middot {
         padding: 0 4px;
       }
 
+      .label {
+        @apply(--settings-checkbox-label);
+      }
     </style>
     <div id="outerRow">
       <paper-checkbox id="checkbox" checked="{{site.isChecked}}"
           disabled="[[disabled]]">
-        <div class="important-site-label">
-          <div>[[site.registerableDomain]]</div>
-          <div class="secondary">
-            <span class="storage-size">[[site.storageSize]]</span>
-            <template is="dom-if" if="[[site.hasNotifications]]">
-              <span class="middot">&middot;</span>
-              <span class="has-notifications">$i18n{notificationWarning}</span>
-            </template>
-          </div>
+        <div class="label">[[site.registerableDomain]]</div>
+        <div class="secondary label">
+          <span class="storage-size">[[site.storageSize]]</span>
+          <template is="dom-if" if="[[site.hasNotifications]]">
+            <span class="middot">&middot;</span>
+            <span class="has-notifications">$i18n{notificationWarning}</span>
+          </template>
         </div>
       </paper-checkbox>
     </div>
