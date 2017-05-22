@@ -31,6 +31,7 @@
 #include "public/web/WebNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -46,7 +47,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXObjectImpl.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
@@ -198,7 +198,7 @@ WebPluginContainer* WebNode::PluginContainer() const {
 WebAXObject WebNode::AccessibilityObject() {
   WebDocument web_document = GetDocument();
   const Document* doc = GetDocument().ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(doc->ExistingAXObjectCache());
+  AXObjectCacheBase* cache = ToAXObjectCacheBase(doc->ExistingAXObjectCache());
   Node* node = Unwrap<Node>();
   return cache ? WebAXObject(cache->Get(node)) : WebAXObject();
 }
