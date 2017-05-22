@@ -33,9 +33,7 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
-#include "content/browser/renderer_host/media/service_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -54,7 +52,6 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "services/video_capture/public/cpp/constants.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -427,11 +424,6 @@ MediaStreamManager::MediaStreamManager(
             media::VideoCaptureDeviceFactory::CreateFactory(
                 BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
         std::move(device_task_runner));
-    if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
-      video_capture_provider = base::MakeUnique<VideoCaptureProviderSwitcher>(
-          base::MakeUnique<ServiceVideoCaptureProvider>(),
-          std::move(video_capture_provider));
-    }
   }
   InitializeMaybeAsync(std::move(video_capture_provider));
 

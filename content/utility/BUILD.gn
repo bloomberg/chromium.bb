@@ -46,8 +46,6 @@ source_set("utility") {
     "//services/service_manager/public/interfaces",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/interfaces",
-    "//services/video_capture:lib",
-    "//services/video_capture/public/interfaces:constants",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/WebKit/public:mojo_bindings",
     "//url",

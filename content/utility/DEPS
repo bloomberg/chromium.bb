@@ -6,6 +6,5 @@ include_rules = [
   "+services/data_decoder",
   "+services/service_manager",
   "+services/shape_detection",
-  "+services/video_capture",
   "+sandbox/win/src",
 ]

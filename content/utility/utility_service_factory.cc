@@ -19,20 +19,10 @@
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/shape_detection_service.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
-#include "services/video_capture/service_impl.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
-
-namespace {
-
-std::unique_ptr<service_manager::Service> CreateVideoCaptureService() {
-  return base::MakeUnique<video_capture::ServiceImpl>();
-}
-
-}  // anonymous namespace
 
 namespace content {
 
@@ -52,11 +42,6 @@ UtilityServiceFactory::~UtilityServiceFactory() {}
 
 void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   GetContentClient()->utility()->RegisterServices(services);
-
-  ServiceInfo video_capture_info;
-  video_capture_info.factory = base::Bind(&CreateVideoCaptureService);
-  services->insert(
-      std::make_pair(video_capture::mojom::kServiceName, video_capture_info));
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
   ServiceInfo info;

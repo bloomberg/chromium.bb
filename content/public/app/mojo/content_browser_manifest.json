@@ -80,8 +80,7 @@
           "text_detection"
 
         ],
-        "resource_coordinator": [ "coordination_unit" ],
-        "video_capture": [ "capture" ]
+        "resource_coordinator": [ "coordination_unit" ]
       }
     },
     "navigation:frame": {
