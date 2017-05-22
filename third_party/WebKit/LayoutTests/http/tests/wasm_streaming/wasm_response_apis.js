@@ -4,54 +4,64 @@
 
 const incrementer_url = '../wasm/resources/load-wasm.php';
 
+function AssertType(obj, type) {
+  assert_equals(obj.constructor, type);
+}
+
+function AssertTypeError(obj) {
+  return AssertType(obj, TypeError);
+}
+
 function TestStreamedCompile() {
   return fetch(incrementer_url)
-    .then(WebAssembly.compile)
+    .then(WebAssembly.compileStreaming)
     .then(m => new WebAssembly.Instance(m))
     .then(i => assert_equals(5, i.exports.increment(4)));
 }
 
 function TestCompileMimeTypeIsChecked() {
   return fetch('../wasm/resources/incrementer.wasm')
-    .then(WebAssembly.compile)
-    .catch(e => e instanceof TypeError);
+    .then(WebAssembly.compileStreaming)
+    .then(assert_unreached,
+          AssertTypeError);
 }
 
 function TestInstantiateMimeTypeIsChecked() {
   return fetch('../wasm/resources/incrementer.wasm')
-    .then(WebAssembly.instantiate)
-    .catch(e => e instanceof TypeError);
+    .then(WebAssembly.instantiateStreaming)
+    .then(assert_unreached,
+          AssertTypeError);
 }
 
 function TestShortFormStreamedCompile() {
-  return WebAssembly.compile(fetch(incrementer_url))
+  return WebAssembly.compileStreaming(fetch(incrementer_url))
     .then(m => new WebAssembly.Instance(m))
     .then(i => assert_equals(5, i.exports.increment(4)));
 }
 
 function NegativeTestStreamedCompilePromise() {
-  return WebAssembly.compile(new Promise((resolve, reject)=>{resolve(5);}))
+  return WebAssembly.compileStreaming(Promise.resolve(5))
     .then(assert_unreached,
-          e => assert_true(e instanceof TypeError));
+          AssertTypeError);
 }
 
 function CompileBlankResponse() {
-  return WebAssembly.compile(new Response())
+  return WebAssembly.compileStreaming(new Response())
     .then(assert_unreached,
-          e => assert_true(e instanceof TypeError));
+          AssertTypeError);
 }
 
 function InstantiateBlankResponse() {
-  return WebAssembly.instantiate(new Response())
+  return WebAssembly.instantiateStreaming(new Response())
     .then(assert_unreached,
-          e => assert_true(e instanceof TypeError));
+          AssertTypeError);
 }
 
 function CompileFromArrayBuffer() {
   return fetch(incrementer_url)
     .then(r => r.arrayBuffer())
     .then(arr => new Response(arr, {headers:{"Content-Type":"application/wasm"}}))
-    .then(WebAssembly.compile)
+    .then(WebAssembly.compileStreaming)
     .then(m => new WebAssembly.Instance(m))
     .then(i => assert_equals(6, i.exports.increment(5)));
 }
@@ -61,9 +71,9 @@ function CompileFromInvalidArrayBuffer() {
   var view = new Uint8Array(arr);
   for (var i = 0; i < view.length; ++i) view[i] = i;
 
-  return WebAssembly.compile(new Response(arr))
+  return WebAssembly.compileStreaming(new Response(arr))
     .then(assert_unreached,
-          e => assert_true(e instanceof Error));
+          AssertTypeError);
 }
 
 function InstantiateFromInvalidArrayBuffer() {
@@ -71,26 +81,26 @@ function InstantiateFromInvalidArrayBuffer() {
   var view = new Uint8Array(arr);
   for (var i = 0; i < view.length; ++i) view[i] = i;
 
-  return WebAssembly.instantiate(new Response(arr))
+  return WebAssembly.instantiateStreaming(new Response(arr))
     .then(assert_unreached,
-          e => assert_true(e instanceof Error));
+          AssertTypeError);
 }
 
 function TestStreamedInstantiate() {
   return fetch(incrementer_url)
-    .then(WebAssembly.instantiate)
+    .then(WebAssembly.instantiateStreaming)
     .then(pair => assert_equals(5, pair.instance.exports.increment(4)));
 }
 
 function InstantiateFromArrayBuffer() {
   return fetch(incrementer_url)
     .then(response => response.arrayBuffer())
-    .then(WebAssembly.instantiate)
-    .then(pair => assert_equals(5, pair.instance.exports.increment(4)));
+    .then(WebAssembly.instantiateStreaming)
+    .then(assert_unreached, AssertTypeError);
 }
 
 function TestShortFormStreamedInstantiate() {
-  return WebAssembly.instantiate(fetch(incrementer_url))
+  return WebAssembly.instantiateStreaming(fetch(incrementer_url))
     .then(pair => assert_equals(5, pair.instance.exports.increment(4)));
 }
 
@@ -99,9 +109,9 @@ function InstantiateFromInvalidArrayBuffer() {
   var view = new Uint8Array(arr);
   for (var i = 0; i < view.length; ++i) view[i] = i;
 
-  return WebAssembly.compile(new Response(arr))
+  return WebAssembly.compileStreaming(new Response(arr))
     .then(assert_unreached,
-          e => assert_true(e instanceof Error));
+          AssertTypeError);
 }
 
 function buildImportingModuleBytes() {
@@ -133,7 +143,7 @@ function buildImportingModuleBytes() {
   builder.appendToTable([2, 3]);
 
   var wire_bytes = builder.toBuffer();
-  return wire_bytes;
+  return new Response(wire_bytes, {headers:{"Content-Type":"application/wasm"}});
 }
 
 function TestInstantiateComplexModule() {
@@ -148,6 +158,6 @@ function TestInstantiateComplexModule() {
               memory: mem_1}
             };
   return Promise.resolve(buildImportingModuleBytes())
-    .then(b => WebAssembly.instantiate(b, ffi))
-    .then(pair => assert_true(pair.instance instanceof WebAssembly.Instance));
+    .then(b => WebAssembly.instantiateStreaming(b, ffi))
+    .then(pair => AssertType(pair.instance, WebAssembly.Instance));
 }
