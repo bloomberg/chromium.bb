@@ -73,6 +73,8 @@ _NEGATIVE_FILTER = [
 
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
+    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
 ]
 _VERSION_SPECIFIC_FILTER['58'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
