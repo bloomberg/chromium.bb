@@ -26,6 +26,14 @@ public abstract class SuggestionsMetrics {
         RecordUserAction.record("Suggestions.SurfaceVisible");
     }
 
+    public static void recordSurfaceHalfVisible() {
+        RecordUserAction.record("Suggestions.SurfaceHalfVisible");
+    }
+
+    public static void recordSurfaceFullyVisible() {
+        RecordUserAction.record("Suggestions.SurfaceFullyVisible");
+    }
+
     public static void recordSurfaceHidden() {
         RecordUserAction.record("Suggestions.SurfaceHidden");
     }

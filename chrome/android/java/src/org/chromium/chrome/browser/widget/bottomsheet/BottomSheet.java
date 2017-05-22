@@ -360,6 +360,26 @@ public class BottomSheet
     }
 
     /**
+     * Returns whether the provided bottom sheet state is in one of the stable open or closed
+     * states: {@link #SHEET_STATE_FULL}, {@link #SHEET_STATE_PEEK} or {@link #SHEET_STATE_HALF}
+     * @param sheetState A {@link SheetState} to test.
+     */
+    public static boolean isStateStable(@SheetState int sheetState) {
+        switch (sheetState) {
+            case SHEET_STATE_PEEK:
+            case SHEET_STATE_HALF:
+            case SHEET_STATE_FULL:
+                return true;
+            case SHEET_STATE_SCROLLING:
+                return false;
+            case SHEET_STATE_NONE: // Should never be tested, internal only value.
+            default:
+                assert false;
+                return false;
+        }
+    }
+
+    /**
      * Constructor for inflation from XML.
      * @param context An Android context.
      * @param atts The XML attributes.
