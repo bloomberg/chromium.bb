@@ -996,17 +996,15 @@ static CSSValue* ConsumeMaskSourceType(CSSParserTokenRange& range) {
   return ConsumeIdent<CSSValueAuto, CSSValueAlpha, CSSValueLuminance>(range);
 }
 
-static CSSValue* ConsumePrefixedBackgroundBox(CSSPropertyID property,
-                                              CSSParserTokenRange& range,
-                                              const CSSParserContext* context) {
+static CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange& range,
+                                              const CSSParserContext* context,
+                                              bool allow_text_value) {
   // The values 'border', 'padding' and 'content' are deprecated and do not
   // apply to the version of the property that has the -webkit- prefix removed.
   if (CSSValue* value =
           ConsumeIdentRange(range, CSSValueBorder, CSSValuePaddingBox))
     return value;
-  if ((property == CSSPropertyWebkitBackgroundClip ||
-       property == CSSPropertyWebkitMaskClip) &&
-      range.Peek().Id() == CSSValueText)
+  if (allow_text_value && range.Peek().Id() == CSSValueText)
     return ConsumeIdent(range);
   return nullptr;
 }
@@ -1057,10 +1055,13 @@ static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
     case CSSPropertyMaskSourceType:
       return ConsumeMaskSourceType(range);
     case CSSPropertyWebkitBackgroundClip:
-    case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskClip:
+      return ConsumePrefixedBackgroundBox(range, context,
+                                          true /* allow_text_value */);
+    case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskOrigin:
-      return ConsumePrefixedBackgroundBox(unresolved_property, range, context);
+      return ConsumePrefixedBackgroundBox(range, context,
+                                          false /* allow_text_value */);
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage:
       return ConsumeImageOrNone(range, context);
