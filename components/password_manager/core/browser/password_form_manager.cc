@@ -231,12 +231,13 @@ PasswordFormManager::PasswordFormManager(
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified),
       form_saver_(std::move(form_saver)),
-      owned_form_fetcher_(form_fetcher
-                              ? nullptr
-                              : base::MakeUnique<FormFetcherImpl>(
-                                    PasswordStore::FormDigest(observed_form),
-                                    client,
-                                    /* should_migrate_http_passwords */ true)),
+      owned_form_fetcher_(
+          form_fetcher ? nullptr
+                       : base::MakeUnique<FormFetcherImpl>(
+                             PasswordStore::FormDigest(observed_form),
+                             client,
+                             true /* should_migrate_http_passwords */,
+                             false /* should_query_suppressed_https_forms */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       is_main_frame_secure_(client->IsMainFrameSecure()) {
   if (owned_form_fetcher_)
