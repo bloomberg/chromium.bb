@@ -270,6 +270,18 @@ unsigned LocalDOMWindow::PendingUnloadEventListeners() const {
       const_cast<LocalDOMWindow*>(this));
 }
 
+bool LocalDOMWindow::AllowPopUp(LocalFrame& first_frame) {
+  if (UserGestureIndicator::ProcessingUserGesture())
+    return true;
+
+  Settings* settings = first_frame.GetSettings();
+  return settings && settings->GetJavaScriptCanOpenWindowsAutomatically();
+}
+
+bool LocalDOMWindow::AllowPopUp() {
+  return GetFrame() && AllowPopUp(*GetFrame());
+}
+
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
       visual_viewport_(DOMVisualViewport::Create(this)),
@@ -1623,6 +1635,14 @@ DOMWindow* LocalDOMWindow::open(const String& url_string,
   UseCounter::Count(*active_document, UseCounter::kDOMWindowOpen);
   if (!window_features_string.IsEmpty())
     UseCounter::Count(*active_document, UseCounter::kDOMWindowOpenFeatures);
+
+  if (!entered_window->AllowPopUp()) {
+    // Because FrameTree::find() returns true for empty strings, we must check
+    // for empty frame names.  Otherwise, illegitimate window.open() calls with
+    // no name will pass right through the popup blocker.
+    if (frame_name.IsEmpty() || !GetFrame()->Tree().Find(frame_name))
+      return nullptr;
+  }
 
   // Get the target frame for the special cases of _top and _parent.
   // In those cases, we schedule a location change right now and return early.

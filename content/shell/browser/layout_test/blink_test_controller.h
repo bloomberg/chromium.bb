@@ -206,7 +206,6 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnPrintMessageToStderr(const std::string& message);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
-  void OnSetPopupBlockingEnabled(bool block_popups);
   void OnTestFinished();
   void OnClearDevToolsLocalStorage();
   void OnShowDevTools(const std::string& settings,

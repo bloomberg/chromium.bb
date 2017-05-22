@@ -45,7 +45,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
-#include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
 #include "content/shell/browser/layout_test/layout_test_first_device_bluetooth_chooser.h"
 #include "content/shell/browser/shell.h"
@@ -378,7 +377,6 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   test_url_ = GURL();
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
-  LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
 
 #if defined(OS_ANDROID)
   // Re-using the shell's main window on Android causes issues with networking
@@ -456,8 +454,6 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_AudioDump, OnAudioDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPopupBlockingEnabled,
-                        OnSetPopupBlockingEnabled)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearDevToolsLocalStorage,
                         OnClearDevToolsLocalStorage)
@@ -823,10 +819,6 @@ void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
   RenderViewHost* main_render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   main_render_view_host->OnWebkitPreferencesChanged();
-}
-
-void BlinkTestController::OnSetPopupBlockingEnabled(bool block_popups) {
-  LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(block_popups);
 }
 
 void BlinkTestController::OnClearDevToolsLocalStorage() {

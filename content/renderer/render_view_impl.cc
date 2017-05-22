@@ -824,6 +824,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       WebString::FromASCII(prefs.default_encoding));
   settings->SetJavaScriptEnabled(prefs.javascript_enabled);
   settings->SetWebSecurityEnabled(prefs.web_security_enabled);
+  settings->SetJavaScriptCanOpenWindowsAutomatically(
+      prefs.javascript_can_open_windows_automatically);
   settings->SetLoadsImagesAutomatically(prefs.loads_images_automatically);
   settings->SetImagesEnabled(prefs.images_enabled);
   settings->SetPluginsEnabled(prefs.plugins_enabled);

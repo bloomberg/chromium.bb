@@ -101,6 +101,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool context_menu_on_mouse_up;
   bool javascript_enabled;
   bool web_security_enabled;
+  bool javascript_can_open_windows_automatically;
   bool loads_images_automatically;
   bool images_enabled;
   bool plugins_enabled;

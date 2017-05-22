@@ -264,6 +264,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   unsigned PendingUnloadEventListeners() const;
 
+  bool AllowPopUp();  // Call on first window, not target window.
+  static bool AllowPopUp(LocalFrame& first_frame);
+
   Element* frameElement() const;
 
   DOMWindow* open(const String& url_string,

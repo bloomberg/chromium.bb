@@ -30,6 +30,10 @@ class BindingSecurityCounterTest
 
   void LoadWindowAndAccessProperty(OriginDisposition which_origin,
                                    const String& property) {
+    GetDocument()
+        .GetFrame()
+        ->GetSettings()
+        ->SetJavaScriptCanOpenWindowsAutomatically(true);
     SimRequest main(kMainFrame, "text/html");
     SimRequest target(which_origin == OriginDisposition::CrossOrigin
                           ? kCrossOriginTarget
@@ -58,6 +62,10 @@ class BindingSecurityCounterTest
 
   void LoadFrameAndAccessProperty(OriginDisposition which_origin,
                                   const String& property) {
+    GetDocument()
+        .GetFrame()
+        ->GetSettings()
+        ->SetJavaScriptCanOpenWindowsAutomatically(true);
     SimRequest main(kMainFrame, "text/html");
     SimRequest target(which_origin == OriginDisposition::CrossOrigin
                           ? kCrossOriginTarget
