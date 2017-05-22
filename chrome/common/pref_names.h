@@ -179,7 +179,6 @@ extern const char kContextualSearchEnabled[];
 #endif  // defined(OS_ANDROID)
 #if defined(OS_MACOSX)
 extern const char kConfirmToQuitEnabled[];
-extern const char kHideFullscreenToolbar[];
 extern const char kShowFullscreenToolbar[];
 #endif
 extern const char kPromptForDownload[];

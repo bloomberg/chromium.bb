@@ -717,20 +717,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
 
-#if defined(OS_MACOSX)
-  // Migrate the value of kHideFullscreenToolbar to kShowFullscreenToolbar if
-  // it was set by the user. See crbug.com/590827.
-  // Added 03/2016.
-  const PrefService::Preference* hide_pref =
-      profile_prefs->FindPreference(prefs::kHideFullscreenToolbar);
-  if (!hide_pref->IsDefaultValue()) {
-    bool hide_pref_value =
-        profile_prefs->GetBoolean(prefs::kHideFullscreenToolbar);
-    profile_prefs->SetBoolean(prefs::kShowFullscreenToolbar, !hide_pref_value);
-    profile_prefs->ClearPref(prefs::kHideFullscreenToolbar);
-  }
-#endif
-
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
   // Added 3/2016.
   profile_prefs->ClearPref(kGoogleGeolocationAccessEnabled);
