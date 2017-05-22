@@ -33755,6 +33755,9 @@ from previous Chrome versions.
   <int value="4" label="Frame detached"/>
   <int value="5" label="By context menu"/>
   <int value="6" label="DOM mutation after XHR"/>
+  <int value="7" label="Provisionally saved form on start provisional load"/>
+  <int value="8" label="Filled form on start provisional load"/>
+  <int value="9" label="Filled input elements on start provisional load"/>
 </enum>
 
 <enum name="SubresourceFilterActions" type="int">
