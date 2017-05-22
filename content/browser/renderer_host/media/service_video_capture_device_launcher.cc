@@ -88,12 +88,9 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     return;
   }
   video_capture::mojom::DevicePtr device;
-  // We need the temporary variable |device_request| in order to guarantee that
-  // mojo::MakeRequest(&device) happens before base::Passed(&device).
-  auto device_request = mojo::MakeRequest(&device);
   (*device_factory_)
       ->CreateDevice(
-          device_id, std::move(device_request),
+          device_id, mojo::MakeRequest(&device),
           base::Bind(
               // Use of Unretained |this| is safe, because |done_cb| guarantees
               // that |this| stays alive.

@@ -21,8 +21,7 @@ class CAPTURE_EXPORT VideoCaptureSystem {
 
   // The passed-in |result_callback| must have ownership of the called
   // VideoCaptureSystem instance to guarantee that it stays alive during the
-  // asynchronous operation. |result_callback| is invoked on the same thread
-  // that calls GetDeviceInfosAsync()
+  // asynchronous operation.
   virtual void GetDeviceInfosAsync(
       const DeviceInfoCallback& result_callback) = 0;
 
