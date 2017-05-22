@@ -32,10 +32,6 @@
         padding-bottom: 40px;
       }
 
-      cr-network-icon {
-        -webkit-padding-end: 8px;
-      }
-
       iron-collapse {
         margin: 10px 0;
       }
@@ -65,17 +61,7 @@
         border-top: none;
       }
 
-      #buttonDiv paper-button {
-        /* Align text edge with trailing margin (12px button padding) */
-        -webkit-margin-end: -12px;
-        /* 8px spacing between highlight edges. */
-        -webkit-margin-start: calc(12px + 8px);
-        margin-bottom: 10px;
-        margin-top: 10px;
-      }
-
       #networkState {
-        -webkit-padding-start: 8px;
         font-size: 107.69%;  /* 14px / 13px */
         font-weight: 500;
       }
@@ -101,7 +87,7 @@
           </cr-policy-indicator>
         </template>
       </div>
-      <div id="buttonDiv" class="layout horizontal center">
+      <div id="buttonDiv" class="button-container">
         <template is="dom-if" if="[[!isSecondaryUser_]]">
           <paper-button class="secondary-button" on-tap="onForgetTap_"
               hidden$="[[!showForget_(networkProperties)]]">
@@ -189,8 +175,7 @@
           </div>
         </template>
         <!-- Data roaming (Cellular only). -->
-        <template is="dom-if"
-            if="[[isType_(NetworkType_.CELLULAR, networkProperties)]]">
+        <template is="dom-if" if="[[isCellular_(networkProperties)]]">
           <div class="settings-box">
             <settings-toggle-button id="allowDataRoaming" class="start"
                 pref="{{prefs.cros.signed.data_roaming_enabled}}"
@@ -269,8 +254,7 @@
         <iron-collapse opened="[[networkExpanded_]]">
           <div class="layout vertical indented">
             <!-- APN -->
-            <template is="dom-if"
-                if="[[isType_(NetworkType_.CELLULAR, networkProperties)]]">
+            <template is="dom-if" if="[[isCellular_(networkProperties)]]">
               <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
                   network-properties="[[networkProperties]]">
               </network-apnlist>
@@ -299,10 +283,12 @@
         </div>
 
         <iron-collapse opened="[[proxyExpanded_]]">
-          <network-proxy editable prefs="{{prefs}}"
-              on-proxy-change="onProxyChange_"
-              network-properties="[[networkProperties]]">
-          </network-proxy>
+          <div class="layout vertical indented">
+            <network-proxy editable prefs="{{prefs}}"
+                on-proxy-change="onProxyChange_"
+                network-properties="[[networkProperties]]">
+            </network-proxy>
+          </div>
         </iron-collapse>
       </template>
     </template>
