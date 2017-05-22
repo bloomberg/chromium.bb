@@ -87,10 +87,6 @@ Bug(723595) virtual/off-main-thread-fetch/http/tests/inspector/service-workers/s
 Bug(723595) virtual/scroll_customization/fast/events/touch/gesture/long-press-focuses-frame.html [ Failure ]
 Bug(723595) virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 
-# PlzNavigate: Only one of the CSP is reported when several are infringed.	
-# See https://crbug.com/723602
-Bug(723602) external/wpt/content-security-policy/frame-src/frame-src-redirect.html [ Timeout ]
-
 # PlzNavigate: Navigation requests upgraded via upgrade-insecure-requests will not get reported	
 # See https://crbug.com/713388
 Bug(713388) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Timeout ]
