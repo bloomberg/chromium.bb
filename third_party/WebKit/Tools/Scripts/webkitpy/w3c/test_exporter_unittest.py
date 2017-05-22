@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
 import unittest
 
 from webkitpy.common.host_mock import MockHost
@@ -160,6 +161,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
         test_exporter.get_exportable_commits = lambda limit: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
         test_exporter.gerrit.query_exportable_open_cls = lambda: [
             GerritCL(data={
                 'change_id': '1',
@@ -222,6 +224,7 @@ class TestExporterTest(unittest.TestCase):
         ])
         test_exporter.get_exportable_commits = lambda limit: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
         test_exporter.gerrit.query_exportable_open_cls = lambda: [
             GerritCL(data={
                 'change_id': '1',
