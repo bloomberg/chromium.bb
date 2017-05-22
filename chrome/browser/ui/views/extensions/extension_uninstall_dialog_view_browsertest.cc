@@ -189,8 +189,17 @@ IN_PROC_BROWSER_TEST_F(
 // on the ExtensionUninstallDialog, the extension's uninstall url (when it is
 // specified) and the CWS Report Abuse survey are opened in the browser, also
 // testing that the CWS survey is the active tab.
-IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
-                       EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
+#if defined(OS_WIN)
+// Flaky on windows: http://crbug.com/725197
+#define MAYBE_EnsureCWSReportAbusePageIsActiveTabAfterUninstall \
+  DISABLED_EnsureCWSReportAbusePageIsActiveTabAfterUninstall
+#else
+#define MAYBE_EnsureCWSReportAbusePageIsActiveTabAfterUninstall \
+  EnsureCWSReportAbusePageIsActiveTabAfterUninstall
+#endif
+IN_PROC_BROWSER_TEST_F(
+    ExtensionUninstallDialogViewBrowserTest,
+    MAYBE_EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
