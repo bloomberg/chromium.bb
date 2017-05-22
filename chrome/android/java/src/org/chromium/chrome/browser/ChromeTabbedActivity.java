@@ -1467,9 +1467,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     protected void recordIntentToCreationTime(long timeMs) {
         super.recordIntentToCreationTime(timeMs);
-
-        RecordHistogram.recordTimesHistogram(
-                "MobileStartup.IntentToCreationTime.TabbedMode", timeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordCustomTimesHistogram("MobileStartup.IntentToCreationTime.TabbedMode",
+                timeMs, 1, TimeUnit.SECONDS.toMillis(30), TimeUnit.MILLISECONDS, 50);
     }
 
     @Override
