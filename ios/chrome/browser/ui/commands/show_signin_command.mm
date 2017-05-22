@@ -15,6 +15,7 @@
 
 @synthesize operation = _operation;
 @synthesize accessPoint = _accessPoint;
+@synthesize promoAction = _promoAction;
 @synthesize callback = _callback;
 
 - (instancetype)initWithTag:(NSInteger)tag {
@@ -24,20 +25,34 @@
 
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
                       accessPoint:(signin_metrics::AccessPoint)accessPoint
+                      promoAction:(signin_metrics::PromoAction)promoAction
                          callback:
                              (ShowSigninCommandCompletionCallback)callback {
   if ((self = [super initWithTag:IDC_SHOW_SIGNIN_IOS])) {
     _operation = operation;
     _accessPoint = accessPoint;
+    _promoAction = promoAction;
     _callback = [callback copy];
   }
   return self;
 }
 
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint
+                      promoAction:(signin_metrics::PromoAction)promoAction {
+  return [self initWithOperation:operation
+                     accessPoint:accessPoint
+                     promoAction:promoAction
+                        callback:nil];
+}
+
+- (instancetype)initWithOperation:(AuthenticationOperation)operation
                       accessPoint:(signin_metrics::AccessPoint)accessPoint {
-  return
-      [self initWithOperation:operation accessPoint:accessPoint callback:nil];
+  return [self initWithOperation:operation
+                     accessPoint:accessPoint
+                     promoAction:signin_metrics::PromoAction::
+                                     PROMO_ACTION_NO_SIGNIN_PROMO
+                        callback:nil];
 }
 
 @end
