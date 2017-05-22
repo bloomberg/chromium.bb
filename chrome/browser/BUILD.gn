@@ -3661,6 +3661,7 @@ split_static_library("browser") {
       "themes/theme_syncable_service.h",
       "upgrade_detector.cc",
       "upgrade_detector.h",
+      "upgrade_observer.h",
       "usb/usb_chooser_controller.cc",
       "usb/usb_chooser_controller.h",
       "usb/web_usb_chooser_service.cc",
