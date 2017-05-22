@@ -27,18 +27,18 @@ LIBAOM_TEST_SRCS-yes += function_equivalence_test.h
 ## Black box tests only use the public API.
 ##
 LIBAOM_TEST_SRCS-yes                   += ../md5_utils.h ../md5_utils.c
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += ivf_video_source.h
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += ../y4minput.h ../y4minput.c
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += altref_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += aq_segment_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += datarate_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += encode_api_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += error_resilience_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += i420_video_source.h
-#LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += realtime_test.cc
-#LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += resize_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += y4m_video_source.h
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += yuv_video_source.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER)    += ivf_video_source.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += ../y4minput.h ../y4minput.c
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += altref_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += aq_segment_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += datarate_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += encode_api_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += error_resilience_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += i420_video_source.h
+#LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += realtime_test.cc
+#LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += resize_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += y4m_video_source.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += yuv_video_source.h
 
 #LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += level_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += active_map_refresh_test.cc
@@ -50,14 +50,14 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += lossless_test.cc
 
 LIBAOM_TEST_SRCS-yes                   += decode_test_driver.cc
 LIBAOM_TEST_SRCS-yes                   += decode_test_driver.h
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += encode_test_driver.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += encode_test_driver.cc
 LIBAOM_TEST_SRCS-yes                   += encode_test_driver.h
 
 ## IVF writing.
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += ../ivfenc.c ../ivfenc.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += ../ivfenc.c ../ivfenc.h
 
 ## Y4m parsing.
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS)    += y4m_test.cc ../y4menc.c ../y4menc.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += y4m_test.cc ../y4menc.c ../y4menc.h
 
 ## WebM Parsing
 ifeq ($(CONFIG_WEBM_IO), yes)
@@ -65,14 +65,14 @@ LIBWEBM_PARSER_SRCS += ../third_party/libwebm/mkvparser/mkvparser.cc
 LIBWEBM_PARSER_SRCS += ../third_party/libwebm/mkvparser/mkvreader.cc
 LIBWEBM_PARSER_SRCS += ../third_party/libwebm/mkvparser/mkvparser.h
 LIBWEBM_PARSER_SRCS += ../third_party/libwebm/mkvparser/mkvreader.h
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += $(LIBWEBM_PARSER_SRCS)
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += ../tools_common.h
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += ../webmdec.cc
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += ../webmdec.h
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += webm_video_source.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += $(LIBWEBM_PARSER_SRCS)
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += ../tools_common.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += ../webmdec.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += ../webmdec.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += webm_video_source.h
 endif
 
-LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += decode_api_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += decode_api_test.cc
 
 # Currently we only support decoder perf tests for av1. Also they read from WebM
 # files, so WebM IO is required.
@@ -81,7 +81,6 @@ ifeq ($(CONFIG_DECODE_PERF_TESTS)$(CONFIG_AV1_DECODER)$(CONFIG_WEBM_IO), \
 LIBAOM_TEST_SRCS-yes                   += decode_perf_test.cc
 endif
 
-# encode perf tests are av1 only
 ifeq ($(CONFIG_ENCODE_PERF_TESTS)$(CONFIG_AV1_ENCODER), yesyes)
 LIBAOM_TEST_SRCS-yes += encode_perf_test.cc
 endif
@@ -221,7 +220,7 @@ endif
 ifeq ($(CONFIG_INTERNAL_STATS),yes)
 LIBAOM_TEST_SRCS-$(CONFIG_HIGHBITDEPTH) += hbd_metrics_test.cc
 endif
-LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS) += sad_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.h
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fwd_txfm1d_test.cc

@@ -344,8 +344,6 @@ CONFIG_LIST="
     internal_stats
     ${CODECS}
     ${CODEC_FAMILIES}
-    encoders
-    decoders
     static_msvcrt
     spatial_resampling
     realtime_only

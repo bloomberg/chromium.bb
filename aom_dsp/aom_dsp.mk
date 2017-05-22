@@ -22,7 +22,7 @@ DSP_SRCS-yes += prob.h
 DSP_SRCS-yes += prob.c
 DSP_SRCS-$(CONFIG_ANS) += ans.h
 
-ifeq ($(CONFIG_ENCODERS),yes)
+ifeq ($(CONFIG_AV1_ENCODER),yes)
 ifeq ($(CONFIG_ANS),yes)
 DSP_SRCS-yes += answriter.h
 DSP_SRCS-yes += buf_ans.h
@@ -49,7 +49,7 @@ DSP_SRCS-$(CONFIG_INTERNAL_STATS) += psnrhvs.c
 DSP_SRCS-$(CONFIG_INTERNAL_STATS) += fastssim.c
 endif
 
-ifeq ($(CONFIG_DECODERS),yes)
+ifeq ($(CONFIG_AV1_DECODER),yes)
 ifeq ($(CONFIG_ANS),yes)
 DSP_SRCS-yes += ansreader.h
 else ifeq ($(CONFIG_DAALA_EC),yes)
@@ -327,7 +327,7 @@ DSP_SRCS-yes            += sum_squares.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/sum_squares_sse2.c
 endif # CONFIG_AV1_ENCODER
 
-ifeq ($(CONFIG_ENCODERS),yes)
+ifeq ($(CONFIG_AV1_ENCODER),yes)
 DSP_SRCS-yes            += sad.c
 DSP_SRCS-yes            += subtract.c
 
@@ -369,9 +369,9 @@ DSP_SRCS-$(HAVE_SSE2) += x86/highbd_sad4d_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/highbd_sad_sse2.asm
 endif  # CONFIG_HIGHBITDEPTH
 
-endif  # CONFIG_ENCODERS
+endif  # CONFIG_AV1_ENCODER
 
-ifneq ($(filter yes,$(CONFIG_ENCODERS)),)
+ifneq ($(filter yes,$(CONFIG_AV1_ENCODER)),)
 DSP_SRCS-yes            += variance.c
 DSP_SRCS-yes            += variance.h
 
@@ -401,7 +401,7 @@ DSP_SRCS-$(HAVE_SSE4_1) += x86/highbd_variance_sse4.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_variance_impl_sse2.asm
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_subpel_variance_impl_sse2.asm
 endif  # CONFIG_HIGHBITDEPTH
-endif  # CONFIG_ENCODERS
+endif  # CONFIG_AV1_ENCODER
 
 DSP_SRCS-no += $(DSP_SRCS_REMOVE-yes)
 
