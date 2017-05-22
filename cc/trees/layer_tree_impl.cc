@@ -1666,8 +1666,17 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
   if (!scroll_element_id)
     return;
 
-  element_id_to_scrollbar_layer_ids_.insert(
-      std::pair<ElementId, int>(scroll_element_id, scrollbar_layer->id()));
+  auto& scrollbar_ids = element_id_to_scrollbar_layer_ids_[scroll_element_id];
+  if (scrollbar_layer->orientation() == HORIZONTAL) {
+    DCHECK_EQ(scrollbar_ids.horizontal, Layer::INVALID_ID)
+        << "Existing scrollbar should have been unregistered.";
+    scrollbar_ids.horizontal = scrollbar_layer->id();
+  } else {
+    DCHECK_EQ(scrollbar_ids.vertical, Layer::INVALID_ID)
+        << "Existing scrollbar should have been unregistered.";
+    scrollbar_ids.vertical = scrollbar_layer->id();
+  }
+
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar()) {
     layer_tree_host_impl_->RegisterScrollbarAnimationController(
         scroll_element_id, scrollbar_layer->Opacity());
@@ -1684,27 +1693,32 @@ void LayerTreeImpl::UnregisterScrollbar(
   if (!scroll_element_id)
     return;
 
-  auto scrollbar_range =
-      element_id_to_scrollbar_layer_ids_.equal_range(scroll_element_id);
-  for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
-    if (i->second == scrollbar_layer->id()) {
-      element_id_to_scrollbar_layer_ids_.erase(i);
-      break;
-    }
+  auto& scrollbar_ids = element_id_to_scrollbar_layer_ids_[scroll_element_id];
+  if (scrollbar_layer->orientation() == HORIZONTAL)
+    scrollbar_ids.horizontal = Layer::INVALID_ID;
+  else
+    scrollbar_ids.vertical = Layer::INVALID_ID;
 
-  if (IsActiveTree() &&
-      element_id_to_scrollbar_layer_ids_.count(scroll_element_id) == 0) {
-    layer_tree_host_impl_->UnregisterScrollbarAnimationController(
-        scroll_element_id);
+  if (scrollbar_ids.horizontal == Layer::INVALID_ID &&
+      scrollbar_ids.vertical == Layer::INVALID_ID) {
+    element_id_to_scrollbar_layer_ids_.erase(scroll_element_id);
+    if (IsActiveTree()) {
+      layer_tree_host_impl_->UnregisterScrollbarAnimationController(
+          scroll_element_id);
+    }
   }
 }
 
 ScrollbarSet LayerTreeImpl::ScrollbarsFor(ElementId scroll_element_id) const {
   ScrollbarSet scrollbars;
-  auto scrollbar_range =
-      element_id_to_scrollbar_layer_ids_.equal_range(scroll_element_id);
-  for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
-    scrollbars.insert(LayerById(i->second)->ToScrollbarLayer());
+  auto it = element_id_to_scrollbar_layer_ids_.find(scroll_element_id);
+  if (it != element_id_to_scrollbar_layer_ids_.end()) {
+    const ScrollbarLayerIds& layer_ids = it->second;
+    if (layer_ids.horizontal != Layer::INVALID_ID)
+      scrollbars.insert(LayerById(layer_ids.horizontal)->ToScrollbarLayer());
+    if (layer_ids.vertical != Layer::INVALID_ID)
+      scrollbars.insert(LayerById(layer_ids.vertical)->ToScrollbarLayer());
+  }
   return scrollbars;
 }
 
