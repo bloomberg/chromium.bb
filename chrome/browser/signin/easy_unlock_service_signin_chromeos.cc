@@ -321,6 +321,13 @@ void EasyUnlockServiceSignin::InitializeInternal() {
   if (chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableChromeOSLogin)) {
+    return;
+  }
+
   service_active_ = true;
 
   chromeos::LoginState::Get()->AddObserver(this);
