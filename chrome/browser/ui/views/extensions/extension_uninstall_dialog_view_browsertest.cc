@@ -135,8 +135,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
 // Test that when the user clicks Uninstall on the ExtensionUninstallDialog, the
 // extension's uninstall url (when it is specified) should open and be the
 // active tab.
-IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
-                       EnsureExtensionUninstallURLIsActiveTabAfterUninstall) {
+// DISABLED: Flaky on Win 10 x64
+IN_PROC_BROWSER_TEST_F(
+    ExtensionUninstallDialogViewBrowserTest,
+    DISABLED_EnsureExtensionUninstallURLIsActiveTabAfterUninstall) {
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
