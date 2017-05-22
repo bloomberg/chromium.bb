@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
@@ -182,7 +183,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                                                ChromeIdentityServiceObserver,
                                                BooleanObserver,
                                                PrefObserverDelegate,
-                                               SigninPromoViewConsumer> {
+                                               SigninPromoViewConsumer,
+                                               SigninPromoViewDelegate> {
   // The main browser state that hold the settings. Never off the record.
   ios::ChromeBrowserState* _mainBrowserState;  // weak
 
@@ -668,14 +670,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     case ItemTypeSigninPromo: {
       SigninPromoCell* signinPromoCell =
           base::mac::ObjCCast<SigninPromoCell>(cell);
-      [signinPromoCell.signinPromoView.primaryButton
-                 addTarget:self
-                    action:@selector(signinPromoPrimaryAction:)
-          forControlEvents:UIControlEventTouchUpInside];
-      [signinPromoCell.signinPromoView.secondaryButton
-                 addTarget:self
-                    action:@selector(signinPromoSecondaryAction:)
-          forControlEvents:UIControlEventTouchUpInside];
+      signinPromoCell.signinPromoView.delegate = self;
       break;
     }
     case ItemTypeViewSource: {
@@ -1013,31 +1008,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _signinInteractionController = nil;
 }
 
-- (void)signinPromoPrimaryAction:(id)unused {
-  ChromeIdentity* identity = _signinPromoViewMediator.defaultIdentity;
-  signin_metrics::PromoAction promoAction =
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-  if (identity) {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_SigninWithDefault_FromSettings"));
-    promoAction = signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT;
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_SigninNewAccount_FromSettings"));
-    promoAction = signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT;
-  }
-  [self showSignInWithIdentity:identity promoAction:promoAction];
-}
-
-- (void)signinPromoSecondaryAction:(id)unused {
-  DCHECK(_signinPromoViewMediator.defaultIdentity);
-  base::RecordAction(
-      base::UserMetricsAction("Signin_SigninNotDefault_FromSettings"));
-  [self showSignInWithIdentity:nil
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NOT_DEFAULT];
-}
-
 #pragma mark NotificationBridgeDelegate
 
 - (void)onSignInStateChanged {
@@ -1176,6 +1146,39 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     if (newIdentity)
       [self.collectionViewLayout invalidateLayout];
   }
+}
+
+#pragma mark - SigninPromoViewDelegate
+
+- (void)signinPromoViewDidTapSigninWithNewAccount:
+    (SigninPromoView*)signinPromoView {
+  DCHECK(!_signinPromoViewMediator.defaultIdentity);
+  base::RecordAction(
+      base::UserMetricsAction("Signin_SigninNewAccount_FromSettings"));
+  [self showSignInWithIdentity:nil
+                   promoAction:signin_metrics::PromoAction::
+                                   PROMO_ACTION_NEW_ACCOUNT];
+}
+
+- (void)signinPromoViewDidTapSigninWithDefaultAccount:
+    (SigninPromoView*)signinPromoView {
+  ChromeIdentity* identity = _signinPromoViewMediator.defaultIdentity;
+  DCHECK(identity);
+  base::RecordAction(
+      base::UserMetricsAction("Signin_SigninWithDefault_FromSettings"));
+  [self showSignInWithIdentity:identity
+                   promoAction:signin_metrics::PromoAction::
+                                   PROMO_ACTION_WITH_DEFAULT];
+}
+
+- (void)signinPromoViewDidTapSigninWithOtherAccount:
+    (SigninPromoView*)signinPromoView {
+  DCHECK(_signinPromoViewMediator.defaultIdentity);
+  base::RecordAction(
+      base::UserMetricsAction("Signin_SigninNotDefault_FromSettings"));
+  [self showSignInWithIdentity:nil
+                   promoAction:signin_metrics::PromoAction::
+                                   PROMO_ACTION_NOT_DEFAULT];
 }
 
 @end
