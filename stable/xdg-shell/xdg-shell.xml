@@ -391,11 +391,20 @@
       manipulate a buffer prior to the first xdg_surface.configure call must
       also be treated as errors.
 
-      For a surface to be mapped by the compositor, the following conditions
-      must be met: (1) the client has assigned a xdg_surface based role to the
-      surface, (2) the client has set and committed the xdg_surface state and
-      the role dependent state to the surface and (3) the client has committed a
-      buffer to the surface.
+      Mapping an xdg_surface-based role surface is defined as making it
+      possible for the surface to be shown by the compositor. Note that
+      a mapped surface is not guaranteed to be visible once it is mapped.
+
+      For an xdg_surface to be mapped by the compositor, the following
+      conditions must be met:
+      (1) the client has assigned an xdg_surface-based role to the surface
+      (2) the client has set and committed the xdg_surface state and the
+	  role-dependent state to the surface
+      (3) the client has committed a buffer to the surface
+
+      A newly-unmapped surface is considered to have met condition (1) out
+      of the 3 required conditions for mapping a surface if its role surface
+      has not been destroyed.
     </description>
 
     <enum name="error">
@@ -531,13 +540,20 @@
       fullscreen, and minimize, set application-specific metadata like title and
       id, and well as trigger user interactive operations such as interactive
       resize and move.
+
+      Unmapping an xdg_toplevel means that the surface cannot be shown
+      by the compositor until it is explicitly mapped again.
+      All active operations (e.g., move, resize) are canceled and all
+      attributes (e.g. title, state, stacking, ...) are discarded for
+      an xdg_toplevel surface when it is unmapped.
+
+      Attaching a null buffer to a toplevel unmaps the surface.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the xdg_toplevel">
-	Unmap and destroy the window. The window will be effectively
-	hidden from the user's point of view, and all state like
-	maximization, fullscreen, and so on, will be lost.
+	This request destroys the role surface and unmaps the surface;
+	see "Unmapping" behavior in interface section for details.
       </description>
     </request>
 
