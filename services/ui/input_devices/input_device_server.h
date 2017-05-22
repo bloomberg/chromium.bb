@@ -19,8 +19,6 @@ struct BindSourceInfo;
 
 namespace ui {
 
-class TouchDeviceServer;
-
 // Listens to DeviceDataManager for updates on input-devices and forwards those
 // updates to any registered InputDeviceObserverMojo in other processes via
 // Mojo IPC. This runs in the mus-ws process.
@@ -64,10 +62,6 @@ class InputDeviceServer : public mojom::InputDeviceServer,
 
   // DeviceDataManager instance we are registered as an observer with.
   ui::DeviceDataManager* manager_ = nullptr;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<TouchDeviceServer> touch_device_server_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceServer);
 };

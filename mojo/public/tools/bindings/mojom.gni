@@ -68,13 +68,6 @@ if (enable_mojom_typemapping) {
         _typemap_config = typemap.config
         read_file(_typemap_config.mojom, "")
       }
-    } else if (is_chromeos && defined(configuration.typemaps_chromeos)) {
-      foreach(typemap, configuration.typemaps_chromeos) {
-        _typemap_config = {
-        }
-        _typemap_config = typemap.config
-        read_file(_typemap_config.mojom, "")
-      }
     }
   }
 } else {
@@ -494,16 +487,6 @@ template("mojom") {
         }
         if (is_mac && defined(bindings_configuration.typemaps_mac)) {
           foreach(typemap, bindings_configuration.typemaps_mac) {
-            _typemap_config = {
-            }
-            _typemap_config = typemap.config
-            if (get_path_info(source, "abspath") == _typemap_config.mojom) {
-              active_typemaps += [ typemap ]
-            }
-          }
-        } else if (is_chromeos &&
-                   defined(bindings_configuration.typemaps_chromeos)) {
-          foreach(typemap, bindings_configuration.typemaps_chromeos) {
             _typemap_config = {
             }
             _typemap_config = typemap.config

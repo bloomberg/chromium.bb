@@ -19,13 +19,6 @@ source_set("input_devices") {
   public_deps = [
     "//services/ui/public/interfaces/input_devices",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "touch_device_server.cc",
-      "touch_device_server.h",
-    ]
-  }
 }
 
 test("input_device_unittests") {
