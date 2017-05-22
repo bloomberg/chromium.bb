@@ -5204,7 +5204,7 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
   if (owner()->HasState(ui::AX_STATE_EDITABLE))
     ia2_state |= IA2_STATE_EDITABLE;
 
-  if (owner()->GetBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE))
+  if (owner()->HasAction(ui::AX_ACTION_SET_VALUE))
     ia2_state |= IA2_STATE_EDITABLE;
 
   if (!owner()->GetStringAttribute(ui::AX_ATTR_AUTO_COMPLETE).empty())

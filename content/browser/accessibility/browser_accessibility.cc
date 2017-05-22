@@ -885,6 +885,10 @@ bool BrowserAccessibility::HasState(ui::AXState state_enum) const {
   return GetData().HasState(state_enum);
 }
 
+bool BrowserAccessibility::HasAction(ui::AXAction action_enum) const {
+  return GetData().HasAction(action_enum);
+}
+
 bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
   return (GetRole() == ui::AX_ROLE_CELL ||
           GetRole() == ui::AX_ROLE_COLUMN_HEADER ||

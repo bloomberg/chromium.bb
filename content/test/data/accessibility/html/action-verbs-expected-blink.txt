@@ -20,3 +20,4 @@ rootWebArea name='Action verbs'
 ++genericContainer defaultActionVerb=3
 ++++staticText name='Div with click handler' defaultActionVerb=3
 ++++++inlineTextBox name='Div with click handler'
+<-- End-of-file -->
