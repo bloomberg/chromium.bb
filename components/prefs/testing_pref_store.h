@@ -83,6 +83,9 @@ class TestingPrefStore : public PersistentPrefStore {
   ~TestingPrefStore() override;
 
  private:
+  void CheckPrefIsSerializable(const std::string& key,
+                               const base::Value& value);
+
   // Stores the preference values.
   PrefValueMap prefs_;
 

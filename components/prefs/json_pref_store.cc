@@ -463,7 +463,9 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   // readable prefs for debugging purposes, you can dump your prefs into any
   // command-line or online JSON pretty printing tool.
   serializer.set_pretty_print(false);
-  return serializer.Serialize(*prefs_);
+  bool success = serializer.Serialize(*prefs_);
+  DCHECK(success);
+  return success;
 }
 
 void JsonPrefStore::FinalizeFileRead(
