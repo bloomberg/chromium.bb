@@ -14,7 +14,7 @@
 namespace {
 
 const float kOneFingerFlingTimeConstant = 325.f;
-const float kScrollFlingTimeConstant = 120.f;
+const float kScrollFlingTimeConstant = 250.f;
 
 }  // namespace
 
@@ -136,6 +136,9 @@ void GestureInterpreter::ScrollWithVelocity(float velocity_x,
 
 void GestureInterpreter::ProcessAnimations() {
   pan_animation_.Tick();
+
+  // TODO(yuweih): It's probably not right to handle host side virtual scroll
+  // momentum in the renderer's callback.
   scroll_animation_.Tick();
 }
 
@@ -174,6 +177,7 @@ void GestureInterpreter::ScrollWithoutAbortAnimations(float dx, float dy) {
 
 void GestureInterpreter::AbortAnimations() {
   pan_animation_.Abort();
+  scroll_animation_.Abort();
 }
 
 void GestureInterpreter::InjectMouseClick(
