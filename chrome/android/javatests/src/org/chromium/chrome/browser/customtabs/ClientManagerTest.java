@@ -34,6 +34,8 @@ public class ClientManagerTest {
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     private static final String URL = "https://www.android.com";
+    private static final String HTTP_URL = "http://www.android.com";
+
     private ClientManager mClientManager;
     private CustomTabsSessionToken mSession =
             CustomTabsSessionToken.createDummySessionTokenForTesting();
@@ -184,6 +186,28 @@ public class ClientManagerTest {
 
         // initializeWithPostMessageOriginForSession should override without checking origin.
         mClientManager.initializeWithPostMessageOriginForSession(mSession, null);
+        Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
+    }
+
+    @Test
+    @SmallTest
+    public void testPostMessageOriginHttpNotAllowed() {
+        Assert.assertTrue(
+                mClientManager.newSession(mSession, mUid, null, new PostMessageHandler(mSession)));
+        // Should always start with no origin.
+        Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
+
+        // With no prepopulated origins, this verification should fail.
+        mClientManager.verifyAndInitializeWithPostMessageOriginForSession(
+                mSession, Uri.parse(HTTP_URL));
+        Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
+
+        // Even if there is a prepopulated origin, non-https origins should get an early return with
+        // false.
+        OriginVerifier.prePopulateVerifiedOriginForTesting(
+                ContextUtils.getApplicationContext().getPackageName(), Uri.parse(HTTP_URL));
+        mClientManager.verifyAndInitializeWithPostMessageOriginForSession(
+                mSession, Uri.parse(HTTP_URL));
         Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
     }
 
