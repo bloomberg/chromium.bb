@@ -389,6 +389,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // invokes |callback| when finished.
 - (void)showSigninWithOperation:(AuthenticationOperation)operation
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
+                    promoAction:(signin_metrics::PromoAction)promoAction
                        callback:(ShowSigninCommandCompletionCallback)callback;
 // Wraps a callback with one that first checks if sign-in was completed
 // successfully and the profile wasn't swapped before invoking.
@@ -1438,6 +1439,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       } else {
         [self showSigninWithOperation:command.operation
                           accessPoint:command.accessPoint
+                          promoAction:command.promoAction
                              callback:command.callback];
       }
       break;
@@ -2083,6 +2085,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)showSigninWithOperation:(AuthenticationOperation)operation
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
+                    promoAction:(signin_metrics::PromoAction)promoAction
                        callback:(ShowSigninCommandCompletionCallback)callback {
   DCHECK_NE(AUTHENTICATION_OPERATION_DISMISS, operation);
 
@@ -2097,7 +2100,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
           initWithBrowserState:_mainBrowserState
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
-                   accessPoint:accessPoint]);
+                   accessPoint:accessPoint
+                   promoAction:promoAction]);
 
   signin_ui::CompletionCallback completion = ^(BOOL success) {
     _signinInteractionController.reset();
@@ -2147,8 +2151,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
           initWithBrowserState:_mainBrowserState
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
-                   accessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_UNKNOWN]);
+                   accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN
+                   promoAction:signin_metrics::PromoAction::
+                                   PROMO_ACTION_NO_SIGNIN_PROMO]);
 
   [_signinInteractionController
       addAccountWithCompletion:^(BOOL success) {

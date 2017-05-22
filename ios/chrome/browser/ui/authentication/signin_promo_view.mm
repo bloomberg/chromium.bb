@@ -303,13 +303,17 @@ void RecordSigninNewAccountUserActionForAccessPoint(
       RecordSigninNewAccountUserActionForAccessPoint(_accessPoint);
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-                accessPoint:_accessPoint];
+                accessPoint:_accessPoint
+                promoAction:signin_metrics::PromoAction::
+                                PROMO_ACTION_NEW_ACCOUNT];
       break;
     case SigninPromoViewModeWarmState:
       RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS
-                accessPoint:_accessPoint];
+                accessPoint:_accessPoint
+                promoAction:signin_metrics::PromoAction::
+                                PROMO_ACTION_WITH_DEFAULT];
       break;
   }
   DCHECK(command);
@@ -324,7 +328,8 @@ void RecordSigninNewAccountUserActionForAccessPoint(
   RecordSigninNotDefaultUserActionForAccessPoint(_accessPoint);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-            accessPoint:_accessPoint];
+            accessPoint:_accessPoint
+            promoAction:signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT];
   [self chromeExecuteCommand:command];
 }
 

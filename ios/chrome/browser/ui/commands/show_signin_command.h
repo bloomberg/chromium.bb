@@ -40,10 +40,17 @@ enum AuthenticationOperation {
 // SigninInteractionController and invoke a possibly-nil callback when finished.
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
                       accessPoint:(signin_metrics::AccessPoint)accessPoint
+                      promoAction:(signin_metrics::PromoAction)promoAction
                          callback:(ShowSigninCommandCompletionCallback)callback
     NS_DESIGNATED_INITIALIZER;
 
 // Initializes a ShowSigninCommand with a nil callback.
+- (instancetype)initWithOperation:(AuthenticationOperation)operation
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint
+                      promoAction:(signin_metrics::PromoAction)promoAction;
+
+// Initializes a ShowSigninCommand with PROMO_ACTION_NO_SIGNIN_PROMO and a nil
+// callback.
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
                       accessPoint:(signin_metrics::AccessPoint)accessPoint;
 
@@ -56,6 +63,9 @@ enum AuthenticationOperation {
 
 // The access point of this authentication operation.
 @property(nonatomic, readonly) signin_metrics::AccessPoint accessPoint;
+
+// The user action from the sign-in promo to trigger the sign-in operation.
+@property(nonatomic, readonly) signin_metrics::PromoAction promoAction;
 
 @end
 

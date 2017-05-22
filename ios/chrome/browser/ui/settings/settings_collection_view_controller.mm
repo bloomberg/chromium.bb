@@ -741,7 +741,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   switch (itemType) {
     case ItemTypeSignInButton:
-      [self showSignInWithIdentity:nil];
+      [self showSignInWithIdentity:nil
+                       promoAction:signin_metrics::PromoAction::
+                                       PROMO_ACTION_NO_SIGNIN_PROMO];
       break;
     case ItemTypeAccount:
       controller = [[AccountsCollectionViewController alloc]
@@ -986,7 +988,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 #pragma mark Sign in
 
-- (void)showSignInWithIdentity:(ChromeIdentity*)identity {
+- (void)showSignInWithIdentity:(ChromeIdentity*)identity
+                   promoAction:(signin_metrics::PromoAction)promoAction {
   base::RecordAction(base::UserMetricsAction("Signin_Signin_FromSettings"));
   DCHECK(!_signinInteractionController);
   _signinInteractionController = [[SigninInteractionController alloc]
@@ -994,7 +997,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       presentingViewController:self.navigationController
          isPresentedOnSettings:YES
                    accessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_SETTINGS];
+                                   ACCESS_POINT_SETTINGS
+                   promoAction:promoAction];
 
   __weak SettingsCollectionViewController* weakSelf = self;
   [_signinInteractionController
@@ -1011,21 +1015,27 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (void)signinPromoPrimaryAction:(id)unused {
   ChromeIdentity* identity = _signinPromoViewMediator.defaultIdentity;
+  signin_metrics::PromoAction promoAction =
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
   if (identity) {
     base::RecordAction(
         base::UserMetricsAction("Signin_SigninWithDefault_FromSettings"));
+    promoAction = signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT;
   } else {
     base::RecordAction(
         base::UserMetricsAction("Signin_SigninNewAccount_FromSettings"));
+    promoAction = signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT;
   }
-  [self showSignInWithIdentity:identity];
+  [self showSignInWithIdentity:identity promoAction:promoAction];
 }
 
 - (void)signinPromoSecondaryAction:(id)unused {
   DCHECK(_signinPromoViewMediator.defaultIdentity);
   base::RecordAction(
       base::UserMetricsAction("Signin_SigninNotDefault_FromSettings"));
-  [self showSignInWithIdentity:nil];
+  [self showSignInWithIdentity:nil
+                   promoAction:signin_metrics::PromoAction::
+                                   PROMO_ACTION_NOT_DEFAULT];
 }
 
 #pragma mark NotificationBridgeDelegate
