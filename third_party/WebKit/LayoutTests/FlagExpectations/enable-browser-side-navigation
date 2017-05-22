@@ -91,10 +91,6 @@ Bug(723595) virtual/threaded/printing/subframes-percentage-height.html [ Failure
 # See https://crbug.com/713388
 Bug(713388) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Timeout ]
 
-# PlzNavigate: module import => ModuleMap.cpp(99) Check failed: !is_fetching_.
-Bug(724989) http/tests/dom/script-module-load-incomplete-no-crash.html [ Crash ]
-Bug(724989) virtual/mojo-loading/http/tests/dom/script-module-load-incomplete-no-crash.html [ Crash ]
-
 # ------------------------------------------------------------
 # These tests are correct with PlzNavigate but not without it
 # ------------------------------------------------------------
