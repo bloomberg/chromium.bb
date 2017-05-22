@@ -780,7 +780,12 @@ void av1_get_entropy_contexts(BLOCK_SIZE bsize, TX_SIZE tx_size,
                               const struct macroblockd_plane *pd,
                               ENTROPY_CONTEXT t_above[2 * MAX_MIB_SIZE],
                               ENTROPY_CONTEXT t_left[2 * MAX_MIB_SIZE]) {
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+  const BLOCK_SIZE plane_bsize =
+      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#else
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif
   get_entropy_contexts_plane(plane_bsize, tx_size, pd, t_above, t_left);
 }
 
