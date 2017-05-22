@@ -68,6 +68,7 @@ class CORE_EXPORT SVGImage final : public Image {
   bool IsSVGImage() const override { return true; }
   IntSize Size() const override { return intrinsic_size_; }
 
+  void CheckLoaded() const;
   bool CurrentFrameHasSingleSecurityOrigin() const override;
 
   void StartAnimation(CatchUpAnimation = kCatchUp) override;

@@ -121,13 +121,24 @@ bool SVGImage::IsInSVGImage(const Node* node) {
   return page->GetChromeClient().IsSVGImageChromeClient();
 }
 
+void SVGImage::CheckLoaded() const {
+  CHECK(page_);
+
+  LocalFrame* frame = ToLocalFrame(page_->MainFrame());
+
+  // Failures of this assertion might result in wrong origin tainting checks,
+  // because CurrentFrameHasSingleSecurityOrigin() assumes all subresources of
+  // the SVG are loaded and thus ready for origin checks.
+  CHECK(frame->GetDocument()->LoadEventFinished());
+}
+
 bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   if (!page_)
     return true;
 
   LocalFrame* frame = ToLocalFrame(page_->MainFrame());
 
-  CHECK(frame->GetDocument()->LoadEventFinished());
+  CheckLoaded();
 
   SVGSVGElement* root_element =
       frame->GetDocument()->AccessSVGExtensions().rootElement();

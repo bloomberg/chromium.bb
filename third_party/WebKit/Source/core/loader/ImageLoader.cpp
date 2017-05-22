@@ -562,9 +562,17 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
 
   UpdateLayoutObject();
 
-  if (image_ && image_->GetImage() && image_->GetImage()->IsSVGImage())
+  if (image_ && image_->GetImage() && image_->GetImage()->IsSVGImage()) {
+    // SVG's document should be completely loaded before access control
+    // checks, which can occur anytime after ImageNotifyFinished()
+    // (See SVGImage::CurrentFrameHasSingleSecurityOrigin()).
+    // We check the document is loaded here to catch violation of the
+    // assumption reliably.
+    ToSVGImage(image_->GetImage())->CheckLoaded();
+
     ToSVGImage(image_->GetImage())
         ->UpdateUseCounters(GetElement()->GetDocument());
+  }
 
   if (loading_image_document_) {
     CHECK(!has_pending_load_event_);
