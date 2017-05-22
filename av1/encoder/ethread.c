@@ -176,6 +176,9 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
     if (i < cpi->num_workers - 1) {
       av1_accumulate_frame_counts(&cm->counts, thread_data->td->counts);
       accumulate_rd_opt(&cpi->td, thread_data->td);
+#if CONFIG_VAR_TX
+      cpi->td.mb.txb_split_count += thread_data->td->mb.txb_split_count;
+#endif
     }
   }
 }
