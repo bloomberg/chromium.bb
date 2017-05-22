@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -469,18 +470,14 @@ bool PasswordProtectionService::ParseVerdictEntry(
     base::DictionaryValue* verdict_entry,
     int* out_verdict_received_time,
     LoginReputationClientResponse* out_verdict) {
-  base::Value* binary_value = nullptr;
-  bool result = verdict_entry && out_verdict &&
-                verdict_entry->GetInteger(kCacheCreationTime,
-                                          out_verdict_received_time) &&
-                verdict_entry->Get(kVerdictProto, &binary_value);
-  if (!result)
-    return false;
-  DCHECK(result);
-  DCHECK_EQ(base::Value::Type::BINARY, binary_value->type());
-  const auto blob = binary_value->GetBlob();
-  const std::string serialized_verdict_proto(blob.begin(), blob.end());
-  return out_verdict->ParseFromString(serialized_verdict_proto);
+  std::string serialized_verdict_proto;
+  return verdict_entry && out_verdict &&
+         verdict_entry->GetInteger(kCacheCreationTime,
+                                   out_verdict_received_time) &&
+         verdict_entry->GetString(kVerdictProto, &serialized_verdict_proto) &&
+         base::Base64Decode(serialized_verdict_proto,
+                            &serialized_verdict_proto) &&
+         out_verdict->ParseFromString(serialized_verdict_proto);
 }
 
 bool PasswordProtectionService::PathVariantsMatchCacheExpression(
@@ -542,15 +539,10 @@ PasswordProtectionService::CreateDictionaryFromVerdict(
       base::MakeUnique<base::DictionaryValue>();
   result->SetInteger(kCacheCreationTime,
                      static_cast<int>(receive_time.ToDoubleT()));
-  // Because DictionaryValue cannot take non-UTF8 string, we need to store
-  // serialized proto in its allowed binary format instead.
-  const std::string serialized_proto(verdict->SerializeAsString());
-  const std::vector<char> verdict_blob(serialized_proto.begin(),
-                                       serialized_proto.end());
-  std::unique_ptr<base::Value> binary_value =
-      base::MakeUnique<base::Value>(verdict_blob);
-  DCHECK_EQ(base::Value::Type::BINARY, binary_value->type());
-  result->Set(kVerdictProto, std::move(binary_value));
+  std::string serialized_proto(verdict->SerializeAsString());
+  // Performs a base64 encoding on the serialized proto.
+  base::Base64Encode(serialized_proto, &serialized_proto);
+  result->SetString(kVerdictProto, serialized_proto);
   return result;
 }
 
