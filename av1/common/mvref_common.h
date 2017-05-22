@@ -41,7 +41,7 @@ typedef enum {
 // adding 9 for each intra block, 3 for each zero mv and 1 for each new
 // motion vector. This single number is then converted into a context
 // with a single lookup ( counter_to_context ).
-static const int mode_2_counter[MB_MODE_COUNT] = {
+static const int mode_2_counter[] = {
   9,  // DC_PRED
   9,  // V_PRED
   9,  // H_PRED
@@ -52,7 +52,11 @@ static const int mode_2_counter[MB_MODE_COUNT] = {
   9,  // D207_PRED
   9,  // D63_PRED
 #if CONFIG_ALT_INTRA
-  9,    // SMOOTH_PRED
+  9,  // SMOOTH_PRED
+#if CONFIG_SMOOTH_HV
+  9,    // SMOOTH_V_PRED
+  9,    // SMOOTH_H_PRED
+#endif  // CONFIG_SMOOTH_HV
 #endif  // CONFIG_ALT_INTRA
   9,    // TM_PRED
   0,    // NEARESTMV

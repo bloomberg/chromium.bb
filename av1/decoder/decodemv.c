@@ -1827,6 +1827,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
+  assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
+
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;

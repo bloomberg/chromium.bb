@@ -129,7 +129,7 @@ static INLINE int is_inter_compound_mode(PREDICTION_MODE mode) {
 }
 
 static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
-  static PREDICTION_MODE lut[MB_MODE_COUNT] = {
+  static PREDICTION_MODE lut[] = {
     MB_MODE_COUNT,  // DC_PRED
     MB_MODE_COUNT,  // V_PRED
     MB_MODE_COUNT,  // H_PRED
@@ -141,6 +141,10 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // D63_PRED
 #if CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // SMOOTH_PRED
+#if CONFIG_SMOOTH_HV
+    MB_MODE_COUNT,  // SMOOTH_V_PRED
+    MB_MODE_COUNT,  // SMOOTH_H_PRED
+#endif              // CONFIG_SMOOTH_HV
 #endif              // CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // TM_PRED
     MB_MODE_COUNT,  // NEARESTMV
@@ -163,12 +167,13 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     ZEROMV,     // ZERO_ZEROMV
     NEWMV,      // NEW_NEWMV
   };
+  assert(NELEMENTS(lut) == MB_MODE_COUNT);
   assert(is_inter_compound_mode(mode));
   return lut[mode];
 }
 
 static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
-  static PREDICTION_MODE lut[MB_MODE_COUNT] = {
+  static PREDICTION_MODE lut[] = {
     MB_MODE_COUNT,  // DC_PRED
     MB_MODE_COUNT,  // V_PRED
     MB_MODE_COUNT,  // H_PRED
@@ -180,6 +185,10 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // D63_PRED
 #if CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // SMOOTH_PRED
+#if CONFIG_SMOOTH_HV
+    MB_MODE_COUNT,  // SMOOTH_V_PRED
+    MB_MODE_COUNT,  // SMOOTH_H_PRED
+#endif              // CONFIG_SMOOTH_HV
 #endif              // CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // TM_PRED
     MB_MODE_COUNT,  // NEARESTMV
@@ -202,6 +211,7 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     ZEROMV,     // ZERO_ZEROMV
     NEWMV,      // NEW_NEWMV
   };
+  assert(NELEMENTS(lut) == MB_MODE_COUNT);
   assert(is_inter_compound_mode(mode));
   return lut[mode];
 }
