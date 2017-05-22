@@ -77,6 +77,13 @@ void MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(
 }
 
 // static
+void MediaRouterMojoMetrics::RecordMediaRouteControllerCreationResult(
+    bool success) {
+  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Provider.RouteControllerCreationOutcome",
+                        success);
+}
+
+// static
 MediaRouteProviderVersion MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
     const base::Version& extension_version,
     const base::Version& browser_version) {

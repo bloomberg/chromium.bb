@@ -104,6 +104,10 @@ class MediaRouterMojoMetrics {
   static void RecordMediaRouteProviderTerminateRoute(
       RouteRequestResult::ResultCode result_code);
 
+  // Records whether the Media Route Provider succeeded or failed to create a
+  // controller for a media route.
+  static void RecordMediaRouteControllerCreationResult(bool success);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoMetricsTest,
                            TestGetMediaRouteProviderVersion);
