@@ -103,22 +103,20 @@ void SafeBrowsingUIManager::ShowBlockingPageForResource(
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
-// Static
-bool SafeBrowsingUIManager::ShouldSendHitReport(const HitReport& hit_report,
-                                                WebContents* web_contents) {
-  if (hit_report.extended_reporting_level != SBER_LEVEL_OFF &&
-      !web_contents->GetBrowserContext()->IsOffTheRecord()) {
-    return true;
-  }
-  return false;
+// static
+bool SafeBrowsingUIManager::ShouldSendHitReport(
+    const HitReport& hit_report,
+    const WebContents* web_contents) {
+  return hit_report.extended_reporting_level != SBER_LEVEL_OFF &&
+         !web_contents->GetBrowserContext()->IsOffTheRecord();
 }
 
-// A safebrowsing hit is sent after a blocking page for malware/phishing
+// A SafeBrowsing hit is sent after a blocking page for malware/phishing
 // or after the warning dialog for download urls, only for
 // extended-reporting users.
 void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report,
-    WebContents* web_contents) {
+    const WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Send report if user opted-in to extended reporting and is not in

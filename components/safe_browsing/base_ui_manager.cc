@@ -244,12 +244,12 @@ void BaseUIManager::ShowBlockingPageForResource(
   BaseBlockingPage::ShowBlockingPage(this, resource);
 }
 
-// A safebrowsing hit is sent after a blocking page for malware/phishing
+// A SafeBrowsing hit is sent after a blocking page for malware/phishing
 // or after the warning dialog for download urls, only for extended_reporting
 // users who are not in incognito mode.
 void BaseUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report,
-    content::WebContents* web_contents) {
+    const content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return;
 }
