@@ -4,6 +4,7 @@
   "author": "dpapad@chromium.org",
   "dependencies": {
     "crisper": "2.0.2",
+    "eslint": "^3.19.0",
     "polymer-css-build": "0.0.9",
     "uglifyjs": "2.4.10",
     "vulcanize": "1.15.2"
