@@ -156,6 +156,7 @@
 #include "ui/display/manager/chromeos/default_touch_transform_setter.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -324,6 +325,11 @@ bool Shell::ShouldUseIMEService() {
 // static
 void Shell::RegisterPrefs(PrefRegistrySimple* registry) {
   NightLightController::RegisterPrefs(registry);
+}
+
+// static
+bool Shell::ShouldEnableSimplifiedDisplayManagement() {
+  return GetAshConfig() != Config::MASH;
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -1057,11 +1063,11 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  // TODO(sky): needs to to work for mus too.
-  if (config == Config::CLASSIC) {
-    touch_transformer_controller_.reset(new AshTouchTransformController(
-        display_configurator_.get(), display_manager_.get(),
-        base::MakeUnique<display::DefaultTouchTransformSetter>()));
+  if (ShouldEnableSimplifiedDisplayManagement()) {
+    touch_transformer_controller_ =
+        base::MakeUnique<AshTouchTransformController>(
+            display_configurator_.get(), display_manager_.get(),
+            shell_port_->CreateTouchTransformDelegate());
   }
 
   keyboard_ui_ = shell_port_->CreateKeyboardUI();
