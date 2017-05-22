@@ -17,12 +17,14 @@
 #import "remoting/ios/client_keyboard.h"
 #import "remoting/ios/session/remoting_client.h"
 
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/client/input/keyboard_interpreter.h"
 #include "remoting/client/ui/gesture_interpreter.h"
 
 static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;
 
-@interface HostViewController () {
+@interface HostViewController ()<ClientKeyboardDelegate> {
   RemotingClient* _client;
   MDCFloatingButton* _floatingButton;
   ClientGestures* _clientGestures;
@@ -147,6 +149,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)showKeyboard {
   if (!_clientKeyboard) {
     _clientKeyboard = [[ClientKeyboard alloc] init];
+    _clientKeyboard.delegate = self;
     [self.view addSubview:_clientKeyboard];
     // TODO(nicholss): need to pass some keyboard injection interface here.
   }
@@ -161,15 +164,15 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)keyboardWillShow:(NSNotification*)notification {
   CGSize keyboardSize =
-      [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey]
+      [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey]
           CGRectValue]
           .size;
   if (_keyboardSize.height != keyboardSize.height) {
     CGFloat deltaHeight = keyboardSize.height - _keyboardSize.height;
-    [UIView animateWithDuration:0.3
+    [UIView animateWithDuration:kKeyboardAnimationTime
                      animations:^{
                        CGRect f = self.view.frame;
-                       f.size.height += deltaHeight;
+                       f.size.height -= deltaHeight;
                        self.view.frame = f;
                      }];
     _keyboardSize = keyboardSize;
@@ -184,6 +187,17 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                      self.view.frame = f;
                    }];
   _keyboardSize = CGSizeZero;
+}
+
+#pragma mark - ClientKeyboardDelegate
+
+- (void)clientKeyboardShouldSend:(NSString*)text {
+  _client.keyboardInterpreter->HandleTextEvent(base::SysNSStringToUTF8(text),
+                                               0);
+}
+
+- (void)clientKeyboardShouldDelete {
+  _client.keyboardInterpreter->HandleDeleteEvent(0);
 }
 
 #pragma mark - Private
