@@ -46,6 +46,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/error_page/common/error_page_switches.h"
+#include "components/favicon/core/features.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
@@ -2339,6 +2340,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableContentSuggestionsShowSummaryDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContentSuggestionsShowSummary)},
+    {"enable-favicons-from-web-manifest",
+     flag_descriptions::kEnableFaviconsFromWebManifestName,
+     flag_descriptions::kEnableFaviconsFromWebManifestDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(favicon::kFaviconsFromWebManifest)},
     {"enable-ntp-remote-suggestions",
      flag_descriptions::kEnableNtpRemoteSuggestionsName,
      flag_descriptions::kEnableNtpRemoteSuggestionsDescription, kOsAndroid,
