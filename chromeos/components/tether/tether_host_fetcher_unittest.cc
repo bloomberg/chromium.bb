@@ -92,9 +92,9 @@ class MockDeviceLoader : public cryptauth::RemoteDeviceLoader {
             nullptr) {}
   ~MockDeviceLoader() override {}
 
-  MOCK_METHOD2(
+  MOCK_METHOD1(
       Load,
-      void(bool, const cryptauth::RemoteDeviceLoader::RemoteDeviceCallback&));
+      void(const cryptauth::RemoteDeviceLoader::RemoteDeviceCallback&));
 };
 
 std::vector<cryptauth::ExternalDeviceInfo>
@@ -136,14 +136,13 @@ class TetherHostFetcherTest : public testing::Test {
 
       std::unique_ptr<MockDeviceLoader> device_loader =
           base::WrapUnique(new NiceMock<MockDeviceLoader>());
-      ON_CALL(*device_loader, Load(false, _))
+      ON_CALL(*device_loader, Load(_))
           .WillByDefault(
               Invoke(this, &TestRemoteDeviceLoaderFactory::MockLoadImpl));
       return std::move(device_loader);
     }
 
     void MockLoadImpl(
-        bool should_load_beacon_seeds,
         const cryptauth::RemoteDeviceLoader::RemoteDeviceCallback& callback) {
       callback_ = callback;
     }
