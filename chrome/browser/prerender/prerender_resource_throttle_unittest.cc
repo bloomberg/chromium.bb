@@ -248,7 +248,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
   DeferredRedirectDelegate delegate;
   std::unique_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
-      net::DEFAULT_PRIORITY, &delegate));
+      net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), content::RESOURCE_TYPE_MAIN_FRAME, NULL, kDefaultChildId,
       kDefaultRouteId, MSG_ROUTING_NONE,
@@ -284,7 +284,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
   DeferredRedirectDelegate delegate;
   std::unique_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
-      net::DEFAULT_PRIORITY, &delegate));
+      net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), content::RESOURCE_TYPE_XHR, NULL, kDefaultChildId,
       kDefaultRouteId, MSG_ROUTING_NONE,

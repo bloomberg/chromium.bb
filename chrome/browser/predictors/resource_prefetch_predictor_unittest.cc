@@ -23,6 +23,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -213,7 +214,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
       bool is_main_frame) {
     std::unique_ptr<net::URLRequest> request =
         url_request_context_.CreateRequest(url, priority,
-                                           &url_request_delegate_);
+                                           &url_request_delegate_,
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
     request->set_first_party_for_cookies(url);
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
