@@ -66,8 +66,8 @@
   <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name." formatter_data="android_java">
     JCB
   </message>
-  <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name." formatter_data="android_java">
-    MasterCard
+  <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="Mastercard credit card name." formatter_data="android_java">
+    Mastercard
   </message>
   <message name="IDS_AUTOFILL_CC_MIR" desc="Mir credit card name." formatter_data="android_java">
     Mir
