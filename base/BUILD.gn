@@ -992,6 +992,8 @@ component("base") {
     "trace_event/process_memory_maps.h",
     "trace_event/process_memory_totals.cc",
     "trace_event/process_memory_totals.h",
+    "trace_event/sharded_allocation_register.cc",
+    "trace_event/sharded_allocation_register.h",
     "trace_event/trace_buffer.cc",
     "trace_event/trace_buffer.h",
     "trace_event/trace_category.h",
