@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_PROCESS_ARC_PROCESS_H_
 
 #include <stdint.h>
+
+#include <ostream>
 #include <string>
 #include <vector>
 
