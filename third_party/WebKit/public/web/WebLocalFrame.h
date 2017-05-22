@@ -551,7 +551,7 @@ class WebLocalFrame : public WebFrame {
   virtual base::SingleThreadTaskRunner* UnthrottledTaskRunner() = 0;
 
   // Returns the WebInputMethodController associated with this local frame.
-  virtual WebInputMethodController* GetInputMethodController() const = 0;
+  virtual WebInputMethodController* GetInputMethodController() = 0;
 
   // Loading ------------------------------------------------------------------
   // Creates and returns a loader. This function can be called only when this

@@ -313,7 +313,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   base::SingleThreadTaskRunner* TimerTaskRunner() override;
   base::SingleThreadTaskRunner* LoadingTaskRunner() override;
   base::SingleThreadTaskRunner* UnthrottledTaskRunner() override;
-  WebInputMethodControllerImpl* GetInputMethodController() const override;
+  WebInputMethodControllerImpl* GetInputMethodController() override;
 
   void ExtractSmartClipData(WebRect rect_in_viewport,
                             WebString& clip_text,
@@ -514,7 +514,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   Member<Node> context_menu_node_;
 
-  std::unique_ptr<WebInputMethodControllerImpl> input_method_controller_;
+  WebInputMethodControllerImpl input_method_controller_;
 
   // Stores the TextCheckerClient to bridge SpellChecker and WebTextCheckClient.
   Member<TextCheckerClientImpl> text_checker_client_;
