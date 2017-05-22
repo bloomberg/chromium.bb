@@ -247,6 +247,9 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // was too slow. Updates will be resumed when this reaches 0 again.
   int updates_to_skip_ = 0;
 
+  // A boolean flag indicating if a session has at least one tab closed.
+  bool has_tab_closed_ = false;
+
   // Holds data that can be accessed from multiple threads.
   scoped_refptr<base::RefCountedData<JumpListData>> jumplist_data_;
 
