@@ -42,7 +42,7 @@ WindowMirrorView::~WindowMirrorView() {
     target_->ClearProperty(aura::client::kMirroringEnabledKey);
 }
 
-gfx::Size WindowMirrorView::GetPreferredSize() const {
+gfx::Size WindowMirrorView::CalculatePreferredSize() const {
   return GetClientAreaBounds().size();
 }
 
