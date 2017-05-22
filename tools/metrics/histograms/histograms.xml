@@ -89141,6 +89141,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="client" label="Suggestions coming from the client."/>
   <suffix name="server" label="Suggestions coming from the server."/>
   <suffix name="popular" label="Non-personalized, popular suggestions."/>
+  <suffix name="homepage" label="The currently set home page."/>
   <suffix name="whitelist"
       label="Installed whitelist entry point suggestions."/>
   <suffix name="client0">
