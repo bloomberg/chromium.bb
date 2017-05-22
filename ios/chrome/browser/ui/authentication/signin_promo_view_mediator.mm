@@ -207,9 +207,11 @@ void RecordSigninNewAccountUserActionForAccessPoint(
   RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS
+      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+               identity:_defaultIdentity
             accessPoint:_accessPoint
-            promoAction:signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT];
+            promoAction:signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
+               callback:nil];
   [signinPromoView chromeExecuteCommand:command];
 }
 

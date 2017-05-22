@@ -388,6 +388,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // Invokes the sign in flow with the specified authentication operation and
 // invokes |callback| when finished.
 - (void)showSigninWithOperation:(AuthenticationOperation)operation
+                       identity:(ChromeIdentity*)identity
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
                        callback:(ShowSigninCommandCompletionCallback)callback;
@@ -1438,6 +1439,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
         [self dismissSigninInteractionController];
       } else {
         [self showSigninWithOperation:command.operation
+                             identity:command.identity
                           accessPoint:command.accessPoint
                           promoAction:command.promoAction
                              callback:command.callback];
@@ -2084,6 +2086,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)showSigninWithOperation:(AuthenticationOperation)operation
+                       identity:(ChromeIdentity*)identity
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
                        callback:(ShowSigninCommandCompletionCallback)callback {
@@ -2122,20 +2125,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case AUTHENTICATION_OPERATION_SIGNIN:
       [_signinInteractionController
           signInWithViewController:self.mainViewController
-                          identity:nil
+                          identity:identity
                         completion:completion];
       break;
-    case AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS: {
-      NSArray* identities = ios::GetChromeBrowserProvider()
-                                ->GetChromeIdentityService()
-                                ->GetAllIdentitiesSortedForDisplay();
-      DCHECK(identities.count > 0);
-      [_signinInteractionController
-          signInWithViewController:self.mainViewController
-                          identity:identities[0]
-                        completion:completion];
-      break;
-    }
   }
 }
 
