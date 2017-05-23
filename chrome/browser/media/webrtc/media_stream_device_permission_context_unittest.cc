@@ -67,21 +67,23 @@ class MediaStreamDevicePermissionContextTests
                                       secure_url.GetOrigin(),
                                       content_settings_type, std::string()));
 
-    EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context
-                  .GetPermissionStatus(nullptr /* render_frame_host */,
-                                       insecure_url, insecure_url)
-                  .content_setting);
+    {
+      // TODO(raymes): Remove this when crbug.com/526324 is fixed.
+      base::test::ScopedFeatureList scoped_feature_list;
+      scoped_feature_list.InitAndDisableFeature(
+          features::kRequireSecureOriginsForPepperMediaRequests);
+      EXPECT_EQ(CONTENT_SETTING_ASK,
+                permission_context
+                    .GetPermissionStatus(nullptr /* render_frame_host */,
+                                         insecure_url, insecure_url)
+                    .content_setting);
 
-    EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context
-                  .GetPermissionStatus(nullptr /* render_frame_host */,
-                                       insecure_url, secure_url)
-                  .content_setting);
-
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        features::kRequireSecureOriginsForPepperMediaRequests);
+      EXPECT_EQ(CONTENT_SETTING_ASK,
+                permission_context
+                    .GetPermissionStatus(nullptr /* render_frame_host */,
+                                         insecure_url, secure_url)
+                    .content_setting);
+    }
 
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               permission_context
@@ -108,15 +110,18 @@ class MediaStreamDevicePermissionContextTests
                                       content_settings_type,
                                       std::string()));
 
-    EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context
-                  .GetPermissionStatus(nullptr /* render_frame_host */,
-                                       secure_url, secure_url)
-                  .content_setting);
+    {
+      // TODO(raymes): Remove this when crbug.com/526324 is fixed.
+      base::test::ScopedFeatureList scoped_feature_list;
+      scoped_feature_list.InitAndDisableFeature(
+          features::kRequireSecureOriginsForPepperMediaRequests);
+      EXPECT_EQ(CONTENT_SETTING_ASK,
+                permission_context
+                    .GetPermissionStatus(nullptr /* render_frame_host */,
+                                         secure_url, secure_url)
+                    .content_setting);
+    }
 
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        features::kRequireSecureOriginsForPepperMediaRequests);
     EXPECT_EQ(CONTENT_SETTING_ASK,
               permission_context
                   .GetPermissionStatus(nullptr /* render_frame_host */,
