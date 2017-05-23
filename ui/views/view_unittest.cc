@@ -5039,6 +5039,12 @@ TEST_F(ViewObserverTest, ScrollViewChildAddLayerTest) {
   child_view->SetPaintToLayer(ui::LAYER_TEXTURED);
 
   EXPECT_TRUE(scroll_view->contents_viewport_->layer());
+  // We don't want the viewport's layer to have the fill_bounds_opaquely() bit
+  // set, as we may have transparent children who want to blend into the
+  // default background.
+  EXPECT_FALSE(
+      scroll_view->contents_viewport_->layer()->fills_bounds_opaquely());
+
   scroll_view->RemoveChildView(child_view.get());
 }
 
