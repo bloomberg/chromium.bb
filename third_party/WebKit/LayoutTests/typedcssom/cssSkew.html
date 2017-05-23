@@ -55,15 +55,25 @@ test(function() {
     assert_true(inputAsMatrix.is2D());
     var tanAx = tanDegrees(input.ax.degrees);
     var tanAy = tanDegrees(input.ay.degrees);
-    var expectedMatrix = new CSSMatrixComponent(1, tanAy, tanAx, 1, 0, 0);
+    var expectedMatrix = new CSSMatrixComponent(new DOMMatrixReadOnly([1, tanAy, tanAx, 1, 0, 0]));
     for (var attribute in expectedMatrix) {
-      if (typeof expectedMatrix[attribute] === "number") {
-        assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);
+      if (attribute == "matrix") {
+        assert_matrix_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
       } else {
         assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
       }
     }
   }
 }, "asMatrix is constructed correctly for CSSSkew.");
+
+function assert_array_approx_equals(actual, expected) {
+  for (var i = 0; i < actual.length; i++) {
+    assert_approx_equals(actual[i], expected[i], EPSILON);
+  }
+}
+
+function assert_matrix_approx_equals(actual, expected) {
+  assert_array_approx_equals(actual.toFloat64Array(), expected.toFloat64Array());
+}
 
 </script>

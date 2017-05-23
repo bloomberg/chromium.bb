@@ -40,29 +40,9 @@ CONSOLE MESSAGE: line 138:     method divide
 CONSOLE MESSAGE: line 138:     method multiply
 CONSOLE MESSAGE: line 138:     method subtract
 CONSOLE MESSAGE: line 138: interface CSSMatrixComponent : CSSTransformComponent
-CONSOLE MESSAGE: line 138:     getter a
-CONSOLE MESSAGE: line 138:     getter b
-CONSOLE MESSAGE: line 138:     getter c
-CONSOLE MESSAGE: line 138:     getter d
-CONSOLE MESSAGE: line 138:     getter e
-CONSOLE MESSAGE: line 138:     getter f
-CONSOLE MESSAGE: line 138:     getter m11
-CONSOLE MESSAGE: line 138:     getter m12
-CONSOLE MESSAGE: line 138:     getter m13
-CONSOLE MESSAGE: line 138:     getter m14
-CONSOLE MESSAGE: line 138:     getter m21
-CONSOLE MESSAGE: line 138:     getter m22
-CONSOLE MESSAGE: line 138:     getter m23
-CONSOLE MESSAGE: line 138:     getter m24
-CONSOLE MESSAGE: line 138:     getter m31
-CONSOLE MESSAGE: line 138:     getter m32
-CONSOLE MESSAGE: line 138:     getter m33
-CONSOLE MESSAGE: line 138:     getter m34
-CONSOLE MESSAGE: line 138:     getter m41
-CONSOLE MESSAGE: line 138:     getter m42
-CONSOLE MESSAGE: line 138:     getter m43
-CONSOLE MESSAGE: line 138:     getter m44
+CONSOLE MESSAGE: line 138:     getter matrix
 CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138:     setter matrix
 CONSOLE MESSAGE: line 138: interface CSSNumberValue : CSSStyleValue
 CONSOLE MESSAGE: line 138:     getter value
 CONSOLE MESSAGE: line 138:     method constructor
