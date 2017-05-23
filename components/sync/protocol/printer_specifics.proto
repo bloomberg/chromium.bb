@@ -25,6 +25,9 @@ message PrinterPPDReference {
   // String identifying the type of printer, used to look up a ppd to drive the
   // printer.
   optional string effective_make_and_model = 4;
+
+  // True if the printer should be automatically configured, false otherwise.
+  optional bool autoconf = 5 [default = false];
 }
 
 message PrinterSpecifics {

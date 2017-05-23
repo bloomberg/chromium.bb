@@ -36,6 +36,9 @@ class CHROMEOS_EXPORT Printer {
     // Where possible, this is the same as the ipp/ldap
     // printer-make-and-model field.
     std::string effective_make_and_model;
+
+    // True if the printer should be auto-configured and a PPD is unnecessary.
+    bool autoconf = false;
   };
 
   // The location where the printer is stored.
