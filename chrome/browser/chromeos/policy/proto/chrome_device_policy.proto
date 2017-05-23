@@ -783,10 +783,12 @@ message DeviceWallpaperImageProto {
 // the device used ecryptfs in the past.
 message DeviceEcryptfsMigrationStrategyProto {
   enum MigrationStrategy {
+    // Default value, unspecified.
+    UNSET = 0;
     // ARC is not allowed, no data migration needed.
-    DISALLOW_ARC = 0;
+    DISALLOW_ARC = 1;
     // The data migration is allowed, opening the possibility to use ARC.
-    ALLOW_MIGRATION = 1;
+    ALLOW_MIGRATION = 2;
   };
 
   optional MigrationStrategy migration_strategy = 1;
