@@ -165,10 +165,9 @@ void RegisterDownloadsProvider(OfflinePageModel* offline_page_model,
 #endif  // OS_ANDROID
 
 void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
-                              ContentSuggestionsService* service,
-                              PrefService* pref_service) {
-  auto provider = base::MakeUnique<BookmarkSuggestionsProvider>(
-      service, bookmark_model, pref_service);
+                              ContentSuggestionsService* service) {
+  auto provider =
+      base::MakeUnique<BookmarkSuggestionsProvider>(service, bookmark_model);
   service->RegisterProvider(std::move(provider));
 }
 
@@ -372,7 +371,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       BookmarkModelFactory::GetForBrowserContext(profile);
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature) &&
       bookmark_model && !IsChromeHomeEnabled()) {
-    RegisterBookmarkProvider(bookmark_model, service, pref_service);
+    RegisterBookmarkProvider(bookmark_model, service);
   }
 
 #if defined(OS_ANDROID)

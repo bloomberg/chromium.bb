@@ -15,9 +15,6 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
-class PrefRegistrySimple;
-class PrefService;
-
 namespace ntp_snippets {
 
 // Provides content suggestions from the bookmarks model.
@@ -25,11 +22,8 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
                                     public bookmarks::BookmarkModelObserver {
  public:
   BookmarkSuggestionsProvider(ContentSuggestionsProvider::Observer* observer,
-                              bookmarks::BookmarkModel* bookmark_model,
-                              PrefService* pref_service);
+                              bookmarks::BookmarkModel* bookmark_model);
   ~BookmarkSuggestionsProvider() override;
-
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // ContentSuggestionsProvider implementation.
