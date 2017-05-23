@@ -80,10 +80,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
-  void AttachCompositorFrameSink(
-      std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
-          compositor_frame_sink_binding);
-
  private:
   friend class WindowPortMusTestApi;
   friend class WindowTreeClient;

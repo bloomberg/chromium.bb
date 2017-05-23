@@ -76,16 +76,21 @@ void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const CompositorFrameSinkCallback& callback) {
-  std::unique_ptr<ui::ClientCompositorFrameSinkBinding> frame_sink_binding;
+  cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info;
+  cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+      mojo::MakeRequest(&sink_info);
+  cc::mojom::MojoCompositorFrameSinkClientPtr client;
+  cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+      mojo::MakeRequest(&client);
   bool enable_surface_synchronization =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableSurfaceSynchronization);
-  auto frame_sink = ui::ClientCompositorFrameSink::Create(
+  auto frame_sink = base::MakeUnique<ui::ClientCompositorFrameSink>(
       std::move(context_provider), gpu_memory_buffer_manager,
-      &frame_sink_binding, enable_surface_synchronization);
-  tree_->AttachCompositorFrameSink(
-      root_window_id_, frame_sink_binding->TakeFrameSinkRequest(),
-      mojo::MakeProxy(frame_sink_binding->TakeFrameSinkClient()));
+      std::move(sink_info), std::move(client_request),
+      enable_surface_synchronization);
+  tree_->AttachCompositorFrameSink(root_window_id_, std::move(sink_request),
+                                   std::move(client));
   callback.Run(std::move(frame_sink));
 }
 

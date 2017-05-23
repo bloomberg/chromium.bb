@@ -12,28 +12,19 @@
 
 namespace ui {
 
-// static
-std::unique_ptr<ClientCompositorFrameSink> ClientCompositorFrameSink::Create(
+ClientCompositorFrameSink::ClientCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    std::unique_ptr<ClientCompositorFrameSinkBinding>*
-        compositor_frame_sink_binding,
-    bool enable_surface_synchronization) {
-  cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink;
-  cc::mojom::MojoCompositorFrameSinkClientPtr compositor_frame_sink_client;
-  cc::mojom::MojoCompositorFrameSinkClientRequest
-      compositor_frame_sink_client_request =
-          MakeRequest(&compositor_frame_sink_client);
-
-  compositor_frame_sink_binding->reset(new ClientCompositorFrameSinkBinding(
-      MakeRequest(&compositor_frame_sink),
-      compositor_frame_sink_client.PassInterface()));
-  return base::WrapUnique(new ClientCompositorFrameSink(
-      std::move(context_provider), gpu_memory_buffer_manager,
-      compositor_frame_sink.PassInterface(),
-      std::move(compositor_frame_sink_client_request),
-      enable_surface_synchronization));
-}
+    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
+    cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+    bool enable_surface_synchronization)
+    : cc::CompositorFrameSink(std::move(context_provider),
+                              nullptr,
+                              gpu_memory_buffer_manager,
+                              nullptr),
+      compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
+      client_request_(std::move(client_request)),
+      enable_surface_synchronization_(enable_surface_synchronization) {}
 
 ClientCompositorFrameSink::~ClientCompositorFrameSink() {}
 
@@ -99,20 +90,6 @@ void ClientCompositorFrameSink::DidNotProduceFrame(
   compositor_frame_sink_->DidNotProduceFrame(ack);
 }
 
-ClientCompositorFrameSink::ClientCompositorFrameSink(
-    scoped_refptr<cc::ContextProvider> context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
-    bool enable_surface_synchronization)
-    : cc::CompositorFrameSink(std::move(context_provider),
-                              nullptr,
-                              gpu_memory_buffer_manager,
-                              nullptr),
-      compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
-      client_request_(std::move(client_request)),
-      enable_surface_synchronization_(enable_surface_synchronization) {}
-
 void ClientCompositorFrameSink::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(thread_checker_);
@@ -139,25 +116,6 @@ void ClientCompositorFrameSink::ReclaimResources(
 
 void ClientCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
-}
-
-ClientCompositorFrameSinkBinding::~ClientCompositorFrameSinkBinding() {}
-
-ClientCompositorFrameSinkBinding::ClientCompositorFrameSinkBinding(
-    cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtrInfo
-        compositor_frame_sink_client)
-    : compositor_frame_sink_request_(std::move(compositor_frame_sink_request)),
-      compositor_frame_sink_client_(std::move(compositor_frame_sink_client)) {}
-
-cc::mojom::MojoCompositorFrameSinkRequest
-ClientCompositorFrameSinkBinding::TakeFrameSinkRequest() {
-  return std::move(compositor_frame_sink_request_);
-}
-
-cc::mojom::MojoCompositorFrameSinkClientPtrInfo
-ClientCompositorFrameSinkBinding::TakeFrameSinkClient() {
-  return std::move(compositor_frame_sink_client_);
 }
 
 }  // namespace ui
