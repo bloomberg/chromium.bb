@@ -282,6 +282,23 @@ void SetKillBuffer(const base::string16& buffer) {
   *kill_buffer = buffer;
 }
 
+void SelectRangeInCompositionText(gfx::RenderText* render_text,
+                                  size_t cursor,
+                                  const gfx::Range& range) {
+  DCHECK(render_text);
+  DCHECK(range.IsValid());
+  uint32_t start = range.GetMin();
+  uint32_t end = range.GetMax();
+#if defined(OS_CHROMEOS)
+  // Swap |start| and |end| so that GetCaretBounds() can always return the same
+  // value during conversion.
+  // TODO(yusukes): Check if this works for other platforms. If it is, use this
+  // on all platforms.
+  std::swap(start, end);
+#endif
+  render_text->SelectRange(gfx::Range(cursor + start, cursor + end));
+}
+
 }  // namespace
 
 using internal::Edit;
@@ -656,13 +673,10 @@ void TextfieldModel::SetCompositionText(
     // range (or caret position) in the composition here we use a selection-like
     // marker instead to show this range.
     // TODO(yukawa, msw): Support thick underlines and remove this workaround.
-    render_text_->SelectRange(gfx::Range(
-        cursor + emphasized_range.GetMin(),
-        cursor + emphasized_range.GetMax()));
+    SelectRangeInCompositionText(render_text_.get(), cursor, emphasized_range);
   } else if (!composition.selection.is_empty()) {
-    render_text_->SelectRange(gfx::Range(
-        cursor + composition.selection.GetMin(),
-        cursor + composition.selection.GetMax()));
+    SelectRangeInCompositionText(render_text_.get(), cursor,
+                                 composition.selection);
   } else {
     render_text_->SetCursorPosition(cursor + composition.selection.end());
   }

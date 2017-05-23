@@ -893,14 +893,23 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   composition_text_confirmed_or_cleared_ = false;
 
   // Restart composition with targeting "67" in "678".
-  composition.selection = gfx::Range(0, 2);
+  composition.selection = gfx::Range(1, 3);
   composition.underlines.clear();
   composition.underlines.push_back(ui::CompositionUnderline(0, 2, 0, true));
   composition.underlines.push_back(ui::CompositionUnderline(2, 3, 0, false));
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
   EXPECT_TRUE(model.HasSelection());
+#if !defined(OS_CHROMEOS)
+  // |composition.selection| is ignored because SetCompositionText checks
+  // if a bold underline exists first.
   EXPECT_EQ(gfx::Range(5, 7), model.render_text()->selection());
+  EXPECT_EQ(7U, model.render_text()->cursor_position());
+#else
+  // See SelectRangeInCompositionText().
+  EXPECT_EQ(gfx::Range(7, 5), model.render_text()->selection());
+  EXPECT_EQ(5U, model.render_text()->cursor_position());
+#endif
 
   model.GetTextRange(&range);
   EXPECT_EQ(10U, range.end());
@@ -910,7 +919,6 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   EXPECT_EQ(gfx::Range(5, 8), range);
   // Check the composition text.
   EXPECT_STR_EQ("456", model.GetTextFromRange(gfx::Range(3, 6)));
-  EXPECT_EQ(gfx::Range(5, 7), model.render_text()->selection());
 
   EXPECT_FALSE(composition_text_confirmed_or_cleared_);
   model.CancelCompositionText();
@@ -927,8 +935,20 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   composition_text_confirmed_or_cleared_ = false;
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
 
+  // Also test the case where a selection exists but a bold underline doesn't.
+  composition.selection = gfx::Range(0, 1);
+  composition.underlines.clear();
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("1234567890678", model.text());
+  EXPECT_TRUE(model.HasSelection());
+#if !defined(OS_CHROMEOS)
+  EXPECT_EQ(gfx::Range(10, 11), model.render_text()->selection());
+  EXPECT_EQ(11U, model.render_text()->cursor_position());
+#else
+  // See SelectRangeInCompositionText().
+  EXPECT_EQ(gfx::Range(11, 10), model.render_text()->selection());
+  EXPECT_EQ(10U, model.render_text()->cursor_position());
+#endif
 
   model.InsertText(base::UTF8ToUTF16("-"));
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
