@@ -4,9 +4,13 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
@@ -67,6 +71,11 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
           ActivationLevel::DISABLED) {
     return;
   }
+
+  TRACE_EVENT1(
+      TRACE_DISABLED_BY_DEFAULT("loading"),
+      "ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation",
+      "activation_state", filter->activation_state().ToTracedValue());
 
   throttle->second->WillSendActivationToRenderer();
 

@@ -5,7 +5,15 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_ACTIVATION_STATE_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_ACTIVATION_STATE_H_
 
+#include <memory>
+
 #include "components/subresource_filter/core/common/activation_level.h"
+
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
 
 namespace subresource_filter {
 
@@ -28,6 +36,8 @@ struct ActivationState {
   }
 
   bool operator!=(const ActivationState& rhs) const { return !operator==(rhs); }
+
+  std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
 
   // The degree to which subresource filtering is activated for the page load.
   ActivationLevel activation_level = ActivationLevel::DISABLED;

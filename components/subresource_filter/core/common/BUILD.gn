@@ -11,6 +11,7 @@ static_library("common") {
     "activation_list.h",
     "activation_scope.cc",
     "activation_scope.h",
+    "activation_state.cc",
     "activation_state.h",
     "closed_hash_map.h",
     "copying_file_stream.cc",
