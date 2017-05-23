@@ -545,11 +545,6 @@ CGSize PreferredCellSizeForWidth(UICollectionViewCell* cell, CGFloat width) {
                                    configurator:(SigninPromoViewConfigurator*)
                                                     configurator {
   DCHECK(_signinPromoViewMediator);
-  if (newIdentity) {
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
-    [self.collectionView reloadSections:indexSet];
-    return;
-  }
   NSIndexPath* indexPath =
       [NSIndexPath indexPathForRow:0 inSection:self.promoSection];
   BookmarkSigninPromoCell* signinPromoCell =
@@ -557,7 +552,15 @@ CGSize PreferredCellSizeForWidth(UICollectionViewCell* cell, CGFloat width) {
           [self.collectionView cellForItemAtIndexPath:indexPath]);
   if (!signinPromoCell)
     return;
+  // Should always reconfigure the cell size even if it has to be reloaded.
+  // -[BookmarkFolderCollectionView cellSizeForIndexPath:] uses the current
+  // cell to compute its height.
   [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
+  if (newIdentity) {
+    // The section should be reload to update the cell height.
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
+    [self.collectionView reloadSections:indexSet];
+  }
 }
 
 @end
