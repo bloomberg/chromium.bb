@@ -390,7 +390,9 @@ INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
-ANDROID_BUILD_TARGETS = {
+ANDROID_MNC_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
+ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
+ANDROID_COMMON_BUILD_TARGETS = {
     # TODO(b/29509721): Workaround to roll adb with system image. We want to
     # get rid of this.
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
@@ -398,6 +400,14 @@ ANDROID_BUILD_TARGETS = {
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
+}
+ANDROID_MNC_BUILD_TARGETS = {
+    # No MNC-specific targets exist, only NYC-specific. Declare the target
+    # dictionary for consistency.
+}
+ANDROID_NYC_BUILD_TARGETS = {
+    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_google_cheets_x86-userdebug',
+                                 r'\.zip$'),
 }
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
@@ -409,6 +419,7 @@ ARC_BUCKET_ACLS = {
     'X86': 'googlestorage_acl_x86.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
+    'SDK_GOOGLE_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
@@ -431,6 +442,7 @@ ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'X86_USERDEBUG',
     'AOSP_X86_USERDEBUG',
+    'SDK_GOOGLE_X86_USERDEBUG',
 }
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')

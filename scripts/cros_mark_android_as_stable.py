@@ -324,6 +324,33 @@ def MakeAclDict(package_dir):
   )
 
 
+def MakeBuildTargetDict(build_branch):
+  """Creates a dictionary of build targets.
+
+  Not all targets are common between M and N branches, for example
+  sdk_google_cheets_x86 only exists on N.
+  This generates a dictionary listing the available build targets for a
+  specific branch.
+
+  Args:
+    build_branch: branch of Android builds.
+
+  Returns:
+    Returns build target dictionary.
+
+  Raises:
+    ValueError: if the Android build branch is invalid.
+  """
+  d = constants.ANDROID_COMMON_BUILD_TARGETS.copy()
+  if build_branch == constants.ANDROID_MNC_BUILD_BRANCH:
+    d.update(constants.ANDROID_MNC_BUILD_TARGETS)
+  elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
+    d.update(constants.ANDROID_NYC_BUILD_TARGETS)
+  else:
+    raise ValueError('Unknown branch: %s' % build_branch)
+  return d
+
+
 def GetAndroidRevisionListLink(build_branch, old_android, new_android):
   """Returns a link to the list of revisions between two Android versions
 
@@ -345,7 +372,7 @@ def GetAndroidRevisionListLink(build_branch, old_android, new_android):
 
 def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
                               android_package, android_version, package_dir,
-                              build_branch, arc_bucket_url):
+                              build_branch, arc_bucket_url, build_targets):
   r"""Uprevs the Android ebuild.
 
   This is the main function that uprevs from a stable candidate
@@ -361,6 +388,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
     package_dir: Path to the android-container package dir.
     build_branch: branch of Android builds.
     arc_bucket_url: URL of the target ARC build gs bucket.
+    build_targets: build targets for this particular Android branch.
 
   Returns:
     Full portage version atom (including rc's, etc) that was revved.
@@ -388,7 +416,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
     new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
   variables = {'BASE_URL': arc_bucket_url}
-  for build, (target, _) in constants.ANDROID_BUILD_TARGETS.iteritems():
+  for build, (target, _) in build_targets.iteritems():
     variables[build + '_TARGET'] = '%s-%s' % (build_branch, target)
 
   portage_util.EBuild.MarkAsStable(
@@ -469,11 +497,12 @@ def main(argv):
 
   (unstable_ebuild, stable_ebuilds) = FindAndroidCandidates(android_package_dir)
   acls = MakeAclDict(android_package_dir)
+  build_targets = MakeBuildTargetDict(options.android_build_branch)
   # Mirror artifacts, i.e., images and some sdk tools (e.g., adb, aapt).
   version_to_uprev = MirrorArtifacts(options.android_bucket_url,
                                      options.android_build_branch,
                                      options.arc_bucket_url, acls,
-                                     constants.ANDROID_BUILD_TARGETS,
+                                     build_targets,
                                      options.force_version)
 
   # Mirror GTS.
@@ -505,7 +534,7 @@ def main(argv):
   android_version_atom = MarkAndroidEBuildAsStable(
       stable_candidate, unstable_ebuild, options.android_package,
       version_to_uprev, android_package_dir,
-      options.android_build_branch, options.arc_bucket_url)
+      options.android_build_branch, options.arc_bucket_url, build_targets)
   if android_version_atom:
     if options.boards:
       cros_mark_as_stable.CleanStalePackages(options.srcroot,
