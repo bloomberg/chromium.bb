@@ -91,7 +91,6 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXObjectImpl.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/speech/SpeechRecognitionClientProxy.h"
