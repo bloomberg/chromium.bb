@@ -92,6 +92,13 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
   switch (stream_type) {
     case MEDIA_DEVICE_VIDEO_CAPTURE: {
+      if (!video_capture_system_) {
+        // Clients who create an instance of |this| without providing a
+        // VideoCaptureSystem instance are expected to know that
+        // MEDIA_DEVICE_VIDEO_CAPTURE is not supported in this case.
+        NOTREACHED();
+        return;
+      }
       start_capture_closure =
           base::Bind(&InProcessVideoCaptureDeviceLauncher::
                          DoStartDeviceCaptureOnDeviceThread,
@@ -165,9 +172,11 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
     switch (state_copy) {
       case State::DEVICE_START_IN_PROGRESS:
         callbacks->OnDeviceLaunchFailed();
+        base::ResetAndReturn(&done_cb).Run();
         return;
       case State::DEVICE_START_ABORTING:
         callbacks->OnDeviceLaunchAborted();
+        base::ResetAndReturn(&done_cb).Run();
         return;
       case State::READY_TO_LAUNCH:
         NOTREACHED();
@@ -181,16 +190,17 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
   switch (state_copy) {
     case State::DEVICE_START_IN_PROGRESS:
       callbacks->OnDeviceLaunched(std::move(launched_device));
+      base::ResetAndReturn(&done_cb).Run();
       return;
     case State::DEVICE_START_ABORTING:
       launched_device.reset();
       callbacks->OnDeviceLaunchAborted();
+      base::ResetAndReturn(&done_cb).Run();
       return;
     case State::READY_TO_LAUNCH:
       NOTREACHED();
       return;
   }
-  base::ResetAndReturn(&done_cb).Run();
 }
 
 void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
@@ -200,6 +210,7 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
     ReceiveDeviceCallback result_callback) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
+  DCHECK(video_capture_system_);
 
   std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
       video_capture_system_->CreateDevice(device_id);

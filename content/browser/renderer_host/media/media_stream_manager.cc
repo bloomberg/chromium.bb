@@ -422,15 +422,17 @@ MediaStreamManager::MediaStreamManager(
     CHECK(video_capture_thread_.Start());
     device_task_runner = video_capture_thread_.task_runner();
 #endif
-    video_capture_provider = base::MakeUnique<InProcessVideoCaptureProvider>(
-        base::MakeUnique<media::VideoCaptureSystemImpl>(
-            media::VideoCaptureDeviceFactory::CreateFactory(
-                BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
-        std::move(device_task_runner));
     if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
       video_capture_provider = base::MakeUnique<VideoCaptureProviderSwitcher>(
           base::MakeUnique<ServiceVideoCaptureProvider>(),
-          std::move(video_capture_provider));
+          InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
+              std::move(device_task_runner)));
+    } else {
+      video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
+          base::MakeUnique<media::VideoCaptureSystemImpl>(
+              media::VideoCaptureDeviceFactory::CreateFactory(
+                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
+          std::move(device_task_runner));
     }
   }
   InitializeMaybeAsync(std::move(video_capture_provider));
