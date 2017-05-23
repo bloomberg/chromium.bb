@@ -219,7 +219,8 @@ TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
       })";
 
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
-      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetReferrer("https://referrer.example.com");
   request->SetExtraRequestHeaderByName("Extra-Header", "Value", true);
   request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
@@ -253,7 +254,8 @@ TEST_F(GenericURLRequestJobTest, BasicPostRequestParams) {
       })";
 
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
-      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetReferrer("https://referrer.example.com");
   request->SetExtraRequestHeaderByName("Extra-Header", "Value", true);
   request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
@@ -498,7 +500,8 @@ TEST_F(GenericURLRequestJobTest, DelegateModifiesRequest) {
   }));
 
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
-      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -585,7 +588,8 @@ TEST_F(GenericURLRequestJobTest, DelegateMocks302Response) {
       })";
 
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
-      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -606,7 +610,7 @@ TEST_F(GenericURLRequestJobTest, OnResourceLoadFailed) {
 
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
       GURL("https://i-dont-exist.com"), net::DEFAULT_PRIORITY,
-      &request_delegate_));
+      &request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
   base::RunLoop().RunUntilIdle();
 }
