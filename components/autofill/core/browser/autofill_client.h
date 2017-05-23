@@ -38,7 +38,7 @@ class SyncService;
 }
 
 namespace ukm {
-class UkmService;
+class UkmRecorder;
 }
 
 namespace autofill {
@@ -112,7 +112,7 @@ class AutofillClient : public RiskDataLoader {
   virtual rappor::RapporServiceImpl* GetRapporServiceImpl() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
-  virtual ukm::UkmService* GetUkmService() = 0;
+  virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
 
   // Gets the SaveCardBubbleController instance associated with the client.
   // May return nullptr if the save card bubble has not been shown yet.

@@ -16,14 +16,16 @@ namespace ukm {
 
 class Source;
 
+typedef int64_t SourceId;
+
 // Contains UKM data for a single navigation entry.
 class UkmSource {
  public:
   UkmSource();
   ~UkmSource();
 
-  int32_t id() const { return id_; }
-  void set_id(int32_t id) { id_ = id; }
+  ukm::SourceId id() const { return id_; }
+  void set_id(ukm::SourceId id) { id_ = id; }
 
   const GURL& initial_url() const { return initial_url_; }
   const GURL& url() const { return url_; }
@@ -42,7 +44,7 @@ class UkmSource {
   void PopulateProto(Source* proto_source) const;
 
  private:
-  int32_t id_;
+  ukm::SourceId id_;
 
   // The final, canonical URL for this source.
   GURL url_;

@@ -12,7 +12,7 @@ option optimize_for = LITE_RUNTIME;
 // Next tag: 7
 message Source {
   // An identifier for the source. This should be unique within a session.
-  optional int32 id = 1;
+  optional int64 id = 1;
 
   // The URL of the source, as recorded in history. If this URL has not been
   // discovered by Google's crawler, it should not be recorded.

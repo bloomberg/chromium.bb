@@ -39,8 +39,8 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/ukm/ukm_entry_builder.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -183,7 +183,7 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
     : BrowserMessageFilter(ChromeMsgStart),
       context_(render_process_id, profile),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      ukm_source_id_(ukm::UkmService::GetNewSourceID()) {
+      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {
   shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
           base::Bind(&PluginInfoMessageFilter::ShutdownOnUIThread,
@@ -534,7 +534,7 @@ void PluginInfoMessageFilter::ReportMetrics(
     const base::StringPiece& mime_type,
     const GURL& url,
     const url::Origin& main_frame_origin,
-    int32_t ukm_source_id) {
+    ukm::SourceId ukm_source_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
@@ -570,14 +570,14 @@ void PluginInfoMessageFilter::ReportMetrics(
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 
-  ukm::UkmService* ukm_service = g_browser_process->ukm_service();
-  if (!ukm_service)
+  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  if (!ukm_recorder)
     return;
-  ukm_service->UpdateSourceURL(ukm_source_id,
-                               web_contents->GetLastCommittedURL());
+  ukm_recorder->UpdateSourceURL(ukm_source_id,
+                                web_contents->GetLastCommittedURL());
   // UkmEntryBuilder records the entry when it goes out of scope.
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm_service->GetEntryBuilder(ukm_source_id, "Plugins.FlashInstance");
+      ukm_recorder->GetEntryBuilder(ukm_source_id, "Plugins.FlashInstance");
 }
 
 void PluginInfoMessageFilter::Context::MaybeGrantAccess(

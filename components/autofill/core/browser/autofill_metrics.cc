@@ -18,7 +18,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/ukm/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_entry_builder.h"
 
 namespace internal {
 const char kUKMCardUploadDecisionEntryName[] = "Autofill.CardUploadDecision";
@@ -760,7 +760,7 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 }
 
 // static
-void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmService* ukm_service,
+void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
                                                 const GURL& url,
                                                 int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);
@@ -768,12 +768,12 @@ void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmService* ukm_service,
 
   const std::vector<std::pair<const char*, int>> metrics = {
       {internal::kUKMCardUploadDecisionMetricName, upload_decision_metrics}};
-  LogUkm(ukm_service, url, internal::kUKMCardUploadDecisionEntryName, metrics);
+  LogUkm(ukm_recorder, url, internal::kUKMCardUploadDecisionEntryName, metrics);
 }
 
 // static
 void AutofillMetrics::LogDeveloperEngagementUkm(
-    ukm::UkmService* ukm_service,
+    ukm::UkmRecorder* ukm_recorder,
     const GURL& url,
     int developer_engagement_metrics) {
   DCHECK(developer_engagement_metrics);
@@ -784,23 +784,24 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
       {internal::kUKMDeveloperEngagementMetricName,
        developer_engagement_metrics}};
 
-  LogUkm(ukm_service, url, internal::kUKMDeveloperEngagementEntryName, metrics);
+  LogUkm(ukm_recorder, url, internal::kUKMDeveloperEngagementEntryName,
+         metrics);
 }
 
 // static
 bool AutofillMetrics::LogUkm(
-    ukm::UkmService* ukm_service,
+    ukm::UkmRecorder* ukm_recorder,
     const GURL& url,
     const std::string& ukm_entry_name,
     const std::vector<std::pair<const char*, int>>& metrics) {
-  if (!ukm_service || !url.is_valid() || metrics.empty()) {
+  if (!ukm_recorder || !url.is_valid() || metrics.empty()) {
     return false;
   }
 
-  int32_t source_id = ukm_service->GetNewSourceID();
-  ukm_service->UpdateSourceURL(source_id, url);
+  ukm::SourceId source_id = ukm_recorder->GetNewSourceID();
+  ukm_recorder->UpdateSourceURL(source_id, url);
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm_service->GetEntryBuilder(source_id, ukm_entry_name.c_str());
+      ukm_recorder->GetEntryBuilder(source_id, ukm_entry_name.c_str());
 
   for (auto it = metrics.begin(); it != metrics.end(); ++it) {
     builder->AddMetric(it->first, it->second);
@@ -1029,12 +1030,12 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
 }
 
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
-    ukm::UkmService* ukm_service)
-    : ukm_service_(ukm_service) {}
+    ukm::UkmRecorder* ukm_recorder)
+    : ukm_recorder_(ukm_recorder) {}
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
     const GURL& url) {
-  if (ukm_service_ == nullptr)
+  if (ukm_recorder_ == nullptr)
     return;
 
   url_ = url;
@@ -1051,8 +1052,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
   if (source_id_ == -1)
     GetNewSourceID();
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id_, internal::kUKMInteractedWithFormEntryName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMInteractedWithFormEntryName);
   builder->AddMetric(internal::kUKMIsForCreditCardMetricName,
                      is_for_credit_card);
   builder->AddMetric(internal::kUKMLocalRecordTypeCountMetricName,
@@ -1068,8 +1070,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown() {
   if (source_id_ == -1)
     GetNewSourceID();
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id_, internal::kUKMSuggestionsShownEntryName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMSuggestionsShownEntryName);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
                      MillisecondsSinceFormParsed());
 }
@@ -1081,8 +1084,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard() {
   if (source_id_ == -1)
     GetNewSourceID();
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id_, internal::kUKMSelectedMaskedServerCardEntryName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(
+          source_id_, internal::kUKMSelectedMaskedServerCardEntryName);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
                      MillisecondsSinceFormParsed());
 }
@@ -1095,8 +1099,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
   if (source_id_ == -1)
     GetNewSourceID();
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id_, internal::kUKMSuggestionFilledEntryName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMSuggestionFilledEntryName);
   builder->AddMetric(internal::kUKMRecordTypeMetricName, record_type);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
                      MillisecondsSinceFormParsed());
@@ -1110,8 +1115,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
   if (source_id_ == -1)
     GetNewSourceID();
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id_, internal::kUKMTextFieldDidChangeEntryName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMTextFieldDidChangeEntryName);
   builder->AddMetric(internal::kUKMFieldTypeGroupMetricName,
                      static_cast<int>(field.Type().group()));
   builder->AddMetric(internal::kUKMHeuristicTypeMetricName,
@@ -1136,8 +1142,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   if (source_id_ == -1)
     GetNewSourceID();
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id_, internal::kUKMFormSubmittedEntryName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMFormSubmittedEntryName);
   builder->AddMetric(internal::kUKMAutofillFormSubmittedStateMetricName,
                      static_cast<int>(state));
   if (form_parsed_timestamp_.is_null())
@@ -1153,11 +1160,11 @@ void AutofillMetrics::FormInteractionsUkmLogger::UpdateSourceURL(
     const GURL& url) {
   url_ = url;
   if (CanLog())
-    ukm_service_->UpdateSourceURL(source_id_, url_);
+    ukm_recorder_->UpdateSourceURL(source_id_, url_);
 }
 
 bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
-  return ukm_service_ && url_.is_valid();
+  return ukm_recorder_ && url_.is_valid();
 }
 
 int64_t
@@ -1168,8 +1175,8 @@ AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed()
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::GetNewSourceID() {
-  source_id_ = ukm_service_->GetNewSourceID();
-  ukm_service_->UpdateSourceURL(source_id_, url_);
+  source_id_ = ukm_recorder_->GetNewSourceID();
+  ukm_recorder_->UpdateSourceURL(source_id_, url_);
 }
 
 }  // namespace autofill

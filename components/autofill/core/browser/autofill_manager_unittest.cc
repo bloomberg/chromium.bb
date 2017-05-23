@@ -57,8 +57,7 @@
 #include "components/rappor/test_rappor_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/test_ukm_service.h"
-#include "components/ukm/ukm_entry.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_params_manager.h"
@@ -826,19 +825,9 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
 };
 
-// Finds the specified UKM metric by |name| in the specified UKM |metrics|.
-const ukm::Entry_Metric* FindMetric(
-    const char* name,
-    const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
-  for (const auto& metric : metrics) {
-    if (metric.metric_hash() == base::HashMetricName(name))
-      return &metric;
-  }
-  return nullptr;
-}
-
 // Get Ukm sources from the Ukm service.
-std::vector<const ukm::UkmSource*> GetUkmSources(ukm::TestUkmService* service) {
+std::vector<const ukm::UkmSource*> GetUkmSources(
+    ukm::TestUkmRecorder* service) {
   std::vector<const ukm::UkmSource*> sources;
   for (const auto& kv : service->GetSources())
     sources.push_back(kv.second.get());
@@ -1081,32 +1070,30 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void ExpectUniqueFillableFormParsedUkm() {
-    ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+    ukm::TestUkmRecorder* ukm_recorder = autofill_client_.GetTestUkmRecorder();
 
     // Check that one source is logged.
-    ASSERT_EQ(1U, ukm_service->sources_count());
-    const ukm::UkmSource* source = GetUkmSources(ukm_service)[0];
+    ASSERT_EQ(1U, ukm_recorder->sources_count());
+    const ukm::UkmSource* source = GetUkmSources(ukm_recorder)[0];
 
     // Check that one entry is logged.
-    EXPECT_EQ(1U, ukm_service->entries_count());
-    const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
-    EXPECT_EQ(source->id(), entry->source_id());
+    EXPECT_EQ(1U, ukm_recorder->entries_count());
+    const ukm::mojom::UkmEntry* entry = ukm_recorder->GetEntry(0);
+    EXPECT_EQ(source->id(), entry->source_id);
 
-    ukm::Entry entry_proto;
-    entry->PopulateProto(&entry_proto);
-    EXPECT_EQ(source->id(), entry_proto.source_id());
+    EXPECT_EQ(source->id(), entry->source_id);
 
     // Check if there is an entry for developer engagement decision.
     EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
-              entry_proto.event_hash());
-    EXPECT_EQ(1, entry_proto.metrics_size());
+              entry->event_hash);
+    EXPECT_EQ(1U, entry->metrics.size());
 
     // Check that the expected developer engagement metric is logged.
-    const ukm::Entry_Metric* metric = FindMetric(
-        internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
+    const ukm::mojom::UkmMetric* metric = ukm::TestUkmRecorder::FindMetric(
+        entry, internal::kUKMDeveloperEngagementMetricName);
     ASSERT_NE(nullptr, metric);
     EXPECT_EQ(1 << AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS,
-              metric->value());
+              metric->value);
   }
 
   void ExpectUniqueCardUploadDecision(
@@ -1142,25 +1129,20 @@ class AutofillManagerTest : public testing::Test {
                     const char* entry_name,
                     int expected_metric_value,
                     int expected_num_matching_entries) {
-    ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+    ukm::TestUkmRecorder* ukm_recorder = autofill_client_.GetTestUkmRecorder();
 
     int num_matching_entries = 0;
-    for (size_t i = 0; i < ukm_service->entries_count(); ++i) {
-      const ukm::UkmEntry* entry = ukm_service->GetEntry(i);
-
-      ukm::Entry entry_proto;
-      entry->PopulateProto(&entry_proto);
-      EXPECT_EQ(entry->source_id(), entry_proto.source_id());
-
+    for (size_t i = 0; i < ukm_recorder->entries_count(); ++i) {
+      const ukm::mojom::UkmEntry* entry = ukm_recorder->GetEntry(i);
       // Check if there is an entry for |entry_name|.
-      if (entry_proto.event_hash() == base::HashMetricName(entry_name)) {
-        EXPECT_EQ(1, entry_proto.metrics_size());
+      if (entry->event_hash == base::HashMetricName(entry_name)) {
+        EXPECT_EQ(1UL, entry->metrics.size());
 
         // Check that the expected |metric_value| is logged.
-        const ukm::Entry_Metric* metric =
-            FindMetric(metric_name, entry_proto.metrics());
+        const ukm::mojom::UkmMetric* metric =
+            ukm::TestUkmRecorder::FindMetric(entry, metric_name);
         ASSERT_NE(nullptr, metric);
-        EXPECT_EQ(expected_metric_value, metric->value());
+        EXPECT_EQ(expected_metric_value, metric->value);
         ++num_matching_entries;
       }
     }
@@ -3569,7 +3551,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
 
   // Similarly, a second form.
@@ -3589,7 +3571,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   form2.fields.push_back(field);
 
   TestFormStructure* form_structure2 = new TestFormStructure(form2);
-  form_structure2->DetermineHeuristicTypes(nullptr /* ukm_service */);
+  form_structure2->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure2));
 
   AutofillQueryResponseContents response;
@@ -3641,7 +3623,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
 
   AutofillQueryResponseContents response;
@@ -3680,7 +3662,7 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
 
   // Clear the heuristic types, and instead set the appropriate server types.
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -6790,7 +6772,7 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsForUpdatedServerTypedForm) {
   form.fields.push_back(field);
 
   auto form_structure = base::MakeUnique<TestFormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
   // Make sure the form can not be autofilled now.
   ASSERT_EQ(0u, form_structure->autofill_count());
   for (size_t idx = 0; idx < form_structure->field_count(); ++idx) {

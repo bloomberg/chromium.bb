@@ -11,7 +11,7 @@
 #include "url/gurl.h"
 
 namespace ukm {
-class UkmService;
+class UkmRecorder;
 }
 
 namespace payments {
@@ -78,7 +78,7 @@ class JourneyLogger {
 
   JourneyLogger(bool is_incognito,
                 const GURL& url,
-                ukm::UkmService* ukm_service);
+                ukm::UkmRecorder* ukm_recorder);
   ~JourneyLogger();
 
   // Increments the number of selection adds for the specified section.
@@ -173,7 +173,7 @@ class JourneyLogger {
   const GURL url_;
 
   // Not owned, will outlive this object.
-  ukm::UkmService* ukm_service_;
+  ukm::UkmRecorder* ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(JourneyLogger);
 };

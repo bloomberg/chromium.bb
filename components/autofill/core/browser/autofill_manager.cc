@@ -230,7 +230,7 @@ AutofillManager::AutofillManager(
           base::MakeUnique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
           base::MakeUnique<AutofillMetrics::FormInteractionsUkmLogger>(
-              client->GetUkmService())),
+              client->GetUkmRecorder())),
       address_form_event_logger_(
           base::MakeUnique<AutofillMetrics::FormEventLogger>(
               false /* is_for_credit_card */,
@@ -1537,7 +1537,8 @@ void AutofillManager::Reset() {
   DCHECK(!pending_form_data_);
   form_structures_.clear();
   form_interactions_ukm_logger_.reset(
-      new AutofillMetrics::FormInteractionsUkmLogger(client_->GetUkmService()));
+      new AutofillMetrics::FormInteractionsUkmLogger(
+          client_->GetUkmRecorder()));
   address_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
       false /* is_for_credit_card */, form_interactions_ukm_logger_.get()));
   credit_card_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
@@ -1574,7 +1575,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
           base::MakeUnique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
           base::MakeUnique<AutofillMetrics::FormInteractionsUkmLogger>(
-              client->GetUkmService())),
+              client->GetUkmRecorder())),
       address_form_event_logger_(
           base::MakeUnique<AutofillMetrics::FormEventLogger>(
               false /* is_for_credit_card */,
@@ -2060,7 +2061,7 @@ bool AutofillManager::ParseForm(const FormData& form,
   // as long as receivers don't take ownership.
   form_structures_.push_back(std::move(form_structure));
   *parsed_form_structure = form_structures_.back().get();
-  (*parsed_form_structure)->DetermineHeuristicTypes(client_->GetUkmService());
+  (*parsed_form_structure)->DetermineHeuristicTypes(client_->GetUkmRecorder());
   return true;
 }
 
@@ -2335,7 +2336,7 @@ void AutofillManager::DumpAutofillData(bool imported_cc) const {
 
 void AutofillManager::LogCardUploadDecisions(int upload_decision_metrics) {
   AutofillMetrics::LogCardUploadDecisionMetrics(upload_decision_metrics);
-  AutofillMetrics::LogCardUploadDecisionsUkm(client_->GetUkmService(),
+  AutofillMetrics::LogCardUploadDecisionsUkm(client_->GetUkmRecorder(),
                                              pending_upload_request_url_,
                                              upload_decision_metrics);
 }

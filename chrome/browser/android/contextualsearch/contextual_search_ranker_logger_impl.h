@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_RANKER_LOGGER_IMPL_H_
 
 #include "base/android/jni_android.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "url/gurl.h"
 
 class GURL;
 
 namespace ukm {
-class UkmService;
+class UkmRecorder;
 }  // namespace ukm
 
 class ContextualSearchRankerLoggerImpl {
@@ -44,12 +44,12 @@ class ContextualSearchRankerLoggerImpl {
   void WriteLogAndReset(JNIEnv* env, jobject obj);
 
  private:
-  // Set the UKM service and base-page URL.
-  // TODO(donnd): write a test, using this to inject a test-ukm-service.
-  void SetUkmService(ukm::UkmService* ukm_service, const GURL& page_url);
+  // Set the UKM recorder and base-page URL.
+  // TODO(donnd): write a test, using this to inject a test-ukm-recorder.
+  void SetUkmRecorder(ukm::UkmRecorder* ukm_recorder, const GURL& page_url);
 
   // Used to log URL-keyed metrics. This pointer will outlive |this|.
-  ukm::UkmService* ukm_service_;
+  ukm::UkmRecorder* ukm_recorder_;
 
   // The UKM source ID being used for this session.
   int32_t source_id_;

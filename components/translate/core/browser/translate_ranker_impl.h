@@ -25,7 +25,7 @@ class RankerModel;
 }  // namespace chrome_intelligence
 
 namespace ukm {
-class UkmService;
+class UkmRecorder;
 }  // namespace ukm
 
 namespace metrics {
@@ -84,7 +84,7 @@ class TranslateRankerImpl : public TranslateRanker {
  public:
   TranslateRankerImpl(const base::FilePath& model_path,
                       const GURL& model_url,
-                      ukm::UkmService* ukm_service);
+                      ukm::UkmRecorder* ukm_recorder);
   ~TranslateRankerImpl() override;
 
   // Get the file path of the translate ranker model, by default with a fixed
@@ -136,7 +136,7 @@ class TranslateRankerImpl : public TranslateRanker {
                          const GURL& url);
 
   // Used to log URL-keyed metrics. This pointer will outlive |this|.
-  ukm::UkmService* ukm_service_;
+  ukm::UkmRecorder* ukm_recorder_;
 
   // Used to sanity check the threading of this ranker.
   base::SequenceChecker sequence_checker_;

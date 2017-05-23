@@ -38,7 +38,7 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/ukm_recorder.h"
 
 namespace autofill {
 namespace {
@@ -353,7 +353,7 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes(ukm::UkmService* ukm_service) {
+void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder) {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
 
   // First, try to detect field types based on each field's |autocomplete|
@@ -396,7 +396,7 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmService* ukm_service) {
   }
 
   if (developer_engagement_metrics)
-    AutofillMetrics::LogDeveloperEngagementUkm(ukm_service, source_url(),
+    AutofillMetrics::LogDeveloperEngagementUkm(ukm_recorder, source_url(),
                                                developer_engagement_metrics);
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(

@@ -110,6 +110,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/ukm/ukm_service.h"
 #include "components/update_client/update_query_params.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -561,7 +562,7 @@ rappor::RapporServiceImpl* BrowserProcessImpl::rappor_service() {
   return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
-ukm::UkmService* BrowserProcessImpl::ukm_service() {
+ukm::UkmRecorder* BrowserProcessImpl::ukm_recorder() {
   DCHECK(CalledOnValidThread());
   return GetMetricsServicesManager()->GetUkmService();
 }

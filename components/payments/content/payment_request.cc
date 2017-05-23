@@ -36,7 +36,7 @@ PaymentRequest::PaymentRequest(
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       web_contents_->GetLastCommittedURL(),
-                      delegate_->GetUkmService()) {
+                      delegate_->GetUkmRecorder()) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).

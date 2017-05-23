@@ -9,8 +9,8 @@
 #include "base/metrics/metrics_hashes.h"
 #include "chrome/browser/browser_process.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/ukm/ukm_entry_builder.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "jni/ContextualSearchRankerLoggerImpl_jni.h"
 
 ContextualSearchRankerLoggerImpl::ContextualSearchRankerLoggerImpl(
@@ -29,18 +29,18 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
     const base::android::JavaParamRef<jstring>& j_base_page_url) {
   GURL page_url =
       GURL(base::android::ConvertJavaStringToUTF8(env, j_base_page_url));
-  ukm::UkmService* ukm_service = g_browser_process->ukm_service();
-  SetUkmService(ukm_service, page_url);
+  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  SetUkmRecorder(ukm_recorder, page_url);
   // TODO(donnd): set up the model once inference is available.
 }
 
-void ContextualSearchRankerLoggerImpl::SetUkmService(
-    ukm::UkmService* ukm_service,
+void ContextualSearchRankerLoggerImpl::SetUkmRecorder(
+    ukm::UkmRecorder* ukm_recorder,
     const GURL& page_url) {
-  ukm_service_ = ukm_service;
-  source_id_ = ukm_service_->GetNewSourceID();
-  ukm_service_->UpdateSourceURL(source_id_, page_url);
-  builder_ = ukm_service_->GetEntryBuilder(source_id_, "ContextualSearch");
+  ukm_recorder_ = ukm_recorder;
+  source_id_ = ukm_recorder_->GetNewSourceID();
+  ukm_recorder_->UpdateSourceURL(source_id_, page_url);
+  builder_ = ukm_recorder_->GetEntryBuilder(source_id_, "ContextualSearch");
 }
 
 void ContextualSearchRankerLoggerImpl::LogLong(
@@ -55,7 +55,7 @@ void ContextualSearchRankerLoggerImpl::LogLong(
 void ContextualSearchRankerLoggerImpl::WriteLogAndReset(JNIEnv* env,
                                                         jobject obj) {
   // Set up another builder for the next record (in case it's needed).
-  builder_ = ukm_service_->GetEntryBuilder(source_id_, "ContextualSearch");
+  builder_ = ukm_recorder_->GetEntryBuilder(source_id_, "ContextualSearch");
 }
 
 // Java wrapper boilerplate

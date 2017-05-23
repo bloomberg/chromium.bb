@@ -53,7 +53,8 @@ void UmaSessionStats::UmaResumeSession(JNIEnv* env,
     metrics::MetricsService* metrics = g_browser_process->metrics_service();
     if (metrics)
       metrics->OnAppEnterForeground();
-    ukm::UkmService* ukm_service = g_browser_process->ukm_service();
+    ukm::UkmService* ukm_service =
+        g_browser_process->GetMetricsServicesManager()->GetUkmService();
     if (ukm_service)
       ukm_service->OnAppEnterForeground();
   }
@@ -77,7 +78,8 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
     metrics::MetricsService* metrics = g_browser_process->metrics_service();
     if (metrics)
       metrics->OnAppEnterBackground();
-    ukm::UkmService* ukm_service = g_browser_process->ukm_service();
+    ukm::UkmService* ukm_service =
+        g_browser_process->GetMetricsServicesManager()->GetUkmService();
     if (ukm_service)
       ukm_service->OnAppEnterBackground();
   }

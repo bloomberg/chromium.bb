@@ -281,8 +281,11 @@ void GetExecutableVersionDetails(base::string16* product_name,
 }
 #endif  // OS_WIN
 
-ukm::UkmService* BindableGetUkmService() {
-  return g_browser_process->ukm_service();
+ukm::UkmService* BindableGetUkmService(
+    base::WeakPtr<ChromeMetricsServiceClient> weak_ptr) {
+  if (!weak_ptr)
+    return nullptr;
+  return weak_ptr->GetUkmService();
 }
 
 }  // namespace
@@ -935,7 +938,8 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
 void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   // Register chrome://ukm handler
   content::URLDataSource::Add(
-      profile, new ukm::debug::DebugPage(base::Bind(&BindableGetUkmService)));
+      profile, new ukm::debug::DebugPage(base::Bind(
+                   &BindableGetUkmService, weak_ptr_factory_.GetWeakPtr())));
 #if defined(OS_CHROMEOS)
   // Ignore the signin profile for sync disables / history deletion.
   if (chromeos::ProfileHelper::IsSigninProfile(profile))

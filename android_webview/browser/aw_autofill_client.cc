@@ -83,7 +83,7 @@ rappor::RapporServiceImpl* AwAutofillClient::GetRapporServiceImpl() {
   return nullptr;
 }
 
-ukm::UkmService* AwAutofillClient::GetUkmService() {
+ukm::UkmRecorder* AwAutofillClient::GetUkmRecorder() {
   return nullptr;
 }
 

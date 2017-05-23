@@ -8,19 +8,18 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
 
 namespace ukm {
 
-class UkmEntry;
-class UkmService;
+typedef int64_t SourceId;
 
-// The builder that builds UkmEntry and adds it to UkmService.
+// The builder that builds UkmEntry and adds it to UkmRecorder.
 // The example usage is:
 //
 // {
 //   unique_ptr<UkmEntryBuilder> builder =
-//       ukm_service->GetEntryBuilder(source_id, "PageLoad");
+//       ukm_recorder->GetEntryBuilder(source_id, "PageLoad");
 //   builder->AddMetric("NavigationStart", navigation_start_time);
 //   builder->AddMetric("ResponseStart", response_start_time);
 //   builder->AddMetric("FirstPaint", first_paint_time);
@@ -31,20 +30,18 @@ class UkmService;
 // UkmEntry to UkmService upon destruction when going out of scope.
 class UkmEntryBuilder {
  public:
+  using AddEntryCallback = base::Callback<void(mojom::UkmEntryPtr)>;
+  UkmEntryBuilder(const AddEntryCallback& callback,
+                  ukm::SourceId source_id,
+                  const char* event_name);
+  ~UkmEntryBuilder();
+
   // Add metric to the entry. A metric contains a metric name and value.
   void AddMetric(const char* metric_name, int64_t value);
 
-  ~UkmEntryBuilder();
-
  private:
-  friend class UkmService;
-
-  UkmEntryBuilder(const UkmService::AddEntryCallback& callback,
-                  int32_t source_id,
-                  const char* event_name);
-
-  UkmService::AddEntryCallback add_entry_callback_;
-  std::unique_ptr<UkmEntry> entry_;
+  AddEntryCallback add_entry_callback_;
+  mojom::UkmEntryPtr entry_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmEntryBuilder);
 };

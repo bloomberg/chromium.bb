@@ -22,7 +22,7 @@ class RegionDataLoader;
 class PrefService;
 
 namespace ukm {
-class UkmService;
+class UkmRecorder;
 }  // namespace ukm
 
 namespace payments {
@@ -75,7 +75,7 @@ class PaymentRequestDelegate {
   virtual autofill::RegionDataLoader* GetRegionDataLoader() = 0;
 
   // Returns a pointer to the UKM service.
-  virtual ukm::UkmService* GetUkmService() = 0;
+  virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
 
   // Returns the user's signed-in email address, or empty string if not signed
   // in.

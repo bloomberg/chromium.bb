@@ -26,7 +26,7 @@ JourneyLoggerAndroid::JourneyLoggerAndroid(bool is_incognito,
                                            const std::string& url)
     : journey_logger_(is_incognito,
                       GURL(url),
-                      g_browser_process->ukm_service()) {}
+                      g_browser_process->ukm_recorder()) {}
 
 JourneyLoggerAndroid::~JourneyLoggerAndroid() {}
 

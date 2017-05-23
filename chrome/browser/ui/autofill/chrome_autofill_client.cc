@@ -145,8 +145,8 @@ rappor::RapporServiceImpl* ChromeAutofillClient::GetRapporServiceImpl() {
   return g_browser_process->rappor_service();
 }
 
-ukm::UkmService* ChromeAutofillClient::GetUkmService() {
-  return g_browser_process->ukm_service();
+ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
+  return g_browser_process->ukm_recorder();
 }
 
 SaveCardBubbleController* ChromeAutofillClient::GetSaveCardBubbleController() {

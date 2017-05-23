@@ -80,8 +80,8 @@ rappor::RapporServiceImpl* AutofillClientIOS::GetRapporServiceImpl() {
   return GetApplicationContext()->GetRapporServiceImpl();
 }
 
-ukm::UkmService* AutofillClientIOS::GetUkmService() {
-  return GetApplicationContext()->GetUkmService();
+ukm::UkmRecorder* AutofillClientIOS::GetUkmRecorder() {
+  return GetApplicationContext()->GetUkmRecorder();
 }
 
 SaveCardBubbleController* AutofillClientIOS::GetSaveCardBubbleController() {
