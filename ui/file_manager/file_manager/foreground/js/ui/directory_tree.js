@@ -740,17 +740,37 @@ DriveVolumeItem.prototype.handleClick = function(e) {
 };
 
 /**
+ * Checks whether the Team Drives grand root should be shown.
+ * @param {function(boolean)} callback to receive the result. The paramter is
+ *     true if the Files app. should show the Team Drives grand root and its
+ *     subtree.
+ * @private
+ */
+DriveVolumeItem.prototype.shouldShowTeamDrives_ = function(callback) {
+  var teamDriveEntry = this.volumeInfo_.teamDriveDisplayRoot;
+  if (!teamDriveEntry) {
+    callback(false);
+  } else {
+    var reader = teamDriveEntry.createReader();
+    reader.readEntries(function(results) {
+      callback(results.length > 0);
+    });
+  }
+};
+
+/**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {boolean} recursive True if the update is recursively.
  * @override
  */
 DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
-  // Drive volume has children including fake entries (offline, recent, etc...).
-  if (this.entry && !this.hasChildren) {
+  if (!this.entry || this.hasChildren)
+    return;
+  this.shouldShowTeamDrives_(function(shouldShowTeamDrives) {
     var entries = [this.entry];
-    var teamDriveEntry = this.volumeInfo_.teamDriveDisplayRoot;
-    if (teamDriveEntry)
-      entries.push(teamDriveEntry);
+    if (shouldShowTeamDrives)
+      entries.push(this.volumeInfo_.teamDriveDisplayRoot);
+    // Drive volume has children including fake entries (offline, recent, ...)
     var fakeEntries = [];
     if (this.parentTree_.fakeEntriesVisible_) {
       for (var key in this.volumeInfo_.fakeEntries)
@@ -774,7 +794,7 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
       item.updateSubDirectories(false);
     }
     this.expanded = true;
-  }
+  }.bind(this));
 };
 
 /**
