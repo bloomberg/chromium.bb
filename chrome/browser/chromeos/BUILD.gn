@@ -333,6 +333,8 @@ source_set("chromeos") {
     "arc/tracing/arc_tracing_bridge.h",
     "arc/tts/arc_tts_service.cc",
     "arc/tts/arc_tts_service.h",
+    "arc/user_session/arc_user_session_service.cc",
+    "arc/user_session/arc_user_session_service.h",
     "arc/video/gpu_arc_video_service_host.cc",
     "arc/video/gpu_arc_video_service_host.h",
     "arc/voice_interaction/arc_voice_interaction_arc_home_service.cc",
