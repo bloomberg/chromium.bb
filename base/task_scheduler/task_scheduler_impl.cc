@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence.h"
@@ -52,13 +53,10 @@ size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
 
 }  // namespace
 
-TaskSchedulerImpl::TaskSchedulerImpl(
-    StringPiece name,
-    std::unique_ptr<TaskTrackerType> task_tracker)
+TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
     : name_(name),
       service_thread_("TaskSchedulerServiceThread"),
-      task_tracker_(std::move(task_tracker)),
-      single_thread_task_runner_manager_(task_tracker_.get(),
+      single_thread_task_runner_manager_(&task_tracker_,
                                          &delayed_task_manager_) {
   static_assert(arraysize(worker_pools_) == ENVIRONMENT_COUNT,
                 "The size of |worker_pools_| must match ENVIRONMENT_COUNT.");
@@ -70,7 +68,7 @@ TaskSchedulerImpl::TaskSchedulerImpl(
        ++environment_type) {
     worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
         name_ + kEnvironmentParams[environment_type].name_suffix,
-        kEnvironmentParams[environment_type].priority_hint, task_tracker_.get(),
+        kEnvironmentParams[environment_type].priority_hint, &task_tracker_,
         &delayed_task_manager_);
   }
 }
@@ -98,11 +96,11 @@ void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // Needs to happen after starting the service thread to get its
   // message_loop().
-  task_tracker_->set_watch_file_descriptor_message_loop(
+  task_tracker_.set_watch_file_descriptor_message_loop(
       static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
 
 #if DCHECK_IS_ON()
-  task_tracker_->set_service_thread_handle(service_thread_.GetThreadHandle());
+  task_tracker_.set_service_thread_handle(service_thread_.GetThreadHandle());
 #endif  // DCHECK_IS_ON()
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
@@ -181,11 +179,11 @@ int TaskSchedulerImpl::GetMaxConcurrentTasksWithTraitsDeprecated(
 
 void TaskSchedulerImpl::Shutdown() {
   // TODO(fdoray): Increase the priority of BACKGROUND tasks blocking shutdown.
-  task_tracker_->Shutdown();
+  task_tracker_.Shutdown();
 }
 
 void TaskSchedulerImpl::FlushForTesting() {
-  task_tracker_->Flush();
+  task_tracker_.Flush();
 }
 
 void TaskSchedulerImpl::JoinForTesting() {

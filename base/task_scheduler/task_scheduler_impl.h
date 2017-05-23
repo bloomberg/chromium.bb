@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
@@ -39,19 +38,8 @@ namespace internal {
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
  public:
-  using TaskTrackerType =
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      TaskTrackerPosix;
-#else
-      TaskTracker;
-#endif
-
-  // |name| is used to label threads and histograms. |task_tracker| can be used
-  // for tests that need more execution control. By default, you get the
-  // production TaskTracker.
-  explicit TaskSchedulerImpl(StringPiece name,
-                             std::unique_ptr<TaskTrackerType> task_tracker =
-                                 MakeUnique<TaskTrackerType>());
+  // |name| is used to label threads and histograms.
+  explicit TaskSchedulerImpl(StringPiece name);
   ~TaskSchedulerImpl() override;
 
   // TaskScheduler:
@@ -86,7 +74,11 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 
   const std::string name_;
   Thread service_thread_;
-  const std::unique_ptr<TaskTrackerType> task_tracker_;
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+  TaskTrackerPosix task_tracker_;
+#else
+  TaskTracker task_tracker_;
+#endif
   DelayedTaskManager delayed_task_manager_;
   SchedulerSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
 

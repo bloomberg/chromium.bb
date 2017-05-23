@@ -90,10 +90,6 @@ class BASE_EXPORT TaskTracker {
   virtual bool IsPostingBlockShutdownTaskAfterShutdownAllowed();
 #endif
 
-  // Returns the number of undelayed tasks that haven't completed their
-  // execution.
-  int GetNumPendingUndelayedTasksForTesting() const;
-
  private:
   class State;
 
