@@ -92,7 +92,8 @@ void NewLoginRequestOnUIThread(
 void OnReceivedErrorOnUiThread(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const AwWebResourceRequest& request,
-    int error_code) {
+    int error_code,
+    bool safebrowsing_hit) {
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
   if (!client) {
@@ -100,7 +101,7 @@ void OnReceivedErrorOnUiThread(
                   << request.url;
     return;
   }
-  client->OnReceivedError(request, error_code);
+  client->OnReceivedError(request, error_code, safebrowsing_hit);
 }
 
 }  // namespace
@@ -340,11 +341,16 @@ void AwResourceDispatcherHostDelegate::RequestComplete(
     const content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
 
+    bool safebrowsing_hit = false;
+    if (request->GetUserData(AwSafeBrowsingResourceThrottle::kUserDataKey)) {
+      safebrowsing_hit = true;
+    }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&OnReceivedErrorOnUiThread,
                    request_info->GetWebContentsGetterForRequest(),
-                   AwWebResourceRequest(*request), request->status().error()));
+                   AwWebResourceRequest(*request), request->status().error(),
+                   safebrowsing_hit));
   }
 }
 
