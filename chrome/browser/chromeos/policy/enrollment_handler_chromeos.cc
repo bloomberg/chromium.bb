@@ -27,14 +27,12 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/channel_info.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
-#include "components/version_info/version_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
@@ -238,14 +236,6 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
         // Do nothing.
         break;
       case DEVICE_MODE_ENTERPRISE_AD:
-        if (chrome::GetChannel() == version_info::Channel::BETA ||
-            chrome::GetChannel() == version_info::Channel::STABLE) {
-          LOG(ERROR) << "Active Directory management is not enabled on the "
-                        "current channel";
-          ReportResult(EnrollmentStatus::ForStatus(
-              EnrollmentStatus::REGISTRATION_BAD_MODE));
-          return;
-        }
         chromeos::DBusThreadManager::Get()
             ->GetUpstartClient()
             ->StartAuthPolicyService();
