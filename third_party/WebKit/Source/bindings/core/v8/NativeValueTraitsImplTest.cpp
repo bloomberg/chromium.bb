@@ -200,27 +200,15 @@ TEST(NativeValueTraitsImplTest, IDLRecord) {
     EXPECT_TRUE(V8CallBoolean(v8_object->Set(
         scope.GetContext(), ToV8(&scope, "foo"), ToV8(&scope, 42))));
 
-    NonThrowableExceptionState exception_state;
+    // The presence of symbols should throw a TypeError when the conversion to
+    // the record's key type is attempted.
+    DummyExceptionStateForTesting exception_state;
     const auto& record =
         NativeValueTraits<IDLRecord<IDLString, IDLShort>>::NativeValue(
             scope.GetIsolate(), v8_object, exception_state);
-    EXPECT_EQ(1U, record.size());
-    EXPECT_EQ(std::make_pair(String("foo"), int16_t(42)), record[0]);
-  }
-  {
-    v8::Local<v8::Object> v8_object = v8::Object::New(scope.GetIsolate());
-    EXPECT_TRUE(V8CallBoolean(v8_object->Set(
-        scope.GetContext(), v8::Symbol::GetToStringTag(scope.GetIsolate()),
-        ToV8(&scope, 34))));
-    EXPECT_TRUE(V8CallBoolean(v8_object->Set(
-        scope.GetContext(), ToV8(&scope, "foo"), ToV8(&scope, 42))));
-
-    NonThrowableExceptionState exception_state;
-    const auto& record =
-        NativeValueTraits<IDLRecord<IDLString, IDLShort>>::NativeValue(
-            scope.GetIsolate(), v8_object, exception_state);
-    EXPECT_EQ(1U, record.size());
-    EXPECT_EQ(std::make_pair(String("foo"), int16_t(42)), record[0]);
+    EXPECT_TRUE(record.IsEmpty());
+    EXPECT_TRUE(exception_state.HadException());
+    EXPECT_TRUE(exception_state.Message().IsEmpty());
   }
   {
     v8::Local<v8::Object> v8_parent_object =
