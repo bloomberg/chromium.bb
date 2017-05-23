@@ -108,6 +108,8 @@ class PresentationHistory {
 
 gfx::Size g_overlay_monitor_size;
 
+bool g_supports_scaled_overlays = true;
+
 // This is the raw support info, which shouldn't depend on field trial state.
 bool HardwareSupportsOverlays() {
   if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
@@ -165,6 +167,8 @@ bool HardwareSupportsOverlays() {
         continue;
       g_overlay_monitor_size =
           gfx::Rect(monitor_desc.DesktopCoordinates).size();
+      g_supports_scaled_overlays =
+          !!(flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
       return true;
     }
   }
@@ -512,7 +516,9 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   gfx::Rect bounds_rect = params.rect;
   gfx::Size ceiled_input_size = gfx::ToCeiledSize(params.contents_rect.size());
   gfx::Size swap_chain_size = bounds_rect.size();
-  swap_chain_size.SetToMin(ceiled_input_size);
+
+  if (g_supports_scaled_overlays)
+    swap_chain_size.SetToMin(ceiled_input_size);
 
   // YUY2 surfaces must have an even width.
   if (swap_chain_size.width() % 2 == 1)
