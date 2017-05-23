@@ -741,6 +741,36 @@ TEST_F(BluetoothTest, TogglePowerBeforeScan) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_MACOSX)
+// TODO(crbug.com/725270): Enable on relevant platforms.
+TEST_F(BluetoothTest, TurnOffAdapterWithConnectedDevice) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(device->IsGattConnected());
+
+  ResetEventCounts();
+  SimulateAdapterPoweredOff();
+
+  EXPECT_EQ(2, observer.device_changed_count());
+  EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(device->IsGattConnected());
+}
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothTest, RegisterLocalGattServices) {
   InitWithFakeAdapter();
