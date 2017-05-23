@@ -64,6 +64,13 @@ class TestBrowserDialog {
   // Show the dialog corresponding to |name| and leave it open.
   virtual void ShowDialog(const std::string& name) = 0;
 
+  // Whether to always close asynchronously using Widget::Close(). This covers
+  // codepaths relying on DialogDelegate::Close(), which isn't invoked by
+  // Widget::CloseNow(). Dialogs should support both, since the OS can initiate
+  // the destruction of dialogs, e.g., during logoff which bypass
+  // Widget::CanClose() and DialogDelegate::Close().
+  virtual bool AlwaysCloseAsynchronously();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBrowserDialog);
 };
