@@ -99,29 +99,6 @@ TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
             GetScrollAnchor(viewport).AnchorObject());
 }
 
-TEST_P(ScrollAnchorTest, Basic) {
-  SetBodyInnerHTML(
-      "<style> body { height: 1000px } div { height: 100px } </style>"
-      "<div id='block1'>abc</div>"
-      "<div id='block2'>def</div>");
-
-  ScrollableArea* viewport = LayoutViewport();
-
-  // No anchor at origin (0,0).
-  EXPECT_EQ(nullptr, GetScrollAnchor(viewport).AnchorObject());
-
-  ScrollLayoutViewport(ScrollOffset(0, 150));
-  SetHeight(GetDocument().getElementById("block1"), 200);
-
-  EXPECT_EQ(250, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().getElementById("block2")->GetLayoutObject(),
-            GetScrollAnchor(viewport).AnchorObject());
-
-  // ScrollableArea::userScroll should clear the anchor.
-  viewport->UserScroll(kScrollByPrecisePixel, FloatSize(0, 100));
-  EXPECT_EQ(nullptr, GetScrollAnchor(viewport).AnchorObject());
-}
-
 TEST_P(ScrollAnchorTest, VisualViewportAnchors) {
   SetBodyInnerHTML(
       "<style>"
@@ -157,68 +134,6 @@ TEST_P(ScrollAnchorTest, VisualViewportAnchors) {
   // Scrolling the visual viewport should clear the anchor.
   v_viewport.SetLocation(FloatPoint(0, 0));
   EXPECT_EQ(nullptr, GetScrollAnchor(l_viewport).AnchorObject());
-}
-
-// Test that we ignore the clipped content when computing visibility otherwise
-// we may end up with an anchor that we think is in the viewport but is not.
-TEST_P(ScrollAnchorTest, ClippedScrollersSkipped) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    body { height: 2000px; }"
-      "    #scroller { overflow: scroll; width: 500px; height: 300px; }"
-      "    .anchor {"
-      "         position:relative; height: 100px; width: 150px;"
-      "         background-color: #afa; border: 1px solid gray;"
-      "    }"
-      "    #forceScrolling { height: 500px; background-color: #fcc; }"
-      "</style>"
-      "<div id='scroller'>"
-      "    <div id='innerChanger'></div>"
-      "    <div id='innerAnchor' class='anchor'></div>"
-      "    <div id='forceScrolling'></div>"
-      "</div>"
-      "<div id='outerChanger'></div>"
-      "<div id='outerAnchor' class='anchor'></div>");
-
-  ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().getElementById("scroller"));
-  ScrollableArea* viewport = LayoutViewport();
-
-  GetDocument().getElementById("scroller")->setScrollTop(100);
-  ScrollLayoutViewport(ScrollOffset(0, 350));
-
-  SetHeight(GetDocument().getElementById("innerChanger"), 200);
-  SetHeight(GetDocument().getElementById("outerChanger"), 150);
-
-  EXPECT_EQ(300, scroller->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().getElementById("innerAnchor")->GetLayoutObject(),
-            GetScrollAnchor(scroller).AnchorObject());
-  EXPECT_EQ(500, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().getElementById("outerAnchor")->GetLayoutObject(),
-            GetScrollAnchor(viewport).AnchorObject());
-}
-
-// Test that scroll anchoring causes no visible jump when a layout change
-// (such as removal of a DOM element) changes the scroll bounds.
-TEST_P(ScrollAnchorTest, AnchoringWhenContentRemoved) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    #changer { height: 1500px; }"
-      "    #anchor {"
-      "        width: 150px; height: 1000px; background-color: pink;"
-      "    }"
-      "</style>"
-      "<div id='changer'></div>"
-      "<div id='anchor'></div>");
-
-  ScrollableArea* viewport = LayoutViewport();
-  ScrollLayoutViewport(ScrollOffset(0, 1600));
-
-  SetHeight(GetDocument().getElementById("changer"), 0);
-
-  EXPECT_EQ(100, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().getElementById("anchor")->GetLayoutObject(),
-            GetScrollAnchor(viewport).AnchorObject());
 }
 
 // Test that scroll anchoring causes no visible jump when a layout change
