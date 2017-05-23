@@ -10,7 +10,7 @@ namespace vr_shell {
 
 namespace {
 
-static constexpr size_t kNumFrameTimes = 200;
+static constexpr size_t kNumFrameTimes = 10;
 
 }  // namepsace
 
@@ -19,6 +19,10 @@ FPSMeter::FPSMeter() : total_time_us_(0) {
 }
 
 FPSMeter::~FPSMeter() {}
+
+size_t FPSMeter::GetNumFrameTimes() {
+  return kNumFrameTimes;
+}
 
 void FPSMeter::AddFrame(const base::TimeTicks& time_stamp) {
   if (last_time_stamp_.is_null()) {
@@ -31,7 +35,7 @@ void FPSMeter::AddFrame(const base::TimeTicks& time_stamp) {
 
   total_time_us_ += delta.InMicroseconds();
 
-  if (frame_times_.size() + 1 < kNumFrameTimes) {
+  if (frame_times_.size() < kNumFrameTimes) {
     frame_times_.push_back(delta);
   } else {
     total_time_us_ -= frame_times_[current_index_].InMicroseconds();

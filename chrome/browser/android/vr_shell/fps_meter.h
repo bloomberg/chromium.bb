@@ -24,6 +24,9 @@ class FPSMeter {
 
   double GetFPS() const;
 
+  // Get sliding window size for tests.
+  size_t GetNumFrameTimes();
+
  private:
   size_t current_index_;
   int64_t total_time_us_;

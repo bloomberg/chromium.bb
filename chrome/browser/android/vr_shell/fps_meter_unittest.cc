@@ -49,7 +49,7 @@ TEST(FPSMeter, AccurateFPSWithManyFrames) {
   EXPECT_FALSE(meter.CanComputeFPS());
   EXPECT_FLOAT_EQ(0.0, meter.GetFPS());
 
-  for (int i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 2 * meter.GetNumFrameTimes(); ++i) {
     now += frame_time;
     meter.AddFrame(now);
     EXPECT_TRUE(meter.CanComputeFPS());
