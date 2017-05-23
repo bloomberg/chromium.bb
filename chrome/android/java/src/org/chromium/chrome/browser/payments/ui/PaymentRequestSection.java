@@ -184,17 +184,11 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
      * Sets what logo should be displayed.
      *
      * @param logo       The logo to display.
-     * @param drawBorder Whether draw border background for the logo.
      */
-    protected void setLogoDrawable(Drawable logo, boolean drawBorder) {
+    protected void setLogoDrawable(Drawable logo) {
         assert isLogoNecessary();
         mLogo = logo;
-
-        if (drawBorder) {
-            mLogoView.setBackgroundResource(R.drawable.payments_ui_logo_bg);
-        } else {
-            mLogoView.setBackgroundResource(0);
-        }
+        mLogoView.setBackgroundResource(0);
         mLogoView.setImageDrawable(mLogo);
     }
 
@@ -1111,8 +1105,6 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 ImageView optionIcon = new ImageView(parent.getContext());
                 optionIcon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
                 if (mOption.isEditable()) {
-                    // Draw border background for the icon if the option is editable.
-                    optionIcon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
                     optionIcon.setMaxWidth(mEditableOptionIconMaxWidth);
                 } else {
                     optionIcon.setMaxWidth(mNonEditableOptionIconMaxWidth);
@@ -1376,7 +1368,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             }
 
             if (selectedItem == null) {
-                setLogoDrawable(null, false);
+                setLogoDrawable(null);
                 // Section summary should be displayed as R.style.PaymentsUiSectionDescriptiveText.
                 if (!mSummaryInDescriptiveText) {
                     ApiCompatibilityUtils.setTextAppearance(
@@ -1386,7 +1378,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 SectionUiUtils.showSectionSummaryInTextViewInSingeLine(
                         getContext(), mSectionInformation, getSummaryLeftTextView());
             } else {
-                setLogoDrawable(selectedItem.getDrawableIcon(), selectedItem.isEditable());
+                setLogoDrawable(selectedItem.getDrawableIcon());
                 // Selected item summary should be displayed as
                 // R.style.PaymentsUiSectionDefaultText.
                 if (mSummaryInDescriptiveText) {

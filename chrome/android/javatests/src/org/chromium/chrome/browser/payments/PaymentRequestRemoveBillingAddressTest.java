@@ -53,7 +53,7 @@ public class PaymentRequestRemoveBillingAddressTest implements MainActivityStart
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                 "US", "555-555-5555", "jon.doe@google.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Alice",
-                "4111111111111111", "1111", "1", "2050", "visa", R.drawable.pr_visa,
+                "4111111111111111", "1111", "1", "2050", "visa", R.drawable.visa_card,
                 billingAddressId, "" /* serverId */));
         helper.deleteProfile(billingAddressId);
     }

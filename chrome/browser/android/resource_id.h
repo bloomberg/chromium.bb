@@ -66,10 +66,10 @@ DECLARE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MAJOR, R.drawable.pageinfo_warning)
 // We use Android's |VectorDrawableCompat| for the following images that are
 // displayed using |DropdownAdapter|.
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_AMEX, R.drawable.amex_card)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CC_DINERS, R.drawable.ic_credit_card_black)
+LINK_RESOURCE_ID(IDR_AUTOFILL_CC_DINERS, R.drawable.diners_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_DISCOVER, R.drawable.discover_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_GENERIC, R.drawable.ic_credit_card_black)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CC_JCB, R.drawable.ic_credit_card_black)
+LINK_RESOURCE_ID(IDR_AUTOFILL_CC_JCB, R.drawable.jcb_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MASTERCARD, R.drawable.mc_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MIR, R.drawable.mir_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_UNIONPAY, R.drawable.unionpay_card)
@@ -86,14 +86,3 @@ LINK_RESOURCE_ID(IDR_AUTOFILL_CREATE, R.drawable.ic_edit_24dp)
 // We use PNG files for the following images.
 LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT, R.drawable.cvc_icon)
 LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT_AMEX, R.drawable.cvc_icon_amex)
-
-// PaymentRequest images.
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_AMEX, R.drawable.pr_amex)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_DINERS, R.drawable.pr_dinersclub)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_DISCOVER, R.drawable.pr_discover)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_GENERIC, R.drawable.pr_generic)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_JCB, R.drawable.pr_jcb)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_MASTERCARD, R.drawable.pr_mc)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_MIR, R.drawable.pr_mir)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_UNIONPAY, R.drawable.pr_unionpay)
-LINK_RESOURCE_ID(IDR_AUTOFILL_PR_VISA, R.drawable.pr_visa)

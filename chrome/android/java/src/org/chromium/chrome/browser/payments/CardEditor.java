@@ -54,7 +54,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private static class CardIssuerNetwork {
         /**
          * The identifier for the drawable resource of the card issuer network, e.g.,
-         * R.drawable.pr_visa.
+         * R.drawable.visa_card.
          */
         public final int icon;
 
@@ -211,21 +211,21 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         mCardIssuerNetworks = new HashMap<>();
         mCardIssuerNetworks.put(
-                AMEX, new CardIssuerNetwork(R.drawable.pr_amex, R.string.autofill_cc_amex));
-        mCardIssuerNetworks.put(DINERS,
-                new CardIssuerNetwork(R.drawable.pr_dinersclub, R.string.autofill_cc_diners));
+                AMEX, new CardIssuerNetwork(R.drawable.amex_card, R.string.autofill_cc_amex));
+        mCardIssuerNetworks.put(
+                DINERS, new CardIssuerNetwork(R.drawable.diners_card, R.string.autofill_cc_diners));
         mCardIssuerNetworks.put(DISCOVER,
-                new CardIssuerNetwork(R.drawable.pr_discover, R.string.autofill_cc_discover));
+                new CardIssuerNetwork(R.drawable.discover_card, R.string.autofill_cc_discover));
         mCardIssuerNetworks.put(
-                JCB, new CardIssuerNetwork(R.drawable.pr_jcb, R.string.autofill_cc_jcb));
+                JCB, new CardIssuerNetwork(R.drawable.jcb_card, R.string.autofill_cc_jcb));
         mCardIssuerNetworks.put(MASTERCARD,
-                new CardIssuerNetwork(R.drawable.pr_mc, R.string.autofill_cc_mastercard));
+                new CardIssuerNetwork(R.drawable.mc_card, R.string.autofill_cc_mastercard));
         mCardIssuerNetworks.put(
-                MIR, new CardIssuerNetwork(R.drawable.pr_mir, R.string.autofill_cc_mir));
+                MIR, new CardIssuerNetwork(R.drawable.mir_card, R.string.autofill_cc_mir));
         mCardIssuerNetworks.put(UNIONPAY,
-                new CardIssuerNetwork(R.drawable.pr_unionpay, R.string.autofill_cc_union_pay));
+                new CardIssuerNetwork(R.drawable.unionpay_card, R.string.autofill_cc_union_pay));
         mCardIssuerNetworks.put(
-                VISA, new CardIssuerNetwork(R.drawable.pr_visa, R.string.autofill_cc_visa));
+                VISA, new CardIssuerNetwork(R.drawable.visa_card, R.string.autofill_cc_visa));
 
         mAcceptedIssuerNetworks = new HashSet<>();
         mAcceptedBasicCardIssuerNetworks = new HashSet<>();
