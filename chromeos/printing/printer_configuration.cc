@@ -27,8 +27,7 @@ Printer& Printer::operator=(const Printer& other) = default;
 Printer::~Printer() {}
 
 bool Printer::IsIppEverywhere() const {
-  // TODO(skau): Add check for IPP Everywhere value.
-  return false;
+  return ppd_reference_.autoconf;
 }
 
 }  // namespace chromeos

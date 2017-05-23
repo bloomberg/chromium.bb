@@ -669,6 +669,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PreferenceSpecifics& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::PrinterPPDReference& proto) {
   VISIT(user_supplied_ppd_url);
   VISIT(effective_make_and_model);
+  VISIT(autoconf);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PrinterSpecifics& proto) {
