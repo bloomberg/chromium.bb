@@ -11,7 +11,6 @@ import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.LinearLayout;
 
 import org.junit.After;
@@ -39,10 +38,11 @@ public class PromoDialogTest {
      * Creates a PromoDialog.  Doesn't call {@link PromoDialog#show} because there is no Window to
      * attach them to, but it does create them and inflate the layouts.
      */
-    private static class PromoDialogWrapper implements Callable<PromoDialog> {
+    private static class PromoDialogWrapper {
         public final CallbackHelper primaryCallback = new CallbackHelper();
         public final CallbackHelper secondaryCallback = new CallbackHelper();
         public final PromoDialog dialog;
+        public final PromoDialogLayout dialogLayout;
 
         private final Context mContext;
         private final DialogParams mDialogParams;
@@ -50,40 +50,57 @@ public class PromoDialogTest {
         PromoDialogWrapper(final DialogParams dialogParams) throws Exception {
             mContext = InstrumentationRegistry.getTargetContext();
             mDialogParams = dialogParams;
-            dialog = ThreadUtils.runOnUiThreadBlocking(this);
+            dialog = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
+                @Override
+                public PromoDialog call() throws Exception {
+                    PromoDialog dialog = new PromoDialog(mContext) {
+                        @Override
+                        public DialogParams getDialogParams() {
+                            return mDialogParams;
+                        }
+
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {}
+
+                        @Override
+                        public void onClick(View view) {
+                            if (view.getId() == R.id.button_primary) {
+                                primaryCallback.notifyCalled();
+                            } else if (view.getId() == R.id.button_secondary) {
+                                secondaryCallback.notifyCalled();
+                            }
+                        }
+                    };
+                    dialog.onCreate(null);
+                    return dialog;
+                }
+            });
+            dialogLayout = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialogLayout>() {
+                @Override
+                public PromoDialogLayout call() throws Exception {
+                    PromoDialogLayout promoDialogLayout =
+                            (PromoDialogLayout) dialog.getWindow().getDecorView().findViewById(
+                                    R.id.promo_dialog_layout);
+                    return promoDialogLayout;
+                }
+            });
+            // Measure the PromoDialogLayout so that the controls have some size.
+            triggerDialogLayoutMeasure(500, 1000);
         }
 
-        @Override
-        public PromoDialog call() {
-            PromoDialog dialog = new PromoDialog(mContext) {
+        /**
+         * Trigger a {@link View#measure(int, int)} on the promo dialog layout.
+         */
+        public void triggerDialogLayoutMeasure(final int width, final int height) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
-                public DialogParams getDialogParams() {
-                    return mDialogParams;
+                public void run() {
+                    int widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+                    int heightMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+                    dialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
                 }
-
-                @Override
-                public void onDismiss(DialogInterface dialog) {}
-
-                @Override
-                public void onClick(View view) {
-                    if (view.getId() == R.id.button_primary) {
-                        primaryCallback.notifyCalled();
-                    } else if (view.getId() == R.id.button_secondary) {
-                        secondaryCallback.notifyCalled();
-                    }
-                }
-            };
-            dialog.onCreate(null);
-
-            // Measure the PromoDialogLayout so that the controls have some size.
-            PromoDialogLayout promoDialogLayout =
-                    (PromoDialogLayout) dialog.getWindow().getDecorView().findViewById(
-                            R.id.promo_dialog_layout);
-            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
-            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
-            promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
-
-            return dialog;
+            });
         }
     }
 
@@ -120,10 +137,7 @@ public class PromoDialogTest {
     /** Confirm that PromoDialogs are constructed with all the elements expected. */
     private void checkDialogControlVisibility(final DialogParams dialogParams) throws Exception {
         PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
-        PromoDialog dialog = wrapper.dialog;
-        PromoDialogLayout promoDialogLayout =
-                (PromoDialogLayout) dialog.getWindow().getDecorView().findViewById(
-                        R.id.promo_dialog_layout);
+        PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         View illustration = promoDialogLayout.findViewById(R.id.illustration);
         View header = promoDialogLayout.findViewById(R.id.header);
@@ -162,9 +176,7 @@ public class PromoDialogTest {
         dialogParams.footerStringResource = R.string.learn_more;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
-        final PromoDialogLayout promoDialogLayout =
-                (PromoDialogLayout) wrapper.dialog.getWindow().getDecorView().findViewById(
-                        R.id.promo_dialog_layout);
+        final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         LinearLayout flippableLayout =
                 (LinearLayout) promoDialogLayout.findViewById(R.id.full_promo_content);
 
@@ -200,9 +212,7 @@ public class PromoDialogTest {
         dialogParams.secondaryButtonStringResource = R.string.cancel;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
-        final PromoDialogLayout promoDialogLayout =
-                (PromoDialogLayout) wrapper.dialog.getWindow().getDecorView().findViewById(
-                        R.id.promo_dialog_layout);
+        final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         // Nothing should have been clicked yet.
         Assert.assertEquals(0, wrapper.primaryCallback.getCallCount());
@@ -231,65 +241,85 @@ public class PromoDialogTest {
 
     @Test
     @SmallTest
-    public void testBasic_HeaderBehavior() throws Exception {
-        // Without an illustration, the header View becomes locked to the top of the layout.
-        {
-            DialogParams dialogParams = new DialogParams();
-            dialogParams.headerStringResource = R.string.search_with_sogou;
-            dialogParams.primaryButtonStringResource = R.string.ok;
-
-            PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
-            PromoDialogLayout promoDialogLayout =
-                    (PromoDialogLayout) wrapper.dialog.getWindow().getDecorView().findViewById(
-                            R.id.promo_dialog_layout);
-
-            View header = promoDialogLayout.findViewById(R.id.header);
-            MarginLayoutParams headerParams = (MarginLayoutParams) header.getLayoutParams();
-            Assert.assertEquals(promoDialogLayout.getChildAt(0), header);
-            Assert.assertNotEquals(0, ApiCompatibilityUtils.getMarginStart(headerParams));
-            Assert.assertNotEquals(0, ApiCompatibilityUtils.getMarginEnd(headerParams));
-        }
-
+    public void testBasic_HeaderBehavior_WithIllustration() throws Exception {
         // With an illustration, the header View is part of the scrollable content.
-        {
-            DialogParams dialogParams = new DialogParams();
-            dialogParams.drawableResource = R.drawable.data_reduction_illustration;
-            dialogParams.headerStringResource = R.string.data_reduction_promo_title;
-            dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
+        DialogParams dialogParams = new DialogParams();
+        dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+        dialogParams.headerStringResource = R.string.data_reduction_promo_title;
+        dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
 
-            PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
-            PromoDialogLayout promoDialogLayout =
-                    (PromoDialogLayout) wrapper.dialog.getWindow().getDecorView().findViewById(
-                            R.id.promo_dialog_layout);
-            ViewGroup scrollableLayout =
-                    (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
+        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
+        ViewGroup scrollableLayout =
+                (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
 
-            View header = promoDialogLayout.findViewById(R.id.header);
-            MarginLayoutParams headerParams = (MarginLayoutParams) header.getLayoutParams();
-            Assert.assertEquals(scrollableLayout.getChildAt(0), header);
-            Assert.assertEquals(0, ApiCompatibilityUtils.getMarginStart(headerParams));
-            Assert.assertEquals(0, ApiCompatibilityUtils.getMarginEnd(headerParams));
-        }
+        View header = promoDialogLayout.findViewById(R.id.header);
+        Assert.assertEquals(scrollableLayout.getChildAt(0), header);
+        assertHasStartAndEndPadding(header, false);
+    }
 
+    @Test
+    @SmallTest
+    public void testBasic_HeaderBehavior_WithVectorIllustration() throws Exception {
         // With a vector illustration, the header View is part of the scrollable content.
-        {
-            DialogParams dialogParams = new DialogParams();
-            dialogParams.vectorDrawableResource = R.drawable.search_sogou;
-            dialogParams.headerStringResource = R.string.search_with_sogou;
-            dialogParams.primaryButtonStringResource = R.string.ok;
+        DialogParams dialogParams = new DialogParams();
+        dialogParams.vectorDrawableResource = R.drawable.search_sogou;
+        dialogParams.headerStringResource = R.string.search_with_sogou;
+        dialogParams.primaryButtonStringResource = R.string.ok;
 
-            PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
-            PromoDialogLayout promoDialogLayout =
-                    (PromoDialogLayout) wrapper.dialog.getWindow().getDecorView().findViewById(
-                            R.id.promo_dialog_layout);
-            ViewGroup scrollableLayout =
-                    (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
+        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
+        ViewGroup scrollableLayout =
+                (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
 
-            View header = promoDialogLayout.findViewById(R.id.header);
-            MarginLayoutParams headerParams = (MarginLayoutParams) header.getLayoutParams();
-            Assert.assertEquals(scrollableLayout.getChildAt(0), header);
-            Assert.assertEquals(0, ApiCompatibilityUtils.getMarginStart(headerParams));
-            Assert.assertEquals(0, ApiCompatibilityUtils.getMarginEnd(headerParams));
+        View header = promoDialogLayout.findViewById(R.id.header);
+        Assert.assertEquals(scrollableLayout.getChildAt(0), header);
+        assertHasStartAndEndPadding(header, false);
+    }
+
+    @Test
+    @SmallTest
+    public void testBasic_HeaderBehavior_NoIllustration() throws Exception {
+        // Without an illustration, the header View becomes locked to the top of the layout if
+        // there is enough height.
+        DialogParams dialogParams = new DialogParams();
+        dialogParams.headerStringResource = R.string.search_with_sogou;
+        dialogParams.primaryButtonStringResource = R.string.ok;
+
+        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
+
+        // Add a dummy control view to ensure the scrolling container has some content.
+        View view = new View(InstrumentationRegistry.getTargetContext());
+        view.setMinimumHeight(2000);
+        promoDialogLayout.addControl(view);
+
+        View header = promoDialogLayout.findViewById(R.id.header);
+        ViewGroup scrollableLayout =
+                (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
+
+        wrapper.triggerDialogLayoutMeasure(400, 1000);
+        Assert.assertEquals(promoDialogLayout.getChildAt(0), header);
+        assertHasStartAndEndPadding(header, true);
+
+        // Decrease the size and see the header is moved into the scrollable content.
+        wrapper.triggerDialogLayoutMeasure(400, 100);
+        Assert.assertEquals(scrollableLayout.getChildAt(0), header);
+        assertHasStartAndEndPadding(header, false);
+
+        // Increase again and ensure the header is moved back to the top of the layout.
+        wrapper.triggerDialogLayoutMeasure(400, 1000);
+        Assert.assertEquals(promoDialogLayout.getChildAt(0), header);
+        assertHasStartAndEndPadding(header, true);
+    }
+
+    private static void assertHasStartAndEndPadding(View view, boolean shouldHavePadding) {
+        if (shouldHavePadding) {
+            Assert.assertNotEquals(0, ApiCompatibilityUtils.getPaddingStart(view));
+            Assert.assertNotEquals(0, ApiCompatibilityUtils.getPaddingEnd(view));
+        } else {
+            Assert.assertEquals(0, ApiCompatibilityUtils.getPaddingStart(view));
+            Assert.assertEquals(0, ApiCompatibilityUtils.getPaddingEnd(view));
         }
     }
 }

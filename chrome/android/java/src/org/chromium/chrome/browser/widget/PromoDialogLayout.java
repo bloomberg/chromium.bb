@@ -40,6 +40,9 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
     /** Content in the dialog that will flip orientation when the screen is wide. */
     private LinearLayout mFlippableContent;
 
+    /** The scrolling container for the scrollable content. */
+    private ViewGroup mScrollingContainer;
+
     /** Content in the dialog that can be scrolled. */
     private LinearLayout mScrollableContent;
 
@@ -65,6 +68,7 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
     @Override
     public void onFinishInflate() {
         mFlippableContent = (LinearLayout) findViewById(R.id.full_promo_content);
+        mScrollingContainer = (ViewGroup) findViewById(R.id.promo_container);
         mScrollableContent = (LinearLayout) findViewById(R.id.scrollable_promo_content);
         mIllustrationView = (ImageView) findViewById(R.id.illustration);
         mHeaderView = (TextView) findViewById(R.id.header);
@@ -84,17 +88,6 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
             // Dialogs with no illustration make the header stay visible at all times instead of
             // scrolling off on small screens.
             ((ViewGroup) mIllustrationView.getParent()).removeView(mIllustrationView);
-            ((ViewGroup) mHeaderView.getParent()).removeView(mHeaderView);
-            addView(mHeaderView, 0);
-
-            // The margins only apply here (after it moves to the root) because the scroll layout it
-            // is normally in has implicit padding.
-            int marginSize =
-                    getContext().getResources().getDimensionPixelSize(R.dimen.dialog_header_margin);
-            ApiCompatibilityUtils.setMarginStart(
-                    (MarginLayoutParams) mHeaderView.getLayoutParams(), marginSize);
-            ApiCompatibilityUtils.setMarginEnd(
-                    (MarginLayoutParams) mHeaderView.getLayoutParams(), marginSize);
         } else if (mParams.vectorDrawableResource != 0) {
             mIllustrationView.setImageDrawable(VectorDrawableCompat.create(
                     getResources(), mParams.vectorDrawableResource, getContext().getTheme()));
@@ -135,6 +128,39 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
         }
     }
 
+    /**
+     * Determines whether the header layout needs to be adjusted to ensure the scrollable content
+     * is usable in small form factors.
+     *
+     * @return Whether the layout needed to be adjusted.
+     */
+    private boolean fixupHeader() {
+        if (mParams.drawableResource != 0 || mParams.vectorDrawableResource != 0) return false;
+
+        int minScrollHeight =
+                getResources().getDimensionPixelSize(R.dimen.promo_dialog_min_scrollable_height);
+        boolean shouldHeaderScroll = mScrollingContainer.getMeasuredHeight() < minScrollHeight;
+        ViewGroup desiredParent;
+        boolean applyHeaderPadding;
+        if (shouldHeaderScroll) {
+            desiredParent = mScrollableContent;
+            applyHeaderPadding = false;
+        } else {
+            desiredParent = this;
+            applyHeaderPadding = true;
+        }
+        if (mHeaderView.getParent() == desiredParent) return false;
+        ((ViewGroup) mHeaderView.getParent()).removeView(mHeaderView);
+        desiredParent.addView(mHeaderView, 0);
+
+        int startEndPadding = applyHeaderPadding
+                ? getResources().getDimensionPixelSize(R.dimen.promo_dialog_padding)
+                : 0;
+        ApiCompatibilityUtils.setPaddingRelative(
+                mHeaderView, startEndPadding, 0, startEndPadding, 0);
+        return true;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int availableWidth = MeasureSpec.getSize(widthMeasureSpec);
@@ -147,6 +173,7 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
         }
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (fixupHeader()) super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     /** Adds a View to the layout within the scrollable area. */
