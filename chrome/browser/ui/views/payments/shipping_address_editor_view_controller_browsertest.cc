@@ -31,8 +31,7 @@ const char kNameFull[] = "Bob Jones";
 const char kHomeAddress[] = "42 Answers-All Avenue";
 const char kHomeCity[] = "Question-City";
 const char kHomeZip[] = "ziiiiiip";
-const char kHomePhone[] = "5755555555";  // 5555555555 is invalid :-(.
-const char kFormattedHomePhone[] = "(575) 555-5555";
+const char kHomePhone[] = "+1 575-555-5555";  // +1 555-555-5555 is invalid :-(.
 const char kAnyState[] = "any state";
 const char kCountryWithoutStates[] = "Albania";
 const char kCountryWithoutStatesPhoneNumber[] = "42223446";
@@ -141,12 +140,10 @@ class PaymentRequestShippingAddressEditorTest
       // The phone can be empty when restored from a saved state, or it may be
       // formatted based on the currently selected country.
       if (!accept_empty_phone_number) {
-        EXPECT_EQ(base::ASCIIToUTF16(kHomePhone), textfield_text);
+        EXPECT_EQ(base::ASCIIToUTF16("+1 575-555-5555"), textfield_text);
       } else if (textfield_text.empty()) {
         if (unset_types)
           unset_types->insert(autofill::PHONE_HOME_WHOLE_NUMBER);
-      } else if (textfield_text != base::ASCIIToUTF16(kHomePhone)) {
-        EXPECT_EQ(base::ASCIIToUTF16(kFormattedHomePhone), textfield_text);
       }
     } else if (unset_types) {
       unset_types->insert(autofill::PHONE_HOME_WHOLE_NUMBER);

@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
   EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
             profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
                              GetLocale()));
-  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+  EXPECT_EQ(base::ASCIIToUTF16("16515558946"),
             profile->GetInfo(
                 autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                 GetLocale()));
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
             profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
                              GetLocale()));
-  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+  EXPECT_EQ(base::ASCIIToUTF16("16515558946"),
             profile->GetInfo(
                 autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                 GetLocale()));
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
   EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
             profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
                              GetLocale()));
-  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+  EXPECT_EQ(base::ASCIIToUTF16("16515558946"),
             profile->GetInfo(
                 autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                 GetLocale()));
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
   EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
             profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
                              GetLocale()));
-  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+  EXPECT_EQ(base::ASCIIToUTF16("16515558946"),
             profile->GetInfo(
                 autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                 GetLocale()));
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
       request->state()->selected_contact_profile();
   DCHECK(profile);
 
-  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+  EXPECT_EQ(base::ASCIIToUTF16("16515558946"),
             profile->GetInfo(
                 autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                 GetLocale()));

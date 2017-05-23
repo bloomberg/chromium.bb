@@ -24,6 +24,9 @@ void ValidatingTextfield::OnBlur() {
     was_blurred_ = true;
     Validate();
   }
+
+  if (!text().empty() && delegate_->ShouldFormat())
+    SetText(delegate_->Format(text()));
 }
 
 void ValidatingTextfield::ViewHierarchyChanged(
@@ -33,6 +36,11 @@ void ValidatingTextfield::ViewHierarchyChanged(
 }
 
 void ValidatingTextfield::OnContentsChanged() {
+  if (!text().empty() && GetCursorPosition() == text().length() &&
+      delegate_->ShouldFormat()) {
+    SetText(delegate_->Format(text()));
+  }
+
   // Validation on every keystroke only happens if the field has been validated
   // before as part of a blur.
   if (!was_blurred_)
