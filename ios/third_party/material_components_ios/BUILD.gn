@@ -27,12 +27,6 @@ config("config") {
     "src/components/Snackbar/src",
     "src/components/Typography/src",
   ]
-
-  cflags_objc = [
-    # Do not consider use of deprecated API as errors when building third-party
-    # libraries.
-    "-Wno-error=deprecated-declarations",
-  ]
 }
 
 _icon_names = [
