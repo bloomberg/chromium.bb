@@ -38,10 +38,18 @@ public class RlzPingHandler {
         String id =
                 new SettingsSecureBasedIdentificationGenerator(ContextUtils.getApplicationContext())
                         .getUniqueId(ID_SALT);
-        id = id + id.substring(0, 50 - id.length() - 1);
+        id = generate50CharacterId(id);
 
         nativeStartPing(Profile.getLastUsedProfile().getOriginalProfile(), brand,
                 Locale.getDefault().getLanguage(), TextUtils.join(",", events), id, callback);
+    }
+
+    private static String generate50CharacterId(String baseId) {
+        StringBuilder idBuilder = new StringBuilder();
+        while (idBuilder.length() < 50) {
+            idBuilder.append(baseId);
+        }
+        return idBuilder.substring(0, 50);
     }
 
     private static native void nativeStartPing(Profile profile, String brand, String language,
