@@ -191,8 +191,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                            uint32_t* service_texture_id) override;
 
   // Provides detail about a lost context if one occurred.
-  error::ContextLostReason GetContextLostReason() override;
-
   // Clears a level sub area of a texture
   // Returns false if a GL error should be generated.
   bool ClearLevel(Texture* texture,

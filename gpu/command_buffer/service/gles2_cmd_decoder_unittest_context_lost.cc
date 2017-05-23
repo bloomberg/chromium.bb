@@ -77,7 +77,7 @@ TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonOOM) {
   Draw(GL_NO_ERROR, expected_reason_for_other_contexts);
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kOutOfMemory, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kOutOfMemory, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsNoError) {
@@ -88,7 +88,7 @@ TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsNoError) {
   Draw(GL_NO_ERROR, expected_reason_for_other_contexts);
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kOutOfMemory, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kOutOfMemory, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsGuilty) {
@@ -99,7 +99,7 @@ TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsGuilty) {
   Draw(GL_GUILTY_CONTEXT_RESET_ARB, expected_reason_for_other_contexts);
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kGuilty, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kGuilty, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsUnknown) {
@@ -110,7 +110,7 @@ TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsUnknown) {
   Draw(GL_UNKNOWN_CONTEXT_RESET_ARB, expected_reason_for_other_contexts);
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kUnknown, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kUnknown, GetContextLostReason());
 }
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDrawOOMTest, ::testing::Bool());
@@ -167,7 +167,7 @@ TEST_P(GLES2DecoderLostContextTest, LostFromMakeCurrent) {
   EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kMakeCurrentFailed, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kMakeCurrentFailed, GetContextLostReason());
 
   // We didn't process commands, so we need to clear the decoder error,
   // so that we can shut down cleanly.
@@ -185,7 +185,7 @@ TEST_P(GLES2DecoderLostContextTest, LostFromMakeCurrentWithRobustness) {
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_FALSE(decoder_->WasContextLostByRobustnessExtension());
-  EXPECT_EQ(error::kMakeCurrentFailed, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kMakeCurrentFailed, GetContextLostReason());
 
   // We didn't process commands, so we need to clear the decoder error,
   // so that we can shut down cleanly.
@@ -203,7 +203,7 @@ TEST_P(GLES2DecoderLostContextTest, LostFromResetAfterMakeCurrent) {
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
-  EXPECT_EQ(error::kGuilty, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kGuilty, GetContextLostReason());
 
   // We didn't process commands, so we need to clear the decoder error,
   // so that we can shut down cleanly.
@@ -219,7 +219,7 @@ TEST_P(GLES2DecoderLostContextTest, LoseGuiltyFromGLError) {
   DoGetErrorWithContextLost(GL_GUILTY_CONTEXT_RESET_KHR);
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
-  EXPECT_EQ(error::kGuilty, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kGuilty, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderLostContextTest, LoseInnocentFromGLError) {
@@ -231,7 +231,7 @@ TEST_P(GLES2DecoderLostContextTest, LoseInnocentFromGLError) {
   DoGetErrorWithContextLost(GL_INNOCENT_CONTEXT_RESET_KHR);
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
-  EXPECT_EQ(error::kInnocent, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kInnocent, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderLostContextTest, LoseVirtualContextWithRobustness) {
@@ -244,7 +244,7 @@ TEST_P(GLES2DecoderLostContextTest, LoseVirtualContextWithRobustness) {
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
   // ...but make sure we don't pretend, since for virtual contexts we don't
   // know if this was really the guilty client.
-  EXPECT_EQ(error::kUnknown, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kUnknown, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderLostContextTest, LoseGroupFromRobustness) {
@@ -257,7 +257,7 @@ TEST_P(GLES2DecoderLostContextTest, LoseGroupFromRobustness) {
   EXPECT_CALL(*gl_, GetGraphicsResetStatusARB()).Times(0);
   LoseContexts(error::kUnknown);
   EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kUnknown, decoder_->GetContextLostReason());
+  EXPECT_EQ(error::kUnknown, GetContextLostReason());
 
   // We didn't process commands, so we need to clear the decoder error,
   // so that we can shut down cleanly.

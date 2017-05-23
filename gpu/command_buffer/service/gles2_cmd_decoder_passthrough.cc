@@ -508,11 +508,6 @@ bool GLES2DecoderPassthroughImpl::GetServiceTextureId(
                                                  service_texture_id);
 }
 
-gpu::error::ContextLostReason
-GLES2DecoderPassthroughImpl::GetContextLostReason() {
-  return error::kUnknown;
-}
-
 bool GLES2DecoderPassthroughImpl::ClearLevel(Texture* texture,
                                              unsigned target,
                                              int level,

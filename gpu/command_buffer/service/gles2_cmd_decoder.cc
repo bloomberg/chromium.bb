@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/error_state.h"
@@ -632,8 +633,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool BoundFramebufferAllowsChangesToAlphaChannel();
   bool BoundFramebufferHasDepthAttachment();
   bool BoundFramebufferHasStencilAttachment();
-
-  error::ContextLostReason GetContextLostReason() override;
 
   // Overriden from ErrorStateClient.
   void OnContextLostError() override;
@@ -2383,7 +2382,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   int commands_to_process_;
 
   bool has_robustness_extension_;
-  error::ContextLostReason context_lost_reason_;
   bool context_was_lost_;
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
@@ -3092,7 +3090,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       feature_info_(group_->feature_info()),
       frame_number_(0),
       has_robustness_extension_(false),
-      context_lost_reason_(error::kUnknown),
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
@@ -15942,10 +15939,6 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVaryingsCHROMIUM(
   return error::kNoError;
 }
 
-error::ContextLostReason GLES2DecoderImpl::GetContextLostReason() {
-  return context_lost_reason_;
-}
-
 error::ContextLostReason GLES2DecoderImpl::GetContextLostReasonFromResetStatus(
     GLenum reset_status) const {
   switch (reset_status) {
@@ -15979,7 +15972,7 @@ void GLES2DecoderImpl::MarkContextLost(error::ContextLostReason reason) {
     return;
 
   // Don't make GL calls in here, the context might not be current.
-  context_lost_reason_ = reason;
+  command_buffer_service()->SetContextLostReason(reason);
   current_decoder_error_ = error::kLostContext;
   context_was_lost_ = true;
 

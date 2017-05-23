@@ -222,6 +222,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     group_->LoseContexts(reason);
   }
 
+  error::ContextLostReason GetContextLostReason() const {
+    return command_buffer_service_->GetState().context_lost_reason;
+  }
+
   ::testing::StrictMock<::gl::MockGLInterface>* GetGLMock() const {
     return gl_.get();
   }

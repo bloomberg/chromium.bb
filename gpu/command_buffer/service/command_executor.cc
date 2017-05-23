@@ -67,8 +67,6 @@ void CommandExecutor::PutChanged() {
     command_buffer_->SetGetOffset(get_);
 
     if (error::IsError(error)) {
-      if (decoder_)
-        command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
       command_buffer_->SetParseError(error);
       break;
     }
@@ -82,7 +80,6 @@ void CommandExecutor::PutChanged() {
 
   if (decoder_) {
     if (!error::IsError(error) && decoder_->WasContextLost()) {
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
       command_buffer_->SetParseError(error::kLostContext);
     }
     decoder_->EndDecoding();
