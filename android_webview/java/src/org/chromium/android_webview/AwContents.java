@@ -2269,8 +2269,17 @@ public class AwContents implements SmartClipProvider {
         if (callback != null) {
             jsCallback = new JavaScriptCallback() {
                 @Override
-                public void handleJavaScriptResult(String jsonResult) {
-                    callback.onReceiveValue(jsonResult);
+                public void handleJavaScriptResult(final String jsonResult) {
+                    // Post the application callback back to the current thread to ensure the
+                    // application callback is executed without any native code on the stack. This
+                    // so that any exception thrown by the application callback won't have to be
+                    // propagated through a native call stack.
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onReceiveValue(jsonResult);
+                        }
+                    });
                 }
             };
         }
