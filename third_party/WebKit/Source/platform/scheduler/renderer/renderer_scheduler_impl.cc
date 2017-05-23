@@ -53,9 +53,11 @@ constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
-// Maximal bound on task duration for reporting.
-constexpr base::TimeDelta kMaxTaskDurationForReporting =
-    base::TimeDelta::FromMinutes(1);
+// Threshold for discarding ultra-long tasks. It is assumed that ultra-long
+// tasks are reporting glitches (e.g. system falling asleep in the middle
+// of the task).
+constexpr base::TimeDelta kLongTaskDiscardingThreshold =
+    base::TimeDelta::FromSeconds(30);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   if (!blink::RuntimeEnabledFeatures::timerThrottlingForBackgroundTabsEnabled())
@@ -64,8 +66,8 @@ void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.ForegroundRendererMainThreadLoad",
-                           load_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "RendererScheduler.ForegroundRendererMainThreadLoad2", load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.ForegroundRendererLoad", load_percentage);
 }
@@ -77,8 +79,8 @@ void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.BackgroundRendererMainThreadLoad",
-                           load_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "RendererScheduler.BackgroundRendererMainThreadLoad2", load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.BackgroundRendererLoad", load_percentage);
 }
@@ -220,7 +222,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       task_duration_per_queue_type_histogram(base::Histogram::FactoryGet(
-          "RendererScheduler.TaskDurationPerQueueType",
+          "RendererScheduler.TaskDurationPerQueueType2",
           1,
           static_cast<int>(TaskQueue::QueueType::COUNT),
           static_cast<int>(TaskQueue::QueueType::COUNT) + 1,
@@ -1839,26 +1841,31 @@ void RendererSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
   task_queue_throttler()->OnTaskRunTimeReported(task_queue, start_time_ticks,
                                                 end_time_ticks);
 
-  // We want to measure thread time here, but for efficiency reasons
-  // we stick with wall time.
-  GetMainThreadOnly().foreground_main_thread_load_tracker.RecordTaskTime(
-      start_time_ticks, end_time_ticks);
-  GetMainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
-      start_time_ticks, end_time_ticks);
-
   // TODO(altimin): Per-page metrics should also be considered.
-  RecordTaskMetrics(task_queue->GetQueueType(),
-                    end_time_ticks - start_time_ticks);
+  RecordTaskMetrics(task_queue->GetQueueType(), start_time_ticks,
+                    end_time_ticks);
 }
 
 void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
-                                              base::TimeDelta duration) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime",
+                                              base::TimeTicks start_time,
+                                              base::TimeTicks end_time) {
+  base::TimeDelta duration = end_time - start_time;
+  if (duration > kLongTaskDiscardingThreshold)
+    return;
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime2",
                               duration.InMicroseconds(), 1, 1000 * 1000, 50);
+
+  // We want to measure thread time here, but for efficiency reasons
+  // we stick with wall time.
+  GetMainThreadOnly().foreground_main_thread_load_tracker.RecordTaskTime(
+      start_time, end_time);
+  GetMainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
+      start_time, end_time);
 
   // TODO(altimin): See whether this metric is still useful after
   // adding RendererScheduler.TaskDurationPerQueueType.
-  UMA_HISTOGRAM_ENUMERATION("RendererScheduler.NumberOfTasksPerQueueType",
+  UMA_HISTOGRAM_ENUMERATION("RendererScheduler.NumberOfTasksPerQueueType2",
                             static_cast<int>(queue_type),
                             static_cast<int>(TaskQueue::QueueType::COUNT));
 
@@ -1868,8 +1875,6 @@ void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
 void RendererSchedulerImpl::RecordTaskDurationPerQueueType(
     TaskQueue::QueueType queue_type,
     base::TimeDelta duration) {
-  duration = std::min(duration, kMaxTaskDurationForReporting);
-
   // Report only whole milliseconds to avoid overflow.
   base::TimeDelta& unreported_duration =
       GetMainThreadOnly()
