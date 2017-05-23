@@ -920,7 +920,10 @@ void BrowserPluginGuest::OnImeCommitText(
                                   replacement_range, relative_cursor_pos));
 }
 
-void BrowserPluginGuest::OnImeFinishComposingText(bool keep_selection) {
+void BrowserPluginGuest::OnImeFinishComposingText(
+    int browser_plugin_instance_id,
+    bool keep_selection) {
+  DCHECK_EQ(browser_plugin_instance_id_, browser_plugin_instance_id);
   Send(new InputMsg_ImeFinishComposingText(routing_id(), keep_selection));
 }
 

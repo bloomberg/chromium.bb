@@ -343,7 +343,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
       const std::vector<blink::WebCompositionUnderline>& underlines,
       const gfx::Range& replacement_range,
       int relative_cursor_pos);
-  void OnImeFinishComposingText(bool keep_selection);
+  void OnImeFinishComposingText(int instance_id, bool keep_selection);
   void OnExtendSelectionAndDelete(int instance_id, int before, int after);
   void OnImeCancelComposition();
 #if defined(OS_MACOSX) || defined(USE_AURA)
