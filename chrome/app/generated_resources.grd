@@ -179,7 +179,7 @@ are declared in build/common.gypi.
       <!-- Bookmarks specific strings -->
       <part file="bookmarks_strings.grdp" />
 
-      <!-- ChromeOS-specific strings -->
+      <!-- Chrome-OS-specific strings -->
       <if expr="chromeos">
         <part file="chromeos_strings.grdp" />
       </if>
@@ -3364,8 +3364,8 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
       </if>
       <if expr="enable_extensions">
-        <message name="IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME" desc="The name of the utility process used for writing ChromeOS system images.">
-          ChromeOS System Image Writer
+        <message name="IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME" desc="The name of the utility process used for writing Chrome OS system images.">
+          Chrome OS System Image Writer
         </message>
         <message name="IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME" desc="The name of the utility process used for checking media files.">
           Media File Checker
@@ -4021,7 +4021,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           </message>
         </if>
         <if expr="chromeos">
-          <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on ChromeOS">
+          <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on Chrome OS">
             Manage your extensions by clicking Extensions in the "More tools" menu.
           </message>
         </if>
@@ -11746,7 +11746,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Finding your phone
       </message>
       <!-- Device types -->
-      <message name="IDS_EASY_UNLOCK_GENERIC_DEVICE_TYPE" desc="String for an unknown device type. Currently used to cover all non-ChromeOS devices.">
+      <message name="IDS_EASY_UNLOCK_GENERIC_DEVICE_TYPE" desc="String for an unknown device type. Currently used to cover all non-Chrome-OS devices.">
         Chrome device
       </message>
 
@@ -11853,7 +11853,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Processing...
       </message>
 
-      <message name="IDS_CAPTIVE_PORTAL_AUTHORIZATION_DIALOG_NAME" desc="Name of the modal Web dialog (displayed in the title) displaying captive portal login page on ChromeOS.">
+      <message name="IDS_CAPTIVE_PORTAL_AUTHORIZATION_DIALOG_NAME" desc="Name of the modal Web dialog (displayed in the title) displaying captive portal login page on Chrome OS.">
         Captive Portal Authorization
       </message>
 
