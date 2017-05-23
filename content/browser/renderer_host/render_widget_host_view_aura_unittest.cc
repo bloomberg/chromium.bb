@@ -290,6 +290,8 @@ class FakeSurfaceObserver : public cc::SurfaceObserver {
   void OnSurfaceDamaged(const cc::SurfaceId& id, bool* changed) override {
     *changed = true;
   }
+
+  void OnSurfaceDiscarded(const cc::SurfaceId& id) override {}
 };
 
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {

@@ -123,6 +123,7 @@ class CompositorFrameSinkSupportTest : public testing::Test,
   void OnSurfaceDamaged(const SurfaceId& id, bool* changed) override {
     *changed = true;
   }
+  void OnSurfaceDiscarded(const SurfaceId& surface_id) override {}
 
   void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
                                           size_t num_resource_ids) {

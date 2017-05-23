@@ -82,6 +82,7 @@ class VIZ_EXPORT MojoFrameSinkManager
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                         bool* changed) override;
+  void OnSurfaceDiscarded(const cc::SurfaceId& surface_id) override;
 
   // GpuCompositorFrameSinkDelegate implementation.
   void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id,

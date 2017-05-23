@@ -129,6 +129,9 @@ void MojoFrameSinkManager::OnSurfaceCreated(
 void MojoFrameSinkManager::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                                             bool* changed) {}
 
+void MojoFrameSinkManager::OnSurfaceDiscarded(const cc::SurfaceId& surface_id) {
+}
+
 void MojoFrameSinkManager::OnClientConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {

@@ -494,6 +494,8 @@ void SurfaceManager::SurfaceDependenciesChanged(
 }
 
 void SurfaceManager::SurfaceDiscarded(Surface* surface) {
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceDiscarded(surface->surface_id());
   if (dependency_tracker_)
     dependency_tracker_->OnSurfaceDiscarded(surface);
 }
