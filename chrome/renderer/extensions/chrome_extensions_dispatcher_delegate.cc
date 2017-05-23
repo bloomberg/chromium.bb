@@ -259,8 +259,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_CHROME_DIRECT_SETTING_JS);
 
   // Platform app sources that are not API-specific..
-  source_map->RegisterSource("fileEntryBindingUtil",
-                             IDR_FILE_ENTRY_BINDING_UTIL_JS);
   source_map->RegisterSource("chromeWebViewInternal",
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);

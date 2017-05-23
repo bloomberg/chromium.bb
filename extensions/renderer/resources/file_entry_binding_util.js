@@ -10,6 +10,16 @@ var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
 var GetExtensionViews = requireNative('runtime').GetExtensionViews;
 var safeCallbackApply = require('uncaught_exception_handler').safeCallbackApply;
 
+var WINDOW = {};
+try {
+  WINDOW = window;
+} catch (e) {
+  // Running in SW context.
+  // TODO(lazyboy): Synchronous access to background page is not possible from
+  // service worker context. Decide what we should do in this case for the class
+  // of APIs that require access to background page or window object
+}
+
 // For a given |apiName|, generates object with two elements that are used
 // in file system relayed APIs:
 // * 'bindFileEntryCallback' function that provides mapping between JS objects
@@ -18,14 +28,14 @@ var safeCallbackApply = require('uncaught_exception_handler').safeCallbackApply;
 //   previously saved file entries.
 function getFileBindingsForApi(apiName) {
   // Fallback to using the current window if no background page is running.
-  var backgroundPage = GetExtensionViews(-1, -1, 'BACKGROUND')[0] || window;
+  var backgroundPage = GetExtensionViews(-1, -1, 'BACKGROUND')[0] || WINDOW;
   var backgroundPageModuleSystem = GetModuleSystem(backgroundPage);
 
   // All windows use the bindFileEntryCallback from the background page so their
   // FileEntry objects have the background page's context as their own. This
   // allows them to be used from other windows (including the background page)
   // after the original window is closed.
-  if (window == backgroundPage) {
+  if (WINDOW == backgroundPage) {
     var bindFileEntryCallback = function(functionName, apiFunctions) {
       apiFunctions.setCustomCallback(functionName,
           function(name, request, callback, response) {
@@ -118,4 +128,51 @@ function getFileBindingsForApi(apiName) {
           entryIdManager: entryIdManager};
 }
 
+function getBindDirectoryEntryCallback() {
+  // Get the background page if one exists. Otherwise, default to the current
+  // window.
+  var backgroundPage = GetExtensionViews(-1, -1, 'BACKGROUND')[0] || WINDOW;
+
+  // For packaged apps, all windows use the bindFileEntryCallback from the
+  // background page so their FileEntry objects have the background page's
+  // context as their own. This allows them to be used from other windows
+  // (including the background page) after the original window is closed.
+  if (WINDOW == backgroundPage) {
+    return function(name, request, callback, response) {
+      if (callback) {
+        if (!response) {
+          callback();
+          return;
+        }
+        var fileSystemId = response.fileSystemId;
+        var baseName = response.baseName;
+        var fs = GetIsolatedFileSystem(fileSystemId);
+
+        try {
+          fs.root.getDirectory(baseName, {}, callback, function(fileError) {
+            lastError.run('runtime.' + functionName,
+                          'Error getting Entry, code: ' + fileError.code,
+                          request.stack,
+                          callback);
+          });
+        } catch (e) {
+          lastError.run('runtime.' + functionName,
+                        'Error: ' + e.stack,
+                        request.stack,
+                        callback);
+        }
+      }
+    }
+  } else {
+    var backgroundPageModuleSystem = GetModuleSystem(backgroundPage);
+    // Force the runtime API to be loaded in the background page. Using
+    // backgroundPageModuleSystem.require('runtime') is insufficient as
+    // requireNative is only allowed while lazily loading an API.
+    backgroundPage.chrome.runtime;
+    return backgroundPageModuleSystem.require('fileEntryBindingUtil')
+               .getBindDirectoryEntryCallback();
+  }
+}
+
 exports.$set('getFileBindingsForApi', getFileBindingsForApi);
+exports.$set('getBindDirectoryEntryCallback', getBindDirectoryEntryCallback);
