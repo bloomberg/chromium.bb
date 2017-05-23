@@ -157,7 +157,7 @@ Polymer({
   shouldShowImportantSites_: function() {
     if (!this.importantSitesFlagEnabled_)
       return false;
-    if (!this.$.cookiesCheckbox.checked && !this.$.cacheCheckbox.checked)
+    if (!this.$.cookiesCheckbox.checked)
       return false;
 
     var haveImportantSites = this.importantSites_.length > 0;
