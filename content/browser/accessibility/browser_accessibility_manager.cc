@@ -389,8 +389,11 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // Fire any events related to changes to the tree.
   for (auto& event : tree_events_) {
+    BrowserAccessibility* event_target = GetFromID(event.second);
+    if (!event_target)
+      continue;
     NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
-                             event.first, event.second);
+                             event.first, event_target);
   }
   tree_events_.clear();
 
@@ -1190,11 +1193,12 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     DCHECK(created_node);
     BrowserAccessibility* object = GetFromAXNode(created_node);
     if (object && object->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
+      int32_t id = object->GetId();
       if (object->GetRole() == ui::AX_ROLE_ALERT) {
-        tree_events_.push_back(std::make_pair(ui::AX_EVENT_ALERT, object));
+        tree_events_.push_back(std::make_pair(ui::AX_EVENT_ALERT, id));
       } else {
         tree_events_.push_back(
-            std::make_pair(ui::AX_EVENT_LIVE_REGION_CREATED, object));
+            std::make_pair(ui::AX_EVENT_LIVE_REGION_CREATED, id));
       }
     }
   }
