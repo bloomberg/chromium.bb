@@ -13,6 +13,7 @@ import android.widget.Button;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -106,6 +107,11 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
     @Override
     public void show() {
         super.show();
+        if (mDialogType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_NEW) {
+            RecordUserAction.record("SearchEnginePromo.NewDevice.Shown.Dialog");
+        } else if (mDialogType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING) {
+            RecordUserAction.record("SearchEnginePromo.ExistingDevice.Shown.Dialog");
+        }
         if (sObserver != null) sObserver.onDialogShown(this);
     }
 
