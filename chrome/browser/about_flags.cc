@@ -1758,10 +1758,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeHomeExpandButtonName,
      flag_descriptions::kChromeHomeExpandButtonDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeExpandButton)},
-    {"enable-chrome-home-ntp-design",
-     flag_descriptions::kChromeHomeNtpRedesignName,
-     flag_descriptions::kChromeHomeNtpRedesignDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeHomeNtpRedesign)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-iph-demo-mode", flag_descriptions::kEnableIphDemoModeName,

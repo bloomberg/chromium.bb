@@ -250,9 +250,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      */
     private boolean mCreatedTabOnStartup;
 
-    /** Whether new tabs should be created using the {@link BottomSheet}. */
-    private Boolean mShouldCreateNewTabsUsingBottomSheet;
-
     // Whether or not chrome was launched with an intent to open a tab.
     private boolean mIntentWithEffect;
 
@@ -322,7 +319,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         @Override
         public Tab launchUrl(
                 String url, TabModel.TabLaunchType type, Intent intent, long intentTimestamp) {
-            if (shouldCreateNewTabsUsingBottomSheet() && NewTabPage.isNTPUrl(url)) {
+            if (getBottomSheet() != null && NewTabPage.isNTPUrl(url)) {
                 getBottomSheet().displayNewTabUi(mIsIncognito);
                 return null;
             }
@@ -961,7 +958,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private void createInitialTab() {
         String url = HomepageManager.getHomepageUri(getApplicationContext());
         if (TextUtils.isEmpty(url)) {
-            if (shouldCreateNewTabsUsingBottomSheet()) {
+            if (getBottomSheet() != null) {
                 mCreateInitialTabDuringUiInit = true;
                 return;
             }
@@ -2112,14 +2109,5 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public boolean supportsFullscreenActivity() {
         return true;
-    }
-
-    private boolean shouldCreateNewTabsUsingBottomSheet() {
-        if (mShouldCreateNewTabsUsingBottomSheet == null) {
-            mShouldCreateNewTabsUsingBottomSheet = getBottomSheet() != null
-                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_NTP_REDESIGN);
-        }
-
-        return mShouldCreateNewTabsUsingBottomSheet;
     }
 }
