@@ -5,10 +5,26 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_STRINGS_UTIL_H_
 #define COMPONENTS_PAYMENTS_CORE_STRINGS_UTIL_H_
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "components/payments/core/payment_options_provider.h"
 
+namespace autofill {
+class AutofillProfile;
+}
+
 namespace payments {
+
+// Helper function to create a shipping address label from an autofill profile.
+base::string16 GetShippingAddressLabelFormAutofillProfile(
+    const autofill::AutofillProfile& profile,
+    const std::string& locale);
+
+// Helper function to create a billing address label from an autofill profile.
+base::string16 GetBillingAddressLabelFromAutofillProfile(
+    const autofill::AutofillProfile& profile,
+    const std::string& locale);
 
 // Gets the informational message to be displayed in the shipping address
 // selector view when there are no valid shipping options.

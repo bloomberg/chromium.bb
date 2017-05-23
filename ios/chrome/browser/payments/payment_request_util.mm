@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -32,38 +33,15 @@ NSString* GetNameLabelFromAutofillProfile(
 
 NSString* GetShippingAddressLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile) {
-  // Name, phone number, and country are not included in the shipping address
-  // label.
-  std::vector<autofill::ServerFieldType> label_fields;
-  label_fields.push_back(autofill::COMPANY_NAME);
-  label_fields.push_back(autofill::ADDRESS_HOME_STREET_ADDRESS);
-  label_fields.push_back(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY);
-  label_fields.push_back(autofill::ADDRESS_HOME_CITY);
-  label_fields.push_back(autofill::ADDRESS_HOME_STATE);
-  label_fields.push_back(autofill::ADDRESS_HOME_ZIP);
-  label_fields.push_back(autofill::ADDRESS_HOME_SORTING_CODE);
-
-  base::string16 label = profile.ConstructInferredLabel(
-      label_fields, label_fields.size(),
-      GetApplicationContext()->GetApplicationLocale());
+  base::string16 label = payments::GetShippingAddressLabelFormAutofillProfile(
+      profile, GetApplicationContext()->GetApplicationLocale());
   return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }
 
 NSString* GetBillingAddressLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile) {
-  // Name, company, phone number, and country are not included in the billing
-  // address label.
-  std::vector<autofill::ServerFieldType> label_fields;
-  label_fields.push_back(autofill::ADDRESS_HOME_STREET_ADDRESS);
-  label_fields.push_back(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY);
-  label_fields.push_back(autofill::ADDRESS_HOME_CITY);
-  label_fields.push_back(autofill::ADDRESS_HOME_STATE);
-  label_fields.push_back(autofill::ADDRESS_HOME_ZIP);
-  label_fields.push_back(autofill::ADDRESS_HOME_SORTING_CODE);
-
-  base::string16 label = profile.ConstructInferredLabel(
-      label_fields, label_fields.size(),
-      GetApplicationContext()->GetApplicationLocale());
+  base::string16 label = payments::GetBillingAddressLabelFromAutofillProfile(
+      profile, GetApplicationContext()->GetApplicationLocale());
   return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }
 
