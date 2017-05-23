@@ -117,7 +117,10 @@ void ProximityAuthSystem::OnLifeCycleStateChanged(
 
 void ProximityAuthSystem::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  OnFocusedUserChanged(ScreenlockBridge::Get()->focused_account_id());
+  const AccountId& focused_account_id =
+      ScreenlockBridge::Get()->focused_account_id();
+  if (focused_account_id.is_valid())
+    OnFocusedUserChanged(focused_account_id);
 }
 
 void ProximityAuthSystem::OnScreenDidUnlock(
