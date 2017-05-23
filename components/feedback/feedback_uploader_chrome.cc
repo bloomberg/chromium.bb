@@ -10,21 +10,17 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
 #include "components/feedback/feedback_uploader_delegate.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace feedback {
 namespace {
@@ -33,10 +29,8 @@ const char kProtoBufMimeType[] = "application/x-protobuf";
 
 }  // namespace
 
-FeedbackUploaderChrome::FeedbackUploaderChrome(
-    content::BrowserContext* context)
-    : FeedbackUploader(context ? context->GetPath() : base::FilePath(),
-                       BrowserThread::GetBlockingPool()),
+FeedbackUploaderChrome::FeedbackUploaderChrome(content::BrowserContext* context)
+    : FeedbackUploader(context ? context->GetPath() : base::FilePath()),
       context_(context) {
   CHECK(context_);
   const base::CommandLine& command_line =

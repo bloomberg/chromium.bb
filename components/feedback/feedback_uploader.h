@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
@@ -26,10 +25,8 @@ class FeedbackReport;
 // tried again when it's turn comes up next in the queue.
 class FeedbackUploader : public base::SupportsWeakPtr<FeedbackUploader> {
  public:
+  FeedbackUploader(const base::FilePath& path);
   FeedbackUploader(const base::FilePath& path,
-                   base::SequencedWorkerPool* pool);
-  FeedbackUploader(const base::FilePath& path,
-                   base::SequencedWorkerPool* pool,
                    const std::string& url);
   virtual ~FeedbackUploader();
 
@@ -76,7 +73,6 @@ class FeedbackUploader : public base::SupportsWeakPtr<FeedbackUploader> {
   ReportDataCallback dispatch_callback_;
   base::TimeDelta retry_delay_;
   std::string url_;
-  base::SequencedWorkerPool* pool_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploader);
 };
