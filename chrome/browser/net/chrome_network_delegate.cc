@@ -450,9 +450,9 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
 bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
                                             const base::FilePath& path) const {
 #if defined(OS_CHROMEOS)
-  // If we're running Chrome for ChromeOS on Linux, we want to allow file
-  // access. This is checked here to make IsAccessAllowed() unit-testable.
-  if (!base::SysInfo::IsRunningOnChromeOS())
+  // browser_tests and interactive_ui_tests rely on the ability to open any
+  // files via file: scheme.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     return true;
 #endif
 
