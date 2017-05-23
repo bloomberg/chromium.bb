@@ -945,10 +945,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
           append_quads_data.checkerboarded_needs_raster_content_area;
       if (append_quads_data.num_missing_tiles > 0) {
         have_missing_animated_tiles |=
-            !layer->was_ever_ready_since_last_transform_animation() ||
             layer->screen_space_transform_is_animating();
-      } else {
-        layer->set_was_ever_ready_since_last_transform_animation(true);
       }
     }
     frame->activation_dependencies.insert(
@@ -4252,12 +4249,6 @@ void LayerTreeHostImpl::ElementIsAnimatingChanged(
                                                              list_type);
             property_trees->transform_tree.set_needs_update(true);
             tree->set_needs_update_draw_properties();
-            // TODO(crbug.com/702777):
-            // was_ever_ready_since_last_transform_animation should not live on
-            // layers.
-            if (LayerImpl* layer = tree->LayerByElementId(element_id)) {
-              layer->set_was_ever_ready_since_last_transform_animation(false);
-            }
           }
         }
         break;

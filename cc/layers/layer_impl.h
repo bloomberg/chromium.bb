@@ -426,14 +426,6 @@ class CC_EXPORT LayerImpl {
 
   float GetIdealContentsScale() const;
 
-  bool was_ever_ready_since_last_transform_animation() const {
-    return was_ever_ready_since_last_transform_animation_;
-  }
-
-  void set_was_ever_ready_since_last_transform_animation(bool was_ready) {
-    was_ever_ready_since_last_transform_animation_ = was_ready;
-  }
-
   void NoteLayerPropertyChanged();
 
   void SetHasWillChangeTransformHint(bool has_will_change);
@@ -513,10 +505,6 @@ class CC_EXPORT LayerImpl {
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
-
-  // This is true if and only if the layer was ever ready since it last animated
-  // (all content was complete).
-  bool was_ever_ready_since_last_transform_animation_ : 1;
 
   static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
                 "enough bits for ViewportLayerType (viewport_layer_type_)");

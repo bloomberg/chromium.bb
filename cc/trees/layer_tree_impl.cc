@@ -611,14 +611,9 @@ void LayerTreeImpl::SetTransformMutated(ElementId element_id,
   DCHECK_EQ(1u, property_trees()->element_id_to_transform_node_index.count(
                     element_id));
   element_id_to_transform_animations_[element_id] = transform;
-  if (!property_trees()->transform_tree.OnTransformAnimated(element_id,
-                                                            transform))
-    return;
-
-  if (LayerImpl* layer = LayerByElementId(element_id))
-    layer->set_was_ever_ready_since_last_transform_animation(false);
-
-  set_needs_update_draw_properties();
+  if (property_trees()->transform_tree.OnTransformAnimated(element_id,
+                                                           transform))
+    set_needs_update_draw_properties();
 }
 
 void LayerTreeImpl::SetOpacityMutated(ElementId element_id, float opacity) {
