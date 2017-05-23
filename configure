@@ -472,6 +472,7 @@ post_process_cmdline() {
 
     # Enable adopted experiments by default
     soft_enable cb4x4
+    soft_enable chroma_sub8x8
     soft_enable filter_7bit
     soft_enable reference_buffer
     soft_enable delta_q
@@ -518,6 +519,7 @@ post_process_cmdline() {
     enabled intra_edge && enable_feature ext_intra
     enabled chroma_2x2 && disable_feature chroma_sub8x8
     enabled dpcm_intra && enable_feature ext_tx
+    enabled chroma_sub8x8 && enable_feature cb4x4
 
     if ! enabled daala_ec && ! enabled ans && enabled cfl; then
       log_echo "cfl requires daala_ec or ans, so disabling cfl"
