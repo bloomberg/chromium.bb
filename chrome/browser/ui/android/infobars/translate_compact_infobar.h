@@ -9,7 +9,9 @@
 #include "base/macros.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
-#include "components/translate/content/browser/content_translate_driver.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "components/translate/core/browser/translate_step.h"
+#include "components/translate/core/common/translate_errors.h"
 
 namespace translate {
 class TranslateInfoBarDelegate;
@@ -17,7 +19,7 @@ class TranslateInfoBarDelegate;
 
 class TranslateCompactInfoBar
     : public InfoBarAndroid,
-      public translate::ContentTranslateDriver::Observer {
+      public translate::TranslateInfoBarDelegate::Observer {
  public:
   explicit TranslateCompactInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate);
@@ -44,10 +46,10 @@ class TranslateCompactInfoBar
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  // ContentTranslateDriver::Observer implementation.
-  void OnPageTranslated(const std::string& original_lang,
-                        const std::string& translated_lang,
-                        translate::TranslateErrors::Type error_type) override;
+  // TranslateInfoBarDelegate::Observer implementation.
+  void OnTranslateStepChanged(translate::TranslateStep step,
+                    translate::TranslateErrors::Type error_type) override;
+  bool IsDeclinedByUser() override;
 
  private:
   // InfoBarAndroid:
@@ -58,7 +60,19 @@ class TranslateCompactInfoBar
       const base::android::JavaRef<jobject>& java_info_bar) override;
 
   translate::TranslateInfoBarDelegate* GetDelegate();
-  translate::ContentTranslateDriver* translate_driver_;
+
+  // Bits for trace user actions.
+  unsigned int action_flags_;
+
+  // User action flags to record what the user has done in each session.
+  enum ActionFlag {
+    FLAG_NONE = 0,
+    FLAG_TRANSLATE = 1 << 0,
+    FLAG_REVERT = 1 << 1,
+    FLAG_ALWAYS_TRANSLATE = 1 << 2,
+    FLAG_NEVER_LANGUAGE = 1 << 3,
+    FLAG_NEVER_SITE = 1 << 4,
+  };
 
   // If number of consecutive translations is equal to this number, infobar will
   // automatically trigger "Always Translate".

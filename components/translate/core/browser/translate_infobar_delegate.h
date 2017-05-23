@@ -37,6 +37,19 @@ class TranslateManager;
 
 class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
+  // An observer to handle different translate steps' UI changes.
+  class Observer {
+   public:
+    // Handles UI changes on the translate step given.
+    virtual void OnTranslateStepChanged(translate::TranslateStep step,
+                              TranslateErrors::Type error_type){};
+    // Return whether user declined translate service.
+    virtual bool IsDeclinedByUser();
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   static const size_t kNoIndex;
 
   ~TranslateInfoBarDelegate() override;
@@ -182,6 +195,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // May return NULL if the driver has been destroyed.
   TranslateDriver* GetTranslateDriver();
 
+  // Set a observer.
+  void SetObserver(Observer* observer);
+
  protected:
   TranslateInfoBarDelegate(
       const base::WeakPtr<TranslateManager>& translate_manager,
@@ -218,6 +234,10 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // Whether the translation was triggered via a menu click vs automatically
   // (due to language detection, preferences...)
   bool triggered_from_menu_;
+
+  // A observer to handle front-end changes on different steps.
+  // It's only used when we try to reuse the existing UI.
+  Observer* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };

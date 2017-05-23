@@ -22,17 +22,12 @@ using base::android::ScopedJavaLocalRef;
 
 TranslateCompactInfoBar::TranslateCompactInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {
-  // |translate_driver| must already be bound.
-  DCHECK(GetDelegate()->GetTranslateDriver());
-  translate_driver_ = static_cast<translate::ContentTranslateDriver*>(
-      GetDelegate()->GetTranslateDriver());
-  translate_driver_->AddObserver(this);
+    : InfoBarAndroid(std::move(delegate)), action_flags_(FLAG_NONE) {
+  GetDelegate()->SetObserver(this);
 }
 
 TranslateCompactInfoBar::~TranslateCompactInfoBar() {
-  DCHECK(translate_driver_);
-  translate_driver_->RemoveObserver(this);
+  GetDelegate()->SetObserver(nullptr);
 }
 
 ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
@@ -67,6 +62,7 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
   // TODO(ramyasharma): Handle other button clicks.
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
+    action_flags_ |= FLAG_TRANSLATE;
     delegate->Translate();
     if (!delegate->ShouldAlwaysTranslate() && ShouldAutoAlwaysTranslate()) {
       JNIEnv* env = base::android::AttachCurrentThread();
@@ -74,6 +70,7 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
                                                           GetJavaInfoBar());
     }
   } else if (action == InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
+    action_flags_ |= FLAG_REVERT;
     delegate->RevertTranslation();
   } else if (action == InfoBarAndroid::ACTION_CANCEL) {
     delegate->TranslationDeclined();
@@ -119,32 +116,22 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   if (option == TranslateUtils::OPTION_ALWAYS_TRANSLATE) {
     if (delegate->ShouldAlwaysTranslate() != value) {
+      action_flags_ |= FLAG_ALWAYS_TRANSLATE;
       delegate->ToggleAlwaysTranslate();
     }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE) {
     if (value && delegate->IsTranslatableLanguageByPrefs()) {
+      action_flags_ |= FLAG_NEVER_LANGUAGE;
       delegate->ToggleTranslatableLanguageByPrefs();
     }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
     if (value && !delegate->IsSiteBlacklisted()) {
+      action_flags_ |= FLAG_NEVER_SITE;
       delegate->ToggleSiteBlacklist();
     }
   } else {
     DCHECK(false);
   }
-}
-
-void TranslateCompactInfoBar::OnPageTranslated(
-    const std::string& original_lang,
-    const std::string& translated_lang,
-    translate::TranslateErrors::Type error_type) {
-  if (!owner())
-    return;  // We're closing; don't call anything, it might access the owner.
-
-  DCHECK(translate_driver_);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TranslateCompactInfoBar_onPageTranslated(env, GetJavaInfoBar(),
-                                                error_type);
 }
 
 bool TranslateCompactInfoBar::ShouldAutoAlwaysTranslate() {
@@ -162,6 +149,24 @@ jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
 translate::TranslateInfoBarDelegate* TranslateCompactInfoBar::GetDelegate() {
   return delegate()->AsTranslateInfoBarDelegate();
 }
+
+void TranslateCompactInfoBar::OnTranslateStepChanged(
+    translate::TranslateStep step,
+    translate::TranslateErrors::Type error_type) {
+  if (!owner())
+    return;  // We're closing; don't call anything.
+
+  if ((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
+      (step == translate::TRANSLATE_STEP_TRANSLATE_ERROR)) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_TranslateCompactInfoBar_onPageTranslated(env, GetJavaInfoBar(),
+                                                  error_type);
+  }
+}
+
+bool TranslateCompactInfoBar::IsDeclinedByUser() {
+  return action_flags_ == FLAG_NONE;
+};
 
 // Native JNI methods ---------------------------------------------------------
 
