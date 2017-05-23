@@ -3126,7 +3126,7 @@ crbug.com/725016 [ Win ] fast/forms/number/number-stepup-stepdown-from-renderer.
 crbug.com/725016 [ Win ] storage/indexeddb/objectstore-keycursor.html [ Skip ]
 
 # Sheriff failures 2017-05-23
-crbug.com/725470 [ Mac ] editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure Pass ]
+crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure Pass ]
 crbug.com/725455 [ Linux ] nfc/mock-nfc.html [ Failure Pass Timeout ]
 crbug.com/725455 [ Linux ] nfc/nfc-block-iframe.html [ Failure Pass Timeout ]
 crbug.com/725455 [ Linux ] nfc/push.html [ Failure Pass Timeout ]
