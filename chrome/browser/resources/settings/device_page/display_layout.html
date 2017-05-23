@@ -1,14 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material-shared-styles.html">
 <link rel="import" href="drag_behavior.html">
 <link rel="import" href="layout_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="display-layout">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared paper-material-shared-styles">
       /* Use relative position with no offset so that display divs (children),
          which have absolute positions, are offset from the displayArea div. */
       #displayArea {
@@ -52,6 +52,10 @@
       .highlight-bottom {
         border-bottom: var(--google-blue-700) solid 1px;
       }
+
+      .display.elevate {
+        @apply(--shadow-elevation-2dp);
+      }
     </style>
     <div id="displayArea" on-iron-resize="calculateVisualScale_">
       <template is="dom-repeat" items="[[displays]]">
@@ -61,12 +65,12 @@
         </div>
       </template>
       <template is="dom-repeat" items="[[displays]]">
-        <paper-material id="_[[item.id]]" class="display" elevation="1"
+        <div id="_[[item.id]]" class="display elevate"
             draggable="[[dragEnabled]]" on-tap="onSelectDisplayTap_"
             style$="[[getDivStyle_(item.id, item.bounds, visualScale)]]"
             selected$="[[isSelected_(item, selectedDisplay)]]">
           [[item.name]]
-        </paper-material>
+        </div>
       </template>
     </div>
   </template>
