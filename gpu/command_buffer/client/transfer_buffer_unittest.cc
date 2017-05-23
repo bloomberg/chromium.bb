@@ -235,7 +235,7 @@ class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
 
   scoped_refptr<gpu::Buffer> RealCreateTransferBuffer(size_t size,
                                                       int32_t* id) {
-    return MockCommandBufferBase::CreateTransferBuffer(size, id);
+    return MockClientCommandBufferMockFlush::CreateTransferBuffer(size, id);
   }
 };
 

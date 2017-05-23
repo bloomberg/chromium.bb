@@ -32,7 +32,7 @@ void CommandExecutor::PutChanged() {
   TRACE_EVENT1("gpu", "CommandExecutor:PutChanged", "decoder",
                decoder_ ? decoder_->GetLogger()->GetLogPrefix() : "None");
 
-  CommandBuffer::State state = command_buffer_->GetLastState();
+  CommandBuffer::State state = command_buffer_->GetState();
 
   put_ = command_buffer_->GetPutOffset();
 
@@ -103,14 +103,6 @@ void CommandExecutor::ProcessPendingQueries() {
   if (!decoder_)
     return;
   decoder_->ProcessPendingQueries(false);
-}
-
-scoped_refptr<Buffer> CommandExecutor::GetSharedMemoryBuffer(int32_t shm_id) {
-  return command_buffer_->GetTransferBuffer(shm_id);
-}
-
-void CommandExecutor::set_token(int32_t token) {
-  command_buffer_->SetToken(token);
 }
 
 bool CommandExecutor::SetGetBuffer(int32_t transfer_buffer_id) {

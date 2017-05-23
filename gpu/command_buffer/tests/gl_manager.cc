@@ -316,7 +316,7 @@ void GLManager::InitializeWithCommandLine(
   executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
                                       decoder_.get()));
 
-  decoder_->set_engine(executor_.get());
+  decoder_->set_command_buffer_service(command_buffer_.get());
 
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";

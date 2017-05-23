@@ -525,7 +525,7 @@ void GpuCommandBufferStub::Destroy() {
   }
 
   if (decoder_)
-    decoder_->set_engine(NULL);
+    decoder_->set_command_buffer_service(nullptr);
 
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
@@ -663,7 +663,7 @@ bool GpuCommandBufferStub::Initialize(
         base::Bind(&PreemptionFlag::IsSet, channel_->preempted_flag()));
   }
 
-  decoder_->set_engine(executor_.get());
+  decoder_->set_command_buffer_service(command_buffer_.get());
 
   if (offscreen) {
     // Do we want to create an offscreen rendering context suitable
