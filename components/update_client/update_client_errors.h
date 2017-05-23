@@ -51,7 +51,7 @@ enum class UnpackerError {
   // kNoManifest = 5,         // Deprecated. Never used.
   kBadManifest = 6,
   kBadExtension = 7,
-  kInvalidId = 8,
+  // kInvalidId = 8,          // Deprecated. Combined with kInvalidFile.
   // kInstallerError = 9,     // Deprecated. Don't use.
   kIoError = 10,
   kDeltaVerificationFailure = 11,

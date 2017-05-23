@@ -168,7 +168,7 @@ TEST_F(SandboxedUnpackerTest, FromDirWithCatalogsSuccess) {
 TEST_F(SandboxedUnpackerTest, FailHashCheck) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableCrxHashCheck);
-  SetupUnpacker("good_l10n.crx", "badhash");
+  SetupUnpacker("good_l10n.crx", std::string(64, '0'));
   // Check that there is an error message.
   EXPECT_NE(base::string16(), GetInstallError());
 }
