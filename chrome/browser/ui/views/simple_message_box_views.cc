@@ -106,10 +106,8 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
   if (no_text_.empty() && type_ == MESSAGE_BOX_TYPE_QUESTION)
     no_text_ = l10n_util::GetStringUTF16(IDS_CANCEL);
 
-  if (!checkbox_text.empty()) {
+  if (!checkbox_text.empty())
     message_box_view_->SetCheckBoxLabel(checkbox_text);
-    message_box_view_->SetCheckBoxSelected(true);
-  }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIMPLE_MESSAGE_BOX);
 }
 

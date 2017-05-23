@@ -46,7 +46,14 @@ void ShowProfileErrorDialog(ProfileErrorType type,
           l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_CHECKBOX))) {
     std::string feedback_description =
         l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION);
-    feedback_description += "\n" + diagnostics;
+    if (!diagnostics.empty()) {
+      // TODO(afakhry): Add support to inject diagnostics to the feedback
+      // reports without adding them to the description. crbug.com/708511.
+      feedback_description += "\n\n" +
+                              l10n_util::GetStringUTF8(
+                                  IDS_PROFILE_ERROR_FEEDBACK_DIAGNOSTICS_LINE) +
+                              diagnostics;
+    }
 
     chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceProfileErrorDialog,
                              feedback_description,
