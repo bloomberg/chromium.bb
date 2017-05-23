@@ -30,6 +30,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -215,6 +216,9 @@ public class BottomSheet
 
     /** Whether the root view has been laid out at least once. **/
     private boolean mHasRootLayoutOccurred;
+
+    /** The activity displaying the bottom sheet. */
+    private ChromeActivity mActivity;
 
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
@@ -538,10 +542,12 @@ public class BottomSheet
      * calculations in this class.
      * @param root The container of the bottom sheet.
      * @param controlContainer The container for the toolbar.
+     * @param activity The activity displaying the bottom sheet.
      */
-    public void init(View root, View controlContainer) {
+    public void init(View root, View controlContainer, ChromeActivity activity) {
         mControlContainer = controlContainer;
         mToolbarHeight = mControlContainer.getHeight();
+        mActivity = activity;
 
         mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
 
@@ -818,6 +824,8 @@ public class BottomSheet
 
         mIsSheetOpen = true;
         for (BottomSheetObserver o : mObservers) o.onSheetOpened();
+        announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened));
+        mActivity.addViewObscuringAllTabs(this);
     }
 
     /**
@@ -828,6 +836,8 @@ public class BottomSheet
 
         mIsSheetOpen = false;
         for (BottomSheetObserver o : mObservers) o.onSheetClosed();
+        announceForAccessibility(getResources().getString(R.string.bottom_sheet_closed));
+        mActivity.removeViewObscuringAllTabs(this);
     }
 
     /**
@@ -1245,15 +1255,23 @@ public class BottomSheet
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) return;
 
+        boolean showExpandButtonHelpBubble =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
+
         ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(getContext(),
-                mControlContainer, R.string.bottom_sheet_help_bubble_message,
-                R.string.bottom_sheet_help_bubble_message);
+                showExpandButtonHelpBubble
+                        ? mControlContainer.findViewById(R.id.expand_sheet_button)
+                        : mControlContainer,
+                showExpandButtonHelpBubble ? R.string.bottom_sheet_expand_button_help_bubble_message
+                                           : R.string.bottom_sheet_help_bubble_message,
+                showExpandButtonHelpBubble
+                        ? R.string.bottom_sheet_accessibility_expand_button_help_bubble_message
+                        : R.string.bottom_sheet_accessibility_help_bubble_message);
         int inset = getContext().getResources().getDimensionPixelSize(
                 R.dimen.bottom_sheet_help_bubble_inset);
         helpBubble.setInsetPx(0, inset, 0, inset);
         helpBubble.setDismissOnTouchInteraction(true);
         helpBubble.show();
-
         preferences.edit().putBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, true).apply();
     }
 

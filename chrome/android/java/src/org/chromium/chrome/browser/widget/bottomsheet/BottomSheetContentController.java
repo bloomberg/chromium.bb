@@ -115,6 +115,8 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetContentChanged(BottomSheetContent newContent) {
+            if (mBottomSheet.isSheetOpen()) announceBottomSheetContentSelected();
+
             if (!mShouldOpenSheetOnNextContentChange) return;
 
             mShouldOpenSheetOnNextContentChange = false;
@@ -292,7 +294,20 @@ public class BottomSheetContentController extends BottomNavigationView
         mSelectedItemId = navItemId;
         getMenu().findItem(mSelectedItemId).setChecked(true);
 
-        mBottomSheet.showContent(getSheetContentForId(mSelectedItemId));
+        BottomSheetContent newContent = getSheetContentForId(mSelectedItemId);
+        mBottomSheet.showContent(newContent);
+    }
+
+    private void announceBottomSheetContentSelected() {
+        if (mSelectedItemId == R.id.action_home) {
+            announceForAccessibility(getResources().getString(R.string.bottom_sheet_home_tab));
+        } else if (mSelectedItemId == R.id.action_downloads) {
+            announceForAccessibility(getResources().getString(R.string.bottom_sheet_downloads_tab));
+        } else if (mSelectedItemId == R.id.action_bookmarks) {
+            announceForAccessibility(getResources().getString(R.string.bottom_sheet_bookmarks_tab));
+        } else if (mSelectedItemId == R.id.action_history) {
+            announceForAccessibility(getResources().getString(R.string.bottom_sheet_history_tab));
+        }
     }
 
     private void updateVisuals(boolean isIncognitoTabModelSelected) {

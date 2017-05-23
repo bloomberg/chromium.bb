@@ -461,7 +461,14 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         mUseToolbarHandle = !FeatureUtilities.isChromeHomeExpandButtonEnabled();
 
-        if (!mUseToolbarHandle) initExpandButton();
+        if (!mUseToolbarHandle) {
+            initExpandButton();
+        } else {
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+            setContentDescription(
+                    getResources().getString(R.string.bottom_sheet_accessibility_toolbar));
+        }
     }
 
     /**
