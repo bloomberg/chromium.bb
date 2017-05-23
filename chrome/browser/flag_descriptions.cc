@@ -1963,11 +1963,6 @@ const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
 const char kChromeHomeExpandButtonDescription[] =
     "Enables the expand button for Chrome Home.";
 
-const char kChromeHomeNtpRedesignName[] = "Chrome Home NTP Redesign";
-
-const char kChromeHomeNtpRedesignDescription[] =
-    "Enables the NTP redesign for Chrome Home.";
-
 #endif  // defined(OS_ANDROID)
 
 //  In-Product Help flags

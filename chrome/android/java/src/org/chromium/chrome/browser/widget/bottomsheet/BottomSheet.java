@@ -1256,4 +1256,12 @@ public class BottomSheet
 
         preferences.edit().putBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, true).apply();
     }
+
+    /** Ends all animations. */
+    @VisibleForTesting
+    public void endAnimationsForTests() {
+        if (mSettleAnimator != null) mSettleAnimator.end();
+        mSettleAnimator = null;
+        endTransitionAnimations();
+    }
 }

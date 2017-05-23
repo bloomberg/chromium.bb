@@ -373,7 +373,7 @@ public class ChromeTabUtils {
         instrumentation.waitForIdleSync();
     }
 
-    private static void loadUrlOnUiThread(final Tab tab, final String url) {
+    public static void loadUrlOnUiThread(final Tab tab, final String url) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
