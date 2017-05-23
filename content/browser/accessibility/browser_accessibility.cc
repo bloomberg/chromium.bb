@@ -1195,19 +1195,29 @@ gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetFocus() {
-  NOTREACHED();
-  return nullptr;
+  auto* focused = manager()->GetFocus();
+  if (!focused)
+    return nullptr;
+
+  return focused->GetNativeViewAccessible();
 }
 
 gfx::AcceleratedWidget
 BrowserAccessibility::GetTargetForNativeAccessibilityEvent() {
-  NOTREACHED();
-  return gfx::kNullAcceleratedWidget;
+  BrowserAccessibilityDelegate* root_delegate =
+      manager()->GetDelegateFromRootManager();
+  if (!root_delegate)
+    return gfx::kNullAcceleratedWidget;
+  return root_delegate->AccessibilityGetAcceleratedWidget();
 }
 
 bool BrowserAccessibility::AccessibilityPerformAction(
     const ui::AXActionData& data) {
-  NOTREACHED();
+  if (data.action == ui::AX_ACTION_DO_DEFAULT) {
+    manager_->DoDefaultAction(*this);
+    return true;
+  }
+
   return false;
 }
 
