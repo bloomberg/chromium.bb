@@ -53,7 +53,7 @@ void OutdatedPluginInfoBarDelegate::Create(
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
           installer, std::move(plugin_metadata),
-          l10n_util::GetStringUTF16(IDS_PLUGIN_OUTDATED_PROMPT)))));
+          l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name)))));
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
