@@ -2779,20 +2779,28 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   void SetBorderImageSlicesFill(bool);
   const BorderValue BorderLeft() const {
-    return BorderValue(BorderLeftStyle(), BorderLeftColor(), BorderLeftWidth(),
-                       OutlineStyleIsAuto());
+    return BorderValue(
+        BorderLeftStyle(), BorderLeftColor(),
+        static_cast<float>(BorderLeftWidthInternal()) / kBorderWidthDenominator,
+        OutlineStyleIsAuto());
   }
   const BorderValue BorderRight() const {
     return BorderValue(BorderRightStyle(), BorderRightColor(),
-                       BorderRightWidth(), OutlineStyleIsAuto());
+                       static_cast<float>(BorderRightWidthInternal()) /
+                           kBorderWidthDenominator,
+                       OutlineStyleIsAuto());
   }
   const BorderValue BorderTop() const {
-    return BorderValue(BorderTopStyle(), BorderTopColor(), BorderTopWidth(),
-                       OutlineStyleIsAuto());
+    return BorderValue(
+        BorderTopStyle(), BorderTopColor(),
+        static_cast<float>(BorderTopWidthInternal()) / kBorderWidthDenominator,
+        OutlineStyleIsAuto());
   }
   const BorderValue BorderBottom() const {
     return BorderValue(BorderBottomStyle(), BorderBottomColor(),
-                       BorderBottomWidth(), OutlineStyleIsAuto());
+                       static_cast<float>(BorderBottomWidthInternal()) /
+                           kBorderWidthDenominator,
+                       OutlineStyleIsAuto());
   }
 
   bool BorderSizeEquals(const ComputedStyle& o) const {
