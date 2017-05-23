@@ -3965,12 +3965,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mus_gpu_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -4624,12 +4618,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_system_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mus_gpu_unittests"
       },
       {
         "swarming": {

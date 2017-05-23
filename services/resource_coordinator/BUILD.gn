@@ -66,31 +66,14 @@ source_set("tests") {
     "public/cpp/tracing/chrome_trace_event_agent_unittest.cc",
   ]
 
+  if (!is_android) {
+    sources += [ "resource_coordinator_service_unittest.cc" ]
+  }
+
   deps = [
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//mojo/public/cpp/bindings",
-    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//testing/gtest",
-  ]
-
-  data_deps = [
-    ":lib",
-  ]
-}
-
-service_test("resource_coordinator_unittests") {
-  testonly = true
-
-  sources = [
-    "resource_coordinator_service_unittest.cc",
-  ]
-
-  catalog = ":resource_coordinator_unittests_catalog"
-
-  deps = [
-    "//base",
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
@@ -101,6 +84,7 @@ service_test("resource_coordinator_unittests") {
 
   data_deps = [
     ":resource_coordinator",
+    ":lib",
   ]
 }
 
@@ -109,7 +93,8 @@ service_manifest("unittest_manifest") {
   source = "unittest_manifest.json"
 }
 
-catalog("resource_coordinator_unittests_catalog") {
+catalog("tests_catalog") {
+  testonly = true
   embedded_services = [ ":unittest_manifest" ]
   standalone_services = [ ":manifest" ]
 }

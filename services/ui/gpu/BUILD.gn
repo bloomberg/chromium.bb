@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -41,32 +42,37 @@ source_set("gpu") {
   }
 }
 
-group("tests") {
-  testonly = true
-  deps = [
-    ":mus_gpu_unittests",
-  ]
-}
+if (use_aura) {
+  source_set("tests") {
+    testonly = true
 
-test("mus_gpu_unittests") {
-  deps = [
-    ":gpu",
-    "//base",
-    "//gpu",
-    "//ipc",
-    "//services/ui/common:run_all_service_tests",
-    "//services/ui/gpu/interfaces",
-    "//testing/gtest",
-    "//ui/gfx:memory_buffer",
-    "//ui/gfx/geometry",
-  ]
+    sources = [
+      "gpu_service_unittest.cc",
+    ]
 
-  sources = [
-    "gpu_service_unittest.cc",
-  ]
-}
+    deps = [
+      ":gpu",
+      "//base",
+      "//gpu",
+      "//ipc",
+      "//services/ui/gpu/interfaces",
+      "//testing/gtest",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/geometry",
+    ]
 
-service_manifest("mus_gpu_unittests_app_manifest") {
-  name = "mus_gpu_unittests_app"
-  source = "mus_gpu_unittests_app_manifest.json"
+    data_deps = [
+      "//services/ui",
+    ]
+  }
+
+  service_manifest("unittest_manifest") {
+    name = "mus_gpu_unittests"
+    source = "test_manifest.json"
+  }
+
+  catalog("tests_catalog") {
+    testonly = true
+    embedded_services = [ ":unittest_manifest" ]
+  }
 }
