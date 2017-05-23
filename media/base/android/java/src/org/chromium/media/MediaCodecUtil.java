@@ -249,7 +249,7 @@ class MediaCodecUtil {
                 // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel.html
                 CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
                 if (mime.endsWith("vp9") && Build.VERSION_CODES.LOLLIPOP <= Build.VERSION.SDK_INT
-                        && Build.VERSION.SDK_INT <= 23) {
+                        && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
                     addVp9CodecProfileLevels(profileLevels, codecCapabilities);
                     continue;
                 }

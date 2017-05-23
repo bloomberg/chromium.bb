@@ -15,7 +15,6 @@ import android.os.Build;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.CommandLine;
@@ -65,9 +64,7 @@ public class NotificationPlatformBridgeUnitTest {
         CommandLine.reset();
 
         CommandLine.init(null);
-        boolean isNougatOrNewer = Build.VERSION.CODENAME.equals("N")
-                || Build.VERSION.SDK_INT > 23 /* Build.VERSION_CODES.M */;
-        if (isNougatOrNewer) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             // Without comand line flags, custom layouts are always disabled on Nougat+.
             assertFalse(NotificationPlatformBridge.useCustomLayouts(false /* hasImage */));
             assertFalse(NotificationPlatformBridge.useCustomLayouts(true /* hasImage */));

@@ -205,7 +205,7 @@ public class ActionModeTest {
     @UseLayout("edittext_webview")
     public void testAssist() {
         // TODO(aluo): Get SdkSuppress to work with the test runner
-        if (Build.VERSION.SDK_INT < 24) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         longClickOnLastWord(R.id.webview);
         clickPopupAction(ASSIST_ACTION);
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());

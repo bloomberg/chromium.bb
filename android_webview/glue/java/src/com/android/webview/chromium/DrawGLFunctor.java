@@ -39,7 +39,7 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
     }
 
     private static final boolean sSupportFunctorReleasedCallback =
-            (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) || Build.VERSION.CODENAME.equals("N");
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N);
 
     @Override
     public boolean requestDrawGL(Canvas canvas, Runnable releasedCallback) {
