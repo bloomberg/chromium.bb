@@ -24,9 +24,13 @@ class ExtensionNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationThrottle implementation:
   ThrottleCheckResult WillStartRequest() override;
+  ThrottleCheckResult WillRedirectRequest() override;
   const char* GetNameForLogging() override;
 
  private:
+  // Shared throttle handler.
+  ThrottleCheckResult WillStartOrRedirectRequest();
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionNavigationThrottle);
 };
 

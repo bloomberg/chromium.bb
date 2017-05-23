@@ -13,6 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -353,4 +354,42 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   // isolated. The failure mode is that the request is canceled and we stay on
   // public.html (see https://crbug.com/656752).
   EXPECT_NE("Private", content);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       IframeNavigateToInaccessibleViaServerRedirect) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Any valid extension that happens to have a web accessible resource.
+  const extensions::Extension* patsy = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("some_accessible"));
+
+  // An extension with a non-webaccessible resource.
+  const extensions::Extension* target = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("inaccessible"));
+
+  // Start with an http iframe.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/iframe.html"));
+
+  // Send it to a web accessible resource of a valid extension.
+  GURL patsy_url = patsy->GetResourceURL("public.html");
+  content::NavigateIframeToURL(web_contents, "test", patsy_url);
+
+  // Now send it to a NON-web-accessible resource of any other extension, via
+  // http redirect.
+  GURL target_url = target->GetResourceURL("inaccessible-iframe-contents.html");
+  GURL http_redirect_to_target_url =
+      embedded_test_server()->GetURL("/server-redirect?" + target_url.spec());
+  content::NavigateIframeToURL(web_contents, "test",
+                               http_redirect_to_target_url);
+
+  // That should not have been allowed.
+  EXPECT_NE(url::Origin(target_url).GetURL(),
+            ChildFrameAt(web_contents->GetMainFrame(), 0)
+                ->GetLastCommittedOrigin()
+                .GetURL());
 }

@@ -62,19 +62,50 @@ class ExtensionNavigationThrottleUnitTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  // Checks that trying to navigate the given |host| to |url| results in the
-  // |expected_result|.
-  void CheckTestCase(content::RenderFrameHost* host,
-                     const GURL& url,
-                     NavigationThrottle::ThrottleCheckResult expected_result) {
+  // Checks that trying to navigate the given |host| to |extension_url| results
+  // in the |expected_will_start_result|, and also that navigating to
+  // |extension_url| via http redirect will cancel the request unless
+  // |expected_will_start_result| is PROCEED.
+  void CheckTestCase(
+      content::RenderFrameHost* host,
+      const GURL& extension_url,
+      NavigationThrottle::ThrottleCheckResult expected_will_start_result) {
+    // First subtest: direct navigation to |extension_url|.
     std::unique_ptr<content::NavigationHandle> handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(url, host);
-    EXPECT_EQ(expected_result,
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            extension_url, host);
+    EXPECT_EQ(expected_will_start_result,
               handle->CallWillStartRequestForTesting(
                   /*is_post=*/false, content::Referrer(),
                   /*has_user_gesture=*/false, ui::PAGE_TRANSITION_LINK,
                   /*is_external_protocol=*/false))
-        << url;
+        << extension_url;
+
+    // Reset the handle for a second subtest: server redirect to
+    // |extension_url|.
+    GURL http_url("https://example.com");
+    handle = content::NavigationHandle::CreateNavigationHandleForTesting(
+        http_url, host);
+
+    // TODO(nick): https://crbug.com/695421 Once PlzNavigate is enabled 100%, it
+    // should be possible to support return values other than PROCEED and CANCEL
+    // from ExtensionNavigationThrottle::WillRedirectRequest.
+    NavigationThrottle::ThrottleCheckResult expected_will_redirect_result =
+        (expected_will_start_result == NavigationThrottle::PROCEED)
+            ? NavigationThrottle::PROCEED
+            : NavigationThrottle::CANCEL;
+    EXPECT_EQ(NavigationThrottle::PROCEED,
+              handle->CallWillStartRequestForTesting(
+                  /*is_post=*/false, content::Referrer(),
+                  /*has_user_gesture=*/false, ui::PAGE_TRANSITION_LINK,
+                  /*is_external_protocol=*/false))
+        << http_url;
+    EXPECT_EQ(expected_will_redirect_result,
+              handle->CallWillRedirectRequestForTesting(
+                  extension_url,
+                  /*new_method_is_post=*/false, http_url,
+                  /*new_is_external_protocol=*/false))
+        << extension_url;
   }
 
   const Extension* extension() { return extension_.get(); }
