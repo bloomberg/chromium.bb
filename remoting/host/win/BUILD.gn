@@ -78,6 +78,8 @@ windows_manifest("dpi_aware_uiaccess_require_admin_exe_manifest") {
 
 source_set("win") {
   sources = [
+    "audio_volume_filter_win.cc",
+    "audio_volume_filter_win.h",
     "com_imported_mstscax.tlh",
     "com_security.cc",
     "com_security.h",

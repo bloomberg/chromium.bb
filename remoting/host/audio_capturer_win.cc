@@ -45,7 +45,7 @@ namespace remoting {
 
 AudioCapturerWin::AudioCapturerWin()
     : sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID),
-      silence_detector_(kSilenceThreshold),
+      volume_filter_(kSilenceThreshold),
       last_capture_error_(S_OK) {
   thread_checker_.DetachFromThread();
 }
@@ -91,14 +91,12 @@ void AudioCapturerWin::Deinitialize() {
   }
   audio_client_.Reset();
   mm_device_.Reset();
-  audio_volume_.Reset();
 }
 
 bool AudioCapturerWin::Initialize() {
   DCHECK(!audio_capture_client_.Get());
   DCHECK(!audio_client_.Get());
   DCHECK(!mm_device_.Get());
-  DCHECK(!audio_volume_.Get());
   DCHECK(static_cast<PWAVEFORMATEX>(wave_format_ex_) == nullptr);
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -234,86 +232,15 @@ bool AudioCapturerWin::Initialize() {
     return false;
   }
 
-  // Initialize IAudioEndpointVolume.
-  // TODO(zijiehe): Do we need to control per process volume?
-  hr = mm_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr,
-                            &audio_volume_);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to get an IAudioEndpointVolume. Error " << hr;
-    return false;
-  }
-
-  silence_detector_.Reset(sampling_rate_, kChannels);
+  volume_filter_.ActivateBy(mm_device_.Get());
+  volume_filter_.Initialize(sampling_rate_, kChannels);
 
   return true;
 }
 
 bool AudioCapturerWin::is_initialized() const {
   // All Com components should be initialized / deinitialized together.
-  return !!audio_volume_;
-}
-
-float AudioCapturerWin::GetAudioLevel() {
-  BOOL mute;
-  HRESULT hr = audio_volume_->GetMute(&mute);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to get mute status from IAudioEndpointVolume, error "
-               << hr;
-    return 1;
-  }
-  if (mute) {
-    return 0;
-  }
-
-  float level;
-  hr = audio_volume_->GetMasterVolumeLevelScalar(&level);
-  if (FAILED(hr) || level > 1) {
-    LOG(ERROR) << "Failed to get master volume from IAudioEndpointVolume, "
-                  "error "
-               << hr;
-    return 1;
-  }
-  if (level < 0) {
-    return 0;
-  }
-  return level;
-}
-
-void AudioCapturerWin::ProcessSamples(uint8_t* data, size_t frames) {
-  if (frames == 0) {
-    return;
-  }
-
-  int16_t* samples = reinterpret_cast<int16_t*>(data);
-  static_assert(sizeof(samples[0]) == kBytesPerSample,
-                "expect 16 bits per sample");
-  size_t sample_count = frames * kChannels;
-  if (silence_detector_.IsSilence(samples, sample_count)) {
-    return;
-  }
-
-  // Windows API does not provide volume adjusted audio sample as Linux does.
-  // So we need to manually apply volume to the samples.
-  float level = GetAudioLevel();
-  if (level == 0) {
-    return;
-  }
-
-  if (level < 1) {
-    int32_t level_int = static_cast<int32_t>(level * 65536);
-    for (size_t i = 0; i < sample_count; i++) {
-      samples[i] = (static_cast<int32_t>(samples[i]) * level_int) >> 16;
-    }
-  }
-
-  std::unique_ptr<AudioPacket> packet(new AudioPacket());
-  packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
-  packet->set_encoding(AudioPacket::ENCODING_RAW);
-  packet->set_sampling_rate(sampling_rate_);
-  packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
-  packet->set_channels(AudioPacket::CHANNELS_STEREO);
-
-  callback_.Run(std::move(packet));
+  return !!audio_client_;
 }
 
 void AudioCapturerWin::DoCapture() {
@@ -347,7 +274,16 @@ void AudioCapturerWin::DoCapture() {
     if (FAILED(hr))
       break;
 
-    ProcessSamples(data, frames);
+    if (volume_filter_.Apply(reinterpret_cast<int16_t*>(data), frames)) {
+      std::unique_ptr<AudioPacket> packet(new AudioPacket());
+      packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
+      packet->set_encoding(AudioPacket::ENCODING_RAW);
+      packet->set_sampling_rate(sampling_rate_);
+      packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+      packet->set_channels(AudioPacket::CHANNELS_STEREO);
+
+      callback_.Run(std::move(packet));
+    }
 
     hr = audio_capture_client_->ReleaseBuffer(frames);
     if (FAILED(hr))
