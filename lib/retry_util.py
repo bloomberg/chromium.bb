@@ -75,6 +75,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
 
   log_all_retries = kwargs.pop('log_all_retries', False)
   sleep = kwargs.pop('sleep', 0)
+  if sleep < 0:
+    raise ValueError('sleep must be >= 0')
+
   if max_retry < 0:
     raise ValueError('max_retry needs to be zero or more: %s' % max_retry)
 

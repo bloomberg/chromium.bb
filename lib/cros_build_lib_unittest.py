@@ -741,6 +741,18 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
                       success_functor=sf)
     self.assertEqual(s, [1])
 
+  def testGenericRetryBadArgs(self):
+    """Test bad retry related arguments to GenericRetry raise ValueError."""
+    def always_raise():
+      raise Exception('Not a ValueError')
+
+    self.assertRaises(ValueError, retry_util.GenericRetry, lambda ex: True,
+                      -1, always_raise)
+    self.assertRaises(ValueError, retry_util.GenericRetry, lambda ex: True,
+                      3, always_raise, backoff_factor=0.9)
+    self.assertRaises(ValueError, retry_util.GenericRetry, lambda ex: True,
+                      3, always_raise, sleep=-1)
+
   def testRaisedException(self):
     """Test which exception gets raised by repeated failure."""
 
