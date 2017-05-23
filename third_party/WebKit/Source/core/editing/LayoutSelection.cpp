@@ -213,16 +213,8 @@ void LayoutSelection::SetSelection(
     LayoutObject* end,
     int end_pos,
     SelectionPaintInvalidationMode block_paint_invalidation_mode) {
-  // This code makes no assumptions as to if the layout tree is up to date or
-  // not and will not try to update it. Currently clearSelection calls this
-  // (intentionally) without updating the layout tree as it doesn't care.
-  // Other callers may want to force recalc style before calling this.
-
-  // Make sure both our start and end objects are defined.
-  // Check www.msnbc.com and try clicking around to find the case where this
-  // happened.
-  if ((start && !end) || (end && !start))
-    return;
+  DCHECK(start);
+  DCHECK(end);
 
   // Just return if the selection hasn't changed.
   if (selection_start_ == start && selection_start_pos_ == start_pos &&
@@ -230,6 +222,7 @@ void LayoutSelection::SetSelection(
     return;
 
   DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
+  DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
 
   SelectedMap old_selected_map =
       CollectSelectedMap(selection_start_, selection_end_, selection_end_pos_,
@@ -301,7 +294,31 @@ void LayoutSelection::ClearSelection() {
   // invalidations.
   DisableCompositingQueryAsserts disabler;
 
-  SetSelection(0, -1, 0, -1, kPaintInvalidationNewMinusOld);
+  // Just return if the selection hasn't changed.
+  if (!selection_start_) {
+    DCHECK_EQ(selection_end_, nullptr);
+    DCHECK_EQ(selection_start_pos_, -1);
+    DCHECK_EQ(selection_end_pos_, -1);
+    return;
+  }
+
+  const SelectedMap& old_selected_map =
+      CollectSelectedMap(selection_start_, selection_end_, selection_end_pos_,
+                         kPaintInvalidationNewMinusOld);
+  // Clear SelectionState and invalidation.
+  for (auto layout_object : old_selected_map.object_map.Keys()) {
+    const SelectionState old_state = layout_object->GetSelectionState();
+    layout_object->SetSelectionStateIfNeeded(SelectionNone);
+    if (layout_object->GetSelectionState() == old_state)
+      continue;
+    layout_object->SetShouldInvalidateSelection();
+  }
+
+  // Reset selection start and end.
+  selection_start_ = nullptr;
+  selection_start_pos_ = -1;
+  selection_end_ = nullptr;
+  selection_end_pos_ = -1;
 }
 
 void LayoutSelection::Commit() {
