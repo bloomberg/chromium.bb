@@ -35,10 +35,8 @@ void SerializeOnBlockingTask(
 }  // namespace
 
 struct WebUIUserScriptLoader::UserScriptRenderInfo {
-  int render_process_id;
-  int render_frame_id;
-
-  UserScriptRenderInfo() : render_process_id(-1), render_frame_id(-1) {}
+  const int render_process_id;
+  const int render_frame_id;
 
   UserScriptRenderInfo(int render_process_id, int render_frame_id)
       : render_process_id(render_process_id),
