@@ -8,9 +8,6 @@
 namespace extensions {
 namespace events {
 
-// TODO(kalman): I am still in the process of migrating Event construction away
-// from using "UNKNOWN" to their real histogram values. See crbug.com/503402.
-//
 // Short version:
 //  *Never* reorder or delete entries in the |HistogramValue| enumeration.
 //  When creating a new extension event, add a new entry at the end of the

@@ -10,8 +10,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -194,14 +192,12 @@ void EventRouter::RegisterObserver(Observer* observer,
 }
 
 void EventRouter::UnregisterObserver(Observer* observer) {
-  std::vector<ObserverMap::iterator> iters_to_remove;
-  for (ObserverMap::iterator iter = observers_.begin();
-       iter != observers_.end(); ++iter) {
-    if (iter->second == observer)
-      iters_to_remove.push_back(iter);
+  for (ObserverMap::iterator it = observers_.begin(); it != observers_.end();) {
+    if (it->second == observer)
+      it = observers_.erase(it);
+    else
+      ++it;
   }
-  for (size_t i = 0; i < iters_to_remove.size(); ++i)
-    observers_.erase(iters_to_remove[i]);
 }
 
 void EventRouter::OnListenerAdded(const EventListener* listener) {
@@ -283,14 +279,14 @@ void EventRouter::AddFilteredEventListener(const std::string& event_name,
       event_name, extension_id, process,
       std::unique_ptr<DictionaryValue>(filter.DeepCopy())));
 
-  if (add_lazy_listener) {
-    bool added = listeners_.AddListener(EventListener::ForExtension(
-        event_name, extension_id, NULL,
-        std::unique_ptr<DictionaryValue>(filter.DeepCopy())));
+  if (!add_lazy_listener)
+    return;
 
-    if (added)
-      AddFilterToEvent(event_name, extension_id, &filter);
-  }
+  bool added = listeners_.AddListener(EventListener::ForExtension(
+      event_name, extension_id, nullptr,
+      std::unique_ptr<DictionaryValue>(filter.DeepCopy())));
+  if (added)
+    AddFilterToEvent(event_name, extension_id, &filter);
 }
 
 void EventRouter::RemoveFilteredEventListener(
@@ -314,12 +310,13 @@ void EventRouter::RemoveFilteredEventListener(
   }
 }
 
-bool EventRouter::HasEventListener(const std::string& event_name) {
+bool EventRouter::HasEventListener(const std::string& event_name) const {
   return listeners_.HasListenerForEvent(event_name);
 }
 
-bool EventRouter::ExtensionHasEventListener(const std::string& extension_id,
-                                            const std::string& event_name) {
+bool EventRouter::ExtensionHasEventListener(
+    const std::string& extension_id,
+    const std::string& event_name) const {
   return listeners_.HasListenerForExtension(extension_id, event_name);
 }
 
@@ -576,30 +573,29 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     return false;
 
   LazyBackgroundTaskQueue* queue = LazyBackgroundTaskQueue::Get(context);
-  if (queue->ShouldEnqueueTask(context, extension)) {
-    linked_ptr<Event> dispatched_event(event);
+  if (!queue->ShouldEnqueueTask(context, extension))
+    return false;
 
-    // If there's a dispatch callback, call it now (rather than dispatch time)
-    // to avoid lifetime issues. Use a separate copy of the event args, so they
-    // last until the event is dispatched.
-    if (!event->will_dispatch_callback.is_null()) {
-      dispatched_event.reset(event->DeepCopy());
-      if (!dispatched_event->will_dispatch_callback.Run(
-              context, extension, dispatched_event.get(), listener_filter)) {
-        // The event has been canceled.
-        return true;
-      }
-      // Ensure we don't call it again at dispatch time.
-      dispatched_event->will_dispatch_callback.Reset();
+  linked_ptr<Event> dispatched_event(event);
+
+  // If there's a dispatch callback, call it now (rather than dispatch time)
+  // to avoid lifetime issues. Use a separate copy of the event args, so they
+  // last until the event is dispatched.
+  if (!event->will_dispatch_callback.is_null()) {
+    dispatched_event.reset(event->DeepCopy());
+    if (!dispatched_event->will_dispatch_callback.Run(
+            context, extension, dispatched_event.get(), listener_filter)) {
+      // The event has been canceled.
+      return true;
     }
-
-    queue->AddPendingTask(context, extension->id(),
-                          base::Bind(&EventRouter::DispatchPendingEvent,
-                                     base::Unretained(this), dispatched_event));
-    return true;
+    // Ensure we don't call it again at dispatch time.
+    dispatched_event->will_dispatch_callback.Reset();
   }
 
-  return false;
+  queue->AddPendingTask(context, extension->id(),
+                        base::Bind(&EventRouter::DispatchPendingEvent,
+                                   base::Unretained(this), dispatched_event));
+  return true;
 }
 
 // static
@@ -756,22 +752,15 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
 void EventRouter::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_ENABLED: {
-      // If the extension has a lazy background page, make sure it gets loaded
-      // to register the events the extension is interested in.
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-        LazyBackgroundTaskQueue* queue =
-            LazyBackgroundTaskQueue::Get(browser_context_);
-        queue->AddPendingTask(browser_context_, extension->id(),
-                              base::Bind(&DoNothing));
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_ENABLED, type);
+  // If the extension has a lazy background page, make sure it gets loaded
+  // to register the events the extension is interested in.
+  const Extension* extension = content::Details<const Extension>(details).ptr();
+  if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
+    LazyBackgroundTaskQueue* queue =
+        LazyBackgroundTaskQueue::Get(browser_context_);
+    queue->AddPendingTask(browser_context_, extension->id(),
+                          base::Bind(&DoNothing));
   }
 }
 
