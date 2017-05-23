@@ -3048,6 +3048,36 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the bottom navigation sheet prompting users to pull the sheet up to see their bookmarks and other content.">
         Pull up to see bookmarks and more
       </message>
+      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the bottom navigation sheet prompting users to pull the sheet up to see their bookmarks and other content when accessibility is enabled.">
+        Pull up on the address bar to see bookmarks, downloads, and history
+      </message>
+      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_TOOLBAR" desc="Accessibilty string read when the bottom toolbar, containing the adddress bar and some buttons, is focused. Informs users that they can pull up on the address bar to see their bookmarks and other content.">
+        Address bar. Pull up to see bookmarks, downloads, and history.
+      </message>
+      <message name="IDS_BOTTOM_SHEET_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content.">
+        Tap to see bookmarks and more
+      </message>
+      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content when accessibility is enabled.">
+        Tap to see bookmarks, downloads, and history
+      </message>
+      <message name="IDS_BOTTOM_SHEET_OPENED" desc="Accessibility string read when the bottom navigation panel is opened.">
+        Navigation panel opened
+      </message>
+      <message name="IDS_BOTTOM_SHEET_CLOSED" desc="Accessibility string read when the bottom navigation panel is closed.">
+        Navigation panel closed
+      </message>
+      <message name="IDS_BOTTOM_SHEET_BOOKMARKS_TAB" desc="Accessibility string read when the bookmarks tab is selected.">
+        Bookmarks tab selected
+      </message>
+      <message name="IDS_BOTTOM_SHEET_DOWNLOADS_TAB" desc="Accessibility string read when the downloads tab is selected.">
+        Downloads tab selected
+      </message>
+      <message name="IDS_BOTTOM_SHEET_HISTORY_TAB" desc="Accessibility string read when the history tab is selected.">
+        History tab selected
+      </message>
+      <message name="IDS_BOTTOM_SHEET_HOME_TAB" desc="Accessibility string read when the home tab is selected.">
+        Home tab selected
+      </message>
     </messages>
   </release>
 </grit>
