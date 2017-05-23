@@ -27,9 +27,12 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/data_element.h"
+#include "storage/common/storage_histograms.h"
 
 namespace storage {
 namespace {
+const char kCacheStorageRecordBytesLabel[] = "DiskCache.CacheStorage";
+
 bool IsFileType(DataElement::Type type) {
   switch (type) {
     case DataElement::TYPE_FILE:
@@ -145,6 +148,8 @@ void BlobReader::DidReadDiskCacheEntrySideData(const StatusCallback& done,
                                                int result) {
   if (result >= 0) {
     DCHECK_EQ(expected_size, result);
+    if (result > 0)
+      storage::RecordBytesRead(kCacheStorageRecordBytesLabel, result);
     done.Run(Status::DONE);
     return;
   }
@@ -584,6 +589,8 @@ BlobReader::Status BlobReader::ReadDiskCacheEntryItem(const BlobDataItem& item,
 void BlobReader::DidReadDiskCacheEntry(int result) {
   TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadDiskCacheItem", this, "uuid",
                          blob_data_->uuid());
+  if (result > 0)
+    storage::RecordBytesRead(kCacheStorageRecordBytesLabel, result);
   DidReadItem(result);
 }
 

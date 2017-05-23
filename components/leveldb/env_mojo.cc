@@ -84,10 +84,11 @@ class MojoSequentialFile : public leveldb::SequentialFile {
       uma_logger_->RecordOSError(leveldb_env::kSequentialFileRead, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kSequentialFileRead, error);
-    } else {
-      *result = Slice(scratch, bytes_read);
-      return Status::OK();
     }
+    if (bytes_read > 0)
+      uma_logger_->RecordBytesRead(bytes_read);
+    *result = Slice(scratch, bytes_read);
+    return Status::OK();
   }
 
   Status Skip(uint64_t n) override {
@@ -121,17 +122,17 @@ class MojoRandomAccessFile : public leveldb::RandomAccessFile {
               size_t n,
               Slice* result,
               char* scratch) const override {
-    Status s;
-    int r = file_.Read(offset, scratch, static_cast<int>(n));
-    *result = Slice(scratch, (r < 0) ? 0 : r);
-    if (r < 0) {
-      // An error: return a non-ok status
-      s = MakeIOError(filename_, "Could not perform read",
-                      leveldb_env::kRandomAccessFileRead);
+    int bytes_read = file_.Read(offset, scratch, static_cast<int>(n));
+    *result = Slice(scratch, (bytes_read < 0) ? 0 : bytes_read);
+    if (bytes_read < 0) {
       uma_logger_->RecordOSError(leveldb_env::kRandomAccessFileRead,
                                  LastFileError());
+      return MakeIOError(filename_, "Could not perform read",
+                         leveldb_env::kRandomAccessFileRead);
     }
-    return s;
+    if (bytes_read > 0)
+      uma_logger_->RecordBytesRead(bytes_read);
+    return Status::OK();
   }
 
  private:
@@ -169,15 +170,16 @@ class MojoWritableFile : public leveldb::WritableFile {
   ~MojoWritableFile() override {}
 
   leveldb::Status Append(const leveldb::Slice& data) override {
-    size_t bytes_written = file_.WriteAtCurrentPos(
-        data.data(), static_cast<int>(data.size()));
-    if (bytes_written != data.size()) {
+    int bytes_written =
+        file_.WriteAtCurrentPos(data.data(), static_cast<int>(data.size()));
+    if (bytes_written != static_cast<int>(data.size())) {
       base::File::Error error = LastFileError();
       uma_logger_->RecordOSError(leveldb_env::kWritableFileAppend, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kWritableFileAppend, error);
     }
-
+    if (bytes_written > 0)
+      uma_logger_->RecordBytesWritten(bytes_written);
     return Status::OK();
   }
 
@@ -188,8 +190,7 @@ class MojoWritableFile : public leveldb::WritableFile {
 
   leveldb::Status Flush() override {
     // base::File doesn't do buffered I/O (i.e. POSIX FILE streams) so nothing
-    // to
-    // flush.
+    // to flush.
     return Status::OK();
   }
 
@@ -453,6 +454,14 @@ void MojoEnv::RecordOSError(leveldb_env::MethodID method,
   std::string uma_name =
       std::string("MojoLevelDBEnv.IOError.BFE.") + MethodIDToString(method);
   base::UmaHistogramExactLinear(uma_name, -error, -base::File::FILE_ERROR_MAX);
+}
+
+void MojoEnv::RecordBytesRead(int amount) const {
+  UMA_HISTOGRAM_COUNTS_10M("Storage.BytesRead.MojoLevelDBEnv", amount);
+}
+
+void MojoEnv::RecordBytesWritten(int amount) const {
+  UMA_HISTOGRAM_COUNTS_10M("Storage.BytesWritten.MojoLevelDBEnv", amount);
 }
 
 void MojoEnv::RecordFileError(leveldb_env::MethodID method,

@@ -54,6 +54,8 @@ class MojoEnv : public Env, public leveldb_env::UMALogger {
   void RecordErrorAt(leveldb_env::MethodID method) const override;
   void RecordOSError(leveldb_env::MethodID method,
                      base::File::Error error) const override;
+  void RecordBytesRead(int amount) const override;
+  void RecordBytesWritten(int amount) const override;
 
   void RecordFileError(leveldb_env::MethodID method,
                        filesystem::mojom::FileError error) const;

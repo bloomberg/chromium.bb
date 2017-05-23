@@ -71984,6 +71984,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Storage.BytesRead" units="bytes">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The number of bytes read. Recorded on each read.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Storage.BytesWritten" units="bytes">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The number of bytes written. Recorded on each write.
+  </summary>
+</histogram>
+
 <histogram name="Storage.ImportantSites.CBDChosenReason"
     enum="ImportantSitesReason">
   <owner>dmurph@chromium.org</owner>
@@ -92732,6 +92746,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Eviction was triggered because the total size exceeded maximum
              in memory size allwed"/>
   <affected-histogram name="Storage.Blob.SizeEvictedToDiskInKB"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Storage.Bytes" separator=".">
+  <suffix name="DiskCache.AppCache" label="AppCache usage."/>
+  <suffix name="DiskCache.CacheStorage" label="CacheStorage usage."/>
+  <suffix name="DiskCache.ServiceWorker"
+      label="ServiceWorker scriptcache usage."/>
+  <suffix name="LevelDBEnv" label="Undifferentiated leveldb usage."/>
+  <suffix name="LevelDBEnv.IDB" label="IndexedDB usage."/>
+  <suffix name="LevelDBEnv.ServiceWorker"
+      label="ServiceWorker database usage."/>
+  <suffix name="MojoLevelDBEnv" label="Mojo leveldb component usage."/>
+  <affected-histogram name="Storage.BytesRead"/>
+  <affected-histogram name="Storage.BytesWritten"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="StunPingInternal" separator=".">

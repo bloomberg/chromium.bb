@@ -317,11 +317,11 @@ int AppCacheDiskCache::DoomEntry(int64_t key,
 }
 
 AppCacheDiskCache::AppCacheDiskCache(bool use_simple_cache)
-    : use_simple_cache_(use_simple_cache),
+    : AppCacheDiskCacheInterface("DiskCache.AppCache"),
+      use_simple_cache_(use_simple_cache),
       is_disabled_(false),
       is_waiting_to_initialize_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AppCacheDiskCache::PendingCall::PendingCall()
     : call_type(CREATE),

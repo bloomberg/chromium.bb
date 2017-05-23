@@ -29,6 +29,8 @@ component("common") {
     "quota/quota_status_code.h",
     "quota/quota_types.h",
     "storage_common_export.h",
+    "storage_histograms.cc",
+    "storage_histograms.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
