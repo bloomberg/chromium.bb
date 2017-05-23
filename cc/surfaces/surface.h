@@ -21,7 +21,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -41,23 +41,24 @@ class CC_SURFACES_EXPORT Surface {
       base::RepeatingCallback<void(const LocalSurfaceId&, const gfx::Rect&)>;
 
   Surface(
-      const SurfaceId& id,
+      const SurfaceInfo& surface_info,
       base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support);
   ~Surface();
 
-  const SurfaceId& surface_id() const { return surface_id_; }
+  const SurfaceId& surface_id() const { return surface_info_.id(); }
   const SurfaceId& previous_frame_surface_id() const {
     return previous_frame_surface_id_;
   }
 
   void SetPreviousFrameSurface(Surface* surface);
 
+  // Returns false if |frame| is invalid.
   // |draw_callback| is called once to notify the client that the previously
   // submitted CompositorFrame is processed and that another frame can be
   // submitted.
   // |will_draw_callback| is called when |surface| is scheduled for a draw and
   // there is visible damage.
-  void QueueFrame(CompositorFrame frame,
+  bool QueueFrame(CompositorFrame frame,
                   const base::Closure& draw_callback,
                   const WillDrawCallback& will_draw_callback);
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
@@ -156,7 +157,7 @@ class CC_SURFACES_EXPORT Surface {
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
 
-  const SurfaceId surface_id_;
+  SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support_;
   SurfaceManager* const surface_manager_;

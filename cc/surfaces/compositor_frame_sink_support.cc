@@ -97,7 +97,7 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
     begin_frame_source_->DidFinishFrame(this, ack);
 }
 
-void CompositorFrameSinkSupport::SubmitCompositorFrame(
+bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
   TRACE_EVENT0("cc", "CompositorFrameSinkSupport::SubmitCompositorFrame");
@@ -131,15 +131,35 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   if (!create_new_surface) {
     surface = std::move(current_surface_);
   } else {
-    surface = CreateSurface(local_surface_id);
+    SurfaceId surface_id(frame_sink_id_, local_surface_id);
+    gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
+    float device_scale_factor = frame.metadata.device_scale_factor;
+    SurfaceInfo surface_info(surface_id, device_scale_factor, frame_size);
+
+    if (!surface_info.is_valid()) {
+      TRACE_EVENT_INSTANT0("cc", "Invalid SurfaceInfo",
+                           TRACE_EVENT_SCOPE_THREAD);
+      if (current_surface_)
+        DestroyCurrentSurface();
+      ReturnedResourceArray resources;
+      TransferableResource::ReturnResources(frame.resource_list, &resources);
+      ReturnResources(resources);
+      DidReceiveCompositorFrameAck();
+      return true;
+    }
+
+    surface = CreateSurface(surface_info);
   }
 
-  surface->QueueFrame(
+  bool result = surface->QueueFrame(
       std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()),
       base::BindRepeating(&CompositorFrameSinkSupport::WillDrawSurface,
                           weak_factory_.GetWeakPtr()));
+
+  if (!result)
+    return false;
 
   if (current_surface_) {
     surface->SetPreviousFrameSurface(current_surface_.get());
@@ -154,6 +174,8 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   // See https://crbug.com/703079.
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this, ack);
+
+  return true;
 }
 
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(
@@ -331,11 +353,10 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 }
 
 std::unique_ptr<Surface> CompositorFrameSinkSupport::CreateSurface(
-    const LocalSurfaceId& local_surface_id) {
+    const SurfaceInfo& surface_info) {
   seen_first_frame_activation_ = false;
-  std::unique_ptr<Surface> surface = surface_manager_->CreateSurface(
-      weak_factory_.GetWeakPtr(), local_surface_id);
-  return surface;
+  return surface_manager_->CreateSurface(weak_factory_.GetWeakPtr(),
+                                         surface_info);
 }
 
 void CompositorFrameSinkSupport::DestroyCurrentSurface() {

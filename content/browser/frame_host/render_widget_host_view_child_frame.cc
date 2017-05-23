@@ -368,7 +368,9 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
   current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
   current_surface_scale_factor_ = frame.metadata.device_scale_factor;
 
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  bool result =
+      support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  DCHECK(result);
   has_frame_ = true;
 
   if (local_surface_id_ != local_surface_id || HasEmbedderChanged()) {

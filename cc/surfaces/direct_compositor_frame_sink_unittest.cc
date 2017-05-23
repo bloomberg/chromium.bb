@@ -17,6 +17,7 @@
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_compositor_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -108,7 +109,7 @@ class DirectCompositorFrameSinkTest : public testing::Test {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     render_pass->SetNew(1, display_rect_, damage_rect, gfx::Transform());
 
-    CompositorFrame frame;
+    CompositorFrame frame = test::MakeEmptyCompositorFrame();
     frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
     frame.render_pass_list.push_back(std::move(render_pass));
 

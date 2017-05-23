@@ -85,7 +85,10 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         cc::SurfaceId(frame_sink_id_, local_surface_id), 1.f, frame_size);
     has_transparent_background_ = root_pass->has_transparent_background;
 
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    bool result =
+        support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    DCHECK(result);
+
     content_layer_ = CreateSurfaceLayer(surface_manager_, surface_info_,
                                         !has_transparent_background_);
     view_->GetLayer()->AddChild(content_layer_);

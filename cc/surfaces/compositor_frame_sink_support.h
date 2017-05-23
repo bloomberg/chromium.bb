@@ -15,7 +15,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
-#include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_resource_holder.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
 #include "cc/surfaces/surfaces_export.h"
@@ -60,7 +60,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void EvictCurrentSurface();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void DidNotProduceFrame(const BeginFrameAck& ack);
-  void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
+  bool SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
   void ClaimTemporaryReference(const SurfaceId& surface_id);
@@ -105,8 +105,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   void UpdateNeedsBeginFramesInternal();
-  std::unique_ptr<Surface> CreateSurface(
-      const LocalSurfaceId& local_surface_id);
+  std::unique_ptr<Surface> CreateSurface(const SurfaceInfo& surface_info);
   void DestroyCurrentSurface();
 
   CompositorFrameSinkSupportClient* const client_;
