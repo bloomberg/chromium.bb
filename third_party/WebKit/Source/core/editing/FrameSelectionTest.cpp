@@ -883,7 +883,7 @@ TEST_F(FrameSelectionTest, RangeContainsFocus) {
   Element* const alink = GetDocument().getElementById("alink");
   alink->focus();
   EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
-  EXPECT_FALSE(Selection().SelectionHasFocus());
+  EXPECT_TRUE(Selection().SelectionHasFocus());
   EXPECT_FALSE(Selection().IsHidden());  // Range still visible.
 }
 

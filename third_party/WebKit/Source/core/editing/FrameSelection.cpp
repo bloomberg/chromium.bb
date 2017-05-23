@@ -434,14 +434,21 @@ bool FrameSelection::SelectionHasFocus() const {
     return false;
 
   // No focused element means document root has focus.
-  const Element* const focused_element = GetDocument().FocusedElement()
-                                             ? GetDocument().FocusedElement()
-                                             : GetDocument().documentElement();
+  Element* const focused_element = GetDocument().FocusedElement()
+                                       ? GetDocument().FocusedElement()
+                                       : GetDocument().documentElement();
   if (!focused_element)
     return false;
 
   if (focused_element->IsTextControl())
     return focused_element->ContainsIncludingHostElements(*current);
+
+  // Selection has focus if it contains the focused element.
+  const PositionInFlatTree& focused_position =
+      PositionInFlatTree::FirstPositionInNode(focused_element);
+  if (ComputeVisibleSelectionInFlatTree().Start() <= focused_position &&
+      ComputeVisibleSelectionInFlatTree().end() >= focused_position)
+    return true;
 
   bool has_editable_style = HasEditableStyle(*current);
   do {
