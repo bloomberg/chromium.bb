@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">İnternet'te aç</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
-<translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="1111673857033749125">Diğer cihazlarınızda kaydedilmiş yer işaretleri burada görünür.</translation>
 <translation id="1121094540300013208">Kullanım ve kilitlenme raporları</translation>
@@ -191,7 +190,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Yakında daha fazla seçenek gösterilecek. Güzel bir sabah geçirmenizi dileriz.</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
-<translation id="3090193911106258841">Ses ve video girişlerine erişiliyor</translation>
 <translation id="3137521801621304719">Gizli moddan çık</translation>
 <translation id="3148434565183091099">Yer işaretlerinizi tüm cihazlarınızda almak için Chrome'da oturum açın.</translation>
 <translation id="3166827708714933426">Sekme ve pencere kısayolları</translation>
@@ -283,6 +281,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4056223980640387499">Sepya Tonu</translation>
 <translation id="4060598801229743805">Ekranın üst kısmına yakın bir yerde seçenekler vardır</translation>
 <translation id="4062305924942672200">Yasal bilgiler</translation>
+<translation id="4084682180776658562">Yer İşareti</translation>
 <translation id="4084836577264234537">İndirilenler <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Bu özellik, operatörünüz tarafından sağlanan birinci sınıf veri hizmetlerine erişime engel olabilir.</translation>
 <translation id="4095146165863963773">Uygulama verileri silinsin mi?</translation>
@@ -293,7 +292,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4226663524361240545">Bildirimler cihazı titretebilir</translation>
-<translation id="423410644998903704">Chrome'un bu siteyle paylaşımda bulunabilmesi için izin erişimine ihtiyacı var.</translation>
 <translation id="4242533952199664413">Ayarları aç</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4254813446494774748">Çeviri Dili:</translation>
@@ -471,8 +469,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5956665950594638604">Chrome Yardım Merkezi'ni yeni bir sekmede açar</translation>
 <translation id="5962718611393537961">Daraltmak için dokunun</translation>
 <translation id="6000066717592683814">Google kalsın</translation>
-<translation id="6010869025736512584">Video girişine erişiliyor</translation>
-<translation id="6012342843556706400">Chrome'un konumu bu siteyle paylaşması için konum erişimine ihtiyacı var.</translation>
 <translation id="6031101910111098835">Daraltıldı - Genişletmek için tıklayın</translation>
 <translation id="6039379616847168523">Sonraki sekmeye gider</translation>
 <translation id="6040143037577758943">Kapat</translation>
@@ -591,6 +587,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7149893636342594995">Son 24 saat</translation>
 <translation id="7180611975245234373">Yenile</translation>
 <translation id="7189372733857464326">Güncellemenin tamamlanması için Google Play Hizmetleri bekleniyor</translation>
+<translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
@@ -611,6 +608,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="7475192538862203634">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
 <translation id="748127970106343339">Cihazın kimlik bilgilerini silmeyi onaylayın</translation>
+<translation id="7481312909269577407">İleri</translation>
 <translation id="7487352416683556407">Seçilen veriler Chrome'dan ve senkronize edilen cihazlarınızdan kaldırıldı.
 
 Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>
@@ -643,11 +641,9 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}}</translation>
 <translation id="7781829728241885113">Dün</translation>
-<translation id="7788788617745289808">Chrome'un kamerayı bu siteyle paylaşması için kamera erişimine ihtiyacı var.</translation>
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
-<translation id="7829298379596169484">Ses girişine erişiliyor</translation>
 <translation id="7837721118676387834">Belirli bir sitenin, sesi kapatılmış videoları otomatik olarak oynatmasına izin verin.</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>

@@ -21,7 +21,7 @@
 <translation id="6207937957461833379">Krajina alebo oblasť</translation>
 <translation id="6247152910634872706">Organizácia</translation>
 <translation id="6271429879296260742">Kód PIN</translation>
-<translation id="6282194474023008486">Poštový kód</translation>
+<translation id="6282194474023008486">Poštové smerovacie číslo</translation>
 <translation id="6327653052522436195">Mesto</translation>
 <translation id="6403469950615936250">Formát tohto poštového smerovacieho čísla sa nedá rozpoznať. Príklad platného poštového smerovacieho čísla: <ph name="EXAMPLE" />. Nepoznáte svoje poštové smerovacie číslo? Zistite ho <ph name="BEGIN_LINK" />tu<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" /> nie je platná hodnota tohto poľa.</translation>
@@ -42,6 +42,6 @@
 <translation id="8446364922515257065">Do/Si</translation>
 <translation id="8449204988444194299">Poštový okres</translation>
 <translation id="8471101563037901452">Toto poštové smerovacie číslo zrejme nezodpovedá zvyšku adresy. Nepoznáte svoje poštové smerovacie číslo? Zistite ho <ph name="BEGIN_LINK" />tu<ph name="END_LINK" />.</translation>
-<translation id="9104066683700680171">Poštový kód sa zrejme nezhoduje so zvyšnou časťou adresy.</translation>
+<translation id="9104066683700680171">Poštové smerovacie číslo sa zrejme nezhoduje so zvyšnou časťou adresy.</translation>
 <translation id="9207002871037636573">Musíte zadať PSČ, napríklad <ph name="EXAMPLE" />.</translation>
 </translationbundle>

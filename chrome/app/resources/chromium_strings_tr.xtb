@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
 <translation id="1808667845054772817">Chromium'u yeniden yükle</translation>
-<translation id="1816404578968201294">Chromium'un, bu siteyle paylaşmak için konum bilgilerine erişmesi gerekiyor.</translation>
 <translation id="1869480248812203386">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirerek Chromium'un daha güvenli ve kullanımı kolay bir hale gelmesine yardımcı olabilirsiniz.</translation>
 <translation id="1881322772814446296">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chromium verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Hesap oturum açma ayrıntılarınız güncel olmadığından Chromium OS, verilerinizi senkronize edemedi.</translation>
 <translation id="2572494885440352020">Chromium Yardımcısı</translation>
 <translation id="2587578672395088481">Güncellemenin uygulanması için Chromium OS yeniden başlatılmalıdır.</translation>
-<translation id="2636877269779209383">Chromium'un, bu siteyle paylaşmak için kameraya erişmesi gerekiyor.</translation>
 <translation id="2647554856022461007">Chromium, göz atma deneyiminizi iyileştirmek için web hizmetleri kullanabilir. İsteğe bağlı olarak bu hizmetleri devre dışı bırakabilirsiniz. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="2685838254101182273">Chromium güncellenmesi durdu ve artık işletim sisteminizin bu sürümünü desteklemiyor.</translation>
@@ -168,7 +166,6 @@
 <translation id="6526111688217511984">Dosya indirmek için Chromium'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="6584627348340620412">32 bit Chromium'un gelecek sürümleri artık bu Linux sistemini desteklemeyecek, lütfen Chromium'un 64 bit sürümüne geçin.</translation>
 <translation id="6593914713218535185">Chromium artık bu Linux sisteminde desteklenmediği için doğru şekilde çalışmayabilir.</translation>
-<translation id="6637001341228460105">Chromium'un, bu siteyle paylaşmak için mikrofona erişmesi gerekiyor.</translation>
 <translation id="6638567566961868659">Yer işaretlerinizi Chromium menüsünde veya yer işaretleri çubuğunda bulabilirsiniz.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
 <translation id="6717134281241384636">Profiliniz daha yeni bir Chromium sürümünden olduğundan kullanılamıyor.
@@ -226,7 +223,6 @@ Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kon
 <translation id="7975919845073681630">Bu, Chromium'un ikincil bir yüklemesidir ve varsayılan tarayıcınız yapılamaz.</translation>
 <translation id="7979877361127045932">Chromium menüsünde gizle</translation>
 <translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor...</translation>
-<translation id="8033665941300843262">Chromium, bu siteyle paylaşmak için erişim izinlerine gerek duyuyor.</translation>
 <translation id="8134284582177628525">Bu bilgisayarı <ph name="PROFILE_NAME" /> ile paylaşıyorsanız bağımsız olarak web taraması yapmak üzere kendinizi Chrome'a ekleyin. Olmazsa diğer kullanıcıların Google Hesaplarının bağlantısını kesin.</translation>
 <translation id="8157153840442649507">Chromium bu dilde görüntüleniyor</translation>
 <translation id="81770708095080097">Bu dosya tehlikeli olduğu için Chromium tarafından engellendi.</translation>

@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">Japansk tastatur</translation>
 <translation id="1358735829858566124">Filen eller mappen kan ikke bruges.</translation>
 <translation id="1358741672408003399">Stavning og grammatik</translation>
-<translation id="1359381790106966506">Opdater tilladelser</translation>
 <translation id="1361164813881551742">Tilføj manuelt</translation>
 <translation id="1361655923249334273">Ikke brugt</translation>
 <translation id="136180453919764941">Batteri – <ph name="STATUS" /></translation>
@@ -1441,7 +1440,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3038675903128704560">Tillad ikke, at websites anvender et plugin til at få adgang til din computer</translation>
 <translation id="3039828483675273919">Flytter $1 elementer...</translation>
 <translation id="304009983491258911">Skift pinkode til SIM-kort</translation>
-<translation id="3046838483509668188">Indstillinger i ChromeVox</translation>
 <translation id="3046910703532196514">Webside, komplet</translation>
 <translation id="304826556400666995">Slå fanernes lyd til</translation>
 <translation id="3053013834507634016">Brug af certifikatnøgle</translation>
@@ -1472,6 +1470,7 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3088325635286126843">&amp;Omdøb...</translation>
 <translation id="308903551226753393">Konfigurer automatisk</translation>
 <translation id="3089231390674410424">Det ser ud til, at der er et problem med dine loginoplysninger. Sørg for, at du er logget ind på korrekt vis, og prøv igen.</translation>
+<translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
 <translation id="3090819949319990166">Ekstern crx-fil kan ikke kopieres til <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" er parret</translation>
 <translation id="3095995014811312755">version</translation>
@@ -1518,7 +1517,6 @@ Gå til din e-mail, <ph name="ACCOUNT_EMAIL" />, for at se denne og flere vejled
 <translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="3154429428035006212">Offline i mere end en måned</translation>
 <translation id="3157931365184549694">Gendan</translation>
-<translation id="3159386328383139451">Google bruger din placering til at give en bedre lokal søgeoplevelse. Du kan ændre dette i <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">Du har certifikatfiler, som identificerer følgende servere:</translation>
 <translation id="316125635462764134">Fjern appen</translation>
 <translation id="3161522574479303604">Alle sprog</translation>
@@ -2151,6 +2149,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4095507791297118304">Primær skærm</translation>
 <translation id="409579654357498729">Føj til Cloudprinter</translation>
 <translation id="4096508467498758490">Deaktiver udvidelser, der kører i udviklertilstand</translation>
+<translation id="4096824249111507322">Sikkerhedsmodulet forberedes. Vent lidt (dette kan tage et par minutter)...</translation>
 <translation id="4099060993766194518">Vil du gendanne standardsøgemaskinen?</translation>
 <translation id="4100733287846229632">Der er næsten ikke mere plads på enheden</translation>
 <translation id="4104163789986725820">E&amp;ksporter...</translation>
@@ -2433,7 +2432,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4590324241397107707">Lagring i database</translation>
 <translation id="4593021220803146968">&amp;Gå til <ph name="URL" /></translation>
 <translation id="4594109696316595112">Engangsaktivering: Indtast din adgangskode for at aktivere Smart Lock på denne <ph name="DEVICE_TYPE" />. Med Smart Lock kan din telefon låse denne enhed op uden adgangskode. Du kan ændre eller deaktivere denne funktion i indstillingerne for din <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4594538246438948697">Hold Søg nede, og klik eller træk for at få noget læst op</translation>
 <translation id="4595560905247879544">Apps og udvidelser kan kun ændres af administratoren (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Du har lagrede certifikater, som identificerer følgende servere:</translation>
 <translation id="4598556348158889687">Administration af lagerplads</translation>
@@ -2471,13 +2469,14 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4647697156028544508">Indtast pinkoden for "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Utilstrækkelige tilladelser</translation>
 <translation id="4648499713050786492">Lås din profil op, før du kan tilføje en person.</translation>
-<translation id="4653235815000740718">Der opstod et problem under oprettelsen af genoprettelsesmediet til operativsystemet. Den brugte lagerenhed blev ikke fundet.</translation>
+<translation id="4653235815000740718">Der opstod et problem under oprettelsen af genoprettelsesmediet til operativsystemet. Den anvendte lagerenhed blev ikke fundet.</translation>
 <translation id="4654488276758583406">Meget lille</translation>
 <translation id="465499440663162826">Der kunne ikke oprettes forbindelse til Chrome Webshop.</translation>
 <translation id="4656293982926141856">Denne computer</translation>
 <translation id="4657031070957997341">Tillad altid plugins på <ph name="HOST" /></translation>
 <translation id="4662788913887017617">Del dette bogmærke med din iPhone</translation>
 <translation id="4664482161435122549">PKCS #12-eksportfejl</translation>
+<translation id="466481852929361583">Sikkerhedsmodulet konfigureres. Vær tålmodig, det kan tage et par minutter.</translation>
 <translation id="4665014895760275686">Producent</translation>
 <translation id="4667176955651319626">Bloker tredjepartscookies og websitedata</translation>
 <translation id="4668721319092543482">Klik for at aktivere <ph name="PLUGIN_NAME" /></translation>
@@ -2651,7 +2650,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="490074449735753175">Brug en webtjeneste til at hjælpe med at rette stavefejl</translation>
 <translation id="49027928311173603">Den politik, der er downloadet fra serveren, er ugyldig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Kør Oprydningsværktøj til Chrome</translation>
-<translation id="4906679076183257864">Nulstil til standard</translation>
 <translation id="4907161631261076876">Denne fil er ikke downloadet på almindelig vis og kan være farlig.</translation>
 <translation id="4907306957610201395">Tilladelseskategori</translation>
 <translation id="4909038193460299775">Eftersom denne konto administreres af <ph name="DOMAIN" />, slettes dine bogmærker, din historik, dine adgangskoder og andre indstillinger på denne enhed. Dine data vil dog fortsat være gemt på din Google-konto og kan administreres i <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
@@ -3226,6 +3224,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="577624874850706961">Søg i cookies</translation>
 <translation id="5778550464785688721">Fuld kontrol over MIDI</translation>
+<translation id="5778747455497889540">Nedenfor ses den tilfældigt genererede adgangskode til sikkerhedsmodulet, der er tilknyttet din computer:</translation>
 <translation id="5780066559993805332">(Bedst)</translation>
 <translation id="5780973441651030252">Procesprioritet</translation>
 <translation id="5781865261247219930">Send kommandoer til <ph name="EXTENSION_NAME" /></translation>
@@ -3284,6 +3283,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5854409662653665676">Hvis du ofte oplever problemer, kan du prøve følgende for at løse problemet med dette modul:</translation>
 <translation id="5854912040170951372">Pepperoni</translation>
 <translation id="5855119960719984315">skift vindue</translation>
+<translation id="5855773610748894548">Ups, der er en fejl i forbindelse med sikkerhedsmodulet.</translation>
 <translation id="5856721540245522153">Aktivér fejlfindingsfunktioner</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5859272821192576954">Du er klar til at fortsætte til Hangouts</translation>
@@ -3374,6 +3374,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6005695835120147974">Medierouter</translation>
 <translation id="6006484371116297560">Klassisk</translation>
 <translation id="6007237601604674381">Flytningen mislykkedes. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Åbner videoinput</translation>
 <translation id="6011193465932186973">Fingeraftryk</translation>
 <translation id="6011449291337289699">Ryd websitedata</translation>
 <translation id="6015796118275082299">År</translation>
@@ -3801,6 +3802,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="6629841649550503054">Alt er sikkerhedskopieret til <ph name="BEGIN_LINK" />Google Drev<ph name="END_LINK" />.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ønsker permanent adgang til et certifikat for at godkende sig selv på dine vegne.</translation>
 <translation id="6639554308659482635">SQLite-hukommelse</translation>
+<translation id="6641138807883536517">Den tilfældigt genererede adgangskode til sikkerhedsmodulet er ikke tilgængelig. Dette er normalt efter en Powerwash.</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6644846457769259194">Opdaterer din enhed (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Webadresse for tilbagekaldelse af Netscape-certifikatautoritet</translation>
@@ -3891,7 +3893,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> blev tilføjet eksternt</translation>
 <translation id="6790820461102226165">Tilføj person...</translation>
 <translation id="6791443592650989371">Aktiveringsstatus:</translation>
-<translation id="6792045489562677072">Valgmuligheder for Oplæsning</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> vil gerne dele indholdet på din skærm med <ph name="TARGET_NAME" />. Vælg det, du gerne vil dele.</translation>
 <translation id="6793604637258913070">Fremhæv tekstmarkøren, når den vises eller flyttes</translation>
 <translation id="6797493596609571643">Ups! Der opstod en fejl.</translation>
@@ -4020,6 +4021,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="6991128190741664836">Senere</translation>
 <translation id="6991665348624301627">Vælg en destination</translation>
 <translation id="699220179437400583">Rapportér automatisk oplysninger om mulige sikkerhedshændelser til Google.</translation>
+<translation id="6996946928646015361">Sikkerhedsmodulet er deaktiveret eller mangler.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> filer er valgt</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Den følgende side svarer ikke. Du kan afvente svar fra den eller lukke den.}one{De følgende sider svarer ikke. Du kan afvente svar fra dem eller lukke dem.}other{De følgende sider svarer ikke. Du kan afvente svar fra dem eller lukke dem.}}</translation>
 <translation id="7002055706763150362">For at konfigurere Smart Lock til Chromebook skal Google først kontrollere, at du er den, du udgiver dig for at være. Indtast din adgangskode for at komme i gang.</translation>
@@ -4511,7 +4513,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7765158879357617694">Flyt</translation>
 <translation id="7766807826975222231">Få en rundvisning</translation>
 <translation id="7767646430896201896">Indstillinger:</translation>
-<translation id="7768784765476638775">Vælg-for-at-tale</translation>
 <translation id="7769353642898261262">Sådan sikrer du telefonen</translation>
 <translation id="7769672763586021400">Model-id</translation>
 <translation id="7771452384635174008">Layout</translation>
@@ -4556,6 +4557,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7825423931463735974">Tamilsk tastatur (Tamil99)</translation>
 <translation id="782590969421016895">Brug aktuelle sider</translation>
 <translation id="782886543891417279">Det Wi-Fi-netværk, du bruger (<ph name="WIFI_NAME" />), kan kræve, at du går til netværkets loginside.</translation>
+<translation id="7829298379596169484">Åbner lydinput</translation>
 <translation id="7831368056091621108">for at få denne udvidelse, din historik og andre Chrome-indstillinger på alle dine enheder.</translation>
 <translation id="7831493768366098287">Google Print</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5077,6 +5079,7 @@ Beregner resterende tid</translation>
 <translation id="8631032106121706562">Marguerit</translation>
 <translation id="8631271110654520730">Kopierer genoprettelsesbilledet...</translation>
 <translation id="8632275030377321303">Proxyen kan ikke ændres af brugeren.</translation>
+<translation id="8637542770513281060">Computeren indeholder et sikkerhedsmodul, som bruges til at implementere flere vigtige sikkerhedsfunktioner i Chrome OS. Du kan få flere oplysninger i Hjælp til Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Der findes en tilgængelig opdatering til systemet. Forbereder download...</translation>
 <translation id="8639963783467694461">Indstillinger for AutoFyld</translation>
 <translation id="8642171459927087831">Adgangstoken</translation>
@@ -5187,7 +5190,6 @@ Beregner resterende tid</translation>
 <translation id="8785622406424941542">Pen</translation>
 <translation id="8787254343425541995">Tillad proxyer til delte netværk</translation>
 <translation id="878763818693997570">Navnet er for langt</translation>
-<translation id="8789375980715484686">Administrer andre brugere</translation>
 <translation id="8791534160414513928">Send en anmodning om "Do Not Track" sammen med din browsertrafik</translation>
 <translation id="8794025342371547160">Adgangsbeskyttet IP-adresse</translation>
 <translation id="879413103056696865">Mens hotspottet er aktivt, vil din <ph name="PHONE_NAME" />:</translation>

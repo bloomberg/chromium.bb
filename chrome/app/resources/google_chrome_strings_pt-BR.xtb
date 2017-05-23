@@ -3,7 +3,6 @@
 <translationbundle lang="pt-BR">
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>
 <translation id="1035334672863811645">fazer login no Chrome</translation>
-<translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> estava usando o Chrome anteriormente</translation>
 <translation id="1104959162601287462">Sobre o Chrome OS</translation>
@@ -107,7 +106,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
 <translation id="4147555960264124640">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
-<translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
 <translation id="4251615635259297716">Vincular seus dados do Google Chrome a esta conta?</translation>
 <translation id="4309555186815777032">(requer a <ph name="BEGIN_BUTTON" />reinicialização<ph name="END_BUTTON" /> do Google Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -169,7 +167,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="5931853610562009806">No Mac, as senhas podem ser salvas no seu Keychain e acessadas ou sincronizadas por outros usuários do Google Chrome que compartilhem essa conta OS X.</translation>
 <translation id="5940385492829620908">Sua Web, seus favoritos e demais conteúdo do Chrome estão aqui.</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
-<translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
 <translation id="6014844626092547096">Agora, você está conectado ao Google Chrome. A sincronização está desativada por seu administrador.</translation>
 <translation id="6070348360322141662">Para maior segurança, o Google Chrome criptografará seus dados</translation>
 <translation id="6113794647360055231">O Chrome ficou ainda melhor</translation>
@@ -227,7 +224,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
 <translation id="7781002470561365167">Uma nova versão do Google Chrome está disponível.</translation>
 <translation id="7787950393032327779">O perfil parece estar em uso por outro processo do Google Chrome (<ph name="PROCESS_ID" />) em outro computador (<ph name="HOST_NAME" />). O Chrome bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chrome.</translation>
-<translation id="7788788617745289808">O Chrome precisa ter acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="7808348361785373670">Remover do Chrome</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="7855730255114109580">O Google Chrome está atualizado</translation>

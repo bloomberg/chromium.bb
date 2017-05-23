@@ -95,7 +95,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3194245623920924351">Vzdialená plocha Chrome</translation>
 <translation id="3197730452537982411">Vzdialená plocha</translation>
 <translation id="3258789396564295715">K tomuto počítaču môžete bezpečne pristupovať pomocou Vzdialenej plochy Chrome.</translation>
-<translation id="327263477022142889">Chcete pomôcť vylepšiť funkciu Vzdialená plocha Chrome? <ph name="LINK_BEGIN" />Zúčastnite sa prieskumu.<ph name="LINK_END" /></translation>
 <translation id="3286521253923406898">Ovládač hostiteľa funkcie Chromoting</translation>
 <translation id="332624996707057614">Upraviť názov počítača</translation>
 <translation id="3339299787263251426">Pristupujte k svojmu počítaču bezpečne cez internet</translation>
@@ -137,7 +136,6 @@ Hostiteľ</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurovaný tak, aby povolil pripojenie jedného alebo viacerých klientov bez zadania kódu PIN.</translation>
 <translation id="4277736576214464567">Prístupový kód je neplatný. Skúste to znova.</translation>
 <translation id="4361728918881830843">Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom Vzdialenú plochu Chrome a potom kliknite na tlačidlo <ph name="BUTTON_NAME" />.</translation>
-<translation id="4368630973089289038">Chcete pomôcť vylepšiť funkciu Chromoting? <ph name="LINK_BEGIN" />Zúčastnite sa prieskumu.<ph name="LINK_END" /></translation>
 <translation id="4394049700291259645">Zakázať</translation>
 <translation id="4405930547258349619">Základná knižnica</translation>
 <translation id="4430435636878359009">Zakázať vzdialené pripojenia k tomuto počítaču</translation>

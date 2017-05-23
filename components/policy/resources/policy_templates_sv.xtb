@@ -1532,7 +1532,7 @@
 <translation id="6693751878507293182">Om inställningen är aktiverad inaktiveras automatisk sökning efter och installation av plugin-program som saknas i <ph name="PRODUCT_NAME" />.
 
       Om inställningen är inaktiverad eller inte anges används pluginsökaren.</translation>
-<translation id="6699880231565102694">Aktivera tvåstegsverifiering för fjärråtkomstvärdar</translation>
+<translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
 <translation id="6766216162565713893">Tillåt att webbplatser begär att få tillgång till Bluetooth-enheter i närheten</translation>
 <translation id="6770454900105963262">Rapportera information om aktiva kiosksessioner</translation>
 <translation id="6786747875388722282">Tillägg</translation>
@@ -1809,11 +1809,11 @@
       Principen är avsedd att ge företag möjlighet att migrera befintliga servrar från HTTP/0.9. Principen tas bort framöver.
 
       Om principen inte har angetts, inaktiveras HTTP/0.9 på portar som inte har angetts som standard.</translation>
-<translation id="7749402620209366169">Aktiverar tvåstegsverifiering för värdar för fjärråtkomst istället för en användarangiven PIN-kod.
+<translation id="7749402620209366169">Aktiverar tvåfaktorsautentisering för värdar för fjärråtkomst istället för en användarangiven PIN-kod.
 
-          Om inställningen aktiveras måste användaren ange en giltig tvåstegskod för att komma åt värden.
+          Om inställningen aktiveras måste användaren ange en giltig tvåfaktorskod för att komma åt värden.
 
-          Om inställningen inaktiveras eller inte anges så kommer tvåstegsverifiering inte att aktiveras och standardfunktionen med en användardefinierad PIN-kod kommer att användas.</translation>
+          Om inställningen inaktiveras eller inte anges så kommer tvåfaktorsautentisering inte att aktiveras och standardfunktionen med en användardefinierad PIN-kod kommer att användas.</translation>
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
 <translation id="7761446981238915769">Konfigurera listan över installerade appar på inloggningsskärmen</translation>
 <translation id="7761526206824804472">Anger en eller flera rekommenderade språkkoder för en offentlig session så att användare enkelt kan använda någon av dessa språkkoder.

@@ -26,7 +26,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1774152462503052664">Povoliť prehliadaču Chromium spustenie na pozadí</translation>
 <translation id="1779356040007214683">Z dôvodu vyššej bezpečnosti prehliadača Chromium sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
 <translation id="1808667845054772817">Preinštalovať prehliadač Chromium</translation>
-<translation id="1816404578968201294">Chromium musí mať najprv prístup k polohe, aby ju mohol s týmito webovými stránkami zdieľať.</translation>
 <translation id="1869480248812203386">Automatickým nahlasovaním podrobností o možných bezpečnostných problémoch môžete prispieť k zvýšeniu zabezpečenia prehliadača Chromium a k zjednodušeniu jeho používania.</translation>
 <translation id="1881322772814446296">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. Ak chcete, aby boli existujúce údaje prehliadača Chromium oddelené, môžete vytvoriť nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nereaguje. Chcete ho spustiť znova?</translation>
@@ -50,7 +49,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2535480412977113886">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Ak chcete uplatniť aktualizáciu, musíte reštartovať systém Chromium OS.</translation>
-<translation id="2636877269779209383">Chromium musí mať najprv prístup k fotoaparátu, aby ho mohol s týmito webovými stránkami zdieľať.</translation>
 <translation id="2647554856022461007">Prehliadač Chromium môže na vylepšenie prehliadania používať webové služby. Tieto služby môžete podľa potreby zakázať. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">V priebehu inštalácie sa vyskytla chyba operačného systému. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="2685838254101182273">Prehliadač Chromium sa prestal aktualizovať a túto verziu vášho operačného systému už nepodporuje.</translation>
@@ -172,7 +170,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6526111688217511984">Chromium potrebuje na sťahovanie súborov prístup k úložisku.</translation>
 <translation id="6584627348340620412">Budúce verzie 32-bitového prehliadača Chromium už nebudú podporovať túto verziu systému Linux. Inovujte Chromium na 64-bitovú verziu.</translation>
 <translation id="6593914713218535185">Chromium nemusí fungovať správne, pretože v tejto verzii systému Linux už nie je podporovaný.</translation>
-<translation id="6637001341228460105">Chromium musí mať najprv prístup k mikrofónu, aby ho mohol s týmito webovými stránkami zdieľať.</translation>
 <translation id="6638567566961868659">Záložky nájdete v ponuke Chromium alebo na paneli so záložkami.</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
 <translation id="6717134281241384636">Váš profil sa nedá použiť, pretože pochádza z novšej verzie prehliadača Chromium.
@@ -230,7 +227,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="7975919845073681630">Toto je sekundárna inštalácia prehliadača Chromium – nemôže byť nastavený ako váš predvolený prehliadač.</translation>
 <translation id="7979877361127045932">Skryť v Ponuke Chromium</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">Chromium musí mať najprv prístup k povoleniam, aby ich mohol s týmito webovými stránkami zdieľať.</translation>
 <translation id="8134284582177628525">Ak tento počítač zdieľate s používateľom <ph name="PROFILE_NAME" />, pridajte sa do prehliadača Chromium, aby ste mohli samostatne prehliadať. V inom prípade odpojte účet Google daného používateľa.</translation>
 <translation id="8157153840442649507">Chromium sa zobrazuje v tomto jazyku</translation>
 <translation id="81770708095080097">Tento súbor je nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>

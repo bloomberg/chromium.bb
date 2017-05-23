@@ -3,7 +3,6 @@
 <translationbundle lang="ko">
 <translation id="1001534784610492198">설치 프로그램 보관 파일이 손상되었거나 올바르지 않습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="1035334672863811645">Chrome에 로그인</translation>
-<translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
 일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
@@ -111,7 +110,6 @@
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="4147555960264124640">관리 계정으로 로그인하여 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
-<translation id="423410644998903704">이 사이트에 공유하려면 Chrome에 액세스 권한이 있어야 합니다.</translation>
 <translation id="4251615635259297716">Chrome 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="4309555186815777032">(Chrome을 <ph name="BEGIN_BUTTON" />다시 시작<ph name="END_BUTTON" />해야 함)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -176,7 +174,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5931853610562009806">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="5940385492829620908">웹, 북마크 및 기타 Chrome 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
-<translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>
 <translation id="6014844626092547096">Chrome에 로그인했습니다. 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="6070348360322141662">보안 강화를 위해 Chrome에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="6113794647360055231">더욱 업그레이드된 Chrome</translation>
@@ -234,7 +231,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7761834446675418963">Chrome을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
 <translation id="7781002470561365167">Chrome의 새 버전이 출시되었습니다.</translation>
 <translation id="7787950393032327779">다른 컴퓨터(<ph name="HOST_NAME" />)의 다른 Chrome 프로세스(<ph name="PROCESS_ID" />)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chrome에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chrome을 다시 시작하세요.</translation>
-<translation id="7788788617745289808">이 사이트에 공유하려면 Chrome에 카메라 액세스 권한이 있어야 합니다.</translation>
 <translation id="7808348361785373670">Chrome에서 삭제...</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="7855730255114109580">Chrome이 최신 버전입니다.</translation>

@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> sier:</translation>
 <translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
+<translation id="1151972924205500581">Passord er påkrevd</translation>
 <translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK" />bufret kopi<ph name="END_LINK" /> av <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> avsluttet tilkoblingen uventet.</translation>
 <translation id="1161325031994447685">Koble til Wi-Fi på nytt</translation>
+<translation id="1165039591588034296">Feil</translation>
 <translation id="1175364870820465910">&amp;Skriv ut...</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Rapportér<ph name="END_WHITEPAPER_LINK" /> automatisk detaljer om mulige sikkerhetsbrudd til Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Lagre dette kortet på denne enheten</translation>
 <translation id="3435896845095436175">Slå på</translation>
 <translation id="3447661539832366887">Eieren av denne enheten har slått av dinosaurspillet.</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Hentingsintervall:</translation>
 <translation id="3462200631372590220">Skjul detaljer</translation>
 <translation id="3467763166455606212">Kortinnhaverens navn er obligatorisk</translation>
 <translation id="3478058380795961209">Utløpsmåned</translation>
 <translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Si fra til oss<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ikke nå</translation>
-<translation id="348000606199325318">Kræsj-ID <ph name="CRASH_LOCAL_ID" /> (Tjener-ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Vi kunne ikke nå foreldrene dine akkurat nå. Prøv igjen.</translation>
 <translation id="3528171143076753409">Tjenerens sertifikat er ikke pålitelig.</translation>
 <translation id="3539171420378717834">Lagre en kopi av dette kortet på denne enheten</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Forespørselen din om å få tilgang til dette nettstedet er sendt til <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Legg til e-post</translation>
 <translation id="3901925938762663762">Kortet er utløpt</translation>
-<translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Bokmerker for mobil</translation>
 <translation id="7961015016161918242">Aldri</translation>
-<translation id="7962083544045318153">Kræsj-ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ikke spesifisert</translation>
 <translation id="800218591365569300">Prøv å lukke andre faner eller programmer for å frigjøre minne.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8874824191258364635">Angi et gyldig kortnummer</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
-<translation id="8877192140621905067">Når du bekrefter, deles kortinformasjonen din med dette nettstedet</translation>
 <translation id="8889402386540077796">Fargetone</translation>
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
 <translation id="889901481107108152">Beklager, dette eksperimentet er ikke er tilgjengelig på plattformen din.</translation>

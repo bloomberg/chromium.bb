@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> บอกว่า:</translation>
 <translation id="1132774398110320017">การตั้งค่าป้อนข้อความอัตโนมัติของ Chrome...</translation>
 <translation id="1150979032973867961">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
+<translation id="1151972924205500581">ต้องมีรหัสผ่าน</translation>
 <translation id="1152921474424827756">เข้าถึง<ph name="BEGIN_LINK" />สำเนาแคช<ph name="END_LINK" />ของ <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ปิดการเชื่อมต่อโดยไม่คาดคิด</translation>
 <translation id="1161325031994447685">เชื่อมต่อ Wi-Fi ใหม่</translation>
+<translation id="1165039591588034296">ข้อผิดพลาด</translation>
 <translation id="1175364870820465910">&amp;พิมพ์...</translation>
 <translation id="1181037720776840403">ลบ</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />รายงาน<ph name="END_WHITEPAPER_LINK" />รายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">บันทึกบัตรนี้ลงในอุปกรณ์นี้</translation>
 <translation id="3435896845095436175">เปิดการใช้งาน</translation>
 <translation id="3447661539832366887">เจ้าของอุปกรณ์นี้ปิดเกมไดโนเสาร์</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">ช่วงการดึงข้อมูล:</translation>
 <translation id="3462200631372590220">ซ่อนข้อมูลขั้นสูง</translation>
 <translation id="3467763166455606212">ต้องระบุชื่อผู้ถือบัตร</translation>
 <translation id="3478058380795961209">เดือนที่หมดอายุ</translation>
 <translation id="3479539252931486093">หากเหตุการณ์นี้ผิดปกติ <ph name="BEGIN_LINK" />โปรดแจ้งให้เราทราบ<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
-<translation id="348000606199325318">รหัสข้อขัดข้อง <ph name="CRASH_LOCAL_ID" /> (รหัสเซิร์ฟเวอร์: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">เราไม่สามารถติดต่อผู้ปกครองของคุณได้ในขณะนี้ โปรดลองอีกครั้ง</translation>
 <translation id="3528171143076753409">ใบรับรองของเซิร์ฟเวอร์ไม่น่าเชื่อถือ</translation>
 <translation id="3539171420378717834">เก็บสำเนาบัตรนี้ไว้บนอุปกรณ์นี้</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">ระบบส่งคำขอเข้าถึงเว็บไซต์นี้ของคุณให้ <ph name="NAME" /> แล้ว</translation>
 <translation id="3890664840433101773">เพิ่มอีเมล</translation>
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
-<translation id="3934680773876859118">โหลดเอกสาร PDF ล้มเหลว</translation>
 <translation id="3963721102035795474">โหมดนักอ่าน</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32 บิต)</translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนมือถือ</translation>
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
-<translation id="7962083544045318153">รหัสข้อขัดข้อง <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">แปล <ph name="ORIGINAL_LANGUAGE" /> เป็น <ph name="TARGET_LANGUAGE" /> เสมอ</translation>
 <translation id="7995512525968007366">ไม่ได้ระบุ</translation>
 <translation id="800218591365569300">ลองปิดแท็บหรือโปรแกรมอื่นๆ เพื่อเพิ่มหน่วยความจำ</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">เพิ่งปิด</translation>
 <translation id="8874824191258364635">ป้อนหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="8876793034577346603">ไม่สามารถแยกวิเคราะห์การกำหนดค่าเครือข่าย</translation>
-<translation id="8877192140621905067">เมื่อคุณยืนยันแล้ว รายละเอียดบัตรของคุณจะแชร์กับเว็บไซต์นี้</translation>
 <translation id="8889402386540077796">โทนสี</translation>
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
 <translation id="889901481107108152">ขออภัย การทดลองนี้ไม่สามารถใช้ได้กับแพลตฟอร์มของคุณ</translation>

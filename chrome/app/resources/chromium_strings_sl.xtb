@@ -26,7 +26,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="1779356040007214683">Zaradi večje varnosti smo v Chromiumu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
 <translation id="1808667845054772817">Vnovična namestitev Chromiuma</translation>
-<translation id="1816404578968201294">Chromium potrebuje dostop do lokacije, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="1869480248812203386">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chromium varnejši in preprostejši za uporabo.</translation>
 <translation id="1881322772814446296">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromiumu ostali ločeni. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
@@ -50,7 +49,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
 <translation id="2587578672395088481">Če želite namestiti posodobitev, morate znova zagnati OS Chromium.</translation>
-<translation id="2636877269779209383">Chromium potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="2647554856022461007">Chromium lahko za izboljšanje izkušnje pri brskanju uporabi spletne storitve.
 Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Napaka v operacijskem sistemu med namestitvijo. Znova prenesite Chromium.</translation>
@@ -173,7 +171,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="6526111688217511984">Chromium potrebuje za prenos datotek dostop do shrambe.</translation>
 <translation id="6584627348340620412">Prihodnje 32-bitne različice Chromiuma ne bodo več podpirale tega sistema Linux. Nadgradite Chromium na 64-bitno različico.</translation>
 <translation id="6593914713218535185">Chromium morda ne bo deloval pravilno, ker ni več podprt v tem sistemu Linux.</translation>
-<translation id="6637001341228460105">Chromium potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="6638567566961868659">Poiščite svoje zaznamke v meniju Chromiuma ali v vrstici z zaznamki.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="6717134281241384636">Vašega profila ni mogoče uporabiti, ker je iz novejše različice Chromiuma.
@@ -231,7 +228,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="7975919845073681630">To je sekundarna namestitev Chromiuma in ga ni mogoče nastaviti kot privzeti brskalnik.</translation>
 <translation id="7979877361127045932">Skrij v meniju Chromiuma</translation>
 <translation id="8030318113982266900">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>
-<translation id="8033665941300843262">Chromium potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="8134284582177628525">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME" />, se dodajte v Chromium, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
 <translation id="8157153840442649507">Chromium je v tem jeziku</translation>
 <translation id="81770708095080097">Ta datoteka je nevarna, zato jo je Chromium blokiral.</translation>

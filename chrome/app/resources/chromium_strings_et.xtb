@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Luba Chromiumil taustal töötada</translation>
 <translation id="1779356040007214683">Chromiumi turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="1808667845054772817">Installi Chromium uuesti</translation>
-<translation id="1816404578968201294">Chromiumil on vaja asukohale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="1869480248812203386">Saate aidata muuta Chromiumi turvalisemaks ja lihtsamalt kasutatavaks, kui teavitate Google'it automaatselt võimalike turvaintsidentide üksikasjadest.</translation>
 <translation id="1881322772814446296">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Chromium OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
 <translation id="2587578672395088481">Chromium OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
-<translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2647554856022461007">Chromium võib sirvimiskogemuse parandamiseks kasutada veebiteenuseid. Võite need teenused valikuliselt keelata. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
 <translation id="2685838254101182273">Chromiumi värskendamine peatati ja teie operatsioonisüsteemi seda versiooni ei toetata enam.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
 <translation id="6584627348340620412">32-bitise Chromiumi tulevased versioonid ei toeta enam seda Linuxi süsteemi. Viige Chromium üle 64-bitisele versioonile.</translation>
 <translation id="6593914713218535185">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis.</translation>
-<translation id="6637001341228460105">Chromiumil on vaja mikrofonile juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="6638567566961868659">Otsige oma järjehoidjaid Chromiumi menüüst või järjehoidjaribalt.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="6717134281241384636">Teie profiili ei saa kasutada, kuna see pärineb Chromiumi uuemast versioonist.
@@ -228,7 +225,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7975919845073681630">See on Chromiumi sekundaarne install ja seda ei saa määrata vaikebrauseriks.</translation>
 <translation id="7979877361127045932">Chromiumi menüüs peitmine</translation>
 <translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>
-<translation id="8033665941300843262">Chromiumil on vaja lubadele juurdepääsu nende jagamiseks saidiga.</translation>
 <translation id="8134284582177628525">Kui jagate seda arvutit kasutajaga <ph name="PROFILE_NAME" />, lisage ennast Chromiumi, et saaksite eraldi sirvida. Muidu katkestage ühendus nende Google'i kontoga.</translation>
 <translation id="8157153840442649507">Chromium kuvatakse selles keeles</translation>
 <translation id="81770708095080097">Chromium blokeeris faili, kuna see on ohtlik.</translation>

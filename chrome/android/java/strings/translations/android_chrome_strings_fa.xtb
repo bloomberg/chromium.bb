@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
 <translation id="1049743911850919806">ناشناس</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
-<translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="1080790410959514870">‏در حال خروج از حسابی هستید که توسط <ph name="DOMAIN_NAME" /> مدیریت می‌شود. این کار داده‌های Chrome ذخیره شده در این دستگاه را حذف خواهد کرد، اما داده‌ها در حساب Google شما باقی خواهد ماند.</translation>
 <translation id="1111673857033749125">نشانک‌های ذخیره‌شده در سایر دستگاه‌های شما در اینجا نشان داده می‌شوند.</translation>
 <translation id="1121094540300013208">آمار استفاده و گزارش‌های خرابی</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از صبحتان لذت ببرید!</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
-<translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدئویی</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
 <translation id="3148434565183091099">‏برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید به سیستم Chrome وارد شوید.</translation>
 <translation id="3166827708714933426">میان‌برهای پنجره و برگه</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4060598801229743805">گزینه‌هایی در نزدیکی بالای صفحه دردسترس هستند</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
+<translation id="4084682180776658562">نشانک</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> مگابایت بارگیری شد</translation>
 <translation id="4089831646916293264">ممکن است این قابلیت با دسترسی به خدمات داده‌های برتر ارائه شده توسط شرکت مخابراتی شما تداخل داشته باشد.</translation>
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
-<translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
 <translation id="4254813446494774748">زبان ترجمه:</translation>
@@ -470,8 +468,6 @@
 <translation id="5956665950594638604">‏باز کردن مرکز راهنمایی Chrome در برگه جدید</translation>
 <translation id="5962718611393537961">برای کوچک کردن ضربه بزنید</translation>
 <translation id="6000066717592683814">‏حفظ Google</translation>
-<translation id="6010869025736512584">در حال دسترسی به ورودی ویدئویی</translation>
-<translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="6031101910111098835">کوچک شده - برای بزرگ کردن کلیک کنید</translation>
 <translation id="6039379616847168523">رفتن به برگه بعدی</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -590,6 +586,7 @@
 <translation id="7149893636342594995">۲۴ ساعت گذشته</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7189372733857464326">‏در انتظار «سرویس‌های Google Play» برای اتمام به‌روزرسانی است</translation>
+<translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
@@ -610,6 +607,7 @@
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7475192538862203634">درصورتی‌که این مورد را مکرراً مشاهده می‌کنید، این <ph name="BEGIN_LINK" />پیشنهادات<ph name="END_LINK" /> را امتحان کنید.</translation>
 <translation id="748127970106343339">تأیید حذف اعتبارنامه دستگاه</translation>
+<translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7487352416683556407">‏داده‌های انتخاب‌‌شده از Chrome و دستگاه‌های همگام‌سازی‌شده شما حذف شد.
 
 ممکن است اشکال دیگری از سابقه مرورتان در حساب Google شما وجود داشته باشد، مانند جستجو‌ها و فعالیت دیگر سرویس‌های Google در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -642,11 +640,9 @@
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}one{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}}</translation>
 <translation id="7781829728241885113">دیروز</translation>
-<translation id="7788788617745289808">‏Chrome باید به دوربین دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
-<translation id="7829298379596169484">در حال دسترسی به ورودی صوتی</translation>
 <translation id="7837721118676387834">به پخش‌خودکار ویدیو‌های صامت‌شده برای سایتی خاص امکان دهید.</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>

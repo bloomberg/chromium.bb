@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Open Online</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Never saved</translation>
-<translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
@@ -191,7 +190,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">More articles will appear soon. Enjoy your morning!</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
-<translation id="3090193911106258841">Accessing audio and video input</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3148434565183091099">To get your bookmarks on all your devices, sign in to Chrome.</translation>
 <translation id="3166827708714933426">Tab and window shortcuts</translation>
@@ -283,6 +281,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Options available near the top of the screen</translation>
 <translation id="4062305924942672200">Legal information</translation>
+<translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB downloaded</translation>
 <translation id="4089831646916293264">This feature may interfere with access to premium data services provided by your operator.</translation>
 <translation id="4095146165863963773">Delete app data?</translation>
@@ -293,7 +292,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
-<translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4254813446494774748">Translation language:</translation>
@@ -471,8 +469,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="6000066717592683814">Keep Google</translation>
-<translation id="6010869025736512584">Accessing video input</translation>
-<translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
 <translation id="6031101910111098835">Collapsed – Click to expand</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -591,6 +587,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
+<translation id="7189598951263744875">Share...</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
@@ -611,6 +608,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirm device credential deletion</translation>
+<translation id="7481312909269577407">Forward</translation>
 <translation id="7487352416683556407">The selected data has been removed from Chrome and your synced devices.
 
 Your Google account may have other forms of browsing history like searches and activity from other Google services at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -643,11 +641,9 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
 <translation id="7781829728241885113">Yesterday</translation>
-<translation id="7788788617745289808">Chrome needs camera access to share it with this site.</translation>
 <translation id="7791543448312431591">Add</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7810647596859435254">Open with…</translation>
-<translation id="7829298379596169484">Accessing audio input</translation>
 <translation id="7837721118676387834">Allow auto-play of muted videos for a specific site.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="784934925303690534">Time range</translation>

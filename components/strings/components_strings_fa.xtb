@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> می‌گوید:</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
 <translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
+<translation id="1151972924205500581">گذرواژه ضروری است</translation>
 <translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK" />نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK" /> از <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> به‌طور غیرمنتظره‌ای اتصال را قطع کرد.</translation>
 <translation id="1161325031994447685">‏اتصال مجدد به Wi-Fi</translation>
+<translation id="1165039591588034296">خطا</translation>
 <translation id="1175364870820465910">&amp;چاپ...</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1184214524891303587">‏<ph name="BEGIN_WHITEPAPER_LINK" /> گزارش خودکار <ph name="END_WHITEPAPER_LINK" /> جزئیات حوادث امنیتی احتمالی به Google.‏ <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">این کارت را در این دستگاه ذخیره کنید</translation>
 <translation id="3435896845095436175">فعال کردن</translation>
 <translation id="3447661539832366887">مالک این دستگاه بازی دایناسور را خاموش کرده است</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">فاصله زمانی واکشی:</translation>
 <translation id="3462200631372590220">پنهان کردن پیشرفته</translation>
 <translation id="3467763166455606212">نام صاحب حساب الزامی است</translation>
 <translation id="3478058380795961209">ماه انقضا</translation>
 <translation id="3479539252931486093">غیرمنتظره بود؟ <ph name="BEGIN_LINK" />به ما اطلاع دهید<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">اکنون نه</translation>
-<translation id="348000606199325318">شناسه خرابی <ph name="CRASH_LOCAL_ID" /> (شناسه سرور: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">در حال حاضر نمی‌توانیم با والدینتان تماس برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3528171143076753409">گواهی سرور مطمئن نیست.</translation>
 <translation id="3539171420378717834">یک کپی از این کارت در این دستگاه نگهداری شود</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">درخواست شما برای دسترسی به این سایت برای <ph name="NAME" /> ارسال شده است</translation>
 <translation id="3890664840433101773">افزودن رایانامه</translation>
 <translation id="3901925938762663762">کارت منقضی شده است</translation>
-<translation id="3934680773876859118">‏بارگیری سند PDF انجام نشد</translation>
 <translation id="3963721102035795474">حالت «خواننده»</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(۳۲ بیت)</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
-<translation id="7962083544045318153">شناسه خرابی <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="800218591365569300">سعی کنید برگه‌ها یا برنامه‌های دیگر را ببندید تا حافظه آزاد شود.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8874824191258364635">شماره کارت معتبری وارد کنید</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
-<translation id="8877192140621905067">بعد از تأیید کردن، جزئیات کارتتان با این سایت به اشتراک گذاشته می‌شود</translation>
 <translation id="8889402386540077796">رنگ‌مایه</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="889901481107108152">متأسفیم، این آزمایش بر روی دستگاه شما قابل انجام نیست.</translation>

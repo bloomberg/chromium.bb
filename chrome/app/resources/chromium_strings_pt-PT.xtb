@@ -24,14 +24,13 @@
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
-<translation id="1816404578968201294">O Chromium necessita de acesso à localização para a partilhar com este site.</translation>
 <translation id="1869480248812203386">Pode contribuir para tornar o Chromium mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
 <translation id="1881322772814446296">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chromium em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">O Chromium não responde. Reiniciar agora?</translation>
 <translation id="1966382378801805537">O Chromium não consegue determinar ou definir o navegador predefinido</translation>
 <translation id="1967743265616885482">É conhecido um módulo com o mesmo nome que entra em conflito com o Chromium.</translation>
 <translation id="2008474315282236005">Esta ação elimina 1 item deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente, no mínimo, $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}other{Esta ação elimina permanentemente, no mínimo, $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
+<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente, no mínimo, $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}one{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}other{Esta ação elimina permanentemente, no mínimo, $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2119636228670142020">Acerca do SO &amp;Chromium</translation>
 <translation id="2158734852934720349">Licenças de código aberto do SO Chromium</translation>
@@ -39,7 +38,7 @@
 <translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página apresentada quando inicia o Chromium.</translation>
 <translation id="2372704305038231957">O Chromium de 32 bits pode não funcionar corretamente porque deixou de ser suportado neste sistema Linux. Atualize para o Chromium de 64 bits.</translation>
-<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Chromium?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Chromium?}}</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Chromium?}one{# downloads are currently in progress. Do you want to cancel the downloads and exit Chromium?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Chromium?}}</translation>
 <translation id="2396765026452590966">A extensão "<ph name="EXTENSION_NAME" />" alterou a página apresentada quando inicia o Chromium.</translation>
 <translation id="2483889755041906834">No Chromium</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">O SO Chromium não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="2572494885440352020">Ajuda do Chromium</translation>
 <translation id="2587578672395088481">O SO Chromium tem de ser reiniciado para aplicar a atualização.</translation>
-<translation id="2636877269779209383">O Chromium necessita de acesso à câmara para a partilhar com este site.</translation>
 <translation id="2647554856022461007">O Chromium poderá utilizar serviços Web para melhorar a sua experiência de navegação. Poderá optar por desativar estes serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Ocorreu um erro no sistema operativo durante a instalação. Transfira novamente o Chromium.</translation>
 <translation id="2685838254101182273">O Chromium já não se atualiza nem suporta mais esta versão do seu sistema operativo.</translation>
@@ -100,7 +98,7 @@
 <translation id="4222580632002216401">Tem agora sessão iniciada no Chromium! A sincronização foi desativada pelo seu administrador.</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="4230135487732243613">Associar os seus dados do Chromium a esta conta?</translation>
-<translation id="4246125976471362530">{SECONDS,plural, =1{O Chromium irá reiniciar dentro de 1 segundo.}other{O Chromium irá reiniciar dentro de # segundos.}}</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{O Chromium irá reiniciar dentro de 1 segundo.}one{Chromium will restart in # seconds.}other{O Chromium irá reiniciar dentro de # segundos.}}</translation>
 <translation id="4271805377592243930">Obter ajuda relacionada com o Chromium</translation>
 <translation id="4285930937574705105">A instalação falhou devido a um erro não especificado. Se o Chromium estiver em execução, feche-o e tente de novo.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">O Chromium necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="6584627348340620412">As versões futuras do Chromium de 32 bits deixarão de suportar este sistema Linux. Atualize para o Chromium de 64 bits.</translation>
 <translation id="6593914713218535185">O Chromium pode não funcionar corretamente, uma vez que já não é suportado neste sistema Linux.</translation>
-<translation id="6637001341228460105">O Chromium necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="6638567566961868659">Encontre os seus marcadores no menu Chromium ou na barra de marcadores.</translation>
 <translation id="6676384891291319759">Aceder à Internet</translation>
 <translation id="6717134281241384636">O seu perfil não pode ser utilizado porque pertence a uma versão mais recente do Chromium.
@@ -189,7 +186,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7066436765290594559">O SO Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso de sincronização.</translation>
 <translation id="707471633328071618">Google Payments (copiado para o Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}other{Esta ação elimina permanentemente $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
+<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}one{This will permanently delete $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}other{Esta ação elimina permanentemente $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="7138853919861947730">O Chromium pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode disponibilizar uma verificação ortográfica mais inteligente ao enviar o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da Pesquisa Google.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
@@ -228,7 +225,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7975919845073681630">Esta é uma instalação secundária do Chromium, pelo que não pode tornar-se o navegador predefinido.</translation>
 <translation id="7979877361127045932">Ocultar no menu do Chromium</translation>
 <translation id="8030318113982266900">A atualizar o dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">O Chromium necessita de acesso às autorizações para as partilhar com este site.</translation>
 <translation id="8134284582177628525">Se partilha este computador com <ph name="PROFILE_NAME" />, adicione-se ao Chromium para navegar em separado. Caso contrário, desassocie a Conta Google do outro utilizador.</translation>
 <translation id="8157153840442649507">O Chromium é apresentado neste idioma</translation>
 <translation id="81770708095080097">Este ficheiro é perigoso. Como tal, o Chromium bloqueou-o.</translation>

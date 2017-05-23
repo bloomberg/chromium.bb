@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">Japansk tastatur</translation>
 <translation id="1358735829858566124">Filen eller katalogen ikke er brukbar.</translation>
 <translation id="1358741672408003399">Stavekontroll og grammatikk</translation>
-<translation id="1359381790106966506">Oppdater tillatelser</translation>
 <translation id="1361164813881551742">Legg til manuelt</translation>
 <translation id="1361655923249334273">Ubrukt</translation>
 <translation id="136180453919764941">Batteri – <ph name="STATUS" /></translation>
@@ -1437,7 +1436,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3038675903128704560">Ikke la noen nettsteder bruke programtillegg for å få tilgang til datamaskinen din</translation>
 <translation id="3039828483675273919">Flytter $1 elementer ...</translation>
 <translation id="304009983491258911">Endre PIN-kode for SIM-kort</translation>
-<translation id="3046838483509668188">Alternativer for ChromeVox</translation>
 <translation id="3046910703532196514">Nettside, fullstendig</translation>
 <translation id="304826556400666995">Slå på lyden for fanene</translation>
 <translation id="3053013834507634016">Bruk av sertifikatnøkkel</translation>
@@ -1468,6 +1466,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3088325635286126843">&amp;Gi nytt navn</translation>
 <translation id="308903551226753393">Konfigurer automatisk</translation>
 <translation id="3089231390674410424">Det ser ut til å være et problem med legitimasjonen din. Sjekk at du er logget på riktig, og prøv på nytt.</translation>
+<translation id="3090193911106258841">Åpner lyd- og videoinngang</translation>
 <translation id="3090819949319990166">Kunne ikke kopiere den eksterne crx-filen til <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» er tilkoblet</translation>
 <translation id="3095995014811312755">versjon</translation>
@@ -1514,7 +1513,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL" /> for instruksjoner om dette og
 <translation id="3154351730702813399">Enhetsadministratoren kan overvåke surfeaktiviteten din.</translation>
 <translation id="3154429428035006212">Frakoblet i mer enn én måned</translation>
 <translation id="3157931365184549694">Gjenopprett</translation>
-<translation id="3159386328383139451">Google bruker posisjonen din for å gi deg en bedre lokal opplevelse. Du kan endre dette i <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">Du har en fil med sertifikater som identifiserer disse tjenerne:</translation>
 <translation id="316125635462764134">Fjern appen</translation>
 <translation id="3161522574479303604">Alle språk</translation>
@@ -2144,6 +2142,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4095507791297118304">Hovedskjerm</translation>
 <translation id="409579654357498729">Legg til Cloud Print</translation>
 <translation id="4096508467498758490">Deaktiver utvidelser for utviklermodus</translation>
+<translation id="4096824249111507322">Den sikre modulen klargjøres. Vent litt – dette kan ta noen få minutter.</translation>
 <translation id="4099060993766194518">Vil du gjenopprette standardsøkemotoren?</translation>
 <translation id="4100733287846229632">Det er kritisk lite plass på enheten</translation>
 <translation id="4104163789986725820">E&amp;ksportér</translation>
@@ -2427,7 +2426,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4590324241397107707">Databaselagring</translation>
 <translation id="4593021220803146968">&amp;Gå til <ph name="URL" /></translation>
 <translation id="4594109696316595112">Engangsaktivering: Skriv inn passordet ditt for å aktivere Smart Lock på denne <ph name="DEVICE_TYPE" />-enheten. Med Smart Lock låser telefonen opp enheten – uten passord. For å endre eller slå av denne funksjonen, gå til innstillingene for <ph name="DEVICE_TYPE" />-enheten.</translation>
-<translation id="4594538246438948697">Hold inne Søk, og klikk eller dra for å si noe</translation>
 <translation id="4595560905247879544">Apper og utvidelser kan bare endres av administratoren (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Du har registrerte sertifikater som identifiserer disse tjenerne</translation>
 <translation id="4598556348158889687">Lagringsbehandling</translation>
@@ -2472,6 +2470,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4657031070957997341">Tillat alltid programtillegg på <ph name="HOST" /></translation>
 <translation id="4662788913887017617">Del dette bokmerket med iPhone</translation>
 <translation id="4664482161435122549">Eksportfeil for PKCS #12</translation>
+<translation id="466481852929361583">Den sikre modulen konfigureres. Dette kan ta noen få minutter.</translation>
 <translation id="4665014895760275686">Produsent</translation>
 <translation id="4667176955651319626">Blokkér informasjonskapsler og nettstedsdata fra tredjeparter</translation>
 <translation id="4668721319092543482">Klikk for å slå på <ph name="PLUGIN_NAME" /></translation>
@@ -2645,7 +2644,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="490074449735753175">Bruk en nettjeneste til å luke ut stavefeil</translation>
 <translation id="49027928311173603">Innstillingene som ble lastet ned fra tjeneren er ugyldige: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Kjør opprydningsverktøyet for Chrome</translation>
-<translation id="4906679076183257864">Tilbakestill til standard</translation>
 <translation id="4907161631261076876">Denne filen lastes sjelden ned, og den kan være farlig.</translation>
 <translation id="4907306957610201395">Tillatelseskategori</translation>
 <translation id="4909038193460299775">Siden denne kontoen administreres av <ph name="DOMAIN" />, slettes bokmerkene, loggen, passordene og andre innstillinger du har, fra denne enheten. Data du har lagret i Google-kontoen din, blir imidlertid værende og kan administreres ved hjelp av <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
@@ -3218,6 +3216,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="577624874850706961">Søk i informasjonskapsler</translation>
 <translation id="5778550464785688721">Full kontroll av MIDI-enheter</translation>
+<translation id="5778747455497889540">Nedenfor ser du det tilfeldig genererte sikker modul-passordet som er tildelt datamaskinen din:</translation>
 <translation id="5780066559993805332">(Best)</translation>
 <translation id="5780973441651030252">Prosessprioritet</translation>
 <translation id="5781865261247219930">Send kommandoer til <ph name="EXTENSION_NAME" /></translation>
@@ -3276,6 +3275,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5854409662653665676">Hvis du opplever hyppige problemer, kan du prøve følgende for å løse problemet med denne modulen:</translation>
 <translation id="5854912040170951372">Pizzaelsker</translation>
 <translation id="5855119960719984315">bytt vindu</translation>
+<translation id="5855773610748894548">Beklager – feil i den sikre modulen.</translation>
 <translation id="5856721540245522153">Slå på feilsøkingsfunksjoner</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5859272821192576954">Du kan fortsette til Hangouts</translation>
@@ -3366,6 +3366,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6005695835120147974">Medieruter</translation>
 <translation id="6006484371116297560">Klassisk</translation>
 <translation id="6007237601604674381">Flytting mislyktes. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Åpner videoinngang</translation>
 <translation id="6011193465932186973">Fingeravtrykk</translation>
 <translation id="6011449291337289699">Fjern nettstedsdata</translation>
 <translation id="6015796118275082299">År</translation>
@@ -3791,6 +3792,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6629841649550503054">Alt er sikkerhetskopiert til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> vil ha permanent tilgang til et sertifikat for å autentisere seg på dine vegne.</translation>
 <translation id="6639554308659482635">SQLite-minne</translation>
+<translation id="6641138807883536517">Det tilfeldig genererte sikker modul-passordet er ikke tilgjengelig. Dette er vanlig etter en Powerwash.</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6644846457769259194">Oppdaterer enheten din (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Nettadresse for tilbakekalling av Netscape-autoritetssertifikat</translation>
@@ -3881,7 +3883,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> er lagt til eksternt</translation>
 <translation id="6790820461102226165">Legg til person …</translation>
 <translation id="6791443592650989371">Aktiveringsstatus:</translation>
-<translation id="6792045489562677072">Alternativer for Velg for å snakke</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> vil dele innholdet på skjermen din med <ph name="TARGET_NAME" />. Velg hva du vil dele.</translation>
 <translation id="6793604637258913070">Fremhev tekstinnsettingspunktet når det vises eller flyttes</translation>
 <translation id="6797493596609571643">Beklager. Noe gikk galt.</translation>
@@ -4010,6 +4011,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6991128190741664836">Senere</translation>
 <translation id="6991665348624301627">Velg en destinasjon</translation>
 <translation id="699220179437400583">Rapportér detaljer om mulige sikkerhetsbrudd til Google automatisk</translation>
+<translation id="6996946928646015361">Den sikre modulen er deaktivert eller mangler.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mapper er valgt</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Følgende side har sluttet å svare. Du kan vente til den svarer, eller du kan lukke den.}other{Følgende sider har sluttet å svare. Du kan vente til de svarer, eller du kan lukke dem.}}</translation>
 <translation id="7002055706763150362">For å konfigurere Smart Lock for Chromebook, må Google være sikker på at det er deg. Skriv inn passordet for å begynne.</translation>
@@ -4493,7 +4495,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7766807826975222231">Få en innføring</translation>
 <translation id="7767646430896201896">Alternativer:</translation>
-<translation id="7768784765476638775">Velg for å snakke</translation>
 <translation id="7769353642898261262">Sånn kan du sikre telefonen</translation>
 <translation id="7769672763586021400">Modell-ID</translation>
 <translation id="7771452384635174008">Layout</translation>
@@ -4539,6 +4540,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7825423931463735974">Tamilsk tastatur (Tamil99)</translation>
 <translation id="782590969421016895">Bruk nåværende sider</translation>
 <translation id="782886543891417279">Det kan hende at Wi-Fi-nettverket du bruker (<ph name="WIFI_NAME" />), krever at du besøker en påloggingsside.</translation>
+<translation id="7829298379596169484">Åpner lydinngang</translation>
 <translation id="7831368056091621108">for å få denne utvidelsen, loggen din og andre Chrome-innstillinger på alle enhetene dine.</translation>
 <translation id="7831493768366098287">Google-utskrift</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5059,6 +5061,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8631032106121706562">Tusenfryd</translation>
 <translation id="8631271110654520730">Kopierer gjenopprettingsbilde …</translation>
 <translation id="8632275030377321303">Mellomtjenerinnstillingene kan ikke endres av brukeren.</translation>
+<translation id="8637542770513281060">Datamaskinen din inneholder en sikker modul som brukes til å implementere mange viktige sikkerhetsfunksjoner i Chrome OS. Gå til Chromebook-brukerstøtten for å finne ut mer: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Systemoppdatering er tilgjengelig. Forbereder nedlasting ...</translation>
 <translation id="8639963783467694461">Innstillinger for autofyll</translation>
 <translation id="8642171459927087831">Tilgangstoken</translation>
@@ -5168,7 +5171,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8785622406424941542">Pekepenn</translation>
 <translation id="8787254343425541995">Gi tillatelse til mellomtjenere for delte nettverk</translation>
 <translation id="878763818693997570">Dette navnet er for langt</translation>
-<translation id="8789375980715484686">Administrer andre brukere</translation>
 <translation id="8791534160414513928">Send en «Ingen sporing»-forespørsel med nettrafikken din</translation>
 <translation id="8794025342371547160">Begrenset IP</translation>
 <translation id="879413103056696865">Når Wi-Fi-sonen er på, kommer <ph name="PHONE_NAME" /> til å</translation>

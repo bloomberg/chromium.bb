@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> ఇలా చెబుతోంది:</translation>
 <translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
+<translation id="1151972924205500581">పాస్‌వర్డ్ అవసరం</translation>
 <translation id="1152921474424827756"><ph name="URL" /> యొక్క <ph name="BEGIN_LINK" />కాష్ చేయబడిన కాపీ<ph name="END_LINK" />ని ప్రాప్యత చేయండి</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ఊహించని విధంగా కనెక్షన్‌ను మూసివేసింది.</translation>
 <translation id="1161325031994447685">Wi-Fiకి మళ్లీ కనెక్ట్ చేయడం</translation>
+<translation id="1165039591588034296">లోపం</translation>
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
 <translation id="1181037720776840403">తొలగించు</translation>
 <translation id="1184214524891303587">సంభావ్య భద్రతా సంఘటనల గురించిన వివరాలను Googleకి <ph name="BEGIN_WHITEPAPER_LINK" />స్వయంచాలకంగా నివేదిస్తుంది<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -300,14 +302,12 @@
 <translation id="3431636764301398940">ఈ కార్డ్‌ను ఈ పరికరానికి సేవ్ చేయి</translation>
 <translation id="3435896845095436175">ప్రారంభించండి</translation>
 <translation id="3447661539832366887">ఈ పరికర యజమాని డైనోసార్ ఆటను ఆఫ్ చేసారు.</translation>
-<translation id="3450660100078934250">మాస్టర్‌కార్డ్</translation>
 <translation id="3452404311384756672">విరామాన్ని పొందండి:</translation>
 <translation id="3462200631372590220">అధునాతనం దాచు</translation>
 <translation id="3467763166455606212">కార్డుదారుని పేరు అవసరం</translation>
 <translation id="3478058380795961209">గడువు ముగింపు నెల</translation>
 <translation id="3479539252931486093">ఊహించని విధంగా ఇది సంభవించిందా? <ph name="BEGIN_LINK" />మాకు తెలియజేయండి<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
-<translation id="348000606199325318">క్రాష్ ID <ph name="CRASH_LOCAL_ID" /> (సర్వర్ ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">మేము ప్రస్తుతం మీ తల్లి/తండ్రిని సంప్రదించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3528171143076753409">సర్వర్ యొక్క ప్రమాణ పత్రం నమ్మదగినది కాదు.</translation>
 <translation id="3539171420378717834">ఈ పరికరంలో ఈ కార్డ్ కాపీని ఉంచు</translation>
@@ -356,7 +356,6 @@
 <translation id="3886446263141354045">మీరు ఈ సైట్‌ను ప్రాప్యత చేయడానికి చేసిన అభ్యర్థన <ph name="NAME" />కి పంపబడింది</translation>
 <translation id="3890664840433101773">ఇమెయిల్‌ను జోడించండి</translation>
 <translation id="3901925938762663762">కార్డ్ గడువు సమయం ముగిసింది</translation>
-<translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
 <translation id="3963721102035795474">పాఠకుని మోడ్</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> బ్లాక్ చేయబడింది</translation>
@@ -768,7 +767,6 @@
 <translation id="7951415247503192394">(32-బిట్)</translation>
 <translation id="7956713633345437162">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="7961015016161918242">ఎప్పుడూ లేదు</translation>
-<translation id="7962083544045318153">క్రాష్ ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">ఎల్లప్పుడూ <ph name="ORIGINAL_LANGUAGE" />ను <ph name="TARGET_LANGUAGE" />కు అనువదించు</translation>
 <translation id="7995512525968007366">పేర్కొనబడలేదు</translation>
 <translation id="800218591365569300">మెమరీని ఖాళీ చేయడానికి ఇతర ట్యాబ్‌లు లేదా ప్రోగ్రామ్‌లను మూసివేయడాన్ని ప్రయత్నించండి.</translation>
@@ -850,7 +848,6 @@
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8874824191258364635">చెల్లుబాటు అయ్యే కార్డ్ నంబర్‌ను నమోదు చేయండి</translation>
 <translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>
-<translation id="8877192140621905067">మీరు నిర్ధారించిన తర్వాత, మీ కార్డ్ వివరాలు ఈ సైట్‌తో భాగస్వామ్యం చేయబడతాయి</translation>
 <translation id="8889402386540077796">వర్ణం</translation>
 <translation id="8891727572606052622">చెల్లని ప్రాక్సీ మోడ్.</translation>
 <translation id="889901481107108152">క్షమించండి, ఈ ప్రయోగం మీ ప్లాట్‌ఫారమ్‌లో అందుబాటులో లేదు.</translation>

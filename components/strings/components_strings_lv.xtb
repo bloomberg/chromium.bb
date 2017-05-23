@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Vietnē <ph name="SITE" /> ir rakstīts:</translation>
 <translation id="1132774398110320017">Chrome automātiskās aizpildes iestatījumi...</translation>
 <translation id="1150979032973867961">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu datora operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
+<translation id="1151972924205500581">Nepieciešama parole</translation>
 <translation id="1152921474424827756">Piekļūstiet vietnes <ph name="URL" /> <ph name="BEGIN_LINK" />kešatmiņā saglabātajai kopijai<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> negaidīti pārtrauca savienojumu.</translation>
 <translation id="1161325031994447685">Atkārtoti izveidojiet savienojumu ar Wi-Fi tīklu.</translation>
+<translation id="1165039591588034296">Kļūda</translation>
 <translation id="1175364870820465910">Drukāt...</translation>
 <translation id="1181037720776840403">Noņemt</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automātiski nosūtīt<ph name="END_WHITEPAPER_LINK" /> Google serveriem informāciju par iespējamām drošības problēmām. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Saglabāt šo karti šajā ierīcē</translation>
 <translation id="3435896845095436175">Iespējot</translation>
 <translation id="3447661539832366887">Šīs ierīces īpašnieks ir izslēdzis dinozauru spēli.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Pirmsielādes intervāls:</translation>
 <translation id="3462200631372590220">Slēpt papildu informāciju</translation>
 <translation id="3467763166455606212">Jānorāda kartes īpašnieka vārds un uzvārds</translation>
 <translation id="3478058380795961209">Der. term. mēn.</translation>
 <translation id="3479539252931486093">Vai tas bija negaidīti? <ph name="BEGIN_LINK" />Informējiet mūs<ph name="END_LINK" />!</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
-<translation id="348000606199325318">Avārijas ID <ph name="CRASH_LOCAL_ID" /> (servera ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Mēs nevarējām sasniegt jūsu māti/tēvu. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="3528171143076753409">Servera sertifikāts nav uzticams.</translation>
 <translation id="3539171420378717834">Saglabāt šīs kartes kopiju šajā ierīcē</translation>
@@ -357,7 +357,6 @@
 <translation id="3886446263141354045">Pieprasījums piekļūt šai vietnei ir nosūtīts lietotājam <ph name="NAME" /></translation>
 <translation id="3890664840433101773">E-pasta adreses pievienošana</translation>
 <translation id="3901925938762663762">Kartes derīguma termiņš ir beidzies.</translation>
-<translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
 <translation id="3963721102035795474">Lasītāja režīms</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="3973234410852337861">Vietne <ph name="HOST_NAME" /> ir bloķēta</translation>
@@ -771,7 +770,6 @@
 <translation id="7951415247503192394">(32 bitu)</translation>
 <translation id="7956713633345437162">Mobilās grāmatzīmes</translation>
 <translation id="7961015016161918242">Nekad</translation>
-<translation id="7962083544045318153">Avārijas ID: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Vienmēr tulkot no <ph name="ORIGINAL_LANGUAGE" /> valodas <ph name="TARGET_LANGUAGE" /> valodā</translation>
 <translation id="7995512525968007366">Nav norādīts</translation>
 <translation id="800218591365569300">Aizveriet citas cilnes vai programmas, lai atbrīvotu vietu atmiņā.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Nesen aizvērtas</translation>
 <translation id="8874824191258364635">Ievadiet derīgu kartes numuru</translation>
 <translation id="8876793034577346603">Neizdevās parsēt tīkla konfigurāciju.</translation>
-<translation id="8877192140621905067">Pēc apstiprināšanas kartes informācija tiks kopīgota ar šo vietni.</translation>
 <translation id="8889402386540077796">Nokrāsa</translation>
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
 <translation id="889901481107108152">Diemžēl šis eksperiments nav pieejams jūsu platformā.</translation>

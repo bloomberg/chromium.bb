@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Setelan IsiOtomatis Chrome...</translation>
 <translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="1151972924205500581">Sandi wajib ada</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan yang disimpan dalam cache<ph name="END_LINK" /> dari <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> tiba-tiba menutup sambungan.</translation>
 <translation id="1161325031994447685">Menyambungkan ulang ke Wi-Fi</translation>
+<translation id="1165039591588034296">Kesalahan</translation>
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Otomatis laporkan<ph name="END_WHITEPAPER_LINK" /> detail kemungkinan insiden keamanan ke Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Simpan kartu ini ke perangkat ini</translation>
 <translation id="3435896845095436175">Aktifkan</translation>
 <translation id="3447661539832366887">Pemilik perangkat ini menonaktifkan game dinosaurus.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval pengambilan:</translation>
 <translation id="3462200631372590220">Sembunyikan lanjutan</translation>
 <translation id="3467763166455606212">Diperlukan nama pemegang kartu</translation>
 <translation id="3478058380795961209">Bulan Masa Berlaku Habis</translation>
 <translation id="3479539252931486093">Apakah hal ini tidak diharapkan? <ph name="BEGIN_LINK" />Beri tahu kami<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Jangan sekarang</translation>
-<translation id="348000606199325318">ID Kerusakan <ph name="CRASH_LOCAL_ID" /> (ID Server: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Orang tua Anda saat ini tidak dapat dihubungi. Coba lagi.</translation>
 <translation id="3528171143076753409">Sertifikat server tidak dipercaya.</translation>
 <translation id="3539171420378717834">Menyimpan salinan kartu ini di perangkat ini</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Permintaan Anda untuk mengakses situs ini telah dikirim ke <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Tambahkan email</translation>
 <translation id="3901925938762663762">Kartu telah habis masa berlakunya</translation>
-<translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
 <translation id="3963721102035795474">Mode Pembaca</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7956713633345437162">Bookmark seluler</translation>
 <translation id="7961015016161918242">Jangan pernah</translation>
-<translation id="7962083544045318153">ID Kerusakan <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Selalu terjemahkan <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>
 <translation id="800218591365569300">Coba tutup tab atau program lain untuk mengosongkan memori.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Barusan Ditutup</translation>
 <translation id="8874824191258364635">Masukkan nomor kartu yang valid</translation>
 <translation id="8876793034577346603">Konfigurasi jaringan gagal diuraikan.</translation>
-<translation id="8877192140621905067">Setelah mengonfirmasi, detail kartu Anda akan dibagikan dengan situs ini</translation>
 <translation id="8889402386540077796">Rona</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="889901481107108152">Maaf, percobaan ini tidak tersedia di platform Anda.</translation>

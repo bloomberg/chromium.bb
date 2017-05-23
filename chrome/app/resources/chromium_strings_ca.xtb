@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Permet que Chromium s'executi en segon pla</translation>
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1808667845054772817">Torna a instal·lar Chromium</translation>
-<translation id="1816404578968201294">Chromium necessita accedir a la ubicació per compartir-la amb aquest lloc.</translation>
 <translation id="1869480248812203386">Si voleu col·laborar perquè Chromium sigui més segur i més fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="1881322772814446296">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chromium a part. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Chromium OS no ha pogut sincronitzar les vostres dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
 <translation id="2587578672395088481">Cal reiniciar Chromium OS per aplicar l'actualització.</translation>
-<translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
 <translation id="2647554856022461007">Chromium pot utilitzar serveis web per millorar la navegació, però si vols els pots desactivar. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>
 <translation id="2685838254101182273">Chromium ha deixat d'actualitzar-se i ja no admet aquesta versió del vostre sistema operatiu.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
 <translation id="6584627348340620412">Les versions futures de Chromium de 32 bits ja no admetran aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
 <translation id="6593914713218535185">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb aquest sistema Linux.</translation>
-<translation id="6637001341228460105">Chromium necessita accedir al micròfon per compartir-lo amb aquest lloc.</translation>
 <translation id="6638567566961868659">Cerqueu les adreces d'interès al menú de Chromium o a la Barra d'adreces d'interès.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="6717134281241384636">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Chromium.
@@ -228,7 +225,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7975919845073681630">Aquesta és una instal·lació secundària de Chromium i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">Chromium necessita accedir als permisos per compartir-los amb aquest lloc.</translation>
 <translation id="8134284582177628525">Si compartiu aquest ordinador amb <ph name="PROFILE_NAME" />, afegiu el vostre usuari a Chromium per navegar per separat. Si no, també podeu desconnectar el seu compte de Google.</translation>
 <translation id="8157153840442649507">Chromium es mostra en aquest idioma</translation>
 <translation id="81770708095080097">Chromium ha bloquejat aquest fitxer perquè és perillós.</translation>

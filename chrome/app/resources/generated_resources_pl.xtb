@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">Klawiatura japońska</translation>
 <translation id="1358735829858566124">Plik lub katalog nie nadaje się do użycia.</translation>
 <translation id="1358741672408003399">Pisownia i gramatyka</translation>
-<translation id="1359381790106966506">Aktualizuj uprawnienia</translation>
 <translation id="1361164813881551742">Dodaj ręcznie</translation>
 <translation id="1361655923249334273">Nieużywany</translation>
 <translation id="136180453919764941">Bateria: <ph name="STATUS" /></translation>
@@ -1441,7 +1440,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3038675903128704560">Nie zezwalaj żadnym stronom na dostęp do komputera przez wtyczkę</translation>
 <translation id="3039828483675273919">Przenoszę $1 elementy(ów)...</translation>
 <translation id="304009983491258911">Zmień PIN karty SIM</translation>
-<translation id="3046838483509668188">Opcje ChromeVox</translation>
 <translation id="3046910703532196514">Strona internetowa, kompletna</translation>
 <translation id="304826556400666995">Wyłącz wyciszenie kart</translation>
 <translation id="3053013834507634016">Użycie klucza certyfikatu</translation>
@@ -1472,6 +1470,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3088325635286126843">&amp;Zmień nazwę</translation>
 <translation id="308903551226753393">Skonfiguruj automatycznie</translation>
 <translation id="3089231390674410424">Wygląda na to, że z Twoimi danymi logowania jest coś nie tak. Sprawdź, czy zalogowałeś się prawidłowo, i spróbuj ponownie.</translation>
+<translation id="3090193911106258841">Otwieram wejście audio i wideo</translation>
 <translation id="3090819949319990166">Nie można skopiować zewnętrznego pliku CRX jako <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">Sparowano „<ph name="DEVICE_NAME" />”</translation>
 <translation id="3095995014811312755">wersja</translation>
@@ -1518,7 +1517,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3154351730702813399">Administrator urządzenia może monitorować Twoją aktywność związaną z przeglądaniem.</translation>
 <translation id="3154429428035006212">Offline od ponad miesiąca</translation>
 <translation id="3157931365184549694">Przywróć</translation>
-<translation id="3159386328383139451">Google korzysta z informacji o Twojej lokalizacji, by zapewnić Ci lepsze wyniki lokalne. Możesz to zmienić na stronie <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">Masz zapisane certyfikaty, które umożliwiają identyfikację następujących serwerów:</translation>
 <translation id="316125635462764134">Usuń aplikację</translation>
 <translation id="3161522574479303604">Wszystkie języki</translation>
@@ -2151,6 +2149,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="4095507791297118304">Ekran główny</translation>
 <translation id="409579654357498729">Dodaj do Cloud Print</translation>
 <translation id="4096508467498758490">Wyłącz rozszerzenia trybu programisty</translation>
+<translation id="4096824249111507322">Czekaj, moduł zabezpieczeń jest przygotowywany (może to potrwać kilka minut)…</translation>
 <translation id="4099060993766194518">Przywrócić domyślną wyszukiwarkę?</translation>
 <translation id="4100733287846229632">Na urządzeniu już prawie nie ma miejsca</translation>
 <translation id="4104163789986725820">E&amp;ksportuj</translation>
@@ -2434,7 +2433,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4590324241397107707">Pamięć masowa bazy danych</translation>
 <translation id="4593021220803146968">&amp;Przejdź do strony <ph name="URL" /></translation>
 <translation id="4594109696316595112">Aktywacja jednorazowa: wpisz hasło, by aktywować funkcję Smart Lock na urządzeniu <ph name="DEVICE_TYPE" />. Dzięki niej Twój telefon będzie odblokowywać to urządzenie bez konieczności wpisywania hasła. Aby wyłączyć tę funkcję lub zmienić jej ustawienia, otwórz ustawienia urządzenia <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4594538246438948697">Przytrzymaj klawisz wyszukiwania i kliknij lub przeciągnij, by usłyszeć tekst</translation>
 <translation id="4595560905247879544">Aplikacje i rozszerzenia może zmieniać tylko menedżer (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Masz zapisane certyfikaty, które potwierdzają tożsamość tych serwerów</translation>
 <translation id="4598556348158889687">Zarządzanie pamięcią</translation>
@@ -2479,6 +2477,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4657031070957997341">Zawsze zezwalaj na wtyczki na <ph name="HOST" /></translation>
 <translation id="4662788913887017617">Udostępnij tę zakładkę na iPhonie</translation>
 <translation id="4664482161435122549">Błąd eksportowania PKCS #12</translation>
+<translation id="466481852929361583">Moduł zabezpieczeń jest konfigurowany. Zachowaj cierpliwość; może to potrwać kilka minut.</translation>
 <translation id="4665014895760275686">Producent</translation>
 <translation id="4667176955651319626">Blokuj pliki cookie i dane z witryn innych firm</translation>
 <translation id="4668721319092543482">Kliknij, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
@@ -2649,7 +2648,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="490074449735753175">Używaj usługi internetowej, aby poprawiać błędy ortograficzne</translation>
 <translation id="49027928311173603">Polityka pobrana z serwera jest nieprawidłowa: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Uruchom Narzędzie do czyszczenia Chrome</translation>
-<translation id="4906679076183257864">Przywróć domyślne</translation>
 <translation id="4907161631261076876">Ten plik nie jest często pobierany i może być niebezpieczny.</translation>
 <translation id="4907306957610201395">Kategoria uprawnień</translation>
 <translation id="4909038193460299775">Ponieważ to konto jest zarządzane przez <ph name="DOMAIN" />, Twoje zakładki, historia, hasła i inne ustawienia zostaną usunięte z tego urządzenia. Twoje dane pozostaną zapisane na koncie Google. Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Panelu Google<ph name="END_LINK" />.</translation>
@@ -3226,6 +3224,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="577624874850706961">Szukaj plików cookie</translation>
 <translation id="5778550464785688721">Pełne sterowanie urządzeniami MIDI</translation>
+<translation id="5778747455497889540">Poniżej znajduje się losowo wygenerowane hasło modułu zabezpieczeń, które zostało przypisane do Twojego komputera:</translation>
 <translation id="5780066559993805332">(Najlepsza)</translation>
 <translation id="5780973441651030252">Priorytet procesu</translation>
 <translation id="5781865261247219930">Prześlij polecenia do: <ph name="EXTENSION_NAME" /></translation>
@@ -3284,6 +3283,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5854409662653665676">Jeśli często natrafiasz na problemy, możesz spróbować następujących czynności w celu rozwiązania problemu z tym modułem:</translation>
 <translation id="5854912040170951372">Kawałek pizzy</translation>
 <translation id="5855119960719984315">przełącz okno</translation>
+<translation id="5855773610748894548">Ups, błąd modułu zabezpieczeń.</translation>
 <translation id="5856721540245522153">Włącz funkcje debugowania</translation>
 <translation id="5857090052475505287">Nowy folder</translation>
 <translation id="5859272821192576954">Wszystko gotowe do korzystania z Hangouts</translation>
@@ -3374,6 +3374,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6005695835120147974">Router multimediów</translation>
 <translation id="6006484371116297560">Klasyczny</translation>
 <translation id="6007237601604674381">Przenoszenie nie powiodło się. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Otwieram wejście wideo</translation>
 <translation id="6011193465932186973">Odcisk palca</translation>
 <translation id="6011449291337289699">Wyczyść dane witryny</translation>
 <translation id="6015796118275082299">Rok</translation>
@@ -3800,6 +3801,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="6629841649550503054">Kopie zapasowe wszystkich materiałów zostały utworzone na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" />.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> chce stałego dostępu do certyfikatu, by uwierzytelniać się w Twoim imieniu.</translation>
 <translation id="6639554308659482635">Pamięć SQLite</translation>
+<translation id="6641138807883536517">Losowo generowane hasło modułu zabezpieczeń jest niedostępne. Ta sytuacja jest normalna po użyciu funkcji Powerwash.</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6644846457769259194">Aktualizuję Twoje urządzenie (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Adres URL odwołania urzędu certyfikacji firmy Netscape</translation>
@@ -3890,7 +3892,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="6790497603648687708">Dodano zdalnie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6790820461102226165">Dodaj osobę...</translation>
 <translation id="6791443592650989371">Stan aktywacji:</translation>
-<translation id="6792045489562677072">Opcje mowy</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> chce udostępnić zawartość Twojego ekranu stronie <ph name="TARGET_NAME" />. Wybierz elementy, które chcesz udostępnić.</translation>
 <translation id="6793604637258913070">Podświetlaj kursor tekstu, gdy się wyświetla lub porusza.</translation>
 <translation id="6797493596609571643">Ups, coś poszło nie tak.</translation>
@@ -4019,6 +4020,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="6991128190741664836">Później</translation>
 <translation id="6991665348624301627">Wybierz urządzenie docelowe</translation>
 <translation id="699220179437400583">Automatycznie przesyłaj do Google szczegółowe informacje o możliwych zagrożeniach</translation>
+<translation id="6996946928646015361">Brak modułu zabezpieczeń lub jest on wyłączony.</translation>
 <translation id="6998711733709403587">Wybrano <ph name="SELCTED_FOLDERS_COUNT" /> foldery(ów)</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Ta strona nie odpowiada. Możesz zaczekać, aż zacznie odpowiadać, lub ją zamknąć.}few{Te strony nie odpowiadają. Możesz zaczekać, aż zaczną odpowiadać, lub je zamknąć.}many{Te strony nie odpowiadają. Możesz zaczekać, aż zaczną odpowiadać, lub je zamknąć.}other{Te strony nie odpowiadają. Możesz zaczekać, aż zaczną odpowiadać, lub je zamknąć.}}</translation>
 <translation id="7002055706763150362">Aby skonfigurować Smart Lock na Chromebooki, Google musi mieć pewność, że jesteś osobą, za którą się podajesz. Najpierw wpisz hasło.</translation>
@@ -4503,7 +4505,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7766807826975222231">Obejrzyj prezentację</translation>
 <translation id="7767646430896201896">Opcje:</translation>
-<translation id="7768784765476638775">Mowa</translation>
 <translation id="7769353642898261262">Jak zabezpieczyć telefon</translation>
 <translation id="7769672763586021400">Identyfikator modelu</translation>
 <translation id="7771452384635174008">Układ</translation>
@@ -4549,6 +4550,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7825423931463735974">Klawiatura tamilska (Tamil99)</translation>
 <translation id="782590969421016895">Użyj bieżących stron</translation>
 <translation id="782886543891417279">Sieć Wi-Fi (<ph name="WIFI_NAME" />), której używasz, może wymagać otwarcia strony logowania.</translation>
+<translation id="7829298379596169484">Otwieram wejście audio</translation>
 <translation id="7831368056091621108">by móc korzystać z tego rozszerzenia, historii i innych ustawień Chrome na wszystkich swoich urządzeniach.</translation>
 <translation id="7831493768366098287">Google Print</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5069,6 +5071,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8631032106121706562">Płatki</translation>
 <translation id="8631271110654520730">Trwa kopiowanie obrazu odzyskiwania...</translation>
 <translation id="8632275030377321303">Użytkownik nie może zmodyfikować serwera proxy.</translation>
+<translation id="8637542770513281060">Twój komputer ma moduł zabezpieczeń, który umożliwia zastosowanie wielu krytycznych funkcji zabezpieczeń w systemie operacyjnym Chrome. Więcej informacji znajdziesz w Centrum pomocy Chromebooka na stronie: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Jest dostępna aktualizacja systemu. Trwa przygotowanie do pobrania…</translation>
 <translation id="8639963783467694461">Ustawienia autouzupełniania</translation>
 <translation id="8642171459927087831">Token dostępu</translation>
@@ -5178,7 +5181,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8785622406424941542">Rysik</translation>
 <translation id="8787254343425541995">Zezwalaj na serwery proxy w sieciach współdzielonych</translation>
 <translation id="878763818693997570">Ta nazwa jest za długa</translation>
-<translation id="8789375980715484686">Zarządzaj użytkownikami</translation>
 <translation id="8791534160414513928">Wysyłaj żądanie „Bez śledzenia” podczas przeglądania</translation>
 <translation id="8794025342371547160">IP z ograniczonym dostępem</translation>
 <translation id="879413103056696865">Gdy hotspot jest włączony, <ph name="PHONE_NAME" />:</translation>

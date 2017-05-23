@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Neka Chromium radi u pozadini</translation>
 <translation id="1779356040007214683">Kako bismo Chromium učinili sigurnijim, onemogućili smo neka proširenja koja nisu navedena u trgovini <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i možda su dodana bez vašeg znanja.</translation>
 <translation id="1808667845054772817">Ponovo instaliraj Chromium</translation>
-<translation id="1816404578968201294">Chromium treba imati pristup lokaciji da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="1869480248812203386">Možete pomoći da Chromium bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="1881322772814446296">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chromium zasebno. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">OS Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Potrebno je ponovo pokrenuti Chromium OS kako bi se ažuriranje primijenilo.</translation>
-<translation id="2636877269779209383">Chromium treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="2647554856022461007">Chromium može upotrebljavati web-usluge za poboljšanje vašeg doživljaja pregledavanja. Ako želite, možete onemogućiti te usluge. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Došlo je do pogreške operativnog sustava tijekom instalacije. Ponovo preuzmite Chromium.</translation>
 <translation id="2685838254101182273">Chromium se prestao ažurirati i više ne podržava ovu verziju vašeg operativnog sustava.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium treba pristup pohrani radi preuzimanja datoteka.</translation>
 <translation id="6584627348340620412">Buduće verzije 32-bitnog Chromiuma više neće podržavati ovaj sustav Linuxa. Nadgradite na 64-bitni Chromium.</translation>
 <translation id="6593914713218535185">Chromium možda neće ispravno raditi jer više nije podržan na tom sustavu Linuxa.</translation>
-<translation id="6637001341228460105">Chromium treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
 <translation id="6638567566961868659">Pronađite oznake u izborniku Chromium ili na traci oznaka.</translation>
 <translation id="6676384891291319759">Pristup Internetu</translation>
 <translation id="6717134281241384636">Vaš se profil ne može upotrebljavati jer je iz novije verzije Chromiuma.
@@ -228,7 +225,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7975919845073681630">Ovo je sekundarna instalacija Chromiuma, pa on ne može biti vaš zadani preglednik.</translation>
 <translation id="7979877361127045932">Sakrij u izborniku Chromiuma</translation>
 <translation id="8030318113982266900">Ažuriranje vašeg uređaja na kanal <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">Chromium treba imati pristup dopuštenjima da bi ih dijelio s ovom web-lokacijom.</translation>
 <translation id="8134284582177628525">Ako dijelite ovo računalo s korisnikom <ph name="PROFILE_NAME" />, dodajte sebe u Chromium kako biste pregledavali odvojeno. U suprotnom odjavite njegov Google račun.</translation>
 <translation id="8157153840442649507">Chromium se prikazuje na tom jeziku</translation>
 <translation id="81770708095080097">Datoteka je opasna i Chromium ju je blokirao.</translation>

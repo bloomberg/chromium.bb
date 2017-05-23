@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> സൈറ്റ് പറയുന്നത്:</translation>
 <translation id="1132774398110320017">Chrome ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
 <translation id="1150979032973867961">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷ സർട്ടിഫിക്കറ്റിനെ നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെ ഓപ്പറേറ്റിംഗ് സിസ്‌റ്റത്തിന് പരിചയമില്ല. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
+<translation id="1151972924205500581">പാസ്‍വേഡ് ആവശ്യമാണ്</translation>
 <translation id="1152921474424827756"><ph name="URL" />-ന്റെ <ph name="BEGIN_LINK" />കാഷെ ചെയ്‌ത പകർപ്പ്<ph name="END_LINK" /> ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> അപ്രതീക്ഷിതമായി കണക്ഷൻ അടച്ചു.</translation>
 <translation id="1161325031994447685">Wi-Fi-ലേക്ക് വീണ്ടും കണക്റ്റുചെയ്യുന്നു</translation>
+<translation id="1165039591588034296">പിശക്</translation>
 <translation id="1175364870820465910">&amp;അച്ചടിക്കൂ...</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />സുരക്ഷയെ ബാധിക്കാൻ സാധ്യതയുള്ള കാര്യങ്ങളുടെ വിശദാംശങ്ങൾ<ph name="END_WHITEPAPER_LINK" /> സ്വയമേവ Google-ൽ റിപ്പോർട്ടുചെയ്യുന്നു. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -299,14 +301,12 @@
 <translation id="3431636764301398940">ഈ ഉപകരണത്തിൽ ഈ കാർഡ് സംരക്ഷിക്കുക</translation>
 <translation id="3435896845095436175">തയ്യാറാക്കുക</translation>
 <translation id="3447661539832366887">ഈ ഉപകരണത്തിന്റെ ഉടമ ദിനോസർ ഗെയിം ഓഫാക്കി.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">ഇടവേള ലഭ്യമാക്കുക:</translation>
 <translation id="3462200631372590220">വിപുലമായവ മറയ്ക്കുക</translation>
 <translation id="3467763166455606212">കാർഡ് ഉടമയുടെ പേര് ആവശ്യമാണ്</translation>
 <translation id="3478058380795961209">കാലഹരണപ്പെടുന്ന മാസം</translation>
 <translation id="3479539252931486093">ഇത് അപ്രതീക്ഷിതമായിരുന്നോ? <ph name="BEGIN_LINK" />ഞങ്ങളെ അറിയിക്കുക<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
-<translation id="348000606199325318">ക്രാഷ് ഐഡി, <ph name="CRASH_LOCAL_ID" /> (സെർവർ ഐഡി: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">ഇപ്പോൾ ഞങ്ങൾക്ക് നിങ്ങളുടെ രക്ഷകർത്താവിനെ ബന്ധപ്പെടാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3528171143076753409">സെര്‍വറിന്‍റെ സര്‍ട്ടിഫിക്കറ്റ് വിശ്വാസയോഗ്യമല്ല.</translation>
 <translation id="3539171420378717834">ഈ ഉപകരണത്തിൽ ഈ കാർഡിന്റെ ഒരു പകർപ്പ് സൂക്ഷിക്കുക</translation>
@@ -355,7 +355,6 @@
 <translation id="3886446263141354045"><ph name="NAME" /> എന്നയാൾക്ക് ഈ സൈറ്റ് ആക്‌സസ് ചെയ്യാനുള്ള നിങ്ങളുടെ അഭ്യർത്ഥന അയച്ചു</translation>
 <translation id="3890664840433101773">ഇമെയില്‍‌ ചേര്‍‌ക്കുക</translation>
 <translation id="3901925938762663762">കാർഡ് കാലഹരണപ്പെട്ടു</translation>
-<translation id="3934680773876859118">PDF പ്രമാണം ലോഡുചെയ്യുന്നത് പരാജയപ്പെട്ടു</translation>
 <translation id="3963721102035795474">റീഡർ മോഡ്</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
@@ -767,7 +766,6 @@
 <translation id="7951415247503192394">(32-ബിറ്റ്)</translation>
 <translation id="7956713633345437162">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
-<translation id="7962083544045318153">ക്രാഷ് ഐഡി, <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">എല്ലായ്‌പ്പോഴും <ph name="ORIGINAL_LANGUAGE" /> നെ <ph name="TARGET_LANGUAGE" /> ലേക്ക് വിവർത്തനം ചെയ്യുക</translation>
 <translation id="7995512525968007366">വ്യക്തമാക്കിയിട്ടില്ല</translation>
 <translation id="800218591365569300">ഇടം സൃഷ്‌ടിക്കാൻ മറ്റ് ടാബുകളോ പ്രോഗ്രാമുകളോ അടയ്‌ക്കുന്നത് പരീക്ഷിക്കൂ.</translation>
@@ -849,7 +847,6 @@
 <translation id="8870413625673593573">സമീപകാലത്ത് അടച്ചവ</translation>
 <translation id="8874824191258364635">ശരിയായ കാർഡ് നമ്പർ നൽകുക</translation>
 <translation id="8876793034577346603">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ പാഴ്‌സുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
-<translation id="8877192140621905067">സ്ഥിരീകരിച്ച് കഴിഞ്ഞാൽ, നിങ്ങളുടെ കാർഡ് വിശദാംശങ്ങൾ ഈ സൈറ്റുമായി പങ്കിടും</translation>
 <translation id="8889402386540077796">ഹ്യൂ</translation>
 <translation id="8891727572606052622">അസാധുവായ പ്രോക്സി മോഡ്</translation>
 <translation id="889901481107108152">ക്ഷമിക്കണം, ഈ പരീക്ഷണം നിങ്ങളുടെ പ്ലാറ്റ്ഫോമിൽ ലഭ്യമല്ല.</translation>

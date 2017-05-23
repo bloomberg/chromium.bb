@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> sakoma:</translation>
 <translation id="1132774398110320017">„Chrome“ automatinio pildymo nustatymai...</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
+<translation id="1151972924205500581">Būtinas slaptažodis</translation>
 <translation id="1152921474424827756">Pasiekite <ph name="BEGIN_LINK" />talpykloje saugomą <ph name="URL" /> kopiją<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> netikėtai nutraukė ryšį.</translation>
 <translation id="1161325031994447685">Iš naujo prisijungti prie „Wi-Fi“</translation>
+<translation id="1165039591588034296">Klaida</translation>
 <translation id="1175364870820465910">&amp;Spausdinti...</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatiškai pateikti<ph name="END_WHITEPAPER_LINK" /> išsamią informaciją apie galimas saugos problemas sistemoje „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -303,14 +305,12 @@
 <translation id="3431636764301398940">Išsaugoti šią kortelę šiame įrenginyje</translation>
 <translation id="3435896845095436175">Įgalinti</translation>
 <translation id="3447661539832366887">Įrenginio savininkas išjungė dinozauro žaidimą.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Gauti intervalą:</translation>
 <translation id="3462200631372590220">Slėpti išsamią informaciją</translation>
 <translation id="3467763166455606212">Būtina nurodyti kortelės savininko vardą ir pavardę</translation>
 <translation id="3478058380795961209">Gal. pab. mėnuo</translation>
 <translation id="3479539252931486093">Ar tai buvo netikėta? <ph name="BEGIN_LINK" />Praneškime mums apie tai<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ne dabar</translation>
-<translation id="348000606199325318">Strigties ID <ph name="CRASH_LOCAL_ID" /> (serverio ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Šiuo metu nepavyko susisiekti su jūsų tėvu. Bandykite dar kartą.</translation>
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>
@@ -359,7 +359,6 @@
 <translation id="3886446263141354045">Jūsų užklausa pasiekti šią svetainę išsiųsta <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Pridėti el. pašto adresą</translation>
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
-<translation id="3934680773876859118">Nepavyko įkelti PDF dokumento</translation>
 <translation id="3963721102035795474">Skaitytojo režimas</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> užblokuota.</translation>
@@ -773,7 +772,6 @@
 <translation id="7951415247503192394">(32 bitų)</translation>
 <translation id="7956713633345437162">Žymės mobiliesiems</translation>
 <translation id="7961015016161918242">Niekada</translation>
-<translation id="7962083544045318153">Strigties ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Visada versti iš <ph name="ORIGINAL_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nenurodytas</translation>
 <translation id="800218591365569300">Pabandykite uždaryti skirtukus arba kitas programas, kad atlaisvintumėte atminties.</translation>
@@ -855,7 +853,6 @@
 <translation id="8870413625673593573">Neseniai uždaryta</translation>
 <translation id="8874824191258364635">Įveskite tinkamą kortelės numerį</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>
-<translation id="8877192140621905067">Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine</translation>
 <translation id="8889402386540077796">Spalva</translation>
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
 <translation id="889901481107108152">Deja, šis eksperimentas negalimas platformoje.</translation>

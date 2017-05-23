@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Abrir on-line</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
 <translation id="10614374240317010">Nunca salvam</translation>
-<translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
 <translation id="1111673857033749125">Favoritos salvos nos seus outros dispositivos serão exibidos aqui.</translation>
 <translation id="1121094540300013208">Relatórios de uso e falhas</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Mais artigos serão exibidos em breve. Aproveite a manhã.</translation>
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
-<translation id="3090193911106258841">Acessando entrada de áudio e vídeo</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
 <translation id="3148434565183091099">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="3166827708714933426">Atalhos de guias e janelas</translation>
@@ -282,6 +280,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4060598801229743805">Opções disponíveis perto da parte superior da tela</translation>
 <translation id="4062305924942672200">Informações legais</translation>
+<translation id="4084682180776658562">Favorito</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB transferido(s) por download</translation>
 <translation id="4089831646916293264">Esta função pode interferir no acesso ao pacote de dados fornecido pela sua operadora.</translation>
 <translation id="4095146165863963773">Excluir dados de apps?</translation>
@@ -292,7 +291,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4226663524361240545">É possível que as notificações façam o dispositivo vibrar</translation>
-<translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
 <translation id="4242533952199664413">Abrir configurações.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
@@ -469,8 +467,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5956665950594638604">Abrir Central de Ajuda do Chrome em uma nova guia</translation>
 <translation id="5962718611393537961">Toque para recolher</translation>
 <translation id="6000066717592683814">Continuar usando o Google</translation>
-<translation id="6010869025736512584">Acessando entrada de vídeo</translation>
-<translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
 <translation id="6031101910111098835">Visualização recolhida: clique para expandir</translation>
 <translation id="6039379616847168523">Ir para a próxima guia</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -589,6 +585,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7189372733857464326">Aguardando o fim da atualização do Google Play Services</translation>
+<translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7191430249889272776">Guia aberta no plano de fundo.</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa sua localização para mostrar resultados de pesquisa locais</translation>
@@ -609,6 +606,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
+<translation id="7481312909269577407">Avançar</translation>
 <translation id="7487352416683556407">Os dados selecionados foram removidos do Chrome e dos seus dispositivos sincronizados.
 
 É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -641,11 +639,9 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7772032839648071052">Confirmar senha</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Ontem</translation>
-<translation id="7788788617745289808">O Chrome precisa ter acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
-<translation id="7829298379596169484">Acessando entrada de áudio</translation>
 <translation id="7837721118676387834">Permite a reprodução automática de vídeos silenciados de um site específico.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>

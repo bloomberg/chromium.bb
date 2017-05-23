@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> 顯示：</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
+<translation id="1151972924205500581">請輸入密碼</translation>
 <translation id="1152921474424827756">存取 <ph name="URL" /> 的<ph name="BEGIN_LINK" />頁庫存檔副本<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外中斷連線。</translation>
 <translation id="1161325031994447685">重新連線至 Wi-Fi 網路</translation>
+<translation id="1165039591588034296">錯誤</translation>
 <translation id="1175364870820465910">列印(&amp;P)...</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />自動向 Google 回報<ph name="END_WHITEPAPER_LINK" />疑似安全性事件的詳細資料。<ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">將這張信用卡儲存到這個裝置</translation>
 <translation id="3435896845095436175">啟用</translation>
 <translation id="3447661539832366887">這個裝置的擁有者已關閉恐龍遊戲。</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">擷取間隔：</translation>
 <translation id="3462200631372590220">隱藏詳細資料</translation>
 <translation id="3467763166455606212">持卡人姓名為必填項目</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3479539252931486093">這是未預期的情況嗎？<ph name="BEGIN_LINK" />通知我們<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">現在不要</translation>
-<translation id="348000606199325318">當機 ID：<ph name="CRASH_LOCAL_ID" /> (伺服器 ID：<ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">我們暫時無法與您的家長聯絡，請再試一次。</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
 <translation id="3539171420378717834">在這個裝置上保留這張信用卡的複本</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">你想存取這個網站的要求已傳送給<ph name="NAME" /></translation>
 <translation id="3890664840433101773">新增電子郵件地址</translation>
 <translation id="3901925938762663762">這張信用卡已過期</translation>
-<translation id="3934680773876859118">無法載入 PDF 文件</translation>
 <translation id="3963721102035795474">閱讀器模式</translation>
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 遭到封鎖</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32 位元)</translation>
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="7961015016161918242">一律不要</translation>
-<translation id="7962083544045318153">當機 ID：<ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="800218591365569300">嘗試關閉其他分頁或程式，以釋出記憶體。</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8874824191258364635">請輸入有效的信用卡號碼</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
-<translation id="8877192140621905067">完成驗證後，這個網站就會取得您的信用卡詳細資訊</translation>
 <translation id="8889402386540077796">色調</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="889901481107108152">很抱歉，這項實驗功能無法支援你的平台。</translation>

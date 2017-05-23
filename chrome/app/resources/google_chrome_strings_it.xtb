@@ -3,7 +3,6 @@
 <translationbundle lang="it">
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
 <translation id="1035334672863811645">accedi a Chrome</translation>
-<translation id="1061441684050139317">Chrome deve avere accesso al microfono per condividerla con questo sito.</translation>
 <translation id="1065672644894730302">Impossibile leggere le preferenze. Alcune funzioni potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
 <translation id="1088300314857992706">L'indirizzo <ph name="USER_EMAIL_ADDRESS" /> utilizzava in precedenza Chrome</translation>
 <translation id="1104959162601287462">Informazioni su &amp;Chrome OS</translation>
@@ -108,7 +107,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
 <translation id="4147555960264124640">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Il programma di installazione non è riuscito a decomprimere il file. Scarica nuovamente Google Chrome.</translation>
-<translation id="423410644998903704">Chrome deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
 <translation id="4251615635259297716">Collegare i tuoi dati Chrome a questo account?</translation>
 <translation id="4309555186815777032">(è necessario <ph name="BEGIN_BUTTON" />riavviare<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -169,7 +167,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="5931853610562009806">Su Mac, le password possono essere salvate in Accesso Portachiavi e sono accessibili o sincronizzate da parte di altri utenti Chrome che utilizzano lo stesso account OS X.</translation>
 <translation id="5940385492829620908">Il tuoi siti web, i tuoi segnalibri e gli altri contenuti Chrome sempre disponibili e aggiornati qui.</translation>
 <translation id="5941830788786076944">Imposta Google Chrome come browser predefinito</translation>
-<translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
 <translation id="6014844626092547096">Hai eseguito l'accesso a Chrome. La sincronizzazione è stata disattivata dall'amministratore.</translation>
 <translation id="6070348360322141662">Per maggiore sicurezza, Google Chrome cripterà i tuoi dati</translation>
 <translation id="6113794647360055231">Da oggi Chrome è ancora meglio</translation>
@@ -227,7 +224,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7761834446675418963">Fai clic sul tuo nome per aprire Chrome e iniziare a navigare.</translation>
 <translation id="7781002470561365167">È disponibile una nuova versione di Google Chrome.</translation>
 <translation id="7787950393032327779">Sembra che il profilo sia in uso in un altro processo Google Chrome (<ph name="PROCESS_ID" />) su un altro computer (<ph name="HOST_NAME" />). Chrome ha bloccato il profilo affinché non venga danneggiato. Se sei sicuro che nessun altro processo stia utilizzando questo profilo, puoi sbloccare il profilo e riavviare Chrome.</translation>
-<translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7808348361785373670">Rimuovi da Chrome...</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome è aggiornato</translation>

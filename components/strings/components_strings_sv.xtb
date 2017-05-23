@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> säger:</translation>
 <translation id="1132774398110320017">Inställningar för Autofyll i Chrome …</translation>
 <translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
+<translation id="1151972924205500581">Lösenord krävs</translation>
 <translation id="1152921474424827756">Öppna en <ph name="BEGIN_LINK" />cachad kopia<ph name="END_LINK" /> av <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> stängde oväntat ner anslutningen.</translation>
 <translation id="1161325031994447685">återansluta till Wi-Fi</translation>
+<translation id="1165039591588034296">Fel</translation>
 <translation id="1175364870820465910">Skriv &amp;ut...</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Rapportera uppgifter<ph name="END_WHITEPAPER_LINK" /> om möjliga säkerhetsincidenter till Google automatiskt. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Spara kortet på enheten</translation>
 <translation id="3435896845095436175">Aktivera</translation>
 <translation id="3447661539832366887">Enhetens ägare har stängt av dinosauriespelet.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Hämta intervall:</translation>
 <translation id="3462200631372590220">Dölja avancerade uppgifter</translation>
 <translation id="3467763166455606212">Kortinnehavarens namn måste anges</translation>
 <translation id="3478058380795961209">Sista giltighetsmånad</translation>
 <translation id="3479539252931486093">Var det här oväntat? <ph name="BEGIN_LINK" />Meddela oss<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Inte nu</translation>
-<translation id="348000606199325318">Krasch-id <ph name="CRASH_LOCAL_ID" /> (server-id: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Vi kunde inte nå din förälder just nu. Försök igen.</translation>
 <translation id="3528171143076753409">Servercertifikatet är inte tillförlitligt.</translation>
 <translation id="3539171420378717834">Spara en kopia av kortet på enheten</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Din begäran om att få tillgång till denna webbplats har skickats till <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Lägg till e-post</translation>
 <translation id="3901925938762663762">Kortet gäller inte längre</translation>
-<translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>
 <translation id="3963721102035795474">Läsarläge</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> har blockerats</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32 bitar)</translation>
 <translation id="7956713633345437162">Bokmärken i mobilen</translation>
 <translation id="7961015016161918242">Aldrig</translation>
-<translation id="7962083544045318153">Krasch-id <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Översätt alltid <ph name="ORIGINAL_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Inte specificerad</translation>
 <translation id="800218591365569300">Testa att stänga andra flikar eller program för att frigöra minne.</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8874824191258364635">Ange ett giltigt kortnummer</translation>
 <translation id="8876793034577346603">Det gick inte att tolka nätverkskonfigurationen.</translation>
-<translation id="8877192140621905067">När du bekräftar delas kortinformationen med den här webbplatsen</translation>
 <translation id="8889402386540077796">Nyans</translation>
 <translation id="8891727572606052622">Ogiltigt proxyläge.</translation>
 <translation id="889901481107108152">Experimentet finns tyvärr inte på din plattform.</translation>

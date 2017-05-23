@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Ouvrir la version en ligne</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
 <translation id="10614374240317010">Jamais enregistrés</translation>
-<translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
 <translation id="1080790410959514870">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Cette opération va entraîner la suppression des données Chrome stockées sur l'appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'affichent ici.</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
@@ -191,7 +190,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">D'autres articles vous seront bientôt proposés. Bonne matinée !</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
-<translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3148434565183091099">Connectez-vous à Chrome pour synchroniser vos favoris sur tous vos appareils.</translation>
 <translation id="3166827708714933426">Raccourcis liés aux onglets et aux fenêtres</translation>
@@ -283,6 +281,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4060598801229743805">Options disponibles à proximité du haut de l'écran</translation>
 <translation id="4062305924942672200">Informations légales</translation>
+<translation id="4084682180776658562">Favori</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> Mo téléchargé(s)</translation>
 <translation id="4089831646916293264">Cette fonctionnalité peut perturber l'accès aux services de données premium fournis par votre opérateur.</translation>
 <translation id="4095146165863963773">Supprimer les données de l'application ?</translation>
@@ -293,7 +292,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="4226663524361240545">L'appareil vibrera en cas de notifications.</translation>
-<translation id="423410644998903704">Chrome doit disposer de l'accès à certaines autorisations pour les partager avec ce site.</translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
 <translation id="4254813446494774748">Langue de traduction :</translation>
@@ -471,8 +469,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5956665950594638604">Ouvrir le centre d'aide dans un nouvel onglet</translation>
 <translation id="5962718611393537961">Appuyer pour réduire</translation>
 <translation id="6000066717592683814">Conserver Google</translation>
-<translation id="6010869025736512584">Accès à l'entrée vidéo en cours…</translation>
-<translation id="6012342843556706400">Chrome doit disposer de l'accès à votre position pour la partager avec ce site.</translation>
 <translation id="6031101910111098835">Réduit – Cliquer pour développer</translation>
 <translation id="6039379616847168523">Accéder à l'onglet suivant</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -591,6 +587,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7149893636342594995">Dernières 24 heures</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7189372733857464326">En attente de la fin de la mise à jour des services Google Play</translation>
+<translation id="7189598951263744875">Partager…</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
@@ -611,6 +608,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
+<translation id="7481312909269577407">Avancer</translation>
 <translation id="7487352416683556407">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés.
 
 Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
@@ -643,11 +641,9 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> de plus}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> de plus}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> de plus}}</translation>
 <translation id="7781829728241885113">Hier</translation>
-<translation id="7788788617745289808">Chrome doit disposer de l'accès à la caméra pour la partager avec ce site.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7810647596859435254">Ouvrir avec…</translation>
-<translation id="7829298379596169484">Accès à l'entrée audio en cours…</translation>
 <translation id="7837721118676387834">Autoriser la lecture automatique des vidéos dont le son est coupé pour un site spécifique</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="784934925303690534">Période</translation>

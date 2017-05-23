@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> diu:</translation>
 <translation id="1132774398110320017">Configuració d'Emplenament automàtic de Chrome...</translation>
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
+<translation id="1151972924205500581">Es requereix una contrasenya</translation>
 <translation id="1152921474424827756">Accediu a una <ph name="BEGIN_LINK" />còpia emmagatzemada a la memòria cau<ph name="END_LINK" /> de la pàgina <ph name="URL" />.</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha tancat la connexió de manera inesperada.</translation>
 <translation id="1161325031994447685">Torneu-vos a connectar a la xarxa Wi-Fi</translation>
+<translation id="1165039591588034296">Error</translation>
 <translation id="1175364870820465910">&amp;Imprimeix...</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Informa automàticament<ph name="END_WHITEPAPER_LINK" /> Google dels detalls sobre possibles incidències de seguretat. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Desa aquesta targeta al dispositiu</translation>
 <translation id="3435896845095436175">Activa</translation>
 <translation id="3447661539832366887">El propietari d'aquest dispositiu ha desactivat el joc de dinosaures.</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Obtén l'interval:</translation>
 <translation id="3462200631372590220">Amaga la configuració avançada</translation>
 <translation id="3467763166455606212">El nom del titular de la targeta és obligatori</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3479539252931486093">Heu trobat el lloc bloquejat de manera inesperada? <ph name="BEGIN_LINK" />Informeu-nos-en<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ara no</translation>
-<translation id="348000606199325318">Identificador d'error <ph name="CRASH_LOCAL_ID" /> (identificador de servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">En aquests moments no ens hem pogut posar en contacte amb els pares. Torneu-ho a provar.</translation>
 <translation id="3528171143076753409">El certificat del servidor no és de confiança.</translation>
 <translation id="3539171420378717834">Desa una còpia d'aquesta targeta al dispositiu</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">La teva sol·licitud per accedir a aquest lloc s'ha enviat a <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Afegeix un correu electrònic</translation>
 <translation id="3901925938762663762">La targeta ha caducat</translation>
-<translation id="3934680773876859118">No es pot carregar el document en format PDF</translation>
 <translation id="3963721102035795474">Mode de lector</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> està bloquejat</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7956713633345437162">Adreces d'interès per a mòbils</translation>
 <translation id="7961015016161918242">Mai</translation>
-<translation id="7962083544045318153">Identificador d'error <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Tradueix sempre de: <ph name="ORIGINAL_LANGUAGE" /> a: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">No especificat</translation>
 <translation id="800218591365569300">Prova de tancar altres pestanyes o programes per alliberar memòria.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8874824191258364635">Introdueix un número de targeta vàlid</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
-<translation id="8877192140621905067">Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc</translation>
 <translation id="8889402386540077796">To</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="889901481107108152">Aquest experiment no està disponible a la vostra plataforma.</translation>

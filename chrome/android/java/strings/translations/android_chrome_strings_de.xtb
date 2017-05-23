@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Online öffnen</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Nie speichern für…</translation>
-<translation id="1061441684050139317">Chrome benötigt Zugriff auf das Mikrofon, um es für diese Website freizugeben.</translation>
 <translation id="1080790410959514870">Sie melden sich von einem Konto ab, das von <ph name="DOMAIN_NAME" /> verwaltet wird. Dadurch werden die auf diesem Gerät gespeicherten Chrome-Daten gelöscht. Die Daten verbleiben jedoch weiterhin in Ihrem Google-Konto.</translation>
 <translation id="1111673857033749125">Hier werden die Lesezeichen angezeigt, die auf Ihren anderen Geräten gespeichert sind.</translation>
 <translation id="1121094540300013208">Nutzungs- und Absturzberichte</translation>
@@ -191,7 +190,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
-<translation id="3090193911106258841">Zugriff auf Audio- und Video-Eingang</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
 <translation id="3148434565183091099">Melden Sie sich in Chrome an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3166827708714933426">Tastenkombinationen für Tabs und Fenster</translation>
@@ -223,7 +221,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3435896845095436175">Aktivieren</translation>
 <translation id="3443221991560634068">Aktuelle Seite neu laden</translation>
 <translation id="3452612588551937789">Melden Sie sich mit Ihrem Google-Konto an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und Ihre anderen Einstellungen auf allen Geräten abrufen zu können.</translation>
-<translation id="3487093336331957349">Such- und Websitevorschläge</translation>
+<translation id="3487093336331957349">Vorschläge für Suchbegriffe und für Websites</translation>
 <translation id="3492207499832628349">Neuer Inkognito-Tab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu vorgeschlagenen Inhalten</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
@@ -283,6 +281,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Optionen sind oben auf dem Bildschirm verfügbar</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
+<translation id="4084682180776658562">Lesezeichen</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB heruntergeladen</translation>
 <translation id="4089831646916293264">Diese Funktion beeinträchtigt möglicherweise den Zugang zu Premium-Datendiensten, die von Ihrem Mobilfunkanbieter bereitgestellt werden.</translation>
 <translation id="4095146165863963773">App-Daten löschen?</translation>
@@ -293,7 +292,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
-<translation id="423410644998903704">Chrome benötigt Zugriff auf die Berechtigungen, um sie für diese Website freizugeben.</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4254813446494774748">Zielsprache:</translation>
@@ -471,8 +469,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5956665950594638604">Chrome-Hilfe in einem neuen Tab öffnen</translation>
 <translation id="5962718611393537961">Zum Minimieren tippen</translation>
 <translation id="6000066717592683814">Google beibehalten</translation>
-<translation id="6010869025736512584">Zugriff auf Video-Eingang</translation>
-<translation id="6012342843556706400">Chrome benötigt Zugriff auf den Standort, um ihn für diese Website freizugeben.</translation>
 <translation id="6031101910111098835">Minimiert – zum Maximieren klicken</translation>
 <translation id="6039379616847168523">Zum nächsten Tab wechseln</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -591,6 +587,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7149893636342594995">Letzte 24 Stunden</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
+<translation id="7189598951263744875">Teilen...</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
@@ -611,6 +608,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
 <translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
+<translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7487352416683556407">Die ausgewählten Daten wurden aus Chrome und von allen Ihren synchronisierten Geräten entfernt.
 
 Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> weitere Arten von Browserverlaufsdaten wie Suchanfragen oder Aktivitäten anderer Google-Dienste für Ihr Google-Konto.</translation>
@@ -643,11 +641,9 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}}</translation>
 <translation id="7781829728241885113">Gestern</translation>
-<translation id="7788788617745289808">Chrome benötigt Zugriff auf die Kamera, um sie für diese Website freizugeben.</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
-<translation id="7829298379596169484">Zugriff auf Audio-Eingang</translation>
 <translation id="7837721118676387834">Automatische Wiedergabe stummgeschalteter Videos für eine bestimmte Website zulassen.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="784934925303690534">Zeitraum</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="bn">
 <translation id="1001534784610492198">ইনস্টলার সংরক্ষণাগারটি দূষিত বা অকার্যকর৷ দয়া করে আবার Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="1035334672863811645">Chrome এ প্রবেশ করুন</translation>
-<translation id="1061441684050139317">এই সাইটের সাথে এটি শেয়ার করতে Chrome এর মাইক্রোফোন অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> পূর্বে Chrome ব্যবহার করছিলেন</translation>
 <translation id="1104959162601287462">&amp;Chrome OS সম্বন্ধে</translation>
@@ -109,7 +108,6 @@
 <translation id="4053720452172726777">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="4147555960264124640">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে প্রবেশ করুন করছেন এবং এর প্রশাসককে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ্লিকেশানগুলি, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্যান্য সেটিংস <ph name="USER_NAME" /> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু আপনি অন্য একটি অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">ইনস্টলারটি সংরক্ষণাগার কমপ্রেস মুক্ত করতে ব্যর্থ হয়েছে৷ দয়া করে আবার Google Chrome ডাউনলোড করুন৷</translation>
-<translation id="423410644998903704">এই সাইটের সাথে এগুলি শেয়ার করতে Chrome এর অনুমতির অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="4251615635259297716">এই অ্যাকাউন্টে আপনার Chrome ডেটা লিঙ্ক করবেন?</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />আবার চালু করা<ph name="END_BUTTON" /> প্রয়োজন)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -172,7 +170,6 @@
 <translation id="5931853610562009806">Mac এ, পাসওয়ার্ডগুলি আপনার Keychain এ সংরক্ষিত হতে পারে এবং এই OS X অ্যাকাউন্টটি শেয়ার করে এমন অন্য Chrome ব্যবহারকারীরা এটি অ্যাক্সেস বা সিঙ্ক করতে পারবে।</translation>
 <translation id="5940385492829620908">আপনার ওয়েব, বুকমার্ক, এবং Chrome এর অন্যান্য জিনিস এখানে রয়েছে৷</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
-<translation id="6012342843556706400">এই সাইটের সাথে এটি শেয়ার করতে Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="6014844626092547096">আপনি এখন Chrome এ প্রবেশ করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="6070348360322141662">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে</translation>
 <translation id="6113794647360055231">Chrome আরো ভাল হয়ে উঠেছে</translation>
@@ -230,7 +227,6 @@
 <translation id="7761834446675418963">Chrome খোলার জন্য আপনার নামের উপরে ক্লিক করুন এবং ব্রাউজ করা শুরু করুন৷</translation>
 <translation id="7781002470561365167">Google Chrome এর একটি নতুন ভার্সন উপলব্ধ।</translation>
 <translation id="7787950393032327779">অন্য একটি কম্পিউটারে (<ph name="HOST_NAME" />) প্রোফাইলটি অন্য Google Chrome প্রক্রিয়া (<ph name="PROCESS_ID" />) দ্বারা ব্যবহৃত হচ্ছে বলে মনে হচ্ছে৷ Chrome প্রোফাইলটিকে লক করেছে যাতে এটি বিকৃত না হয়ে যায়৷ যদি আপনি নিশ্চিত হন যে আর কোনো প্রক্রিয়া এই প্রোফাইলটিকে ব্যবহার করছে না, তবে আপনি প্রোফাইলটিকে আনলক করতে পারেন এবং Chrome কে পুনরায় লঞ্চ করতে পারেন৷</translation>
-<translation id="7788788617745289808">এই সাইটের সাথে এটি শেয়ার করতে Chrome এর ক্যামেরা অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="7808348361785373670">Chrome থেকে সরান...</translation>
 <translation id="7825851276765848807">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ দয়া করে আবার Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="7855730255114109580">Google Chrome আপ টু ডেট আছে</translation>

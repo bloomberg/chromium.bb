@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> siger:</translation>
 <translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
+<translation id="1151972924205500581">En adgangskode er påkrævet</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> lukkede forbindelsen uventet.</translation>
 <translation id="1161325031994447685">Genoprette forbindelse til Wi-Fi</translation>
+<translation id="1165039591588034296">Fejl</translation>
 <translation id="1175364870820465910">&amp;Udskriv...</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Rapportér automatisk<ph name="END_WHITEPAPER_LINK" /> oplysninger om mulige sikkerhedsproblemer til Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Gem dette kort på denne enhed</translation>
 <translation id="3435896845095436175">Aktivér</translation>
 <translation id="3447661539832366887">Ejeren af denne enhed har lukket dinosaurspillet.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Hent interval:</translation>
 <translation id="3462200631372590220">Skjul avanceret</translation>
 <translation id="3467763166455606212">Kortindehavers navn skal angives</translation>
 <translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Giv os gerne feedback<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ikke nu</translation>
-<translation id="348000606199325318">Nedbruds-id <ph name="CRASH_LOCAL_ID" /> (server-id: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Vi kan ikke få fat i din forælder på nuværende tidspunkt. Prøv igen.</translation>
 <translation id="3528171143076753409">Serverens certifikat er ikke troværdigt.</translation>
 <translation id="3539171420378717834">Gem en kopi af dette kort på denne enhed</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Din anmodning om adgang til dette website er blevet sendt til <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Tilføj e-mail</translation>
 <translation id="3901925938762663762">Kortet er udløbet</translation>
-<translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>
 <translation id="3963721102035795474">Læser-tilstand</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokeret</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Bogmærker på mobil</translation>
 <translation id="7961015016161918242">Aldrig</translation>
-<translation id="7962083544045318153">Nedbruds-id <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Oversæt altid <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ikke angivet</translation>
 <translation id="800218591365569300">Prøv at lukke andre faner eller programmer for at frigøre hukommelse.</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8874824191258364635">Angiv et gyldigt kortnummer</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>
-<translation id="8877192140621905067">Når du har bekræftet, deles dine kortoplysninger med dette website</translation>
 <translation id="8889402386540077796">Farvetone</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="889901481107108152">Dette eksperiment er ikke tilgængeligt på din platform.</translation>

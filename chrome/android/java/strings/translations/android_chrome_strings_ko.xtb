@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">온라인 열기</translation>
 <translation id="1049743911850919806">시크릿</translation>
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
-<translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
 <translation id="1121094540300013208">사용 및 비정상 종료 보고서</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">더 많은 콘텐츠가 표시될 예정이니 기대해 주세요. 즐거운 아침 시간 보내세요.</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
-<translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
 <translation id="3148434565183091099">어느 기기에서나 내 북마크를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="3166827708714933426">탭 및 창 단축키</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4060598801229743805">화면 상단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="4062305924942672200">법적 정보</translation>
+<translation id="4084682180776658562">북마크</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" />MB 다운로드됨</translation>
 <translation id="4089831646916293264">이 기능을 사용하면 이동통신사에서 제공하는 프리미엄 데이터 서비스에 액세스하는 데 문제가 생길 수 있습니다.</translation>
 <translation id="4095146165863963773">앱 데이터를 삭제하시겠습니까?</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4226663524361240545">알림이 있으면 진동이 울릴 수도 있습니다.</translation>
-<translation id="423410644998903704">이 사이트에 공유하려면 Chrome에 액세스 권한이 있어야 합니다.</translation>
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
 <translation id="4254813446494774748">번역 언어:</translation>
@@ -471,8 +469,6 @@
 <translation id="5956665950594638604">새 탭에서 Chrome 고객센터 열기</translation>
 <translation id="5962718611393537961">탭하여 접기</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
-<translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
-<translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>
 <translation id="6031101910111098835">접힘 - 펼치려면 클릭</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
@@ -591,6 +587,7 @@
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7189372733857464326">Google Play 서비스 업데이트 완료 대기 중</translation>
+<translation id="7189598951263744875">공유...</translation>
 <translation id="7191430249889272776">탭이 백그라운드에 열림</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
@@ -611,6 +608,7 @@
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
+<translation id="7481312909269577407">앞으로</translation>
 <translation id="7487352416683556407">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다.
 
 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
@@ -643,11 +641,9 @@
 <translation id="7772032839648071052">암호 확인</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}}</translation>
 <translation id="7781829728241885113">어제</translation>
-<translation id="7788788617745289808">이 사이트에 공유하려면 Chrome에 카메라 액세스 권한이 있어야 합니다.</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>
-<translation id="7829298379596169484">오디오 입력 장치에 액세스 중</translation>
 <translation id="7837721118676387834">특정 사이트에서만 음소거된 동영상이 자동재생되도록 허용합니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="784934925303690534">기간</translation>

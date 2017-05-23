@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> ütleb:</translation>
 <translation id="1132774398110320017">Chrome'i automaattäite seaded ...</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
+<translation id="1151972924205500581">Parool on nõutav</translation>
 <translation id="1152921474424827756">Hankige juurdepääs aadressi <ph name="URL" /> <ph name="BEGIN_LINK" />vahemällu salvestatud koopiale<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885">Host <ph name="HOST_NAME" /> sulges ootamatult ühenduse.</translation>
 <translation id="1161325031994447685">Ühendage uuesti WiFi-ga</translation>
+<translation id="1165039591588034296">Viga</translation>
 <translation id="1175364870820465910">&amp;Prindi...</translation>
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Teavita Google'it automaatselt<ph name="END_WHITEPAPER_LINK" /> võimalikest turvaintsidentidest. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Salvesta kaart sellesse seadmesse</translation>
 <translation id="3435896845095436175">Luba</translation>
 <translation id="3447661539832366887">Seadme omanik lülitas dinosaurusemängu välja.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Hankimise intervall:</translation>
 <translation id="3462200631372590220">Peida täpsemad üksikasjad</translation>
 <translation id="3467763166455606212">Kaardiomaniku nimi on kohustuslik</translation>
 <translation id="3478058380795961209">Aegumiskuu</translation>
 <translation id="3479539252931486093">Kas see oli ootamatu? <ph name="BEGIN_LINK" />Andke meile sellest teada<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Mitte praegu</translation>
-<translation id="348000606199325318">Krahhi ID <ph name="CRASH_LOCAL_ID" /> (serveri ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Teie vanemaga ei õnnestunud praegu ühendust võtta. Proovige hiljem uuesti.</translation>
 <translation id="3528171143076753409">Serveri sertifikaat ei ole usaldusväärne.</translation>
 <translation id="3539171420378717834">Säilita kaardi koopia seadmes</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Teie juurdepääsutaotlus sellele saidile saadeti kasutajale <ph name="NAME" /></translation>
 <translation id="3890664840433101773">E-posti aadressi lisamine</translation>
 <translation id="3901925938762663762">Kaart on aegunud</translation>
-<translation id="3934680773876859118">PDF-dokumendi laadimine nurjus</translation>
 <translation id="3963721102035795474">Lugejarežiim</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> on blokeeritud</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-bitine)</translation>
 <translation id="7956713633345437162">Mobiili järjehoidjad</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
-<translation id="7962083544045318153">Krahhi ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Tõlgi alati keelest <ph name="ORIGINAL_LANGUAGE" /> keelde <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ei ole määratud</translation>
 <translation id="800218591365569300">Sulgege muud vahelehed või programmid, et mälu vabastada.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8874824191258364635">Sisestaeg kehtiv kaardinumber</translation>
 <translation id="8876793034577346603">Võrgu seadistust ei õnnestunud sõeluda.</translation>
-<translation id="8877192140621905067">Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga</translation>
 <translation id="8889402386540077796">Värvitoon</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="889901481107108152">Kahjuks ei ole see eksperiment teie platvormil saadaval.</translation>

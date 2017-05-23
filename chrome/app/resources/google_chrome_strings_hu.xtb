@@ -3,7 +3,6 @@
 <translationbundle lang="hu">
 <translation id="1001534784610492198">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="1035334672863811645">bejelentkezés a Chrome-ba</translation>
-<translation id="1061441684050139317">A Chrome-nak rendelkeznie kell hozzáféréssel a mikrofonhoz, hogy megoszthassa ezzel a webhellyel.</translation>
 <translation id="1065672644894730302">A beállításait nem sikerült olvasni. Egyes funkciókat esetleg nem ér el, és a beállításaiban végrehajtott módosításokat nem menti a rendszer.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> előzőleg Chrome-ot használt</translation>
 <translation id="1104959162601287462">A &amp;Chrome OS névjegye</translation>
@@ -107,7 +106,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
 <translation id="4147555960264124640">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiókok Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
-<translation id="423410644998903704">A Chrome-nak rendelkeznie kell hozzáférési engedélyekkel, hogy megoszthassa őket ezzel a webhellyel.</translation>
 <translation id="4251615635259297716">Társítja Chrome-adatait ezzel a fiókkal?</translation>
 <translation id="4309555186815777032">(a Chrome <ph name="BEGIN_BUTTON" />újraindítását<ph name="END_BUTTON" /> igényli)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -168,7 +166,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="5931853610562009806">Mac típusú számítógépen a rendszer a Keychain alkalmazásba mentheti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chrome-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
 <translation id="5940385492829620908">Az Ön könyvjelzői, valamint az internetezéssel és a Chrome-mal kapcsolatos egyéb dolgai vannak itt.</translation>
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
-<translation id="6012342843556706400">A Chrome-nak rendelkeznie kell hozzáféréssel a tartózkodási helyhez, hogy megoszthassa ezzel a webhellyel.</translation>
 <translation id="6014844626092547096">Bejelentkezett a Chrome-ba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="6070348360322141662">A nagyobb biztonság érdekében a Google Chrome titkosítja az Ön adatait</translation>
 <translation id="6113794647360055231">A Chrome még jobb lett</translation>
@@ -226,7 +223,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7761834446675418963">Kattintson a nevére a Chrome megnyitásához és a böngészés megkezdéséhez.</translation>
 <translation id="7781002470561365167">Elérhető a Google Chrome új verziója</translation>
 <translation id="7787950393032327779">Úgy tűnik, a profilt egy másik Google Chrome-folyamat (<ph name="PROCESS_ID" />) használja egy másik számítógépen (<ph name="HOST_NAME" />). A Chrome zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chrome-ot.</translation>
-<translation id="7788788617745289808">A Chrome-nak rendelkeznie kell hozzáféréssel a kamerához, hogy megoszthassa ezzel a webhellyel.</translation>
 <translation id="7808348361785373670">Eltávolítás a Chrome-ból…</translation>
 <translation id="7825851276765848807">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Google Chrome-ot.</translation>
 <translation id="7855730255114109580">A Google Chrome naprakész</translation>

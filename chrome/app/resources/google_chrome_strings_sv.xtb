@@ -3,7 +3,6 @@
 <translationbundle lang="sv">
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Google Chrome igen.</translation>
 <translation id="1035334672863811645">Logga in i Chrome</translation>
-<translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
 <translation id="1065672644894730302">Det går inte att läsa inställningarna.
 
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
@@ -111,7 +110,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
 <translation id="4147555960264124640">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Google Chrome igen.</translation>
-<translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
 <translation id="4309555186815777032">(Chrome måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -176,7 +174,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="5931853610562009806">På Mac kan lösenord sparas i nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="5940385492829620908">Här finns webben, bokmärken och allt annat du använder Chrome till.</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
-<translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
 <translation id="6014844626092547096">Nu är du inloggad på Chrome. Synkronisering har inaktiverats av administratören.</translation>
 <translation id="6070348360322141662">Din data krypteras i Google Chrome för att öka säkerheten</translation>
 <translation id="6113794647360055231">Vi har gjort Chrome ännu bättre</translation>
@@ -234,7 +231,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7761834446675418963">Öppna Chrome genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="7781002470561365167">Det finns en ny version av Google Chrome tillgänglig.</translation>
 <translation id="7787950393032327779">Profilen verkar användas av en annan Google Chrome-process (<ph name="PROCESS_ID" />) på en annan dator (<ph name="HOST_NAME" />). Profilen har låsts så att den inte används på otillåtet sätt. Om du är säker på att profilen inte används i några andra processer låser du upp profilen och startar om Chrome.</translation>
-<translation id="7788788617745289808">Chrome behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
 <translation id="7808348361785373670">Ta bort från Chrome …</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>

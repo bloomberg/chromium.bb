@@ -3,7 +3,6 @@
 <translationbundle lang="ru">
 <translation id="1001534784610492198">Архив программы установки поврежден или имеет неправильный формат. Скачайте Google Chrome снова.</translation>
 <translation id="1035334672863811645">войдите в Chrome</translation>
-<translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
 <translation id="1088300314857992706">Адрес <ph name="USER_EMAIL_ADDRESS" /> уже использовался в Chrome</translation>
 <translation id="1104959162601287462">О &amp;Chrome OS</translation>
@@ -107,7 +106,6 @@
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="4147555960264124640">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Не удалось извлечь файлы из архива. Скачайте Google Chrome заново.</translation>
-<translation id="423410644998903704">Предоставьте браузеру Chrome разрешения, чтобы продолжить работу на этом сайте.</translation>
 <translation id="4251615635259297716">Связать данные Chrome с этим аккаунтом?</translation>
 <translation id="4309555186815777032">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -168,7 +166,6 @@
 <translation id="5931853610562009806">Если пароли на Mac сохраняются с помощью функции "Связка ключей", их могут просматривать и синхронизировать все пользователи Chrome, у которых есть доступ к этому аккаунту OS X.</translation>
 <translation id="5940385492829620908">Все веб-страницы, закладки и другие данные Chrome можно найти здесь.</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
-<translation id="6012342843556706400">Предоставьте браузеру Chrome доступ к геоданным, чтобы продолжить работу на этом сайте.</translation>
 <translation id="6014844626092547096">Добро пожаловать в Chrome! Синхронизация отключена администратором.</translation>
 <translation id="6070348360322141662">В целях повышения безопасности Google Chrome шифрует ваши данные</translation>
 <translation id="6113794647360055231">Chrome становится все лучше</translation>
@@ -226,7 +223,6 @@
 <translation id="7761834446675418963">Нажмите на свое имя, чтобы войти в Chrome.</translation>
 <translation id="7781002470561365167">Доступна новая версия Google Chrome.</translation>
 <translation id="7787950393032327779">Скорее всего, профиль используется другим процессом Google Chrome (<ph name="PROCESS_ID" />) на другом компьютере (<ph name="HOST_NAME" />). Во избежание сбоев профиль был заблокирован. Если вы уверены, что профиль не используется другими процессами, разблокируйте его и перезапустите Chrome.</translation>
-<translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
 <translation id="7808348361785373670">Удалить из Chrome</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Скачайте Google Chrome ещё раз.</translation>
 <translation id="7855730255114109580">Последняя версия Google Chrome уже установлена</translation>

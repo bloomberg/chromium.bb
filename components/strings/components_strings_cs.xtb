@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Web <ph name="SITE" /> říká:</translation>
 <translation id="1132774398110320017">Nastavení Automatického vyplňování v prohlížeči Chrome...</translation>
 <translation id="1150979032973867961">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho počítače nedůvěřuje jeho bezpečnostnímu certifikátu.Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
+<translation id="1151972924205500581">Je vyžadováno heslo</translation>
 <translation id="1152921474424827756">Otevřete <ph name="BEGIN_LINK" />archivovanou kopii<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
 <translation id="1158211211994409885">Web <ph name="HOST_NAME" /> neočekávaně ukončil připojení.</translation>
 <translation id="1161325031994447685">Obnovit připojení k síti Wi-Fi</translation>
+<translation id="1165039591588034296">Chyba</translation>
 <translation id="1175364870820465910">Tisk...</translation>
 <translation id="1181037720776840403">Odebrat</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automaticky Googlu hlásit<ph name="END_WHITEPAPER_LINK" /> podrobnosti o možných bezpečnostních incidentech. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -299,14 +301,12 @@
 <translation id="3431636764301398940">Uložit tuto kartu do zařízení</translation>
 <translation id="3435896845095436175">Aktivovat</translation>
 <translation id="3447661539832366887">Vlastník tohoto zařízení hru s dinosaurem vypnul.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval načtení:</translation>
 <translation id="3462200631372590220">Skrýt rozšířené</translation>
 <translation id="3467763166455606212">Je nutné zadat jméno držitele karty</translation>
 <translation id="3478058380795961209">Měsíc vypršení platnosti</translation>
 <translation id="3479539252931486093">Nebylo toto očekáváno? <ph name="BEGIN_LINK" />Informujte nás<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Nyní ne</translation>
-<translation id="348000606199325318">ID selhání <ph name="CRASH_LOCAL_ID" /> (ID serveru: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">V tuto chvíli se nám s vaším rodičem nepodařilo spojit. Zkuste to prosím znovu.</translation>
 <translation id="3528171143076753409">Certifikát serveru není důvěryhodný.</translation>
 <translation id="3539171420378717834">Uchovat kopii této karty v tomto zařízení</translation>
@@ -354,7 +354,6 @@
 <translation id="3886446263141354045">Vaše žádost o přístup k tomuto webu byla odeslána uživateli <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Přidat e-mail</translation>
 <translation id="3901925938762663762">Karta vypršela</translation>
-<translation id="3934680773876859118">Načítání dokumentu PDF se nezdařilo.</translation>
 <translation id="3963721102035795474">Režim čtečky</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je blokován</translation>
@@ -767,7 +766,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7951415247503192394">(32bitový)</translation>
 <translation id="7956713633345437162">Mobilní záložky</translation>
 <translation id="7961015016161918242">Nikdy</translation>
-<translation id="7962083544045318153">ID selhání <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Vždy překládat z jazyka <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Není zadáno</translation>
 <translation id="800218591365569300">Zkuste uvolnit paměť tím, že zavřete ostatní karty nebo programy.</translation>
@@ -849,7 +847,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8870413625673593573">Nedávno zavřené</translation>
 <translation id="8874824191258364635">Zadejte platné číslo karty</translation>
 <translation id="8876793034577346603">Analýza konfigurace sítě se nezdařila.</translation>
-<translation id="8877192140621905067">Po ověření budou údaje o kartě sdíleny s tímto webem.</translation>
 <translation id="8889402386540077796">Odstín</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="889901481107108152">Je nám líto, tento experiment není na vaší platformě dostupný.</translation>

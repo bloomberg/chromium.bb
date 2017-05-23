@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
+<translation id="1151972924205500581">Passwort erforderlich</translation>
 <translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> hat die Verbindung unerwartet geschlossen.</translation>
 <translation id="1161325031994447685">WLAN-Verbindung erneut herstellen</translation>
+<translation id="1165039591588034296">Fehler</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1184214524891303587">Informationen zu sicherheitsrelevanten Zwischenfällen <ph name="BEGIN_WHITEPAPER_LINK" />automatisch Google melden<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -88,7 +90,7 @@
 <translation id="1706954506755087368">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst ab morgen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst in # Tagen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}}</translation>
 <translation id="1710259589646384581">Betriebssystem</translation>
 <translation id="1721312023322545264">Du benötigst die Berechtigung von <ph name="NAME" />, um diese Website zu besuchen</translation>
-<translation id="1721424275792716183">* Erforderliches Feld</translation>
+<translation id="1721424275792716183">* Pflichtfeld</translation>
 <translation id="1728677426644403582">Dies ist die Quelle einer Webseite</translation>
 <translation id="173080396488393970">Dieser Kartentyp wird nicht unterstützt</translation>
 <translation id="1734864079702812349">American Express</translation>
@@ -167,7 +169,7 @@
 <translation id="2384307209577226199">Standardeinstellung durch Unternehmen</translation>
 <translation id="2386255080630008482">Das Serverzertifikat wurde aufgehoben.</translation>
 <translation id="2392959068659972793">Richtlinien ohne Wert zeigen</translation>
-<translation id="239429038616798445">Diese Versandart ist nicht verfügbar. Wählen Sie eine andere aus.</translation>
+<translation id="239429038616798445">Diese Versandart ist nicht verfügbar. Bitte wählen Sie eine andere aus.</translation>
 <translation id="2396249848217231973">&amp;Löschen rückgängig machen</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
@@ -232,7 +234,7 @@
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="2985306909656435243">Wenn Sie diese Option auswählen, speichert Chromium eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="2985398929374701810">Gültige Adresse eingeben</translation>
-<translation id="2986368408720340940">Diese Abholoption ist nicht verfügbar. Wählen Sie eine andere Option aus.</translation>
+<translation id="2986368408720340940">Diese Abholoption ist nicht verfügbar. Bitte wählen Sie eine andere Option aus.</translation>
 <translation id="2991174974383378012">Datenfreigabe an Websites</translation>
 <translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
 <translation id="3008447029300691911">Geben Sie den CVC für <ph name="CREDIT_CARD" /> ein. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Diese Karte für dieses Gerät speichern</translation>
 <translation id="3435896845095436175">Aktivieren</translation>
 <translation id="3447661539832366887">Der Besitzer dieses Geräts hat das Dinosaurier-Spiel deaktiviert.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Abrufintervall:</translation>
 <translation id="3462200631372590220">Erweiterte Informationen ausblenden</translation>
 <translation id="3467763166455606212">Name des Karteninhabers erforderlich</translation>
 <translation id="3478058380795961209">Ablaufmonat</translation>
 <translation id="3479539252931486093">Geschah dies unerwartet? <ph name="BEGIN_LINK" />Informieren Sie uns<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
-<translation id="348000606199325318">Absturz-ID <ph name="CRASH_LOCAL_ID" /> (Server-ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Wir können deinen Vater bzw. deine Mutter momentan nicht erreichen. Bitte versuche es später erneut.</translation>
 <translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
@@ -347,7 +347,7 @@
 <translation id="3744899669254331632">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chromium nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
-<translation id="3787705759683870569">Läuft ab: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3787705759683870569">Ablaufdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Falls Sie einen Proxyserver verwenden...</translation>
 <translation id="3828924085048779000">Eine leere Passphrase ist nicht zulässig.</translation>
 <translation id="385051799172605136">Zurück</translation>
@@ -357,7 +357,6 @@
 <translation id="3886446263141354045">Deine Anfrage zum Zugriff auf diese Website wurde an <ph name="NAME" /> gesendet</translation>
 <translation id="3890664840433101773">E-Mail-Adresse hinzufügen</translation>
 <translation id="3901925938762663762">Die Karte ist abgelaufen.</translation>
-<translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
 <translation id="3963721102035795474">Lesemodus</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
@@ -446,7 +445,7 @@
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="483020001682031208">Keine Physical Web-Seiten verfügbar</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
-<translation id="4854362297993841467">Diese Lieferoption ist nicht verfügbar. Wählen Sie eine andere Option aus.</translation>
+<translation id="4854362297993841467">Diese Lieferoption ist nicht verfügbar. Bitte wählen Sie eine andere Option aus.</translation>
 <translation id="4858792381671956233">Du hast deine Eltern gefragt, ob du diese Website besuchen darfst</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -519,7 +518,7 @@
 <translation id="5544037170328430102">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt:</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5565735124758917034">Aktiv</translation>
-<translation id="5571083550517324815">Diese Abholadresse wird nicht unterstützt. Wählen Sie eine andere Adresse aus.</translation>
+<translation id="5571083550517324815">Diese Abholadresse wird nicht unterstützt. Bitte wählen Sie eine andere Adresse aus.</translation>
 <translation id="5572851009514199876">Melden Sie sich zuerst in Chrome an, damit überprüft werden kann, ob Sie auf diese Website zugreifen dürfen.</translation>
 <translation id="5580958916614886209">Prüfen Sie Ihren Ablaufmonat und versuchen Sie es dann erneut</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
@@ -587,7 +586,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
 <translation id="6276112860590028508">Seiten von Ihrer Leseliste werden hier angezeigt</translation>
-<translation id="6280223929691119688">Die Lieferadresse wird nicht unterstützt. Wählen Sie eine andere Adresse aus.</translation>
+<translation id="6280223929691119688">Die Lieferadresse wird nicht unterstützt. Bitte wählen Sie eine andere Adresse aus.</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>
 <translation id="6290238015253830360">Hier werden Ihre vorgeschlagenen Artikel angezeigt</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ist nicht erreichbar.</translation>
@@ -671,7 +670,7 @@
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="7090678807593890770">Auf Google nach <ph name="LINK" /> suchen</translation>
 <translation id="7119414471315195487">Andere Tabs oder Programme schließen</translation>
-<translation id="7129409597930077180">Der Versand an diese Adresse ist nicht möglich. Wählen Sie eine andere Adresse aus.</translation>
+<translation id="7129409597930077180">Der Versand an diese Adresse ist nicht möglich. Bitte wählen Sie eine andere Adresse aus.</translation>
 <translation id="7138472120740807366">Lieferoption</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7155487117670177674">Zahlung nicht sicher</translation>
@@ -771,7 +770,6 @@
 <translation id="7951415247503192394">(32-Bit)</translation>
 <translation id="7956713633345437162">Mobile Lesezeichen</translation>
 <translation id="7961015016161918242">Nie</translation>
-<translation id="7962083544045318153">Absturz-ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> immer auf <ph name="TARGET_LANGUAGE" /> übersetzen</translation>
 <translation id="7995512525968007366">Nicht angegeben</translation>
 <translation id="800218591365569300">Versuchen Sie, andere Tabs oder Programme zu schließen, um Speicher freizugeben.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8874824191258364635">Geben Sie eine gültige Kartennummer ein</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
-<translation id="8877192140621905067">Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben</translation>
 <translation id="8889402386540077796">Farbton</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="889901481107108152">Leider steht dieses Experiment auf Ihrer Plattform nicht zur Verfügung.</translation>

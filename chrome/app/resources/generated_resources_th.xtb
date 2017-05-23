@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">แป้นพิมพ์ภาษาญี่ปุ่น</translation>
 <translation id="1358735829858566124">ไฟล์หรือไดเรกทอรีใช้งานไม่ได้</translation>
 <translation id="1358741672408003399">ตัวสะกดและไวยากรณ์</translation>
-<translation id="1359381790106966506">อัปเดตสิทธิ์</translation>
 <translation id="1361164813881551742">เพิ่มด้วยตนเอง</translation>
 <translation id="1361655923249334273">ไม่ได้ใช้</translation>
 <translation id="136180453919764941">แบตเตอรี่ - <ph name="STATUS" /></translation>
@@ -1441,7 +1440,6 @@
 <translation id="3038675903128704560">ไม่อนุญาตให้เว็บไซต์ทั้งหมดใช้ปลั๊กอินเพื่อเข้าถึงคอมพิวเตอร์ของคุณ</translation>
 <translation id="3039828483675273919">กำลังย้าย $1 รายการ...</translation>
 <translation id="304009983491258911">เปลี่ยน PIN ของซิมการ์ด</translation>
-<translation id="3046838483509668188">ตัวเลือก ChromeVox</translation>
 <translation id="3046910703532196514">หน้าเว็บ ทั้งหมด</translation>
 <translation id="304826556400666995">เปิดเสียงแท็บ</translation>
 <translation id="3053013834507634016">การใช้คีย์ใบรับรอง </translation>
@@ -1472,6 +1470,7 @@
 <translation id="3088325635286126843">&amp;เปลี่ยนชื่อ...</translation>
 <translation id="308903551226753393">กำหนดค่าโดยอัตโนมัติ</translation>
 <translation id="3089231390674410424">ดูเหมือนว่าข้อมูลรับรองมีปัญหา โปรดตรวจสอบว่าคุณได้ลงชื่อเข้าใช้อย่างถูกต้องแล้วลองอีกครั้ง</translation>
+<translation id="3090193911106258841">กำลังเข้าถึงอินพุตเสียงและวิดีโอ</translation>
 <translation id="3090819949319990166">ไม่สามารถคัดลอกไฟล์ crx ภายนอกไปยัง <ph name="TEMP_CRX_FILE" /></translation>
 <translation id="3090871774332213558">จับคู่ "<ph name="DEVICE_NAME" />" แล้ว</translation>
 <translation id="3095995014811312755">รุ่น</translation>
@@ -1518,7 +1517,6 @@
 <translation id="3154351730702813399">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="3154429428035006212">ออฟไลน์นานกว่าหนึ่งเดือน</translation>
 <translation id="3157931365184549694">คืนค่า</translation>
-<translation id="3159386328383139451">Google ใช้ตำแหน่งของคุณเพื่อมอบประสบการณ์ในท้องถิ่นที่ดีขึ้น คุณสามารถเปลี่ยนการตั้งค่านี้ใน <ph name="SETTINGS_LINK" /></translation>
 <translation id="3160041952246459240">คุณมีใบรับรองของไฟล์ซึ่งระบุตัวตนของเซิร์ฟเวอร์เหล่านี้:</translation>
 <translation id="316125635462764134">นำแอปออก</translation>
 <translation id="3161522574479303604">ทุกภาษา</translation>
@@ -2151,6 +2149,7 @@
 <translation id="4095507791297118304">การแสดงผลหลัก</translation>
 <translation id="409579654357498729">เพิ่มไปยัง Cloud Print</translation>
 <translation id="4096508467498758490">ปิดส่วนขยายโหมดนักพัฒนาซอฟต์แวร์</translation>
+<translation id="4096824249111507322">กำลังจัดเตรียมโมดูลความปลอดภัย โปรดรอสักครู่ (ขั้นตอนนี้อาจใช้เวลา 2-3 นาที)...</translation>
 <translation id="4099060993766194518">คืนค่าเป็นเครื่องมือค้นหาเริ่มต้นไหม</translation>
 <translation id="4100733287846229632">พื้นที่ดิสก์เกือบเต็มแล้ว</translation>
 <translation id="4104163789986725820">ส่ง&amp;ออก</translation>
@@ -2434,7 +2433,6 @@
 <translation id="4590324241397107707">พื้นที่จัดเก็บฐานข้อมูล</translation>
 <translation id="4593021220803146968">&amp;ไปที่ <ph name="URL" /></translation>
 <translation id="4594109696316595112">การเปิดใช้งานครั้งเดียว: พิมพ์รหัสผ่านเพื่อเปิดใช้งาน Smart Lock บน <ph name="DEVICE_TYPE" /> นี้ เมื่อใช้ Smart Lock โทรศัพท์ของคุณจะปลดล็อกอุปกรณ์นี้โดยไม่ต้องใช้รหัสผ่าน หากต้องการเปลี่ยนแปลงหรือปิดคุณลักษณะนี้ ให้ไปที่การตั้งค่าของ <ph name="DEVICE_TYPE" /></translation>
-<translation id="4594538246438948697">กดแป้น Search ค้างไว้ แล้วคลิกหรือลากเพื่อพูดอะไรก็ได้</translation>
 <translation id="4595560905247879544">แอปและส่วนขยายสามารถแก้ไขได้โดยผู้จัดการ (<ph name="CUSTODIAN_NAME" />) เท่านั้น</translation>
 <translation id="4596295440756783523">คุณมีใบรับรองของไฟล์ซึ่งระบุตัวตนของเซิร์ฟเวอร์เหล่านี้:</translation>
 <translation id="4598556348158889687">การจัดการพื้นที่เก็บข้อมูล</translation>
@@ -2479,6 +2477,7 @@
 <translation id="4657031070957997341">อนุญาตปลั๊กอินบน <ph name="HOST" /> เสมอ</translation>
 <translation id="4662788913887017617">แชร์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
 <translation id="4664482161435122549">ข้อผิดพลาดในการส่งออก PKCS #12</translation>
+<translation id="466481852929361583">กำลังตั้งค่าโมดูลความปลอดภัย โปรดรอสักครู่ ขั้นตอนนี้อาจใช้เวลา 2-3 นาที</translation>
 <translation id="4665014895760275686">ผู้ผลิต</translation>
 <translation id="4667176955651319626">บล็อกคุกกี้และข้อมูลไซต์ของบุคคลที่สาม</translation>
 <translation id="4668721319092543482">คลิกเพื่อเปิดใช้ <ph name="PLUGIN_NAME" /></translation>
@@ -2652,7 +2651,6 @@
 <translation id="490074449735753175">ใช้บริการเว็บเพื่อช่วยแก้ไขข้อผิดพลาดในการสะกดคำ</translation>
 <translation id="49027928311173603">นโยบายที่ดาวน์โหลดจากเซิร์ฟเวอร์ไม่ถูกต้อง: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4903369323166982260">เรียกใช้เครื่องมือทำความสะอาด Chrome</translation>
-<translation id="4906679076183257864">รีเซ็ตเป็นค่าเริ่มต้น</translation>
 <translation id="4907161631261076876">ไฟล์นี้ไม่ได้มีการดาวน์โหลดเป็นที่แพร่หลายและอาจเป็นอันตราย</translation>
 <translation id="4907306957610201395">หมวดหมู่สิทธิ์</translation>
 <translation id="4909038193460299775">เนื่องจากบัญชีนี้มีการจัดการโดย <ph name="DOMAIN" /> บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะถูกล้างออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังจัดเก็บอยู่ในบัญชี Google และสามารถจัดการได้ใน<ph name="BEGIN_LINK" />แดชบอร์ด Google<ph name="END_LINK" /></translation>
@@ -3228,6 +3226,7 @@
 <translation id="5774515636230743468">จัดการ:</translation>
 <translation id="577624874850706961">ค้นหาคุกกี้</translation>
 <translation id="5778550464785688721">การควบคุมอุปกรณ์ MIDI เต็มรูปแบบ</translation>
+<translation id="5778747455497889540">ด้านล่างนี้คือรหัสผ่านโมดูลความปลอดภัยที่สร้างขึ้นโดยการสุ่มและได้รับการกำหนดให้กับคอมพิวเตอร์ของคุณ:</translation>
 <translation id="5780066559993805332">(ดีที่สุด)</translation>
 <translation id="5780973441651030252">ลำดับความสำคัญของกระบวนการ</translation>
 <translation id="5781865261247219930">ส่งคำสั่งไปที่ <ph name="EXTENSION_NAME" /></translation>
@@ -3286,6 +3285,7 @@
 <translation id="5854409662653665676">หากคุณประสบปัญหาที่เกิดขึ้นบ่อยครั้ง คุณสามารถลองใช้วิธีต่อไปนี้เพื่อแก้ไขปัญหาเกี่ยวกับโมดูลนี้:</translation>
 <translation id="5854912040170951372">สไลซ์</translation>
 <translation id="5855119960719984315">สลับหน้าต่าง</translation>
+<translation id="5855773610748894548">อ๊ะ เกิดข้อผิดพลาดกับโมดูลความปลอดภัย</translation>
 <translation id="5856721540245522153">เปิดใช้คุณลักษณะการแก้ไขข้อบกพร่อง</translation>
 <translation id="5857090052475505287">โฟลเดอร์ใหม่</translation>
 <translation id="5859272821192576954">คุณพร้อมที่จะไปยังแฮงเอาท์แล้ว</translation>
@@ -3376,6 +3376,7 @@
 <translation id="6005695835120147974">เราเตอร์สื่อ</translation>
 <translation id="6006484371116297560">คลาสสิก</translation>
 <translation id="6007237601604674381">การย้ายล้มเหลว <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">กำลังเข้าถึงอินพุตวิดีโอ</translation>
 <translation id="6011193465932186973">ลายนิ้วมือ</translation>
 <translation id="6011449291337289699">ล้างข้อมูลเว็บไซต์</translation>
 <translation id="6015796118275082299">ปี</translation>
@@ -3802,6 +3803,7 @@
 <translation id="6629841649550503054">สำรองข้อมูลทั้งหมดไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" />แล้ว!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ต้องการสิทธิ์ถาวรในการเข้าถึงใบรับรองเพื่อตรวจสอบสิทธิ์ตัวเองในนามของคุณ</translation>
 <translation id="6639554308659482635">หน่วยความจำ SQLite</translation>
+<translation id="6641138807883536517">รหัสผ่านโมดูลที่สร้างแบบสุ่มไม่พร้อมใช้งาน เหตุการณ์นี้เป็นเรื่องปกติหลังจากการ Powerwash</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6644846457769259194">กำลังอัปเดตอุปกรณ์ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">URL การเพิกถอนผู้ออกใบรับรองของ Netscape</translation>
@@ -3892,7 +3894,6 @@
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> ได้รับการเพิ่มจากระยะไกล</translation>
 <translation id="6790820461102226165">เพิ่มบุคคล...</translation>
 <translation id="6791443592650989371">สถานะการเปิดใช้งาน:</translation>
-<translation id="6792045489562677072">ตัวเลือกสำหรับเลือกเพื่อพูด</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> ต้องการแชร์เนื้อหาบนหน้าจอของคุณกับ <ph name="TARGET_NAME" /> เลือกส่วนที่คุณต้องการแชร์</translation>
 <translation id="6793604637258913070">ไฮไลต์เครื่องหมาย caret ของข้อความเมื่อปรากฏขึ้นหรือเคลื่อนที่</translation>
 <translation id="6797493596609571643">อ๊ะ เกิดข้อผิดพลาดบางอย่าง</translation>
@@ -4021,6 +4022,7 @@
 <translation id="6991128190741664836">ในภายหลัง</translation>
 <translation id="6991665348624301627">เลือกปลายทาง</translation>
 <translation id="699220179437400583">รายงานรายละเอียดของเหตุการณ์ด้านความปลอดภัยที่อาจจะเกิดขึ้นต่อ Google โดยอัตโนมัติ</translation>
+<translation id="6996946928646015361">ไม่พบโมดูลความปลอดภัยหรือถูกปิดใช้</translation>
 <translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{หน้าต่อไปนี้ไม่มีการตอบสนอง คุณสามารถรอให้ตอบสนองหรือปิดไปเลยได้}other{หน้าต่อไปนี้ไม่มีการตอบสนอง คุณสามารถรอให้ตอบสนองหรือปิดไปเลยได้}}</translation>
 <translation id="7002055706763150362">ในการตั้งค่า Smart Lock สำหรับ Chromebook นั้น Google จะต้องตรวจสอบว่าเป็นคุณจริงๆ โปรดพิมพ์รหัสผ่านเพื่อเริ่มต้นใช้งาน</translation>
@@ -4512,7 +4514,6 @@
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7766807826975222231">ทัวร์ชม</translation>
 <translation id="7767646430896201896">ตัวเลือก:</translation>
-<translation id="7768784765476638775">เลือกเพื่อพูด</translation>
 <translation id="7769353642898261262">วิธีรักษาความปลอดภัยของโทรศัพท์</translation>
 <translation id="7769672763586021400">รหัสรุ่น</translation>
 <translation id="7771452384635174008">รูปแบบ</translation>
@@ -4558,6 +4559,7 @@
 <translation id="7825423931463735974">แป้นพิมพ์ภาษาทมิฬ (Tamil99)</translation>
 <translation id="782590969421016895">ใช้หน้าเว็บปัจจุบัน</translation>
 <translation id="782886543891417279">Wi-Fi ที่คุณใช้ (<ph name="WIFI_NAME" />) อาจต้องการให้คุณไปที่หน้าการเข้าสู่ระบบ</translation>
+<translation id="7829298379596169484">กำลังเข้าถึงอินพุตเสียง</translation>
 <translation id="7831368056091621108">เพื่อรับส่วนขยายนี้ ประวัติการเข้าชม และการตั้งค่าอื่นๆ ของ Chrome บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="7831493768366098287">Google Print</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5078,6 +5080,7 @@
 <translation id="8631032106121706562">พีทอล</translation>
 <translation id="8631271110654520730">กำลังคัดลอกอิมเมจการกู้คืน...</translation>
 <translation id="8632275030377321303">ผู้ใช้ไม่สามารถแก้ไขพร็อกซีได้</translation>
+<translation id="8637542770513281060">คอมพิวเตอร์ของคุณมีโมดูลความปลอดภัย ซึ่งใช้เพื่อนำคุณลักษณะการรักษาความปลอดภัยที่สำคัญจำนวนมากมาใช้ใน Chrome OS โปรดไปที่ศูนย์ช่วยเหลือของ Chromebook เพื่อเรียนรู้เพิ่มเติม: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">มีอัปเดตระบบพร้อมใช้งาน กำลังเตรียมการดาวน์โหลด…</translation>
 <translation id="8639963783467694461">การตั้งค่าป้อนอัตโนมัติ</translation>
 <translation id="8642171459927087831">โทเค็นการเข้าถึง</translation>
@@ -5187,7 +5190,6 @@
 <translation id="8785622406424941542">สไตลัส</translation>
 <translation id="8787254343425541995">อนุญาตให้ใช้พร็อกซีสำหรับเครือข่ายที่แชร์ไว้</translation>
 <translation id="878763818693997570">ชื่อนี้ยาวเกินไป</translation>
-<translation id="8789375980715484686">จัดการผู้ใช้คนอื่นๆ</translation>
 <translation id="8791534160414513928">ส่งคำขอ "ไม่ติดตาม" พร้อมกับการเข้าชมของคุณ</translation>
 <translation id="8794025342371547160">IP แบบจำกัด</translation>
 <translation id="879413103056696865">ขณะที่ฮอตสปอตเปิดอยู่ <ph name="PHONE_NAME" /> ของคุณจะ:</translation>

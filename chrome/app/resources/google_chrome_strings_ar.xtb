@@ -3,7 +3,6 @@
 <translationbundle lang="ar">
 <translation id="1001534784610492198">‏أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
-<translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="1088300314857992706">‏كان <ph name="USER_EMAIL_ADDRESS" /> يستخدم Chrome سابقًا</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
@@ -109,7 +108,6 @@
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
 <translation id="4147555960264124640">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">‏فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
-<translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="4309555186815777032">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chrome مطلوبة)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -172,7 +170,6 @@
 <translation id="5931853610562009806">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="5940385492829620908">‏الويب والإشارات المرجعية وغيرها من عناصر Chrome توجد هنا.</translation>
 <translation id="5941830788786076944">‏جعل Google Chrome المتصفّح الافتراضي</translation>
-<translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! عطّل المشرف المزامنة.</translation>
 <translation id="6070348360322141662">‏لمزيد من الأمان، سيشفِّر Google Chrome بياناتك</translation>
 <translation id="6113794647360055231">‏Chrome أصبح أفضل</translation>
@@ -230,7 +227,6 @@
 <translation id="7761834446675418963">‏انقر على اسمك لفتح Chrome وبدء التصفح.</translation>
 <translation id="7781002470561365167">‏يتوفر إصدار جديد من متصفح Google Chrome.</translation>
 <translation id="7787950393032327779">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Google Chrome (<ph name="PROCESS_ID" />) على جهاز كمبيوتر آخر (<ph name="HOST_NAME" />). وقد تمّ قفل الملف الشخصي من جانب Chrome لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chrome مجددًا.</translation>
-<translation id="7788788617745289808">‏يحتاج Chrome الحصول على حق الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="7808348361785373670">‏جارٍ الإزالة من Chrome...</translation>
 <translation id="7825851276765848807">‏فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="7855730255114109580">‏Google Chrome محدّث</translation>

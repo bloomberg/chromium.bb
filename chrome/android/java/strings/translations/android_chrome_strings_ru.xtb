@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Открыть в Интернете</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
-<translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
 <translation id="1080790410959514870">Вы выходите из аккаунта, которым управляет администратор домена <ph name="DOMAIN_NAME" />. Все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="1111673857033749125">Здесь появятся закладки, сохраненные на других устройствах.</translation>
 <translation id="1121094540300013208">Отчеты об использовании и сбоях</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Другие статьи скоро появятся. Хорошего утра!</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
-<translation id="3090193911106258841">Доступ к аудио- и видеовходу</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
 <translation id="3148434565183091099">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="3166827708714933426">Работа с вкладками и окнами</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4060598801229743805">Меню доступно в верхней части экрана</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
+<translation id="4084682180776658562">Закладка</translation>
 <translation id="4084836577264234537">Скачанные файлы: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="4089831646916293264">Эта функция может мешать доступу к премиум-службам, которые предоставляет ваш оператор связи.</translation>
 <translation id="4095146165863963773">Удалить данные приложения?</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4226663524361240545">Вибрация при получении уведомлений</translation>
-<translation id="423410644998903704">Предоставьте браузеру Chrome разрешения, чтобы продолжить работу на этом сайте.</translation>
 <translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="424864128008805179">Выйти из Chrome?</translation>
 <translation id="4254813446494774748">Перевести на:</translation>
@@ -471,8 +469,6 @@
 <translation id="5956665950594638604">Открыть Справочный центр Chrome в новой вкладке</translation>
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
-<translation id="6010869025736512584">Доступ к видеовходу</translation>
-<translation id="6012342843556706400">Предоставьте браузеру Chrome доступ к геоданным, чтобы продолжить работу на этом сайте.</translation>
 <translation id="6031101910111098835">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -591,6 +587,7 @@
 <translation id="7149893636342594995">Последние 24 часа</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7189372733857464326">Обновление сервисов Google Play…</translation>
+<translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
@@ -611,6 +608,7 @@
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7475192538862203634">Если эта проблема возникает часто, узнайте, <ph name="BEGIN_LINK" />как ее решить<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
+<translation id="7481312909269577407">Вперед</translation>
 <translation id="7487352416683556407">Выбранные данные удалены из Chrome и с синхронизированных устройств.
 
 Остальная история ваших действий в Интернете может храниться в аккаунте Google, например в виде поисковых запросов и сведений из наших сервисов. Она доступна на странице <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -643,11 +641,9 @@
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
 <translation id="7781829728241885113">Вчера</translation>
-<translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
-<translation id="7829298379596169484">Доступ к аудиовходу</translation>
 <translation id="7837721118676387834">Разрешить определенному сайту автоматически воспроизводить видео без звука.</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="784934925303690534">Временной диапазон</translation>

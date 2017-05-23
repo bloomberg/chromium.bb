@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">صفحه‌کلید ژاپنی</translation>
 <translation id="1358735829858566124">فایل یا فهرست راهنما قابل استفاده نیست.</translation>
 <translation id="1358741672408003399">املا و گرامر</translation>
-<translation id="1359381790106966506">مجوزهای به‌روزرسانی</translation>
 <translation id="1361164813881551742">افزودن دستی</translation>
 <translation id="1361655923249334273">استفاده نشده</translation>
 <translation id="136180453919764941">باتری - <ph name="STATUS" /></translation>
@@ -1438,7 +1437,6 @@
 <translation id="3038675903128704560">به هیچ سایتی امکان داده نشود برای دسترسی به رایانه‌تان از افزایه استفاده کند</translation>
 <translation id="3039828483675273919">درحال انتقال $1 مورد...</translation>
 <translation id="304009983491258911">تغییر دادن پین سیم کارت</translation>
-<translation id="3046838483509668188">‏گزینه‌های ChromeVox</translation>
 <translation id="3046910703532196514">صفحهٔ وب، کامل</translation>
 <translation id="304826556400666995">وصل کردن صدای برگه‌ها</translation>
 <translation id="3053013834507634016">کاربرد کلید گواهی</translation>
@@ -1469,6 +1467,7 @@
 <translation id="3088325635286126843">&amp;تغییر‌نام...</translation>
 <translation id="308903551226753393">پیکربندی به صورت خودکار</translation>
 <translation id="3089231390674410424">اوه! به‌نظر می‌رسد مشکلی در اعتبارنامه شما وجود دارد. لطفاً مطمئن شوید به‌درستی به سیستم وارد شده‌اید و دوباره امتحان کنید.</translation>
+<translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدئویی</translation>
 <translation id="3090819949319990166">‏فایل خارجی crx در <ph name="TEMP_CRX_FILE" /> کپی نمی‌شود.</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» مرتبط شد</translation>
 <translation id="3095995014811312755">نسخه</translation>
@@ -1515,7 +1514,6 @@
 <translation id="3154351730702813399">سرپرست دستگاه ممکن است فعالیت مرور شما را پایش کند</translation>
 <translation id="3154429428035006212">آفلاین برای مدت بیش از یک ماه</translation>
 <translation id="3157931365184549694">بازیابی</translation>
-<translation id="3159386328383139451">‏Google از مکان شما استفاده می‌کند تا تجربه‌ محلی بهتری فراهم کند. می‌توانید این قابلیت را در <ph name="SETTINGS_LINK" /> تغییر دهید.</translation>
 <translation id="3160041952246459240">شما گواهی هایی در فایل دارید که این سرورها را شناسایی می‌کنند:</translation>
 <translation id="316125635462764134">حذف برنامه</translation>
 <translation id="3161522574479303604">همه زبان‌ها</translation>
@@ -2148,6 +2146,7 @@
 <translation id="4095507791297118304">نمایشگر اصلی</translation>
 <translation id="409579654357498729">‏افزودن به Cloud Print</translation>
 <translation id="4096508467498758490">غیرفعال کردن افزونه‌های حالت برنامه‌نویس</translation>
+<translation id="4096824249111507322">مدول امن درحال آماده شدن است،‌ لطفاً منتظر بمانید (ممکن است چند دقیقه طول بکشد)…</translation>
 <translation id="4099060993766194518">موتور جستجوی پیش‌فرض بازیابی شود؟</translation>
 <translation id="4100733287846229632">فضای دستگاه خیلی کم است</translation>
 <translation id="4104163789986725820">&amp;صادر کردن...</translation>
@@ -2431,7 +2430,6 @@
 <translation id="4590324241397107707">فضای ذخیره‌سازی پایگاه داده</translation>
 <translation id="4593021220803146968">&amp;رفتن به <ph name="URL" /></translation>
 <translation id="4594109696316595112">‏فعال‌سازی یک‌باره: برای فعال کردن Smart Lock در این <ph name="DEVICE_TYPE" />، گذرواژه‌تان را تایپ کنید. با Smart Lock، تلفن شما قفل این دستگاه را باز می‌کند—بدون گذرواژه. برای تغییر دادن یا خاموش کردن این ویژگی، به تنظیمات <ph name="DEVICE_TYPE" /> بروید.</translation>
-<translation id="4594538246438948697">«جستجو» را پایین نگه دارید و برای بازگو کردن هر چیزی کلیک کنید یا بکشید</translation>
 <translation id="4595560905247879544">برنامه‌ها و افزونه‌ها فقط توسط مدیر (<ph name="CUSTODIAN_NAME" />) قابل تغییر هستند.</translation>
 <translation id="4596295440756783523">گواهی‌هایی در فایل دارید که این سرورها را شناسایی می‌کنند</translation>
 <translation id="4598556348158889687">مدیریت فضای ذخیره‌سازی</translation>
@@ -2476,6 +2474,7 @@
 <translation id="4657031070957997341">افزایه‌ها در <ph name="HOST" /> همیشه مجازند</translation>
 <translation id="4662788913887017617">‏این نشانک را با iPhone خود به اشتراک بگذارید</translation>
 <translation id="4664482161435122549">‏خطای صادر کردن PKCS #12</translation>
+<translation id="466481852929361583">مدول امن درحال راه‌اندازی است. منتظر بمانید؛ ممکن است چند دقیقه طول بکشد.</translation>
 <translation id="4665014895760275686">سازنده</translation>
 <translation id="4667176955651319626">کوکی‌ها و داده‌های سایت شخص ثالث مسدود شود</translation>
 <translation id="4668721319092543482">برای فعال کردن <ph name="PLUGIN_NAME" /> کلیک کنید</translation>
@@ -2647,7 +2646,6 @@
 <translation id="490074449735753175">استفاده از سرویس وب برای برطرف کردن خطاهای املایی</translation>
 <translation id="49027928311173603">خط‌مشی دانلودشده از سرور نامعتبر است: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">‏اجرای ابزار پاک‌سازی Chrome</translation>
-<translation id="4906679076183257864">بازنشانی روی موارد پیش‌فرض</translation>
 <translation id="4907161631261076876">این فایل معمولاً بارگیری نمی‌شود و ممکن است خطرناک باشد.</translation>
 <translation id="4907306957610201395">دسته مجوز</translation>
 <translation id="4909038193460299775">‏از آن‌جا که این حساب توسط <ph name="DOMAIN" /> مدیریت می‌شود، نشانک‌ها، سابقه، گذرواژه‌ها و دیگر تنظیماتتان از این دستگاه پاک می‌شوند. اما داده‌هایتان در حساب Google ذخیره می‌مانند و می‌توانید آن‌ها را در <ph name="BEGIN_LINK" />داشبورد Google<ph name="END_LINK" /> مدیریت کنید.</translation>
@@ -3224,6 +3222,7 @@
 <translation id="5774515636230743468">اظهارنامه:</translation>
 <translation id="577624874850706961">جستجوی کوکی‌ها</translation>
 <translation id="5778550464785688721">‏کنترل کامل دستگاه‌های MIDI</translation>
+<translation id="5778747455497889540">گذرواژه زیر، گذرواژه به‌صورت تصادفی ایجادشده مدول امن است که به رایانه شما اختصاص داده شده است:</translation>
 <translation id="5780066559993805332">(بهترین)</translation>
 <translation id="5780973441651030252">پردازش اولویت‌دار</translation>
 <translation id="5781865261247219930">ارسال فرمان‌ها به <ph name="EXTENSION_NAME" /></translation>
@@ -3282,6 +3281,7 @@
 <translation id="5854409662653665676">درصورت بروز مشکلات مکرر، می‌توانید برای حل مشکل در این مدول موارد زیر را امتحان کنید:</translation>
 <translation id="5854912040170951372">پیتزا</translation>
 <translation id="5855119960719984315">تغییر پنجره</translation>
+<translation id="5855773610748894548">وای، خطای مدول امن.</translation>
 <translation id="5856721540245522153">فعال کردن ویژگی‌های رفع اشکال</translation>
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
 <translation id="5859272821192576954">‏برای ادامه و رفتن به Hangouts آماده‌اید</translation>
@@ -3372,6 +3372,7 @@
 <translation id="6005695835120147974">مسیریاب رسانه</translation>
 <translation id="6006484371116297560">کلاسيک</translation>
 <translation id="6007237601604674381">انتقال انجام نشد. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">در حال دسترسی به ورودی ویدئویی</translation>
 <translation id="6011193465932186973">اثر انگشت</translation>
 <translation id="6011449291337289699">پاک کردن داده‌های سایت</translation>
 <translation id="6015796118275082299">سال</translation>
@@ -3798,6 +3799,7 @@
 <translation id="6629841649550503054">‏همه در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پشتیبان گرفته شدند</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> خواستار دسترسی دائم به یک گواهی است تا خودش را از طرف شما احراز هویت کند.</translation>
 <translation id="6639554308659482635">‏حافظه SQLite</translation>
+<translation id="6641138807883536517">‏گذرواژه به‌صورت تصادفی ایجادشده مدول امن دردسترس نیست. این حالت بعد از Powerwash عادی است.</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6644846457769259194">درحال به‌روزرسانی دستگاه شما (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">‏نشانی وب ابطال ارائه دهنده مجوز Netscape</translation>
@@ -3888,7 +3890,6 @@
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> از راه دور اضافه شد</translation>
 <translation id="6790820461102226165">افزودن شخص...</translation>
 <translation id="6791443592650989371">وضعیت فعالسازی:</translation>
-<translation id="6792045489562677072">گزینه‌های «انتخاب برای شنیدن»</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> می‌خواهد محتوای صفحه شما را با <ph name="TARGET_NAME" /> به اشتراک بگذارد. آنچه را می‌خواهید به اشتراک بگذارید، انتخاب کنید.</translation>
 <translation id="6793604637258913070">برجسته کردن نشانگر نوشتار درصورتی‌که ظاهر شود یا حرکت کند</translation>
 <translation id="6797493596609571643">اوه، مشکلی روی داد.</translation>
@@ -4017,6 +4018,7 @@
 <translation id="6991128190741664836">بعداً</translation>
 <translation id="6991665348624301627">انتخاب مقصد</translation>
 <translation id="699220179437400583">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google.</translation>
+<translation id="6996946928646015361">مدول امن غیرفعال است یا وجود ندارد.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> پوشه‌ انتخاب شد</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{صفحه زیر پاسخ نمی‌دهد. می‌توانید منتظر پاسخگویی آن بمانید یا صفحه را ببندید.}one{صفحه‌های زیر پاسخ نمی‌دهند. می‌توانید منتظر پاسخگویی ‌صفحه‌ها بمانید یا آن‌ها را ببندید.}other{صفحه‌های زیر پاسخ نمی‌دهند. می‌توانید منتظر پاسخگویی ‌صفحه‌ها بمانید یا آن‌ها را ببندید.}}</translation>
 <translation id="7002055706763150362">‏برای تنظیم «Smart Lock برای Chromebook»، ‏Google باید مطمئن شود این شما هستید—برای شروع به کار، گذرواژه‌تان را وارد کنید.</translation>
@@ -4510,7 +4512,6 @@
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7766807826975222231">شرکت در تور</translation>
 <translation id="7767646430896201896">گزینه‌ها:</translation>
-<translation id="7768784765476638775">انتخاب برای صحبت کردن</translation>
 <translation id="7769353642898261262">نحوه ایمن کردن تلفن</translation>
 <translation id="7769672763586021400">شناسه مدل</translation>
 <translation id="7771452384635174008">صفحه آرایی</translation>
@@ -4555,6 +4556,7 @@
 <translation id="7825423931463735974">صفحه‌کلید تامیل (تامیل ۹۹)</translation>
 <translation id="782590969421016895">استفاده از صفحات فعلی</translation>
 <translation id="782886543891417279">‏شبکه Wi-Fi (<ph name="WIFI_NAME" />) مورد استفاده‌تان احتمالاً نیاز دارد که به یک صفحه ورود به سیستم بروید.</translation>
+<translation id="7829298379596169484">در حال دسترسی به ورودی صوتی</translation>
 <translation id="7831368056091621108">‏برای دریافت این برنامه افزودنی، سابقه خود، و دیگر تنظیمات Chrome در تمام دستگاه‌های خود.</translation>
 <translation id="7831493768366098287">‏چاپ Google</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5075,6 +5077,7 @@
 <translation id="8631032106121706562">گل</translation>
 <translation id="8631271110654520730">در حال کپی کردن تصویر بازیابی...</translation>
 <translation id="8632275030377321303">کاربر نمی‌تواند تنظیمات پروکسی را تغییر بدهد.</translation>
+<translation id="8637542770513281060">‏رایانه شما مدول امنی دارد که برای پیاده‌سازی بسیاری از قابلیت‌های امنیتی ضروری در سیستم‌عامل Chrome استفاده می‌شود. برای اطلاعات بیشتر از «مرکز راهنمایی Chromebook» دیدن کنید: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">به‌روزرسانی سیستم موجود است. در حال آماده سازی برای بارگیری...</translation>
 <translation id="8639963783467694461">تنظیمات تکمیل خودکار</translation>
 <translation id="8642171459927087831">کد دسترسی</translation>
@@ -5184,7 +5187,6 @@
 <translation id="8785622406424941542">قلم</translation>
 <translation id="8787254343425541995">پراکسی‌های شبکه‌های مشترک مجاز باشند</translation>
 <translation id="878763818693997570">این نام بیش از حد طولانی است</translation>
-<translation id="8789375980715484686">مدیریت کاربران دیگر</translation>
 <translation id="8791534160414513928">ارسال درخواست «ردیابی نشود» با ترافیک مرور</translation>
 <translation id="8794025342371547160">‏IP محدود</translation>
 <translation id="879413103056696865">وقتی نقطه اتصال روشن است، <ph name="PHONE_NAME" /> شما:</translation>

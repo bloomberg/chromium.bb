@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">פתח גרסה מקוונת</translation>
 <translation id="1049743911850919806">גלישה פרטית</translation>
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
-<translation id="1061441684050139317">‏Chrome זקוק לגישה למיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="1080790410959514870">‏אתה מתנתק מחשבון המנוהל על ידי <ph name="DOMAIN_NAME" />. הפעולה הזו תמחק את נתוני Chrome המאוחסנים במכשיר הזה, אבל הנתונים יישמרו בחשבון Google שלך.</translation>
 <translation id="1111673857033749125">סימניות שנשמרו במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="1121094540300013208">דוחות קריסה ושימוש</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">בקרוב יופיעו מאמרים נוספים. שיהיה לך בוקר נפלא!</translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
-<translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3148434565183091099">‏כדי שהסימניות שלך יופיעו בכל המכשירים, היכנס ל-Chrome.</translation>
 <translation id="3166827708714933426">מקשי קיצור לכרטיסיות ולחלונות</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4060598801229743805">האפשרויות זמינות בחלק העליון של המסך</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
+<translation id="4084682180776658562">סימניה</translation>
 <translation id="4084836577264234537">‏‎<ph name="MEGABYTES" /> MB להורדות</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
 <translation id="4095146165863963773">למחוק נתוני יישומים?</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
-<translation id="423410644998903704">‏Chrome זקוק לגישה אל ההרשאות כדי לשתף אותן עם האתר הזה.</translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
 <translation id="4254813446494774748">שפת התרגום:</translation>
@@ -471,8 +469,6 @@
 <translation id="5956665950594638604">‏פתח את מרכז העזרה של Chrome בכרטיסייה חדשה</translation>
 <translation id="5962718611393537961">הקש כדי לכווץ</translation>
 <translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
-<translation id="6010869025736512584">גישה לפלט אודיו</translation>
-<translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6031101910111098835">מכווץ - לחץ כדי להרחיב</translation>
 <translation id="6039379616847168523">עבור לכרטיסייה הבאה</translation>
 <translation id="6040143037577758943">סגור</translation>
@@ -591,6 +587,7 @@
 <translation id="7149893636342594995">מהיום האחרון</translation>
 <translation id="7180611975245234373">רענן</translation>
 <translation id="7189372733857464326">‏המערכת ממתינה שיסתיים העדכון של שירותי Google Play</translation>
+<translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
@@ -611,6 +608,7 @@
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7475192538862203634">אם אתה רואה זאת לעתים קרובות, נסה את <ph name="BEGIN_LINK" />ההצעות<ph name="END_LINK" /> האלה.</translation>
 <translation id="748127970106343339">אשר את מחיקת פרטי הכניסה של המכשיר</translation>
+<translation id="7481312909269577407">קדימה</translation>
 <translation id="7487352416683556407">‏הנתונים שבחרת הוסרו מ-Chrome ומהמכשירים המסונכרנים. 
 
 ייתכן שבכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> תוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google, כמו חיפושים ופעילות משירותי Google אחרים.</translation>
@@ -643,11 +641,9 @@
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוסף}two{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}many{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}}</translation>
 <translation id="7781829728241885113">אתמול</translation>
-<translation id="7788788617745289808">‏Chrome זקוק לגישה למצלמה כדי לשתף אותה עם האתר הזה.</translation>
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
-<translation id="7829298379596169484">גישה לקלט אודיו</translation>
 <translation id="7837721118676387834">אפשר הפעלה אוטומטית של סרטונים מושתקים באתר ספציפי.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="784934925303690534">טווח זמן</translation>

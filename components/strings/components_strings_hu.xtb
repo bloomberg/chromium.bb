@@ -21,9 +21,11 @@
 <translation id="113188000913989374">A(z) <ph name="SITE" /> közlendője:</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
+<translation id="1151972924205500581">Jelszó szükséges</translation>
 <translation id="1152921474424827756">A(z) <ph name="URL" /> egy <ph name="BEGIN_LINK" />tárolt változatának<ph name="END_LINK" /> megtekintése</translation>
 <translation id="1158211211994409885">A(z) <ph name="HOST_NAME" /> váratlanul megszakította a kapcsolatot.</translation>
 <translation id="1161325031994447685">Újracsatlakozás Wi-Fi-hálózathoz</translation>
+<translation id="1165039591588034296">Hiba</translation>
 <translation id="1175364870820465910">&amp;Nyomtatás...</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1184214524891303587">A lehetséges biztonsági események adatainak <ph name="BEGIN_WHITEPAPER_LINK" />automatikus jelentése<ph name="END_WHITEPAPER_LINK" /> a Google-nak. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -300,14 +302,12 @@
 <translation id="3431636764301398940">Kártya mentése az eszközre</translation>
 <translation id="3435896845095436175">Engedélyezés</translation>
 <translation id="3447661539832366887">Az eszköz tulajdonosa kikapcsolta a dinoszauruszos játékot.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Lekérési intervallum:</translation>
 <translation id="3462200631372590220">Speciális beállítások elrejtése</translation>
 <translation id="3467763166455606212">A kártyatulajdonos nevének megadása kötelező</translation>
 <translation id="3478058380795961209">Lejárat hónapja</translation>
 <translation id="3479539252931486093">Ez váratlanul érte Önt? <ph name="BEGIN_LINK" />Tudassa velünk.<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ne most</translation>
-<translation id="348000606199325318">Hibaazonosító: <ph name="CRASH_LOCAL_ID" /> (szerverazonosító: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Jelenleg nem tudjuk elérni szüleidet. Próbálkozz újra.</translation>
 <translation id="3528171143076753409">A szervezet tanúsítványa nem megbízható.</translation>
 <translation id="3539171420378717834">A kártya másolatának megőrzése az eszközön</translation>
@@ -356,7 +356,6 @@
 <translation id="3886446263141354045">Webhely-hozzáférési kérelme elküldve a következő személynek: <ph name="NAME" /></translation>
 <translation id="3890664840433101773">E-mail-cím hozzáadása</translation>
 <translation id="3901925938762663762">A kártya lejárt</translation>
-<translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>
 <translation id="3963721102035795474">Olvasási mód</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
@@ -770,7 +769,6 @@
 <translation id="7951415247503192394">(32 bites)</translation>
 <translation id="7956713633345437162">Mobil könyvjelzők</translation>
 <translation id="7961015016161918242">Soha</translation>
-<translation id="7962083544045318153">Hibaazonosító: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE" /> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="7995512525968007366">Nincs megadva</translation>
 <translation id="800218591365569300">Próbáljon meg bezárni más lapokat vagy programokat memória felszabadítása céljából.</translation>
@@ -852,7 +850,6 @@
 <translation id="8870413625673593573">Mostanában bezárt</translation>
 <translation id="8874824191258364635">Érvényes kártyaszámot adjon meg</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
-<translation id="8877192140621905067">Az igazolást követően a böngésző megosztja kártyaadatait a webhellyel</translation>
 <translation id="8889402386540077796">Színárnyalat</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="889901481107108152">Sajnos ez a kísérlet nem érhető el az Ön operációs rendszerén.</translation>

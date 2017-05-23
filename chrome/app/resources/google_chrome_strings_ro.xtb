@@ -3,7 +3,6 @@
 <translationbundle lang="ro">
 <translation id="1001534784610492198">Arhiva programului de instalare este deteriorată sau nevalidă. Descarcă din nou Google Chrome.</translation>
 <translation id="1035334672863811645">conectează-te la Chrome</translation>
-<translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> a folosit Chrome anterior</translation>
 <translation id="1104959162601287462">Despre sistemul de operare &amp;Chrome</translation>
@@ -107,7 +106,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descarcă din nou Google Chrome.</translation>
-<translation id="423410644998903704">Chrome are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
@@ -168,7 +166,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="5931853610562009806">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care folosesc același cont de OS X.</translation>
 <translation id="5940385492829620908">Experiența web personalizată, marcajele și celelalte date Chrome chiar aici.</translation>
 <translation id="5941830788786076944">Setează Google Chrome ca browser prestabilit</translation>
-<translation id="6012342843556706400">Chrome are nevoie de acces la locație pentru a-l acorda acestui site.</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="6070348360322141662">Pentru un plus de securitate, Google Chrome îți va cripta datele</translation>
 <translation id="6113794647360055231">Chrome a devenit și mai bun</translation>
@@ -226,7 +223,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7761834446675418963">Dați clic pe numele dvs. pentru a deschide Chrome și a începe să navigați.</translation>
 <translation id="7781002470561365167">Este disponibilă o nouă versiune a browserului Google Chrome.</translation>
 <translation id="7787950393032327779">Profilul pare să fie utilizat de alt proces Google Chrome (<ph name="PROCESS_ID" />), pe alt computer (<ph name="HOST_NAME" />). Chrome a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chrome.</translation>
-<translation id="7788788617745289808">Chrome are nevoie de acces la camera foto pentru a-l acorda acestui site.</translation>
 <translation id="7808348361785373670">Elimină din Chrome...</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7855730255114109580">Google Chrome este actualizat</translation>
