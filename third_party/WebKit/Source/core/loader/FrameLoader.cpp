@@ -676,7 +676,9 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
     return false;
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
-    ReportLocalLoadFailed(frame_, url.ElidedString());
+    request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
+        "Not allowed to load local resource: " + url.ElidedString()));
     return false;
   }
 
@@ -917,16 +919,6 @@ SubstituteData FrameLoader::DefaultSubstituteDataForURL(const KURL& url) {
   return SubstituteData(
       SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
       "text/html", "UTF-8", KURL());
-}
-
-void FrameLoader::ReportLocalLoadFailed(LocalFrame* frame, const String& url) {
-  DCHECK(!url.IsEmpty());
-  if (!frame)
-    return;
-
-  frame->GetDocument()->AddConsoleMessage(
-      ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
-                             "Not allowed to load local resource: " + url));
 }
 
 void FrameLoader::StopAllLoaders() {

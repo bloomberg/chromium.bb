@@ -748,10 +748,6 @@ void FrameFetchContext::DispatchDidBlockRequest(
                          fetch_initiator_info, blocked_reason);
 }
 
-void FrameFetchContext::ReportLocalLoadFailed(const KURL& url) const {
-  FrameLoader::ReportLocalLoadFailed(GetFrame(), url.ElidedString());
-}
-
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
   return GetFrame()->GetScriptController().ShouldBypassMainWorldCSP();
 }

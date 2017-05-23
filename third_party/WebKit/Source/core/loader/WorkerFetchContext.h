@@ -44,7 +44,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason) const override;
-  void ReportLocalLoadFailed(const KURL&) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(UseCounter::Feature) const override;

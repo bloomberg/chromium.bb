@@ -339,11 +339,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     return true;
   }
 
-  if (!GetDocument().GetSecurityOrigin()->CanDisplay(url)) {
-    FrameLoader::ReportLocalLoadFailed(parent_frame, url.GetString());
-    return false;
-  }
-
   if (!SubframeLoadingDisabler::CanLoadFrame(*this))
     return false;
 

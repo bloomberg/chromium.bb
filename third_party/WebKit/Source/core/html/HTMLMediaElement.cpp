@@ -1413,8 +1413,11 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
 
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || !GetDocument().GetSecurityOrigin()->CanDisplay(url)) {
-    if (action_if_invalid == kComplain)
-      FrameLoader::ReportLocalLoadFailed(frame, url.ElidedString());
+    if (action_if_invalid == kComplain) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kSecurityMessageSource, kErrorMessageLevel,
+          "Not allowed to load local resource: " + url.ElidedString()));
+    }
     BLINK_MEDIA_LOG << "isSafeToLoadURL(" << (void*)this << ", "
                     << UrlForLoggingMedia(url)
                     << ") -> FALSE rejected by SecurityOrigin";

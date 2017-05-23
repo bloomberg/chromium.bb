@@ -136,11 +136,6 @@ void WorkerFetchContext::DispatchDidBlockRequest(
   // TODO(horo): Implement this.
 }
 
-void WorkerFetchContext::ReportLocalLoadFailed(const KURL&) const {
-  // Threre is no way to load local files from worker thread.
-  NOTREACHED();
-}
-
 bool WorkerFetchContext::ShouldBypassMainWorldCSP() const {
   // This method was introduced to bypass the page's CSP while running the
   // script from an isolated world (ex: Chrome extensions). But worker threads
