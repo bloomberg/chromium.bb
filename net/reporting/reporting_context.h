@@ -72,7 +72,8 @@ class NET_EXPORT ReportingContext {
   ReportingContext(const ReportingPolicy& policy,
                    std::unique_ptr<base::Clock> clock,
                    std::unique_ptr<base::TickClock> tick_clock,
-                   std::unique_ptr<ReportingUploader> uploader);
+                   std::unique_ptr<ReportingUploader> uploader,
+                   std::unique_ptr<ReportingDelegate> delegate);
 
  private:
   ReportingPolicy policy_;

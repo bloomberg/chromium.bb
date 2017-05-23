@@ -546,6 +546,42 @@ bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
   return true;
 }
 
+bool ChromeNetworkDelegate::OnCanQueueReportingReport(
+    const url::Origin& origin) const {
+  if (!cookie_settings_)
+    return true;
+
+  return cookie_settings_->IsCookieAccessAllowed(origin.GetURL(),
+                                                 origin.GetURL());
+}
+
+bool ChromeNetworkDelegate::OnCanSendReportingReport(
+    const url::Origin& origin) const {
+  if (!cookie_settings_)
+    return true;
+
+  return cookie_settings_->IsCookieAccessAllowed(origin.GetURL(),
+                                                 origin.GetURL());
+}
+
+bool ChromeNetworkDelegate::OnCanSetReportingClient(
+    const url::Origin& origin,
+    const GURL& endpoint) const {
+  if (!cookie_settings_)
+    return true;
+
+  return cookie_settings_->IsCookieAccessAllowed(endpoint, origin.GetURL());
+}
+
+bool ChromeNetworkDelegate::OnCanUseReportingClient(
+    const url::Origin& origin,
+    const GURL& endpoint) const {
+  if (!cookie_settings_)
+    return true;
+
+  return cookie_settings_->IsCookieAccessAllowed(endpoint, origin.GetURL());
+}
+
 void ChromeNetworkDelegate::ReportDataUsageStats(net::URLRequest* request,
                                                  int64_t tx_bytes,
                                                  int64_t rx_bytes) {
