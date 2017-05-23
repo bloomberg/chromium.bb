@@ -1354,7 +1354,7 @@ int LayoutTableSection::CalcBlockDirectionOuterBorder(
       side == kBorderBefore ? Style()->BorderBefore() : Style()->BorderAfter();
   if (sb.Style() == EBorderStyle::kHidden)
     return -1;
-  if (sb.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(sb.Style()))
     border_width = sb.Width();
 
   const BorderValue& rb = side == kBorderBefore
@@ -1362,7 +1362,8 @@ int LayoutTableSection::CalcBlockDirectionOuterBorder(
                               : LastRow()->Style()->BorderAfter();
   if (rb.Style() == EBorderStyle::kHidden)
     return -1;
-  if (rb.Style() > EBorderStyle::kHidden && rb.Width() > border_width)
+  if (ComputedStyle::BorderStyleIsVisible(rb.Style()) &&
+      rb.Width() > border_width)
     border_width = rb.Width();
 
   bool all_hidden = true;
@@ -1389,15 +1390,18 @@ int LayoutTableSection::CalcBlockDirectionOuterBorder(
           cb.Style() == EBorderStyle::kHidden)
         continue;
       all_hidden = false;
-      if (gb.Style() > EBorderStyle::kHidden && gb.Width() > border_width)
+      if (ComputedStyle::BorderStyleIsVisible(gb.Style()) &&
+          gb.Width() > border_width)
         border_width = gb.Width();
-      if (cb.Style() > EBorderStyle::kHidden && cb.Width() > border_width)
+      if (ComputedStyle::BorderStyleIsVisible(cb.Style()) &&
+          cb.Width() > border_width)
         border_width = cb.Width();
     } else {
       if (cb.Style() == EBorderStyle::kHidden)
         continue;
       all_hidden = false;
-      if (cb.Style() > EBorderStyle::kHidden && cb.Width() > border_width)
+      if (ComputedStyle::BorderStyleIsVisible(cb.Style()) &&
+          cb.Width() > border_width)
         border_width = cb.Width();
     }
   }
@@ -1422,7 +1426,7 @@ int LayoutTableSection::CalcInlineDirectionOuterBorder(
       side == kBorderStart ? Style()->BorderStart() : Style()->BorderEnd();
   if (sb.Style() == EBorderStyle::kHidden)
     return -1;
-  if (sb.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(sb.Style()))
     border_width = sb.Width();
 
   if (LayoutTableCol* col = Table()
@@ -1432,7 +1436,8 @@ int LayoutTableSection::CalcInlineDirectionOuterBorder(
                                                  : col->Style()->BorderEnd();
     if (gb.Style() == EBorderStyle::kHidden)
       return -1;
-    if (gb.Style() > EBorderStyle::kHidden && gb.Width() > border_width)
+    if (ComputedStyle::BorderStyleIsVisible(gb.Style()) &&
+        gb.Width() > border_width)
       border_width = gb.Width();
   }
 
@@ -1459,9 +1464,11 @@ int LayoutTableSection::CalcInlineDirectionOuterBorder(
         rb.Style() == EBorderStyle::kHidden)
       continue;
     all_hidden = false;
-    if (cb.Style() > EBorderStyle::kHidden && cb.Width() > border_width)
+    if (ComputedStyle::BorderStyleIsVisible(cb.Style()) &&
+        cb.Width() > border_width)
       border_width = cb.Width();
-    if (rb.Style() > EBorderStyle::kHidden && rb.Width() > border_width)
+    if (ComputedStyle::BorderStyleIsVisible(rb.Style()) &&
+        rb.Width() > border_width)
       border_width = rb.Width();
   }
   if (all_hidden)
