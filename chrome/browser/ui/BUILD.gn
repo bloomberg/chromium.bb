@@ -1588,6 +1588,7 @@ split_static_library("ui") {
       "views/payments/validating_combobox.h",
       "views/payments/validating_textfield.cc",
       "views/payments/validating_textfield.h",
+      "views/payments/validation_delegate.cc",
       "views/payments/validation_delegate.h",
       "views/payments/view_stack.cc",
       "views/payments/view_stack.h",

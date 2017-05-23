@@ -159,6 +159,19 @@ ContactInfoEditorViewController::ContactInfoValidationDelegate::
     ~ContactInfoValidationDelegate() {}
 
 bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
+    ShouldFormat() {
+  return field_.type == autofill::PHONE_HOME_WHOLE_NUMBER;
+}
+
+base::string16
+ContactInfoEditorViewController::ContactInfoValidationDelegate::Format(
+    const base::string16& text) {
+  return base::UTF8ToUTF16(data_util::FormatPhoneForDisplay(
+      base::UTF16ToUTF8(text),
+      autofill::AutofillCountry::CountryCodeForLocale(locale_)));
+}
+
+bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
     IsValidTextfield(views::Textfield* textfield) {
   return ValidateTextfield(textfield, nullptr);
 }

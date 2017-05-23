@@ -452,6 +452,23 @@ ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ~ShippingAddressValidationDelegate() {}
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
+    ShouldFormat() {
+  return field_.type == autofill::PHONE_HOME_WHOLE_NUMBER;
+}
+
+base::string16
+ShippingAddressEditorViewController::ShippingAddressValidationDelegate::Format(
+    const base::string16& text) {
+  if (controller_->chosen_country_index_ < controller_->countries_.size()) {
+    return base::UTF8ToUTF16(data_util::FormatPhoneForDisplay(
+        base::UTF16ToUTF8(text),
+        controller_->countries_[controller_->chosen_country_index_].first));
+  } else {
+    return text;
+  }
+}
+
+bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     IsValidTextfield(views::Textfield* textfield) {
   return ValidateValue(textfield->text(), nullptr);
 }

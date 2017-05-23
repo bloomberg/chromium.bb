@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_VALIDATION_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_VALIDATION_DELEGATE_H_
 
+#include "base/strings/string16.h"
+
 namespace views {
 class Combobox;
 class Textfield;
@@ -12,9 +14,13 @@ class Textfield;
 
 namespace payments {
 
+// Handles text field validation and formatting.
 class ValidationDelegate {
  public:
-  virtual ~ValidationDelegate() {}
+  virtual ~ValidationDelegate();
+
+  virtual bool ShouldFormat();
+  virtual base::string16 Format(const base::string16& text);
 
   // Only the delegate knows how to validate the input fields.
   virtual bool IsValidTextfield(views::Textfield* textfield) = 0;
