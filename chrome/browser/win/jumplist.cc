@@ -635,12 +635,14 @@ void JumpList::DeleteIconFiles(const base::FilePath& icon_dir,
   DeleteNonCachedFiles(icon_dir, cached_files);
 }
 
-void JumpList::CreateIconFiles(const base::FilePath& icon_dir,
-                               const ShellLinkItemList& item_list,
-                               size_t max_items,
-                               JumpListCategory category) {
+int JumpList::CreateIconFiles(const base::FilePath& icon_dir,
+                              const ShellLinkItemList& item_list,
+                              size_t max_items,
+                              JumpListCategory category) {
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.CreateIconFilesDuration");
+
+  int icons_created = 0;
 
   // Reuse icons for urls that were already present in the jumplist for this
   // category.
@@ -667,18 +669,23 @@ void JumpList::CreateIconFiles(const base::FilePath& icon_dir,
     } else {
       base::FilePath icon_path;
       if (CreateIconFile(item->icon_image(), icon_dir, &icon_path)) {
+        ++icons_created;
         item->set_icon(icon_path.value(), 0);
         updated_map[item->url()] = icon_path;
       }
     }
   }
   source_map->swap(updated_map);
+
+  return icons_created;
 }
 
-void JumpList::UpdateIconFiles(const base::FilePath& icon_dir,
-                               const ShellLinkItemList& page_list,
-                               size_t slot_limit,
-                               JumpListCategory category) {
+int JumpList::UpdateIconFiles(const base::FilePath& icon_dir,
+                              const ShellLinkItemList& page_list,
+                              size_t slot_limit,
+                              JumpListCategory category) {
+  int icons_created = 0;
+
   // Maximum number of icon files that each JumpList icon folder may hold.
   size_t icon_limit = (category == JumpListCategory::kMostVisited) ? 10 : 6;
 
@@ -698,11 +705,14 @@ void JumpList::UpdateIconFiles(const base::FilePath& icon_dir,
     recently_closed_icons_.clear();
     // Create new icons only when the directory exists and is empty.
     if (base::CreateDirectory(icon_dir) && base::IsDirectoryEmpty(icon_dir))
-      CreateIconFiles(icon_dir, page_list, slot_limit, category);
+      icons_created +=
+          CreateIconFiles(icon_dir, page_list, slot_limit, category);
   } else if (base::CreateDirectory(icon_dir)) {
-    CreateIconFiles(icon_dir, page_list, slot_limit, category);
+    icons_created += CreateIconFiles(icon_dir, page_list, slot_limit, category);
     DeleteIconFiles(icon_dir, category);
   }
+
+  return icons_created;
 }
 
 bool JumpList::UpdateJumpList(
@@ -732,18 +742,17 @@ bool JumpList::UpdateJumpList(
     return false;
   }
 
-  // Record the desired number of icons to create in this JumpList update.
-  int icons_to_create = 0;
+  // Record the desired number of icons created in this JumpList update.
+  int icons_created = 0;
 
   // Update the icons for "Most Visisted" category of the JumpList if needed.
   if (most_visited_pages_have_updates) {
     base::FilePath icon_dir_most_visited = GenerateJumplistIconDirName(
         profile_dir, FILE_PATH_LITERAL("MostVisited"));
 
-    UpdateIconFiles(icon_dir_most_visited, most_visited_pages,
-                    kMostVisitedItems, JumpListCategory::kMostVisited);
-
-    icons_to_create += std::min(most_visited_pages.size(), kMostVisitedItems);
+    icons_created +=
+        UpdateIconFiles(icon_dir_most_visited, most_visited_pages,
+                        kMostVisitedItems, JumpListCategory::kMostVisited);
   }
 
   // Update the icons for "Recently Closed" category of the JumpList if needed.
@@ -751,15 +760,13 @@ bool JumpList::UpdateJumpList(
     base::FilePath icon_dir_recent_closed = GenerateJumplistIconDirName(
         profile_dir, FILE_PATH_LITERAL("RecentClosed"));
 
-    UpdateIconFiles(icon_dir_recent_closed, recently_closed_pages,
-                    kRecentlyClosedItems, JumpListCategory::kRecentlyClosed);
-
-    icons_to_create +=
-        std::min(recently_closed_pages.size(), kRecentlyClosedItems);
+    icons_created += UpdateIconFiles(
+        icon_dir_recent_closed, recently_closed_pages, kRecentlyClosedItems,
+        JumpListCategory::kRecentlyClosed);
   }
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  UMA_HISTOGRAM_COUNTS_100("WinJumplist.CreateIconFilesCount", icons_to_create);
+  UMA_HISTOGRAM_COUNTS_100("WinJumplist.CreateIconFilesCount", icons_created);
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
