@@ -18,7 +18,7 @@ static SimNetwork* g_network = nullptr;
 
 SimNetwork::SimNetwork() : current_request_(nullptr) {
   Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(this);
-  ASSERT(!g_network);
+  DCHECK(!g_network);
   g_network = this;
 }
 

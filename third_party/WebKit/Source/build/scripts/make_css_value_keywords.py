@@ -94,7 +94,8 @@ const Value* FindValue(const char* str, unsigned int len) {
 }
 
 const char* getValueName(CSSValueID id) {
-  ASSERT(id > 0 && id < numCSSValueKeywords);
+  DCHECK_GT(id, 0);
+  DCHECK_LT(id, numCSSValueKeywords);
   return valueListStringPool + valueListStringOffsets[id - 1];
 }
 

@@ -366,7 +366,7 @@ void TouchEventManager::UpdateTargetAndRegionMapsForTouchStarts(
         DCHECK(touch_sequence_document_->GetFrame()->View());
       }
 
-      // Ideally we'd ASSERT(!m_targetForTouchID.contains(point.id())
+      // Ideally we'd DCHECK(!m_targetForTouchID.contains(point.id())
       // since we shouldn't get a touchstart for a touch that's already
       // down. However EventSender allows this to be violated and there's
       // some tests that take advantage of it. There may also be edge
@@ -473,7 +473,7 @@ bool TouchEventManager::ReHitTestTouchPointsIfNeeded(
       all_touches_released = false;
   }
   if (new_touch_sequence) {
-    // Ideally we'd ASSERT(!m_touchSequenceDocument) here since we should
+    // Ideally we'd DCHECK(!m_touchSequenceDocument) here since we should
     // have cleared the active document when we saw the last release. But we
     // have some tests that violate this, ClusterFuzz could trigger it, and
     // there may be cases where the browser doesn't reliably release all

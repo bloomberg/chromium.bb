@@ -833,7 +833,7 @@ bool KURL::ProtocolIs(const StringView protocol) const {
   // they are invalid.  The free function protocolIsJavaScript() should be used
   // instead.
   // FIXME: Chromium code needs to be fixed for this assert to be enabled.
-  // ASSERT(strcmp(protocol, "javascript"));
+  // DCHECK(strcmp(protocol, "javascript"));
   return protocol_ == protocol;
 }
 

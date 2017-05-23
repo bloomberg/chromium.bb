@@ -180,7 +180,9 @@ bool LookupAlgorithmIdByName(const String& algorithm_name,
   const AlgorithmNameMapping* end =
       kAlgorithmNameMappings + WTF_ARRAY_LENGTH(kAlgorithmNameMappings);
 
-  ASSERT(VerifyAlgorithmNameMappings(begin, end));
+#if DCHECK_IS_ON()
+  DCHECK(VerifyAlgorithmNameMappings(begin, end));
+#endif
 
   const AlgorithmNameMapping* it;
   if (algorithm_name.Impl()->Is8Bit())

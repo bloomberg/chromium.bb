@@ -54,7 +54,7 @@ struct Create{{namespace}}FunctionMapData {
 };
 
 static void create{{namespace}}FunctionMap() {
-  ASSERT(!g_constructors);
+  DCHECK(!g_constructors);
   g_constructors = new FunctionMap;
   // Empty array initializer lists are illegal [dcl.init.aggr] and will not
   // compile in MSVC. If tags list is empty, add check to skip this.

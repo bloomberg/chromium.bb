@@ -558,7 +558,7 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
                                                int call_id,
                                                const String& response,
                                                const String& state) {
-  ASSERT(Attached());
+  DCHECK(Attached());
   if (client_)
     client_->SendProtocolMessage(session_id, call_id, response, state);
 }
