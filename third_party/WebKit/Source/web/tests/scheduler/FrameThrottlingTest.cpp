@@ -45,8 +45,10 @@ class MockWebDisplayItemList : public WebDisplayItemList {
  public:
   ~MockWebDisplayItemList() override {}
 
-  MOCK_METHOD2(AppendDrawingItem,
-               void(const WebRect&, sk_sp<const PaintRecord>));
+  MOCK_METHOD3(AppendDrawingItem,
+               void(const WebRect& visual_rect,
+                    sk_sp<const cc::PaintRecord>,
+                    const WebRect& record_bounds));
 };
 
 void PaintRecursively(GraphicsLayer* layer, WebDisplayItemList* display_items) {
@@ -836,7 +838,7 @@ TEST_P(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled) {
 
   // Before the iframe is throttled, we should create all drawing items.
   MockWebDisplayItemList display_items_not_throttled;
-  EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _)).Times(3);
+  EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _, _)).Times(3);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_not_throttled);
 
   // Move the frame offscreen to throttle it and make sure it is backed by a
@@ -853,7 +855,7 @@ TEST_P(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled) {
   // If painting of the iframe is throttled, we should only receive two
   // drawing items.
   MockWebDisplayItemList display_items_throttled;
-  EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _)).Times(2);
+  EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _, _)).Times(2);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled);
 }
 
@@ -880,7 +882,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
 
   // Before the iframe is throttled, we should create all drawing items.
   MockWebDisplayItemList display_items_not_throttled;
-  EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _)).Times(4);
+  EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _, _)).Times(4);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_not_throttled);
 
   // Move the frame offscreen to throttle it.
@@ -896,7 +898,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   // If painting of the iframe is throttled, we should only receive two
   // drawing items.
   MockWebDisplayItemList display_items_throttled;
-  EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _)).Times(2);
+  EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _, _)).Times(2);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled);
 
   // Remove compositing trigger of inner_div.
@@ -920,7 +922,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   }
 
   MockWebDisplayItemList display_items_throttled1;
-  EXPECT_CALL(display_items_throttled1, AppendDrawingItem(_, _)).Times(2);
+  EXPECT_CALL(display_items_throttled1, AppendDrawingItem(_, _, _)).Times(2);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled1);
 
   // Move the frame back on screen.
@@ -935,7 +937,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
 
   // After the iframe is unthrottled, we should create all drawing items.
   MockWebDisplayItemList display_items_not_throttled1;
-  EXPECT_CALL(display_items_not_throttled1, AppendDrawingItem(_, _))
+  EXPECT_CALL(display_items_not_throttled1, AppendDrawingItem(_, _, _))
       .Times(4);
   PaintRecursively(WebView().RootGraphicsLayer(),
                    &display_items_not_throttled1);

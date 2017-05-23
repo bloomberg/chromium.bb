@@ -355,9 +355,9 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
                                  phase.Y() + spaced_tile.Y());
 
   PaintFlags flags;
-  flags.setShader(MakePaintShaderRecord(record, SkShader::kRepeat_TileMode,
-                                        SkShader::kRepeat_TileMode,
-                                        &pattern_transform, nullptr));
+  flags.setShader(
+      MakePaintShaderRecord(record, spaced_tile, SkShader::kRepeat_TileMode,
+                            SkShader::kRepeat_TileMode, &pattern_transform));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
@@ -383,7 +383,7 @@ sk_sp<SkImage> SVGImage::ImageForCurrentFrameForContainer(
                    container_rect, container_rect, url);
 
   return SkImage::MakeFromPicture(
-      ToSkPicture(recorder.finishRecordingAsPicture()),
+      ToSkPicture(recorder.finishRecordingAsPicture(), container_rect),
       SkISize::Make(container_size.Width(), container_size.Height()), nullptr,
       nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
 }
@@ -397,16 +397,15 @@ static bool DrawNeedsLayer(const PaintFlags& flags) {
 bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
                                    const SkMatrix& local_matrix,
                                    const KURL& url) {
-  const FloatSize size(ContainerSize());
+  const IntSize size(ContainerSize());
   if (size.IsEmpty())
     return false;
 
-  FloatRect float_bounds(FloatPoint(), size);
-  const SkRect bounds(float_bounds);
+  IntRect bounds(IntPoint(), size);
 
   flags.setShader(MakePaintShaderRecord(
-      PaintRecordForCurrentFrame(float_bounds, url), SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &local_matrix, &bounds));
+      PaintRecordForCurrentFrame(bounds, url), bounds,
+      SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &local_matrix));
 
   // Animation is normally refreshed in draw() impls, which we don't reach when
   // painting via shaders.
@@ -451,7 +450,7 @@ void SVGImage::Draw(
                should_respect_image_orientation, clamp_mode, KURL());
 }
 
-sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const FloatRect& bounds,
+sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
                                                         const KURL& url,
                                                         PaintCanvas* canvas) {
   DCHECK(page_);
@@ -469,12 +468,10 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const FloatRect& bounds,
   // avoid setting timers from the latter.
   FlushPendingTimelineRewind();
 
-  IntRect int_bounds(EnclosingIntRect(bounds));
-  PaintRecordBuilder builder(int_bounds, nullptr, nullptr,
-                             paint_controller_.get());
+  PaintRecordBuilder builder(bounds, nullptr, nullptr, paint_controller_.get());
 
   view->UpdateAllLifecyclePhasesExceptPaint();
-  view->Paint(builder.Context(), CullRect(int_bounds));
+  view->Paint(builder.Context(), CullRect(bounds));
   DCHECK(!view->NeedsLayout());
 
   if (canvas) {
@@ -512,7 +509,7 @@ void SVGImage::DrawInternal(PaintCanvas* canvas,
     canvas->save();
     canvas->clipRect(EnclosingIntRect(dst_rect));
     canvas->concat(AffineTransformToSkMatrix(transform));
-    PaintRecordForCurrentFrame(src_rect, url, canvas);
+    PaintRecordForCurrentFrame(EnclosingIntRect(src_rect), url, canvas);
     canvas->restore();
   }
 

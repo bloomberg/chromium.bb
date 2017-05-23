@@ -6,14 +6,13 @@
 #define BoxReflection_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
 
 namespace blink {
-
-class FloatRect;
 
 // A reflection, as created by -webkit-box-reflect. Consists of:
 // * a direction (either vertical or horizontal)
@@ -30,14 +29,22 @@ class PLATFORM_EXPORT BoxReflection {
     kHorizontalReflection,
   };
 
+  BoxReflection(ReflectionDirection direction, float offset)
+      : BoxReflection(direction, offset, nullptr, FloatRect()) {}
+
   BoxReflection(ReflectionDirection direction,
                 float offset,
-                sk_sp<PaintRecord> mask = nullptr)
-      : direction_(direction), offset_(offset), mask_(std::move(mask)) {}
+                sk_sp<PaintRecord> mask,
+                const FloatRect& mask_bounds)
+      : direction_(direction),
+        offset_(offset),
+        mask_(std::move(mask)),
+        mask_bounds_(mask_bounds) {}
 
   ReflectionDirection Direction() const { return direction_; }
   float Offset() const { return offset_; }
   const sk_sp<PaintRecord>& Mask() const { return mask_; }
+  const FloatRect& MaskBounds() const { return mask_bounds_; }
 
   // Returns a matrix which maps points between the original content and its
   // reflection. Reflections are self-inverse, so this matrix can be used to
@@ -54,11 +61,12 @@ class PLATFORM_EXPORT BoxReflection {
   ReflectionDirection direction_;
   float offset_;
   sk_sp<PaintRecord> mask_;
+  FloatRect mask_bounds_;
 };
 
 inline bool operator==(const BoxReflection& a, const BoxReflection& b) {
   return a.Direction() == b.Direction() && a.Offset() == b.Offset() &&
-         a.Mask() == b.Mask();
+         a.Mask() == b.Mask() && a.MaskBounds() == b.MaskBounds();
 }
 
 inline bool operator!=(const BoxReflection& a, const BoxReflection& b) {
