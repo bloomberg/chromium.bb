@@ -12,6 +12,7 @@ import android.text.Selection;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -52,6 +53,8 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
     // state has been loaded.
     private boolean mIgnoreTextChangeFromAutocomplete = true;
     private boolean mLastEditWasDelete;
+
+    private boolean mIgnoreImeForTest;
 
     public AutocompleteEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -418,6 +421,11 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
         return mInputConnection;
     }
 
+    @VisibleForTesting
+    public void setIgnoreImeForTest(boolean ignore) {
+        mIgnoreImeForTest = ignore;
+    }
+
     private InputConnectionWrapper mInputConnection = new InputConnectionWrapper(null, true) {
         private final char[] mTempSelectionChar = new char[1];
 
@@ -528,7 +536,14 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
     @VisibleForTesting
     public InputConnection createInputConnection(InputConnection target) {
         mInputConnection.setTarget(target);
+        if (mIgnoreImeForTest) return null;
         return mInputConnection;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mIgnoreImeForTest) return true;
+        return super.dispatchKeyEvent(event);
     }
 
     private void notifyAutocompleteTextStateChanged(boolean textDeleted, boolean updateDisplay) {
