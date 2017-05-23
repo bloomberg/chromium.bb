@@ -2160,7 +2160,7 @@ void RenderFrameHostImpl::OnBeginNavigation(
   if (!is_active())
     return;
 
-  TRACE_EVENT2("navigation", "RenderFrameHostImpl::OnBeforeNavigation",
+  TRACE_EVENT2("navigation", "RenderFrameHostImpl::OnBeginNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params.url.possibly_invalid_spec());
 
