@@ -40,6 +40,17 @@ void PresentationConnectionList::AddConnection(
   connections_.push_back(connection);
 }
 
+bool PresentationConnectionList::RemoveConnection(
+    WebPresentationConnection* connection) {
+  for (size_t i = 0; i < connections_.size(); i++) {
+    if (connections_[i] == connection) {
+      connections_.erase(i);
+      return true;
+    }
+  }
+  return false;
+}
+
 void PresentationConnectionList::DispatchConnectionAvailableEvent(
     PresentationConnection* connection) {
   DispatchEvent(PresentationConnectionAvailableEvent::Create(

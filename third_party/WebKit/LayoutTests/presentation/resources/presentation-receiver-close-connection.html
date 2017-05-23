@@ -27,11 +27,16 @@ presentationServiceMock.then(mockService => {
     const connection = list.connections[0];
     connection.onclose = () => {
       assert_equals(connection.state, 'closed');
-      opener.postMessage('receiver connection closed', '*');
+      setTimeout(() => {
+        assert_equals(list.connections.length, 0);
+        opener.postMessage('receiver connection closed', '*');
+      } ,0);
     };
     opener.postMessage('receiver connection ready', '*');
     if (shouldCallClose) {
-      connection.close();
+      list.connections.forEach(theConnection => {
+        theConnection.close();
+      });
     }
   });
 });

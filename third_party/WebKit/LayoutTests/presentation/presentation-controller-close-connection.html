@@ -23,8 +23,6 @@ async_test(t => {
             assert_equals(closeEvent.reason, "closed");
             assert_equals(closeEvent.message, "");
             assert_equals(connection.state, "closed");
-            assert_true(receiverConnectionClosed);
-            t.done();
           };
           connection.onconnect = () => {
             // Open a receiver page and pass controller connection's
@@ -41,6 +39,7 @@ async_test(t => {
   window.addEventListener("message", t.step_func(e => {
     if (e.data == "receiver connection closed") {
       receiverConnectionClosed = true;
+      t.done();
     } else if (e.data == "receiver connection ready") {
       assert_not_equals(connection, null);
       connection.close();

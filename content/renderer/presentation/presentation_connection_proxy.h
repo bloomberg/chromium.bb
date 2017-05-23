@@ -13,6 +13,7 @@
 
 namespace blink {
 class WebPresentationConnection;
+class WebPresentationReceiver;
 }  // namespace blink
 
 namespace content {
@@ -96,7 +97,6 @@ class CONTENT_EXPORT PresentationConnectionProxy
   mojo::InterfacePtr<blink::mojom::PresentationConnection>
       target_connection_ptr_;
 
- private:
   // Raw pointer to Blink connection object owning this proxy object. Does not
   // take ownership.
   blink::WebPresentationConnection* const source_connection_;
@@ -118,8 +118,8 @@ class CONTENT_EXPORT ControllerConnectionProxy
 class CONTENT_EXPORT ReceiverConnectionProxy
     : public PresentationConnectionProxy {
  public:
-  explicit ReceiverConnectionProxy(
-      blink::WebPresentationConnection* receiver_connection);
+  ReceiverConnectionProxy(blink::WebPresentationConnection* receiver_connection,
+                          blink::WebPresentationReceiver* receiver);
   ~ReceiverConnectionProxy() override;
 
   void Bind(
@@ -129,6 +129,14 @@ class CONTENT_EXPORT ReceiverConnectionProxy
   // called only once.
   void BindControllerConnection(
       blink::mojom::PresentationConnectionPtr controller_connection_ptr);
+
+  // PresentationConnectionProxy override
+  void DidChangeState(content::PresentationConnectionState state) override;
+
+ private:
+  // Raw pointer to PresentationReceiver. This class does not take ownership of
+  // |receiver_|.
+  blink::WebPresentationReceiver* receiver_;
 };
 
 }  // namespace content

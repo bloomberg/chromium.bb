@@ -30,6 +30,10 @@ class BLINK_PLATFORM_EXPORT WebPresentationReceiver {
   // Called when any PresentationConnection object on receiver page invokes
   // connnection.terminate().
   virtual void TerminateConnection() = 0;
+
+  // Called when any receiver connection switches to 'closed' state. Remove the
+  // connection from PresentationReceiver's connection list.
+  virtual void RemoveConnection(WebPresentationConnection*) = 0;
 };
 
 }  // namespace blink
