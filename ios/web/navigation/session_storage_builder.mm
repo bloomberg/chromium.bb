@@ -20,6 +20,10 @@
 #include "ios/web/web_state/session_certificate_policy_cache_storage_builder.h"
 #import "ios/web/web_state/web_state_impl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // CRWSessionController's readonly properties redefined as readwrite.  These
 // will be removed and NavigationManagerImpl's ivars will be written directly
 // as this functionality moves from CRWSessionController to
