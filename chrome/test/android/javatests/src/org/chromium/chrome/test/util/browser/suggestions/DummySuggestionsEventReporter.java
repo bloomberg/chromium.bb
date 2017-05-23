@@ -18,7 +18,8 @@ public class DummySuggestionsEventReporter implements SuggestionsEventReporter {
     public void onSurfaceOpened() {}
 
     @Override
-    public void onPageShown(int[] categories, int[] suggestionsPerCategory) {}
+    public void onPageShown(
+            int[] categories, int[] suggestionsPerCategory, int visibleCategoriesCount) {}
 
     @Override
     public void onSuggestionShown(SnippetArticle suggestion) {}

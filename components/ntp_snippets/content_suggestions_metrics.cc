@@ -25,6 +25,8 @@ const int kMaxCategories = 10;
 
 const char kHistogramCountOnNtpOpened[] =
     "NewTabPage.ContentSuggestions.CountOnNtpOpened";
+const char kHistogramSectionCountOnNtpOpened[] =
+    "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened";
 const char kHistogramShown[] = "NewTabPage.ContentSuggestions.Shown";
 const char kHistogramShownAge[] = "NewTabPage.ContentSuggestions.ShownAge";
 const char kHistogramShownScore[] =
@@ -212,7 +214,8 @@ void RecordContentSuggestionsUsage() {
 }  // namespace
 
 void OnPageShown(
-    const std::vector<std::pair<Category, int>>& suggestions_per_category) {
+    const std::vector<std::pair<Category, int>>& suggestions_per_category,
+    int visible_categories_count) {
   int suggestions_total = 0;
   for (const std::pair<Category, int>& item : suggestions_per_category) {
     LogCategoryHistogramPosition(kHistogramCountOnNtpOpened, item.first,
@@ -221,6 +224,8 @@ void OnPageShown(
   }
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramCountOnNtpOpened, suggestions_total,
                              kMaxSuggestionsTotal);
+  UMA_HISTOGRAM_EXACT_LINEAR(kHistogramSectionCountOnNtpOpened,
+                             visible_categories_count, kMaxCategories);
 }
 
 void OnSuggestionShown(int global_position,

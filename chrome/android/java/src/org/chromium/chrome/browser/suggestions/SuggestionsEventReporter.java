@@ -22,8 +22,9 @@ public interface SuggestionsEventReporter {
      * Tracks per-page-load metrics for content suggestions.
      * @param categories The categories of content suggestions.
      * @param suggestionsPerCategory The number of content suggestions in each category.
+     * @param visibleCategoriesCount The number of (possibly empty) categories visible in the UI.
      */
-    void onPageShown(int[] categories, int[] suggestionsPerCategory);
+    void onPageShown(int[] categories, int[] suggestionsPerCategory, int visibleCategoriesCount);
 
     /**
      * Tracks impression metrics for a content suggestion.
