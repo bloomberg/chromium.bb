@@ -3339,6 +3339,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   bool PreserveNewline() const { return PreserveNewline(WhiteSpace()); }
 
+  static bool BorderStyleIsVisible(EBorderStyle style) {
+    return style != EBorderStyle::kNone && style != EBorderStyle::kHidden;
+  }
+
   static bool CollapseWhiteSpace(EWhiteSpace ws) {
     // Pre and prewrap do not collapse whitespace.
     return ws != EWhiteSpace::kPre && ws != EWhiteSpace::kPreWrap;

@@ -1192,7 +1192,7 @@ int LayoutTable::CalcBorderStart() const {
   const BorderValue& table_start_border = Style()->BorderStart();
   if (table_start_border.Style() == EBorderStyle::kHidden)
     return 0;
-  if (table_start_border.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(table_start_border.Style()))
     border_width = table_start_border.Width();
 
   // TODO(dgrogan): This logic doesn't properly account for the first column in
@@ -1203,7 +1203,7 @@ int LayoutTable::CalcBorderStart() const {
     const BorderValue& column_adjoining_border = column->Style()->BorderStart();
     if (column_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
-    if (column_adjoining_border.Style() > EBorderStyle::kHidden)
+    if (ComputedStyle::BorderStyleIsVisible(column_adjoining_border.Style()))
       border_width =
           std::max<int>(border_width, column_adjoining_border.Width());
   }
@@ -1215,7 +1215,7 @@ int LayoutTable::CalcBorderStart() const {
     if (section_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
 
-    if (section_adjoining_border.Style() > EBorderStyle::kHidden)
+    if (ComputedStyle::BorderStyleIsVisible(section_adjoining_border.Style()))
       border_width =
           std::max<int>(border_width, section_adjoining_border.Width());
 
@@ -1232,11 +1232,13 @@ int LayoutTable::CalcBorderStart() const {
       if (first_row_adjoining_border.Style() == EBorderStyle::kHidden)
         return 0;
 
-      if (start_cell_adjoining_border.Style() > EBorderStyle::kHidden) {
+      if (ComputedStyle::BorderStyleIsVisible(
+              start_cell_adjoining_border.Style())) {
         border_width =
             std::max<int>(border_width, start_cell_adjoining_border.Width());
       }
-      if (first_row_adjoining_border.Style() > EBorderStyle::kHidden) {
+      if (ComputedStyle::BorderStyleIsVisible(
+              first_row_adjoining_border.Style())) {
         border_width =
             std::max<int>(border_width, first_row_adjoining_border.Width());
       }
@@ -1259,7 +1261,7 @@ int LayoutTable::CalcBorderEnd() const {
   const BorderValue& table_end_border = Style()->BorderEnd();
   if (table_end_border.Style() == EBorderStyle::kHidden)
     return 0;
-  if (table_end_border.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(table_end_border.Style()))
     border_width = table_end_border.Width();
 
   unsigned end_column = NumEffectiveColumns() - 1;
@@ -1272,7 +1274,7 @@ int LayoutTable::CalcBorderEnd() const {
     const BorderValue& column_adjoining_border = column->Style()->BorderEnd();
     if (column_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
-    if (column_adjoining_border.Style() > EBorderStyle::kHidden)
+    if (ComputedStyle::BorderStyleIsVisible(column_adjoining_border.Style()))
       border_width =
           std::max<int>(border_width, column_adjoining_border.Width());
   }
@@ -1284,7 +1286,7 @@ int LayoutTable::CalcBorderEnd() const {
     if (section_adjoining_border.Style() == EBorderStyle::kHidden)
       return 0;
 
-    if (section_adjoining_border.Style() > EBorderStyle::kHidden)
+    if (ComputedStyle::BorderStyleIsVisible(section_adjoining_border.Style()))
       border_width =
           std::max<int>(border_width, section_adjoining_border.Width());
 
@@ -1301,11 +1303,13 @@ int LayoutTable::CalcBorderEnd() const {
       if (first_row_adjoining_border.Style() == EBorderStyle::kHidden)
         return 0;
 
-      if (end_cell_adjoining_border.Style() > EBorderStyle::kHidden) {
+      if (ComputedStyle::BorderStyleIsVisible(
+              end_cell_adjoining_border.Style())) {
         border_width =
             std::max<int>(border_width, end_cell_adjoining_border.Width());
       }
-      if (first_row_adjoining_border.Style() > EBorderStyle::kHidden) {
+      if (ComputedStyle::BorderStyleIsVisible(
+              first_row_adjoining_border.Style())) {
         border_width =
             std::max<int>(border_width, first_row_adjoining_border.Width());
       }
@@ -1349,7 +1353,7 @@ int LayoutTable::OuterBorderBefore() const {
   const BorderValue& tb = Style()->BorderBefore();
   if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(tb.Style()))
     border_width = std::max<int>(border_width, tb.Width() / 2);
   return border_width;
 }
@@ -1367,7 +1371,7 @@ int LayoutTable::OuterBorderAfter() const {
   const BorderValue& tb = Style()->BorderAfter();
   if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(tb.Style()))
     border_width = std::max<int>(border_width, (tb.Width() + 1) / 2);
   return border_width;
 }
@@ -1381,7 +1385,7 @@ int LayoutTable::OuterBorderStart() const {
   const BorderValue& tb = Style()->BorderStart();
   if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(tb.Style()))
     border_width =
         (tb.Width() + (Style()->IsLeftToRightDirection() ? 0 : 1)) / 2;
 
@@ -1409,7 +1413,7 @@ int LayoutTable::OuterBorderEnd() const {
   const BorderValue& tb = Style()->BorderEnd();
   if (tb.Style() == EBorderStyle::kHidden)
     return 0;
-  if (tb.Style() > EBorderStyle::kHidden)
+  if (ComputedStyle::BorderStyleIsVisible(tb.Style()))
     border_width =
         (tb.Width() + (Style()->IsLeftToRightDirection() ? 1 : 0)) / 2;
 

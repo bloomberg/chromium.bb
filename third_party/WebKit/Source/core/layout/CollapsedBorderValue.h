@@ -25,7 +25,7 @@
 #ifndef CollapsedBorderValue_h
 #define CollapsedBorderValue_h
 
-#include "core/style/BorderValue.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -55,7 +55,9 @@ class CollapsedBorderValue {
                        const Color& color,
                        EBorderPrecedence precedence)
       : color_(color),
-        width_(border.Style() > EBorderStyle::kHidden ? border.Width() : 0),
+        width_(ComputedStyle::BorderStyleIsVisible(border.Style())
+                   ? border.Width()
+                   : 0),
         style_(static_cast<unsigned>(border.Style())),
         precedence_(precedence) {
     DCHECK(precedence != kBorderPrecedenceOff);
