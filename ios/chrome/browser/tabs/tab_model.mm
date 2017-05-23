@@ -204,36 +204,11 @@ std::unique_ptr<web::WebState> CreateWebState(
 #pragma mark - Overriden
 
 - (void)dealloc {
-  // Make sure the tabs do clean after themselves. It is important for
-  // removeObserver: to be called first otherwise a lot of unecessary work will
-  // happen on -closeAllTabs.
-  DCHECK([_observers empty]);
-
   // browserStateDestroyed should always have been called before destruction.
   DCHECK(!_browserState);
 
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-  // Clear weak pointer to WebStateListMetricsObserver before destroying it.
-  _webStateListMetricsObserver = nullptr;
-
-  // Close all tabs. Do this in an @autoreleasepool as WebStateList observers
-  // will be notified (they are unregistered later). As some of them may be
-  // implemented in Objective-C and unregister themselves in their -dealloc
-  // method, ensure they -autorelease introduced by ARC are processed before
-  // the WebStateList destructor is called.
-  @autoreleasepool {
-    [self closeAllTabs];
-  }
-
-  // Unregister all observers after closing all the tabs as some of them are
-  // required to properly clean up the Tabs.
-  for (const auto& webStateListObserver : _webStateListObservers)
-    _webStateList->RemoveObserver(webStateListObserver.get());
-  _webStateListObservers.clear();
-  _retainedWebStateListObservers = nil;
-
-  _clearPoliciesTaskTracker.TryCancelAll();
+  // Make sure the observers do clean after themselves.
+  DCHECK([_observers empty]);
 }
 
 #pragma mark - Public methods
@@ -644,11 +619,33 @@ std::unique_ptr<web::WebState> CreateWebState(
 
 // NOTE: This can be called multiple times, so must be robust against that.
 - (void)browserStateDestroyed {
+  if (!_browserState)
+    return;
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  if (_browserState) {
-    UnregisterTabModelFromChromeBrowserState(_browserState, self);
-  }
+  UnregisterTabModelFromChromeBrowserState(_browserState, self);
   _browserState = nullptr;
+
+  // Clear weak pointer to WebStateListMetricsObserver before destroying it.
+  _webStateListMetricsObserver = nullptr;
+
+  // Close all tabs. Do this in an @autoreleasepool as WebStateList observers
+  // will be notified (they are unregistered later). As some of them may be
+  // implemented in Objective-C and unregister themselves in their -dealloc
+  // method, ensure they -autorelease introduced by ARC are processed before
+  // the WebStateList destructor is called.
+  @autoreleasepool {
+    [self closeAllTabs];
+  }
+
+  // Unregister all observers after closing all the tabs as some of them are
+  // required to properly clean up the Tabs.
+  for (const auto& webStateListObserver : _webStateListObservers)
+    _webStateList->RemoveObserver(webStateListObserver.get());
+  _webStateListObservers.clear();
+  _retainedWebStateListObservers = nil;
+
+  _clearPoliciesTaskTracker.TryCancelAll();
 }
 
 - (void)navigationCommittedInTab:(Tab*)tab
