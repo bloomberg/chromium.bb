@@ -280,6 +280,10 @@ component("wtf") {
     sources -= [ "ThreadingPthreads.cpp" ]
 
     cflags = [ "/wd4068" ]  # Unknown pragma.
+
+    # Inject Visual Studio debug visualizers for our types into all targets
+    # that reference this.
+    all_dependent_configs = [ "//tools/win/DebugVisualizers:webkit" ]
   } else {
     # Non-Windows.
     sources -= [
