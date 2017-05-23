@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -52,6 +53,8 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
+#include "services/video_capture/public/cpp/constants.h"
+#include "services/video_capture/public/interfaces/constants.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -363,6 +366,11 @@ ServiceManagerContext::ServiceManagerContext() {
     unsandboxed_services.insert(
         std::make_pair(content::mojom::kNetworkServiceName,
                        base::ASCIIToUTF16("Network Service")));
+  }
+  if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
+    unsandboxed_services.insert(
+        std::make_pair(video_capture::mojom::kServiceName,
+                       base::ASCIIToUTF16("Video Capture Service")));
   }
 
   for (const auto& service : unsandboxed_services) {

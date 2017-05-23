@@ -39,6 +39,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "media/base/media_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/ui_base_switches.h"
@@ -312,6 +313,8 @@ bool UtilityProcessHostImpl::StartProcess() {
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif
+      switches::kUseFakeDeviceForMediaStream,
+      switches::kUseFileForFakeVideoCapture,
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                arraysize(kSwitchNames));
