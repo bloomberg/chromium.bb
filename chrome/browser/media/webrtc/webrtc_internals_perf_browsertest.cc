@@ -240,17 +240,9 @@ IN_PROC_BROWSER_TEST_F(
 
 #if BUILDFLAG(RTC_USE_H264)
 
-// Flaky on Windows, crbug.com/703579.
-#if defined(OS_WIN)
-#define MAYBE_MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264 \
-  DISABLED_MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264
-#else
-#define MAYBE_MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264 \
-  MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264
-#endif
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
-    MAYBE_MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264) {
+    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
