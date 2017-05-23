@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import sys
+import textwrap
 
 import git_common
 
@@ -69,7 +70,7 @@ def main():
   if args.reflink is None:
     args.reflink = support_cow(gclient, new_gclient)
     if args.reflink:
-      print('Copy-on-write is supported. Using reflink to copy the repo.')
+      print('Copy-on-write support is detected.')
   os.symlink(gclient, new_gclient)
 
   for root, dirs, _ in os.walk(args.repository):
@@ -92,9 +93,13 @@ def main():
       else:
         subprocess.check_call(['git', 'checkout', '-f'], cwd=workdir)
 
-      if args.reflink:
-        subprocess.check_call(['git', 'clean', '-df'], cwd=workdir)
+  if args.reflink:
+    print(textwrap.dedent('''\
+      The repo was copied with copy-on-write, and the artifacts were retained.
+      More details on http://crbug.com/721585.
 
+      Depending on your usage pattern, you might want to do "gn gen"
+      on the output directories. More details: http://crbug.com/723856.'''))
 
 if __name__ == '__main__':
   sys.exit(main())
