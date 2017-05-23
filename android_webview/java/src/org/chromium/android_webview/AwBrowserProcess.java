@@ -13,7 +13,9 @@ import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.StrictMode;
+import android.webkit.ValueCallback;
 
+import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.android_webview.crash.CrashReceiverService;
 import org.chromium.android_webview.crash.ICrashReceiverService;
 import org.chromium.android_webview.policy.AwPolicyProvider;
@@ -22,6 +24,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -40,6 +44,7 @@ import java.nio.channels.FileLock;
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
  */
+@JNINamespace("android_webview")
 public abstract class AwBrowserProcess {
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "webview";
 
@@ -47,6 +52,7 @@ public abstract class AwBrowserProcess {
     private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
     private static RandomAccessFile sLockFile;
     private static FileLock sExclusiveFileLock;
+    private static String sWebViewPackageName;
 
     /**
      * Loads the native library, and performs basic static construction of objects needed
@@ -147,6 +153,49 @@ public abstract class AwBrowserProcess {
         }
     }
 
+    public static void setWebViewPackageName(String webViewPackageName) {
+        assert sWebViewPackageName == null || sWebViewPackageName.equals(webViewPackageName);
+        sWebViewPackageName = webViewPackageName;
+    }
+
+    /**
+     * Trigger minidump copying, which in turn triggers minidump uploading.
+     */
+    @CalledByNative
+    private static void triggerMinidumpUploading() {
+        handleMinidumpsAndSetMetricsConsent(sWebViewPackageName, false /* updateMetricsConsent */);
+    }
+
+    /**
+     * Trigger minidump uploading, and optionaly also update the metrics-consent value depending on
+     * whether the Android Checkbox is toggled on.
+     * @param updateMetricsConsent whether to update the metrics-consent value to represent the
+     * Android Checkbox toggle.
+     */
+    public static void handleMinidumpsAndSetMetricsConsent(
+            final String webViewPackageName, final boolean updateMetricsConsent) {
+        final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
+                CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+        if (enableMinidumpUploadingForTesting) {
+            AwBrowserProcess.handleMinidumps(webViewPackageName, true /* enabled */);
+        }
+
+        PlatformServiceBridge.getInstance().queryMetricsSetting(new ValueCallback<Boolean>() {
+            // Actions conditioned on whether the Android Checkbox is toggled on
+            public void onReceiveValue(Boolean enabled) {
+                ThreadUtils.assertOnUiThread();
+                if (updateMetricsConsent) {
+                    AwMetricsServiceClient.setConsentSetting(
+                            ContextUtils.getApplicationContext(), enabled);
+                }
+
+                if (!enableMinidumpUploadingForTesting) {
+                    AwBrowserProcess.handleMinidumps(webViewPackageName, enabled);
+                }
+            }
+        });
+    }
+
     /**
      * Pass Minidumps to a separate Service declared in the WebView provider package.
      * That Service will copy the Minidumps to its own data directory - at which point we can delete
@@ -235,6 +284,9 @@ public abstract class AwBrowserProcess {
                 }
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            // To avoid any potential synchronization issues we post all minidump-copying actions to
+            // the same thread to be run serially.
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }

@@ -24,7 +24,6 @@ import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
-import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
@@ -41,13 +40,11 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDevToolsServer;
-import org.chromium.android_webview.AwMetricsServiceClient;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.HttpAuthDatabase;
-import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.BuildConfig;
@@ -417,26 +414,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         initPlatSupportLibrary();
         doNetworkInitializations(context);
         final boolean isExternalService = true;
+        // The WebView package name is used to locate the separate Service to which we copy crash
+        // minidumps. This package name must be set before a render process has a chance to crash -
+        // otherwise we might try to copy a minidump without knowing what process to copy it to.
+        AwBrowserProcess.setWebViewPackageName(webViewPackageName);
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();
-
-        final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
-                CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
-        if (enableMinidumpUploadingForTesting) {
-            AwBrowserProcess.handleMinidumps(webViewPackageName, true /* enabled */);
-        }
-
-        PlatformServiceBridge.getInstance().queryMetricsSetting(new ValueCallback<Boolean>() {
-            // Actions conditioned on whether the Android Checkbox is toggled on
-            public void onReceiveValue(Boolean enabled) {
-                ThreadUtils.assertOnUiThread();
-                AwMetricsServiceClient.setConsentSetting(context, enabled);
-
-                if (!enableMinidumpUploadingForTesting) {
-                    AwBrowserProcess.handleMinidumps(webViewPackageName, enabled);
-                }
-            }
-        });
+        AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(
+                webViewPackageName, true /* updateMetricsConsent */);
 
         if (CommandLineUtil.isBuildDebuggable()) {
             setWebContentsDebuggingEnabled(true);
