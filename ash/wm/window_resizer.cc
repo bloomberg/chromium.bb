@@ -107,7 +107,7 @@ int WindowResizer::GetPositionChangeDirectionForWindowComponent(
 }
 
 aura::Window* WindowResizer::GetTarget() const {
-  return window_state_ ? window_state_->window()->aura_window() : nullptr;
+  return window_state_ ? window_state_->window() : nullptr;
 }
 
 gfx::Rect WindowResizer::CalculateBoundsForDrag(

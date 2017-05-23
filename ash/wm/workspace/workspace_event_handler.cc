@@ -8,6 +8,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm_window.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
@@ -97,9 +99,10 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event,
 void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     wm::WindowState* target_state,
     ui::MouseEvent* event) {
-  WmWindow* target = target_state->window();
-  if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
-    int component = target->GetNonClientComponent(event->location());
+  aura::Window* target = target_state->window();
+  if ((event->flags() & ui::EF_IS_DOUBLE_CLICK) != 0 && target->delegate()) {
+    const int component =
+        target->delegate()->GetNonClientComponent(event->location());
     if (component == HTBOTTOM || component == HTTOP) {
       ShellPort::Get()->RecordUserMetricsAction(
           UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);

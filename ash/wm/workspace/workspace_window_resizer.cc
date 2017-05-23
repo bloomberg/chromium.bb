@@ -716,14 +716,14 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
     for (auto i = children.rbegin();
          i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
       wm::WindowState* other_state = wm::GetWindowState(*i);
-      if (other_state->window()->aura_window() == GetTarget() ||
+      if (other_state->window() == GetTarget() ||
           !other_state->window()->IsVisible() ||
           !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
         continue;
       }
       if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
                                &magnetism_edge_)) {
-        magnetism_window_ = other_state->window()->aura_window();
+        magnetism_window_ = other_state->window();
         window_tracker_.Add(magnetism_window_);
         return true;
       }

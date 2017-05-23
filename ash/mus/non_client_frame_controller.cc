@@ -21,6 +21,7 @@
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -387,15 +388,18 @@ base::string16 NonClientFrameController::GetWindowTitle() const {
 }
 
 bool NonClientFrameController::CanResize() const {
-  return window_ && WmWindow::Get(window_)->CanResize();
+  return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+                     ui::mojom::kResizeBehaviorCanResize) != 0;
 }
 
 bool NonClientFrameController::CanMaximize() const {
-  return window_ && WmWindow::Get(window_)->CanMaximize();
+  return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+                     ui::mojom::kResizeBehaviorCanMaximize) != 0;
 }
 
 bool NonClientFrameController::CanMinimize() const {
-  return window_ && WmWindow::Get(window_)->CanMinimize();
+  return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+                     ui::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {

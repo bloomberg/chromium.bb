@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/wm/core/transient_window_observer.h"
@@ -41,7 +40,6 @@ namespace ash {
 class ImmersiveFullscreenController;
 class RootWindowController;
 class WmTransientWindowObserver;
-class WmWindowTestApi;
 enum class WmWindowProperty;
 
 namespace wm {
@@ -53,8 +51,7 @@ class WindowState;
 //
 // WmWindow is tied to the life of the underlying aura::Window. Use the
 // static Get() function to obtain a WmWindow from an aura::Window.
-class ASH_EXPORT WmWindow : public aura::WindowObserver,
-                            public ::wm::TransientWindowObserver {
+class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
  public:
   // See comments in SetBoundsInScreen().
   enum class BoundsInScreenBehavior {
@@ -200,10 +197,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   void SetBounds(const gfx::Rect& bounds);
   void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
                                     base::TimeDelta delta);
-  // Sets the bounds in such a way that LayoutManagers are circumvented.
-  void SetBoundsDirect(const gfx::Rect& bounds);
-  void SetBoundsDirectAnimated(const gfx::Rect& bounds);
-  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
 
   // Sets the bounds in two distinct ways. The exact behavior is dictated by
   // the value of BoundsInScreenBehavior set on the parent:
@@ -229,12 +222,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   ui::WindowShowState GetShowState() const;
 
   void SetPreFullscreenShowState(ui::WindowShowState show_state);
-
-  // Sets the restore bounds and show state overrides. These values take
-  // precedence over the restore bounds and restore show state (if set).
-  // If |bounds_override| is empty the values are cleared.
-  void SetRestoreOverrides(const gfx::Rect& bounds_override,
-                           ui::WindowShowState window_state_override);
 
   // If |value| is true the window can not be moved to another root, regardless
   // of the bounds set on it.
@@ -319,14 +306,7 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   void RemoveLimitedPreTargetHandler(ui::EventHandler* handler);
 
  private:
-  friend class WmWindowTestApi;
-
   explicit WmWindow(aura::Window* window);
-
-  // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
 
   // ::wm::TransientWindowObserver overrides:
   void OnTransientChildAdded(aura::Window* window,

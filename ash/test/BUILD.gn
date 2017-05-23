@@ -129,8 +129,6 @@ static_library("test_support_common") {
     "user_metrics_recorder_test_api.h",
     "wallpaper_controller_test_api.cc",
     "wallpaper_controller_test_api.h",
-    "wm_window_test_api.cc",
-    "wm_window_test_api.h",
     "workspace_controller_test_api.cc",
     "workspace_controller_test_api.h",
     "workspace_event_handler_test_helper.cc",

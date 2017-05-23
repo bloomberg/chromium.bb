@@ -33,6 +33,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 using aura::Window;
@@ -488,11 +489,9 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
   if (restore_windows_on_shelf_visible_) {
     if (window_state->IsMinimized()) {
       MinimizePanel(window_state->window());
-      restore_windows_on_shelf_visible_->Remove(
-          window_state->window()->aura_window());
+      restore_windows_on_shelf_visible_->Remove(window_state->window());
     } else {
-      restore_windows_on_shelf_visible_->Add(
-          window_state->window()->aura_window());
+      restore_windows_on_shelf_visible_->Add(window_state->window());
     }
     return;
   }
@@ -540,7 +539,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
       std::unique_ptr<aura::WindowTracker> restore_windows(
           std::move(restore_windows_on_shelf_visible_));
       for (aura::Window* window : restore_windows->windows())
-        RestorePanel(WmWindow::Get(window));
+        RestorePanel(window);
     }
     return;
   }
@@ -573,33 +572,33 @@ void PanelLayoutManager::OnShelfIconPositionsChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager private implementation:
 
-void PanelLayoutManager::MinimizePanel(WmWindow* panel) {
+void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
   // Clusterfuzz can trigger panel accelerators before the shelf is created.
   // TODO(jamescook): Revert this after http://crbug.com/648964 is fixed.
   if (!shelf_)
     return;
 
-  panel->SetVisibilityAnimationType(
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-  ui::Layer* layer = panel->GetLayer();
+  ::wm::SetWindowVisibilityAnimationType(
+      panel, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+  ui::Layer* layer = panel->layer();
   ui::ScopedLayerAnimationSettings panel_slide_settings(layer->GetAnimator());
   panel_slide_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   panel_slide_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
-  gfx::Rect bounds(panel->GetBounds());
+  gfx::Rect bounds(panel->bounds());
   bounds.Offset(GetSlideInAnimationOffset(shelf_->GetAlignment()));
-  panel->SetBoundsDirect(bounds);
+  SetChildBoundsDirect(panel, bounds);
   panel->Hide();
   layer->SetOpacity(0);
-  if (panel->IsActive())
-    panel->Deactivate();
+  if (::wm::IsActiveWindow(panel))
+    ::wm::DeactivateWindow(panel);
   Relayout();
 }
 
-void PanelLayoutManager::RestorePanel(WmWindow* panel) {
-  PanelList::iterator found =
-      std::find(panel_windows_.begin(), panel_windows_.end(), panel);
+void PanelLayoutManager::RestorePanel(aura::Window* panel) {
+  PanelList::iterator found = std::find(
+      panel_windows_.begin(), panel_windows_.end(), WmWindow::Get(panel));
   DCHECK(found != panel_windows_.end());
   found->slide_in = true;
   Relayout();
@@ -736,7 +735,8 @@ void PanelLayoutManager::Relayout() {
       layer->SetOpacity(0);
       gfx::Rect initial_bounds(bounds);
       initial_bounds.Offset(GetSlideInAnimationOffset(shelf_->alignment()));
-      visible_panels[i].window->SetBoundsDirect(initial_bounds);
+      SetChildBoundsDirect(visible_panels[i].window->aura_window(),
+                           initial_bounds);
       // Set on shelf so that the panel animates into its target position.
       on_shelf = true;
     }
@@ -748,7 +748,7 @@ void PanelLayoutManager::Relayout() {
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       panel_slide_settings.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
-      visible_panels[i].window->SetBoundsDirect(bounds);
+      SetChildBoundsDirect(visible_panels[i].window->aura_window(), bounds);
       if (slide_in) {
         layer->SetOpacity(1);
         visible_panels[i].window->Show();
@@ -756,7 +756,7 @@ void PanelLayoutManager::Relayout() {
     } else {
       // If the shelf moved don't animate, move immediately to the new
       // target location.
-      visible_panels[i].window->SetBoundsDirect(bounds);
+      SetChildBoundsDirect(visible_panels[i].window->aura_window(), bounds);
     }
   }
 
@@ -871,7 +871,7 @@ void PanelLayoutManager::UpdateCallouts() {
     callout_bounds = callout_widget_window->GetParent()->ConvertRectFromScreen(
         callout_bounds);
 
-    callout_widget_window->SetBoundsDirect(callout_bounds);
+    SetChildBoundsDirect(callout_widget_window->aura_window(), callout_bounds);
     DCHECK_EQ(panel_container_, callout_widget_window->GetParent());
     DCHECK_EQ(panel_container_, panel->GetParent());
     panel_container_->StackChildAbove(callout_widget_window, panel);
@@ -928,13 +928,15 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
       // Ensure panels are not pushed above the parent boundaries, shrink any
       // panels that violate this constraint.
       if (delta > 0) {
-        panel->SetBoundsDirect(
+        SetChildBoundsDirect(
+            panel->aura_window(),
             gfx::Rect(panel_bounds.x(), panel_bounds.y() + delta,
                       panel_bounds.width(), panel_bounds.height() - delta));
       }
     } else if (panel_state->HasRestoreBounds()) {
       // Keyboard hidden, restore original bounds if they exist.
-      panel->SetBoundsDirect(panel_state->GetRestoreBoundsInScreen());
+      SetChildBoundsDirect(panel->aura_window(),
+                           panel_state->GetRestoreBoundsInScreen());
     }
   }
   // This bounds change will have caused a change to the Shelf which does not
