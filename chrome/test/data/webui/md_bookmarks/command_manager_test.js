@@ -8,14 +8,6 @@ suite('<bookmarks-command-manager>', function() {
   var lastCommand;
   var lastCommandIds;
 
-  function assertLastCommand(command, ids) {
-    assertEquals(lastCommand, command);
-    if (ids)
-      assertDeepEquals(normalizeSet(lastCommandIds), ids);
-    lastCommand = null;
-    lastCommandIds = null;
-  }
-
   suiteSetup(function() {
     // Overwrite bookmarkManagerPrivate APIs which will crash if called with
     // fake data.
@@ -49,14 +41,7 @@ suite('<bookmarks-command-manager>', function() {
     });
     bookmarks.Store.instance_ = store;
 
-    commandManager = document.createElement('bookmarks-command-manager');
-
-    var realHandle = commandManager.handle.bind(commandManager);
-    commandManager.handle = function(command, itemIds) {
-      lastCommand = command;
-      lastCommandIds = itemIds;
-      realHandle(command, itemIds);
-    };
+    commandManager = new TestCommandManager();
     replaceBody(commandManager);
 
     Polymer.dom.flush();
@@ -92,21 +77,21 @@ suite('<bookmarks-command-manager>', function() {
     store.notifyObservers();
 
     MockInteractions.pressAndReleaseKeyOn(document, 67, modifier, 'c');
-    assertLastCommand('copy', ['13']);
+    commandManager.assertLastCommand('copy', ['13']);
 
     // Doesn't trigger when a folder is selected.
     store.data.selection.items = new Set(['11']);
     store.notifyObservers();
 
     MockInteractions.pressAndReleaseKeyOn(document, 67, modifier, 'c');
-    assertLastCommand(null);
+    commandManager.assertLastCommand(null);
 
     // Doesn't trigger when nothing is selected.
     store.data.selection.items = new Set();
     store.notifyObservers();
 
     MockInteractions.pressAndReleaseKeyOn(document, 67, modifier, 'c');
-    assertLastCommand(null);
+    commandManager.assertLastCommand(null);
   });
 
   test('delete command triggers', function() {
@@ -114,7 +99,7 @@ suite('<bookmarks-command-manager>', function() {
     store.notifyObservers();
 
     MockInteractions.pressAndReleaseKeyOn(document, 46, '', 'Delete');
-    assertLastCommand('delete', ['12', '13']);
+    commandManager.assertLastCommand('delete', ['12', '13']);
   });
 
   test('edit command triggers', function() {
@@ -125,7 +110,7 @@ suite('<bookmarks-command-manager>', function() {
     store.notifyObservers();
 
     MockInteractions.pressAndReleaseKeyOn(document, keyCode, '', key);
-    assertLastCommand('edit', ['11']);
+    commandManager.assertLastCommand('edit', ['11']);
   });
 
   test('does not delete children at same time as ancestor', function() {
@@ -159,7 +144,7 @@ suite('<bookmarks-command-manager>', function() {
     };
 
     MockInteractions.pressAndReleaseKeyOn(document, 13, 'shift', 'Enter');
-    assertLastCommand(Command.OPEN_NEW_WINDOW, ['12', '13']);
+    commandManager.assertLastCommand(Command.OPEN_NEW_WINDOW, ['12', '13']);
     assertDeepEquals(['http://121/', 'http://13/'], lastCreate.url);
     assertFalse(lastCreate.incognito);
   });

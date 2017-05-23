@@ -22,6 +22,7 @@ MaterialBookmarksBrowserTest.prototype = {
                          switchValue: 'MaterialDesignBookmarks'}],
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'test_command_manager.js',
     'test_store.js',
     'test_util.js',
   ]),

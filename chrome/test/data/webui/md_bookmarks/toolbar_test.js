@@ -5,6 +5,11 @@
 suite('<bookmarks-toolbar>', function() {
   var toolbar;
   var store;
+  var commandManager;
+
+  suiteSetup(function() {
+    chrome.bookmarkManagerPrivate.removeTrees = function() {};
+  });
 
   setup(function() {
     store = new bookmarks.TestStore({
@@ -21,6 +26,9 @@ suite('<bookmarks-toolbar>', function() {
 
     toolbar = document.createElement('bookmarks-toolbar');
     replaceBody(toolbar);
+
+    commandManager = new TestCommandManager();
+    document.body.appendChild(commandManager);
   });
 
   test('selecting multiple items shows toolbar overlay', function() {
@@ -33,5 +41,16 @@ suite('<bookmarks-toolbar>', function() {
     store.data.selection.items = new Set(['2', '3']);
     store.notifyObservers();
     assertTrue(toolbar.showSelectionOverlay);
+  });
+
+  test('clicking overlay delete button triggers a delete command', function() {
+    store.data.selection.items = new Set(['2', '3']);
+    store.notifyObservers();
+
+    Polymer.dom.flush();
+    MockInteractions.tap(
+        toolbar.$$('cr-toolbar-selection-overlay').deleteButton);
+
+    commandManager.assertLastCommand(Command.DELETE, ['2', '3']);
   });
 });

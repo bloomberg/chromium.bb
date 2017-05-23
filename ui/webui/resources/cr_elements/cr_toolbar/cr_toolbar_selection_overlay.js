@@ -19,6 +19,11 @@ Polymer({
     selectionLabel: String,
   },
 
+  /** @return {PaperButtonElement} */
+  get deleteButton() {
+    return this.$.delete;
+  },
+
   /** @private */
   onClearSelectionTap_: function() {
     this.fire('clear-selected-items');

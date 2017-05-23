@@ -99,6 +99,14 @@ Polymer({
   },
 
   /** @private */
+  onDeleteSelectionTap_: function() {
+    var selection = this.getState().selection.items;
+    var commandManager = bookmarks.CommandManager.getInstance();
+    assert(commandManager.canExecute(Command.DELETE, selection));
+    commandManager.handle(Command.DELETE, selection);
+  },
+
+  /** @private */
   onClearSelectionTap_: function() {
     this.dispatch(bookmarks.actions.deselectItems());
   },

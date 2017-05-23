@@ -150,6 +150,7 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
         '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):chrome_extensions',
+        'command_manager',
         'edit_dialog',
         'store_client',
       ],
