@@ -356,6 +356,9 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
       life_cycle_->GetState() == RemoteDeviceLifeCycle::State::STOPPED)
     return ScreenlockState::INACTIVE;
 
+  if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
+    return ScreenlockState::NO_BLUETOOTH;
+
   if (IsUnlockAllowed())
     return ScreenlockState::AUTHENTICATED;
 
@@ -368,9 +371,6 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
       life_cycle_->GetState() ==
           RemoteDeviceLifeCycle::State::FINDING_CONNECTION)
     return ScreenlockState::BLUETOOTH_CONNECTING;
-
-  if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
-    return ScreenlockState::NO_BLUETOOTH;
 
   Messenger* messenger = GetMessenger();
   if (screenlock_type_ == ProximityAuthSystem::SIGN_IN && messenger &&

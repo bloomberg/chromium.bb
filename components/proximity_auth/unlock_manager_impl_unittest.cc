@@ -519,6 +519,18 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
+       OnLifeCycleStateChanged_FindingConnection_BluetoothAdapterOff) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::NO_BLUETOOTH));
+  ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(false));
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
+  unlock_manager_->OnLifeCycleStateChanged();
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_Authenticating_UpdatesScreenlockState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
