@@ -165,7 +165,7 @@ class PasswordProtectionServiceTest : public testing::Test {
         .WillRepeatedly(testing::Return(match_whitelist));
 
     request_ = new PasswordProtectionRequest(
-        target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
+        nullptr, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
         std::string(), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -178,7 +178,7 @@ class PasswordProtectionServiceTest : public testing::Test {
         .WillRepeatedly(testing::Return(match_whitelist));
 
     request_ = new PasswordProtectionRequest(
-        target_url, GURL(), GURL(), std::string(kSavedDomain),
+        nullptr, target_url, GURL(), GURL(), std::string(kSavedDomain),
         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -396,28 +396,42 @@ TEST_F(PasswordProtectionServiceTest, TestRemoveCachedVerdictOnURLsDeleted) {
   EXPECT_EQ(0U, GetStoredVerdictCount());
 }
 
-TEST_F(PasswordProtectionServiceTest,
-       TestNoRequestCreatedIfMainFrameURLIsNotValid) {
-  ASSERT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
-  password_protection_service_->MaybeStartPasswordFieldOnFocusRequest(
-      GURL(), GURL("http://foo.com/submit"), GURL("http://foo.com/frame"));
-  EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
-}
+TEST_F(PasswordProtectionServiceTest, VerifyCanGetReputationOfURL) {
+  // Invalid main frame URL.
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(GURL()));
 
-TEST_F(PasswordProtectionServiceTest,
-       TestNoRequestCreatedIfMainFrameURLIsNotHttpOrHttps) {
-  ASSERT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
-  // If main frame url is data url, don't create request.
-  password_protection_service_->MaybeStartPasswordFieldOnFocusRequest(
-      GURL("data:text/html, <p>hellow"), GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"));
-  EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+  // Main frame URL scheme is not HTTP or HTTPS.
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("data:text/html, <p>hellow")));
 
-  // If main frame url is ftp, don't create request.
-  password_protection_service_->MaybeStartPasswordFieldOnFocusRequest(
-      GURL("ftp://foo.com:21"), GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"));
-  EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+  // Main frame URL is a local host.
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://localhost:80")));
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://127.0.0.1")));
+
+  // Main frame URL is a private IP address or anything in an IANA-reserved
+  // range.
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://192.168.1.0/")));
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://10.0.1.0/")));
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://FEED::BEEF")));
+
+  // Main frame URL is a no-yet-assigned y ICANN gTLD.
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://intranet")));
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://host.intranet.example")));
+
+  // Main frame URL is a dotless domain.
+  EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://go/example")));
+
+  // Main frame URL is anything else.
+  EXPECT_TRUE(PasswordProtectionService::CanGetReputationOfURL(
+      GURL("http://www.chromium.org")));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
@@ -527,8 +541,9 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
       .WillRepeatedly(testing::Return(false));
   password_protection_service_->StartRequest(
-      target_url, GURL("http://foo.com/submit"), GURL("http://foo.com/frame"),
-      std::string(), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+      nullptr, target_url, GURL("http://foo.com/submit"),
+      GURL("http://foo.com/frame"), std::string(),
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();

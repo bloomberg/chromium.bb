@@ -21,6 +21,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace history {
 class HistoryService;
 }
@@ -61,6 +65,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     SERVICE_DESTROYED = 11,
     DISABLED_DUE_TO_FEATURE_DISABLED = 12,
     DISABLED_DUE_TO_USER_POPULATION = 13,
+    URL_NOT_VALID_FOR_REPUTATION_COMPUTING = 14,
     MAX_OUTCOME
   };
   PasswordProtectionService(
@@ -94,25 +99,43 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
   // record keeping.
-  void StartRequest(const GURL& main_frame_url,
+  void StartRequest(content::WebContents* web_contents,
+                    const GURL& main_frame_url,
                     const GURL& password_form_action,
                     const GURL& password_form_frame_url,
                     const std::string& saved_domain,
                     LoginReputationClientRequest::TriggerType type);
 
   virtual void MaybeStartPasswordFieldOnFocusRequest(
+      content::WebContents* web_contents,
       const GURL& main_frame_url,
       const GURL& password_form_action,
       const GURL& password_form_frame_url);
 
   virtual void MaybeStartProtectedPasswordEntryRequest(
+      content::WebContents* web_contents,
       const GURL& main_frame_url,
       const std::string& saved_domain);
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
+  // Safe Browsing backend cannot get a reliable reputation of a URL if
+  // (1) URL is not valid
+  // (2) URL doesn't have http or https scheme
+  // (3) It maps to a local host.
+  // (4) Its hostname is an IP Address in an IANA-reserved range.
+  // (5) Its hostname is a not-yet-assigned by ICANN gTLD.
+  // (6) Its hostname is a dotless domain.
+  static bool CanGetReputationOfURL(const GURL& url);
+
  protected:
   friend class PasswordProtectionRequest;
+
+  // Chrome can send password protection ping if it is allowed by Finch config
+  // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
+  // Safe Browsing is not able to compute reputation of a private IP or
+  // a local host.)
+  bool CanSendPing(const base::Feature& feature, const GURL& main_frame_url);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.
@@ -211,8 +234,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
 
-  static void RecordPingingDisabledReason(const base::Feature& feature,
-                                          RequestOutcome reason);
+  static void RecordNoPingingReason(const base::Feature& feature,
+                                    RequestOutcome reason);
   // Number of verdict stored for this profile.
   int stored_verdict_count_;
 
