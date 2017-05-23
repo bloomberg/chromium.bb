@@ -387,11 +387,10 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
     event_type = WebInputEvent::kMouseUp;
 
   WebMouseEvent mouse_event(
-      event_type, gesture_event, WebPointerProperties::Button::kRight,
-      /* clickCount */ 1,
+      event_type, gesture_event, WebPointerProperties::Button::kNoButton,
+      /* clickCount */ 0,
       static_cast<WebInputEvent::Modifiers>(
-          modifiers | WebInputEvent::Modifiers::kRightButtonDown |
-          WebInputEvent::kIsCompatibilityEventForTouch),
+          modifiers | WebInputEvent::kIsCompatibilityEventForTouch),
       gesture_event.TimeStampSeconds());
 
   if (!suppress_mouse_events_from_gestures_ && frame_->View()) {
