@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_combobox_model.h"
@@ -68,6 +69,11 @@ base::string16 ContactInfoEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
   if (!profile_to_edit_)
     return base::string16();
+
+  if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
+    return data_util::GetFormattedPhoneNumberForDisplay(
+        *profile_to_edit_, state()->GetApplicationLocale());
+  }
 
   return profile_to_edit_->GetInfo(autofill::AutofillType(type),
                                    state()->GetApplicationLocale());

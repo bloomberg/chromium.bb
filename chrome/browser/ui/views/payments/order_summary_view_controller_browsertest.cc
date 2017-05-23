@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   EXPECT_EQ(
       base::ASCIIToUTF16("ACME, 123 Main Street, Unit 1, Greensdale, MI 48838"),
       shipping_address_labels[1]);
-  EXPECT_EQ(base::ASCIIToUTF16("13105557889"), shipping_address_labels[2]);
+  EXPECT_EQ(base::ASCIIToUTF16("+1 310-555-7889"), shipping_address_labels[2]);
   std::vector<base::string16> shipping_option_labels =
       GetShippingOptionLabelValues(
           DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION);
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   EXPECT_EQ(base::ASCIIToUTF16(
                 "Underworld, 666 Erebus St., Apt 8, Elysium, CA 91111"),
             shipping_address_labels[1]);
-  EXPECT_EQ(base::ASCIIToUTF16("16502111111"), shipping_address_labels[2]);
+  EXPECT_EQ(base::ASCIIToUTF16("+1 650-211-1111"), shipping_address_labels[2]);
   shipping_option_labels = GetShippingOptionLabelValues(
       DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION);
   EXPECT_EQ(base::ASCIIToUTF16("Free shipping in California"),

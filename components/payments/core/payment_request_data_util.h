@@ -52,6 +52,11 @@ void ParseBasicCardSupportedNetworks(
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_supported_networks);
 
+// Returns the phone number from the given |profile| formatted for display.
+base::string16 GetFormattedPhoneNumberForDisplay(
+    const autofill::AutofillProfile& profile,
+    const std::string& locale);
+
 // Formats the given number |phone_number| to
 // i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL format
 // by using i18n::phonenumbers::PhoneNumberUtil::Format.
