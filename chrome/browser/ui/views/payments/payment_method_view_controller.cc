@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
@@ -116,9 +117,8 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     }
     if (!instrument_->IsCompleteForPayment()) {
       std::unique_ptr<views::Label> missing_info_label =
-          base::MakeUnique<views::Label>(instrument_->GetMissingInfoLabel());
-      missing_info_label->SetFontList(
-          missing_info_label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+          base::MakeUnique<views::Label>(instrument_->GetMissingInfoLabel(),
+                                         CONTEXT_DEPRECATED_SMALL);
       missing_info_label->SetEnabledColor(
           missing_info_label->GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_LinkEnabled));

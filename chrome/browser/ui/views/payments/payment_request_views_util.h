@@ -125,6 +125,11 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(
 // Creates a label with a bold font.
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
 
+// Creates a label with a medium-weight font, with appropriate fallbacks for
+// platforms that have no medium font, or where a user has configured their
+// default font with a heavier weight.
+std::unique_ptr<views::Label> CreateMediumLabel(const base::string16& text);
+
 // Creates a 2 line label containing |shipping_option|'s label and amount. If
 // |emphasize_label| is true, the label part will be in medium weight.
 std::unique_ptr<views::View> CreateShippingOptionLabel(

@@ -30,19 +30,20 @@ namespace {
 enum class DialogAction {
   INTERACTIVE,  // Run interactively.
   CLOSE_NOW,    // Call Widget::CloseNow().
+  CLOSE,        // Call Widget::Close().
 };
 
 // Helper to break out of the nested run loop that runs a test dialog.
 class WidgetCloser : public views::WidgetObserver {
  public:
   WidgetCloser(views::Widget* widget, DialogAction action)
-      : widget_(widget), weak_ptr_factory_(this) {
+      : action_(action), widget_(widget), weak_ptr_factory_(this) {
     widget->AddObserver(this);
     if (action == DialogAction::INTERACTIVE)
       return;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&WidgetCloser::CloseNow,
+        FROM_HERE, base::BindOnce(&WidgetCloser::CloseAction,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -54,11 +55,24 @@ class WidgetCloser : public views::WidgetObserver {
   }
 
  private:
-  void CloseNow() {
-    if (widget_)
-      widget_->CloseNow();
+  void CloseAction() {
+    if (!widget_)
+      return;
+
+    switch (action_) {
+      case DialogAction::CLOSE_NOW:
+        widget_->CloseNow();
+        break;
+      case DialogAction::CLOSE:
+        widget_->Close();
+        break;
+      case DialogAction::INTERACTIVE:
+        NOTREACHED();
+        break;
+    }
   }
 
+  const DialogAction action_;
   views::Widget* widget_;
 
   base::WeakPtrFactory<WidgetCloser> weak_ptr_factory_;
@@ -124,11 +138,20 @@ void TestBrowserDialog::RunDialog() {
   // views dialog, or if more than one child dialog was shown.
   ASSERT_EQ(1u, added.size());
 
-  const DialogAction action = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                  internal::kInteractiveSwitch)
-                                  ? DialogAction::INTERACTIVE
-                                  : DialogAction::CLOSE_NOW;
+  DialogAction action = DialogAction::CLOSE_NOW;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          internal::kInteractiveSwitch)) {
+    action = DialogAction::INTERACTIVE;
+  } else if (AlwaysCloseAsynchronously()) {
+    // TODO(tapted): Iterate over close methods when non-interactive for greater
+    // test coverage.
+    action = DialogAction::CLOSE;
+  }
 
   WidgetCloser closer(added[0], action);
   ::test::RunTestInteractively();
+}
+
+bool TestBrowserDialog::AlwaysCloseAsynchronously() {
+  return false;
 }
