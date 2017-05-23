@@ -4,6 +4,8 @@
 
 package org.chromium.components.background_task_scheduler;
 
+import android.os.Build;
+
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
@@ -125,6 +127,8 @@ public class BackgroundTaskGcmTaskService extends GcmTaskService {
 
     @Override
     public void onInitializeTasks() {
+        // Ignore the event on OSs supporting JobScheduler.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return;
         BackgroundTaskSchedulerFactory.getScheduler().reschedule(
                 ContextUtils.getApplicationContext());
     }

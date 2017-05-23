@@ -11,6 +11,9 @@ import com.google.android.gms.gcm.Task;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Custom shadow for the OS's GcmNetworkManager.  We use this to hook the call to GcmNetworkManager
  * to make sure it was invoked as we expect.
@@ -19,6 +22,11 @@ import org.robolectric.annotation.Implements;
 public class ShadowGcmNetworkManager {
     private Task mTask;
     private Task mCanceledTask;
+    private Set<String> mCanceledTaskTags;
+
+    public ShadowGcmNetworkManager() {
+        mCanceledTaskTags = new HashSet<>();
+    }
 
     @Implementation
     public void schedule(Task task) {
@@ -33,6 +41,7 @@ public class ShadowGcmNetworkManager {
             mCanceledTask = mTask;
             mTask = null;
         }
+        mCanceledTaskTags.add(tag);
     }
 
     public Task getScheduledTask() {
@@ -43,8 +52,13 @@ public class ShadowGcmNetworkManager {
         return mCanceledTask;
     }
 
+    public Set<String> getCanceledTaskTags() {
+        return mCanceledTaskTags;
+    }
+
     public void clear() {
         mTask = null;
         mCanceledTask = null;
+        mCanceledTaskTags = new HashSet<>();
     }
 }
