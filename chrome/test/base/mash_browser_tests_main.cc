@@ -153,9 +153,11 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
 
 std::unique_ptr<content::ServiceManagerConnection>
     CreateServiceManagerConnection(MashTestLauncherDelegate* delegate) {
+  delegate->GetMojoTestConnectorForSingleProcess()->Init();
   std::unique_ptr<content::ServiceManagerConnection> connection(
       content::ServiceManagerConnection::Create(
-          delegate->GetMojoTestConnectorForSingleProcess()->Init(),
+          delegate->GetMojoTestConnectorForSingleProcess()
+              ->InitBackgroundServiceManager(),
           base::ThreadTaskRunnerHandle::Get()));
   connection->Start();
   connection->GetConnector()->StartService(mash::session::mojom::kServiceName);

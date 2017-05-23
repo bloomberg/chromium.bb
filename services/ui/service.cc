@@ -100,9 +100,9 @@ Service::~Service() {
 #endif
 }
 
-void Service::InitializeResources(service_manager::Connector* connector) {
+bool Service::InitializeResources(service_manager::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
-    return;
+    return true;
 
   std::set<std::string> resource_paths;
   resource_paths.insert(kResourceFileStrings);
@@ -112,7 +112,10 @@ void Service::InitializeResources(service_manager::Connector* connector) {
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
   connector->BindInterface(catalog::mojom::kServiceName, &directory);
-  CHECK(loader.OpenFiles(std::move(directory), resource_paths));
+  if (!loader.OpenFiles(std::move(directory), resource_paths)) {
+    LOG(ERROR) << "Service failed to open resource files.";
+    return false;
+  }
 
   ui::RegisterPathProvider();
 
@@ -125,6 +128,7 @@ void Service::InitializeResources(service_manager::Connector* connector) {
                          ui::SCALE_FACTOR_100P);
   rb.AddDataPackFromFile(loader.TakeFile(kResourceFile200),
                          ui::SCALE_FACTOR_200P);
+  return true;
 }
 
 Service::UserState* Service::GetUserState(
@@ -156,7 +160,11 @@ void Service::OnStart() {
   if (test_config_)
     ui::test::EnableTestConfigForPlatformWindows();
 
-  InitializeResources(context()->connector());
+  // If resources are unavailable do not complete start-up.
+  if (!InitializeResources(context()->connector())) {
+    context()->QuitNow();
+    return;
+  }
 
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the

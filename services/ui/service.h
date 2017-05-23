@@ -87,7 +87,9 @@ class Service : public service_manager::Service,
 
   using UserIdToUserState = std::map<ws::UserId, std::unique_ptr<UserState>>;
 
-  void InitializeResources(service_manager::Connector* connector);
+  // Attempts to initialize the resource bundle. Returns true if successful,
+  // otherwise false if resources cannot be loaded.
+  bool InitializeResources(service_manager::Connector* connector);
 
   // Returns the user specific state for the user id of |remote_identity|.
   // Service owns the return value.

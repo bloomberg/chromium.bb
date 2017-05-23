@@ -30,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
+#include "services/service_manager/runner/common/switches.h"
 #include "ui/base/test/ui_controls.h"
 
 #if defined(OS_MACOSX)
@@ -63,6 +64,12 @@ ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
 ChromeTestSuiteRunner::~ChromeTestSuiteRunner() {}
 
 int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
+#if defined(USE_AURA)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(service_manager::switches::kServicePipeToken))
+    content::GetContentMainParams()->env_mode = aura::Env::Mode::MUS;
+#endif  // defined(USE_AURA)
+
   return ChromeTestSuite(argc, argv).Run();
 }
 
