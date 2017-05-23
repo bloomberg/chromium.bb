@@ -13,8 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/tracked_objects.h"
@@ -352,11 +351,10 @@ void ApplicationContextImpl::CreateGCMDriver() {
   base::FilePath store_path;
   CHECK(PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
 
-  base::SequencedWorkerPool* worker_pool = web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       base::WrapUnique(new gcm::GCMClientFactory), GetLocalState(), store_path,
