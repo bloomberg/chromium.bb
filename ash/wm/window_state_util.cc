@@ -7,6 +7,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm_window.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -21,7 +22,7 @@ void ToggleFullScreen(wm::WindowState* window_state,
 
   if (delegate && delegate->ToggleFullscreen(window_state))
     return;
-  window_state->window()->SetFullscreen(!is_fullscreen);
+  ::wm::SetWindowFullscreen(window_state->window(), !is_fullscreen);
 }
 
 }  // namespace wm

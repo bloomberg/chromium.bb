@@ -625,11 +625,11 @@ void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
   if (IsMinimizedStateType(old_type) == IsMinimizedStateType(new_type))
     return;
 
-  auto iter =
-      std::find_if(window_list_.begin(), window_list_.end(),
-                   [window_state](std::unique_ptr<WindowSelectorItem>& item) {
-                     return item->Contains(window_state->window());
-                   });
+  auto iter = std::find_if(
+      window_list_.begin(), window_list_.end(),
+      [window_state](std::unique_ptr<WindowSelectorItem>& item) {
+        return item->Contains(WmWindow::Get(window_state->window()));
+      });
   if (iter != window_list_.end()) {
     (*iter)->OnMinimizedStateChanged();
     PositionWindows(false);

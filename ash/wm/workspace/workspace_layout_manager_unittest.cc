@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility_delegate.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -25,7 +26,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/test/test_session_controller_client.h"
-#include "ash/test/wm_window_test_api.h"
 #include "ash/test/workspace_controller_test_api.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h"
@@ -58,10 +58,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
-
-// NOTE: many of these tests use GlobalMinimumSizeLock. This is needed as the
-// tests assume a minimum size of 0x0. In mash the minimum size, for top-level
-// windows, is not 0x0, so without this the tests fails.
 
 namespace ash {
 namespace {
@@ -122,6 +118,23 @@ void DisableNewVKMode() {
 
 }  // namespace
 
+// NOTE: many of these tests use CustomFrameViewAshSizeLock. This is needed as
+// the tests assume a minimum size of 0x0. In mash the minimum size, for
+// top-level windows, is not 0x0, so without this the tests fails.
+// TODO(sky): update the tests so that this isn't necessary.
+class CustomFrameViewAshSizeLock {
+ public:
+  CustomFrameViewAshSizeLock() {
+    CustomFrameViewAsh::use_empty_minimum_size_for_test_ = true;
+  }
+  ~CustomFrameViewAshSizeLock() {
+    CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshSizeLock);
+};
+
 using WorkspaceLayoutManagerTest = test::AshTestBase;
 
 // Verifies that a window containing a restore coordinate will be restored to
@@ -129,7 +142,7 @@ using WorkspaceLayoutManagerTest = test::AshTestBase;
 // there is one).
 TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   // See comment at top of file for why this is needed.
-  WmWindowTestApi::GlobalMinimumSizeLock min_size_lock;
+  CustomFrameViewAshSizeLock min_size_lock;
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
@@ -199,7 +212,7 @@ TEST_F(WorkspaceLayoutManagerTest, NoMinimumVisibilityForPopupWindows) {
 
 TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   // See comment at top of file for why this is needed.
-  WmWindowTestApi::GlobalMinimumSizeLock min_size_lock;
+  CustomFrameViewAshSizeLock min_size_lock;
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
@@ -239,6 +252,8 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
+  // See comment at top of file for why this is needed.
+  CustomFrameViewAshSizeLock min_size_lock;
   UpdateDisplay("300x400,400x500");
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -291,6 +306,8 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
+  // See comment at top of file for why this is needed.
+  CustomFrameViewAshSizeLock min_size_lock;
   UpdateDisplay("300x400,400x500");
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -1425,7 +1442,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   DisableNewVKMode();
 
   // See comment at top of file for why this is needed.
-  WmWindowTestApi::GlobalMinimumSizeLock min_size_lock;
+  CustomFrameViewAshSizeLock min_size_lock;
 
   InitKeyboardBounds();
 
@@ -1460,7 +1477,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   DisableNewVKMode();
 
   // See comment at top of file for why this is needed.
-  WmWindowTestApi::GlobalMinimumSizeLock min_size_lock;
+  CustomFrameViewAshSizeLock min_size_lock;
   InitKeyboardBounds();
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());

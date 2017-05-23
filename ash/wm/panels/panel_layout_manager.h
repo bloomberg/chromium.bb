@@ -155,8 +155,8 @@ class ASH_EXPORT PanelLayoutManager
 
   typedef std::list<PanelInfo> PanelList;
 
-  void MinimizePanel(WmWindow* panel);
-  void RestorePanel(WmWindow* panel);
+  void MinimizePanel(aura::Window* panel);
+  void RestorePanel(aura::Window* panel);
 
   // Called whenever the panel layout might change.
   void Relayout();

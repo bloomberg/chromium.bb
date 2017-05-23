@@ -20,7 +20,6 @@ class Event;
 }
 
 namespace ash {
-
 namespace wm {
 
 // Utility functions for window activation.

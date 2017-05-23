@@ -401,7 +401,7 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(aura::Window* window_on_top) {
   for (aura::Window* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_on_top)
-      window_state->DisableAlwaysOnTop(WmWindow::Get(window_on_top));
+      window_state->DisableAlwaysOnTop(window_on_top);
     else
       window_state->RestoreAlwaysOnTop();
   }

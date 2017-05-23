@@ -175,7 +175,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 
   gfx::Rect local_bounds;
   if (update_bounds) {
-    local_bounds = state->window()->GetBounds();
+    local_bounds = state->window()->bounds();
     MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
     local_bounds.AdjustToFit(work_area_in_new_parent);
   }

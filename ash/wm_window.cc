@@ -48,39 +48,11 @@
 DECLARE_UI_CLASS_PROPERTY_TYPE(ash::WmWindow*);
 
 namespace ash {
-
+namespace {
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(WmWindow, kWmWindowKey, nullptr);
 
 static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
               "ids must match");
-
-namespace {
-
-// A tentative class to set the bounds on the window.
-// TODO(oshima): Once all logic is cleaned up, move this to the real layout
-// manager with proper friendship.
-class BoundsSetter : public aura::LayoutManager {
- public:
-  BoundsSetter() {}
-  ~BoundsSetter() override {}
-
-  // aura::LayoutManager overrides:
-  void OnWindowResized() override {}
-  void OnWindowAddedToLayout(aura::Window* child) override {}
-  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
-  void OnWindowRemovedFromLayout(aura::Window* child) override {}
-  void OnChildWindowVisibilityChanged(aura::Window* child,
-                                      bool visible) override {}
-  void SetChildBounds(aura::Window* child,
-                      const gfx::Rect& requested_bounds) override {}
-
-  void SetBounds(aura::Window* window, const gfx::Rect& bounds) {
-    SetChildBoundsDirect(window, bounds);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BoundsSetter);
-};
 
 }  // namespace
 
@@ -90,8 +62,6 @@ bool WmWindow::default_use_empty_minimum_size_for_testing_ = false;
 WmWindow::~WmWindow() {
   if (added_transient_observer_)
     ::wm::TransientWindowManager::Get(window_)->RemoveObserver(this);
-
-  window_->RemoveObserver(this);
 }
 
 // static
@@ -356,50 +326,6 @@ void WmWindow::SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
   window_->SetBounds(bounds);
 }
 
-void WmWindow::SetBoundsDirect(const gfx::Rect& bounds) {
-  BoundsSetter().SetBounds(window_, bounds);
-  wm::SnapWindowToPixelBoundary(window_);
-}
-
-void WmWindow::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
-  const int kBoundsChangeSlideDurationMs = 120;
-
-  ui::Layer* layer = window_->layer();
-  ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
-  slide_settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  slide_settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBoundsChangeSlideDurationMs));
-  SetBoundsDirect(bounds);
-}
-
-void WmWindow::SetBoundsDirectCrossFade(const gfx::Rect& bounds) {
-  const gfx::Rect old_bounds = window_->bounds();
-
-  // Create fresh layers for the window and all its children to paint into.
-  // Takes ownership of the old layer and all its children, which will be
-  // cleaned up after the animation completes.
-  // Specify |set_bounds| to true here to keep the old bounds in the child
-  // windows of |window|.
-  std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
-      ::wm::RecreateLayers(window_);
-  ui::Layer* old_layer = old_layer_owner->root();
-  DCHECK(old_layer);
-  ui::Layer* new_layer = window_->layer();
-
-  // Resize the window to the new size, which will force a layout and paint.
-  SetBoundsDirect(bounds);
-
-  // Ensure the higher-resolution layer is on top.
-  bool old_on_top = (old_bounds.width() > bounds.width());
-  if (old_on_top)
-    old_layer->parent()->StackBelow(new_layer, old_layer);
-  else
-    old_layer->parent()->StackAbove(new_layer, old_layer);
-
-  CrossFadeAnimation(window_, std::move(old_layer_owner), gfx::Tween::EASE_OUT);
-}
-
 void WmWindow::SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
                                  const display::Display& dst_display) {
   window_->SetBoundsInScreen(bounds_in_screen, dst_display);
@@ -449,18 +375,6 @@ void WmWindow::SetPreFullscreenShowState(ui::WindowShowState show_state) {
   // fullscreen.
   DCHECK_NE(show_state, ui::SHOW_STATE_MINIMIZED);
   window_->SetProperty(aura::client::kPreFullscreenShowStateKey, show_state);
-}
-
-void WmWindow::SetRestoreOverrides(const gfx::Rect& bounds_override,
-                                   ui::WindowShowState window_state_override) {
-  if (bounds_override.IsEmpty()) {
-    window_->ClearProperty(kRestoreShowStateOverrideKey);
-    window_->ClearProperty(kRestoreBoundsOverrideKey);
-    return;
-  }
-  window_->SetProperty(kRestoreShowStateOverrideKey, window_state_override);
-  window_->SetProperty(kRestoreBoundsOverrideKey,
-                       new gfx::Rect(bounds_override));
 }
 
 void WmWindow::SetLockedToRoot(bool value) {
@@ -696,26 +610,7 @@ WmWindow::WmWindow(aura::Window* window)
     : window_(window),
       use_empty_minimum_size_for_testing_(
           default_use_empty_minimum_size_for_testing_) {
-  window_->AddObserver(this);
   window_->SetProperty(kWmWindowKey, this);
-}
-
-void WmWindow::OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) {
-  if (key == aura::client::kShowStateKey) {
-    ash::wm::GetWindowState(window_)->OnWindowShowStateChanged();
-    return;
-  }
-  if (key == aura::client::kImmersiveFullscreenKey) {
-    bool enable = window_->GetProperty(aura::client::kImmersiveFullscreenKey);
-    GetWindowState()->set_in_immersive_fullscreen(enable);
-    return;
-  }
-  if (key == kWindowPinTypeKey) {
-    ash::wm::GetWindowState(window_)->OnWindowPinTypeChanged();
-    return;
-  }
 }
 
 void WmWindow::OnTransientChildAdded(aura::Window* window,

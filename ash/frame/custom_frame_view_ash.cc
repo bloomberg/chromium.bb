@@ -53,7 +53,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_ = window_state;
     window_state_->AddObserver(this);
-    window_state_->window()->aura_window()->AddObserver(this);
+    window_state_->window()->AddObserver(this);
 
     if (!enable_immersive)
       return;
@@ -68,7 +68,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   ~CustomFrameViewAshWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
-      window_state_->window()->aura_window()->RemoveObserver(this);
+      window_state_->window()->RemoveObserver(this);
     }
   }
 
@@ -76,10 +76,12 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   // Overridden from wm::WindowStateDelegate:
   bool ToggleFullscreen(wm::WindowState* window_state) override {
     bool enter_fullscreen = !window_state->IsFullscreen();
-    if (enter_fullscreen)
-      window_state_->window()->SetShowState(ui::SHOW_STATE_FULLSCREEN);
-    else
+    if (enter_fullscreen) {
+      window_state_->window()->SetProperty(aura::client::kShowStateKey,
+                                           ui::SHOW_STATE_FULLSCREEN);
+    } else {
       window_state->Restore();
+    }
     if (immersive_fullscreen_controller_) {
       immersive_fullscreen_controller_->SetEnabled(
           ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enter_fullscreen);
@@ -111,6 +113,9 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
 };
 
 }  // namespace
+
+// static
+bool CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::OverlayView
@@ -319,6 +324,9 @@ const char* CustomFrameViewAsh::GetClassName() const {
 }
 
 gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
+  if (use_empty_minimum_size_for_test_)
+    return gfx::Size();
+
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
   return gfx::Size(
       std::max(header_view_->GetMinimumWidth(), min_client_view_size.width()),

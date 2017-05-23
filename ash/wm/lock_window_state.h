@@ -18,7 +18,7 @@ class LockWindowState : public wm::WindowState::State {
  public:
   // The |window|'s state object will be modified to use this new window mode
   // state handler.
-  explicit LockWindowState(WmWindow* window);
+  explicit LockWindowState(aura::Window* window);
   ~LockWindowState() override;
 
   // WindowState::State overrides:
@@ -30,7 +30,7 @@ class LockWindowState : public wm::WindowState::State {
   void DetachState(wm::WindowState* window_state) override;
 
   // Creates new LockWindowState instance and attaches it to |window|.
-  static wm::WindowState* SetLockWindowState(WmWindow* window);
+  static wm::WindowState* SetLockWindowState(aura::Window* window);
 
  private:
   // Updates the window to |new_state_type| and resulting bounds:
