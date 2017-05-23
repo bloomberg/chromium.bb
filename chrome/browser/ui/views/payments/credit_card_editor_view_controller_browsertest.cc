@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
 
   SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
                           autofill::CREDIT_CARD_NAME_FULL);
-  SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111111"),
+  SetEditorTextfieldValue(base::ASCIIToUTF16(" 4111 1111-1111 1111-"),
                           autofill::CREDIT_CARD_NUMBER);
   SetComboboxValue(base::ASCIIToUTF16("05"), autofill::CREDIT_CARD_EXP_MONTH);
   SetComboboxValue(base::ASCIIToUTF16("2026"),
@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
 
   EXPECT_EQ(base::ASCIIToUTF16("Test User"),
             GetEditorTextfieldValue(autofill::CREDIT_CARD_NAME_FULL));
-  EXPECT_EQ(base::ASCIIToUTF16("4111111111111111"),
+  EXPECT_EQ(base::ASCIIToUTF16("4111 1111 1111 1111"),
             GetEditorTextfieldValue(autofill::CREDIT_CARD_NUMBER));
   EXPECT_EQ(base::ASCIIToUTF16("01"),
             GetComboboxValue(autofill::CREDIT_CARD_EXP_MONTH));

@@ -184,6 +184,26 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ExpirationDateValidationDelegate);
 };
 
+// Formats card number. For example, "4111111111111111" is formatted into
+// "4111 1111 1111 1111".
+base::string16 FormatCardNumber(const base::string16& text) {
+  base::string16 number = autofill::CreditCard::StripSeparators(text);
+
+  std::vector<size_t> positions = {4U, 9U, 14U};
+  if (autofill::CreditCard::GetCardNetwork(number) ==
+      autofill::kAmericanExpressCard) {
+    positions = {4U, 11U};
+  }
+
+  static const base::char16 kSeparator = base::ASCIIToUTF16(" ")[0];
+  for (size_t i : positions) {
+    if (number.size() > i)
+      number.insert(i, 1U, kSeparator);
+  }
+
+  return number;
+}
+
 }  // namespace
 
 CreditCardEditorViewController::CreditCardEditorViewController(
@@ -369,8 +389,10 @@ base::string16 CreditCardEditorViewController::GetInitialValueForType(
   if (!credit_card_to_edit_ || type == kBillingAddressType)
     return base::string16();
 
-  return credit_card_to_edit_->GetInfo(autofill::AutofillType(type),
-                                       state()->GetApplicationLocale());
+  base::string16 info = credit_card_to_edit_->GetInfo(
+      autofill::AutofillType(type), state()->GetApplicationLocale());
+
+  return type == autofill::CREDIT_CARD_NUMBER ? FormatCardNumber(info) : info;
 }
 
 bool CreditCardEditorViewController::ValidateModelAndSave() {
@@ -590,6 +612,17 @@ CreditCardEditorViewController::CreditCardValidationDelegate::
                                supported_card_networks.end()) {}
 CreditCardEditorViewController::CreditCardValidationDelegate::
     ~CreditCardValidationDelegate() {}
+
+bool CreditCardEditorViewController::CreditCardValidationDelegate::
+    ShouldFormat() {
+  return field_.type == autofill::CREDIT_CARD_NUMBER;
+}
+
+base::string16
+CreditCardEditorViewController::CreditCardValidationDelegate::Format(
+    const base::string16& text) {
+  return FormatCardNumber(text);
+}
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
     IsValidTextfield(views::Textfield* textfield) {
