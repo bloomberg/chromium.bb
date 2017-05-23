@@ -803,9 +803,9 @@ bool InputMethodController::SetSelectionOffsets(
   if (range.IsNull())
     return false;
 
-  return GetFrame().Selection().SetSelectedRange(
-      range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::kNonDirectional,
-      options);
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(), options);
+  return true;
 }
 
 bool InputMethodController::SetEditableSelectionOffsets(
