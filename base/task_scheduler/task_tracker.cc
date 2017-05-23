@@ -388,6 +388,10 @@ bool TaskTracker::IsPostingBlockShutdownTaskAfterShutdownAllowed() {
 }
 #endif
 
+int TaskTracker::GetNumPendingUndelayedTasksForTesting() const {
+  return subtle::Acquire_Load(&num_pending_undelayed_tasks_);
+}
+
 bool TaskTracker::BeforePostTask(TaskShutdownBehavior shutdown_behavior) {
   if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
     // BLOCK_SHUTDOWN tasks block shutdown between the moment they are posted
