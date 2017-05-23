@@ -90008,6 +90008,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="PageLoad.PageTiming.ForegroundDuration"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsAfterRedirectToNonAmpPage"
+    separator=".">
+  <suffix name="RedirectToNonAmpPage"
+      label="Limited to redirects to non-AMP pages."/>
+  <affected-histogram
+      name="PageLoad.Clients.AMP.AmpCache.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram
+      name="PageLoad.Clients.AMP.GoogleNews.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram
+      name="PageLoad.Clients.AMP.GoogleSearch.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram
+      name="PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsAtTimingCallbackDispatch"
     separator=".">
   <suffix name="AtTimingCallbackDispatch"

@@ -103,9 +103,9 @@ class AMPPageLoadMetricsObserverTest
     tracker->AddObserver(base::WrapUnique(new AMPPageLoadMetricsObserver()));
   }
 
- private:
   page_load_metrics::mojom::PageLoadTiming timing_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserverTest);
 };
 
@@ -204,4 +204,29 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
       static_cast<base::HistogramBase::Sample>(
           AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
       2);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCacheRedirect) {
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL("https://news.google.com/news/amp?page"), main_rfh());
+  navigation_simulator->Redirect(GURL("http://www.example.com/"));
+  navigation_simulator->Commit();
+  SimulateTimingUpdate(timing_);
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart", 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.GoogleNews.ParseTiming.NavigationToParseStart", 0);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart."
+      "RedirectToNonAmpPage",
+      static_cast<base::HistogramBase::Sample>(
+          timing_.parse_timing->parse_start.value().InMilliseconds()),
+      1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.AMP.GoogleNews.ParseTiming.NavigationToParseStart."
+      "RedirectToNonAmpPage",
+      static_cast<base::HistogramBase::Sample>(
+          timing_.parse_timing->parse_start.value().InMilliseconds()),
+      1);
 }
