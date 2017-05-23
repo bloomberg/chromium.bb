@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -19,27 +20,22 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
+#include "ui/message_center/message_center.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/background.h"
-#include "ui/views/controls/button/custom_button.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
-#include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
+
+const char kNotificationId[] = "chrome://settings/accessibility";
 
 enum AccessibilityState {
   A11Y_NONE = 0,
@@ -94,6 +90,17 @@ LoginStatus GetCurrentLoginStatus() {
   return Shell::Get()->session_controller()->login_status();
 }
 
+// Returns notification icon based on the enabled accessibility state.
+const gfx::VectorIcon& GetNotificationIcon(uint32_t enabled_accessibility) {
+  if ((enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED) &&
+      (enabled_accessibility & A11Y_SPOKEN_FEEDBACK)) {
+    return kSystemMenuAccessibilityIcon;
+  }
+  if (enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED)
+    return kNotificationAccessibilityBrailleIcon;
+  return kSystemMenuAccessibilityChromevoxIcon;
+}
+
 }  // namespace
 
 namespace tray {
@@ -123,84 +130,6 @@ class DefaultAccessibilityView : public TrayItemMore {
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityView);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// ash::tray::AccessibilityPopupView
-
-AccessibilityPopupView::AccessibilityPopupView(uint32_t enabled_state_bits)
-    : label_(CreateLabel(enabled_state_bits)) {}
-
-void AccessibilityPopupView::Init() {
-  set_background(views::Background::CreateThemedSolidBackground(
-      this, ui::NativeTheme::kColorId_BubbleBackground));
-
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  views::ImageView* close_button = new views::ImageView();
-  close_button->SetImage(
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
-  close_button->SetHorizontalAlignment(views::ImageView::CENTER);
-  close_button->SetVerticalAlignment(views::ImageView::CENTER);
-
-  views::ImageView* icon = new views::ImageView;
-  icon->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon, kMenuIconColor));
-
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
-
-  // Icon
-  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                     0, /* resize percent */
-                     views::GridLayout::FIXED, kNotificationIconWidth,
-                     kNotificationIconWidth);
-
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
-
-  // Contents
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     100, /* resize percent */
-                     views::GridLayout::FIXED, kTrayNotificationContentsWidth,
-                     kTrayNotificationContentsWidth);
-
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
-
-  // Close button
-  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                     0, /* resize percent */
-                     views::GridLayout::FIXED, kNotificationButtonWidth,
-                     kNotificationButtonWidth);
-
-  // Layout rows
-  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
-  layout->StartRow(0, 0);
-  layout->AddView(icon);
-  layout->AddView(label_);
-  layout->AddView(close_button);
-  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
-}
-
-views::Label* AccessibilityPopupView::CreateLabel(uint32_t enabled_state_bits) {
-  DCHECK((enabled_state_bits &
-          (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED)) != 0);
-  base::string16 text;
-  if (enabled_state_bits & A11Y_BRAILLE_DISPLAY_CONNECTED) {
-    text.append(l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED_BUBBLE));
-  }
-  if (enabled_state_bits & A11Y_SPOKEN_FEEDBACK) {
-    if (!text.empty())
-      text.append(base::ASCIIToUTF16(" "));
-    text.append(l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_BUBBLE));
-  }
-  views::Label* label = new views::Label(text);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ash::tray::AccessibilityDetailedView
@@ -305,65 +234,65 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   UserMetricsAction user_action;
   if (view == spoken_feedback_view_) {
     user_action = delegate->IsSpokenFeedbackEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK
-                      : ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK;
+                      ? UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK
+                      : UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK;
     delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
   } else if (view == high_contrast_view_) {
     user_action = delegate->IsHighContrastEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST
-                      : ash::UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST;
+                      ? UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST
+                      : UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST;
     delegate->ToggleHighContrast();
   } else if (view == screen_magnifier_view_) {
     user_action = delegate->IsMagnifierEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_MAGNIFIER
-                      : ash::UMA_STATUS_AREA_ENABLE_MAGNIFIER;
+                      ? UMA_STATUS_AREA_DISABLE_MAGNIFIER
+                      : UMA_STATUS_AREA_ENABLE_MAGNIFIER;
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
   } else if (large_cursor_view_ && view == large_cursor_view_) {
     user_action = delegate->IsLargeCursorEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_LARGE_CURSOR
-                      : ash::UMA_STATUS_AREA_ENABLE_LARGE_CURSOR;
+                      ? UMA_STATUS_AREA_DISABLE_LARGE_CURSOR
+                      : UMA_STATUS_AREA_ENABLE_LARGE_CURSOR;
     delegate->SetLargeCursorEnabled(!delegate->IsLargeCursorEnabled());
   } else if (autoclick_view_ && view == autoclick_view_) {
     user_action = delegate->IsAutoclickEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_AUTO_CLICK
-                      : ash::UMA_STATUS_AREA_ENABLE_AUTO_CLICK;
+                      ? UMA_STATUS_AREA_DISABLE_AUTO_CLICK
+                      : UMA_STATUS_AREA_ENABLE_AUTO_CLICK;
     delegate->SetAutoclickEnabled(!delegate->IsAutoclickEnabled());
   } else if (virtual_keyboard_view_ && view == virtual_keyboard_view_) {
     user_action = delegate->IsVirtualKeyboardEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD
-                      : ash::UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD;
+                      ? UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD
+                      : UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD;
     delegate->SetVirtualKeyboardEnabled(!delegate->IsVirtualKeyboardEnabled());
   } else if (caret_highlight_view_ && view == caret_highlight_view_) {
     user_action = delegate->IsCaretHighlightEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_CARET_HIGHLIGHT
-                      : ash::UMA_STATUS_AREA_ENABLE_CARET_HIGHLIGHT;
+                      ? UMA_STATUS_AREA_DISABLE_CARET_HIGHLIGHT
+                      : UMA_STATUS_AREA_ENABLE_CARET_HIGHLIGHT;
     delegate->SetCaretHighlightEnabled(!delegate->IsCaretHighlightEnabled());
   } else if (mono_audio_view_ && view == mono_audio_view_) {
     user_action = delegate->IsMonoAudioEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_MONO_AUDIO
-                      : ash::UMA_STATUS_AREA_ENABLE_MONO_AUDIO;
+                      ? UMA_STATUS_AREA_DISABLE_MONO_AUDIO
+                      : UMA_STATUS_AREA_ENABLE_MONO_AUDIO;
     delegate->SetMonoAudioEnabled(!delegate->IsMonoAudioEnabled());
   } else if (highlight_mouse_cursor_view_ &&
              view == highlight_mouse_cursor_view_) {
     user_action = delegate->IsCursorHighlightEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_HIGHLIGHT_MOUSE_CURSOR
-                      : ash::UMA_STATUS_AREA_ENABLE_HIGHLIGHT_MOUSE_CURSOR;
+                      ? UMA_STATUS_AREA_DISABLE_HIGHLIGHT_MOUSE_CURSOR
+                      : UMA_STATUS_AREA_ENABLE_HIGHLIGHT_MOUSE_CURSOR;
     delegate->SetCursorHighlightEnabled(!delegate->IsCursorHighlightEnabled());
   } else if (highlight_keyboard_focus_view_ &&
              view == highlight_keyboard_focus_view_) {
     user_action = delegate->IsFocusHighlightEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_HIGHLIGHT_KEYBOARD_FOCUS
-                      : ash::UMA_STATUS_AREA_ENABLE_HIGHLIGHT_KEYBOARD_FOCUS;
+                      ? UMA_STATUS_AREA_DISABLE_HIGHLIGHT_KEYBOARD_FOCUS
+                      : UMA_STATUS_AREA_ENABLE_HIGHLIGHT_KEYBOARD_FOCUS;
     delegate->SetFocusHighlightEnabled(!delegate->IsFocusHighlightEnabled());
   } else if (sticky_keys_view_ && view == sticky_keys_view_) {
     user_action = delegate->IsStickyKeysEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_STICKY_KEYS
-                      : ash::UMA_STATUS_AREA_ENABLE_STICKY_KEYS;
+                      ? UMA_STATUS_AREA_DISABLE_STICKY_KEYS
+                      : UMA_STATUS_AREA_ENABLE_STICKY_KEYS;
     delegate->SetStickyKeysEnabled(!delegate->IsStickyKeysEnabled());
   } else if (tap_dragging_view_ && view == tap_dragging_view_) {
     user_action = delegate->IsTapDraggingEnabled()
-                      ? ash::UMA_STATUS_AREA_DISABLE_TAP_DRAGGING
-                      : ash::UMA_STATUS_AREA_ENABLE_TAP_DRAGGING;
+                      ? UMA_STATUS_AREA_DISABLE_TAP_DRAGGING
+                      : UMA_STATUS_AREA_ENABLE_TAP_DRAGGING;
     delegate->SetTapDraggingEnabled(!delegate->IsTapDraggingEnabled());
   } else {
     return;
@@ -416,9 +345,7 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
                     kSystemTrayAccessibilityIcon,
                     UMA_ACCESSIBILITY),
       default_(NULL),
-      detailed_popup_(NULL),
       detailed_menu_(NULL),
-      request_popup_view_state_(A11Y_NONE),
       tray_icon_visible_(false),
       login_(GetCurrentLoginStatus()),
       previous_accessibility_state_(GetAccessibilityState()),
@@ -469,21 +396,12 @@ views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
 }
 
 views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
-  CHECK(detailed_popup_ == NULL);
   CHECK(detailed_menu_ == NULL);
 
-  if (request_popup_view_state_) {
-    detailed_popup_ =
-        new tray::AccessibilityPopupView(request_popup_view_state_);
-    detailed_popup_->Init();
-    request_popup_view_state_ = A11Y_NONE;
-    return detailed_popup_;
-  } else {
-    ShellPort::Get()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_DETAILED_ACCESSABILITY);
-    detailed_menu_ = CreateDetailedMenu();
-    return detailed_menu_;
-  }
+  ShellPort::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_ACCESSIBILITY);
+  detailed_menu_ = CreateDetailedMenu();
+  return detailed_menu_;
 }
 
 void TrayAccessibility::DestroyDefaultView() {
@@ -491,7 +409,6 @@ void TrayAccessibility::DestroyDefaultView() {
 }
 
 void TrayAccessibility::DestroyDetailedView() {
-  detailed_popup_ = NULL;
   detailed_menu_ = NULL;
 }
 
@@ -516,23 +433,55 @@ void TrayAccessibility::OnAccessibilityModeChanged(
   // return early if there's no change in the state that we keep track of.
   if (accessibility_state == previous_accessibility_state_)
     return;
+
+  if (detailed_menu_)
+    detailed_menu_->GetWidget()->Close();
+
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  message_center->RemoveNotification(kNotificationId, false /* by_user */);
+
   // Contains bits for spoken feedback and braille display connected currently
   // being enabled.
   uint32_t being_enabled =
       (accessibility_state & ~previous_accessibility_state_) &
       (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED);
-  if ((notify == A11Y_NOTIFICATION_SHOW) && being_enabled != A11Y_NONE) {
-    // Shows popup if |notify| is true and the spoken feedback is being enabled.
-    request_popup_view_state_ = being_enabled;
-    ShowDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+  previous_accessibility_state_ = accessibility_state;
+
+  // Shows notification if |notify| is true and the spoken feedback is being
+  // enabled or if a braille display is connected.
+  if (notify != A11Y_NOTIFICATION_SHOW || being_enabled == A11Y_NONE)
+    return;
+
+  base::string16 text;
+  base::string16 title;
+  if (being_enabled & A11Y_BRAILLE_DISPLAY_CONNECTED &&
+      being_enabled & A11Y_SPOKEN_FEEDBACK) {
+    text =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_BRAILLE_ENABLED_TITLE);
+  } else if (being_enabled & A11Y_BRAILLE_DISPLAY_CONNECTED) {
+    text = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
   } else {
-    if (detailed_popup_)
-      detailed_popup_->GetWidget()->Close();
-    if (detailed_menu_)
-      detailed_menu_->GetWidget()->Close();
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TITLE);
+    text =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
   }
 
-  previous_accessibility_state_ = accessibility_state;
+  std::unique_ptr<message_center::Notification> notification =
+      base::MakeUnique<message_center::Notification>(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
+          text,
+          gfx::Image(gfx::CreateVectorIcon(GetNotificationIcon(being_enabled),
+                                           kMenuIconSize, kMenuIconColor)),
+          base::string16(), GURL(),
+          message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                     system_notifier::kNotifierAccessibility),
+          message_center::RichNotificationData(), nullptr);
+  message_center->AddNotification(std::move(notification));
 }
 
 }  // namespace ash

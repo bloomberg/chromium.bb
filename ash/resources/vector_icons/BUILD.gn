@@ -56,6 +56,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "network_ethernet.icon",
     "network_vpn.1x.icon",
     "network_vpn.icon",
+    "notification_accessibility_braille.icon",
     "notification_display_error.icon",
     "notification_feedback_button.1x.icon",
     "notification_feedback_button.icon",
