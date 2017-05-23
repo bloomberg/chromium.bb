@@ -16,6 +16,9 @@ if (NOT EMSCRIPTEN)
   endif ()
 endif ()
 
+option(ENABLE_CCACHE "Enable ccache support." OFF)
+option(ENABLE_DISTCC "Enable distcc support." OFF)
+
 project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")

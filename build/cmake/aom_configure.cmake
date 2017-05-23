@@ -16,9 +16,6 @@ include(FindwxWidgets)
 set(AOM_SUPPORTED_CPU_TARGETS
     "arm64 armv7 armv7s generic mips32 mips64 x86 x86_64")
 
-option(ENABLE_CCACHE "Enable ccache support" OFF)
-option(ENABLE_DISTCC "Enable distcc support" OFF)
-
 # Generate the user config settings. This must occur before include of
 # aom_config_defaults.cmake (because it turns every config variable into a cache
 # variable with its own help string).
