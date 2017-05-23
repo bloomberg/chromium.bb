@@ -33,10 +33,10 @@ public class VisibleNetworks {
     private VisibleNetworks(@Nullable VisibleWifi connectedWifi,
             @Nullable VisibleCell connectedCell, @Nullable Set<VisibleWifi> allVisibleWifis,
             @Nullable Set<VisibleCell> allVisibleCells) {
-        this.mConnectedWifi = connectedWifi;
-        this.mConnectedCell = connectedCell;
-        this.mAllVisibleWifis = allVisibleWifis;
-        this.mAllVisibleCells = allVisibleCells;
+        mConnectedWifi = connectedWifi;
+        mConnectedCell = connectedCell;
+        mAllVisibleWifis = allVisibleWifis;
+        mAllVisibleCells = allVisibleCells;
     }
 
     public static VisibleNetworks create(@Nullable VisibleWifi connectedWifi,
@@ -101,11 +101,10 @@ public class VisibleNetworks {
             return false;
         }
         VisibleNetworks that = (VisibleNetworks) object;
-        return ApiCompatibilityUtils.objectEquals(this.mConnectedWifi, that.connectedWifi())
-                && ApiCompatibilityUtils.objectEquals(this.mConnectedCell, that.connectedCell())
-                && ApiCompatibilityUtils.objectEquals(this.mAllVisibleWifis, that.allVisibleWifis())
-                && ApiCompatibilityUtils.objectEquals(
-                           this.mAllVisibleCells, that.allVisibleCells());
+        return ApiCompatibilityUtils.objectEquals(mConnectedWifi, that.connectedWifi())
+                && ApiCompatibilityUtils.objectEquals(mConnectedCell, that.connectedCell())
+                && ApiCompatibilityUtils.objectEquals(mAllVisibleWifis, that.allVisibleWifis())
+                && ApiCompatibilityUtils.objectEquals(mAllVisibleCells, that.allVisibleCells());
     }
 
     private static int objectsHashCode(Object o) {
@@ -118,8 +117,8 @@ public class VisibleNetworks {
 
     @Override
     public int hashCode() {
-        return objectsHash(this.mConnectedWifi, this.mConnectedCell,
-                objectsHashCode(this.mAllVisibleWifis), objectsHashCode(this.mAllVisibleCells));
+        return objectsHash(mConnectedWifi, mConnectedCell, objectsHashCode(mAllVisibleWifis),
+                objectsHashCode(mAllVisibleCells));
     }
 
     /**
@@ -139,10 +138,10 @@ public class VisibleNetworks {
 
         private VisibleWifi(@Nullable String ssid, @Nullable String bssid, @Nullable Integer level,
                 @Nullable Long timestampMs) {
-            this.mSsid = ssid;
-            this.mBssid = bssid;
-            this.mLevel = level;
-            this.mTimestampMs = timestampMs;
+            mSsid = ssid;
+            mBssid = bssid;
+            mLevel = level;
+            mTimestampMs = timestampMs;
         }
 
         public static VisibleWifi create(@Nullable String ssid, @Nullable String bssid,
@@ -194,13 +193,34 @@ public class VisibleNetworks {
             }
 
             VisibleWifi that = (VisibleWifi) object;
-            return ApiCompatibilityUtils.objectEquals(this.mSsid, that.ssid())
-                    && ApiCompatibilityUtils.objectEquals(this.mBssid, that.bssid());
+            return ApiCompatibilityUtils.objectEquals(mSsid, that.ssid())
+                    && ApiCompatibilityUtils.objectEquals(mBssid, that.bssid());
         }
 
         @Override
         public int hashCode() {
-            return VisibleNetworks.objectsHash(this.mSsid, this.mBssid);
+            return VisibleNetworks.objectsHash(mSsid, mBssid);
+        }
+
+        /**
+         * Encodes a VisibleWifi into its corresponding PartnerLocationDescriptor.VisibleNetwork
+         * proto.
+         */
+        public PartnerLocationDescriptor.VisibleNetwork toProto(boolean connected) {
+            PartnerLocationDescriptor.VisibleNetwork visibleNetwork =
+                    new PartnerLocationDescriptor.VisibleNetwork();
+
+            PartnerLocationDescriptor.VisibleNetwork.WiFi wifi =
+                    new PartnerLocationDescriptor.VisibleNetwork.WiFi();
+
+            wifi.bssid = bssid();
+            wifi.levelDbm = level();
+
+            visibleNetwork.wifi = wifi;
+            visibleNetwork.timestampMs = timestampMs();
+            visibleNetwork.connected = connected;
+
+            return visibleNetwork;
         }
     }
 
@@ -252,15 +272,15 @@ public class VisibleNetworks {
         private Long mTimestampMs;
 
         private VisibleCell(Builder builder) {
-            this.mRadioType = builder.mRadioType;
-            this.mCellId = builder.mCellId;
-            this.mLocationAreaCode = builder.mLocationAreaCode;
-            this.mMobileCountryCode = builder.mMobileCountryCode;
-            this.mMobileNetworkCode = builder.mMobileNetworkCode;
-            this.mPrimaryScramblingCode = builder.mPrimaryScramblingCode;
-            this.mPhysicalCellId = builder.mPhysicalCellId;
-            this.mTrackingAreaCode = builder.mTrackingAreaCode;
-            this.mTimestampMs = builder.mTimestampMs;
+            mRadioType = builder.mRadioType;
+            mCellId = builder.mCellId;
+            mLocationAreaCode = builder.mLocationAreaCode;
+            mMobileCountryCode = builder.mMobileCountryCode;
+            mMobileNetworkCode = builder.mMobileNetworkCode;
+            mPrimaryScramblingCode = builder.mPrimaryScramblingCode;
+            mPhysicalCellId = builder.mPhysicalCellId;
+            mTrackingAreaCode = builder.mTrackingAreaCode;
+            mTimestampMs = builder.mTimestampMs;
         }
 
         /**
@@ -347,27 +367,71 @@ public class VisibleNetworks {
                 return false;
             }
             VisibleCell that = (VisibleCell) object;
-            return ApiCompatibilityUtils.objectEquals(this.mRadioType, that.radioType())
-                    && ApiCompatibilityUtils.objectEquals(this.mCellId, that.cellId())
+            return ApiCompatibilityUtils.objectEquals(mRadioType, that.radioType())
+                    && ApiCompatibilityUtils.objectEquals(mCellId, that.cellId())
                     && ApiCompatibilityUtils.objectEquals(
-                               this.mLocationAreaCode, that.locationAreaCode())
+                               mLocationAreaCode, that.locationAreaCode())
                     && ApiCompatibilityUtils.objectEquals(
-                               this.mMobileCountryCode, that.mobileCountryCode())
+                               mMobileCountryCode, that.mobileCountryCode())
                     && ApiCompatibilityUtils.objectEquals(
-                               this.mMobileNetworkCode, that.mobileNetworkCode())
+                               mMobileNetworkCode, that.mobileNetworkCode())
                     && ApiCompatibilityUtils.objectEquals(
-                               this.mPrimaryScramblingCode, that.primaryScramblingCode())
+                               mPrimaryScramblingCode, that.primaryScramblingCode())
+                    && ApiCompatibilityUtils.objectEquals(mPhysicalCellId, that.physicalCellId())
                     && ApiCompatibilityUtils.objectEquals(
-                               this.mPhysicalCellId, that.physicalCellId())
-                    && ApiCompatibilityUtils.objectEquals(
-                               this.mTrackingAreaCode, that.trackingAreaCode());
+                               mTrackingAreaCode, that.trackingAreaCode());
         }
 
         @Override
         public int hashCode() {
-            return VisibleNetworks.objectsHash(this.mRadioType, this.mCellId,
-                    this.mLocationAreaCode, this.mMobileCountryCode, this.mMobileNetworkCode,
-                    this.mPrimaryScramblingCode, this.mPhysicalCellId, this.mTrackingAreaCode);
+            return VisibleNetworks.objectsHash(mRadioType, mCellId, mLocationAreaCode,
+                    mMobileCountryCode, mMobileNetworkCode, mPrimaryScramblingCode, mPhysicalCellId,
+                    mTrackingAreaCode);
+        }
+
+        /**
+         * Encodes a VisibleCell into its corresponding PartnerLocationDescriptor.VisibleNetwork
+         * proto.
+         */
+        public PartnerLocationDescriptor.VisibleNetwork toProto(boolean connected) {
+            PartnerLocationDescriptor.VisibleNetwork visibleNetwork =
+                    new PartnerLocationDescriptor.VisibleNetwork();
+
+            PartnerLocationDescriptor.VisibleNetwork.Cell cell =
+                    new PartnerLocationDescriptor.VisibleNetwork.Cell();
+
+            switch (radioType()) {
+                case VisibleCell.CDMA_RADIO_TYPE:
+                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.CDMA;
+                    break;
+                case VisibleCell.GSM_RADIO_TYPE:
+                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.GSM;
+                    break;
+                case VisibleCell.LTE_RADIO_TYPE:
+                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.LTE;
+                    break;
+                case VisibleCell.WCDMA_RADIO_TYPE:
+                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.WCDMA;
+                    break;
+                case VisibleCell.UNKNOWN_RADIO_TYPE:
+                case VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE:
+                default:
+                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.UNKNOWN;
+                    break;
+            }
+            cell.cellId = cellId();
+            cell.locationAreaCode = locationAreaCode();
+            cell.mobileCountryCode = mobileCountryCode();
+            cell.mobileNetworkCode = mobileNetworkCode();
+            cell.primaryScramblingCode = primaryScramblingCode();
+            cell.physicalCellId = physicalCellId();
+            cell.trackingAreaCode = trackingAreaCode();
+
+            visibleNetwork.cell = cell;
+            visibleNetwork.timestampMs = timestampMs();
+            visibleNetwork.connected = connected;
+
+            return visibleNetwork;
         }
 
         /**
