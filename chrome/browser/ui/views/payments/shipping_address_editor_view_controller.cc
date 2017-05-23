@@ -480,7 +480,10 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    TextfieldValueChanged(views::Textfield* textfield) {
+    TextfieldValueChanged(views::Textfield* textfield, bool was_blurred) {
+  if (!was_blurred)
+    return true;
+
   base::string16 error_message;
   bool is_valid = ValidateValue(textfield->text(), &error_message);
   controller_->DisplayErrorMessageForField(field_.type, error_message);

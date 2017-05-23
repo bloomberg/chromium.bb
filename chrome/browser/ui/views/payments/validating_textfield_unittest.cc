@@ -28,8 +28,9 @@ class ValidatingTextfieldTest : public testing::Test {
     ~TestValidationDelegate() override {}
 
     // ValidationDelegate:
-    bool TextfieldValueChanged(views::Textfield* textfield) override {
-      return IsValidTextfield(textfield);
+    bool TextfieldValueChanged(views::Textfield* textfield,
+                               bool was_blurred) override {
+      return !was_blurred || IsValidTextfield(textfield);
     }
     bool ComboboxValueChanged(views::Combobox* combobox) override {
       return IsValidCombobox(combobox);

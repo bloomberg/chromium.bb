@@ -222,7 +222,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
 
 std::unique_ptr<views::ImageView> CreateInstrumentIconView(
     int icon_resource_id,
-    const base::string16& tooltip_text) {
+    const base::string16& tooltip_text,
+    float opacity) {
   std::unique_ptr<views::ImageView> card_icon_view =
       base::MakeUnique<views::ImageView>();
   card_icon_view->set_can_process_events_within_subtree(false);
@@ -230,6 +231,8 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
                                .GetImageNamed(icon_resource_id)
                                .AsImageSkia());
   card_icon_view->SetTooltipText(tooltip_text);
+  card_icon_view->SetPaintToLayer();
+  card_icon_view->layer()->SetOpacity(opacity);
   return card_icon_view;
 }
 

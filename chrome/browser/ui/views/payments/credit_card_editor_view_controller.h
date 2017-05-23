@@ -63,6 +63,10 @@ class CreditCardEditorViewController : public EditorViewController {
   std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
       const autofill::ServerFieldType& type) override;
 
+  // Selects the icon in the UI corresponding to |basic_card_network| with
+  // higher opacity. If empty string, selects none of them (all full opacity).
+  void SelectBasicCardNetworkIcon(const std::string& basic_card_network);
+
  protected:
   // PaymentRequestSheetController:
   void FillContentView(views::View* content_view) override;
@@ -77,14 +81,15 @@ class CreditCardEditorViewController : public EditorViewController {
     // passed in to validate |field| (the data will be copied to the delegate).
     CreditCardValidationDelegate(
         const EditorField& field,
-        EditorViewController* controller,
+        CreditCardEditorViewController* controller,
         const std::vector<std::string>& supported_card_networks);
     ~CreditCardValidationDelegate() override;
 
     // ValidationDelegate:
     bool IsValidTextfield(views::Textfield* textfield) override;
     bool IsValidCombobox(views::Combobox* combobox) override;
-    bool TextfieldValueChanged(views::Textfield* textfield) override;
+    bool TextfieldValueChanged(views::Textfield* textfield,
+                               bool was_blurred) override;
     bool ComboboxValueChanged(views::Combobox* combobox) override;
     void ComboboxModelChanged(views::Combobox* combobox) override {}
 
@@ -97,7 +102,7 @@ class CreditCardEditorViewController : public EditorViewController {
 
     EditorField field_;
     // Outlives this class.
-    EditorViewController* controller_;
+    CreditCardEditorViewController* controller_;
     // The list of supported basic card networks.
     std::set<std::string> supported_card_networks_;
 
@@ -120,6 +125,10 @@ class CreditCardEditorViewController : public EditorViewController {
   // If non-nullptr, a pointer to an object to be edited. Must outlive this
   // controller.
   autofill::CreditCard* credit_card_to_edit_;
+
+  // Keeps track of the card icons currently visible, keyed by basic card
+  // network.
+  std::map<std::string, views::View*> card_icons_;
 
   // The value to use for the add billing address button tag.
   int add_billing_address_button_tag_;

@@ -76,7 +76,8 @@ class ContactInfoEditorViewController : public EditorViewController {
     base::string16 Format(const base::string16& text) override;
     bool IsValidTextfield(views::Textfield* textfield) override;
     bool IsValidCombobox(views::Combobox* combobox) override;
-    bool TextfieldValueChanged(views::Textfield* textfield) override;
+    bool TextfieldValueChanged(views::Textfield* textfield,
+                               bool was_blurred) override;
     bool ComboboxValueChanged(views::Combobox* combobox) override;
     void ComboboxModelChanged(views::Combobox* combobox) override {}
 

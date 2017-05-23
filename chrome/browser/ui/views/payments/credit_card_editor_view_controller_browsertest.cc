@@ -392,6 +392,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
   EXPECT_EQ(base::ASCIIToUTF16("2017"),
             GetComboboxValue(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
+  views::Combobox* combobox = static_cast<views::Combobox*>(
+      dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
+          autofill::CREDIT_CARD_EXP_MONTH)));
+  EXPECT_TRUE(combobox->HasFocus());
+
   // Fixing the expiration date.
   SetComboboxValue(base::ASCIIToUTF16("11"), autofill::CREDIT_CARD_EXP_MONTH);
 

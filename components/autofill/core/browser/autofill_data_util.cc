@@ -22,8 +22,8 @@ namespace autofill {
 namespace data_util {
 
 namespace {
-// Mappings from Chrome card types to Payment Request API basic card payment
-// spec types and icons. Note that "generic" is not in the spec.
+// Mappings from Chrome card networks to Payment Request API basic card payment
+// spec networks and icons. Note that "generic" is not in the spec.
 // https://w3c.github.io/webpayments-methods-card/#method-id
 const PaymentRequestData kPaymentRequestData[]{
     {"americanExpressCC", "amex", IDR_AUTOFILL_CC_AMEX, IDS_AUTOFILL_CC_AMEX},

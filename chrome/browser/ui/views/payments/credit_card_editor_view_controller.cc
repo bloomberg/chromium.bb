@@ -54,6 +54,10 @@ namespace {
 // year dropdown.
 const int kNumberOfExpirationYears = 10;
 
+// Opacity of card network icons when they are not selected and are displayed
+// alongside a selected icon.
+const float kDimmedCardIconOpacity = 0.33f;
+
 // This is not quite right but is the closest server type that wasn't already
 // used.
 const auto kBillingAddressType = autofill::ADDRESS_BILLING_LINE1;
@@ -101,8 +105,11 @@ bool IsCardExpired(const base::string16& month,
 class ExpirationDateValidationDelegate : public ValidationDelegate {
  public:
   ExpirationDateValidationDelegate(EditorViewController* controller,
-                                   const std::string& app_locale)
-      : controller_(controller), app_locale_(app_locale) {}
+                                   const std::string& app_locale,
+                                   bool initially_valid)
+      : controller_(controller),
+        app_locale_(app_locale),
+        initially_valid_(initially_valid) {}
 
   bool IsValidTextfield(views::Textfield* textfield) override {
     NOTREACHED();
@@ -110,9 +117,13 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
   }
 
   bool IsValidCombobox(views::Combobox* combobox) override {
-    // Get the combined date from the month and year dropdowns.
+    // View will have no parent if it's not been attached yet. Use initial
+    // validity state.
     views::View* view_parent = combobox->parent();
+    if (!view_parent)
+      return initially_valid_;
 
+    // Get the combined date from the month and year dropdowns.
     views::Combobox* month_combobox = static_cast<views::Combobox*>(
         view_parent->GetViewByID(EditorViewController::GetInputFieldViewId(
             autofill::CREDIT_CARD_EXP_MONTH)));
@@ -132,7 +143,8 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
     return !is_expired;
   }
 
-  bool TextfieldValueChanged(views::Textfield* textfield) override {
+  bool TextfieldValueChanged(views::Textfield* textfield,
+                             bool was_blurred) override {
     NOTREACHED();
     return true;
   }
@@ -152,6 +164,7 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
  private:
   EditorViewController* controller_;
   const std::string app_locale_;
+  bool initially_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpirationDateValidationDelegate);
 };
@@ -214,17 +227,31 @@ CreditCardEditorViewController::CreateHeaderView() {
       views::BoxLayout::kHorizontal, 0, 0, kPaddingBetweenCardIcons);
   icons_row->SetLayoutManager(icons_layout);
 
+  std::string selected_network =
+      credit_card_to_edit_ ? autofill::data_util::GetPaymentRequestData(
+                                 credit_card_to_edit_->network())
+                                 .basic_card_issuer_network
+                           : "";
   constexpr gfx::Size kCardIconSize = gfx::Size(30, 18);
   for (const std::string& supported_network :
        spec()->supported_card_networks()) {
     const std::string autofill_card_type =
         autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork(
             supported_network);
+    // Icon is fully opaque if no network is selected, or if it is the selected
+    // network.
+    float opacity =
+        selected_network.empty() || selected_network == supported_network
+            ? 1.0f
+            : kDimmedCardIconOpacity;
     std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
         autofill::data_util::GetPaymentRequestData(autofill_card_type)
             .icon_resource_id,
-        base::UTF8ToUTF16(supported_network));
+        base::UTF8ToUTF16(supported_network), opacity);
     card_icon_view->SetImageSize(kCardIconSize);
+
+    // Keep track of this card icon to later adjust opacity.
+    card_icons_[supported_network] = card_icon_view.get();
 
     icons_row->AddChildView(card_icon_view.release());
   }
@@ -280,7 +307,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
       GetInitialValueForType(autofill::CREDIT_CARD_EXP_MONTH);
   base::string16 year =
       GetInitialValueForType(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  *valid = IsCardExpired(month, year, state()->GetApplicationLocale());
+  *valid = !IsCardExpired(month, year, state()->GetApplicationLocale());
   return view;
 }
 
@@ -414,12 +441,17 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
 std::unique_ptr<ValidationDelegate>
 CreditCardEditorViewController::CreateValidationDelegate(
     const EditorField& field) {
+  if (field.type == autofill::CREDIT_CARD_EXP_MONTH ||
+      field.type == autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+    bool initially_valid =
+        credit_card_to_edit_
+            ? !credit_card_to_edit_->IsExpired(autofill::AutofillClock::Now())
+            : true;
+    return base::MakeUnique<ExpirationDateValidationDelegate>(
+        this, state()->GetApplicationLocale(), initially_valid);
+  }
   // The supported card networks for non-cc-number types are not passed to avoid
   // the data copy in the delegate.
-  if (field.type == autofill::CREDIT_CARD_EXP_MONTH ||
-      field.type == autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)
-    return base::MakeUnique<ExpirationDateValidationDelegate>(
-        this, state()->GetApplicationLocale());
   return base::MakeUnique<
       CreditCardEditorViewController::CreditCardValidationDelegate>(
       field, this,
@@ -454,6 +486,23 @@ CreditCardEditorViewController::GetComboboxModelForType(
       break;
   }
   return std::unique_ptr<ui::ComboboxModel>();
+}
+
+void CreditCardEditorViewController::SelectBasicCardNetworkIcon(
+    const std::string& basic_card_network) {
+  // If empty string was passed or if the icon representing |basic_card_network|
+  // is not present (i.e. not supported), all icons have full opacity.
+  bool full_opacity =
+      card_icons_.find(basic_card_network) == card_icons_.end() ||
+      basic_card_network.empty();
+  for (auto network_icon_it : card_icons_) {
+    float target_opacity =
+        full_opacity || network_icon_it.first == basic_card_network
+            ? 1.0f
+            : kDimmedCardIconOpacity;
+    network_icon_it.second->layer()->SetOpacity(target_opacity);
+    network_icon_it.second->layer()->ScheduleDraw();
+  }
 }
 
 void CreditCardEditorViewController::FillContentView(
@@ -518,7 +567,7 @@ void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
 CreditCardEditorViewController::CreditCardValidationDelegate::
     CreditCardValidationDelegate(
         const EditorField& field,
-        EditorViewController* controller,
+        CreditCardEditorViewController* controller,
         const std::vector<std::string>& supported_card_networks)
     : field_(field),
       controller_(controller),
@@ -538,10 +587,25 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
 }
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
-    TextfieldValueChanged(views::Textfield* textfield) {
+    TextfieldValueChanged(views::Textfield* textfield, bool was_blurred) {
+  // The only behavior pre-blur is selecting the card icon.
+  if (field_.type == autofill::CREDIT_CARD_NUMBER) {
+    std::string basic_card_network =
+        autofill::data_util::GetPaymentRequestData(
+            autofill::CreditCard::GetCardNetwork(textfield->text()))
+            .basic_card_issuer_network;
+    controller_->SelectBasicCardNetworkIcon(basic_card_network);
+  }
+
+  // We return true if the field was not yet blurred, because validation should
+  // not occur yet.
+  if (!was_blurred)
+    return true;
+
   base::string16 error_message;
   bool is_valid = ValidateValue(textfield->text(), &error_message);
   controller_->DisplayErrorMessageForField(field_.type, error_message);
+
   return is_valid;
 }
 
