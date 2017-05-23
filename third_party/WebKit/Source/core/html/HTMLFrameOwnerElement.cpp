@@ -80,16 +80,16 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::
   FrameOrPluginNewParentMap().swap(map);
   for (const auto& entry : map) {
     FrameOrPlugin* child = entry.key;
-    FrameView* current_parent = child->Parent();
-    FrameView* new_parent = entry.value;
-    if (new_parent != current_parent) {
-      if (current_parent)
-        current_parent->RemoveChild(child);
-      if (new_parent) {
-        DCHECK(child != new_parent && !child->Parent());
-        child->SetParent(new_parent);
-      }
-      if (current_parent && !new_parent)
+    bool current_attached = child->IsAttached();
+    bool new_attached = entry.value;
+    if (new_attached != current_attached) {
+      if (current_attached)
+        child->Detach();
+
+      if (new_attached)
+        child->Attach();
+
+      if (current_attached && !new_attached)
         child->Dispose();
     }
   }
@@ -97,8 +97,8 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::
   FrameOrPluginSet remove_set;
   FrameOrPluginsPendingTemporaryRemovalFromParent().swap(remove_set);
   for (const auto& child : remove_set) {
-    if (child->Parent())
-      child->Parent()->RemoveChild(child);
+    if (child->IsAttached())
+      child->Detach();
   }
 
   FrameOrPluginSet dispose_set;
@@ -120,18 +120,18 @@ void TemporarilyRemoveFrameOrPluginFromParentSoon(FrameOrPlugin* child) {
   if (g_update_suspend_count) {
     FrameOrPluginsPendingTemporaryRemovalFromParent().insert(child);
   } else {
-    if (child->Parent())
-      child->Parent()->RemoveChild(child);
+    if (child->IsAttached())
+      child->Detach();
   }
 }
 
 void MoveFrameOrPluginToParentSoon(FrameOrPlugin* child, FrameView* parent) {
   if (!g_update_suspend_count) {
     if (parent) {
-      DCHECK(child != parent && !child->Parent());
-      child->SetParent(parent);
-    } else if (child->Parent()) {
-      child->Parent()->RemoveChild(child);
+      DCHECK(child != parent && !child->IsAttached());
+      child->Attach();
+    } else if (child->IsAttached()) {
+      child->Detach();
       child->Dispose();
     }
     return;
@@ -289,7 +289,7 @@ void HTMLFrameOwnerElement::SetWidget(FrameOrPlugin* frame_or_plugin) {
   }
 
   if (widget_) {
-    if (widget_->Parent())
+    if (widget_->IsAttached())
       MoveFrameOrPluginToParentSoon(widget_, nullptr);
   }
 
@@ -316,7 +316,7 @@ void HTMLFrameOwnerElement::SetWidget(FrameOrPlugin* frame_or_plugin) {
 FrameOrPlugin* HTMLFrameOwnerElement::ReleaseWidget() {
   if (!widget_)
     return nullptr;
-  if (widget_->Parent())
+  if (widget_->IsAttached())
     TemporarilyRemoveFrameOrPluginFromParentSoon(widget_);
   LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
   if (layout_part) {

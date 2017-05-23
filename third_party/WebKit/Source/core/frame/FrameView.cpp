@@ -182,7 +182,7 @@ static bool g_initial_track_all_paint_invalidations = false;
 FrameView::FrameView(LocalFrame& frame, IntRect frame_rect)
     : frame_(frame),
       frame_rect_(frame_rect),
-      parent_(nullptr),
+      is_attached_(false),
       display_mode_(kWebDisplayModeBrowser),
       can_have_scrollbars_(true),
       has_pending_layout_(false),
@@ -250,7 +250,6 @@ FrameView::~FrameView() {
 
 DEFINE_TRACE(FrameView) {
   visitor->Trace(frame_);
-  visitor->Trace(parent_);
   visitor->Trace(fragment_anchor_);
   visitor->Trace(scrollable_areas_);
   visitor->Trace(animating_scrollable_areas_);
@@ -2873,7 +2872,7 @@ Color FrameView::DocumentBackgroundColor() const {
 }
 
 FrameView* FrameView::ParentFrameView() const {
-  if (!Parent())
+  if (!is_attached_)
     return nullptr;
 
   Frame* parent_frame = frame_->Tree().Parent();
@@ -3627,7 +3626,7 @@ IntPoint FrameView::ConvertSelfToChild(const FrameOrPlugin& child,
 
 IntRect FrameView::ConvertToContainingFrameViewBase(
     const IntRect& local_rect) const {
-  if (parent_) {
+  if (FrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
     LayoutPartItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
@@ -3637,7 +3636,7 @@ IntRect FrameView::ConvertToContainingFrameViewBase(
     // Add borders and padding??
     rect.Move((layout_item.BorderLeft() + layout_item.PaddingLeft()).ToInt(),
               (layout_item.BorderTop() + layout_item.PaddingTop()).ToInt());
-    return parent_->ConvertFromLayoutItem(layout_item, rect);
+    return parent->ConvertFromLayoutItem(layout_item, rect);
   }
 
   return local_rect;
@@ -3645,10 +3644,10 @@ IntRect FrameView::ConvertToContainingFrameViewBase(
 
 IntRect FrameView::ConvertFromContainingFrameViewBase(
     const IntRect& parent_rect) const {
-  if (parent_) {
+  if (FrameView* parent = ParentFrameView()) {
     IntRect local_rect = parent_rect;
     local_rect.SetLocation(
-        parent_->ConvertSelfToChild(*this, local_rect.Location()));
+        parent->ConvertSelfToChild(*this, local_rect.Location()));
     return local_rect;
   }
 
@@ -3657,7 +3656,7 @@ IntRect FrameView::ConvertFromContainingFrameViewBase(
 
 IntPoint FrameView::ConvertToContainingFrameViewBase(
     const IntPoint& local_point) const {
-  if (parent_) {
+  if (FrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
     LayoutPartItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
@@ -3668,7 +3667,7 @@ IntPoint FrameView::ConvertToContainingFrameViewBase(
     // Add borders and padding
     point.Move((layout_item.BorderLeft() + layout_item.PaddingLeft()).ToInt(),
                (layout_item.BorderTop() + layout_item.PaddingTop()).ToInt());
-    return parent_->ConvertFromLayoutItem(layout_item, point);
+    return parent->ConvertFromLayoutItem(layout_item, point);
   }
 
   return local_point;
@@ -3676,13 +3675,13 @@ IntPoint FrameView::ConvertToContainingFrameViewBase(
 
 IntPoint FrameView::ConvertFromContainingFrameViewBase(
     const IntPoint& parent_point) const {
-  if (parent_) {
+  if (FrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
     LayoutPartItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
       return parent_point;
 
-    IntPoint point = parent_->ConvertToLayoutItem(layout_item, parent_point);
+    IntPoint point = parent->ConvertToLayoutItem(layout_item, parent_point);
     // Subtract borders and padding
     point.Move((-layout_item.BorderLeft() - layout_item.PaddingLeft()).ToInt(),
                (-layout_item.BorderTop() - layout_item.PaddingTop()).ToInt());
@@ -3817,37 +3816,22 @@ void FrameView::RemoveAnimatingScrollableArea(ScrollableArea* scrollable_area) {
   animating_scrollable_areas_->erase(scrollable_area);
 }
 
-void FrameView::SetParent(FrameView* parent) {
-  if (parent == parent_)
-    return;
-
-  DCHECK(!parent || !parent_);
-  if (!parent || !parent->IsVisible())
-    SetParentVisible(false);
-  parent_ = parent;
-  if (parent && parent->IsVisible())
+void FrameView::Attach() {
+  DCHECK(!is_attached_);
+  is_attached_ = true;
+  if (ParentFrameView()->IsVisible())
     SetParentVisible(true);
-
   UpdateParentScrollableAreaSet();
   SetupRenderThrottling();
-
-  if (ParentFrameView())
-    subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
+  subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
 }
 
-void FrameView::RemoveChild(FrameOrPlugin* child) {
-  DCHECK(child->Parent() == this);
-
-  if (child->IsFrameView()) {
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-      RemoveScrollableArea(ToFrameView(child));
-  } else if (child->IsPluginView()) {
-    PluginView* plugin = ToPluginView(child);
-    DCHECK(plugins_.Contains(plugin));
-    plugins_.erase(plugin);
-  }
-
-  child->SetParent(nullptr);
+void FrameView::Detach() {
+  DCHECK(is_attached_);
+  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    ParentFrameView()->RemoveScrollableArea(this);
+  SetParentVisible(false);
+  is_attached_ = false;
 }
 
 void FrameView::AddPlugin(PluginView* plugin) {
@@ -4700,25 +4684,25 @@ bool FrameView::ScrollbarCornerPresent() const {
 }
 
 IntRect FrameView::ConvertToRootFrame(const IntRect& local_rect) const {
-  if (parent_) {
+  if (FrameView* parent = ParentFrameView()) {
     IntRect parent_rect = ConvertToContainingFrameViewBase(local_rect);
-    return parent_->ConvertToRootFrame(parent_rect);
+    return parent->ConvertToRootFrame(parent_rect);
   }
   return local_rect;
 }
 
 IntPoint FrameView::ConvertToRootFrame(const IntPoint& local_point) const {
-  if (parent_) {
+  if (FrameView* parent = ParentFrameView()) {
     IntPoint parent_point = ConvertToContainingFrameViewBase(local_point);
-    return parent_->ConvertToRootFrame(parent_point);
+    return parent->ConvertToRootFrame(parent_point);
   }
   return local_point;
 }
 
 IntRect FrameView::ConvertFromRootFrame(
     const IntRect& rect_in_root_frame) const {
-  if (parent_) {
-    IntRect parent_rect = parent_->ConvertFromRootFrame(rect_in_root_frame);
+  if (FrameView* parent = ParentFrameView()) {
+    IntRect parent_rect = parent->ConvertFromRootFrame(rect_in_root_frame);
     return ConvertFromContainingFrameViewBase(parent_rect);
   }
   return rect_in_root_frame;
@@ -4726,8 +4710,8 @@ IntRect FrameView::ConvertFromRootFrame(
 
 IntPoint FrameView::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
-  if (parent_) {
-    IntPoint parent_point = parent_->ConvertFromRootFrame(point_in_root_frame);
+  if (FrameView* parent = ParentFrameView()) {
+    IntPoint parent_point = parent->ConvertFromRootFrame(point_in_root_frame);
     return ConvertFromContainingFrameViewBase(parent_point);
   }
   return point_in_root_frame;

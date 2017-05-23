@@ -25,8 +25,9 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   ~RemoteFrameView() override;
 
-  void SetParent(FrameView*) override;
-  FrameView* Parent() const override { return parent_; }
+  void Attach() override;
+  void Detach() override;
+  bool IsAttached() const override { return is_attached_; }
 
   RemoteFrame& GetFrame() const {
     DCHECK(remote_frame_);
@@ -51,6 +52,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
  private:
   explicit RemoteFrameView(RemoteFrame*);
 
+  FrameView* ParentFrameView() const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
 
   // The properties and handling of the cycle between RemoteFrame
@@ -58,7 +60,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   // and FrameView. Please see the FrameView::m_frame comment for
   // details.
   Member<RemoteFrame> remote_frame_;
-  Member<FrameView> parent_;
+  bool is_attached_;
   IntRect last_viewport_intersection_;
   IntRect frame_rect_;
   bool self_visible_;

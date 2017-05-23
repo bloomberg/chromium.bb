@@ -490,9 +490,9 @@ class CORE_EXPORT FrameView final
   }  // Whether or not we are actually visible.
   void SetParentVisible(bool) override;
   void SetSelfVisible(bool v) { self_visible_ = v; }
-  void SetParent(FrameView*) override;
-  FrameView* Parent() const override { return parent_; }
-  void RemoveChild(FrameOrPlugin*);
+  void Attach() override;
+  void Detach() override;
+  bool IsAttached() const override { return is_attached_; }
   using PluginSet = HeapHashSet<Member<PluginView>>;
   const PluginSet& Plugins() const { return plugins_; }
   void AddPlugin(PluginView*);
@@ -668,7 +668,6 @@ class CORE_EXPORT FrameView final
 
   DECLARE_VIRTUAL_TRACE();
   void NotifyPageThatContentAreaWillPaint() const;
-  FrameView* ParentFrameView() const;
 
   // Returns the scrollable area for the frame. For the root frame, this will
   // be the RootFrameViewport, which adds pinch-zoom semantics to scrolling.
@@ -904,6 +903,8 @@ class CORE_EXPORT FrameView final
     void DestroyScrollbar(ScrollbarOrientation) override;
   };
 
+  FrameView* ParentFrameView() const;
+
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
 
   void UpdateScrollbarEnabledState();
@@ -1065,7 +1066,7 @@ class CORE_EXPORT FrameView final
   Member<LocalFrame> frame_;
 
   IntRect frame_rect_;
-  Member<FrameView> parent_;
+  bool is_attached_;
   bool self_visible_;
   bool parent_visible_;
 

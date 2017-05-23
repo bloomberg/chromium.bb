@@ -71,8 +71,9 @@ class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   ~WebPluginContainerImpl() override;
 
   // PluginView methods
-  void SetParent(FrameView*) override;
-  FrameView* Parent() const override { return parent_; };
+  void Attach() override;
+  void Detach() override;
+  bool IsAttached() const override { return is_attached_; }
   void SetParentVisible(bool) override;
   WebLayer* PlatformLayer() const override;
   v8::Local<v8::Object> ScriptableObject(v8::Isolate*) override;
@@ -181,6 +182,7 @@ class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void Dispose() override;
 
  private:
+  FrameView* ParentFrameView() const;
   // Sets |windowRect| to the content rect of the plugin in screen space.
   // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to
   // the visible screen of the root frame, in local space of the plugin.
@@ -217,7 +219,7 @@ class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
 
   friend class WebPluginContainerTest;
 
-  Member<FrameView> parent_;
+  bool is_attached_;
   Member<HTMLPlugInElement> element_;
   WebPlugin* web_plugin_;
   WebLayer* web_layer_;

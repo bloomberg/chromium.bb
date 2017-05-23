@@ -16,23 +16,35 @@
 namespace blink {
 
 RemoteFrameView::RemoteFrameView(RemoteFrame* remote_frame)
-    : remote_frame_(remote_frame) {
+    : remote_frame_(remote_frame), is_attached_(false) {
   DCHECK(remote_frame);
 }
 
 RemoteFrameView::~RemoteFrameView() {}
 
-void RemoteFrameView::SetParent(FrameView* parent) {
-  if (parent == parent_)
-    return;
+FrameView* RemoteFrameView::ParentFrameView() const {
+  if (!is_attached_)
+    return nullptr;
 
-  DCHECK(!parent || !parent_);
-  if (!parent || !parent->IsVisible())
-    SetParentVisible(false);
-  parent_ = parent;
-  if (parent && parent->IsVisible())
+  Frame* parent_frame = remote_frame_->Tree().Parent();
+  if (parent_frame && parent_frame->IsLocalFrame())
+    return ToLocalFrame(parent_frame)->View();
+
+  return nullptr;
+}
+
+void RemoteFrameView::Attach() {
+  DCHECK(!is_attached_);
+  is_attached_ = true;
+  if (ParentFrameView()->IsVisible())
     SetParentVisible(true);
   FrameRectsChanged();
+}
+
+void RemoteFrameView::Detach() {
+  DCHECK(is_attached_);
+  SetParentVisible(false);
+  is_attached_ = false;
 }
 
 RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
@@ -111,8 +123,9 @@ void RemoteFrameView::FrameRectsChanged() {
   // containing local frame root. The position of the local root within
   // any remote frames, if any, is accounted for by the embedder.
   IntRect new_rect = frame_rect_;
-  if (parent_)
-    new_rect = parent_->ConvertToRootFrame(parent_->ContentsToFrame(new_rect));
+
+  if (FrameView* parent = ParentFrameView())
+    new_rect = parent->ConvertToRootFrame(parent->ContentsToFrame(new_rect));
   remote_frame_->Client()->FrameRectsChanged(new_rect);
 }
 
@@ -139,10 +152,10 @@ void RemoteFrameView::SetParentVisible(bool visible) {
 
 IntRect RemoteFrameView::ConvertFromRootFrame(
     const IntRect& rect_in_root_frame) const {
-  if (parent_) {
-    IntRect parent_rect = parent_->ConvertFromRootFrame(rect_in_root_frame);
+  if (FrameView* parent = ParentFrameView()) {
+    IntRect parent_rect = parent->ConvertFromRootFrame(rect_in_root_frame);
     parent_rect.SetLocation(
-        parent_->ConvertSelfToChild(*this, parent_rect.Location()));
+        parent->ConvertSelfToChild(*this, parent_rect.Location()));
     return parent_rect;
   }
   return rect_in_root_frame;
@@ -150,7 +163,6 @@ IntRect RemoteFrameView::ConvertFromRootFrame(
 
 DEFINE_TRACE(RemoteFrameView) {
   visitor->Trace(remote_frame_);
-  visitor->Trace(parent_);
 }
 
 }  // namespace blink
