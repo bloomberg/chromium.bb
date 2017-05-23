@@ -957,7 +957,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      */
     private void createInitialTab() {
         String url = HomepageManager.getHomepageUri(getApplicationContext());
-        if (TextUtils.isEmpty(url)) {
+        if (TextUtils.isEmpty(url) || NewTabPage.isNTPUrl(url)) {
             if (getBottomSheet() != null) {
                 mCreateInitialTabDuringUiInit = true;
                 return;
