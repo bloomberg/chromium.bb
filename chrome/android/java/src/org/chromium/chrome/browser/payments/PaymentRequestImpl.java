@@ -257,9 +257,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private final Handler mHandler = new Handler();
     private final RenderFrameHost mRenderFrameHost;
     private final WebContents mWebContents;
-    private final String mSchemelessOriginForPaymentApp;
-    private final String mOriginForDisplay;
-    private final String mSchemelessIFrameOriginForPaymentApp;
+    private final String mTopLevelOrigin;
+    private final String mPaymentRequestOrigin;
     private final String mMerchantName;
     @Nullable
     private final byte[][] mCertificateChain;
@@ -364,15 +363,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         assert renderFrameHost != null;
 
         mRenderFrameHost = renderFrameHost;
-        mSchemelessIFrameOriginForPaymentApp = UrlFormatter.formatUrlForSecurityDisplay(
-                mRenderFrameHost.getLastCommittedURL(), false /* omit scheme for payment apps. */);
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
 
-        mSchemelessOriginForPaymentApp = UrlFormatter.formatUrlForSecurityDisplay(
-                mWebContents.getLastCommittedUrl(), false /* omit scheme for payment apps. */);
-
-        mOriginForDisplay = UrlFormatter.formatUrlForSecurityDisplay(
-                mWebContents.getLastCommittedUrl(), true /* include scheme in display */);
+        mPaymentRequestOrigin = UrlFormatter.formatUrlForSecurityDisplay(
+                mRenderFrameHost.getLastCommittedURL(), true);
+        mTopLevelOrigin =
+                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl(), true);
 
         mMerchantName = mWebContents.getTitle();
 
@@ -521,7 +517,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mUI = new PaymentRequestUI(activity, this, mRequestShipping,
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
                 mMerchantSupportsAutofillPaymentInstruments,
-                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mOriginForDisplay,
+                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType));
 
@@ -717,8 +713,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (queryApps.isEmpty()) {
-            CanMakePaymentQuery query =
-                    sCanMakePaymentQueries.get(mSchemelessIFrameOriginForPaymentApp);
+            CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
             if (query != null && query.matchesPaymentMethods(mMethodData)) {
                 query.notifyObserversOfResponse(mCanMakePayment);
             }
@@ -730,8 +725,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // so a fast response from a non-autofill payment app at the front of the app list does not
         // cause NOT_SUPPORTED payment rejection.
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().getInstruments(q.getValue(), mSchemelessOriginForPaymentApp,
-                    mSchemelessIFrameOriginForPaymentApp, mCertificateChain, mRawTotal, this);
+            q.getKey().getInstruments(q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
+                    mCertificateChain, mRawTotal, this);
         }
     }
 
@@ -1302,10 +1297,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        instrument.invokePaymentApp(mId, mMerchantName, mSchemelessOriginForPaymentApp,
-                mSchemelessIFrameOriginForPaymentApp, mCertificateChain,
-                Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
-                Collections.unmodifiableMap(modifiers), this);
+        instrument.invokePaymentApp(mId, mMerchantName, mTopLevelOrigin, mPaymentRequestOrigin,
+                mCertificateChain, Collections.unmodifiableMap(methodData), mRawTotal,
+                mRawLineItems, Collections.unmodifiableMap(modifiers), this);
 
         mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_PAY_CLICKED);
         return !(instrument instanceof AutofillPaymentInstrument);
@@ -1391,19 +1385,18 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void canMakePayment() {
         if (mClient == null) return;
 
-        CanMakePaymentQuery query =
-                sCanMakePaymentQueries.get(mSchemelessIFrameOriginForPaymentApp);
+        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
         if (query == null) {
             // If there has not been a canMakePayment() query in the last 30 minutes, take a note
             // that one has happened just now. Remember the payment method names and the
             // corresponding data for the next 30 minutes. Forget about it after the 30 minute
             // period expires.
             query = new CanMakePaymentQuery(Collections.unmodifiableMap(mMethodData));
-            sCanMakePaymentQueries.put(mSchemelessIFrameOriginForPaymentApp, query);
+            sCanMakePaymentQueries.put(mPaymentRequestOrigin, query);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    sCanMakePaymentQueries.remove(mSchemelessIFrameOriginForPaymentApp);
+                    sCanMakePaymentQueries.remove(mPaymentRequestOrigin);
                 }
             }, CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
         } else if (shouldEnforceCanMakePaymentQueryQuota()
@@ -1427,8 +1420,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         boolean isIgnoringQueryQuota = false;
         if (!shouldEnforceCanMakePaymentQueryQuota()) {
-            CanMakePaymentQuery query =
-                    sCanMakePaymentQueries.get(mSchemelessIFrameOriginForPaymentApp);
+            CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
             // The cached query may have expired between instantiation of PaymentRequest and
             // finishing the query of the payment apps.
             if (query != null) {
@@ -1572,8 +1564,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        CanMakePaymentQuery query =
-                sCanMakePaymentQueries.get(mSchemelessIFrameOriginForPaymentApp);
+        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
         if (query != null && query.matchesPaymentMethods(mMethodData)) {
             query.notifyObserversOfResponse(mCanMakePayment);
         }

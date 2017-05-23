@@ -27,6 +27,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -166,9 +167,9 @@ public class AndroidPaymentApp
             public void onServiceDisconnected(ComponentName name) {}
         };
 
-        mIsReadyToPayIntent.putExtras(buildExtras(null /* id */, null /* merchantName */, origin,
-                iframeOrigin, certificateChain, methodDataMap, total, null /* displayItems */,
-                null /* modifiers */));
+        mIsReadyToPayIntent.putExtras(buildExtras(null /* id */, null /* merchantName */,
+                removeUrlScheme(origin), removeUrlScheme(iframeOrigin), certificateChain,
+                methodDataMap, total, null /* displayItems */, null /* modifiers */));
         try {
             if (!ContextUtils.getApplicationContext().bindService(
                         mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE)) {
@@ -264,17 +265,19 @@ public class AndroidPaymentApp
     }
 
     @Override
-    public void invokePaymentApp(final String id, final String merchantName, final String origin,
-            final String iframeOrigin, final byte[][] certificateChain,
+    public void invokePaymentApp(final String id, final String merchantName, String origin,
+            String iframeOrigin, final byte[][] certificateChain,
             final Map<String, PaymentMethodData> methodDataMap, final PaymentItem total,
             final List<PaymentItem> displayItems,
             final Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback) {
         mInstrumentDetailsCallback = callback;
 
+        final String schemelessOrigin = removeUrlScheme(origin);
+        final String schemelessIframeOrigin = removeUrlScheme(iframeOrigin);
         if (!mIsIncognito) {
-            launchPaymentApp(id, merchantName, origin, iframeOrigin, certificateChain,
-                    methodDataMap, total, displayItems, modifiers);
+            launchPaymentApp(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
+                    certificateChain, methodDataMap, total, displayItems, modifiers);
             return;
         }
 
@@ -291,9 +294,9 @@ public class AndroidPaymentApp
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                launchPaymentApp(id, merchantName, origin, iframeOrigin,
-                                        certificateChain, methodDataMap, total, displayItems,
-                                        modifiers);
+                                launchPaymentApp(id, merchantName, schemelessOrigin,
+                                        schemelessIframeOrigin, certificateChain, methodDataMap,
+                                        total, displayItems, modifiers);
                             }
                         })
                 .setNegativeButton(R.string.cancel,
@@ -310,6 +313,10 @@ public class AndroidPaymentApp
                     }
                 })
                 .show();
+    }
+
+    private static String removeUrlScheme(String url) {
+        return UrlFormatter.formatUrlForSecurityDisplay(url, false /* omit scheme */);
     }
 
     private void launchPaymentApp(String id, String merchantName, String origin,
