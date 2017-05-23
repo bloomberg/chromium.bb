@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -675,6 +676,8 @@ class DummySyntheticGestureControllerDelegate
   DISALLOW_COPY_AND_ASSIGN(DummySyntheticGestureControllerDelegate);
 };
 
+}  // namespace
+
 class SyntheticGestureControllerTestBase {
  public:
   SyntheticGestureControllerTestBase() {}
@@ -697,9 +700,15 @@ class SyntheticGestureControllerTestBase {
   }
 
   void FlushInputUntilComplete() {
+    // Start and stop the timer explicitly here, since the test does not need to
+    // wait for begin-frame to start the timer.
+    controller_->dispatch_timer_.Start(FROM_HERE,
+                                       base::TimeDelta::FromSeconds(1),
+                                       base::Bind(&base::DoNothing));
     do
       time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
     while (controller_->DispatchNextEvent(time_));
+    controller_->dispatch_timer_.Stop();
   }
 
   void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
@@ -712,6 +721,7 @@ class SyntheticGestureControllerTestBase {
 
   base::TimeDelta GetTotalTime() const { return time_ - start_time_; }
 
+  base::test::ScopedTaskEnvironment env_;
   MockSyntheticGestureTarget* target_;
   DummySyntheticGestureControllerDelegate delegate_;
   std::unique_ptr<SyntheticGestureController> controller_;
@@ -845,9 +855,7 @@ TEST_F(SyntheticGestureControllerTest, GestureCompletedOnDidFlushInput) {
   QueueSyntheticGesture(std::move(gesture_1));
   QueueSyntheticGesture(std::move(gesture_2));
 
-  do {
-    time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
-  } while (controller_->DispatchNextEvent(time_));
+  FlushInputUntilComplete();
   EXPECT_EQ(2, num_success_);
 }
 
@@ -1760,7 +1768,5 @@ TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
   EXPECT_TRUE(
       pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
 }
-
-}  // namespace
 
 }  // namespace content
