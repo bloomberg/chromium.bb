@@ -1148,6 +1148,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapper.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreVersionChecker.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApi.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrFeedbackStatus.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
