@@ -10,33 +10,41 @@ import android.content.pm.ProviderInfo;
 import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
 
+import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 
 /**
  * Base class for Chrome's ContentProvider tests.
  * Sets up a local ChromeBrowserProvider associated to a mock resolver in an isolated context.
  */
-public class ProviderTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
-
+public class ProviderTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private IsolatedContext mContext;
 
-    public ProviderTestBase() {
+    public ProviderTestRule() {
         super(ChromeActivity.class);
     }
 
     @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                setUp();
+                base.evaluate();
+            }
+        }, description);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    private void setUp() throws Exception {
+        startMainActivityOnBlankPage();
 
         final ChromeActivity activity = getActivity();
-        assertNotNull(activity);
+        Assert.assertNotNull(activity);
 
         final ContentProvider provider = new ChromeBrowserProvider();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -52,7 +60,7 @@ public class ProviderTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
         resolver.addProvider(ChromeBrowserProvider.getApiAuthority(activity), provider);
 
         mContext = new IsolatedContext(resolver, activity);
-        assertTrue(getContentResolver() instanceof MockContentResolver);
+        Assert.assertTrue(getContentResolver() instanceof MockContentResolver);
     }
 
     protected ContentResolver getContentResolver() {

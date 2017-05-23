@@ -6,8 +6,13 @@ package org.chromium.chrome.browser.provider;
 
 import android.os.Parcel;
 import android.support.test.filters.SmallTest;
-import android.test.AndroidTestCase;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.provider.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.provider.ChromeBrowserProvider.Type;
@@ -17,14 +22,13 @@ import java.util.Random;
 /**
  * Tests parceling of bookmark node hierarchies used by the provider client API.
  */
-public class ProviderBookmarkNodeUnitTest extends AndroidTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ProviderBookmarkNodeUnitTest {
     Random mGenerator = new Random();
     byte[][] mImageBlobs = null;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         mImageBlobs = new byte[][] {
             { 1, 2, 3 },
             { 4, 5, 6, 7 },
@@ -32,7 +36,7 @@ public class ProviderBookmarkNodeUnitTest extends AndroidTestCase {
         };
 
         for (byte[] icon : mImageBlobs) {
-            assertNotNull(icon);
+            Assert.assertNotNull(icon);
         }
     }
 
@@ -125,31 +129,35 @@ public class ProviderBookmarkNodeUnitTest extends AndroidTestCase {
         return true;
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-ContentProvider"})
     public void testBookmarkNodeParceling() throws InterruptedException {
-        assertTrue(internalTestNodeHierarchyParceling(createMockHierarchy()));
+        Assert.assertTrue(internalTestNodeHierarchyParceling(createMockHierarchy()));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-ContentProvider"})
     public void testBookmarkNodeParcelingWithImages() throws InterruptedException {
-        assertTrue(internalTestNodeHierarchyParceling(createMockHierarchyWithImages()));
+        Assert.assertTrue(internalTestNodeHierarchyParceling(createMockHierarchyWithImages()));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-ContentProvider"})
     public void testSingleNodeParceling() throws InterruptedException {
         BookmarkNode node = new BookmarkNode(1, Type.URL, "Google", "http://www.google.com/", null);
-        assertTrue(internalTestNodeHierarchyParceling(node));
+        Assert.assertTrue(internalTestNodeHierarchyParceling(node));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-ContentProvider"})
     public void testInvalidHierarchy() throws InterruptedException {
         BookmarkNode root = new BookmarkNode(1, Type.FOLDER, "Bookmarks", null, null);
         root.addChild(new BookmarkNode(2, Type.URL, "Google", "http://www.google.com/", root));
         root.addChild(new BookmarkNode(2, Type.URL, "GoogleMaps", "http://maps.google.com/", root));
-        assertFalse(internalTestNodeHierarchyParceling(root));
+        Assert.assertFalse(internalTestNodeHierarchyParceling(root));
     }
 }
