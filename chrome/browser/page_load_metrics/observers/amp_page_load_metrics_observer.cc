@@ -30,6 +30,8 @@ const char kHistogramAMPLoadEventFired[] =
 const char kHistogramAMPFirstContentfulPaint[] =
     "PaintTiming.NavigationToFirstContentfulPaint";
 const char kHistogramAMPParseStart[] = "ParseTiming.NavigationToParseStart";
+const char kHistogramAMPParseStartRedirect[] =
+    "ParseTiming.NavigationToParseStart.RedirectToNonAmpPage";
 
 // Host pattern for AMP Cache URLs.
 // See https://developers.google.com/amp/cache/overview#amp-cache-url-format
@@ -171,13 +173,27 @@ void AMPPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 void AMPPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (view_type_ == AMPViewType::NONE)
-    return;
-
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_start, info)) {
     return;
   }
+
+  if (view_type_ == AMPViewType::NONE) {
+    // If we ended up on a non-AMP document, but the initial URL matched an AMP
+    // document, record the time it took to get to this point. We encounter this
+    // case in the Google News AMP viewer, for example: when a user loads a news
+    // AMP URL in a non-same-document navigation context, the user is presented
+    // with a redirect prompt which they must click through to continue to the
+    // canoncial document on the non-AMP origin.
+    AMPViewType initial_view_type = GetAMPViewType(info.start_url);
+    if (initial_view_type != AMPViewType::NONE) {
+      RECORD_HISTOGRAM_FOR_TYPE(kHistogramAMPParseStartRedirect,
+                                initial_view_type,
+                                timing.parse_timing->parse_start.value());
+    }
+    return;
+  }
+
   RECORD_HISTOGRAM_FOR_TYPE(kHistogramAMPParseStart, view_type_,
                             timing.parse_timing->parse_start.value());
 }
