@@ -97,6 +97,9 @@ public class AppBannerManagerTest {
     private static final String WEB_APP_SHORT_TITLE_MANIFEST =
             "/chrome/test/data/banners/manifest_short_name_only.json";
 
+    private static final String WEB_APP_EMPTY_NAME_MANIFEST =
+            "/chrome/test/data/banners/manifest_empty_name.json";
+
     private static final String WEB_APP_TITLE = "Manifest test app";
 
     private static final String WEB_APP_SHORT_TITLE = "Manifest";
@@ -611,9 +614,18 @@ public class AppBannerManagerTest {
     @Test
     @SmallTest
     @Feature({"AppBanners"})
-    public void testBannerFallsBackToShortName() throws Exception {
+    public void testBannerFallsBackToShortNameWhenNameNotPresent() throws Exception {
         triggerWebAppBanner(WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
                                     mTestServer, WEB_APP_SHORT_TITLE_MANIFEST),
+                WEB_APP_SHORT_TITLE, false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testBannerFallsBackToShortNameWhenNameIsEmpty() throws Exception {
+        triggerWebAppBanner(WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
+                                    mTestServer, WEB_APP_EMPTY_NAME_MANIFEST),
                 WEB_APP_SHORT_TITLE, false);
     }
 
