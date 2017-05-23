@@ -36,6 +36,9 @@ const CGFloat kCornerRadius = 3.0;
 const CGFloat kTrailingDecorationXPadding = 2.0;
 const CGFloat kLeadingDecorationXPadding = 1.0;
 
+// The padding between each decoration on the right.
+const CGFloat kRightDecorationPadding = 1.0f;
+
 // How much the text frame needs to overlap the outermost leading
 // decoration.
 const CGFloat kTextFrameDecorationOverlap = 5.0;
@@ -53,7 +56,8 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 // |x_edge| describes the edge to layout the decorations against
 // (|NSMinXEdge| or |NSMaxXEdge|).  |regular_padding| is the padding
 // from the edge of |cell_frame| to use when the first visible decoration
-// is a regular decoration.
+// is a regular decoration. |decoration_padding| is the padding between each
+// decoration.
 void CalculatePositionsHelper(
     NSRect frame,
     const std::vector<LocationBarDecoration*>& all_decorations,
@@ -61,7 +65,8 @@ void CalculatePositionsHelper(
     CGFloat regular_padding,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
-    NSRect* remaining_frame) {
+    NSRect* remaining_frame,
+    CGFloat decoration_padding) {
   DCHECK(x_edge == NSMinXEdge || x_edge == NSMaxXEdge);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
@@ -75,6 +80,8 @@ void CalculatePositionsHelper(
       if (is_first_visible_decoration) {
         padding = regular_padding;
         is_first_visible_decoration = false;
+      } else {
+        padding = decoration_padding;
       }
 
       NSRect padding_rect, available;
@@ -131,7 +138,7 @@ size_t CalculatePositionsInFrame(
   // Layout |leading_decorations| against the leading side.
   CalculatePositionsHelper(*text_frame, leading_decorations, NSMinXEdge,
                            kLeadingDecorationXPadding, decorations,
-                           decoration_frames, text_frame);
+                           decoration_frames, text_frame, 0.0f);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
   // Capture the number of visible leading decorations.
@@ -147,7 +154,8 @@ size_t CalculatePositionsInFrame(
   // Layout |trailing_decorations| against the trailing side.
   CalculatePositionsHelper(*text_frame, trailing_decorations, NSMaxXEdge,
                            kTrailingDecorationXPadding, decorations,
-                           decoration_frames, text_frame);
+                           decoration_frames, text_frame,
+                           kRightDecorationPadding);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
   // Reverse the right-hand decorations so that overall everything is
