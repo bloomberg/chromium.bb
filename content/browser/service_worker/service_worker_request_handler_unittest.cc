@@ -18,6 +18,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -63,7 +64,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                                                  const std::string& method) {
     std::unique_ptr<net::URLRequest> request =
         url_request_context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY,
-                                           &url_request_delegate_);
+                                           &url_request_delegate_,
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
     request->set_method(method);
     return request;
   }
