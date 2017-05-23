@@ -89,8 +89,6 @@ class GclientTest(trial_dir.TestCase):
 
     e.g. if there is a dependency 'src' and another 'src/third_party/bar', that
     bar isn't fetched until 'src' is done.
-    Also test that a From() dependency should not be processed when it is listed
-    as a requirement.
 
     Args:
       |jobs| is the number of parallel jobs simulated.
@@ -111,8 +109,6 @@ class GclientTest(trial_dir.TestCase):
         # This one will depend on dir1/dir2 in bar.
         '  "foo/dir1/dir2/dir3": "/dir1/dir2/dir3",\n'
         '  "foo/dir1/dir2/dir3/dir4": "/dir1/dir2/dir3/dir4",\n'
-        '  "foo/dir1/dir2/dir5/dir6":\n'
-        '    From("foo/dir1/dir2/dir3/dir4", "foo/dir1/dir2"),\n'
         '}')
     write(
         os.path.join('bar', 'DEPS'),
@@ -123,15 +119,6 @@ class GclientTest(trial_dir.TestCase):
     write(
         os.path.join('bar/empty', 'DEPS'),
         'deps = {\n'
-        '}')
-    # Test From()
-    write(
-        os.path.join('foo/dir1/dir2/dir3/dir4', 'DEPS'),
-        'deps = {\n'
-        # This one should not be fetched or set as a requirement.
-        '  "foo/dir1/dir2/dir5": "svn://example.com/x",\n'
-        # This foo/dir1/dir2 points to a different url than the one in bar.
-        '  "foo/dir1/dir2": "/dir1/another",\n'
         '}')
 
     obj = gclient.GClient.LoadCurrentConfig(options)
@@ -160,8 +147,6 @@ class GclientTest(trial_dir.TestCase):
           ('foo/dir1/dir2/dir3', 'svn://example.com/foo/dir1/dir2/dir3'),
           ('foo/dir1/dir2/dir3/dir4',
            'svn://example.com/foo/dir1/dir2/dir3/dir4'),
-          ('foo/dir1/dir2/dir5/dir6',
-           'svn://example.com/foo/dir1/dir2/dir3/dir4/dir1/another'),
         ],
         actual[3:])
 
@@ -178,9 +163,6 @@ class GclientTest(trial_dir.TestCase):
           'foo/dir1/dir2/dir3/dir4':
               [ 'bar', 'bar/empty', 'foo', 'foo/dir1', 'foo/dir1/dir2',
                 'foo/dir1/dir2/dir3'],
-          'foo/dir1/dir2/dir5/dir6':
-              [ 'bar', 'bar/empty', 'foo', 'foo/dir1', 'foo/dir1/dir2',
-                'foo/dir1/dir2/dir3/dir4'],
         })
     self._check_requirements(
         obj.dependencies[1],
@@ -240,17 +222,13 @@ class GclientTest(trial_dir.TestCase):
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir1', 'url', None, None, None,
           None, 'DEPS', True, False),
-        gclient.Dependency(
-          obj.dependencies[0], 'foo/dir2',
-          gclient.GClientKeywords.FromImpl('bar'), None, None, None,
-          None, 'DEPS', True, False),
       ],
       [])
     # Make sure __str__() works fine.
     # pylint: disable=protected-access
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
-    self.assertEquals(370, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+    self.assertEquals(263, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
   def testHooks(self):
     topdir = self.root_dir
