@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> 내용:</translation>
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
+<translation id="1151972924205500581">비밀번호를 입력해야 합니다.</translation>
 <translation id="1152921474424827756"><ph name="URL" />의 <ph name="BEGIN_LINK" />캐시된 사본<ph name="END_LINK" />에 액세스</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" />와(과)의 연결이 예기치 않게 종료되었습니다.</translation>
 <translation id="1161325031994447685">Wi-Fi에 다시 연결</translation>
+<translation id="1165039591588034296">오류</translation>
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1184214524891303587">발생 가능성이 있는 보안 문제의 세부정보를 Google에 <ph name="BEGIN_WHITEPAPER_LINK" />자동으로 보고<ph name="END_WHITEPAPER_LINK" />합니다. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">기기에 카드 저장</translation>
 <translation id="3435896845095436175">사용</translation>
 <translation id="3447661539832366887">이 기기의 소유자가 공룡 게임을 사용 중지했습니다.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">가져오기 간격:</translation>
 <translation id="3462200631372590220">세부정보 숨기기</translation>
 <translation id="3467763166455606212">카드 소유자 이름을 입력해야 합니다.</translation>
 <translation id="3478058380795961209">만료 월</translation>
 <translation id="3479539252931486093">예기치 않은 문제가 발생했나요? <ph name="BEGIN_LINK" />Google에 알리기<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">나중에</translation>
-<translation id="348000606199325318">비정상 종료 ID <ph name="CRASH_LOCAL_ID" />(서버 ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">사용자의 사이트 액세스 요청이 <ph name="NAME" />님에게 전송되었습니다.</translation>
 <translation id="3890664840433101773">이메일 추가</translation>
 <translation id="3901925938762663762">만료된 카드입니다.</translation>
-<translation id="3934680773876859118">PDF 문서를 로드하지 못했습니다.</translation>
 <translation id="3963721102035795474">리더 모드</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" />이(가) 차단됨</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32비트)</translation>
 <translation id="7956713633345437162">모바일 북마크</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
-<translation id="7962083544045318153">비정상 종료 ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" />를 항상 <ph name="TARGET_LANGUAGE" />로 번역</translation>
 <translation id="7995512525968007366">지정되지 않음</translation>
 <translation id="800218591365569300">다른 탭이나 프로그램을 종료하여 메모리를 확보하세요.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8874824191258364635">올바른 카드 번호를 입력하세요.</translation>
 <translation id="8876793034577346603">네트워크 설정을 파싱하지 못했습니다.</translation>
-<translation id="8877192140621905067">카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="8889402386540077796">색조</translation>
 <translation id="8891727572606052622">프록시 모드가 잘못되었습니다.</translation>
 <translation id="889901481107108152">죄송합니다. 현재 플랫폼에서 사용할 수 없는 실험실 기능입니다.</translation>

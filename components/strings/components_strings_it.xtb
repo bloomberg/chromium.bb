@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> dice:</translation>
 <translation id="1132774398110320017">Impostazioni di Compilazione automatica Chrome...</translation>
 <translation id="1150979032973867961">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del computer. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
+<translation id="1151972924205500581">Password obbligatoria</translation>
 <translation id="1152921474424827756">Accedi a una <ph name="BEGIN_LINK" />copia memorizzata nella cache<ph name="END_LINK" /> di <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha chiuso in modo imprevisto la connessione.</translation>
 <translation id="1161325031994447685">Riconnessione alla rete Wi-Fi</translation>
+<translation id="1165039591588034296">Errore</translation>
 <translation id="1175364870820465910">&amp;Stampa...</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Segnala automaticamente<ph name="END_WHITEPAPER_LINK" /> a Google i dettagli dei possibili problemi di sicurezza. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -299,19 +301,17 @@
 <translation id="3431636764301398940">Salva la carta per questo dispositivo</translation>
 <translation id="3435896845095436175">Abilita</translation>
 <translation id="3447661539832366887">Il proprietario del dispositivo ha disattivato il gioco dei dinosauri.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Intervallo recupero:</translation>
 <translation id="3462200631372590220">Nascondi avanzate</translation>
 <translation id="3467763166455606212">Nome titolare carta obbligatorio</translation>
 <translation id="3478058380795961209">Mese di scadenza</translation>
 <translation id="3479539252931486093">Non era previsto? <ph name="BEGIN_LINK" />Contattaci<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Non adesso</translation>
-<translation id="348000606199325318">ID arresto anomalo <ph name="CRASH_LOCAL_ID" /> (ID server: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">In questo momento, non è possibile raggiungere il tuo genitore. Riprova.</translation>
 <translation id="3528171143076753409">Il certificato del server non è affidabile.</translation>
 <translation id="3539171420378717834">Conserva una copia di questa carta sul dispositivo</translation>
 <translation id="3542684924769048008">Utilizza password per:</translation>
-<translation id="3549644494707163724">Crittografa tutti i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
+<translation id="3549644494707163724">Cripta tutti i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
 <translation id="3556433843310711081">Il tuo gestore può sbloccarlo per te</translation>
 <translation id="3566021033012934673">La connessione non è privata</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -355,7 +355,6 @@
 <translation id="3886446263141354045">La tua richiesta di accesso al sito è stata inviata a <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Aggiungi email</translation>
 <translation id="3901925938762663762">La carta è scaduta</translation>
-<translation id="3934680773876859118">Caricamento del documento PDF non riuscito</translation>
 <translation id="3963721102035795474">Modalità Reader</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> è bloccato</translation>
@@ -474,7 +473,7 @@
 <translation id="5094747076828555589">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile da Chromium. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5115563688576182185">(a 64 bit)</translation>
-<translation id="5141240743006678641">Crittografa le password sincronizzate con le tue credenziali Google</translation>
+<translation id="5141240743006678641">Cripta le password sincronizzate con le tue credenziali Google</translation>
 <translation id="514421653919133810">Apri la pagina in modalità di navigazione in incognito (CTRL-MAIUSC-N)</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
@@ -768,7 +767,6 @@
 <translation id="7951415247503192394">(a 32 bit)</translation>
 <translation id="7956713633345437162">Preferiti su disp. mobili</translation>
 <translation id="7961015016161918242">Mai</translation>
-<translation id="7962083544045318153">ID arresto anomalo: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Traduci sempre <ph name="ORIGINAL_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Non specificato</translation>
 <translation id="800218591365569300">Prova a chiudere altri programmi o schede per liberare spazio in memoria.</translation>
@@ -849,7 +847,6 @@
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8874824191258364635">Inserisci un numero di carta di credito valido</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
-<translation id="8877192140621905067">Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito</translation>
 <translation id="8889402386540077796">Tonalità</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="889901481107108152">Spiacenti, questo esperimento non è disponibile sulla tua piattaforma.</translation>

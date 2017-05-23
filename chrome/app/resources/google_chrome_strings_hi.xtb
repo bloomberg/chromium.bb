@@ -3,7 +3,6 @@
 <translationbundle lang="hi">
 <translation id="1001534784610492198">इंस्टॉलर संग्रह अनुपयोगी या अमान्य है. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
 <translation id="1035334672863811645">Chrome में प्रवेश करें</translation>
-<translation id="1061441684050139317">Chrome को माइक्रोफ़ोन ऐक्सेस की आवश्यकता है ताक‍ि माइक्रोफ़ोन को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="1065672644894730302">आपकी प्राथमिकताओं को पढ़ा नहीं जा सकता| \\n\\nकुछ विशेषताएं अनुपलब्ध हो सकती हैं और प्राथमिकताओं में किए गए परिवर्तनों को सहेजा नहीं जाएगा.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> पहले Chrome का उपयोग कर रहा था</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
@@ -107,7 +106,6 @@
 <translation id="4053720452172726777">Google Chrome कस्टमाइज़ करें और नियंत्रित करें</translation>
 <translation id="4147555960264124640">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">इंस्टॉलर, संग्रह को विस्तारित करने में विफल हुआ. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
-<translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,7 +168,6 @@
 <translation id="5931853610562009806">Mac पर, पासवर्ड आपके कीचेन पर सहेजे जा सकते हैं और उन्हें इस OS X खाते को साझा करने वाले अन्य Chrome उपयोगकर्ताओं द्वारा ऐक्सेस या समन्‍वयित किया जा सकता है.</translation>
 <translation id="5940385492829620908">आपके वेब, बुकमार्क और अन्य Chrome सामग्री यहां मौजूद रहती है.</translation>
 <translation id="5941830788786076944">Google Chrome को सामान्य ब्राउज़र बनाएं</translation>
-<translation id="6012342843556706400">Chrome को स्थान ऐक्सेस की आवश्यकता है ताकि स्थान को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="6014844626092547096">अब आपने Chrome में प्रवेश कर लिया हैं! सिंक को आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="6070348360322141662">अतिरिक्‍त सुरक्षा के लिए, Google Chrome आपका डेटा एन्‍क्रिप्‍ट करेगा</translation>
 <translation id="6113794647360055231">Chrome पहले से बेहतर हो गया है</translation>
@@ -228,7 +225,6 @@
 <translation id="7761834446675418963">Chrome को खोलने और ब्राउज़ करना प्रारंभ करने के लिए अपना नाम क्लिक करें.</translation>
 <translation id="7781002470561365167">Google Chrome का एक नया वर्शन उपलब्ध है.</translation>
 <translation id="7787950393032327779">ऐसा लगता है कि प्रोफ़ाइल का उपयोग अन्य Google Chrome प्रोसेस (<ph name="PROCESS_ID" />) द्वारा किसी अन्य कंप्यूटर (<ph name="HOST_NAME" />) पर किया जा रहा है.  Chrome ने प्रोफ़ाइल को लॉक कर दिया है ताकि वह दूषित न हो. यदि आप सुनिश्चित हैं कि अन्य प्रोसेस इस प्रोफ़ाइल का उपयोग नहीं कर रही हैं, तो आप प्रोफ़ाइल को अनलॉक कर सकते हैं और Chrome को फिर से लॉन्च कर सकते हैं.</translation>
-<translation id="7788788617745289808">Chrome को कैमरा ऐक्सेस की आवश्यकता है ताकि कैमरे को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="7808348361785373670">Chrome से नि‍कालें...</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट गड़बड़ी के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
 <translation id="7855730255114109580">Google Chrome अप टू डेट है</translation>

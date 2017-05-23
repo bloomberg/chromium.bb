@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">जापानी कीबोर्ड</translation>
 <translation id="1358735829858566124">फा़इल या निर्देशिका उपयोग करने योग्य नहीं है.</translation>
 <translation id="1358741672408003399">वर्तनी और व्याकरण</translation>
-<translation id="1359381790106966506">अनुमतियां अपडेट करें</translation>
 <translation id="1361164813881551742">मैन्युअल रूप से जोड़ें</translation>
 <translation id="1361655923249334273">अप्रयुक्त</translation>
 <translation id="136180453919764941">बैटरी - <ph name="STATUS" /></translation>
@@ -1441,7 +1440,6 @@
 <translation id="3038675903128704560">किसी भी साइट को आपका कंप्यूटर एक्सेस करने के लिए प्लग इन का उपयोग न करने दें</translation>
 <translation id="3039828483675273919">$1 आइटम ले जाए जा रहे हैं...</translation>
 <translation id="304009983491258911">सिम कार्ड पिन बदलें</translation>
-<translation id="3046838483509668188">ChromeVox विकल्प</translation>
 <translation id="3046910703532196514">वेबपेज, पूर्ण</translation>
 <translation id="304826556400666995">टैब अनम्‍यूट करें</translation>
 <translation id="3053013834507634016">प्रमाणपत्र कुंजी उपयोग</translation>
@@ -1472,6 +1470,7 @@
 <translation id="3088325635286126843">&amp;नाम बदलें...</translation>
 <translation id="308903551226753393">अपने आप कॉन्फ़िगर करें</translation>
 <translation id="3089231390674410424">ऐसा लगता है कि आपके क्रेडेंशियल में कोई समस्या है. कृपया सुनिश्चित करें कि आपने ठीक तरह से प्रवेश किया हुआ है और पुनः प्रयास करें.</translation>
+<translation id="3090193911106258841">ऑडियो और वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="3090819949319990166">बाहरी crx फ़ाइल की <ph name="TEMP_CRX_FILE" /> में प्रतिलिपि नहीं बनाई जा सकती.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" युग्मित किया गया</translation>
 <translation id="3095995014811312755">वर्शन</translation>
@@ -1518,7 +1517,6 @@
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3154429428035006212">एक माह से अधिक समय से ऑफ़लाइन</translation>
 <translation id="3157931365184549694">पुनर्स्थापित करें</translation>
-<translation id="3159386328383139451">Google बेहतर स्थानीय अनुभव देने के लिए आपके स्थान का उपयोग करता है. आप <ph name="SETTINGS_LINK" /> में इसे बदल सकते हैं.</translation>
 <translation id="3160041952246459240">आपके पास इन सर्वर की पहचान करने वाली फ़ाइल पर प्रमाणपत्र हैं:</translation>
 <translation id="316125635462764134">ऐप्स निकालें</translation>
 <translation id="3161522574479303604">सभी भाषाएं</translation>
@@ -2150,6 +2148,7 @@
 <translation id="4095507791297118304">प्राथमिक प्रदर्शन</translation>
 <translation id="409579654357498729">क्लाउड प्रिंट में जोड़ें</translation>
 <translation id="4096508467498758490">डेवलपर मोड एक्सटेंशन अक्षम करें</translation>
+<translation id="4096824249111507322">सुरक्षित मॉड्यूल तैयार हो रहा है, कृपया इंतज़ार करें (इसमें कुछ मिनट लग सकते हैं)...</translation>
 <translation id="4099060993766194518">डिफ़ॉल्ट खोज इंजन को बहाल करना चाहते हैं?</translation>
 <translation id="4100733287846229632">डिवाइस में बहुत ही कम स्थान बचा है</translation>
 <translation id="4104163789986725820">नि&amp;र्यात करें...</translation>
@@ -2433,7 +2432,6 @@
 <translation id="4590324241397107707">डेटाबेस मेमोरी</translation>
 <translation id="4593021220803146968"><ph name="URL" /> पर &amp;जाएं</translation>
 <translation id="4594109696316595112">एक बार का सक्रियण: इस <ph name="DEVICE_TYPE" /> पर Smart Lock सक्रिय करने के लिए अपना पासवर्ड लिखें. Smart Lock के साथ, आपका फ़ोन पासवर्ड के बिना ही इस डिवाइस को अनलॉक कर लेगा. इस सुविधा को बदलने या बंद करने के लिए, अपने <ph name="DEVICE_TYPE" /> की सेटिंग पर जाएं.</translation>
-<translation id="4594538246438948697">खोजें को दबाकर रखें और कुछ बोलने के लिए क्लिक करें या खींचें</translation>
 <translation id="4595560905247879544">ऐप्स और एक्सटेंशन केवल प्रबंधक (<ph name="CUSTODIAN_NAME" />) के द्वारा बदले जा सकते हैं.</translation>
 <translation id="4596295440756783523">इन सर्वर की पहचान करने वाले प्रमाणपत्र आपके रिकॉर्ड में हैं</translation>
 <translation id="4598556348158889687">जगह प्रबंधन</translation>
@@ -2478,6 +2476,7 @@
 <translation id="4657031070957997341"><ph name="HOST" /> पर प्‍लग इन को हमेशा अनुमति दें</translation>
 <translation id="4662788913887017617">इस बुकमार्क को अपने iPhone से साझा करें</translation>
 <translation id="4664482161435122549">PKCS #12 निर्यात गड़बड़ी</translation>
+<translation id="466481852929361583">सुरक्षित मॉड्यूल सेट अप हो रहा है. कृपया धैर्य रखें; इसमें कुछ मिनट लग सकते हैं.</translation>
 <translation id="4665014895760275686">निर्माता</translation>
 <translation id="4667176955651319626">तृतीय-पक्ष कुकी और साइट डेटा अवरुद्ध करें</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> को सक्षम करने के लिए क्लिक करें</translation>
@@ -2651,7 +2650,6 @@
 <translation id="490074449735753175">वर्तनी त्रुटियों के समाधान में सहायता के लिए किसी वेब सेवा का उपयोग करें</translation>
 <translation id="49027928311173603">सर्वर से डाउनलोड की गई नीति अमान्य है: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Chrome सॉफ़्टवेयर सफ़ाई टूल चलाएं</translation>
-<translation id="4906679076183257864">डिफ़ॉल्ट पर रीसेट करें</translation>
 <translation id="4907161631261076876">यह फ़ाइल आमतौर पर डाउनलोड नहीं की जाती है और यह खतरनाक हो सकती है.</translation>
 <translation id="4907306957610201395">अनुमति श्रेणी</translation>
 <translation id="4909038193460299775">चूंकि यह खाता <ph name="DOMAIN" /> द्वारा प्रबंधित किया जाता है, इसलिए इस डिवाइस से आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग हटा दी जाएंगी. हालांकि, आपका डेटा आपके Google खाते में संग्रहित रहेगा और उसे <ph name="BEGIN_LINK" />Google डैशबोर्ड<ph name="END_LINK" /> से प्रबंधित किया जा सकता है.</translation>
@@ -3227,6 +3225,7 @@
 <translation id="5774515636230743468">मालसूची:</translation>
 <translation id="577624874850706961">कुकी खोजें</translation>
 <translation id="5778550464785688721">MIDI डिवाइस पूर्ण नियंत्रण</translation>
+<translation id="5778747455497889540">नीचे, बिना किसी क्रम से जेनरेट किया गया सुरक्षित मॉड्यूल पासवर्ड दिया गया है जिसे आपके कंप्यूटर को असाइन किया गया है:</translation>
 <translation id="5780066559993805332">(सर्वश्रेष्ठ)</translation>
 <translation id="5780973441651030252">प्राथमिकता संसाधित करें</translation>
 <translation id="5781865261247219930"><ph name="EXTENSION_NAME" /> को आदेश भेजें</translation>
@@ -3285,6 +3284,7 @@
 <translation id="5854409662653665676">यदि आपको बार-बार समस्‍या आ रही है, तो आप इस मॉड्यूल के साथ समस्‍या का समाधान करने के लिए निम्‍न को आज़मा सकते हैं:</translation>
 <translation id="5854912040170951372">स्‍लाइस</translation>
 <translation id="5855119960719984315">विंडो स्‍विच करें</translation>
+<translation id="5855773610748894548">ओह, सुरक्षित मॉड्यूल में गड़बड़ी.</translation>
 <translation id="5856721540245522153">डीबग करने वाली सुविधाएं सक्षम करें</translation>
 <translation id="5857090052475505287">नया फ़ोल्डर</translation>
 <translation id="5859272821192576954">Hangouts पर जारी रखने के लिए आप बिल्कुल तैयार हैं</translation>
@@ -3375,6 +3375,7 @@
 <translation id="6005695835120147974">मीडिया राउटर</translation>
 <translation id="6006484371116297560">क्लासिक</translation>
 <translation id="6007237601604674381">ले जाना विफल रहा. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="6011193465932186973">फ़िंगरप्रिंट</translation>
 <translation id="6011449291337289699">साइट डेटा साफ़ करें</translation>
 <translation id="6015796118275082299">वर्ष</translation>
@@ -3801,6 +3802,7 @@
 <translation id="6629841649550503054">सभी का <ph name="BEGIN_LINK" />Google डिस्‍क<ph name="END_LINK" /> में बैक अप लिया गया!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> को आपकी ओर से स्वयं को प्रमाणीकृत करने के लिए प्रमाणपत्र की स्थायी ऐक्सेस चाहिए.</translation>
 <translation id="6639554308659482635">SQLite मेमोरी</translation>
+<translation id="6641138807883536517">बिना किसी क्रम से जेनरेट किया गया सुरक्षित मॉड्यूल पासवर्ड उपलब्ध नहीं है. Powerwash के बाद आमतौर पर ऐसा होता है.</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6644846457769259194">आपका डिवाइस अपडेट हो रहा है (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape प्रमाणन प्राधिकरण खण्डन URL</translation>
@@ -3891,7 +3893,6 @@
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> को दूरस्थ रूप से जोड़ा गया है</translation>
 <translation id="6790820461102226165">व्‍यक्ति जोड़ें...</translation>
 <translation id="6791443592650989371">सक्रियण स्थिति:</translation>
-<translation id="6792045489562677072">चुनें और सुनें विकल्प</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> आपकी स्क्रीन पर मौजूद सामग्री को <ph name="TARGET_NAME" /> से साझा करना चाहता है. चुनें कि आप क्या साझा करना चाहते हैं.</translation>
 <translation id="6793604637258913070">लेख कैरेट के दिखाई देने या उसके इधर-उधर जाने पर उसे हाइलाइट करें</translation>
 <translation id="6797493596609571643">ओह... कुछ गलत हो गया.</translation>
@@ -4021,6 +4022,7 @@
 <translation id="6991128190741664836">बाद में</translation>
 <translation id="6991665348624301627">गंतव्य को चुनें</translation>
 <translation id="699220179437400583">Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करें</translation>
+<translation id="6996946928646015361">सुरक्षित मॉड्यूल अक्षम है या मौजूद नहीं है.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> फ़ोल्‍डर चयनित</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{निम्नलिखित पेज प्रतिसाद नहीं दे रहा है. आप इसके प्रतिसाद देने की प्रतीक्षा कर सकते हैं या इसे बंद कर सकते हैं.}one{निम्नलिखित पेज प्रतिसाद नहीं दे रहे हैं. आप इनके प्रतिसाद देने की प्रतीक्षा कर सकते हैं या इन्हें बंद कर सकते हैं.}other{निम्नलिखित पेज प्रतिसाद नहीं दे रहे हैं. आप इनके प्रतिसाद देने की प्रतीक्षा कर सकते हैं या इन्हें बंद कर सकते हैं.}}</translation>
 <translation id="7002055706763150362">Chromebook के लिए Smart Lock सेट करने हेतु, Google यह सुनिश्‍चित करना चाहता है कि यह आप ही हैं—प्रारंभ करने के लिए अपना पासवर्ड लिखें.</translation>
@@ -4512,7 +4514,6 @@
 <translation id="7765158879357617694">ले जाएं</translation>
 <translation id="7766807826975222231">भ्रमण करें</translation>
 <translation id="7767646430896201896">विकल्प:</translation>
-<translation id="7768784765476638775">बोलने के लिए चुनें</translation>
 <translation id="7769353642898261262">फ़ोन को किस तरह सुरक्षित करें</translation>
 <translation id="7769672763586021400">मॉडल आईडी</translation>
 <translation id="7771452384635174008">लेआउट</translation>
@@ -4558,6 +4559,7 @@
 <translation id="7825423931463735974">तमिल कीबोर्ड (तमिल99)</translation>
 <translation id="782590969421016895">वर्तमान पृष्ठों का उपयोग करें</translation>
 <translation id="782886543891417279">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) उसके लिए आपको प्रवेश पृष्‍ठ पर जाने की आवश्‍यकता हो सकती है.</translation>
+<translation id="7829298379596169484">ऑडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="7831368056091621108">अपने सभी डिवाइस पर यह एक्सटेंशन, अपना इतिहास, और अन्य Chrome सेटिंग प्राप्त करने के लिए.</translation>
 <translation id="7831493768366098287">Google Print</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5078,6 +5080,7 @@
 <translation id="8631032106121706562">पेटल्स</translation>
 <translation id="8631271110654520730">पुनर्प्राप्ति चित्र की प्रति बना रहा है...</translation>
 <translation id="8632275030377321303">उपयोगकर्ता द्वारा प्रॉक्सी में बदलाव नहीं किया जा सकता.</translation>
+<translation id="8637542770513281060">आपके कंप्यूटर में ऐसा सुरक्षित मॉड्यूल है, जिसका उपयोग Chrome OS की कई महत्वपूर्ण सुरक्षा सुविधाओं का क्रियान्वयन करने के लिए किया जाता है. अधिक जानने के लिए Chromebook सहायता केंद्र पर जाएं: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">सिस्टम अपडेट उपलब्ध है. डाउनलोड करने के लिए तैयार हो रहा है...</translation>
 <translation id="8639963783467694461">ऑटोमैटिक भरना की सेटिंग...</translation>
 <translation id="8642171459927087831">पहुंच टोकन</translation>
@@ -5187,7 +5190,6 @@
 <translation id="8785622406424941542">स्टाइलस</translation>
 <translation id="8787254343425541995">साझा किए गए नेटवर्क के लिए प्रॉक्‍सी की अनुमति दें</translation>
 <translation id="878763818693997570">यह नाम बहुत बड़ा है</translation>
-<translation id="8789375980715484686">अन्‍य उपयोगकर्ताओं को प्रबंधित करें</translation>
 <translation id="8791534160414513928">अपने ब्राउज़िंग ट्रैफ़िक के साथ "ट्रैक न करें" अनुरोध भेजें</translation>
 <translation id="8794025342371547160">प्रतिबंधित IP</translation>
 <translation id="879413103056696865">हॉटस्पॉट चालू होने पर, आपका <ph name="PHONE_NAME" /> यह काम करेगा:</translation>

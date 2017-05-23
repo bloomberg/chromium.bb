@@ -3,7 +3,6 @@
 <translationbundle lang="es">
 <translation id="1001534784610492198">El archivo de instalación está dañado o no es válido. Vuelve a descargar Google Chrome.</translation>
 <translation id="1035334672863811645">iniciar sesión en Chrome</translation>
-<translation id="1061441684050139317">Chrome necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias.
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
@@ -111,7 +110,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4147555960264124640">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
-<translation id="423410644998903704">Chrome necesita acceder a los permisos para compartirlos con este sitio web.</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Chrome a esta cuenta?</translation>
 <translation id="4309555186815777032">(se debe <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -176,7 +174,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5931853610562009806">En los ordenadores Mac, las contraseñas se pueden guardar en el llavero, y otros usuarios de Chrome que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
 <translation id="5940385492829620908">Aquí puedes encontrar tus páginas web, tus marcadores y otros contenidos de Chrome.</translation>
 <translation id="5941830788786076944">Establecer Google Chrome como navegador predeterminado</translation>
-<translation id="6012342843556706400">Chrome necesita acceder a la información de ubicación para compartirla con este sitio web.</translation>
 <translation id="6014844626092547096">Has iniciado sesión en Chrome. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="6070348360322141662">Para mayor seguridad, Google Chrome cifrará tus datos</translation>
 <translation id="6113794647360055231">Chrome mejor que nunca</translation>
@@ -234,7 +231,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7761834446675418963">Haz clic en tu nombre para abrir Chrome y empezar a navegar.</translation>
 <translation id="7781002470561365167">Hay una nueva versión de Google Chrome disponible.</translation>
 <translation id="7787950393032327779">Parece que otro proceso de Google Chrome (<ph name="PROCESS_ID" />) está utilizando el perfil en otro ordenador (<ph name="HOST_NAME" />). Chrome ha bloqueado el perfil para que no se dañe. Si estás seguro de que ningún otro proceso está utilizando este perfil, puedes desbloquearlo y volver a iniciar Chrome.</translation>
-<translation id="7788788617745289808">Chrome necesita acceder a la cámara para compartirla con este sitio web.</translation>
 <translation id="7808348361785373670">Desinstalar de Chrome...</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>

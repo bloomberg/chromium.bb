@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">일본어 키보드</translation>
 <translation id="1358735829858566124">파일 또는 디렉토리를 사용할 수 없습니다.</translation>
 <translation id="1358741672408003399">영문 철자 및 문법</translation>
-<translation id="1359381790106966506">권한 업데이트</translation>
 <translation id="1361164813881551742">직접 추가</translation>
 <translation id="1361655923249334273">사용되지 않음</translation>
 <translation id="136180453919764941">배터리 - <ph name="STATUS" /></translation>
@@ -1443,7 +1442,6 @@
 <translation id="3038675903128704560">사이트에서 플러그인을 사용하여 내 컴퓨터에 액세스하도록 허용하지 않음</translation>
 <translation id="3039828483675273919">$1개 항목 이동 중...</translation>
 <translation id="304009983491258911">SIM 카드 PIN 변경</translation>
-<translation id="3046838483509668188">ChromeVox 옵션</translation>
 <translation id="3046910703532196514">웹페이지, 전부</translation>
 <translation id="304826556400666995">탭 음소거 해제</translation>
 <translation id="3053013834507634016">인증서 키 사용</translation>
@@ -1474,6 +1472,7 @@
 <translation id="3088325635286126843">이름 바꾸기(&amp;R)...</translation>
 <translation id="308903551226753393">자동 설정</translation>
 <translation id="3089231390674410424">사용자 인증 정보에 문제가 있는 것 같습니다. 제대로 로그인했는지 확인한 후 다시 시도해 주세요.</translation>
+<translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
 <translation id="3090819949319990166">외부 crx 파일을 <ph name="TEMP_CRX_FILE" />에 복사할 수 없습니다.</translation>
 <translation id="3090871774332213558">'<ph name="DEVICE_NAME" />' 페어링됨</translation>
 <translation id="3095995014811312755">버전</translation>
@@ -1520,7 +1519,6 @@
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3154429428035006212">1달 이상 오프라인 상태</translation>
 <translation id="3157931365184549694">복구</translation>
-<translation id="3159386328383139451">Google에서 사용자 위치를 사용하여 더 나은 지역 정보를 제공합니다. <ph name="SETTINGS_LINK" />에서 이 설정을 변경할 수 있습니다.</translation>
 <translation id="3160041952246459240">다음 서버를 식별하는 인증서가 등록되어 있습니다.</translation>
 <translation id="316125635462764134">앱 제거</translation>
 <translation id="3161522574479303604">모든 언어</translation>
@@ -2152,6 +2150,7 @@
 <translation id="4095507791297118304">기본 디스플레이</translation>
 <translation id="409579654357498729">클라우드 프린트에 추가</translation>
 <translation id="4096508467498758490">개발자 모드 확장 프로그램 사용 중지</translation>
+<translation id="4096824249111507322">보안 모듈을 준비 중입니다. 잠시 기다려 주세요. 몇 분 정도 걸릴 수 있습니다...</translation>
 <translation id="4099060993766194518">기본 검색 엔진을 복원하시겠습니까?</translation>
 <translation id="4100733287846229632">기기 저장 공간 매우 부족</translation>
 <translation id="4104163789986725820">내보내기(&amp;X)...</translation>
@@ -2435,7 +2434,6 @@
 <translation id="4590324241397107707">데이터베이스 저장소</translation>
 <translation id="4593021220803146968"><ph name="URL" />(으)로 이동(&amp;G)</translation>
 <translation id="4594109696316595112">한번에 활성화: 비밀번호를 입력하여 이 <ph name="DEVICE_TYPE" />에서 Smart Lock을 활성화하세요. Smart Lock을 이용하면 비밀번호를 입력할 필요 없이 휴대전화로 이 기기를 잠금 해제할 수 있습니다. 이 기능을 변경하거나 사용 중지하려면 <ph name="DEVICE_TYPE" />의 설정으로 이동하세요.</translation>
-<translation id="4594538246438948697">음성으로 안내를 받으려면 검색을 길게 누른 후 클릭하거나 드래그하세요.</translation>
 <translation id="4595560905247879544">앱 및 확장 프로그램은 관리자(<ph name="CUSTODIAN_NAME" />)만 수정할 수 있습니다.</translation>
 <translation id="4596295440756783523">다음 서버를 식별하는 인증서가 등록되어 있습니다.</translation>
 <translation id="4598556348158889687">저장용량 관리</translation>
@@ -2480,6 +2478,7 @@
 <translation id="4657031070957997341"><ph name="HOST" />에서 플러그인 항상 허용</translation>
 <translation id="4662788913887017617">이 북마크를 내 iPhone과 공유</translation>
 <translation id="4664482161435122549">PKCS #12 내보내기 오류</translation>
+<translation id="466481852929361583">보안 모듈을 설정 중입니다. 잠시만 기다려 주세요. 몇 분 정도 걸릴 수 있습니다.</translation>
 <translation id="4665014895760275686">제조업체</translation>
 <translation id="4667176955651319626">타사 쿠키 및 사이트 데이터 차단</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />을(를) 사용하려면 클릭하세요.</translation>
@@ -2653,7 +2652,6 @@
 <translation id="490074449735753175">웹 서비스를 이용하여 철자 오류 문제 해결</translation>
 <translation id="49027928311173603">서버에서 다운로드한 정책이 잘못됨: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Chrome 정리도구 실행하기</translation>
-<translation id="4906679076183257864">기본 설정으로 돌아가기</translation>
 <translation id="4907161631261076876">이 파일은 위험할 수 있기 때문에 일반적으로 다운로드하지 않습니다.</translation>
 <translation id="4907306957610201395">권한 카테고리</translation>
 <translation id="4909038193460299775">이 계정은 <ph name="DOMAIN" />에 의해 관리되므로 북마크, 방문 기록, 비밀번호 및 기타 설정이 이 기기에서 삭제됩니다. 하지만 데이터는 Google 계정에 계속 저장되며 <ph name="BEGIN_LINK" />Google 대시보드<ph name="END_LINK" />에서 관리할 수 있습니다.</translation>
@@ -3229,6 +3227,7 @@
 <translation id="5774515636230743468">매니페스트:</translation>
 <translation id="577624874850706961">쿠키 검색</translation>
 <translation id="5778550464785688721">MIDI 기기 전체 제어</translation>
+<translation id="5778747455497889540">다음은 임의로 생성된 후 내 컴퓨터에 할당된 보안 모듈 비밀번호입니다.</translation>
 <translation id="5780066559993805332">(최고 해상도)</translation>
 <translation id="5780973441651030252">프로세스 우선순위</translation>
 <translation id="5781865261247219930"><ph name="EXTENSION_NAME" />에 명령어 보내기</translation>
@@ -3287,6 +3286,7 @@
 <translation id="5854409662653665676">문제가 자주 발생할 경우 다음 단계에 따라 모듈 문제를 해결할 수 있습니다.</translation>
 <translation id="5854912040170951372">피자왕</translation>
 <translation id="5855119960719984315">창 전환</translation>
+<translation id="5855773610748894548">보안 모듈 오류입니다.</translation>
 <translation id="5856721540245522153">디버깅 기능 사용</translation>
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5859272821192576954">계속해서 행아웃을 사용할 준비가 되었습니다.</translation>
@@ -3377,6 +3377,7 @@
 <translation id="6005695835120147974">미디어 라우터</translation>
 <translation id="6006484371116297560">기본</translation>
 <translation id="6007237601604674381">이동에 실패했습니다. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
 <translation id="6011193465932186973">지문</translation>
 <translation id="6011449291337289699">사이트 데이터 삭제</translation>
 <translation id="6015796118275082299">연도</translation>
@@ -3803,6 +3804,7 @@
 <translation id="6629841649550503054">모두 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업했습니다.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />에서 사용자를 대신하여 인증하기 위해 인증서에 대한 영구적인 액세스 권한을 요청합니다.</translation>
 <translation id="6639554308659482635">SQLite 메모리</translation>
+<translation id="6641138807883536517">임의로 생성된 보안 모듈 비밀번호는 사용할 수 없습니다. 이는 파워워시 후에는 정상적으로 나타나는 현상입니다.</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6644846457769259194">기기 업데이트 중(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape 인증 기관 취소 URL</translation>
@@ -3893,7 +3895,6 @@
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" />이(가) 원격으로 추가됨</translation>
 <translation id="6790820461102226165">사용자 추가...</translation>
 <translation id="6791443592650989371">활성화 상태:</translation>
-<translation id="6792045489562677072">음성 안내 옵션</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" />에서 <ph name="TARGET_NAME" />에 내 화면의 콘텐츠를 공유하려고 합니다. 공유할 항목을 선택하세요.</translation>
 <translation id="6793604637258913070">텍스트 캐럿이 나타나거나 이동할 때 이를 강조표시합니다.</translation>
 <translation id="6797493596609571643">문제가 발생했습니다.</translation>
@@ -4022,6 +4023,7 @@
 <translation id="6991128190741664836">나중에</translation>
 <translation id="6991665348624301627">대상 선택</translation>
 <translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 신고합니다.</translation>
+<translation id="6996946928646015361">보안 모듈이 사용 중지되었거나 없습니다.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />개의 폴더가 선택됨</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{다음 페이지가 응답하지 않습니다. 페이지가 응답할 때까지 기다리거나 종료할 수 있습니다.}other{다음 페이지가 응답하지 않습니다. 페이지가 응답할 때까지 기다리거나 종료할 수 있습니다.}}</translation>
 <translation id="7002055706763150362">Chromebook용 Smart Lock을 설정하려면 본인 확인이 필요합니다. 시작하려면 비밀번호를 입력하세요.</translation>
@@ -4513,7 +4515,6 @@
 <translation id="7765158879357617694">이동</translation>
 <translation id="7766807826975222231">둘러보기</translation>
 <translation id="7767646430896201896">옵션:</translation>
-<translation id="7768784765476638775">음성 안내 선택</translation>
 <translation id="7769353642898261262">휴대전화를 보호하는 방법</translation>
 <translation id="7769672763586021400">모델 ID</translation>
 <translation id="7771452384635174008">레이아웃</translation>
@@ -4559,6 +4560,7 @@
 <translation id="7825423931463735974">타밀어 키보드(Tamil99)</translation>
 <translation id="782590969421016895">현재 페이지 사용</translation>
 <translation id="782886543891417279">사용 중인 Wi-Fi(<ph name="WIFI_NAME" />)에서 로그인 페이지 방문을 요청할 수 있습니다.</translation>
+<translation id="7829298379596169484">오디오 입력 장치에 액세스 중</translation>
 <translation id="7831368056091621108">이 확장 프로그램, 방문 기록 및 기타 Chrome 설정을 모든 기기로 가져올 수 있습니다.</translation>
 <translation id="7831493768366098287">Google 인쇄</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5081,6 +5083,7 @@
 <translation id="8631032106121706562">꽃잎</translation>
 <translation id="8631271110654520730">복구 이미지를 복사 중...</translation>
 <translation id="8632275030377321303">프록시는 사용자가 수정할 수 없습니다.</translation>
+<translation id="8637542770513281060">컴퓨터에 보안 모듈이 있습니다. 보안 모듈은 Chrome OS에서 여러 중요한 보안 기능을 구현하는 데 사용됩니다. 자세히 알아보려면 Chromebook 고객센터의 다음 페이지를 방문하세요. https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">시스템 업데이트 사용가능. 다운로드 준비 중…</translation>
 <translation id="8639963783467694461">자동완성 설정</translation>
 <translation id="8642171459927087831">액세스 토큰</translation>
@@ -5190,7 +5193,6 @@
 <translation id="8785622406424941542">스타일러스</translation>
 <translation id="8787254343425541995">공유 네트워크에서 프록시 허용</translation>
 <translation id="878763818693997570">이름이 너무 깁니다.</translation>
-<translation id="8789375980715484686">다른 사용자 관리</translation>
 <translation id="8791534160414513928">탐색 트래픽으로 ‘추적 안함’ 요청 전송</translation>
 <translation id="8794025342371547160">제한된 IP</translation>
 <translation id="879413103056696865">핫스팟이 사용 설정되어 있는 동안 <ph name="PHONE_NAME" />이(가) 다음과 같이 작동함</translation>

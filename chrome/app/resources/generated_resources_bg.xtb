@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">Японска клавиатура</translation>
 <translation id="1358735829858566124">Файлът или директорията не могат да се използват.</translation>
 <translation id="1358741672408003399">Правопис и граматика</translation>
-<translation id="1359381790106966506">Актуализиране на разрешенията</translation>
 <translation id="1361164813881551742">Ръчно добавяне</translation>
 <translation id="1361655923249334273">Не се използва</translation>
 <translation id="136180453919764941">Батерия: <ph name="STATUS" /></translation>
@@ -1438,7 +1437,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3038675903128704560">Забраняване на сайтовете да използват приставка за достъп до компютъра ви</translation>
 <translation id="3039828483675273919">$1 елемента се преместват...</translation>
 <translation id="304009983491258911">Промяна на ПИН кода на SIM картата</translation>
-<translation id="3046838483509668188">Опции за ChromeVox</translation>
 <translation id="3046910703532196514">Уеб страница, цялата</translation>
 <translation id="304826556400666995">Включване отново на звука на разделите</translation>
 <translation id="3053013834507634016">Използване на ключа на сертификата</translation>
@@ -1469,6 +1467,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3088325635286126843">&amp;Преименуване...</translation>
 <translation id="308903551226753393">Автоматично конфигуриране</translation>
 <translation id="3089231390674410424">Изглежда, че има проблем с идентификационните ви данни. Моля, уверете се, че сте влезли правилно, и опитайте отново.</translation>
+<translation id="3090193911106258841">Осъществява се достъп до аудио- и видеовхода</translation>
 <translation id="3090819949319990166">Външният crx файл не може да се копира в/ъв „<ph name="TEMP_CRX_FILE" />“.</translation>
 <translation id="3090871774332213558">Успешно сдвояване на <ph name="DEVICE_NAME" /></translation>
 <translation id="3095995014811312755">версия</translation>
@@ -1515,7 +1514,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3154351730702813399">Администраторът на устройството може да наблюдава активността ви при сърфиране.</translation>
 <translation id="3154429428035006212">Офлайн за повече от един месец</translation>
 <translation id="3157931365184549694">Възстановяване</translation>
-<translation id="3159386328383139451">Google използва местоположението ви, за да предоставя по-добра работа на местно ниво. Можете да промените това от <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">Разполагате със сертификати, които идентифицират тези сървъри:</translation>
 <translation id="316125635462764134">Премахване на приложението</translation>
 <translation id="3161522574479303604">Всички езици</translation>
@@ -2148,6 +2146,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4095507791297118304">Основен екран</translation>
 <translation id="409579654357498729">Добавяне към Отпечатване в облак</translation>
 <translation id="4096508467498758490">Деактивиране на разширенията в режим за програмисти</translation>
+<translation id="4096824249111507322">Модулът за сигурност се подготвя. Моля, изчакайте (това може да отнеме няколко минути)...</translation>
 <translation id="4099060993766194518">Да се възстанови ли основната търсеща машина?</translation>
 <translation id="4100733287846229632">Мястото на устройството е критично малко</translation>
 <translation id="4104163789986725820">Екс&amp;портиране...</translation>
@@ -2431,7 +2430,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4590324241397107707">Хранилище за базата от данни</translation>
 <translation id="4593021220803146968">&amp;Към <ph name="URL" /></translation>
 <translation id="4594109696316595112">Еднократно активиране: Въведете паролата си, за да активирате Smart Lock на този <ph name="DEVICE_TYPE" />. С тази функция отключването на това устройство ще става от телефона ви – без парола. За да промените или изключите функцията, отворете настройките на своя <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4594538246438948697">Натиснете и задръжте клавиша „търсене“ и кликнете или преместете с плъзгане върху текст, за да бъде произнесен</translation>
 <translation id="4595560905247879544">Само мениджърът (<ph name="CUSTODIAN_NAME" />) може да променя приложенията и разширенията.</translation>
 <translation id="4596295440756783523">Разполагате със сертификати, които идентифицират тези сървъри</translation>
 <translation id="4598556348158889687">Управление на хранилището</translation>
@@ -2476,6 +2474,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4657031070957997341">Разрешаване на <ph name="HOST" /> винаги да използва приставки</translation>
 <translation id="4662788913887017617">Споделете тази отметка със своя iPhone</translation>
 <translation id="4664482161435122549">Грешка при експортиране на PKCS #12</translation>
+<translation id="466481852929361583">Модулът за сигурност се настройва. Моля, имайте търпение – това може да отнеме няколко минути.</translation>
 <translation id="4665014895760275686">Производител</translation>
 <translation id="4667176955651319626">Да се блокират „бисквитките“ и данните за сайтове на трети страни</translation>
 <translation id="4668721319092543482">Кликнете, за да активирате <ph name="PLUGIN_NAME" /></translation>
@@ -2649,7 +2648,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="490074449735753175">Използване на услуга в мрежата за помощ при поправянето на правописни грешки</translation>
 <translation id="49027928311173603">Изтегленото от сървъра правило е невалидно: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Стартиране на инструмента за почистване на Chrome</translation>
-<translation id="4906679076183257864">Възстановяване на настройката по подразбиране</translation>
 <translation id="4907161631261076876">Този файл обикновено не се изтегля и може да е опасен.</translation>
 <translation id="4907306957610201395">Категория за разрешения</translation>
 <translation id="4909038193460299775">Тъй като този профил се управлява от <ph name="DOMAIN" />, вашите отметки, история, пароли и други настройки ще бъдат изчистени от устройството. Данните ви обаче ще продължат да се съхраняват в профила ви в Google. Можете да ги управлявате от <ph name="BEGIN_LINK" />Google Табло за управление<ph name="END_LINK" />.</translation>
@@ -3226,6 +3224,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="5774515636230743468">Манифест:</translation>
 <translation id="577624874850706961">Търсене</translation>
 <translation id="5778550464785688721">Пълен контрол над MIDI устройства</translation>
+<translation id="5778747455497889540">По-долу е произволно генерираната чрез модула за сигурност парола, която е присвоена на компютъра ви:</translation>
 <translation id="5780066559993805332">(Най-добро)</translation>
 <translation id="5780973441651030252">Приоритет на процесите</translation>
 <translation id="5781865261247219930">Изпращане на команди до <ph name="EXTENSION_NAME" /></translation>
@@ -3284,6 +3283,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="5854409662653665676">Ако често имате проблеми, може да опитате следните стъпки, за да разрешите проблема с този модул:</translation>
 <translation id="5854912040170951372">Парче пица</translation>
 <translation id="5855119960719984315">превключване на прозореца</translation>
+<translation id="5855773610748894548">Ами сега! Възникна грешка в модула за сигурност.</translation>
 <translation id="5856721540245522153">Активиране на функциите за отстраняване на грешки</translation>
 <translation id="5857090052475505287">Нова папка</translation>
 <translation id="5859272821192576954">Готови сте да продължите към Hangouts</translation>
@@ -3374,6 +3374,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6005695835120147974">Медиен маршрутизатор</translation>
 <translation id="6006484371116297560">Класическа тема</translation>
 <translation id="6007237601604674381">Преместването не бе успешно. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Осъществява се достъп до видеовхода</translation>
 <translation id="6011193465932186973">Отпечатък</translation>
 <translation id="6011449291337289699">Изчистване на данните за сайтовете</translation>
 <translation id="6015796118275082299">Година</translation>
@@ -3800,6 +3801,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6629841649550503054">На всичко бе създадено резервно копие в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" />!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> иска постоянен достъп до сертификат, за да се удостоверява от ваше име.</translation>
 <translation id="6639554308659482635">Памет за SQLite</translation>
+<translation id="6641138807883536517">Произволно генерираната чрез модула за сигурност парола не е налице. Това е нормално след извършване на Powerwash.</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6644846457769259194">Устройството ви се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">URL адрес за анулиране от сертифициращ орган на Netscape</translation>
@@ -3890,7 +3892,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6790497603648687708">Разширението <ph name="EXTENSION_NAME" /> бе добавено отдалечено</translation>
 <translation id="6790820461102226165">Добавяне на човек...</translation>
 <translation id="6791443592650989371">Състояние на активирането:</translation>
-<translation id="6792045489562677072">Опции за функцията Прочитане на глас</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> иска да сподели съдържанието на екрана ви с/ъс <ph name="TARGET_NAME" />. Изберете какво да се сподели.</translation>
 <translation id="6793604637258913070">Открояване на точката на вмъкване в текста, когато се показва или движи</translation>
 <translation id="6797493596609571643">Ами сега! Нещо се обърка.</translation>
@@ -4019,6 +4020,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6991128190741664836">По-късно</translation>
 <translation id="6991665348624301627">Избиране на местоназначение</translation>
 <translation id="699220179437400583">Автоматично съобщаване на Google на подробности за евентуални инциденти, свързани със сигурността</translation>
+<translation id="6996946928646015361">Модулът за сигурност е деактивиран или липсва.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> избрани папки</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Следната страница е блокирала. Можете да изчакате да се възстанови или да я затворите.}other{Следните страници са блокирали. Можете да изчакате да се възстановят или да ги затворите.}}</translation>
 <translation id="7002055706763150362">Преди да настроите Smart Lock за Chromebook, Google трябва да се увери, че това сте вие. Въведете паролата си, за да започнете.</translation>
@@ -4510,7 +4512,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7766807826975222231">Направете обиколка</translation>
 <translation id="7767646430896201896">Опции:</translation>
-<translation id="7768784765476638775">Избиране на текст за произнасяне</translation>
 <translation id="7769353642898261262">Как да подсигурите телефона</translation>
 <translation id="7769672763586021400">Идент. № на модела</translation>
 <translation id="7771452384635174008">Ориентация</translation>
@@ -4556,6 +4557,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7825423931463735974">Тамилска клавиатура (Tamil99)</translation>
 <translation id="782590969421016895">Използване на текущите страници</translation>
 <translation id="782886543891417279">Използваната от вас Wi-Fi мрежа (<ph name="WIFI_NAME" />) може да изисква да посетите страницата й за вход.</translation>
+<translation id="7829298379596169484">Осъществява се достъп до аудиовхода</translation>
 <translation id="7831368056091621108">, за да получите това разширение, историята си и други настройки за Chrome на всичките си устройства.</translation>
 <translation id="7831493768366098287">Отпечатване с Google</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5077,6 +5079,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8631032106121706562">Цвете</translation>
 <translation id="8631271110654520730">Образът за възстановяване се копира...</translation>
 <translation id="8632275030377321303">Прокси сървърът не може да бъде променен от потребителя.</translation>
+<translation id="8637542770513281060">Компютърът ви съдържа модул за сигурност, който служи за реализиране на множество критични защитни функции в Chrome OS. За да научите повече, посетете Помощния център на Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Налице е системна актуализация. Подготвя се за изтегляне...</translation>
 <translation id="8639963783467694461">Настройки за автоматично попълване</translation>
 <translation id="8642171459927087831">Означение за достъп</translation>
@@ -5186,7 +5189,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8785622406424941542">Писалка</translation>
 <translation id="8787254343425541995">Разрешаване на прокси сървъри за споделените мрежи</translation>
 <translation id="878763818693997570">Това име е твърде дълго</translation>
-<translation id="8789375980715484686">Управление на другите потребители</translation>
 <translation id="8791534160414513928">Изпращане на заявка „Do Not Track“ с трафика ви на сърфиране</translation>
 <translation id="8794025342371547160">Ограничен IP адрес</translation>
 <translation id="879413103056696865">Докато точката за достъп е включена, устройството ви <ph name="PHONE_NAME" /> ще:</translation>

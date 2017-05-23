@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> يعرض:</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
+<translation id="1151972924205500581">كلمة المرور مطلوبة</translation>
 <translation id="1152921474424827756">الدخول إلى <ph name="BEGIN_LINK" />النسخة المخزنة مؤقتًا<ph name="END_LINK" /> من <ph name="URL" /></translation>
 <translation id="1158211211994409885">أغلق <ph name="HOST_NAME" /> الاتصال على نحو غير متوقع.</translation>
 <translation id="1161325031994447685">‏إعادة الاتصال بـ Wi-Fi</translation>
+<translation id="1165039591588034296">خطأ</translation>
 <translation id="1175364870820465910">ط&amp;باعة...</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1184214524891303587">‏<ph name="BEGIN_WHITEPAPER_LINK" />إبلاغ Google تلقائيًا<ph name="END_WHITEPAPER_LINK" /> بتفاصيل أي مخاطر أمنية محتملة. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="3435896845095436175">تمكين الإضافات</translation>
 <translation id="3447661539832366887">عطل مالك هذا الجهاز تشغيل لعبة الديناصور.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">الفاصل الزمني للجلب:</translation>
 <translation id="3462200631372590220">الإخفاء (خيار متقدم)</translation>
 <translation id="3467763166455606212">اسم حامل البطاقة مطلوب</translation>
 <translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
 <translation id="3479539252931486093">ألم تتوقَّع هذا؟ <ph name="BEGIN_LINK" />أطلِعنا على الأمر<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ليس الآن</translation>
-<translation id="348000606199325318">معرّف التعطُّل <ph name="CRASH_LOCAL_ID" /> (معرّف الخادم: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">لم نتمكن من الوصول إلى أحد والديك في الوقت الحالي. يُرجى إعادة المحاولة مرة أخرى.</translation>
 <translation id="3528171143076753409">شهادة الخادم غير موثوق فيها.</translation>
 <translation id="3539171420378717834">الاحتفاظ بنسخة من هذه البطاقة على هذا الجهاز</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">تمّ إرسال طلبك للدخول إلى هذا الموقع إلى <ph name="NAME" /></translation>
 <translation id="3890664840433101773">إضافة بريد إلكتروني</translation>
 <translation id="3901925938762663762">انتهت صلاحية البطاقة</translation>
-<translation id="3934680773876859118">‏إخفاق تحميل مستند PDF</translation>
 <translation id="3963721102035795474">وضع القارئ</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3973234410852337861">تم حظر <ph name="HOST_NAME" /></translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32 بت)</translation>
 <translation id="7956713633345437162">الإشارات المرجعية على الجوال</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
-<translation id="7962083544045318153">معرّف التعطُّل <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">الترجمة من اللغة <ph name="ORIGINAL_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> دومًا</translation>
 <translation id="7995512525968007366">غير محدد</translation>
 <translation id="800218591365569300">جرّب إغلاق علامات التبويب أو البرامج الأخرى لتفريغ مساحة من الذاكرة.</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8874824191258364635">أدخِل رقم بطاقة صحيحًا</translation>
 <translation id="8876793034577346603">تعذّر تحليل تهيئة الشبكة</translation>
-<translation id="8877192140621905067">بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع</translation>
 <translation id="8889402386540077796">تدرج اللون</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="889901481107108152">عذرًا، هذه التجربة غير متاحة على نظامك الأساسي.</translation>

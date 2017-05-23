@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> の内容:</translation>
 <translation id="1132774398110320017">Chrome の自動入力設定...</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="1151972924205500581">パスワードを入力してください</translation>
 <translation id="1152921474424827756"><ph name="URL" /> の<ph name="BEGIN_LINK" />キャッシュ コピー<ph name="END_LINK" />にアクセスします</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> により途中で接続が切断されました。</translation>
 <translation id="1161325031994447685">Wi-Fi に再度接続する</translation>
+<translation id="1165039591588034296">エラー</translation>
 <translation id="1175364870820465910">印刷(&amp;P)...</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1184214524891303587">セキュリティに関する事象についての詳細を Google に<ph name="BEGIN_WHITEPAPER_LINK" />自動送信<ph name="END_WHITEPAPER_LINK" />する。<ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">このカード情報をこの端末に保存する</translation>
 <translation id="3435896845095436175">有効にする</translation>
 <translation id="3447661539832366887">このデバイスの所有者が恐竜ゲームを無効にしています。</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">取得間隔:</translation>
 <translation id="3462200631372590220">詳細情報を表示しない</translation>
 <translation id="3467763166455606212">カード名義人は必須です</translation>
 <translation id="3478058380795961209">有効期限（月）</translation>
 <translation id="3479539252931486093">想定外の動作である場合は、<ph name="BEGIN_LINK" />問題を報告<ph name="END_LINK" />してください。</translation>
 <translation id="3479552764303398839">後で</translation>
-<translation id="348000606199325318">クラッシュ ID <ph name="CRASH_LOCAL_ID" />（サーバー ID: <ph name="CRASH_ID" />）</translation>
 <translation id="3498215018399854026">現在、保護者にたずねることができません。もう一度お試しください。</translation>
 <translation id="3528171143076753409">サーバーの証明書を信頼できません。</translation>
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">このサイトへのアクセス リクエストを <ph name="NAME" /> さんに送信しました</translation>
 <translation id="3890664840433101773">メールを追加</translation>
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
-<translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>
 <translation id="3963721102035795474">リーダーモード</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">（32 ビット）</translation>
 <translation id="7956713633345437162">モバイルのブックマーク</translation>
 <translation id="7961015016161918242">使用しない</translation>
-<translation id="7962083544045318153">クラッシュ ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">常に<ph name="ORIGINAL_LANGUAGE" />から<ph name="TARGET_LANGUAGE" />に翻訳する</translation>
 <translation id="7995512525968007366">指定なし</translation>
 <translation id="800218591365569300">メモリを解放するために、他のタブやプログラムを閉じてみてください。</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8874824191258364635">有効なクレジット カード番号を入力してください</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
-<translation id="8877192140621905067">確認を行うと、カードの詳細がこのサイトと共有されます</translation>
 <translation id="8889402386540077796">色調</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="889901481107108152">この試験運用機能は、お使いのプラットフォームでは利用できません。</translation>

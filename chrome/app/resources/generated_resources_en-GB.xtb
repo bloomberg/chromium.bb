@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">Japanese keyboard</translation>
 <translation id="1358735829858566124">The file or the directory is not usable.</translation>
 <translation id="1358741672408003399">Spelling and Grammar</translation>
-<translation id="1359381790106966506">Update permissions</translation>
 <translation id="1361164813881551742">Add Manually</translation>
 <translation id="1361655923249334273">Unused</translation>
 <translation id="136180453919764941">Battery – <ph name="STATUS" /></translation>
@@ -1442,7 +1441,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3038675903128704560">Do not allow any site to use a plug-in to access your computer</translation>
 <translation id="3039828483675273919">Moving $1 items...</translation>
 <translation id="304009983491258911">Change SIM card PIN</translation>
-<translation id="3046838483509668188">ChromeVox Options</translation>
 <translation id="3046910703532196514">Web Page, Complete</translation>
 <translation id="304826556400666995">Unmute Tabs</translation>
 <translation id="3053013834507634016">Certificate Key Usage</translation>
@@ -1473,6 +1471,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3088325635286126843">&amp;Rename...</translation>
 <translation id="308903551226753393">Configure automatically</translation>
 <translation id="3089231390674410424">Looks like there's a problem with your credentials. Please make sure that you're signed in properly and try again.</translation>
+<translation id="3090193911106258841">Accessing audio and video input</translation>
 <translation id="3090819949319990166">Can't copy external crx file to <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" paired</translation>
 <translation id="3095995014811312755">version</translation>
@@ -1519,7 +1518,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3154351730702813399">The device admin may monitor your browsing activity.</translation>
 <translation id="3154429428035006212">Offline for more than a month</translation>
 <translation id="3157931365184549694">Restore</translation>
-<translation id="3159386328383139451">Google uses your location to provide a better local experience. You can change this in <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">You have certificates on file that identify these servers:</translation>
 <translation id="316125635462764134">Remove app</translation>
 <translation id="3161522574479303604">All languages</translation>
@@ -2152,6 +2150,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4095507791297118304">Primary display</translation>
 <translation id="409579654357498729">Add to Cloud Print</translation>
 <translation id="4096508467498758490">Disable developer mode extensions</translation>
+<translation id="4096824249111507322">Secure module is being prepared, please wait (this may take a few minutes)...</translation>
 <translation id="4099060993766194518">Restore default search engine?</translation>
 <translation id="4100733287846229632">Device space critically low</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
@@ -2435,7 +2434,6 @@ Press any key to continue exploring.</translation>
 <translation id="4590324241397107707">Database Storage</translation>
 <translation id="4593021220803146968">&amp;Go to <ph name="URL" /></translation>
 <translation id="4594109696316595112">One-time activation: Type your password to activate Smart Lock on this <ph name="DEVICE_TYPE" />. With Smart Lock, your phone will unlock this device – without a password. To change or turn off this feature, visit your <ph name="DEVICE_TYPE" />'s settings.</translation>
-<translation id="4594538246438948697">Hold down Search and click or drag to speak anything</translation>
 <translation id="4595560905247879544">Apps and extensions can only be modified by the manager (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">You have certificates on file that identify these servers</translation>
 <translation id="4598556348158889687">Storage management</translation>
@@ -2480,6 +2478,7 @@ Press any key to continue exploring.</translation>
 <translation id="4657031070957997341">Always allow plug-ins on <ph name="HOST" /></translation>
 <translation id="4662788913887017617">Share this bookmark with your iPhone</translation>
 <translation id="4664482161435122549">PKCS No.12 Export Error</translation>
+<translation id="466481852929361583">The secure module is being set up. Please be patient; this may take a few minutes.</translation>
 <translation id="4665014895760275686">Manufacturer</translation>
 <translation id="4667176955651319626">Block third-party cookies and site data</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
@@ -2653,7 +2652,6 @@ Press any key to continue exploring.</translation>
 <translation id="490074449735753175">Use a web service to help resolve spelling errors</translation>
 <translation id="49027928311173603">The policy downloaded from the server is invalid: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Run Chrome Clean-Up Tool</translation>
-<translation id="4906679076183257864">Reset to Default</translation>
 <translation id="4907161631261076876">This file is not commonly downloaded and may be dangerous.</translation>
 <translation id="4907306957610201395">Permission Category</translation>
 <translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -3229,6 +3227,7 @@ Press any key to continue exploring.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="577624874850706961">Search cookies</translation>
 <translation id="5778550464785688721">MIDI devices full control</translation>
+<translation id="5778747455497889540">Below is the randomly generated secure module password that has been assigned to your computer:</translation>
 <translation id="5780066559993805332">(Best)</translation>
 <translation id="5780973441651030252">Process priority</translation>
 <translation id="5781865261247219930">Send commands to <ph name="EXTENSION_NAME" /></translation>
@@ -3287,6 +3286,7 @@ Press any key to continue exploring.</translation>
 <translation id="5854409662653665676">If you are experiencing frequent problems, you could try the following to resolve the issue with this module:</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855119960719984315">switch window</translation>
+<translation id="5855773610748894548">Oops, secure module error.</translation>
 <translation id="5856721540245522153">Enable debugging features</translation>
 <translation id="5857090052475505287">New Folder</translation>
 <translation id="5859272821192576954">You're all set to continue on to Hangouts</translation>
@@ -3377,6 +3377,7 @@ Press any key to continue exploring.</translation>
 <translation id="6005695835120147974">Media Router</translation>
 <translation id="6006484371116297560">Classic</translation>
 <translation id="6007237601604674381">Move failed. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Accessing video input</translation>
 <translation id="6011193465932186973">Fingerprint</translation>
 <translation id="6011449291337289699">Clear site data</translation>
 <translation id="6015796118275082299">Year</translation>
@@ -3803,6 +3804,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6629841649550503054">All backed up to <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> wants permanent access to a certificate to authenticate itself on your behalf.</translation>
 <translation id="6639554308659482635">SQLite memory</translation>
+<translation id="6641138807883536517">The randomly generated secure module password is not available. This is normal after a Powerwash.</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6644846457769259194">Updating your device (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape Certification Authority Revocation URL</translation>
@@ -3893,7 +3895,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> was added remotely</translation>
 <translation id="6790820461102226165">Add Person...</translation>
 <translation id="6791443592650989371">Activation status:</translation>
-<translation id="6792045489562677072">Select-to-speak options</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> would like to share the contents of your screen with <ph name="TARGET_NAME" />. Choose what you'd like to share.</translation>
 <translation id="6793604637258913070">Highlight the text caret when it appears or moves</translation>
 <translation id="6797493596609571643">Oops, something went wrong.</translation>
@@ -4023,6 +4024,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6991128190741664836">Later</translation>
 <translation id="6991665348624301627">Select a destination</translation>
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
+<translation id="6996946928646015361">Secure module is disabled or absent.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{The following page has become unresponsive. You can wait for it to become responsive or kill it.}other{The following pages have become unresponsive. You can wait for them to become responsive or kill them.}}</translation>
 <translation id="7002055706763150362">To set up Smart Lock for Chromebook, Google needs to make sure that it’s you – type your password to get started.</translation>
@@ -4514,7 +4516,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7766807826975222231">Take a tour</translation>
 <translation id="7767646430896201896">Options:</translation>
-<translation id="7768784765476638775">Select-to-speak</translation>
 <translation id="7769353642898261262">How to secure the phone</translation>
 <translation id="7769672763586021400">Model ID</translation>
 <translation id="7771452384635174008">Layout</translation>
@@ -4560,6 +4561,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7825423931463735974">Tamil keyboard (Tamil99)</translation>
 <translation id="782590969421016895">Use current pages</translation>
 <translation id="782886543891417279">The Wi-Fi that you are using (<ph name="WIFI_NAME" />) may require you to visit its login page.</translation>
+<translation id="7829298379596169484">Accessing audio input</translation>
 <translation id="7831368056091621108">to get this extension, your history, and other Chrome settings on all your devices.</translation>
 <translation id="7831493768366098287">Google Print</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5082,6 +5084,7 @@ Calculating time until full</translation>
 <translation id="8631032106121706562">Petals</translation>
 <translation id="8631271110654520730">Copying recovery image...</translation>
 <translation id="8632275030377321303">The proxy cannot be modified by the user.</translation>
+<translation id="8637542770513281060">Your computer contains a secure module, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Centre to learn more: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
 <translation id="8639963783467694461">Auto-fill settings</translation>
 <translation id="8642171459927087831">Access Token</translation>
@@ -5191,7 +5194,6 @@ Calculating time until full</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Allow proxies for shared networks</translation>
 <translation id="878763818693997570">This name is too long</translation>
-<translation id="8789375980715484686">Manage other users</translation>
 <translation id="8791534160414513928">Send a "Do Not Track" request with your browsing traffic</translation>
 <translation id="8794025342371547160">Restricted IP</translation>
 <translation id="879413103056696865">While the hotspot is on, your <ph name="PHONE_NAME" /> will:</translation>

@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
+<translation id="1151972924205500581">需要密码</translation>
 <translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外终止了连接。</translation>
 <translation id="1161325031994447685">重新连接到 Wi-Fi 网络</translation>
+<translation id="1165039591588034296">错误</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />自动向 Google 报告<ph name="END_WHITEPAPER_LINK" />可能出现的安全事件的详细信息。<ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -300,14 +302,12 @@
 <translation id="3431636764301398940">将此卡的信息保存到该设备</translation>
 <translation id="3435896845095436175">启用</translation>
 <translation id="3447661539832366887">此设备的所有者已关闭恐龙游戏。</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">抓取时间间隔：</translation>
 <translation id="3462200631372590220">隐藏详情</translation>
 <translation id="3467763166455606212">必须输入持卡人姓名</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3479539252931486093">不应该出现这种情况？请<ph name="BEGIN_LINK" />告诉我们<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">以后再说</translation>
-<translation id="348000606199325318">崩溃 ID：<ph name="CRASH_LOCAL_ID" />（服务器 ID：<ph name="CRASH_ID" />）</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
@@ -355,7 +355,6 @@
 <translation id="3886446263141354045">系统已将您想访问此网站的请求发送给<ph name="NAME" /></translation>
 <translation id="3890664840433101773">添加电子邮件地址</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
-<translation id="3934680773876859118">无法加载 PDF 文档</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
@@ -768,7 +767,6 @@
 <translation id="7951415247503192394">（32 位）</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="7961015016161918242">一律不</translation>
-<translation id="7962083544045318153">崩溃 ID：<ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">一律将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="800218591365569300">请尝试关闭其他标签页或程序以释放内存。</translation>
@@ -850,7 +848,6 @@
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8874824191258364635">请输入有效的信用卡号</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>
-<translation id="8877192140621905067">在您确认后，您的信用卡详情将与此网站共享</translation>
 <translation id="8889402386540077796">色调</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="889901481107108152">抱歉，此项实验性功能不能用于您的平台。</translation>

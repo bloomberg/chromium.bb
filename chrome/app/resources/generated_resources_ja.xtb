@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">日本語のキーボード</translation>
 <translation id="1358735829858566124">このファイルまたはディレクトリは使用できません。</translation>
 <translation id="1358741672408003399">スペルと文法</translation>
-<translation id="1359381790106966506">権限を更新</translation>
 <translation id="1361164813881551742">手動で追加</translation>
 <translation id="1361655923249334273">使用されていない</translation>
 <translation id="136180453919764941">バッテリー - <ph name="STATUS" /></translation>
@@ -1442,7 +1441,6 @@
 <translation id="3038675903128704560">すべてのサイトに対し、プラグインを使ったパソコンへのアクセスを禁止する</translation>
 <translation id="3039828483675273919">$1 件の項目を移動しています...</translation>
 <translation id="304009983491258911">SIM カードの PIN の変更</translation>
-<translation id="3046838483509668188">ChromeVox のオプション</translation>
 <translation id="3046910703532196514">ウェブページ、完全</translation>
 <translation id="304826556400666995">タブのミュートを解除</translation>
 <translation id="3053013834507634016">証明書キーの用途</translation>
@@ -1473,6 +1471,7 @@
 <translation id="3088325635286126843">名前を変更(&amp;R)...</translation>
 <translation id="308903551226753393">自動設定</translation>
 <translation id="3089231390674410424">認証情報に問題があるようです。正しくログインしていることを確認し、もう一度お試しください。</translation>
+<translation id="3090193911106258841">音声 / ビデオ入力にアクセスしています</translation>
 <translation id="3090819949319990166">外部の crx ファイルは <ph name="TEMP_CRX_FILE" /> にコピーできません。</translation>
 <translation id="3090871774332213558">「<ph name="DEVICE_NAME" />」がペア設定されました</translation>
 <translation id="3095995014811312755">バージョン</translation>
@@ -1519,7 +1518,6 @@
 <translation id="3154351730702813399">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="3154429428035006212">1 か月以上オフライン</translation>
 <translation id="3157931365184549694">復元</translation>
-<translation id="3159386328383139451">Google ではより有益な地域情報を提供するために現在地情報を使用します。この設定は <ph name="SETTINGS_LINK" /> で変更できます。</translation>
 <translation id="3160041952246459240">これらのサーバーを識別するための証明書がファイルに格納されています:</translation>
 <translation id="316125635462764134">アプリを削除</translation>
 <translation id="3161522574479303604">すべての言語</translation>
@@ -2152,6 +2150,7 @@
 <translation id="4095507791297118304">メイン ディスプレイ</translation>
 <translation id="409579654357498729">クラウド プリントに追加</translation>
 <translation id="4096508467498758490">デベロッパー モードの拡張機能を無効にする</translation>
+<translation id="4096824249111507322">セキュア モジュールを準備しています。しばらくお待ちください。これには数分かかることがあります。</translation>
 <translation id="4099060993766194518">既定の検索エンジンに戻しますか？</translation>
 <translation id="4100733287846229632">端末の空き領域が非常に少なくなっています</translation>
 <translation id="4104163789986725820">エクスポート(&amp;X)</translation>
@@ -2435,7 +2434,6 @@
 <translation id="4590324241397107707">データベース ストレージ</translation>
 <translation id="4593021220803146968"><ph name="URL" /> に移動(&amp;G)</translation>
 <translation id="4594109696316595112">1 回限りの有効化: この <ph name="DEVICE_TYPE" /> で Smart Lock を有効にするにはパスワードを入力します。Smart Lock を使用すると、パスワードを入力することなくスマートフォンからこのデバイスのロックを解除できます。この機能を変更または無効にするには、<ph name="DEVICE_TYPE" /> の設定画面で行います。</translation>
-<translation id="4594538246438948697">テキストを読み上げるには、[検索] を押したままクリックまたはドラッグします</translation>
 <translation id="4595560905247879544">アプリと拡張機能は管理者（<ph name="CUSTODIAN_NAME" />）だけが変更できます。</translation>
 <translation id="4596295440756783523">これらのサーバーを識別する証明書がファイルに格納されています</translation>
 <translation id="4598556348158889687">ストレージ管理</translation>
@@ -2480,6 +2478,7 @@
 <translation id="4657031070957997341"><ph name="HOST" /> のプラグインを常に許可する</translation>
 <translation id="4662788913887017617">このブックマークは iPhone と共有できます</translation>
 <translation id="4664482161435122549">PKCS #12 エクスポート エラー</translation>
+<translation id="466481852929361583">セキュア モジュールをセットアップしています。しばらくお待ちください。これには数分かかることがあります。</translation>
 <translation id="4665014895760275686">メーカー</translation>
 <translation id="4667176955651319626">サードパーティの Cookie とサイト データをブロックする</translation>
 <translation id="4668721319092543482">クリックして <ph name="PLUGIN_NAME" /> を有効にします</translation>
@@ -2653,7 +2652,6 @@
 <translation id="490074449735753175">ウェブ サービスを使用してスペル ミスの解決を支援する</translation>
 <translation id="49027928311173603">サーバーからダウンロードされたポリシーが無効です: <ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4903369323166982260">Chrome クリーンアップ ツールを実行</translation>
-<translation id="4906679076183257864">デフォルトに戻す</translation>
 <translation id="4907161631261076876">このファイルは一般的にダウンロードされているファイルではなく、危害を及ぼす可能性があります。</translation>
 <translation id="4907306957610201395">権限のカテゴリ</translation>
 <translation id="4909038193460299775">このアカウントは <ph name="DOMAIN" /> で管理されているため、ブックマーク、履歴、パスワードなどの設定はこの端末から消去されます。ただし、データは Google アカウントに保存され、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
@@ -3229,6 +3227,7 @@
 <translation id="5774515636230743468">マニフェスト:</translation>
 <translation id="577624874850706961">Cookie を検索</translation>
 <translation id="5778550464785688721">MIDI デバイスのフル コントロール</translation>
+<translation id="5778747455497889540">ご使用のパソコンに割り当てられたランダム生成のセキュア モジュール パスワードは以下のとおりです。</translation>
 <translation id="5780066559993805332">（最良）</translation>
 <translation id="5780973441651030252">プロセスの優先値</translation>
 <translation id="5781865261247219930">コマンドを <ph name="EXTENSION_NAME" /> に送信します</translation>
@@ -3287,6 +3286,7 @@
 <translation id="5854409662653665676">このモジュールで頻繁に問題が発生する場合は、次の手順に従って問題を解決してください:</translation>
 <translation id="5854912040170951372">スライス</translation>
 <translation id="5855119960719984315">ウィンドウを切り替える</translation>
+<translation id="5855773610748894548">セキュア モジュール エラー。</translation>
 <translation id="5856721540245522153">デバッグ機能を有効にする</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
 <translation id="5859272821192576954">すべての設定が完了しました。ハングアウトに進むことができます</translation>
@@ -3377,6 +3377,7 @@
 <translation id="6005695835120147974">メディア ルーター</translation>
 <translation id="6006484371116297560">クラシック</translation>
 <translation id="6007237601604674381">移動できませんでした。<ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">ビデオ入力にアクセスしています</translation>
 <translation id="6011193465932186973">指紋</translation>
 <translation id="6011449291337289699">サイトデータの削除</translation>
 <translation id="6015796118275082299">年</translation>
@@ -3803,6 +3804,7 @@
 <translation id="6629841649550503054">すべて <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップ済みです</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> が、自身を自動的に認証できるよう、証明書への恒久的なアクセス許可を求めています。</translation>
 <translation id="6639554308659482635">SQLite メモリ</translation>
+<translation id="6641138807883536517">ランダム生成のセキュア モジュール パスワードが使用できなくなっています。これは Powerwash の実行後に通常起こることです。</translation>
 <translation id="6643016212128521049">クリア</translation>
 <translation id="6644846457769259194">端末を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6647228709620733774">Netscape 認証局取り消し URL</translation>
@@ -3893,7 +3895,6 @@
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> がリモートで追加されました</translation>
 <translation id="6790820461102226165">ユーザーを追加...</translation>
 <translation id="6791443592650989371">起動状態:</translation>
-<translation id="6792045489562677072">「選択して読み上げ」のオプション</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> が <ph name="TARGET_NAME" /> との画面コンテンツの共有をリクエストしています。共有する部分を選択してください。</translation>
 <translation id="6793604637258913070">テキスト キャレットが表示されるか移動したときに強調表示する</translation>
 <translation id="6797493596609571643">エラーが発生しました。</translation>
@@ -4023,6 +4024,7 @@
 <translation id="6991128190741664836">後で確認</translation>
 <translation id="6991665348624301627">送信先の選択</translation>
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
+<translation id="6996946928646015361">セキュア モジュールが無効であるか、存在しません。</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{次のページは応答していません。応答があるまで待つか、強制終了することができます。}other{次のページは応答していません。応答があるまで待つか、強制終了することができます。}}</translation>
 <translation id="7002055706763150362">Smart Lock for Chromebook を設定するには、Google に対する本人確認が必要です。開始するにはパスワードを入力してください。</translation>
@@ -4516,7 +4518,6 @@
 <translation id="7765158879357617694">移動</translation>
 <translation id="7766807826975222231">使い方ガイド</translation>
 <translation id="7767646430896201896">オプション:</translation>
-<translation id="7768784765476638775">選択して読み上げ</translation>
 <translation id="7769353642898261262">スマートフォンを保護するには</translation>
 <translation id="7769672763586021400">モデル ID</translation>
 <translation id="7771452384635174008">レイアウト</translation>
@@ -4562,6 +4563,7 @@
 <translation id="7825423931463735974">タミル語キーボード（Tamil99）</translation>
 <translation id="782590969421016895">現在のページを使用</translation>
 <translation id="782886543891417279">ご利用の Wi-Fi（<ph name="WIFI_NAME" />）では、ログインページへのアクセスが必要な可能性があります。</translation>
+<translation id="7829298379596169484">音声入力にアクセスしています</translation>
 <translation id="7831368056091621108">この拡張機能、履歴、すべてのデバイス上にあるその他の Chrome 設定を取得します。</translation>
 <translation id="7831493768366098287">Google プリント</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5082,6 +5084,7 @@
 <translation id="8631032106121706562">デイジー</translation>
 <translation id="8631271110654520730">リカバリ イメージをコピーしています...</translation>
 <translation id="8632275030377321303">このユーザーはプロキシを変更できません。</translation>
+<translation id="8637542770513281060">ご使用のパソコンにはセキュア モジュールが組み込まれています。これは Chrome OS の多くの重要なセキュリティ機能を実装するために使用されます。詳しくは Chromebook ヘルプセンター（https://support.google.com/chromebook/?p=sm）をご覧ください。</translation>
 <translation id="8637688295594795546">システムのアップデートが見つかりました。ダウンロードの準備をしています...</translation>
 <translation id="8639963783467694461">自動入力の設定</translation>
 <translation id="8642171459927087831">アクセス トークン</translation>
@@ -5191,7 +5194,6 @@
 <translation id="8785622406424941542">タッチペン</translation>
 <translation id="8787254343425541995">共有ネットワークのプロキシを許可する</translation>
 <translation id="878763818693997570">名前が長すぎます</translation>
-<translation id="8789375980715484686">他のユーザーの管理</translation>
 <translation id="8791534160414513928">閲覧トラフィックと一緒に「トラッキング拒否」リクエストを送信する</translation>
 <translation id="8794025342371547160">制限付き IP</translation>
 <translation id="879413103056696865">アクセス ポイントが有効な場合、<ph name="PHONE_NAME" /> は次のように動作します。</translation>

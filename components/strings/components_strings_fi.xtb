@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Viesti osoitteesta <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
+<translation id="1151972924205500581">Salasana vaaditaan</translation>
 <translation id="1152921474424827756">Käytä osoitteen <ph name="URL" /> <ph name="BEGIN_LINK" />välimuistiversiota<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> katkaisi yhteyden yllättäen.</translation>
 <translation id="1161325031994447685">Muodosta yhteys Wi-Fi-verkkoon uudelleen.</translation>
+<translation id="1165039591588034296">Virhe</translation>
 <translation id="1175364870820465910">Tulo&amp;sta...</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Ilmoita Googlelle automaattisesti<ph name="END_WHITEPAPER_LINK" /> mahdollisista turvallisuusongelmista. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -303,14 +305,12 @@
 <translation id="3431636764301398940">Tallenna kortti tälle laitteelle</translation>
 <translation id="3435896845095436175">Ota käyttöön</translation>
 <translation id="3447661539832366887">Tämän laitteen omistaja on poistanut dinosauruspelin käytöstä.</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Hakuväli:</translation>
 <translation id="3462200631372590220">Piilota lisäasetukset</translation>
 <translation id="3467763166455606212">Kortinhaltijan nimi on pakollinen.</translation>
 <translation id="3478058380795961209">Voimassa (kk)</translation>
 <translation id="3479539252931486093">Etkö odottanut tätä? <ph name="BEGIN_LINK" />Kerro siitä meille.<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ei nyt</translation>
-<translation id="348000606199325318">Kaatumistunnus: <ph name="CRASH_LOCAL_ID" /> (palvelintunnus: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Emme tavoittaneet vanhempaasi. Yritä uudelleen.</translation>
 <translation id="3528171143076753409">Palvelimen varmenne ei ole luotettava.</translation>
 <translation id="3539171420378717834">Säilytä tämän kortin kopio laitteella.</translation>
@@ -359,7 +359,6 @@
 <translation id="3886446263141354045">Pyyntösi päästä tälle sivustolle on lähetetty henkilölle <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Lisää sähköposti</translation>
 <translation id="3901925938762663762">Kortti on vanhentunut.</translation>
-<translation id="3934680773876859118">PDF-asiakirjan lataaminen epäonnistui</translation>
 <translation id="3963721102035795474">Lukijatila</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> on estetty</translation>
@@ -773,7 +772,6 @@
 <translation id="7951415247503192394">(32-bittinen)</translation>
 <translation id="7956713633345437162">Mobiilikirjanmerkit</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
-<translation id="7962083544045318153">Kaatumistunnus <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Käännä aina kielestä <ph name="ORIGINAL_LANGUAGE" /> kielelle <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ei määritetty</translation>
 <translation id="800218591365569300">Yritä vapauttaa muistia sulkemalla muita välilehtiä tai ohjelmia.</translation>
@@ -855,7 +853,6 @@
 <translation id="8870413625673593573">Hiljattain suljetut</translation>
 <translation id="8874824191258364635">Anna kelvollinen kortin numero.</translation>
 <translation id="8876793034577346603">Verkkoasetuksia ei voitu jäsentää.</translation>
-<translation id="8877192140621905067">Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="8889402386540077796">Sävy</translation>
 <translation id="8891727572606052622">Virheellinen välityspalvelimen tila.</translation>
 <translation id="889901481107108152">Tämä kokeilu ei ole käytettävissä käyttöympäristössäsi.</translation>

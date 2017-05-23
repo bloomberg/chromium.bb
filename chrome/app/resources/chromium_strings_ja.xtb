@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="1808667845054772817">Chromium を再インストール</translation>
-<translation id="1816404578968201294">このサイトと位置情報を共有するには、Chromium に位置情報へのアクセスを許可する必要があります。</translation>
 <translation id="1869480248812203386">セキュリティに関する事象についての詳細を Google に自動送信して、Chromium の安全性と利便性の向上にご協力ください。</translation>
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">アカウントのログイン情報が最新ではないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">アップデートを適用するには Chromium OS を再起動する必要があります。</translation>
-<translation id="2636877269779209383">このサイトとカメラを共有するには、Chromium にカメラへのアクセスを許可する必要があります。</translation>
 <translation id="2647554856022461007">Chromium は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらのサービスは無効にすることもできます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
 <translation id="2685838254101182273">Chromium はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="6584627348340620412">32 ビットの Chromium の今後のバージョンではこの Linux システムはサポートされなくなります。64 ビットの Chromium にアップグレードしてください。</translation>
 <translation id="6593914713218535185">この Linux システムはサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
-<translation id="6637001341228460105">このサイトとマイクを共有するには、Chromium にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="6638567566961868659">ブックマークは Chromium メニューやブックマーク バーに表示されます。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6717134281241384636">バージョンが新しい Chromium のプロフィールは使用できません。
@@ -228,7 +225,6 @@
 <translation id="7975919845073681630">この Chromium はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="7979877361127045932">Chromium メニューで非表示</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
-<translation id="8033665941300843262">このサイトと制限付き機能を共有するには、Chromium に制限付き機能へのアクセスを許可する必要があります。</translation>
 <translation id="8134284582177628525">このパソコンを <ph name="PROFILE_NAME" /> さんと共有する場合は、個別に閲覧できるように、ご自分を Chromium に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
 <translation id="8157153840442649507">Chromium はこの言語で表示されています</translation>
 <translation id="81770708095080097">このファイルは危険なファイルであるため、Chromium でブロックしました。</translation>

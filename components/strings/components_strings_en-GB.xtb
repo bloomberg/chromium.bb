@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> says:</translation>
 <translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
+<translation id="1151972924205500581">Password required</translation>
 <translation id="1152921474424827756">Access a <ph name="BEGIN_LINK" />cached copy<ph name="END_LINK" /> of <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> unexpectedly closed the connection.</translation>
 <translation id="1161325031994447685">Reconnecting to Wi-Fi</translation>
+<translation id="1165039591588034296">Error</translation>
 <translation id="1175364870820465910">&amp;Print...</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatically report<ph name="END_WHITEPAPER_LINK" /> details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Save this card to this device</translation>
 <translation id="3435896845095436175">Enable</translation>
 <translation id="3447661539832366887">The owner of this device turned off the dinosaur game.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Fetch interval:</translation>
 <translation id="3462200631372590220">Hide advanced</translation>
 <translation id="3467763166455606212">Cardholder name required</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Not now</translation>
-<translation id="348000606199325318">Crash ID <ph name="CRASH_LOCAL_ID" /> (Server ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Your request to access this site has been sent to <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Add email</translation>
 <translation id="3901925938762663762">The card is expired</translation>
-<translation id="3934680773876859118">Failed to load PDF document</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is blocked</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Mobile bookmarks</translation>
 <translation id="7961015016161918242">Never</translation>
-<translation id="7962083544045318153">Crash ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Not Specified</translation>
 <translation id="800218591365569300">Try closing other tabs or programmes to free up memory.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8874824191258364635">Enter a valid card number</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
-<translation id="8877192140621905067">Once you've confirm, your card details will be shared with this site</translation>
 <translation id="8889402386540077796">Hue</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>

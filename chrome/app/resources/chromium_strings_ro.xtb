@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Permiteți Chromium să ruleze în fundal</translation>
 <translation id="1779356040007214683">Pentru mai multă siguranță în Chromium, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="1808667845054772817">Reinstalați Chromium</translation>
-<translation id="1816404578968201294">Chromium are nevoie de acces la locație pentru a-l acorda acestui site.</translation>
 <translation id="1869480248812203386">Puteți contribui la un produs Chromium mai sigur și mai ușor de folosit raportând automat la Google detaliile eventualelor incidente privind securitatea.</translation>
 <translation id="1881322772814446296">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chromium existente. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nu mai răspunde. Îl reporniți acum?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Pentru a se aplica actualizarea, sistemul de operare Chromium trebuie să fie repornit.</translation>
-<translation id="2636877269779209383">Chromium are nevoie de acces la camera foto pentru a-l acorda acestui site.</translation>
 <translation id="2647554856022461007">Este posibil ca Chromium să folosească servicii web pentru a-ți îmbunătăți experiența de navigare. Poți să dezactivezi aceste servicii. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">S-a produs o eroare de sistem de operare în timpul instalării. Descărcați din nou Chromium.</translation>
 <translation id="2685838254101182273">Chromium nu se mai actualizează și nu mai acceptă această versiune a sistemului dvs. de operare.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Pentru a descărca fișiere, Chromium necesită acces la stocare.</translation>
 <translation id="6584627348340620412">Versiunile ulterioare Chromium pe 32 de biți nu vor mai accepta acest sistem Linux. Fă upgrade la Chromium pe 64 de biți.</translation>
 <translation id="6593914713218535185">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe acest sistem Linux.</translation>
-<translation id="6637001341228460105">Chromium are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="6638567566961868659">Găsiți marcajele în meniul Chromium sau în bara de marcaje.</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="6717134281241384636">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune mai nouă a sistemului de operare Chromium.
@@ -228,7 +225,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7975919845073681630">Aceasta este o instalare secundară a browserului Chromium și nu poate fi setat ca browser prestabilit.</translation>
 <translation id="7979877361127045932">Ascunde în meniul Chromium</translation>
 <translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">Chromium are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
 <translation id="8134284582177628525">Dacă folosești acest computer în comun cu <ph name="PROFILE_NAME" />, adaugă-te în Chromium pentru a naviga separat. În caz contrar, deconectează Contul Google al celuilalt utilizator.</translation>
 <translation id="8157153840442649507">Chromium este afișat în această limbă</translation>
 <translation id="81770708095080097">Fișierul este periculos, așadar Chromium l-a blocat.</translation>

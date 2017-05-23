@@ -3,7 +3,6 @@
 <translationbundle lang="lt">
 <translation id="1001534784610492198">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="1035334672863811645">prisijunkite prie „Chrome“</translation>
-<translation id="1061441684050139317">„Chrome“ reikia galimybės pasiekti mikrofoną, kad jį būtų galima bendrinti su šia svetaine.</translation>
 <translation id="1065672644894730302">Jūsų nuostatų negalima nuskaityti.
 
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
@@ -111,7 +110,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
 <translation id="4147555960264124640">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
-<translation id="423410644998903704">„Chrome“ reikia pasiekiamumo leidimų, kad juos būtų galima bendrinti su šia svetaine.</translation>
 <translation id="4251615635259297716">Susisieti „Chrome“ duomenis su šia paskyra?</translation>
 <translation id="4309555186815777032">(„Chrome“ būtina <ph name="BEGIN_BUTTON" />paleisti iš naujo<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -177,7 +175,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="5931853610562009806">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chrome“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
 <translation id="5940385492829620908">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chrome“ duomenys.</translation>
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
-<translation id="6012342843556706400">„Chrome“ reikia galimybės pasiekti vietovės informaciją, kad ją būtų galima bendrinti su šia svetaine.</translation>
 <translation id="6014844626092547096">Dabar esate prisijungę prie „Chrome“. Administratorius neleidžia sinchronizuoti.</translation>
 <translation id="6070348360322141662">Kad būtų papildomai užtikrintas saugumas, „Google Chrome“ užšifruos duomenis</translation>
 <translation id="6113794647360055231">„Chrome“ dabar dar tobulesnė</translation>
@@ -235,7 +232,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7761834446675418963">Spustelėkite savo vardą, kad atidarytumėte „Chrome“ ir pradėtumėte naršyti.</translation>
 <translation id="7781002470561365167">Galima nauja „Google Chrome“ versija.</translation>
 <translation id="7787950393032327779">Atrodo, kad profilį naudoja kitas „Google Chrome“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chrome“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chrome“.</translation>
-<translation id="7788788617745289808">„Chrome“ reikia galimybės pasiekti fotoaparatą, kad jį būtų galima bendrinti su šia svetaine.</translation>
 <translation id="7808348361785373670">Pašalinti iš „Chrome“...</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="7855730255114109580">„Google Chrome“ yra naujausios versijos</translation>

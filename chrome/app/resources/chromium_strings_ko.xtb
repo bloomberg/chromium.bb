@@ -26,7 +26,6 @@
 <translation id="1774152462503052664">백그라운드에서 Chromium을 실행</translation>
 <translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="1808667845054772817">Chromium 재설치</translation>
-<translation id="1816404578968201294">Chromium이 이 사이트와 위치를 공유하려면 위치 액세스가 필요합니다.</translation>
 <translation id="1869480248812203386">Google에 발생할 수 있는 보안 문제의 세부정보를 자동으로 보고하도록 설정하면 Chromium을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="1881322772814446296">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chromium 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
@@ -50,7 +49,6 @@
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
 <translation id="2587578672395088481">업데이트를 적용하려면 Chromium OS를 다시 시작해야 합니다.</translation>
-<translation id="2636877269779209383">Chromium이 이 사이트와 카메라를 공유하려면 카메라 액세스가 필요합니다.</translation>
 <translation id="2647554856022461007">Chromium에서 사용자에게 더 나은 인터넷 사용 환경을 제공하기 위해 웹 서비스를 사용할 수 있습니다. 원하는 경우 서비스를 사용 중지하실 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="2685838254101182273">Chromium에서 업데이트를 중단했으며 이 버전의 운영체제를 더 이상 지원하지 않습니다.</translation>
@@ -172,7 +170,6 @@
 <translation id="6526111688217511984">Chromium에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="6584627348340620412">향후 32비트 Chromium 버전에서는 더 이상 이 Linux 시스템을 지원하지 않습니다. 64비트 Chromium으로 업그레이드하세요.</translation>
 <translation id="6593914713218535185">이 Linux 시스템에서 더 이상 Chromium이 지원되지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
-<translation id="6637001341228460105">Chromium이 이 사이트와 마이크를 공유하려면 마이크 액세스가 필요합니다.</translation>
 <translation id="6638567566961868659">Chromium 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="6717134281241384636">Chromium의 최신 버전을 사용하기 때문에 프로필을 사용할 수 없습니다.
@@ -230,7 +227,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7975919845073681630">Chromium의 보조 설치이며 기본 브라우저로 설정할 수 없습니다.</translation>
 <translation id="7979877361127045932">Chromium 메뉴에서 숨기기</translation>
 <translation id="8030318113982266900">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트하는 중...</translation>
-<translation id="8033665941300843262">Chromium이 이 사이트와 권한을 공유하려면 권한 액세스가 필요합니다.</translation>
 <translation id="8134284582177628525"><ph name="PROFILE_NAME" />님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chromium에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
 <translation id="8157153840442649507">현재 Chromium에서 사용 중인 언어</translation>
 <translation id="81770708095080097">이 파일은 위험하므로 Chromium에서 차단했습니다.</translation>

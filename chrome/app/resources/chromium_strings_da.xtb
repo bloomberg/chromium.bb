@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Lad Chromium køre i baggrunden</translation>
 <translation id="1779356040007214683">For at gøre Chromium sikrere har vi slået nogle udvidelser fra, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="1808667845054772817">Geninstaller Chromium</translation>
-<translation id="1816404578968201294">Chromium skal have adgang til din placering, før den kan deles med dette website.</translation>
 <translation id="1869480248812203386">Du kan hjælpe med at gøre Chromium sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="1881322772814446296">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. Du kan eventuelt oprette en ny profil for at holde dine Chromium-data adskilt. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Chromium OS kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Chromium OS skal genstartes, før opdateringen kan anvendes.</translation>
-<translation id="2636877269779209383">Chromium skal have adgang til dit kamera, før det kan deles med dette website.</translation>
 <translation id="2647554856022461007">Chromium bruger muligvis webtjenester for at forbedre din browseroplevelse. Du kan vælge at deaktivere disse tjenester. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Der opstod en fejl i operativsystemet under installationen. Download Chromium igen.</translation>
 <translation id="2685838254101182273">Chromium er holdt op med at opdatere og understøtter ikke længere denne version af dit operativsystem.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium skal have lageradgang for at kunne downloade filer.</translation>
 <translation id="6584627348340620412">Fremtidige versioner af 32-bit Chromium vil ikke længere understøtte dette Linux-system. Opgrader til 64-bit Chromium.</translation>
 <translation id="6593914713218535185">Chromium fungerer muligvis ikke korrekt, da det ikke længere understøttes af dette Linux-system.</translation>
-<translation id="6637001341228460105">Chromium skal have adgang til din mikrofon, før den kan deles med dette website.</translation>
 <translation id="6638567566961868659">Find dine bogmærker i Chromium-menuen eller på bogmærkelinjen.</translation>
 <translation id="6676384891291319759">Få adgang til internettet</translation>
 <translation id="6717134281241384636">Din profil kan ikke bruges, da den stammer fra en nyere version af Chromium.
@@ -228,7 +225,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7975919845073681630">Dette er en sekundær installation af Chromium, og den kan ikke gøres til din standardbrowser.</translation>
 <translation id="7979877361127045932">Skjul i Chromium-menuen</translation>
 <translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">Chromium skal have adgang til dine tilladelser, før de kan deles med dette website.</translation>
 <translation id="8134284582177628525">Hvis du deler denne computer med <ph name="PROFILE_NAME" />, kan du tilføje dig selv i Chromium for at browse individuelt. Alternativt kan du afbryde vedkommendes Google-konto.</translation>
 <translation id="8157153840442649507">Chromium vises på dette sprog</translation>
 <translation id="81770708095080097">Denne fil er farlig, så Chromium har blokeret den.</translation>

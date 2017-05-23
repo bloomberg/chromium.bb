@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Ο ιστότοπος <ph name="SITE" /> λέει:</translation>
 <translation id="1132774398110320017">Ρυθμίσεις Αυτόματης συμπλήρωσης Chrome…</translation>
 <translation id="1150979032973867961">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του δεν θεωρείται έμπιστο από το λειτουργικό σύστημα της συσκευής σας. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
+<translation id="1151972924205500581">Απαιτείται κωδικός πρόσβασης</translation>
 <translation id="1152921474424827756">Πρόσβαση σε <ph name="BEGIN_LINK" />προσωρινό αντίγραφο<ph name="END_LINK" /> της διεύθυνσης <ph name="URL" /></translation>
 <translation id="1158211211994409885">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> τερμάτισε απροσδόκητα τη σύνδεση.</translation>
 <translation id="1161325031994447685">Επανασυνδεθείτε στο Wi-Fi</translation>
+<translation id="1165039591588034296">Σφάλμα</translation>
 <translation id="1175364870820465910">&amp;Εκτύπωση...</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Αυτόματη αναφορά<ph name="END_WHITEPAPER_LINK" /> στην Google λεπτομερειών σχετικά με πιθανά περιστατικά ασφάλειας.<ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Αποθήκευση αυτής της κάρτας στη συγκεκριμένη συσκευή</translation>
 <translation id="3435896845095436175">Ενεργοποίηση</translation>
 <translation id="3447661539832366887">Ο κάτοχος αυτής της συσκευής απενεργοποίησε το παιχνίδι με τους δεινοσαύρους.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Διάστημα ανάκτησης:</translation>
 <translation id="3462200631372590220">Απόκρυψη σύνθετων</translation>
 <translation id="3467763166455606212">Απαιτείται το όνομα κατόχου κάρτας</translation>
 <translation id="3478058380795961209">Μήνας λήξης</translation>
 <translation id="3479539252931486093">Δεν το περιμένατε; <ph name="BEGIN_LINK" />Ενημερώστε μας<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Όχι τώρα</translation>
-<translation id="348000606199325318">Αναγνωριστικό σφάλματος <ph name="CRASH_LOCAL_ID" /> (Αναγνωριστικό διακομιστή: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Δεν ήταν δυνατή η επικοινωνία με τον γονέα σας αυτήν τη στιγμή. Δοκιμάστε ξανά.</translation>
 <translation id="3528171143076753409">Το πιστοποιητικό του διακομιστή δεν είναι αξιόπιστο.</translation>
 <translation id="3539171420378717834">Διατήρηση αντιγράφου αυτής της κάρτας σε αυτήν τη συσκευή</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Το αίτημά σας για να αποκτήσετε πρόσβαση σε αυτόν τον ιστότοπο έχει σταλεί στον/η(ν) <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Προσθήκη διεύθυνσης ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="3901925938762663762">Η κάρτα έχει λήξει</translation>
-<translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>
 <translation id="3963721102035795474">Λειτουργία αναγνώστη</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="3973234410852337861">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> είναι αποκλεισμένος</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Σελιδοδείκτες κινητής συσκευής</translation>
 <translation id="7961015016161918242">Ποτέ</translation>
-<translation id="7962083544045318153">Αναγνωριστικό σφάλματος <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Να γίνεται πάντα μετάφραση των <ph name="ORIGINAL_LANGUAGE" /> στα <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Δεν καθορίστηκε</translation>
 <translation id="800218591365569300">Δοκιμάστε να κλείσετε τις άλλες καρτέλες ή τα άλλα προγράμματα για να απελευθερώσετε μνήμη.</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">Έκλεισαν πρόσφατα</translation>
 <translation id="8874824191258364635">Εισαγάγετε έναν έγκυρο αριθμό κάρτας</translation>
 <translation id="8876793034577346603">Αποτυχία ανάλυσης της διαμόρφωσης δικτύου</translation>
-<translation id="8877192140621905067">Μετά την επιβεβαίωση, θα γίνει κοινή χρήση των στοιχείων της κάρτας σας με αυτόν τον ιστότοπο</translation>
 <translation id="8889402386540077796">Απόχρωση</translation>
 <translation id="8891727572606052622">Μη έγκυρη λειτουργία διακομιστή μεσολάβησης.</translation>
 <translation id="889901481107108152">Λυπούμαστε, αυτό το πείραμα δεν είναι διαθέσιμο στην πλατφόρμα σας.</translation>

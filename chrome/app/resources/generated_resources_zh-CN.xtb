@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">日语键盘</translation>
 <translation id="1358735829858566124">该文件或目录无法使用。</translation>
 <translation id="1358741672408003399">拼写和语法</translation>
-<translation id="1359381790106966506">更新权限</translation>
 <translation id="1361164813881551742">手动添加</translation>
 <translation id="1361655923249334273">未使用</translation>
 <translation id="136180453919764941">电池 - <ph name="STATUS" /></translation>
@@ -1437,7 +1436,6 @@
 <translation id="3038675903128704560">不允许任何网站使用插件访问您的计算机</translation>
 <translation id="3039828483675273919">正在移动$1项内容…</translation>
 <translation id="304009983491258911">更改 SIM 卡 PIN</translation>
-<translation id="3046838483509668188">ChromeVox选项</translation>
 <translation id="3046910703532196514">网页，全部</translation>
 <translation id="304826556400666995">将所有标签页取消静音</translation>
 <translation id="3053013834507634016">证书密钥用法</translation>
@@ -1468,6 +1466,7 @@
 <translation id="3088325635286126843">重命名(&amp;R)...</translation>
 <translation id="308903551226753393">自动配置</translation>
 <translation id="3089231390674410424">您的凭据似乎有问题。请确保您已成功登录，然后重试。</translation>
+<translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3090819949319990166">无法将外部 crx 文件复制到 <ph name="TEMP_CRX_FILE" />。</translation>
 <translation id="3090871774332213558">“<ph name="DEVICE_NAME" />”已配对</translation>
 <translation id="3095995014811312755">版本</translation>
@@ -1514,7 +1513,6 @@
 <translation id="3154351730702813399">此设备的管理员可能会监控您的浏览活动。</translation>
 <translation id="3154429428035006212">离线超过 1 个月</translation>
 <translation id="3157931365184549694">恢复</translation>
-<translation id="3159386328383139451">Google 会利用您的位置信息来提升本地体验。您可在“<ph name="SETTINGS_LINK" />”中更改此设置。</translation>
 <translation id="3160041952246459240">您有证书可标识以下服务器：</translation>
 <translation id="316125635462764134">卸载应用</translation>
 <translation id="3161522574479303604">所有语言</translation>
@@ -2144,6 +2142,7 @@
 <translation id="4095507791297118304">主显示屏</translation>
 <translation id="409579654357498729">添加到云打印</translation>
 <translation id="4096508467498758490">请停用以开发者模式运行的扩展程序</translation>
+<translation id="4096824249111507322">正在准备安全模块，请稍候（这可能需要几分钟的时间）…</translation>
 <translation id="4099060993766194518">要恢复默认搜索引擎吗？</translation>
 <translation id="4100733287846229632">设备存储空间严重不足</translation>
 <translation id="4104163789986725820">导出(&amp;X)...</translation>
@@ -2427,7 +2426,6 @@
 <translation id="4590324241397107707">数据库存储</translation>
 <translation id="4593021220803146968">转到 <ph name="URL" />(&amp;G)</translation>
 <translation id="4594109696316595112">启用一次即可：要在此<ph name="DEVICE_TYPE" />上启用 Smart Lock，请输入您的密码。Smart Lock 启用后，配对手机将能够用来为此设备解锁 - 无需输入密码。要更改或关闭此功能，请前往<ph name="DEVICE_TYPE" />的设置部分。</translation>
-<translation id="4594538246438948697">按下“搜索”，然后点击或拖动，即可让系统朗读任何内容</translation>
 <translation id="4595560905247879544">只有管理员（<ph name="CUSTODIAN_NAME" />）可以修改应用和扩展程序。</translation>
 <translation id="4596295440756783523">您有证书可标识以下服务器</translation>
 <translation id="4598556348158889687">存储空间管理</translation>
@@ -2472,6 +2470,7 @@
 <translation id="4657031070957997341">始终允许 <ph name="HOST" /> 使用插件</translation>
 <translation id="4662788913887017617">将此书签共享给您的 iPhone</translation>
 <translation id="4664482161435122549">PKCS #12 导出错误</translation>
+<translation id="466481852929361583">正在设置安全模块。这可能需要几分钟的时间，请耐心等待。</translation>
 <translation id="4665014895760275686">制造商</translation>
 <translation id="4667176955651319626">阻止第三方 Cookie 和网站数据</translation>
 <translation id="4668721319092543482">点击即可启用 <ph name="PLUGIN_NAME" /></translation>
@@ -2642,7 +2641,6 @@
 <translation id="490074449735753175">使用网络服务帮助解决拼写错误</translation>
 <translation id="49027928311173603">从服务器下载的策略无效：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4903369323166982260">运行 Chrome 清理工具</translation>
-<translation id="4906679076183257864">重置为默认值</translation>
 <translation id="4907161631261076876">此文件属于不常下载的内容，可能存在危险。</translation>
 <translation id="4907306957610201395">权限类别</translation>
 <translation id="4909038193460299775">由于此帐号是由 <ph name="DOMAIN" /> 管理，因此系统将会从该设备中清除您的书签、历史记录、密码及其他设置。但是，您的数据依然会存储在您的 Google 帐号中，而且您可以通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />管理这些数据。</translation>
@@ -3210,6 +3208,7 @@
 <translation id="5774515636230743468">网址：</translation>
 <translation id="577624874850706961">搜索 Cookie</translation>
 <translation id="5778550464785688721">完全控制 MIDI 设备</translation>
+<translation id="5778747455497889540">以下是系统向您计算机分配的随机生成的安全模块密码：</translation>
 <translation id="5780066559993805332">（最佳）</translation>
 <translation id="5780973441651030252">进程优先级</translation>
 <translation id="5781865261247219930">向“<ph name="EXTENSION_NAME" />”发送命令</translation>
@@ -3268,6 +3267,7 @@
 <translation id="5854409662653665676">如果您经常遇到问题，可以试着用以下方法解决此模块存在的问题：</translation>
 <translation id="5854912040170951372">比萨</translation>
 <translation id="5855119960719984315">切换窗口</translation>
+<translation id="5855773610748894548">糟糕，安全模块出错了。</translation>
 <translation id="5856721540245522153">启用调试功能</translation>
 <translation id="5857090052475505287">新文件夹</translation>
 <translation id="5859272821192576954">搞定了！接下来即可开始使用环聊</translation>
@@ -3358,6 +3358,7 @@
 <translation id="6005695835120147974">媒体路由器</translation>
 <translation id="6006484371116297560">经典</translation>
 <translation id="6007237601604674381">移动失败。<ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">正在存取视频输入</translation>
 <translation id="6011193465932186973">指纹</translation>
 <translation id="6011449291337289699">清除网站数据</translation>
 <translation id="6015796118275082299">年</translation>
@@ -3783,6 +3784,7 @@
 <translation id="6629841649550503054">所有文件都已备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" />！</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />希望获得某个证书的永久访问权限，以便代表您进行自我身份验证。</translation>
 <translation id="6639554308659482635">SQLite 使用的内存</translation>
+<translation id="6641138807883536517">无法提供随机生成的安全模块密码。这是执行 Powerwash 之后的正常现象。</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6644846457769259194">正在更新您的设备 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape 证书授权中心吊销网址</translation>
@@ -3873,7 +3875,6 @@
 <translation id="6790497603648687708">已远程添加“<ph name="EXTENSION_NAME" />”</translation>
 <translation id="6790820461102226165">添加用户…</translation>
 <translation id="6791443592650989371">激活状态：</translation>
-<translation id="6792045489562677072">随选朗读选项</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" />想要与 <ph name="TARGET_NAME" /> 共享您屏幕上的内容。请选择您希望共享哪些内容。</translation>
 <translation id="6793604637258913070">文本插入符号出现或移动时突出显示</translation>
 <translation id="6797493596609571643">糟糕，出问题了。</translation>
@@ -4003,6 +4004,7 @@
 <translation id="6991128190741664836">以后再说</translation>
 <translation id="6991665348624301627">选择目标打印机</translation>
 <translation id="699220179437400583">自动向 Google 报告可能出现的安全事件详情</translation>
+<translation id="6996946928646015361">安全模块缺失或已被停用。</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{以下页面已停止响应。您可以等待该页面恢复响应，也可以将其关闭。}other{以下页面已停止响应。您可以等待这些页面恢复响应，也可以将其关闭。}}</translation>
 <translation id="7002055706763150362">要设置 Smart Lock（Chromebook 版），您需要先输入密码，因为 Google 需要确认是您本人在操作。</translation>
@@ -4485,7 +4487,6 @@
 <translation id="7765158879357617694">移动</translation>
 <translation id="7766807826975222231">功能导览</translation>
 <translation id="7767646430896201896">选项：</translation>
-<translation id="7768784765476638775">随选朗读</translation>
 <translation id="7769353642898261262">如何保障配对手机的安全</translation>
 <translation id="7769672763586021400">型号 ID</translation>
 <translation id="7771452384635174008">布局</translation>
@@ -4531,6 +4532,7 @@
 <translation id="7825423931463735974">泰米尔语键盘(Tamil99)</translation>
 <translation id="782590969421016895">使用当前网页</translation>
 <translation id="782886543891417279">您要使用的 Wi-Fi 网络（<ph name="WIFI_NAME" />）可能需要您访问其登录页面。</translation>
+<translation id="7829298379596169484">正在存取音频输入</translation>
 <translation id="7831368056091621108">在您的所有设备上使用此扩展程序并共享历史记录和其他 Chrome 设置。</translation>
 <translation id="7831493768366098287">Google 打印</translation>
 <translation id="7831754656372780761">“<ph name="TAB_TITLE" />”<ph name="EMOJI_MUTING" /></translation>
@@ -5051,6 +5053,7 @@
 <translation id="8631032106121706562">花朵</translation>
 <translation id="8631271110654520730">正在复制恢复映像...</translation>
 <translation id="8632275030377321303">该用户无法修改代理。</translation>
+<translation id="8637542770513281060">您的计算机包含一个安全模块，该模块可用于在 Chrome 操作系统中实施许多关键的安全功能。要了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">有系统更新，开始下载...</translation>
 <translation id="8639963783467694461">自动填充设置</translation>
 <translation id="8642171459927087831">访问令牌</translation>
@@ -5160,7 +5163,6 @@
 <translation id="8785622406424941542">触控笔</translation>
 <translation id="8787254343425541995">允许共享网络使用代理</translation>
 <translation id="878763818693997570">名称过长</translation>
-<translation id="8789375980715484686">管理其他用户</translation>
 <translation id="8791534160414513928">随浏览流量一起发送“不跟踪”请求</translation>
 <translation id="8794025342371547160">受限 IP</translation>
 <translation id="879413103056696865">开启热点后，您的 <ph name="PHONE_NAME" /> 将会：</translation>

@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">在網路上開啟</translation>
 <translation id="1049743911850919806">無痕模式</translation>
 <translation id="10614374240317010">一律不儲存</translation>
-<translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
 <translation id="1080790410959514870">您即將登出由 <ph name="DOMAIN_NAME" /> 所管理的帳戶。儲存在這個裝置上的 Chrome 資料將因此遭到刪除，但這些資料仍會保留在您的 Google 帳戶中。</translation>
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">系統即將顯示更多文章供你閱覽，陪你度過美好的早晨！</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
-<translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3148434565183091099">如要在所有裝置上使用您的書籤，請登入 Chrome。</translation>
 <translation id="3166827708714933426">分頁與視窗快速鍵</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">深褐色調</translation>
 <translation id="4060598801229743805">選項位於畫面頂端</translation>
 <translation id="4062305924942672200">法律資訊</translation>
+<translation id="4084682180776658562">書籤</translation>
 <translation id="4084836577264234537">下載內容佔 <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">這項功能可能會讓您無法存取電信業者提供的付費數據服務。</translation>
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
-<translation id="423410644998903704">Chrome 需要存取權限，才能與這個網站分享。</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4254813446494774748">翻譯語言：</translation>
@@ -471,8 +469,6 @@
 <translation id="5956665950594638604">在新分頁中開啟 Chrome 說明中心</translation>
 <translation id="5962718611393537961">輕觸即可收合</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
-<translation id="6010869025736512584">正在存取視訊輸入</translation>
-<translation id="6012342843556706400">Chrome 需要存取位置資訊，才能與這個網站分享。</translation>
 <translation id="6031101910111098835">已收合 - 按一下即可展開</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -591,6 +587,7 @@
 <translation id="7149893636342594995">過去 24 小時</translation>
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服務完成更新</translation>
+<translation id="7189598951263744875">分享...</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
@@ -611,6 +608,7 @@
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7475192538862203634">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="748127970106343339">確認刪除裝置憑證</translation>
+<translation id="7481312909269577407">往前</translation>
 <translation id="7487352416683556407">系統已將您所選取的資料從 Chrome 和其他同步的裝置中移除。
 
 您的 Google 帳戶仍可能保留了其他類型的瀏覽紀錄，例如其他 Google 服務中的搜尋和活動紀錄 (可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 查詢)。</translation>
@@ -643,11 +641,9 @@
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
 <translation id="7781829728241885113">昨天</translation>
-<translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7810647596859435254">選擇開啟工具…</translation>
-<translation id="7829298379596169484">正在存取音訊輸入</translation>
 <translation id="7837721118676387834">允許特定網站自動播放靜音的影片。</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="784934925303690534">時間範圍</translation>

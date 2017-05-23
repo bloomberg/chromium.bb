@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Mở trực tuyến</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
 <translation id="10614374240317010">Không bao giờ được lưu</translation>
-<translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="1080790410959514870">Bạn đang đăng xuất tài khoản do <ph name="DOMAIN_NAME" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome được lưu trữ trên thiết bị này nhưng dữ liệu sẽ vẫn còn trong tài khoản Google của bạn.</translation>
 <translation id="1111673857033749125">Dấu trang được lưu trên thiết bị khác của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="1121094540300013208">Báo cáo sử dụng và sự cố</translation>
@@ -191,7 +190,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ!</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
-<translation id="3090193911106258841">Đang truy cập thiết bị đầu vào video và âm thanh</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
 <translation id="3148434565183091099">Để nhận dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3166827708714933426">Phím tắt dành cho tab và cửa sổ</translation>
@@ -283,6 +281,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4060598801229743805">Có các tùy chọn ở gần đầu màn hình</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
+<translation id="4084682180776658562">Dấu trang</translation>
 <translation id="4084836577264234537">Đã tải xuống <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Tính năng này có thể ảnh hưởng đến quyền truy cập vào các dịch vụ dữ liệu cao cấp được nhà cung cấp dịch vụ của bạn cung cấp.</translation>
 <translation id="4095146165863963773">Xóa dữ liệu ứng dụng?</translation>
@@ -293,7 +292,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="4226663524361240545">Thông báo có thể làm rung thiết bị</translation>
-<translation id="423410644998903704">Chrome cần quyền truy cập quyền để chia sẻ quyền với trang web này.</translation>
 <translation id="4242533952199664413">Mở cài đặt</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4254813446494774748">Ngôn ngữ dịch:</translation>
@@ -471,8 +469,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5956665950594638604">Mở Trung tâm trợ giúp Chrome trong tab mới</translation>
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
-<translation id="6010869025736512584">Đang truy cập thiết bị đầu vào video</translation>
-<translation id="6012342843556706400">Chrome cần quyền truy cập vị trí để chia sẻ vị trí với trang web này.</translation>
 <translation id="6031101910111098835">Đã thu gọn - Nhấp để mở rộng</translation>
 <translation id="6039379616847168523">Chuyển sang tab tiếp theo</translation>
 <translation id="6040143037577758943">Đóng</translation>
@@ -591,6 +587,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7149893636342594995">24 giờ qua</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7189372733857464326">Đợi Dịch vụ của Google Play cập nhật xong</translation>
+<translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
@@ -611,6 +608,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="748127970106343339">Xác nhận xóa thông tin đăng nhập thiết bị</translation>
+<translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7487352416683556407">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị được đồng bộ hóa của bạn.
 
 Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -643,11 +641,9 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tùy chọn khác}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tùy chọn khác}}</translation>
 <translation id="7781829728241885113">Hôm qua</translation>
-<translation id="7788788617745289808">Chrome cần quyền truy cập máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7810647596859435254">Mở bằng…</translation>
-<translation id="7829298379596169484">Đang truy cập thiết bị đầu vào âm thanh</translation>
 <translation id="7837721118676387834">Cho phép tự động phát video bị tắt tiếng cho trang web cụ thể.</translation>
 <translation id="7846076177841592234">Hủy chọn</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>

@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">فتح عبر الإنترنت</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
-<translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1121094540300013208">تقارير الاستخدام والأعطال</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">ستظهر المزيد من المقالات قريبًا. استمتع بصباحك!</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
-<translation id="3090193911106258841">جارٍ الوصول إلى إدخال الصوت والفيديو</translation>
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3148434565183091099">‏للحصول على الإشارات المرجعية على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="3166827708714933426">اختصارات علامات التبويب والنوافذ</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="4060598801229743805">الخيارات متاحة بالقرب من أعلى الشاشة</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
+<translation id="4084682180776658562">إشارة</translation>
 <translation id="4084836577264234537">تم تنزيل <ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="4089831646916293264">قد تتداخل هذه الميزة مع إمكانية الوصول إلى خدمات البيانات المتميزة التي يقدّمها مشغّل شبكة الجوال.</translation>
 <translation id="4095146165863963773">هل ترغب في حذف بيانات التطبيق؟</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
-<translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4254813446494774748">لغة الترجمة:</translation>
@@ -472,8 +470,6 @@
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
-<translation id="6010869025736512584">جارٍ الوصول إلى إدخال الفيديو</translation>
-<translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
 <translation id="6031101910111098835">تم التصغير - انقر للتوسيع</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -592,6 +588,7 @@
 <translation id="7149893636342594995">آخر 24 ساعة</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
+<translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
@@ -612,6 +609,7 @@
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7475192538862203634">إذا تكرر ظهور هذا، فحاول الاستفادة من <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">تأكيد حذف بيانات اعتماد الجهاز</translation>
+<translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7487352416683556407">‏تمت إزالة البيانات المُحددة من متصفح Chrome والأجهزة التي تمت مزامنتها.
 
 قد يحتوي حسابك في Google على نماذج أخرى من سجل التصفح، مثل عمليات البحث والأنشطة من خدمات Google الأخرى في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -644,11 +642,9 @@
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 وطريقة دفع إضافية واحدة (<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />)}zero{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع إضافية}two{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 وطريقتا دفع إضافيتان (<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />)}few{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طرق دفع إضافية}many{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع إضافية}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع إضافية}}</translation>
 <translation id="7781829728241885113">أمس</translation>
-<translation id="7788788617745289808">‏يحتاج Chrome الحصول على حق الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
-<translation id="7829298379596169484">جارٍ الوصول إلى إدخال الصوت</translation>
 <translation id="7837721118676387834">السماح بالتشغيل التلقائي لمقاطع الفيديو المكتومة الصوت لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>

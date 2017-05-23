@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> navodi sljedeće:</translation>
 <translation id="1132774398110320017">Postavke Automatskog popunjavanja u Chromeu...</translation>
 <translation id="1150979032973867961">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg računala smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
+<translation id="1151972924205500581">Potrebna je zaporka</translation>
 <translation id="1152921474424827756">Pristupite <ph name="BEGIN_LINK" />predmemoriranoj kopiji<ph name="END_LINK" /> stranice <ph name="URL" /></translation>
 <translation id="1158211211994409885">Host <ph name="HOST_NAME" /> neočekivano je prekinuo vezu.</translation>
 <translation id="1161325031994447685">Ponovo se povežite s Wi-Fi mrežom</translation>
+<translation id="1165039591588034296">Pogreška</translation>
 <translation id="1175364870820465910">&amp;Ispis...</translation>
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatski prijavi<ph name="END_WHITEPAPER_LINK" /> Googleu pojedinosti o mogućim sigurnosnim incidentima. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Spremi tu karticu na ovaj uređaj</translation>
 <translation id="3435896845095436175">Omogući</translation>
 <translation id="3447661539832366887">Vlasnik tog uređaja isključio je igru s dinosaurima.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Dohvati interval:</translation>
 <translation id="3462200631372590220">Sakrij napredno</translation>
 <translation id="3467763166455606212">Potrebno je unijeti ime nositelja kartice</translation>
 <translation id="3478058380795961209">Mjesec isteka</translation>
 <translation id="3479539252931486093">Niste to očekivali? <ph name="BEGIN_LINK" />Javite nam<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Ne sada</translation>
-<translation id="348000606199325318">ID rušenja <ph name="CRASH_LOCAL_ID" /> (ID poslužitelja: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Nismo uspjeli stupiti u kontakt s tvojim roditeljem. Pokušaj ponovo.</translation>
 <translation id="3528171143076753409">Certifikat poslužitelja nije pouzdan.</translation>
 <translation id="3539171420378717834">Zadrži kopiju te kartice na uređaju</translation>
@@ -357,7 +357,6 @@
 <translation id="3886446263141354045">Zahtjev za pristup toj web-lokaciji poslan je korisniku <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Dodajte e-adresu</translation>
 <translation id="3901925938762663762">Kartica je istekla</translation>
-<translation id="3934680773876859118">Učitavanje dokumenta PDF nije uspjelo</translation>
 <translation id="3963721102035795474">Način čitača</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> je blokiran</translation>
@@ -771,7 +770,6 @@
 <translation id="7951415247503192394">(32-bitni)</translation>
 <translation id="7956713633345437162">Mobilne oznake</translation>
 <translation id="7961015016161918242">Nikad</translation>
-<translation id="7962083544045318153">ID rušenja <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Uvijek prevedi <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nije navedeno</translation>
 <translation id="800218591365569300">Pokušajte zatvoriti ostale kartice ili programe da biste oslobodili memoriju.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8874824191258364635">Unesite važeći broj kreditne kartice</translation>
 <translation id="8876793034577346603">Mrežna konfiguracija nije uspješno analizirana.</translation>
-<translation id="8877192140621905067">Nakon što ih potvrdite, podaci o kartici dijelit će se s ovom web-lokacijom</translation>
 <translation id="8889402386540077796">Ton</translation>
 <translation id="8891727572606052622">Nevažeći način proxy poslužitelja.</translation>
 <translation id="889901481107108152">Nažalost, ovaj eksperiment nije dostupan na vašoj platformi.</translation>

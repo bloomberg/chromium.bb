@@ -234,7 +234,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1358032944105037487">Japonská klávesnice</translation>
 <translation id="1358735829858566124">Soubor nebo adresář nelze použít.</translation>
 <translation id="1358741672408003399">Pravopis a gramatika</translation>
-<translation id="1359381790106966506">Aktualizovat oprávnění</translation>
 <translation id="1361164813881551742">Přidat ručně</translation>
 <translation id="1361655923249334273">Nepoužit</translation>
 <translation id="136180453919764941">Baterie – <ph name="STATUS" /></translation>
@@ -1442,7 +1441,6 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3038675903128704560">Žádným webům přístup do počítače pomocí pluginu nepovolovat</translation>
 <translation id="3039828483675273919">Přesouvání $1 položek...</translation>
 <translation id="304009983491258911">Změna PIN SIM karty</translation>
-<translation id="3046838483509668188">Možnosti programu ChromeVox</translation>
 <translation id="3046910703532196514">Webová stránka, úplná</translation>
 <translation id="304826556400666995">Zapnout zvuk karet</translation>
 <translation id="3053013834507634016">Použití klíče certifikátu</translation>
@@ -1473,6 +1471,7 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3088325635286126843">&amp;Přejmenovat...</translation>
 <translation id="308903551226753393">Konfigurovat automaticky</translation>
 <translation id="3089231390674410424">Zdá se, že došlo k problému s vašimi identifikačními údaji. Zkontrolujte, zda jste správně přihlášeni, a zkuste to znovu.</translation>
+<translation id="3090193911106258841">Přístup ke vstupu zvuku a videa</translation>
 <translation id="3090819949319990166">Obsah externího souboru CRX nelze zkopírovat do souboru <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">Zařízení „<ph name="DEVICE_NAME" />“ bylo spárováno</translation>
 <translation id="3095995014811312755">verze</translation>
@@ -1519,7 +1518,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph n
 <translation id="3154351730702813399">Správce zařízení může sledovat vaši aktivitu při procházení.</translation>
 <translation id="3154429428035006212">Offline déle než měsíc</translation>
 <translation id="3157931365184549694">Obnovit</translation>
-<translation id="3159386328383139451">Google používá vaši polohu k zajištění lepšího prostředí vyhledávání. Toto nastavení můžete změnit na stránce <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">Máte založené certifikáty, které identifikují tyto servery:</translation>
 <translation id="316125635462764134">Odstranit aplikaci</translation>
 <translation id="3161522574479303604">Všechny jazyky</translation>
@@ -2149,6 +2147,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4095507791297118304">Primární obrazovka</translation>
 <translation id="409579654357498729">Přidat do služby Cloud Print</translation>
 <translation id="4096508467498758490">Deaktivovat rozšíření v režimu pro vývojáře</translation>
+<translation id="4096824249111507322">Připravuje se modul zabezpečení. Čekejte prosím (možná i několik minut)...</translation>
 <translation id="4099060993766194518">Obnovit výchozí vyhledávač?</translation>
 <translation id="4100733287846229632">V zařízení je kriticky málo místa</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
@@ -2432,7 +2431,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4590324241397107707">Databázové úložiště</translation>
 <translation id="4593021220803146968">&amp;Přejít na adresu <ph name="URL" /></translation>
 <translation id="4594109696316595112">Jednorázová aktivace: Smart Lock v tomto zařízení <ph name="DEVICE_TYPE" /> aktivujete zadáním hesla. Díky funkci Smart Lock budete toto zařízení moci odemknout pomocí telefonu bez nutnosti zadání hesla. Chcete-li tuto funkci změnit nebo vypnout, přejděte do nastavení zařízení <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4594538246438948697">Podržením tlačítka Hledat a kliknutím na text nebo jeho přetáhnutím bude text nahlas přečten</translation>
 <translation id="4595560905247879544">Aplikace a rozšíření může upravit pouze správce (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Máte založené certifikáty, které identifikují tyto servery</translation>
 <translation id="4598556348158889687">Správa úložiště</translation>
@@ -2477,6 +2475,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4657031070957997341">Vždy povolovat pluginy na webu <ph name="HOST" /></translation>
 <translation id="4662788913887017617">Sdílejte tuto záložku se svým iPhonem</translation>
 <translation id="4664482161435122549">Chyba exportu souboru PKCS #12</translation>
+<translation id="466481852929361583">Nastavování modulu zabezpečení. Buďte prosím trpěliví, proces může trvat několik minut.</translation>
 <translation id="4665014895760275686">Výrobce</translation>
 <translation id="4667176955651319626">Blokovat soubory cookie třetích stran a data webových stránek</translation>
 <translation id="4668721319092543482">Plugin <ph name="PLUGIN_NAME" /> aktivujete kliknutím</translation>
@@ -2649,7 +2648,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="490074449735753175">Vyřešit pravopisné chyby pomocí webové služby</translation>
 <translation id="49027928311173603">Zásada stažená ze serveru je neplatná: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Spustit nástroj Chrome Cleanup Tool</translation>
-<translation id="4906679076183257864">Obnovit výchozí zobrazení</translation>
 <translation id="4907161631261076876">Tento soubor se běžně nestahuje a může být nebezpečný.</translation>
 <translation id="4907306957610201395">Kategorie oprávnění</translation>
 <translation id="4909038193460299775">Protože je tento účet spravován doménou <ph name="DOMAIN" />, budou z tohoto zařízení vymazány vaše záložky, historie, hesla a další nastavení. Data však zůstanou uložená ve vašem účtu Google a lze je spravovat v <ph name="BEGIN_LINK" />Hlavním panelu Google<ph name="END_LINK" />.</translation>
@@ -3222,6 +3220,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="577624874850706961">Prohledávat cookie</translation>
 <translation id="5778550464785688721">Úplná kontrola zařízení MIDI</translation>
+<translation id="5778747455497889540">Níže je náhodně vygenerované heslo modulu zabezpečení, které bylo přiřazeno vašemu počítači:</translation>
 <translation id="5780066559993805332">(Nejlepší)</translation>
 <translation id="5780973441651030252">Priorita procesu</translation>
 <translation id="5781865261247219930">Odeslat příkazy do rozšíření <ph name="EXTENSION_NAME" /></translation>
@@ -3280,6 +3279,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5854409662653665676">Jestliže dochází často k potížím, zkuste problém s tímto modulem vyřešit pomocí následujícího postupu:</translation>
 <translation id="5854912040170951372">Svačinka</translation>
 <translation id="5855119960719984315">přepnout okno</translation>
+<translation id="5855773610748894548">Jejda, došlo k chybě modulu zabezpečení</translation>
 <translation id="5856721540245522153">Aktivovat funkce ladění</translation>
 <translation id="5857090052475505287">Nová složka</translation>
 <translation id="5859272821192576954">Jste připraveni pokračovat do služby Hangouts</translation>
@@ -3370,6 +3370,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="6005695835120147974">Směrovač médií</translation>
 <translation id="6006484371116297560">Klasické</translation>
 <translation id="6007237601604674381">Přesun se nezdařil. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Přístup k vstupu videa</translation>
 <translation id="6011193465932186973">Otisk prstu</translation>
 <translation id="6011449291337289699">Vymazání dat webu</translation>
 <translation id="6015796118275082299">Rok</translation>
@@ -3796,6 +3797,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="6629841649550503054">Vše je zálohováno na <ph name="BEGIN_LINK" />Disku Google<ph name="END_LINK" />!</translation>
 <translation id="6630752851777525409">Rozšíření <ph name="EXTENSION_NAME" /> požaduje trvalý přístup k certifikátu, aby se vaším jménem mohlo ověřit.</translation>
 <translation id="6639554308659482635">Paměť SQLite</translation>
+<translation id="6641138807883536517">Náhodně generované heslo modulu zabezpečení není k dispozici. Po použití funkce Powerwash je to normální.</translation>
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="6644846457769259194">Aktualizace zařízení (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Adresa URL pro odvolání certifikační autority Netscape</translation>
@@ -3886,7 +3888,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="6790497603648687708">Rozšíření <ph name="EXTENSION_NAME" /> bylo přidáno vzdáleně</translation>
 <translation id="6790820461102226165">Přidat uživatele...</translation>
 <translation id="6791443592650989371">Stav aktivace:</translation>
-<translation id="6792045489562677072">Možnosti hlasové odezvy po výběru</translation>
 <translation id="6792072150955115067">Aplikace <ph name="APP_NAME" /> chce sdílet obsah vaší obrazovky se stránkou <ph name="TARGET_NAME" />. Vyberte, co chcete sdílet.</translation>
 <translation id="6793604637258913070">Zvýraznit textový kurzor, když se zobrazí nebo pohne</translation>
 <translation id="6797493596609571643">Jejda, něco se pokazilo.</translation>
@@ -4016,6 +4017,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="6991128190741664836">Později</translation>
 <translation id="6991665348624301627">Vybrat cíl</translation>
 <translation id="699220179437400583">Automaticky Googlu hlásit podrobnosti možných bezpečnostních incidentů</translation>
+<translation id="6996946928646015361">Modul zabezpečení je zakázán nebo chybí.</translation>
 <translation id="6998711733709403587">Vybrané soubory: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{Následující stránka přestala reagovat. Můžete počkat, až začne reagovat, nebo ji ukončit.}few{Následující stránky přestaly reagovat. Můžete počkat, až začnou reagovat, nebo je ukončit.}many{Následující stránky přestaly reagovat. Můžete počkat, až začnou reagovat, nebo je ukončit.}other{Následující stránky přestaly reagovat. Můžete počkat, až začnou reagovat, nebo je ukončit.}}</translation>
 <translation id="7002055706763150362">Aby bylo možné funkci Smart Lock pro Chromebook nastavit, Google musí zkontrolovat, zda jste to opravdu vy. Chcete-li začít, zadejte heslo.</translation>
@@ -4503,7 +4505,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7766807826975222231">Spustit prohlídku</translation>
 <translation id="7767646430896201896">Možnosti:</translation>
-<translation id="7768784765476638775">Hlasová odezva po výběru</translation>
 <translation id="7769353642898261262">Jak telefon zabezpečit</translation>
 <translation id="7769672763586021400">ID modelu</translation>
 <translation id="7771452384635174008">Rozložení</translation>
@@ -4549,6 +4550,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7825423931463735974">Tamilská klávesnice (Tamil99)</translation>
 <translation id="782590969421016895">Použít aktuální stránky</translation>
 <translation id="782886543891417279">Síť Wi-Fi, kterou používáte (<ph name="WIFI_NAME" />), může vyžadovat, abyste navštívili její stránku přihlášení.</translation>
+<translation id="7829298379596169484">Přístup ke zvukovému vstupu</translation>
 <translation id="7831368056091621108">pokud chcete přenést toto rozšíření, historii procházení a další nastavení prohlížeče Chrome do všech svých zařízení.</translation>
 <translation id="7831493768366098287">Tisk Google</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5071,6 +5073,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8631032106121706562">Kopretina</translation>
 <translation id="8631271110654520730">Kopírování obrazu pro obnovení...</translation>
 <translation id="8632275030377321303">Uživatel nemůže proxy server změnit.</translation>
+<translation id="8637542770513281060">Ve vašem počítači je bezpečnostní modul, jehož pomocí je do systému Chrome OS implementováno mnoho důležitých bezpečnostních prvků. Další informace naleznete v centru nápovědy k Chromebookům: http://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">K dispozici je aktualizace systému. Příprava stahování...</translation>
 <translation id="8639963783467694461">Nastavení automatického vyplňování</translation>
 <translation id="8642171459927087831">Přístupový token</translation>
@@ -5180,7 +5183,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8785622406424941542">Dotykové pero</translation>
 <translation id="8787254343425541995">Povolit proxy servery u sdílených sítí</translation>
 <translation id="878763818693997570">Tento název je příliš dlouhý.</translation>
-<translation id="8789375980715484686">Správa ostatních uživatelů</translation>
 <translation id="8791534160414513928">Posílat při procházení webů požadavek Do Not Track</translation>
 <translation id="8794025342371547160">Omezená IP adresa</translation>
 <translation id="879413103056696865">Při zapnutém hotspotu váš telefon <ph name="PHONE_NAME" />:</translation>

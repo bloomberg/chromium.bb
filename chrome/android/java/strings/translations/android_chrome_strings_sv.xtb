@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Öppna onlineversionen</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
-<translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" />. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
 <translation id="1111673857033749125">Här visas bokmärken som du har sparat på andra enheter.</translation>
 <translation id="1121094540300013208">Användning och felrapporter</translation>
@@ -191,7 +190,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Fler artiklar visas snart. Ha en bra förmiddag!</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
-<translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3148434565183091099">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3166827708714933426">Kortkommandon för flikar och fönster</translation>
@@ -283,6 +281,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Alternativ finns högt upp på skärmen</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
+<translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB används av nedladdningar</translation>
 <translation id="4089831646916293264">Det kan hända att den här funktionen förhindrar åtkomst till premiumdatatjänster från operatören.</translation>
 <translation id="4095146165863963773">Vill du ta bort appdata?</translation>
@@ -293,7 +292,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
-<translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4254813446494774748">Översättningsspråk:</translation>
@@ -471,8 +469,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
-<translation id="6010869025736512584">Får åtkomst till videoindata</translation>
-<translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
 <translation id="6031101910111098835">Gruppvyn har komprimerats. Expandera vyn genom att klicka.</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
 <translation id="6040143037577758943">Stäng</translation>
@@ -591,6 +587,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7149893636342594995">Senaste 24 timmarna</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
+<translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
@@ -611,6 +608,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7475192538862203634">Om du ser detta ofta provar du de här <ph name="BEGIN_LINK" />förslagen<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
+<translation id="7481312909269577407">Framåt</translation>
 <translation id="7487352416683556407">Den data som markerades har tagits bort från Chrome och från synkroniserade enheter.
 
 Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
@@ -643,11 +641,9 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
 <translation id="7781829728241885113">Igår</translation>
-<translation id="7788788617745289808">Chrome behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
-<translation id="7829298379596169484">Får åtkomst till ljudindata</translation>
 <translation id="7837721118676387834">Tillåt automatisk uppspelning av videor utan ljud för en specifik webbplats.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="784934925303690534">Tidsintervall</translation>

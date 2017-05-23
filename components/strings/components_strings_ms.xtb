@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Tetapan Auto Isi Chrome...</translation>
 <translation id="1150979032973867961">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
+<translation id="1151972924205500581">Kata laluan diperlukan</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan cache<ph name="END_LINK" /> <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> menutup sambungan tanpa di jangka.</translation>
 <translation id="1161325031994447685">Menyambung semula kepada Wi-Fi</translation>
+<translation id="1165039591588034296">Ralat</translation>
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="1181037720776840403">Buang</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Laporkan secara automatik<ph name="END_WHITEPAPER_LINK" /> tentang butiran kemungkinan insiden keselamatan kepada Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Simpan kad ini pada peranti ini</translation>
 <translation id="3435896845095436175">Dayakan</translation>
 <translation id="3447661539832366887">Pemilik peranti ini telah mematikan permainan dinosaur.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Selang masa ambil:</translation>
 <translation id="3462200631372590220">Menyembunyikan butiran</translation>
 <translation id="3467763166455606212">Nama pemegang kad diperlukan</translation>
 <translation id="3478058380795961209">Bulan Tamat Tempoh</translation>
 <translation id="3479539252931486093">Adakah hal ini tidak dijangka? <ph name="BEGIN_LINK" />Beritahu kami<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Bukan sekarang</translation>
-<translation id="348000606199325318">ID Ranap Sistem <ph name="CRASH_LOCAL_ID" /> (ID Pelayan: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Kami tidak dapat menghubungi ibu bapa anda pada masa ini. Sila cuba lagi.</translation>
 <translation id="3528171143076753409">Sijil pelayan tidak dipercayai.</translation>
 <translation id="3539171420378717834">Simpan salinan kad ini pada peranti ini</translation>
@@ -359,7 +359,6 @@
 <translation id="3886446263141354045">Permintaan anda untuk mengakses tapak ini telah dihantar kepada <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Tambah e-mel</translation>
 <translation id="3901925938762663762">Kad telah tamat tempoh</translation>
-<translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
 <translation id="3963721102035795474">Mod Pembaca</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> disekat</translation>
@@ -773,7 +772,6 @@
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Penanda halaman mudah alih</translation>
 <translation id="7961015016161918242">Tidak sama sekali</translation>
-<translation id="7962083544045318153">ID Ranap Sistem <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Sentiasa terjemahkan <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>
 <translation id="800218591365569300">Cuba tutup tab atau atur cara lain untuk mengosongkan memori.</translation>
@@ -855,7 +853,6 @@
 <translation id="8870413625673593573">Ditutup Baru-baru Ini</translation>
 <translation id="8874824191258364635">Masukkan nombor kad yang sah</translation>
 <translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>
-<translation id="8877192140621905067">Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini</translation>
 <translation id="8889402386540077796">Rona</translation>
 <translation id="8891727572606052622">Mod proksi tidak sah.</translation>
 <translation id="889901481107108152">Maaf, eksperimen ini tidak tersedia pada platform anda.</translation>

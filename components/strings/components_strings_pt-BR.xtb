@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> diz:</translation>
 <translation id="1132774398110320017">Configurações de preenchimento automático do Google Chrome...</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
+<translation id="1151972924205500581">Senha obrigatória</translation>
 <translation id="1152921474424827756">Acessar uma <ph name="BEGIN_LINK" />cópia em cache<ph name="END_LINK" /> de <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> encerrou a conexão inesperadamente.</translation>
 <translation id="1161325031994447685">Conectar-se à rede Wi-Fi novamente</translation>
+<translation id="1165039591588034296">Erro</translation>
 <translation id="1175364870820465910">&amp;Imprimir...</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Informar automaticamente<ph name="END_WHITEPAPER_LINK" /> ao Google detalhes de possíveis incidentes de segurança. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -241,7 +243,7 @@
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
 <translation id="3032412215588512954">Deseja atualizar este site?</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{pelo menos 1 item em dispositivos sincronizados}=1{1 item (e mais em dispositivos sincronizados)}other{# itens (e mais em dispositivos sincronizados)}}</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{pelo menos 1 item em dispositivos sincronizados}=1{1 item (e mais em dispositivos sincronizados)}one{# items (and more on synced devices)}other{# itens (e mais em dispositivos sincronizados)}}</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
 <translation id="3063697135517575841">Não foi possível confirmar seu cartão com o Chrome no momento. Tente novamente mais tarde.</translation>
 <translation id="3064966200440839136">Saindo do modo de navegação anônima para pagar usando um aplicativo externo. Continuar?</translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Salvar este cartão neste dispositivo</translation>
 <translation id="3435896845095436175">Ativar</translation>
 <translation id="3447661539832366887">O proprietário deste dispositivo desativou o jogo do dinossauro.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Buscar intervalo:</translation>
 <translation id="3462200631372590220">Ocultar detalhes</translation>
 <translation id="3467763166455606212">O nome do titular do cartão é obrigatório</translation>
 <translation id="3478058380795961209">Mês de vencimento</translation>
 <translation id="3479539252931486093">Isso foi inesperado? <ph name="BEGIN_LINK" />Informe-nos<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Não agora</translation>
-<translation id="348000606199325318">Código de falha <ph name="CRASH_LOCAL_ID" /> (código do servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Não foi possível contatar seu pai/mãe no momento. Tente novamente.</translation>
 <translation id="3528171143076753409">O certificado do servidor não é confiável.</translation>
 <translation id="3539171420378717834">Manter uma cópia deste cartão neste dispositivo</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Sua solicitação para acessar este site foi enviada para <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Adicionar e-mail</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
-<translation id="3934680773876859118">Falha ao carregar o documento PDF</translation>
 <translation id="3963721102035795474">Modo leitor</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
@@ -386,7 +385,7 @@
 <translation id="4171400957073367226">Assinatura de verificação inválida</translation>
 <translation id="4196861286325780578">&amp;Refazer mover</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações do antivírus e firewall<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{nenhum}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{nenhum}=1{1 app ($1)}=2{2 apps ($1, $2)}one{# apps ($1, $2, $3)}other{# apps ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Falhas</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Rede<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Sua conexão com esse site não é completamente segura</translation>
@@ -470,7 +469,7 @@
 <translation id="5045550434625856497">Senha incorreta</translation>
 <translation id="5056549851600133418">Artigos para você</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Verificar o endereço do proxy<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Sem cookies}=1{1 site usa cookies. }other{# sites usam cookies. }}</translation>
+<translation id="5076731569460970710">{COUNT,plural, =0{Sem cookies}=1{1 site usa cookies. }one{# sites use cookies. }other{# sites usam cookies. }}</translation>
 <translation id="5087286274860437796">O certificado do servidor não é válido no momento.</translation>
 <translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -637,7 +636,7 @@
 <translation id="6710594484020273272">&lt;Digitar termo de pesquisa&gt;</translation>
 <translation id="6711464428925977395">Há algo errado com o servidor proxy, ou o endereço está incorreto.</translation>
 <translation id="6727102863431372879">Definir</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{nenhum}=1{1 item}other{# itens}}</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{nenhum}=1{1 item}one{# items}other{# itens}}</translation>
 <translation id="674375294223700098">Erro, certificado de servidor desconhecido.</translation>
 <translation id="6753269504797312559">Valor da política</translation>
 <translation id="6757797048963528358">O dispositivo entrou em modo de suspensão.</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">32 bits</translation>
 <translation id="7956713633345437162">Favoritos de dispositivos móveis</translation>
 <translation id="7961015016161918242">Nunca</translation>
-<translation id="7962083544045318153">Código de falha <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Sempre traduzir <ph name="ORIGINAL_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Não especificado</translation>
 <translation id="800218591365569300">Tente fechar outras guias ou programas para liberar memória.</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">Recentemente fechadas</translation>
 <translation id="8874824191258364635">Informe um número de cartão válido</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
-<translation id="8877192140621905067">Depois da confirmação, os detalhes do cartão serão compartilhados com esse site</translation>
 <translation id="8889402386540077796">Matiz</translation>
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="889901481107108152">Esta experiência não está disponível na sua plataforma.</translation>

@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
+<translation id="1151972924205500581">Wachtwoord vereist</translation>
 <translation id="1152921474424827756">Een <ph name="BEGIN_LINK" />gecacht exemplaar<ph name="END_LINK" /> van <ph name="URL" /> openen</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> heeft de verbinding onverwacht verbroken.</translation>
 <translation id="1161325031994447685">Maak opnieuw verbinding met wifi</translation>
+<translation id="1165039591588034296">Fout</translation>
 <translation id="1175364870820465910">&amp;Afdrukken...</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1184214524891303587">Informatie over mogelijke beveiligingsincidenten <ph name="BEGIN_WHITEPAPER_LINK" />automatisch melden<ph name="END_WHITEPAPER_LINK" /> aan Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -299,14 +301,12 @@
 <translation id="3431636764301398940">Deze creditcard opslaan op dit apparaat</translation>
 <translation id="3435896845095436175">Inschakelen</translation>
 <translation id="3447661539832366887">De eigenaar van dit apparaat heeft de dinosaurusgame uitgeschakeld.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Ophaalinterval:</translation>
 <translation id="3462200631372590220">Gedetailleerde informatie verbergen</translation>
 <translation id="3467763166455606212">Naam kaarthouder vereist</translation>
 <translation id="3478058380795961209">Vervalmaand</translation>
 <translation id="3479539252931486093">Wat dit onverwacht? <ph name="BEGIN_LINK" />Laat het ons weten<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Niet nu</translation>
-<translation id="348000606199325318">Crash-ID <ph name="CRASH_LOCAL_ID" /> (Server-ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">We kunnen je ouder momenteel niet bereiken. Probeer het opnieuw.</translation>
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
 <translation id="3539171420378717834">Een exemplaar van deze kaart op dit apparaat bewaren</translation>
@@ -354,7 +354,6 @@
 <translation id="3886446263141354045">Je verzoek voor toegang tot deze website is verzonden naar <ph name="NAME" /></translation>
 <translation id="3890664840433101773">E-mailadres toevoegen</translation>
 <translation id="3901925938762663762">De kaart is verlopen</translation>
-<translation id="3934680773876859118">PDF-document kan niet worden geladen</translation>
 <translation id="3963721102035795474">Lezermodus</translation>
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> wordt geblokkeerd</translation>
@@ -767,7 +766,6 @@
 <translation id="7951415247503192394">(32-bits)</translation>
 <translation id="7956713633345437162">Mobiele bladwijzers</translation>
 <translation id="7961015016161918242">Nooit</translation>
-<translation id="7962083544045318153">Crash-ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> altijd vertalen in het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Niet opgegeven</translation>
 <translation id="800218591365569300">Probeer andere tabbladen en programma's te sluiten om geheugen vrij te maken.</translation>
@@ -848,7 +846,6 @@
 <translation id="8870413625673593573">Recent gesloten</translation>
 <translation id="8874824191258364635">Geef een geldig kaartnummer op</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>
-<translation id="8877192140621905067">Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site</translation>
 <translation id="8889402386540077796">Kleurtoon</translation>
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="889901481107108152">Dit experiment is niet beschikbaar op je platform.</translation>

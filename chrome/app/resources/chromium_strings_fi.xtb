@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Jätä Chromium käyntiin taustalle</translation>
 <translation id="1779356040007214683">Paransimme Chromiumin turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja jotka on voitu lisätä ilman lupaasi.</translation>
 <translation id="1808667845054772817">Asenna Chromium uudelleen</translation>
-<translation id="1816404578968201294">Chromium tarvitsee sijaintisi käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="1869480248812203386">Voit auttaa meitä parantamaan Chromiumin turvallisuutta ja tekemään siitä helppokäyttöisemmän ilmoittamalla mahdollisista turvallisuusongelmista Googlelle automaattisesti.</translation>
 <translation id="1881322772814446296">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. Halutessasi voit luoda uuden profiilin, jolloin aiemmat Chromium-tietosi pysyvät erillään. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ei vastaa. Käynnistetäänkö uudelleen?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Chromium-käyttöjärjestelmä täytyy käynnistää uudelleen, jotta päivitys voidaan ottaa käyttöön.</translation>
-<translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="2647554856022461007">Chromium voi käyttää verkkopalveluita selauskokemuksesi parantamiseen. Voit halutessasi poistaa nämä palvelut käytöstä. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Asennuksessa ilmeni käyttöjärjestelmävirhe. Lataa Chromium uudelleen.</translation>
 <translation id="2685838254101182273">Chromium on lakannut päivittymästä, eikä se enää tue käyttöjärjestelmäsi tätä versiota.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="6584627348340620412">32-bittisen Chromiumin tulevat versiot eivät enää tue tätä Linux-järjestelmää. Päivitä Chromium 64-bittiseen versioon.</translation>
 <translation id="6593914713218535185">Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta.</translation>
-<translation id="6637001341228460105">Chromium tarvitsee mikrofonin käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="6638567566961868659">Etsi kirjanmerkit Chromium-valikosta tai kirjanmerkkipalkista.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="6717134281241384636">Profiiliasi ei voi käyttää, sillä se on peräisin Chromiumin uudemmasta versiosta.
@@ -228,7 +225,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7975919845073681630">Tämä on Chromiumin toissijainen asennus, eikä sitä voi asettaa oletusselaimeksi.</translation>
 <translation id="7979877361127045932">Piilota Chromium-valikossa</translation>
 <translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>
-<translation id="8033665941300843262">Chromium tarvitsee lupien käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="8134284582177628525">Jos jaat tämän tietokoneen henkilön <ph name="PROFILE_NAME" /> kanssa, lisää itsesi Chromiumiin, jotta voitte selata erikseen. Muuten sinun on irrotettava hänen Google-tilinsä.</translation>
 <translation id="8157153840442649507">Chromium näytetään tällä kielellä.</translation>
 <translation id="81770708095080097">Tämä tiedosto on vaarallinen, joten Chromium on estänyt sen.</translation>

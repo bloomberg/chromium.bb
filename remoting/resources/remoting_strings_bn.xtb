@@ -95,7 +95,6 @@
 <translation id="3194245623920924351">Chrome দূরবর্তী ডেস্কটপ</translation>
 <translation id="3197730452537982411">দূরবর্তী ডেস্কটপ</translation>
 <translation id="3258789396564295715">Chrome দূরবর্তী ডেস্কটপ ব্যবহার করে আপনি হয়ত নিরাপদে এই কম্পিউটারটিকে অ্যাক্সেস করতে পারবেন৷</translation>
-<translation id="327263477022142889">Chrome এর দূরবর্তী ডেস্কটপের উন্নতিতে সাহায্য করতে চান? <ph name="LINK_BEGIN" />সমীক্ষাটিতে অংশ নিন৷<ph name="LINK_END" /></translation>
 <translation id="3286521253923406898">Chromoting হোস্ট নিয়ন্ত্রণকারী</translation>
 <translation id="332624996707057614">কম্পিউটারের নাম সম্পাদনা করুন</translation>
 <translation id="3339299787263251426">ইন্টারনেটের মাধ্যমে নিরাপদভাবে আপনার কম্পিউটার অ্যাক্সেস করুন</translation>
@@ -137,7 +136,6 @@ Host</translation>
 <translation id="4277463233460010382">এই কম্পিউটারটিতে কোনো পিন ছাড়াই এক বা একাধিক ক্লায়েন্টকে সংযুক্ত হওয়ার মঞ্জুরি দেওয়ার জন্য কনফিগার করা আছে৷</translation>
 <translation id="4277736576214464567">অ্যাক্সেস কোডটি অবৈধ৷ দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="4361728918881830843">কোনো অন্য কম্পিউটারে দূরবর্তী সংযোগগুলি সক্ষম করতে সেখানে Chrome দূরবর্তী ডেস্কটপ ইনস্টল করুন এবং “<ph name="BUTTON_NAME" />” এ ক্লিক করুন৷</translation>
-<translation id="4368630973089289038">Chromoting এর উন্নতিতে সাহায্য করতে চান? <ph name="LINK_BEGIN" />সমীক্ষাটিতে অংশগ্রহণ করুন৷<ph name="LINK_END" /></translation>
 <translation id="4394049700291259645">অক্ষম</translation>
 <translation id="4405930547258349619">কোর লাইব্রেরি</translation>
 <translation id="4430435636878359009">এই কম্পিউটারে রিমোট সংযোগ অক্ষম করুন</translation>

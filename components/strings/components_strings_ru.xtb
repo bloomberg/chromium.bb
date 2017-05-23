@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Подтвердите действие на <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Настройки автозаполнения в Chrome...</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
+<translation id="1151972924205500581">Необходимо ввести пароль</translation>
 <translation id="1152921474424827756">Открыть <ph name="BEGIN_LINK" />кешированную версию<ph name="END_LINK" /> страницы <ph name="URL" /></translation>
 <translation id="1158211211994409885">Сайт <ph name="HOST_NAME" /> неожиданно разорвал соединение.</translation>
 <translation id="1161325031994447685">Подключитесь к сети Wi-Fi ещё раз.</translation>
+<translation id="1165039591588034296">Ошибка</translation>
 <translation id="1175364870820465910">&amp;Печать...</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Автоматически отправлять в Google<ph name="END_WHITEPAPER_LINK" /> информацию о возможных проблемах безопасности. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -301,14 +303,12 @@
 <translation id="3431636764301398940">Сохранить карту на этом устройстве</translation>
 <translation id="3435896845095436175">Включить</translation>
 <translation id="3447661539832366887">Владелец этого устройства отключил игру с динозавром.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Выберите интервал:</translation>
 <translation id="3462200631372590220">Скрыть подробности</translation>
 <translation id="3467763166455606212">Укажите имя владельца карты.</translation>
 <translation id="3478058380795961209">Месяц</translation>
 <translation id="3479539252931486093">Этот сайт не должен быть заблокирован? <ph name="BEGIN_LINK" />Сообщите нам об этом<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
-<translation id="348000606199325318">Идентификатор сбоя: <ph name="CRASH_LOCAL_ID" /> (идентификатор сервера: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="3528171143076753409">Сертификат сервера не является доверенным.</translation>
 <translation id="3539171420378717834">Хранить данные карты на этом устройстве</translation>
@@ -357,7 +357,6 @@
 <translation id="3886446263141354045">Ваш запрос на доступ к сайту отправлен пользователю <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Добавление адреса электронной почты</translation>
 <translation id="3901925938762663762">Срок действия карты истек</translation>
-<translation id="3934680773876859118">Не удалось загрузить документ PDF</translation>
 <translation id="3963721102035795474">Режим чтения</translation>
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="3973234410852337861">Сайт <ph name="HOST_NAME" /> заблокирован</translation>
@@ -771,7 +770,6 @@
 <translation id="7951415247503192394">(32 бит)</translation>
 <translation id="7956713633345437162">Закладки на мобильном</translation>
 <translation id="7961015016161918242">Нет</translation>
-<translation id="7962083544045318153">Идентификатор сбоя: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Всегда переводить <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Не указано</translation>
 <translation id="800218591365569300">Закройте другие вкладки и программы, чтобы освободить память.</translation>
@@ -852,7 +850,6 @@
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
-<translation id="8877192140621905067">После этого данные вашей карты будут переданы сайту.</translation>
 <translation id="8889402386540077796">Тон</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="889901481107108152">К сожалению, данное действие невозможно выполнить на этой платформе.</translation>

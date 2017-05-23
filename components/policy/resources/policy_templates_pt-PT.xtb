@@ -658,7 +658,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       e restrito rigoroso, no YouTube, mas não pode desativar o Modo restrito.
 
       Se esta política estiver definida como Desativada ou não for definido qualquer valor, o <ph name="PRODUCT_NAME" /> não aplica o Modo restrito no YouTube. As políticas externas, tais como as políticas do YouTube, podem ainda assim aplicar o Modo restrito.</translation>
-<translation id="3428247105888806363">Ativar predição de rede</translation>
+<translation id="3428247105888806363">Ativar previsão de rede</translation>
 <translation id="3449886121729668969">Configura as definições de proxy para o <ph name="PRODUCT_NAME" />. Estas definições de proxy também estão disponíveis para aplicações ARC.
 
       Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>

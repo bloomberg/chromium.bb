@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">在线打开</translation>
 <translation id="1049743911850919806">隐身</translation>
 <translation id="10614374240317010">一律不保存</translation>
-<translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐号。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">我们很快将会为您奉上更多文章，伴您度过美好的晨间时光！</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
-<translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3166827708714933426">标签页和窗口快捷键</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="4060598801229743805">选项位于屏幕顶部附近</translation>
 <translation id="4062305924942672200">法律信息</translation>
+<translation id="4084682180776658562">已保存的书签</translation>
 <translation id="4084836577264234537">下载内容已占用的空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">此功能可能会导致您无法使用运营商提供的付费数据网络服务。</translation>
 <translation id="4095146165863963773">要删除应用数据吗？</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
-<translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4254813446494774748">翻译语言：</translation>
@@ -471,8 +469,6 @@
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
-<translation id="6010869025736512584">正在存取视频输入</translation>
-<translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
 <translation id="6031101910111098835">已收起 - 点击即可展开</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -591,6 +587,7 @@
 <translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
+<translation id="7189598951263744875">分享...</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
@@ -611,6 +608,7 @@
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="748127970106343339">确认删除设备凭据</translation>
+<translation id="7481312909269577407">前进</translation>
 <translation id="7487352416683556407">所选数据已从 Chrome 和您的同步设备中移除。
 
 不过，您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
@@ -643,11 +641,9 @@
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
 <translation id="7781829728241885113">昨天</translation>
-<translation id="7788788617745289808">Chrome 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
-<translation id="7829298379596169484">正在存取音频输入</translation>
 <translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="784934925303690534">时间范围</translation>

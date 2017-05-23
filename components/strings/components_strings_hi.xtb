@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> का कहना है:</translation>
 <translation id="1132774398110320017">Chrome ऑटोमैटिक भरने वाली सेटिंग...</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
+<translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
 <translation id="1152921474424827756"><ph name="URL" /> की <ph name="BEGIN_LINK" />संचित प्रति<ph name="END_LINK" /> एक्सेस करें</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ने अनपेक्षित रूप से कनेक्शन बंद कर दिया है.</translation>
 <translation id="1161325031994447685">वाई-फ़ाई से फिर से कनेक्ट करें</translation>
+<translation id="1165039591588034296">गड़बड़ी</translation>
 <translation id="1175364870820465910">&amp;प्रिंट करें...</translation>
 <translation id="1181037720776840403">निकालें</translation>
 <translation id="1184214524891303587">Google को संभावित सुरक्षा घटनाओं के विवरण की <ph name="BEGIN_WHITEPAPER_LINK" />अपने आप रिपोर्ट करें<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">इस कार्ड को इस डिवाइस पर सहेजें</translation>
 <translation id="3435896845095436175">सक्षम करें</translation>
 <translation id="3447661539832366887">इस डिवाइस के मालिक ने डायनासोर गेम को बंद कर दिया है.</translation>
-<translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">प्राप्ति अंतराल:</translation>
 <translation id="3462200631372590220">उन्नत को छिपाएं</translation>
 <translation id="3467763166455606212">कार्ड मालिक का नाम ज़रूरी है</translation>
 <translation id="3478058380795961209">समाप्ति माह</translation>
 <translation id="3479539252931486093">क्या यह अनपेक्षित था? <ph name="BEGIN_LINK" />हमें बताएं<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
-<translation id="348000606199325318">क्रैश आईडी <ph name="CRASH_LOCAL_ID" /> (सर्वर आईडी: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">हम इस समय आपके अभिभावक तक नहीं पहुंच पा रहे हैं. कृपया पुन: प्रयास करें.</translation>
 <translation id="3528171143076753409">सर्वर का प्रमाणपत्र विश्वसनीय नहीं है.</translation>
 <translation id="3539171420378717834">इस डिवाइस पर इस कार्ड की प्रतिलिपि रखें</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">यह साइट एक्सेस करने का आपका अनुरोध <ph name="NAME" /> को भेज दिया गया है</translation>
 <translation id="3890664840433101773">ईमेल जोड़ें</translation>
 <translation id="3901925938762663762">इस कार्ड की समय सीमा समाप्‍त हो गई है</translation>
-<translation id="3934680773876859118">PDF दस्तावेज़ लोड करने में विफल</translation>
 <translation id="3963721102035795474">रीडर मोड</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरुद्ध है</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7956713633345437162">मोबाइल बुकमार्क</translation>
 <translation id="7961015016161918242">कभी नहीं</translation>
-<translation id="7962083544045318153">क्रैश आईडी <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">हमेशा <ph name="ORIGINAL_LANGUAGE" /> से <ph name="TARGET_LANGUAGE" /> में अनुवाद करें</translation>
 <translation id="7995512525968007366">निर्दिष्‍ट नहीं किया गया</translation>
 <translation id="800218591365569300">जगह खाली करने के लिए दूसरे टैब या प्रोग्राम बंद करके देखें.</translation>
@@ -854,7 +852,6 @@
 <translation id="8870413625673593573">हाल ही में बंद किए गए</translation>
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>
 <translation id="8876793034577346603">नेटवर्क कॉन्फ़िगरेशन पार्स होने में विफल रहा.</translation>
-<translation id="8877192140621905067">आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ साझा किए जाएंगे</translation>
 <translation id="8889402386540077796">रंग</translation>
 <translation id="8891727572606052622">अमान्य प्रॉक्सी मोड.</translation>
 <translation id="889901481107108152">क्षमा करें, यह प्रयोग आपके प्‍लेटफ़ॉर्म पर उपलब्ध नहीं है.</translation>

@@ -982,7 +982,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4541530620466526913">Akaunti za kifaa cha karibu nawe</translation>
 <translation id="4555850956567117258">Washa usahihishaji wa mbali kwa mtumiaji</translation>
 <translation id="4557134566541205630">Mtoa huduma ya utafutaji chaguo-msingi ya URL ya ukurasa wa kichupo kipya</translation>
-<translation id="4600786265870346112">Washa kishale kikubwa</translation>
+<translation id="4600786265870346112">Washa kiteuzi kikubwa</translation>
 <translation id="4604931264910482931">Sanidi orodha ya wasioidhinishwa ya ujumbe asili</translation>
 <translation id="4617338332148204752">Ruka kuingia kwa metatagi katika <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Sanidi orodha iliyoidhinishwa ya usakinishaji kiendelezi</translation>
@@ -1019,11 +1019,11 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
 
           Ukiacha sera hii bila kuiweka <ph name="PRODUCT_NAME" /> haitaweza kuweka majukumu ya vitambulisho vya mtumiaji hata ikiwa seva itagunduliwa kama Intraneti.</translation>
 <translation id="4752880493649142945">Cheti cha seva teja cha kuunganisha kwenye RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4791031774429044540">Washa kipengee cha upatikanaji cha kishale kikubwa. 
-Iwapo sera hii imewekwa kuwa kweli, kishale kikubwa kitawashwa kila wakati. 
-Iwapo sera hii imewekwa kuwa haitumiki, kishale kikubwa kitawashwa kila wakati. 
+<translation id="4791031774429044540">Washa kipengee cha upatikanaji cha kiteuzi kikubwa. 
+Iwapo sera hii imewekwa kuwa kweli, kiteuzi kikubwa kitawashwa kila wakati. 
+Iwapo sera hii imewekwa kuwa haitumiki, kiteuzi kikubwa kitawashwa kila wakati. 
 Iwapo utaweka sera hii, watumiaji hawezi kuibadilisha au kuipuuza. 
-Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa na mtumiaji wakati wowote.</translation>
+Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa na mtumiaji wakati wowote.</translation>
 <translation id="4807950475297505572">Watumiaji waliotumiwa mara chache hivi karibuni huondolewa hadi kuwe na nafasi ya kutosha</translation>
 <translation id="4815725774537609998">Sera hii imeacha kufanya kazi, tumia ProxyMode badala yake.
 
@@ -1313,15 +1313,15 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikiwekwa kuwa sivyo, hakuna udhibiti.
       Ikiwekwa kuwa ndivyo, mfumo hudhibitiwa ili kufanikisha viwango vya upakiaji na kupakua vilivyowekwa (katika kbits/s).</translation>
 <translation id="5921713479449475707">Ruhusu vipakuliwa vya kusasisha kiotomatiki kupitia HTTP</translation>
-<translation id="5921888683953999946">Weka hali chaguo-msingi ya kipengele cha upatikanaji wa kishale kikubwa kwenye skrini  ya kuingia katika akaunti. 
+<translation id="5921888683953999946">Weka hali chaguo-msingi ya kipengele cha upatikanaji wa kiteuzi kikubwa kwenye skrini  ya kuingia katika akaunti. 
 
-Kama sera hii itawekwa kuwa kweli, kishale kikubwa kitawashwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa. 
+Kama sera hii itawekwa kuwa kweli, kiteuzi kikubwa kitawashwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa. 
 
-Kama sera hii ni itawekwa kuwa uongo, kishale kikubwa kitazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa. 
+Kama sera hii ni itawekwa kuwa uongo, kiteuzi kikubwa kitazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa. 
 
-Kama utaweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzima kishale kikubwa. Hata hivyo, chaguo la mtumiaji halitaendelea na chaguo-msingi  litarejeshwa tena wakati wowote skrini ya kuingia katika skrini itakapoonyeshwa upya au mtumiaji atakaposalia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
+Kama utaweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzima kiteuzi kikubwa. Hata hivyo, chaguo la mtumiaji halitaendelea na chaguo-msingi  litarejeshwa tena wakati wowote skrini ya kuingia katika skrini itakapoonyeshwa upya au mtumiaji atakaposalia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
 
-Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima kishale kikubwa wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
+Kama sera hii haijawekwa, kiteuzi kikubwa huzimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima kiteuzi kikubwa wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
 <translation id="5936622343001856595">Hulazimisha maswali katika Utafutaji wa Wavuti wa Google kufanywa na SafeSearch ikiwa imewashwa na huzuia watumiaji kubadilisha mpangilio huu.
 
       Ukiwasha mpangilio huu, SafeSearch katika Utafutaji wa Google huwa imewashwa wakati wote.
@@ -1368,7 +1368,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 
           Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultJavaScriptSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
 <translation id="614662973812186053">Sera hii pia inadhibiti matumizi ya Android na ukusanyaji data ya utatuzi.</translation>
-<translation id="6155936611791017817">Weka hali chaguo-msingi ya kishale kikubwa kwenye skrini ya kuingia katika akaunti</translation>
+<translation id="6155936611791017817">Weka hali chaguo-msingi ya kiteuzi kikubwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="6157537876488211233">Orodha iliyotenganishwa kwa koma ya kanuni za ukwepaji wa proksi</translation>
 <translation id="6158324314836466367">Jina la biashara la duka la wavuti (limeacha kuendesha huduma)</translation>
 <translation id="6167074305866468481">Onyo: Matumizi ya SSLv3 yataondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 43 (kufikia Julai 2015) na sera hii itaondolewa wakati huo.

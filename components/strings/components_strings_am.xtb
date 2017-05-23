@@ -21,9 +21,11 @@
 <translation id="113188000913989374"><ph name="SITE" /> እንዲህ ይላል፦</translation>
 <translation id="1132774398110320017">የChrome ራስ-ሙላ ቅንብሮች...</translation>
 <translation id="1150979032973867961">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በኮምፒውተርዎ ስርዓተ ክወና የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
+<translation id="1151972924205500581">የይለፍ ቃል ያስፈልጋል</translation>
 <translation id="1152921474424827756">የ<ph name="URL" /> <ph name="BEGIN_LINK" />የተሸጎጠ ቅጂ<ph name="END_LINK" /> ይድረሱ</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ሳይታሰብ ግንኙነቱን ዘግቷል።</translation>
 <translation id="1161325031994447685">ከWi-Fi ጋር ዳግም በማገናኘት</translation>
+<translation id="1165039591588034296">ስህተት</translation>
 <translation id="1175364870820465910">&amp;አትም…</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1184214524891303587">የደህንነት ሊሆኑ የሚችሉ የክስተቶች ዝርዝሮችን በራስ-ሰር ለGoogle <ph name="BEGIN_WHITEPAPER_LINK" />ሪፖርት ያድርጉ<ph name="END_WHITEPAPER_LINK" />። <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -301,14 +303,12 @@
 <translation id="3431636764301398940">ይህን ካርድ ወደዚህ መሣሪያ አስቀምጥ</translation>
 <translation id="3435896845095436175">አንቃ</translation>
 <translation id="3447661539832366887">የዚህ መሣሪያ ባለቤት የዳይኖሰር ጨዋታውን አጥፍቶታል።</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">የሚመጣው በየ፦</translation>
 <translation id="3462200631372590220">የላቁ ደብቅ</translation>
 <translation id="3467763166455606212">የካርድ ያዥ ስም ያስፈልጋል</translation>
 <translation id="3478058380795961209">ጊዜው የሚያልፍበት ወር</translation>
 <translation id="3479539252931486093">ይህ ያልተጠበቀ ነበር? <ph name="BEGIN_LINK" />ያሳውቁን<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">አሁን አይደለም</translation>
-<translation id="348000606199325318">የብልሽት መታወቂያ <ph name="CRASH_LOCAL_ID" /> (የአገልጋይ መታወቂያ፦ <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">በዚህ ጊዜ ላይ ወላጅህን ማግኘት አልቻልንም። እባክህ እንደገና ሞክር።</translation>
 <translation id="3528171143076753409">የአገልጋይ እውቅና ማረጋገጫ የታመነ አይደለም።</translation>
 <translation id="3539171420378717834">የዚህን ካርድ ቅጂ በዚህ መሣሪያ ላይ አቆይ</translation>
@@ -357,7 +357,6 @@
 <translation id="3886446263141354045">ይህን ጣቢያ የመድረስ ጥያቄዎ ለ<ph name="NAME" /> ተልኳል</translation>
 <translation id="3890664840433101773">ኢሜይል ያክሉ</translation>
 <translation id="3901925938762663762">ካርዱ አገልግሎት ጊዜው አብቅቷል</translation>
-<translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>
 <translation id="3963721102035795474">የአንባቢ ሁነታ</translation>
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ታግዷል</translation>
@@ -773,7 +772,6 @@ nil</translation>
 <translation id="7951415247503192394">(32-ቢት)</translation>
 <translation id="7956713633345437162">የተንቀሳቃሽ ስልክ ዕልባቶች</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
-<translation id="7962083544045318153">የብልሽት መታወቂያ <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">ሁልጊዜ <ph name="ORIGINAL_LANGUAGE" />ን ወደ<ph name="TARGET_LANGUAGE" /> መተርጎም</translation>
 <translation id="7995512525968007366">አልተጠቀሰም</translation>
 <translation id="800218591365569300">የማህደረ ትውስታ ቦታን ለማስለቀቅ ሌሎች ትሮችን ወይም ፕሮግራሞችን ዘግተው ይሞክሩ።</translation>
@@ -855,7 +853,6 @@ nil</translation>
 <translation id="8870413625673593573">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="8874824191258364635">የሚሰራ የካርድ ቁጥር ያስገቡ</translation>
 <translation id="8876793034577346603">የአውታረ መረብ ውቅር ሊተነተን አልቻለም።</translation>
-<translation id="8877192140621905067">አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ</translation>
 <translation id="8889402386540077796">ለይ ቀለም</translation>
 <translation id="8891727572606052622">ልክ ያልሆነ የተኪ ሁነታ።</translation>
 <translation id="889901481107108152">ይቅርታ፣ ይህ ሙከራ ለመሣሪያ ስርዓትዎ አይገኝም።</translation>

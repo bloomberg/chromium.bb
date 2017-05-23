@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Abrir versión online</translation>
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
-<translation id="1061441684050139317">Chrome necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="1080790410959514870">Vas a salir de una cuenta administrada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
 <translation id="1111673857033749125">Aquí aparecen los marcadores que hayas guardado en otros dispositivos.</translation>
 <translation id="1121094540300013208">Informes de uso y sobre fallos</translation>
@@ -191,7 +190,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Próximamente se mostrarán más artículos. Disfruta de la mañana.</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
-<translation id="3090193911106258841">Accediendo a la entrada de vídeo y audio</translation>
 <translation id="3137521801621304719">Salir del modo incógnito</translation>
 <translation id="3148434565183091099">Inicia sesión en Chrome para ver tus marcadores en todos tus dispositivos.</translation>
 <translation id="3166827708714933426">Combinaciones de teclas de pestañas y ventanas</translation>
@@ -283,6 +281,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opciones disponibles junto a la parte superior de la pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
+<translation id="4084682180776658562">Marcador</translation>
 <translation id="4084836577264234537">MB descargados: <ph name="MEGABYTES" /></translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos premium ofrecidos por el operador.</translation>
 <translation id="4095146165863963773">¿Eliminar datos de la aplicación?</translation>
@@ -293,7 +292,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan que el dispositivo vibre</translation>
-<translation id="423410644998903704">Chrome necesita acceder a los permisos para compartirlos con este sitio web.</translation>
 <translation id="4242533952199664413">Abrir Ajustes</translation>
 <translation id="424864128008805179">¿Cerrar sesión en Chrome?</translation>
 <translation id="4254813446494774748">Idioma de traducción:</translation>
@@ -424,7 +422,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5517095782334947753">Tienes los marcadores, el historial, las contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pestañas de incógnito</translation>
-<translation id="5556459405103347317">Cargar de nuevo</translation>
+<translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5568069709869097550">No puedo iniciar sesión</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
@@ -471,8 +469,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5956665950594638604">Abre la Ayuda de Chrome en una pestaña nueva</translation>
 <translation id="5962718611393537961">Toca para ocultar</translation>
 <translation id="6000066717592683814">Mantener Google como motor de búsqueda predeterminado</translation>
-<translation id="6010869025736512584">Accediendo a la entrada de vídeo</translation>
-<translation id="6012342843556706400">Chrome necesita acceder a la información de ubicación para compartirla con este sitio web.</translation>
 <translation id="6031101910111098835">Vista contraída (hacer clic para expandirla)</translation>
 <translation id="6039379616847168523">Te dirige a la siguiente pestaña</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -591,6 +587,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7189372733857464326">Esperando a que Servicios de Google Play termine de actualizarse</translation>
+<translation id="7189598951263744875">Compartir...</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano.</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza tu ubicación para mostrar resultados de búsqueda locales</translation>
@@ -611,6 +608,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si este mensaje aparece con frecuencia, prueba estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
+<translation id="7481312909269577407">Adelante</translation>
 <translation id="7487352416683556407">Los datos seleccionados se han eliminado de Chrome y de los dispositivos sincronizados.
 
 Es posible que tu cuenta de Google tenga otras formas del historial de navegación, como las búsquedas o la actividad de otros servicios de Google en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -643,11 +641,9 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7772032839648071052">Repite la contraseña</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}}</translation>
 <translation id="7781829728241885113">Ayer</translation>
-<translation id="7788788617745289808">Chrome necesita acceder a la cámara para compartirla con este sitio web.</translation>
 <translation id="7791543448312431591">Añadir</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
-<translation id="7829298379596169484">Accediendo a la entrada de audio</translation>
 <translation id="7837721118676387834">Permitir que un sitio web específico reproduzca automáticamente los vídeos silenciados.</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>

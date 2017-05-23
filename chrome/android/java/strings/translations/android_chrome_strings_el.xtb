@@ -4,7 +4,6 @@
 <translation id="1006017844123154345">Άνοιγμα στο διαδίκτυο</translation>
 <translation id="1049743911850919806">Ανώνυμη περιήγηση</translation>
 <translation id="10614374240317010">Δεν έχει αποθηκευθεί ποτέ</translation>
-<translation id="1061441684050139317">Το Chrome χρειάζεται πρόσβαση στο μικρόφωνο προκειμένου να το μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="1080790410959514870">Πρόκειται να αποσυνδεθείτε από έναν λογαριασμό που τελεί υπό τη διαχείριση του <ph name="DOMAIN_NAME" />. Με αυτόν τον τρόπο θα διαγραφούν τα δεδομένα του Chrome που είναι αποθηκευμένα σε αυτήν τη συσκευή, αλλά τα δεδομένα θα διατηρηθούν στο Λογαριασμό σας Google.</translation>
 <translation id="1111673857033749125">Οι σελιδοδείκτες που είναι αποθηκευμένοι σε άλλες συσκευές θα εμφανίζονται εδώ.</translation>
 <translation id="1121094540300013208">Αναφορές χρήσης και σφαλμάτων</translation>
@@ -191,7 +190,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Περισσότερα άρθρα θα εμφανιστούν σύντομα. Απολαύστε το πρωινό σας!</translation>
 <translation id="3089395242580810162">Άνοιγμα σε καρτέλα ανώνυμης περιήγησης</translation>
-<translation id="3090193911106258841">Πρόσβαση στην είσοδο ήχου και βίντεο</translation>
 <translation id="3137521801621304719">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="3148434565183091099">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="3166827708714933426">Συντομεύσεις καρτέλας και παραθύρου</translation>
@@ -283,6 +281,7 @@
 <translation id="4056223980640387499">Σέπια</translation>
 <translation id="4060598801229743805">Διαθέσιμες επιλογές κοντά στην κορυφή της οθόνης</translation>
 <translation id="4062305924942672200">Νομικές πληροφορίες</translation>
+<translation id="4084682180776658562">Σελιδοδείκτης</translation>
 <translation id="4084836577264234537">Έγινε λήψη <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Αυτή η λειτουργία ενδέχεται να εμποδίζει την πρόσβαση σε υπηρεσίες δεδομένων υψηλής ποιότητας που παρέχονται από την εταιρεία κινητής τηλεφωνίας.</translation>
 <translation id="4095146165863963773">Διαγραφή δεδομένων εφαρμογών;</translation>
@@ -293,7 +292,6 @@
 <translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
 <translation id="4226663524361240545">Κατά τη λήψη ειδοποιήσεων ενδέχεται να δονείται η συσκευή</translation>
-<translation id="423410644998903704">Το Chrome θα πρέπει να έχει πρόσβαση στις άδειες προκειμένου να τις μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="4242533952199664413">Ανοίξτε τις ρυθμίσεις</translation>
 <translation id="424864128008805179">Αποσύνδεση από το Chrome;</translation>
 <translation id="4254813446494774748">Γλώσσα μετάφρασης:</translation>
@@ -471,8 +469,6 @@
 <translation id="5956665950594638604">Άνοιγμα Κέντρου βοήθειας Chrome σε νέα καρτέλα</translation>
 <translation id="5962718611393537961">Πατήστε για σύμπτυξη</translation>
 <translation id="6000066717592683814">Διατήρηση του Google</translation>
-<translation id="6010869025736512584">Πρόσβαση στην είσοδο βίντεο</translation>
-<translation id="6012342843556706400">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία προκειμένου να την μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="6031101910111098835">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
 <translation id="6039379616847168523">Μετάβαση στην επόμενη καρτέλα</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
@@ -591,6 +587,7 @@
 <translation id="7149893636342594995">Τελευταίες 24 ώρες</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7189372733857464326">Αναμονή για ολοκλήρωση της ενημέρωσης των Υπηρεσιών Google Play</translation>
+<translation id="7189598951263744875">Κοινή χρήση…</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7244362611678346589">Το <ph name="SEARCH_ENGINE_URL" /> χρησιμοποιεί την τοποθεσία σας για την εμφάνιση τοπικών αποτελεσμάτων αναζήτησης</translation>
@@ -611,6 +608,7 @@
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7475192538862203634">Εάν αυτό το μήνυμα εμφανίζεται συχνά, δοκιμάστε αυτές τις <ph name="BEGIN_LINK" />προτάσεις<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Επιβεβαίωση διαγραφής διαπιστευτηρίων συσκευής</translation>
+<translation id="7481312909269577407">Προώθηση</translation>
 <translation id="7487352416683556407">Τα επιλεγμένα δεδομένα καταργήθηκαν από το Chrome και από τις συγχρονισμένες συσκευές.
 
 Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης, όπως αναζητήσεις και δραστηριότητα από άλλες υπηρεσίες Google στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -643,11 +641,9 @@
 <translation id="7772032839648071052">Επιβεβαίωση φράσης πρόσβασης</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}}</translation>
 <translation id="7781829728241885113">Χθες</translation>
-<translation id="7788788617745289808">Το Chrome χρειάζεται πρόσβαση στην κάμερα προκειμένου να την μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7810647596859435254">Άνοιγμα με…</translation>
-<translation id="7829298379596169484">Πρόσβαση στην είσοδο ήχου</translation>
 <translation id="7837721118676387834">Να επιτρέπεται η αυτόματη αναπαραγωγή βίντεο που έχουν τεθεί σε σίγαση για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
 <translation id="784934925303690534">Χρονικό εύρος</translation>

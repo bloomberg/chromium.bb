@@ -21,9 +21,11 @@
 <translation id="113188000913989374">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
 <translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
+<translation id="1151972924205500581">Wymagane hasło</translation>
 <translation id="1152921474424827756">Przejdź do <ph name="BEGIN_LINK" />kopii<ph name="END_LINK" /> <ph name="URL" /> w pamięci podręcznej</translation>
 <translation id="1158211211994409885">Serwer <ph name="HOST_NAME" /> nieoczekiwanie zakończył połączenie.</translation>
 <translation id="1161325031994447685">Ponownie połącz się z Wi-Fi</translation>
+<translation id="1165039591588034296">Błąd</translation>
 <translation id="1175364870820465910">&amp;Drukuj...</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatycznie przesyłaj<ph name="END_WHITEPAPER_LINK" /> do Google szczegółowe informacje o możliwych zagrożeniach. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -302,14 +304,12 @@
 <translation id="3431636764301398940">Zapisz tę kartę na tym urządzeniu</translation>
 <translation id="3435896845095436175">Włącz</translation>
 <translation id="3447661539832366887">Właściciel tego urządzenia wyłączył grę z dinozaurem.</translation>
-<translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Okres pobierania:</translation>
 <translation id="3462200631372590220">Ukryj zaawansowane</translation>
 <translation id="3467763166455606212">Wymagane jest imię i nazwisko posiadacza karty</translation>
 <translation id="3478058380795961209">Miesiąc utraty ważności</translation>
 <translation id="3479539252931486093">Zaskoczyło Cię to? <ph name="BEGIN_LINK" />Daj nam znać<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Nie teraz</translation>
-<translation id="348000606199325318">Identyfikator awarii: <ph name="CRASH_LOCAL_ID" /> (identyfikator serwera: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Obecnie nie możemy się skontaktować z Twoim rodzicem. Spróbuj ponownie.</translation>
 <translation id="3528171143076753409">Certyfikat serwera nie jest zaufany.</translation>
 <translation id="3539171420378717834">Zachowaj kopię tej karty na urządzeniu</translation>
@@ -358,7 +358,6 @@
 <translation id="3886446263141354045">Twoja prośba o dostęp to tej strony została wysłana do: <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Dodaj adres e-mail</translation>
 <translation id="3901925938762663762">Karta straciła ważność</translation>
-<translation id="3934680773876859118">Nie można wczytać dokumentu PDF</translation>
 <translation id="3963721102035795474">Tryb czytnika</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3973234410852337861">Strona <ph name="HOST_NAME" /> jest zablokowana</translation>
@@ -772,7 +771,6 @@
 <translation id="7951415247503192394">(32-bitowa)</translation>
 <translation id="7956713633345437162">Zakładki na komórce</translation>
 <translation id="7961015016161918242">Nigdy</translation>
-<translation id="7962083544045318153">Identyfikator awarii: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Zawsze tłumacz z języka: <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nie określono</translation>
 <translation id="800218591365569300">Zamknij inne karty lub programy, by zwolnić pamięć.</translation>
@@ -853,7 +851,6 @@
 <translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8874824191258364635">Wpisz prawidłowy numer karty</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
-<translation id="8877192140621905067">Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie</translation>
 <translation id="8889402386540077796">Odcień</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="889901481107108152">Eksperyment jest niedostępny na Twojej platformie.</translation>

@@ -234,7 +234,6 @@
 <translation id="1358032944105037487">Japans toetsenbord</translation>
 <translation id="1358735829858566124">Het bestand of de map is niet bruikbaar.</translation>
 <translation id="1358741672408003399">Spelling en grammatica</translation>
-<translation id="1359381790106966506">Rechten updaten</translation>
 <translation id="1361164813881551742">Handmatig toevoegen</translation>
 <translation id="1361655923249334273">Ongebruikt</translation>
 <translation id="136180453919764941">Batterij - <ph name="STATUS" /></translation>
@@ -1442,7 +1441,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3038675903128704560">Sites niet toestaan een plug-in te gebruiken om toegang te krijgen tot je computer</translation>
 <translation id="3039828483675273919">$1 items verplaatsen...</translation>
 <translation id="304009983491258911">Pincode simkaart wijzigen</translation>
-<translation id="3046838483509668188">ChromeVox-opties</translation>
 <translation id="3046910703532196514">Webpagina, compleet</translation>
 <translation id="304826556400666995">Dempen tabbladen opheffen</translation>
 <translation id="3053013834507634016">Sleutelgebruik voor certificaat</translation>
@@ -1473,6 +1471,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3088325635286126843">&amp;Naam wijzigen...</translation>
 <translation id="308903551226753393">Automatisch configureren</translation>
 <translation id="3089231390674410424">Er lijkt een probleem te zijn met je inloggegevens. Zorg ervoor dat je correct bent ingelogd en probeer het opnieuw.</translation>
+<translation id="3090193911106258841">Audio- en video-invoer openen</translation>
 <translation id="3090819949319990166">Kan extern crx-bestand niet kopiëren naar <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">'<ph name="DEVICE_NAME" />' gekoppeld</translation>
 <translation id="3095995014811312755">versie</translation>
@@ -1519,7 +1518,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3154351730702813399">De apparaatbeheerder kan je browse-activiteit controleren.</translation>
 <translation id="3154429428035006212">Langer dan een maand offline</translation>
 <translation id="3157931365184549694">Herstellen</translation>
-<translation id="3159386328383139451">Google gebruikt je locatie om een betere lokale functionaliteit te leveren. Je kunt dit wijzigen in <ph name="SETTINGS_LINK" />.</translation>
 <translation id="3160041952246459240">Je hebt certificaten waarmee de volgende servers worden geïdentificeerd:</translation>
 <translation id="316125635462764134">App verwijderen</translation>
 <translation id="3161522574479303604">Alle talen</translation>
@@ -2152,6 +2150,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4095507791297118304">Primair scherm</translation>
 <translation id="409579654357498729">Toevoegen aan Cloudprinter</translation>
 <translation id="4096508467498758490">Extensies van ontwikkelaarsmodus uitschakelen</translation>
+<translation id="4096824249111507322">Beveiligde module wordt voorbereid, even geduld (dit kan enkele minuten duren)...</translation>
 <translation id="4099060993766194518">Standaardzoekmachine herstellen?</translation>
 <translation id="4100733287846229632">Er is zeer weinig ruimte beschikbaar op het apparaat</translation>
 <translation id="4104163789986725820">E&amp;xporteren...</translation>
@@ -2336,7 +2335,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4423376891418188461">Instellingen herstellen</translation>
 <translation id="4423482519432579560">&amp;Spellingcontrole</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, de beheerder vereist dat je je wachtwoord wijzigt.</translation>
-<translation id="4425149324548788773">My Drive</translation>
+<translation id="4425149324548788773">Mijn Drive</translation>
 <translation id="4428582326923056538">Voor Adobe Flash Player worden afzonderlijke camera-uitzonderingen gebruikt.</translation>
 <translation id="4430369329743628066">Bladwijzer toegevoegd</translation>
 <translation id="4433914671537236274">Een herstelmedium maken</translation>
@@ -2435,7 +2434,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4590324241397107707">Opslag in database</translation>
 <translation id="4593021220803146968">&amp;Ga naar <ph name="URL" /></translation>
 <translation id="4594109696316595112">Eenmalige activering: typ je wachtwoord om Smart Lock te activeren op deze <ph name="DEVICE_TYPE" />. Met Smart Lock kan je telefoon dit apparaat ontgrendelen, zonder wachtwoord. Als je deze functie wilt uitschakelen, ga je naar de instellingen van je <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4594538246438948697">Houd Zoeken ingedrukt en klik of sleep om tekst voor te laten lezen</translation>
 <translation id="4595560905247879544">Apps en extensies kunnen alleen worden aangepast door de beheerder (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Je hebt certificaten waarmee deze servers worden geïdentificeerd</translation>
 <translation id="4598556348158889687">Opslagbeheer</translation>
@@ -2480,6 +2478,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4657031070957997341">Plug-ins altijd toestaan op <ph name="HOST" /></translation>
 <translation id="4662788913887017617">Deze bladwijzer delen met je iPhone</translation>
 <translation id="4664482161435122549">Fout bij exporteren van PKCS #12</translation>
+<translation id="466481852929361583">De beveiligde module wordt ingesteld. Even geduld, dit kan enkele minuten duren.</translation>
 <translation id="4665014895760275686">Fabrikant</translation>
 <translation id="4667176955651319626">Indirecte cookies en sitegegevens blokkeren</translation>
 <translation id="4668721319092543482">Klik om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
@@ -2653,7 +2652,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="490074449735753175">Een webservice gebruiken voor het oplossen van spelfouten</translation>
 <translation id="49027928311173603">Het beleid dat van de server is gedownload, is ongeldig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4903369323166982260">Chrome Cleanup Tool uitvoeren</translation>
-<translation id="4906679076183257864">Standaardinstelling herstellen</translation>
 <translation id="4907161631261076876">Dit bestand wordt niet vaak gedownload en kan gevaarlijk zijn.</translation>
 <translation id="4907306957610201395">Rechtencategorie</translation>
 <translation id="4909038193460299775">Omdat dit account wordt beheerd door <ph name="DOMAIN" />, worden je bladwijzers, geschiedenis, wachtwoorden en andere instellingen gewist van dit apparaat. Je gegevens blijven opgeslagen in je Google-account en kunnen worden beheerd via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -3228,6 +3226,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="577624874850706961">Cookies zoeken</translation>
 <translation id="5778550464785688721">Volledige controle voor MIDI-apparaten</translation>
+<translation id="5778747455497889540">Hieronder staat het willekeurig gegenereerde wachtwoord voor de beveiligde module dat aan je computer is toegewezen:</translation>
 <translation id="5780066559993805332">(Beste)</translation>
 <translation id="5780973441651030252">Procesprioriteit</translation>
 <translation id="5781865261247219930">Opdrachten verzenden naar <ph name="EXTENSION_NAME" /></translation>
@@ -3286,6 +3285,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5854409662653665676">Als je vaak problemen ondervindt, kun je het volgende proberen om het probleem met deze module te verhelpen:</translation>
 <translation id="5854912040170951372">Pizzapunt</translation>
 <translation id="5855119960719984315">ander venster</translation>
+<translation id="5855773610748894548">Fout met beveiligde module.</translation>
 <translation id="5856721540245522153">Foutopsporingsfuncties inschakelen</translation>
 <translation id="5857090052475505287">Nieuwe map</translation>
 <translation id="5859272821192576954">Je bent gereed om door te gaan met Hangouts</translation>
@@ -3376,6 +3376,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6005695835120147974">Mediarouter</translation>
 <translation id="6006484371116297560">Klassiek</translation>
 <translation id="6007237601604674381">Verplaatsen mislukt. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6010869025736512584">Video-invoer openen</translation>
 <translation id="6011193465932186973">Vingerafdruk</translation>
 <translation id="6011449291337289699">Sitegegevens wissen</translation>
 <translation id="6015796118275082299">Jaar</translation>
@@ -3802,6 +3803,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6629841649550503054">Er is een back-up van alles gemaakt in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> wil permanente toegang tot een certificaat om zichzelf names jou te verifiëren.</translation>
 <translation id="6639554308659482635">SQLite-geheugen</translation>
+<translation id="6641138807883536517">Het willekeurig gegenereerde wachtwoord voor de beveiligde module is niet beschikbaar. Dit is normaal nadat de Powerwash-functie is uitgevoerd.</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6644846457769259194">Je apparaat updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">URL voor intrekken van certificeringsinstantie voor Netscape-certificaat</translation>
@@ -3892,7 +3894,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> is op afstand toegevoegd</translation>
 <translation id="6790820461102226165">Persoon toevoegen...</translation>
 <translation id="6791443592650989371">Activeringsstatus:</translation>
-<translation id="6792045489562677072">Opties voor 'Selecteren om voor te lezen'</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> wil de content op je scherm delen met <ph name="TARGET_NAME" />. Kies wat je wilt delen.</translation>
 <translation id="6793604637258913070">Markeer het tekstinvoerpunt wanneer dit wordt weergegeven of wanneer het wordt verplaatst</translation>
 <translation id="6797493596609571643">Er is een fout opgetreden.</translation>
@@ -4022,6 +4023,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6991128190741664836">Later</translation>
 <translation id="6991665348624301627">Een bestemming selecteren</translation>
 <translation id="699220179437400583">Automatisch informatie over mogelijke beveiligingsincidenten aan Google melden</translation>
+<translation id="6996946928646015361">Beveiligde module is uitgeschakeld of ontbreekt.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappen geselecteerd</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{De volgende pagina reageert niet meer. Je kunt wachten tot de pagina reageert of de pagina sluiten.}other{De volgende pagina's reageren niet meer. Je kunt wachten tot ze reageren of de pagina's sluiten.}}</translation>
 <translation id="7002055706763150362">Als je Smart Lock voor Chromebook wilt instellen, moet Google eerst controleren of je de juiste gebruiker bent. Typ je wachtwoord om aan de slag te gaan.</translation>
@@ -4513,7 +4515,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7766807826975222231">Een rondleiding volgen</translation>
 <translation id="7767646430896201896">Opties:</translation>
-<translation id="7768784765476638775">Selecteren om voor te lezen</translation>
 <translation id="7769353642898261262">De telefoon beveiligen</translation>
 <translation id="7769672763586021400">Model-ID</translation>
 <translation id="7771452384635174008">Opmaak</translation>
@@ -4558,6 +4559,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7825423931463735974">Tamil toetsenbord (Tamil99)</translation>
 <translation id="782590969421016895">Huidige pagina's gebruiken</translation>
 <translation id="782886543891417279">Het is mogelijk dat je de inlogpagina moet bezoeken van het wifi-netwerk (<ph name="WIFI_NAME" />) dat je gebruikt.</translation>
+<translation id="7829298379596169484">Audio-invoer openen</translation>
 <translation id="7831368056091621108">om deze extensie, je geschiedenis en andere Chrome-instellingen op al je apparaten te krijgen.</translation>
 <translation id="7831493768366098287">Google Afdrukken</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5080,6 +5082,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8631032106121706562">Madeliefje</translation>
 <translation id="8631271110654520730">Herstelkopie kopiëren...</translation>
 <translation id="8632275030377321303">De proxy kan niet worden aangepast door de gebruiker.</translation>
+<translation id="8637542770513281060">Je computer bevat een beveiligde module die wordt gebruikt om veel van de belangrijke beveiligingsfuncties in Chrome OS te implementeren. Ga voor meer informatie naar het Helpcentrum voor Chromebooks: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Systeemupdate beschikbaar. Download voorbereiden...</translation>
 <translation id="8639963783467694461">Instellingen voor Automatisch aanvullen</translation>
 <translation id="8642171459927087831">Toegangstoken</translation>
@@ -5190,7 +5193,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Proxy's voor gedeelde netwerken toestaan</translation>
 <translation id="878763818693997570">Deze naam is te lang</translation>
-<translation id="8789375980715484686">Andere gebruikers beheren</translation>
 <translation id="8791534160414513928">Een verzoek voor niet bijhouden met je browseverkeer verzenden</translation>
 <translation id="8794025342371547160">Beperkt IP-adres</translation>
 <translation id="879413103056696865">Terwijl de hotspot is ingeschakeld, doet je <ph name="PHONE_NAME" /> het volgende:</translation>

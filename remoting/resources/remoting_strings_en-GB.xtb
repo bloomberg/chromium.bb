@@ -95,7 +95,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="3258789396564295715">You may securely access this computer using Chrome Remote Desktop.</translation>
-<translation id="327263477022142889">Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN" />Take the survey.<ph name="LINK_END" /></translation>
 <translation id="3286521253923406898">Chromoting Host Controller</translation>
 <translation id="332624996707057614">Edit computer name</translation>
 <translation id="3339299787263251426">Access your computer securely over the Internet</translation>
@@ -137,7 +136,6 @@ Host</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>
 <translation id="4361728918881830843">To enable remote connections to a different computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
-<translation id="4368630973089289038">Want to help improve Chromoting? <ph name="LINK_BEGIN" />Take the survey.<ph name="LINK_END" /></translation>
 <translation id="4394049700291259645">Disable</translation>
 <translation id="4405930547258349619">Core Library</translation>
 <translation id="4430435636878359009">Disable remote connections to this computer</translation>

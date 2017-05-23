@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Chromium im Hintergrund ausführen</translation>
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
 <translation id="1808667845054772817">Chromium neu installieren</translation>
-<translation id="1816404578968201294">Chromium benötigt Zugriff auf diesen Standort, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="1869480248812203386">Helfen Sie mit, Chromium sicherer und nutzerfreundlicher zu machen, indem Sie Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden.</translation>
 <translation id="1881322772814446296">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chromium-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium reagiert nicht. Jetzt neu starten?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Chromium OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Chromium OS muss neu gestartet werden, um das Update zu übernehmen.</translation>
-<translation id="2636877269779209383">Chromium benötigt Zugriff auf die Kamera, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="2647554856022461007">Chromium verwendet möglicherweise Webdienste zur Verbesserung Ihrer Nutzererfahrung beim Surfen im Internet. Sie haben die Möglichkeit, diese Dienste zu deaktivieren. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Während der Installation ist ein Fehler im Betriebssystem aufgetreten. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="2685838254101182273">Chromium wird nicht mehr aktualisiert und unterstützt Ihre Betriebssystemversion nicht länger.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="6584627348340620412">Künftige 32-Bit-Versionen von Chromium werden unter diesem Linux-System nicht mehr unterstützt. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
 <translation id="6593914713218535185">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter diesem Linux-System nicht mehr unterstützt wird.</translation>
-<translation id="6637001341228460105">Chromium benötigt Zugriff auf das Mikrofon, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="6638567566961868659">Ihre Lesezeichen finden Sie im Chromium-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
 <translation id="6717134281241384636">Ihr Profil kann nicht verwendet werden, da es aus einer neueren Version von Chromium stammt.
@@ -228,7 +225,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7975919845073681630">Dies ist eine Zweitinstallation, daher kann Chromium nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="7979877361127045932">Im Chromium-Menü ausblenden</translation>
 <translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>
-<translation id="8033665941300843262">Chromium benötigt Zugriff auf die Berechtigungen, um sie mit dieser Website teilen zu können.</translation>
 <translation id="8134284582177628525">Wenn Sie diesen Computer gemeinsam mit <ph name="PROFILE_NAME" /> nutzen, fügen Sie Ihr eigenes Profil zu Chromium hinzu, um separat zu surfen. Trennen Sie andernfalls die Verbindung zu dem Google-Konto der Person.</translation>
 <translation id="8157153840442649507">Chromium wird in dieser Sprache angezeigt</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>

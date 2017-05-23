@@ -3,7 +3,6 @@
 <translationbundle lang="en-GB">
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="1035334672863811645">sign in to Chrome</translation>
-<translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1065672644894730302">Your preferences cannot be read.
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
@@ -111,7 +110,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
 <translation id="4147555960264124640">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
-<translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
 <translation id="4309555186815777032">(requires Chrome <ph name="BEGIN_BUTTON" />restart<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -176,7 +174,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5931853610562009806">On Mac, passwords may be saved to your Keychain and accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
-<translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
 <translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
 <translation id="6070348360322141662">For added security, Google Chrome will encrypt your data</translation>
 <translation id="6113794647360055231">Chrome just got better</translation>
@@ -234,7 +231,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>
 <translation id="7781002470561365167">There is a new version of Google Chrome available.</translation>
 <translation id="7787950393032327779">The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chrome has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.</translation>
-<translation id="7788788617745289808">Chrome needs camera access to share it with this site.</translation>
 <translation id="7808348361785373670">Remove from Chrome...</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="7855730255114109580">Google Chrome is up to date</translation>

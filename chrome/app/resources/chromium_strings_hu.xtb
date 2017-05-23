@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="1808667845054772817">A Chromium újratelepítése</translation>
-<translation id="1816404578968201294">A Chromiumnak hozzáférésre van szüksége a helyadatokhoz, hogy megoszthassa azokat a webhellyel.</translation>
 <translation id="1869480248812203386">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chromium használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="1881322772814446296">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chromium-adatainak elkülönített tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">A Chromium OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">A frissítés alkalmazásához újra kell indítani a Chromium OS-t.</translation>
-<translation id="2636877269779209383">A Chromiumnak hozzáférésre van szüksége a kamerához, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="2647554856022461007">Előfordulhat, hogy a Chromium internetes szolgáltatásokat használ böngészési élménye javítására. Lehetősége van az ilyen szolgáltatások letiltására. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="2685838254101182273">A Chromium a továbbiakban nem frissül, és már nem támogatja az Ön operációs rendszerének ezen verzióját.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">A Chromiumnak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="6584627348340620412">A 32 bites Chromium jövőbeli verziói nem fogják támogatni ezt a Linux rendszert. Kérjük, frissítsen a Chromium 64 bites változatára.</translation>
 <translation id="6593914713218535185">Előfordulhat, hogy a Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja ezt a Linux rendszert.</translation>
-<translation id="6637001341228460105">A Chromiumnak hozzáférésre van szüksége a mikrofonhoz, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="6638567566961868659">Könyvjelzőit megtalálhatja a Chromium menüben vagy a könyvjelzősávban.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="6717134281241384636">A profilja nem használható, mert az a Chromium egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Chromium újabb verzióját.</translation>
@@ -226,7 +223,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7975919845073681630">Ez a Chromium második telepítése, amelyet nem állíthat be az alapértelmezett böngészővé.</translation>
 <translation id="7979877361127045932">Elrejtés a Chromium-menüben</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára...</translation>
-<translation id="8033665941300843262">A Chromiumnak hozzáférésre van szüksége az engedélyekhez, hogy megoszthassa azokat a webhellyel.</translation>
 <translation id="8134284582177628525">Ha közösen használja ezt a számítógépet <ph name="PROFILE_NAME" /> felhasználóval, adja hozzá magát a Chromiumhoz, hogy külön böngészhessen. Máskülönben válassza le az ő Google-fiókját.</translation>
 <translation id="8157153840442649507">A Chromium ezen a nyelven jelenik meg</translation>
 <translation id="81770708095080097">Ez a fájl veszélyes, ezért a Chromium letiltotta.</translation>

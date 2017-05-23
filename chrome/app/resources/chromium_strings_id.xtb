@@ -24,7 +24,6 @@
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
 <translation id="1779356040007214683">Agar Chromium lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="1808667845054772817">Instal ulang Chromium</translation>
-<translation id="1816404578968201294">Chromium memerlukan akses lokasi untuk membagikannya dengan situs ini.</translation>
 <translation id="1869480248812203386">Anda dapat membantu membuat Chromium lebih aman dan lebih mudah digunakan dengan melaporkan detail secara otomatis tentang kemungkinan insiden keamanan ke Google.</translation>
 <translation id="1881322772814446296">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. Secara opsional, Anda dapat membuat profil untuk menjaga data Chromium Anda yang sudah ada tetap terpisah. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
@@ -48,7 +47,6 @@
 <translation id="2535480412977113886">Chromium OS tidak dapat menyinkronkan data karena detail ID masuk Anda belum diperbarui.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
 <translation id="2587578672395088481">Chromium OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
-<translation id="2636877269779209383">Chromium memerlukan akses kamera untuk membagikannya dengan situs ini.</translation>
 <translation id="2647554856022461007">Chromium dapat mengunakan layanan web agar pengalaman mengakses internet lebih menyenangkan. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Terjadi kesalahan pada sistem operasi saat pemasangan berlangsung. Download Chromium lagi.</translation>
 <translation id="2685838254101182273">Chromium telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi ini.</translation>
@@ -170,7 +168,6 @@
 <translation id="6526111688217511984">Chromium memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="6584627348340620412">Versi Chromium 32-bit berikutnya sudah tidak mendukung sistem Linux ini, tingkatkan versi ke Chromium 64-bit.</translation>
 <translation id="6593914713218535185">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di sistem Linux ini.</translation>
-<translation id="6637001341228460105">Chromium memerlukan akses mikrofon untuk membagikannya dengan situs ini.</translation>
 <translation id="6638567566961868659">Cari bookmark Anda dalam menu Chromium atau di bilah bookmark.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
@@ -228,7 +225,6 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7975919845073681630">Ini adalah pemasangan Chromium sekunder, dan tidak dapat digunakan sebagai browser default.</translation>
 <translation id="7979877361127045932">Sembunyikan di menu Chromium</translation>
 <translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8033665941300843262">Chromium memerlukan akses izin untuk membagikannya dengan situs ini.</translation>
 <translation id="8134284582177628525">Jika Anda berbagi komputer dengan <ph name="PROFILE_NAME" />, tambahkan diri Anda ke Chromium untuk menjelajah secara terpisah. Jika tidak, putuskan Akun Google-nya.</translation>
 <translation id="8157153840442649507">Chromium ditampilkan dalam bahasa ini</translation>
 <translation id="81770708095080097">File ini berbahaya, jadi Chromium telah memblokirnya.</translation>
