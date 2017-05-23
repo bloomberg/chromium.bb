@@ -92,7 +92,7 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
   } else if (machine_name.empty() ||
              machine_name.find_first_of(kInvalidMachineNameCharacters) !=
                  std::string::npos) {
-    error = authpolicy::ERROR_BAD_MACHINE_NAME;
+    error = authpolicy::ERROR_INVALID_MACHINE_NAME;
   } else {
     std::vector<std::string> parts = base::SplitString(
         user_principal_name, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
