@@ -1905,6 +1905,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableRTCSmoothnessAlgorithm,
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSharedWorkers,
+    switches::kDisableSkiaRuntimeOpts,
     switches::kDisableSlimmingPaintInvalidation,
     switches::kDisableSmoothScrolling,
     switches::kDisableSpeechAPI,
