@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"
+#include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
@@ -16,42 +17,6 @@
 
 namespace base {
 namespace internal {
-
-namespace {
-
-enum EnvironmentType {
-  BACKGROUND = 0,
-  BACKGROUND_BLOCKING,
-  FOREGROUND,
-  FOREGROUND_BLOCKING,
-  ENVIRONMENT_COUNT  // Always last.
-};
-
-// Order must match the EnvironmentType enum.
-constexpr struct {
-  // The threads and histograms of this environment will be labeled with
-  // the task scheduler name concatenated to this.
-  const char* name_suffix;
-
-  // Preferred priority for threads in this environment; the actual thread
-  // priority depends on shutdown state and platform capabilities.
-  ThreadPriority priority_hint;
-} kEnvironmentParams[] = {
-    {"Background", base::ThreadPriority::BACKGROUND},
-    {"BackgroundBlocking", base::ThreadPriority::BACKGROUND},
-    {"Foreground", base::ThreadPriority::NORMAL},
-    {"ForegroundBlocking", base::ThreadPriority::NORMAL},
-};
-
-size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
-  const bool is_background =
-      traits.priority() == base::TaskPriority::BACKGROUND;
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-  return is_background ? BACKGROUND : FOREGROUND;
-}
-
-}  // namespace
 
 TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
     : name_(name),

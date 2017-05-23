@@ -818,6 +818,8 @@ component("base") {
     "task_runner_util.h",
     "task_scheduler/delayed_task_manager.cc",
     "task_scheduler/delayed_task_manager.h",
+    "task_scheduler/environment_config.cc",
+    "task_scheduler/environment_config.h",
     "task_scheduler/initialization_util.cc",
     "task_scheduler/initialization_util.h",
     "task_scheduler/post_task.cc",
