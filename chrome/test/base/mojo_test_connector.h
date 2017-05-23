@@ -57,8 +57,15 @@ class MojoTestConnector {
                     Config config);
   ~MojoTestConnector();
 
+  service_manager::BackgroundServiceManager* background_service_manager() {
+    return background_service_manager_.get();
+  }
+
+  // Initializes the Mojo environment, and IPC thread.
+  void Init();
+
   // Initializes the background thread the ServiceManager runs on.
-  service_manager::mojom::ServiceRequest Init();
+  service_manager::mojom::ServiceRequest InitBackgroundServiceManager();
 
   std::unique_ptr<content::TestState> PrepareForTest(
       base::CommandLine* command_line,
