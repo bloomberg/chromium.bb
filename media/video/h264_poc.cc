@@ -57,15 +57,15 @@ void H264POC::Reset() {
   pending_mmco5_ = false;
 }
 
-bool H264POC::ComputePicOrderCnt(
+base::Optional<int32_t> H264POC::ComputePicOrderCnt(
     const H264SPS* sps,
-    const H264SliceHeader& slice_hdr,
-    int32_t *pic_order_cnt) {
+    const H264SliceHeader& slice_hdr) {
   if (slice_hdr.field_pic_flag) {
     DLOG(ERROR) << "Interlaced frames are not supported";
-    return false;
+    return base::nullopt;
   }
 
+  int32_t pic_order_cnt = 0;
   bool mmco5 = HasMMCO5(slice_hdr);
   int32_t max_frame_num = 1 << (sps->log2_max_frame_num_minus4 + 4);
   int32_t max_pic_order_cnt_lsb =
@@ -117,9 +117,9 @@ bool H264POC::ComputePicOrderCnt(
       // change to 0 after decoding; we change it immediately and set the
       // |pending_mmco5_| flag.
       if (mmco5)
-        *pic_order_cnt = 0;
+        pic_order_cnt = 0;
       else
-        *pic_order_cnt = std::min(top_foc, bottom_foc);
+        pic_order_cnt = std::min(top_foc, bottom_foc);
 
       // Store state.
       pending_mmco5_ = mmco5;
@@ -166,7 +166,7 @@ bool H264POC::ComputePicOrderCnt(
         // Moved inside 8-9 to avoid division when this check is not done.
         if (sps->num_ref_frames_in_pic_order_cnt_cycle == 0) {
           DLOG(ERROR) << "Invalid num_ref_frames_in_pic_order_cnt_cycle";
-          return false;
+          return base::nullopt;
         }
 
         // H264Parser checks that num_ref_frames_in_pic_order_cnt_cycle < 255.
@@ -192,9 +192,9 @@ bool H264POC::ComputePicOrderCnt(
 
       // Compute POC. MMCO5 handling is the same as |pic_order_cnt_type| == 0.
       if (mmco5)
-        *pic_order_cnt = 0;
+        pic_order_cnt = 0;
       else
-        *pic_order_cnt = std::min(top_foc, bottom_foc);
+        pic_order_cnt = std::min(top_foc, bottom_foc);
 
       // Store state.
       pending_mmco5_ = mmco5;
@@ -229,9 +229,9 @@ bool H264POC::ComputePicOrderCnt(
 
       // Compute POC. MMCO5 handling is the same as |pic_order_cnt_type| == 0.
       if (mmco5)
-        *pic_order_cnt = 0;
+        pic_order_cnt = 0;
       else
-        *pic_order_cnt = temp_pic_order_count;
+        pic_order_cnt = temp_pic_order_count;
 
       // Store state.
       pending_mmco5_ = mmco5;
@@ -246,10 +246,10 @@ bool H264POC::ComputePicOrderCnt(
 
     default:
       DLOG(ERROR) << "Invalid pic_order_cnt_type: " << sps->pic_order_cnt_type;
-      return false;
+      return base::nullopt;
   }
 
-  return true;
+  return pic_order_cnt;
 }
 
 }  // namespace media

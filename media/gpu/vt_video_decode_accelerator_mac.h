@@ -157,12 +157,6 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // Methods for interacting with VideoToolbox. Run on |decoder_thread_|.
   //
 
-  // Compute the |pic_order_cnt| for a frame. Returns true or calls
-  // NotifyError() before returning false.
-  bool ComputePicOrderCnt(const H264SPS* sps,
-                          const H264SliceHeader& slice_hdr,
-                          Frame* frame);
-
   // Set up VideoToolbox using the current SPS and PPS. Returns true or calls
   // NotifyError() before returning false.
   bool ConfigureDecoder();
