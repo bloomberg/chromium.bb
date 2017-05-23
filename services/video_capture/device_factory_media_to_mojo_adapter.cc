@@ -35,17 +35,10 @@ static void TranslateDeviceInfos(
     translated_device_info.descriptor = device_info.descriptor;
     for (const auto& format : device_info.supported_formats) {
       media::VideoCaptureFormat translated_format;
-      switch (format.pixel_format) {
-        case media::PIXEL_FORMAT_I420:
-        case media::PIXEL_FORMAT_MJPEG:
-          translated_format.pixel_format = media::PIXEL_FORMAT_I420;
-          break;
-        case media::PIXEL_FORMAT_Y16:
-          translated_format.pixel_format = media::PIXEL_FORMAT_Y16;
-        default:
-          // Any other format cannot be consumed by VideoCaptureDeviceClient.
-          continue;
-      }
+      translated_format.pixel_format =
+          (format.pixel_format == media::PIXEL_FORMAT_Y16)
+              ? media::PIXEL_FORMAT_Y16
+              : media::PIXEL_FORMAT_I420;
       translated_format.frame_size = format.frame_size;
       translated_format.frame_rate = format.frame_rate;
       translated_format.pixel_storage = media::PIXEL_STORAGE_CPU;
