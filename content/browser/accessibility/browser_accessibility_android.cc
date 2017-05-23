@@ -266,7 +266,8 @@ bool BrowserAccessibilityAndroid::IsRangeType() const {
   return (GetRole() == ui::AX_ROLE_PROGRESS_INDICATOR ||
           GetRole() == ui::AX_ROLE_METER ||
           GetRole() == ui::AX_ROLE_SCROLL_BAR ||
-          GetRole() == ui::AX_ROLE_SLIDER);
+          GetRole() == ui::AX_ROLE_SLIDER ||
+          (GetRole() == ui::AX_ROLE_SPLITTER && IsFocusable()));
 }
 
 bool BrowserAccessibilityAndroid::IsScrollable() const {
@@ -853,46 +854,45 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
 
 int BrowserAccessibilityAndroid::GetItemIndex() const {
   int index = 0;
-  switch (GetRole()) {
-    case ui::AX_ROLE_LIST_ITEM:
-    case ui::AX_ROLE_LIST_BOX_OPTION:
-    case ui::AX_ROLE_TREE_ITEM:
-      index = GetIntAttribute(ui::AX_ATTR_POS_IN_SET) - 1;
-      break;
-    case ui::AX_ROLE_SLIDER:
-    case ui::AX_ROLE_PROGRESS_INDICATOR: {
-      // Return a percentage here for live feedback in an AccessibilityEvent.
-      // The exact value is returned in RangeCurrentValue.
-      float min = GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
-      float max = GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
-      float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
-      if (max > min && value >= min && value <= max)
-        index = static_cast<int>(((value - min)) * 100 / (max - min));
-      break;
+  if (IsRangeType()) {
+    // Return a percentage here for live feedback in an AccessibilityEvent.
+    // The exact value is returned in RangeCurrentValue.
+    float min = GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
+    float max = GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
+    float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+    if (max > min && value >= min && value <= max)
+      index = static_cast<int>(((value - min)) * 100 / (max - min));
+  } else {
+    switch (GetRole()) {
+      case ui::AX_ROLE_LIST_ITEM:
+      case ui::AX_ROLE_LIST_BOX_OPTION:
+      case ui::AX_ROLE_TREE_ITEM:
+        index = GetIntAttribute(ui::AX_ATTR_POS_IN_SET) - 1;
+        break;
+      default:
+        break;
     }
-    default:
-      break;
   }
   return index;
 }
 
 int BrowserAccessibilityAndroid::GetItemCount() const {
   int count = 0;
-  switch (GetRole()) {
-    case ui::AX_ROLE_LIST:
-    case ui::AX_ROLE_LIST_BOX:
-    case ui::AX_ROLE_DESCRIPTION_LIST:
-      count = PlatformChildCount();
-      break;
-    case ui::AX_ROLE_SLIDER:
-    case ui::AX_ROLE_PROGRESS_INDICATOR:
-      // An AccessibilityEvent can only return integer information about a
-      // seek control, so we return a percentage. The real range is returned
-      // in RangeMin and RangeMax.
-      count = 100;
-      break;
-    default:
-      break;
+  if (IsRangeType()) {
+    // An AccessibilityEvent can only return integer information about a
+    // seek control, so we return a percentage. The real range is returned
+    // in RangeMin and RangeMax.
+    count = 100;
+  } else {
+    switch (GetRole()) {
+      case ui::AX_ROLE_LIST:
+      case ui::AX_ROLE_LIST_BOX:
+      case ui::AX_ROLE_DESCRIPTION_LIST:
+        count = PlatformChildCount();
+        break;
+      default:
+        break;
+    }
   }
   return count;
 }

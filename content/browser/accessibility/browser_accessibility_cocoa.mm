@@ -1904,7 +1904,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
              [role isEqualToString:NSAccessibilitySliderRole] ||
              [role isEqualToString:NSAccessibilityIncrementorRole] ||
-             [role isEqualToString:NSAccessibilityScrollBarRole]) {
+             [role isEqualToString:NSAccessibilityScrollBarRole] ||
+             ([role isEqualToString:NSAccessibilitySplitterRole] &&
+              browserAccessibility_->HasState(ui::AX_STATE_FOCUSABLE))) {
     float floatValue;
     if (browserAccessibility_->GetFloatAttribute(
             ui::AX_ATTR_VALUE_FOR_RANGE, &floatValue)) {
@@ -2639,7 +2641,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
              [role isEqualToString:NSAccessibilitySliderRole] ||
              [role isEqualToString:NSAccessibilityIncrementorRole] ||
-             [role isEqualToString:NSAccessibilityScrollBarRole]) {
+             [role isEqualToString:NSAccessibilityScrollBarRole] ||
+             ([role isEqualToString:NSAccessibilitySplitterRole] &&
+              browserAccessibility_->HasState(ui::AX_STATE_FOCUSABLE))) {
     [ret addObjectsFromArray:@[
       NSAccessibilityMaxValueAttribute, NSAccessibilityMinValueAttribute,
       NSAccessibilityValueDescriptionAttribute

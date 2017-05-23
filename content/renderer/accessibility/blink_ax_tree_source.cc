@@ -654,10 +654,10 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     }
 
     if (dst->role == ui::AX_ROLE_PROGRESS_INDICATOR ||
-        dst->role == ui::AX_ROLE_METER ||
-        dst->role == ui::AX_ROLE_SCROLL_BAR ||
+        dst->role == ui::AX_ROLE_METER || dst->role == ui::AX_ROLE_SCROLL_BAR ||
         dst->role == ui::AX_ROLE_SLIDER ||
-        dst->role == ui::AX_ROLE_SPIN_BUTTON) {
+        dst->role == ui::AX_ROLE_SPIN_BUTTON ||
+        (dst->role == ui::AX_ROLE_SPLITTER && src.CanSetFocusAttribute())) {
       dst->AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, src.ValueForRange());
       dst->AddFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
                              src.MaxValueForRange());
