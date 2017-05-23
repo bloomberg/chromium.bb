@@ -790,7 +790,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::TimeDelta renderer_main_thread_time);
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
-                          const gfx::Range& range);
+                          const gfx::Range& range,
+                          bool user_initiated);
   void OnFocusedNodeChanged(bool is_editable_element,
                             const gfx::Rect& bounds_in_frame_widget);
   void OnSetHasReceivedUserGesture();

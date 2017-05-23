@@ -560,7 +560,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
 
   NSRect rect;
   NSRange actual_range;
-  rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
+  rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range, true);
   params.anchor_rect = params.focus_rect = caret_rect;
   params.anchor_dir = params.focus_dir = blink::kWebTextDirectionLeftToRight;
   rwhv_mac_->SelectionBoundsChanged(params);
@@ -588,7 +588,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   caret_rect = gfx::Rect(20, 11, 0, 10);
   caret_range = gfx::Range(1, 1);
   params.anchor_rect = params.focus_rect = caret_rect;
-  rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
+  rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range, true);
   rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         caret_range.ToNSRange(),
@@ -612,7 +612,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
 
   // No caret.
   caret_range = gfx::Range(1, 2);
-  rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
+  rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range, true);
   params.anchor_rect = caret_rect;
   params.focus_rect = gfx::Rect(30, 11, 0, 10);
   rwhv_mac_->SelectionBoundsChanged(params);
@@ -1499,17 +1499,17 @@ TEST_F(RenderWidgetHostViewMacTest, SelectedText) {
   gfx::Range range(6, 11);
 
   // Send a valid selection for the word 'World'.
-  rwhv_mac_->SelectionChanged(sample_text, 0U, range);
+  rwhv_mac_->SelectionChanged(sample_text, 0U, range, true);
   EXPECT_EQ("world", selected_text());
 
   // Make the range cover some of the text and extend more.
   range.set_end(100);
-  rwhv_mac_->SelectionChanged(sample_text, 0U, range);
+  rwhv_mac_->SelectionChanged(sample_text, 0U, range, true);
   EXPECT_EQ("world!", selected_text());
 
   // Finally, send an empty range. This should clear the selected text.
   range.set_start(100);
-  rwhv_mac_->SelectionChanged(sample_text, 0U, range);
+  rwhv_mac_->SelectionChanged(sample_text, 0U, range, true);
   EXPECT_EQ("", selected_text());
 }
 

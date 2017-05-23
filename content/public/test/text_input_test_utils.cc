@@ -356,6 +356,21 @@ bool TextInputManagerTester::GetCurrentTextSelectionLength(size_t* length) {
   return true;
 }
 
+bool TextInputManagerTester::GetTextSelectionUserInitiatedForView(
+    RenderWidgetHostView* view,
+    bool* user_initiated) {
+  TextInputManager* manager = observer_->text_input_manager();
+  DCHECK(manager);
+
+  RenderWidgetHostViewBase* view_base =
+      static_cast<RenderWidgetHostViewBase*>(view);
+  if (!manager->IsRegistered(view_base))
+    return false;
+
+  *user_initiated = manager->GetTextSelection(view_base)->user_initiated();
+  return true;
+}
+
 bool TextInputManagerTester::IsTextInputStateChanged() {
   return observer_->text_input_state_changed();
 }
