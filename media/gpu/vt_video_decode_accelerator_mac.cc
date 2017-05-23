@@ -622,8 +622,9 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
 
           // Compute and store frame properties. |image_size| gets filled in
           // later, since it comes from the decoder configuration.
-          int32_t pic_order_cnt;
-          if (!poc_.ComputePicOrderCnt(sps, slice_hdr, &pic_order_cnt)) {
+          base::Optional<int32_t> pic_order_cnt =
+              poc_.ComputePicOrderCnt(sps, slice_hdr);
+          if (!pic_order_cnt.has_value()) {
             DLOG(ERROR) << "Unable to compute POC";
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
@@ -632,7 +633,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
           frame->has_slice = true;
           frame->is_idr = nalu.nal_unit_type == media::H264NALU::kIDRSlice;
           frame->has_mmco5 = poc_.IsPendingMMCO5();
-          frame->pic_order_cnt = pic_order_cnt;
+          frame->pic_order_cnt = *pic_order_cnt;
           frame->reorder_window = ComputeReorderWindow(sps);
         }
 

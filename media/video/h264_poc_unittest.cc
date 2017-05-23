@@ -22,16 +22,14 @@ class H264POCTest : public testing::Test {
   }
 
  protected:
-  bool ComputePOC() {
-    bool result = h264_poc_.ComputePicOrderCnt(&sps_, slice_hdr_, &poc_);
+  void ComputePOC() {
+    poc_ = h264_poc_.ComputePicOrderCnt(&sps_, slice_hdr_);
 
     // Clear MMCO5.
     slice_hdr_.adaptive_ref_pic_marking_mode_flag = false;
     slice_hdr_.ref_pic_marking[0].memory_mgmnt_control_operation = 0;
     slice_hdr_.ref_pic_marking[1].memory_mgmnt_control_operation = 0;
     slice_hdr_.ref_pic_marking[2].memory_mgmnt_control_operation = 0;
-
-    return result;
   }
 
   // Also sets as a reference frame and unsets IDR, which is required for
@@ -45,7 +43,7 @@ class H264POCTest : public testing::Test {
     slice_hdr_.ref_pic_marking[2].memory_mgmnt_control_operation = 0;
   }
 
-  int32_t poc_;
+  base::Optional<int32_t> poc_;
 
   H264SPS sps_;
   H264SliceHeader slice_hdr_;
@@ -61,29 +59,33 @@ TEST_F(H264POCTest, PicOrderCntType0) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame with POC lsb 8.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
   slice_hdr_.pic_order_cnt_lsb = 8;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(8, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(8, *poc_);
 
   // Ref frame with POC lsb 0. This should be detected as wrapping, as the
   // (negative) gap is at least half the maximum.
   slice_hdr_.pic_order_cnt_lsb = 0;
   slice_hdr_.frame_num = 2;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(16, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(16, *poc_);
 
   // Ref frame with POC lsb 9. This should be detected as negative wrapping,
   // as the (positive) gap is more than half the maximum.
   slice_hdr_.pic_order_cnt_lsb = 9;
   slice_hdr_.frame_num = 3;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(9, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(9, *poc_);
 }
 
 TEST_F(H264POCTest, PicOrderCntType0_WithMMCO5) {
@@ -93,38 +95,44 @@ TEST_F(H264POCTest, PicOrderCntType0_WithMMCO5) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Skip ahead.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
   slice_hdr_.pic_order_cnt_lsb = 8;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(8, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(8, *poc_);
 
   slice_hdr_.frame_num = 2;
   slice_hdr_.pic_order_cnt_lsb = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(16, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(16, *poc_);
 
   slice_hdr_.frame_num = 3;
   slice_hdr_.pic_order_cnt_lsb = 8;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(24, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(24, *poc_);
 
   // MMCO5 resets to 0.
   slice_hdr_.frame_num = 4;
   slice_hdr_.pic_order_cnt_lsb = 0;
   SetMMCO5();
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Still detected as positive wrapping.
   slice_hdr_.frame_num = 5;
   slice_hdr_.pic_order_cnt_lsb = 8;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(24, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(24, *poc_);
 }
 
 TEST_F(H264POCTest, PicOrderCntType1) {
@@ -138,34 +146,40 @@ TEST_F(H264POCTest, PicOrderCntType1) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(1, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(1, *poc_);
 
   // Ref frame.
   slice_hdr_.frame_num = 2;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(3, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(3, *poc_);
 
   // Ref frame.
   slice_hdr_.frame_num = 3;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(4, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(4, *poc_);
 
   // Ref frame.
   slice_hdr_.frame_num = 4;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(6, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(6, *poc_);
 
   // Ref frame, detected as wrapping (ie, this is frame 16).
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(24, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(24, *poc_);
 }
 
 TEST_F(H264POCTest, PicOrderCntType1_WithMMCO5) {
@@ -179,25 +193,29 @@ TEST_F(H264POCTest, PicOrderCntType1_WithMMCO5) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(1, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(1, *poc_);
 
   // Ref frame, detected as wrapping.
   SetMMCO5();
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame, wrapping from before has been cleared.
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(1, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(1, *poc_);
 }
 
 // |frame_num| values may be duplicated by non-reference frames.
@@ -212,21 +230,24 @@ TEST_F(H264POCTest, PicOrderCntType1_DupFrameNum) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(1, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(1, *poc_);
 
   // Duplicate |frame_num| frame.
   slice_hdr_.nal_ref_idc = 0;
   slice_hdr_.frame_num = 1;
   slice_hdr_.delta_pic_order_cnt0 = 2;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(2, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(2, *poc_);
 }
 
 TEST_F(H264POCTest, PicOrderCntType2) {
@@ -235,34 +256,40 @@ TEST_F(H264POCTest, PicOrderCntType2) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(2, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(2, *poc_);
 
   // Ref frame.
   slice_hdr_.frame_num = 2;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(4, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(4, *poc_);
 
   // Ref frame.
   slice_hdr_.frame_num = 3;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(6, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(6, *poc_);
 
   // Ref frame.
   slice_hdr_.frame_num = 4;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(8, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(8, *poc_);
 
   // Ref frame, detected as wrapping (ie, this is frame 16).
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(32, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(32, *poc_);
 }
 
 TEST_F(H264POCTest, PicOrderCntType2_WithMMCO5) {
@@ -271,25 +298,29 @@ TEST_F(H264POCTest, PicOrderCntType2_WithMMCO5) {
   // Initial IDR with POC 0.
   slice_hdr_.idr_pic_flag = true;
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame.
   slice_hdr_.idr_pic_flag = false;
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(2, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(2, *poc_);
 
   // Ref frame, detected as wrapping.
   SetMMCO5();
   slice_hdr_.frame_num = 0;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(0, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(0, *poc_);
 
   // Ref frame, wrapping from before has been cleared.
   slice_hdr_.frame_num = 1;
-  ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(2, poc_);
+  ComputePOC();
+  ASSERT_TRUE(poc_.has_value());
+  ASSERT_EQ(2, *poc_);
 }
 
 }  // namespace media
