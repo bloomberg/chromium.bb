@@ -1089,7 +1089,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
         ['linux', ('amd', 0x6613)], bug=710392)
-
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-float.html',
         ['linux', ('amd', 0x6613)], bug=701138)
@@ -1105,6 +1104,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_data/' +
+        'tex-3d-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['linux', ('amd', 0x6613)], bug=725556)
 
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
