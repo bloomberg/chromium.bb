@@ -821,6 +821,7 @@ android_library("android_webview_java") {
     ":strings_grd",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
+    "//components/crash/android:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
