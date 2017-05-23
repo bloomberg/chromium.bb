@@ -126,7 +126,7 @@ bool ShouldDeferSurfaceCreation(
     return false;
 
   return codec == kCodecH264 && codec_allocator->IsAnyRegisteredAVDA() &&
-         platform_config.sdk_int <= 18;
+         platform_config.sdk_int <= base::android::SDK_VERSION_JELLY_BEAN_MR2;
 }
 
 std::unique_ptr<AndroidOverlay> CreateContentVideoViewOverlay(

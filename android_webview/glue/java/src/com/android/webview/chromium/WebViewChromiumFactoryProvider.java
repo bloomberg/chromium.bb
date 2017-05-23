@@ -274,8 +274,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     static void checkStorageIsNotDeviceProtected(Context context) {
-        if ((Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M)
-                && context.isDeviceProtectedStorage()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && context.isDeviceProtectedStorage()) {
             throw new IllegalArgumentException(
                     "WebView cannot be used with device protected storage");
         }

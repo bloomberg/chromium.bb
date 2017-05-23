@@ -3115,7 +3115,7 @@ public class AwContents implements SmartClipProvider {
             // Workaround for bug in libhwui on N that does not swap if inserting functor is the
             // only operation in a canvas. See crbug.com/704212.
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N
-                    || Build.VERSION.SDK_INT == 25 /* N_MR1 */) {
+                    || Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1) {
                 if (mPaintForNWorkaround == null) {
                     mPaintForNWorkaround = new Paint();
                     // Note a completely transparent color will get optimized out. So draw almost

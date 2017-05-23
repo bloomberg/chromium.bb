@@ -816,8 +816,7 @@ public class DownloadNotificationService extends Service {
 
         if (!indeterminate && !LegacyHelpers.isLegacyOfflinePage(id)) {
             String percentText = DownloadUtils.getPercentageString(progress.getPercentage());
-            if (Build.VERSION.CODENAME.equals("N")
-                    || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 builder.setSubText(percentText);
             } else {
                 builder.setContentInfo(percentText);

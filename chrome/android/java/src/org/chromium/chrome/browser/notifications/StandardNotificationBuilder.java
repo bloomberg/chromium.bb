@@ -37,8 +37,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         if (mImage != null) {
             Notification.BigPictureStyle style =
                     new Notification.BigPictureStyle().bigPicture(mImage);
-            if (Build.VERSION.CODENAME.equals("N")
-                    || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // Android N doesn't show content text when expanded, so duplicate body text as a
                 // summary for the big picture.
                 style.setSummaryText(mBody);
