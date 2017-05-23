@@ -40,6 +40,8 @@ const CGFloat kThumbnailWidth = 150;
 const CGFloat kThumbnailHeight = 150;
 const CGFloat kSingleScreenWidth = 300;
 const CGFloat kSingleScreenHeight = 300;
+const CGFloat kMultipleScreenWidth = 220;
+const CGFloat kMultipleScreenHeight = 220;
 const CGFloat kFramePadding = 20;
 const CGFloat kControlSpacing = 10;
 const CGFloat kExcessButtonPadding = 6;
@@ -279,9 +281,12 @@ NSString* const kTitleId = @"title";
 
 - (void)createSourceViewsAtOrigin:(NSPoint)origin {
   if (screenList_) {
-    screenBrowser_.reset([[self
-        createImageBrowserWithSize:NSMakeSize(kSingleScreenWidth,
-                                              kSingleScreenHeight)] retain]);
+    const bool is_single = screenList_->GetSourceCount() <= 1;
+    const CGFloat width = is_single ? kSingleScreenWidth : kMultipleScreenWidth;
+    const CGFloat height =
+        is_single ? kSingleScreenHeight : kMultipleScreenHeight;
+    screenBrowser_.reset(
+        [[self createImageBrowserWithSize:NSMakeSize(width, height)] retain]);
   }
 
   if (windowList_) {
@@ -602,7 +607,6 @@ NSString* const kTitleId = @"title";
   // "Entire Screen", because it is redundant with tab label "Your Entire
   // Screen".
   [item setTitleHidden:browser == screenBrowser_ && [items count] == 1];
-
   return item;
 }
 
@@ -693,10 +697,16 @@ NSString* const kTitleId = @"title";
   if (sourceType == DesktopMediaID::TYPE_WEB_CONTENTS) {
     // Memorizing selection.
     [self setTabBrowserIndex:selectedIndex];
-  } else if (sourceType == DesktopMediaID::TYPE_SCREEN && [items count] == 1) {
-    // Preselect the first screen source.
-    [browser setSelectionIndexes:[NSIndexSet indexSetWithIndex:0]
-            byExtendingSelection:NO];
+  } else if (sourceType == DesktopMediaID::TYPE_SCREEN) {
+    if ([items count] == 1) {
+      // Preselect the first screen source.
+      [browser setSelectionIndexes:[NSIndexSet indexSetWithIndex:0]
+              byExtendingSelection:NO];
+    } else if ([items count] == 2) {
+      // Switch to multiple sources mode.
+      [browser
+          setCellSize:NSMakeSize(kMultipleScreenWidth, kMultipleScreenHeight)];
+    }
   }
 
   NSString* autoselectSource = base::SysUTF8ToNSString(
@@ -731,6 +741,8 @@ NSString* const kTitleId = @"title";
     [browser setSelectionIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
   }
   [items removeObjectAtIndex:index];
+  if (sourceType == DesktopMediaID::TYPE_SCREEN && [items count] == 1)
+    [browser setCellSize:NSMakeSize(kSingleScreenWidth, kSingleScreenHeight)];
   [browser reloadData];
 }
 
