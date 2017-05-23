@@ -24,11 +24,17 @@ class PrinterDetectorFactory : public BrowserContextKeyedServiceFactory {
 
   PrinterDetector* Get(content::BrowserContext* context);
 
+ protected:
+  // BrowserContextKeyedServiceFactory:
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
+
  private:
   friend struct base::LazyInstanceTraitsBase<PrinterDetectorFactory>;
   PrinterDetectorFactory();
   ~PrinterDetectorFactory() override;
 
+  // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
