@@ -4105,22 +4105,8 @@ PositionInFlatTree SkipWhitespace(const PositionInFlatTree& position) {
   return SkipWhitespaceAlgorithm(position);
 }
 
-static void CollectAbsoluteBoundsForRange(unsigned start,
-                                          unsigned end,
-                                          const LayoutText& layout_text,
-                                          Vector<IntRect>& rects) {
-  layout_text.AbsoluteRectsForRange(rects, start, end);
-}
-
-static void CollectAbsoluteBoundsForRange(unsigned start,
-                                          unsigned end,
-                                          const LayoutText& layout_text,
-                                          Vector<FloatQuad>& quads) {
-  layout_text.AbsoluteQuadsForRange(quads, start, end);
-}
-
-template <typename RectType, typename Strategy>
-static Vector<RectType> ComputeTextBounds(
+template <typename Strategy>
+static Vector<FloatQuad> ComputeTextBounds(
     const EphemeralRangeTemplate<Strategy>& range) {
   const PositionTemplate<Strategy>& start_position = range.StartPosition();
   const PositionTemplate<Strategy>& end_position = range.EndPosition();
@@ -4129,7 +4115,7 @@ static Vector<RectType> ComputeTextBounds(
   Node* const end_container = end_position.ComputeContainerNode();
   DCHECK(end_container);
 
-  Vector<RectType> result;
+  Vector<FloatQuad> result;
   for (const Node& node : range.Nodes()) {
     LayoutObject* const layout_object = node.GetLayoutObject();
     if (!layout_object || !layout_object->IsText())
@@ -4140,32 +4126,30 @@ static Vector<RectType> ComputeTextBounds(
     unsigned end_offset = node == end_container
                               ? end_position.OffsetInContainerNode()
                               : std::numeric_limits<unsigned>::max();
-    CollectAbsoluteBoundsForRange(start_offset, end_offset, *layout_text,
-                                  result);
+    layout_text->AbsoluteQuadsForRange(result, start_offset, end_offset);
   }
   return result;
 }
 
 template <typename Strategy>
-static IntRect ComputeTextRectTemplate(
+static FloatRect ComputeTextRectTemplate(
     const EphemeralRangeTemplate<Strategy>& range) {
-  IntRect result;
-  const Vector<IntRect>& rects = ComputeTextBounds<IntRect, Strategy>(range);
-  for (const IntRect& rect : rects)
-    result.Unite(rect);
+  FloatRect result;
+  for (auto rect : ComputeTextBounds<Strategy>(range))
+    result.Unite(rect.BoundingBox());
   return result;
 }
 
 IntRect ComputeTextRect(const EphemeralRange& range) {
-  return ComputeTextRectTemplate(range);
+  return EnclosingIntRect(ComputeTextRectTemplate(range));
 }
 
 IntRect ComputeTextRect(const EphemeralRangeInFlatTree& range) {
-  return ComputeTextRectTemplate(range);
+  return EnclosingIntRect(ComputeTextRectTemplate(range));
 }
 
 Vector<FloatQuad> ComputeTextQuads(const EphemeralRange& range) {
-  return ComputeTextBounds<FloatQuad>(range);
+  return ComputeTextBounds(range);
 }
 
 }  // namespace blink
