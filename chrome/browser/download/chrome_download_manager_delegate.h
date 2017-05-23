@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -85,7 +86,7 @@ class ChromeDownloadManagerDelegate
   void ShowDownloadInShell(content::DownloadItem* download) override;
   void CheckForFileExistence(
       content::DownloadItem* download,
-      const content::CheckForFileExistenceCallback& callback) override;
+      content::CheckForFileExistenceCallback callback) override;
   std::string ApplicationClientIdForFileScanning() const override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
@@ -167,6 +168,12 @@ class ChromeDownloadManagerDelegate
   uint32_t next_download_id_;
   IdCallbackVector id_callbacks_;
   std::unique_ptr<DownloadPrefs> download_prefs_;
+
+  // SequencedTaskRunner to check for file existence. A sequence is used so that
+  // a large download history doesn't cause a large number of concurrent disk
+  // operations.
+  const scoped_refptr<base::SequencedTaskRunner>
+      check_for_file_existence_task_runner_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Maps from pending extension installations to DownloadItem IDs.

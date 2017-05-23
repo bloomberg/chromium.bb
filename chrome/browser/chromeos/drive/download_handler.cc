@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -104,10 +106,10 @@ void MoveDownloadedFile(const base::FilePath& downloaded_file,
 
 // Used to implement CheckForFileExistence().
 void ContinueCheckingForFileExistence(
-    const content::CheckForFileExistenceCallback& callback,
+    content::CheckForFileExistenceCallback callback,
     FileError error,
     std::unique_ptr<ResourceEntry> entry) {
-  callback.Run(error == FILE_ERROR_OK);
+  std::move(callback).Run(error == FILE_ERROR_OK);
 }
 
 // Returns true if |download| is a Drive download created from data persisted
@@ -247,11 +249,11 @@ bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
 
 void DownloadHandler::CheckForFileExistence(
     const DownloadItem* download,
-    const content::CheckForFileExistenceCallback& callback) {
+    content::CheckForFileExistenceCallback callback) {
   file_system_->GetResourceEntry(
       util::ExtractDrivePath(GetTargetPath(download)),
       base::Bind(&ContinueCheckingForFileExistence,
-                 callback));
+                 base::Passed(std::move(callback))));
 }
 
 void DownloadHandler::SetFreeDiskSpaceDelayForTesting(
