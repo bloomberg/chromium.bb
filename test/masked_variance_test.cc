@@ -29,7 +29,7 @@
 using libaom_test::ACMRandom;
 
 namespace {
-const int number_of_iterations = 500;
+const int number_of_iterations = 200;
 
 typedef unsigned int (*MaskedSubPixelVarianceFunc)(
     const uint8_t *src, int src_stride, int xoffset, int yoffset,
@@ -217,15 +217,14 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, OperationCheck) {
   int xoffset, yoffset;
 
   for (int i = 0; i < number_of_iterations; ++i) {
+    for (int j = 0; j < (MAX_SB_SIZE + 1) * (MAX_SB_SIZE + 1); j++) {
+      src_ptr[j] = rnd.Rand16() & ((1 << bit_depth_) - 1);
+      ref_ptr[j] = rnd.Rand16() & ((1 << bit_depth_) - 1);
+      second_pred_ptr[j] = rnd.Rand16() & ((1 << bit_depth_) - 1);
+      msk_ptr[j] = rnd(65);
+    }
     for (xoffset = 0; xoffset < BIL_SUBPEL_SHIFTS; xoffset++) {
       for (yoffset = 0; yoffset < BIL_SUBPEL_SHIFTS; yoffset++) {
-        for (int j = 0; j < (MAX_SB_SIZE + 1) * (MAX_SB_SIZE + 1); j++) {
-          src_ptr[j] = rnd.Rand16() & ((1 << bit_depth_) - 1);
-          ref_ptr[j] = rnd.Rand16() & ((1 << bit_depth_) - 1);
-          second_pred_ptr[j] = rnd.Rand16() & ((1 << bit_depth_) - 1);
-          msk_ptr[j] = rnd(65);
-        }
-
         for (int invert_mask = 0; invert_mask < 2; ++invert_mask) {
           ref_ret = ref_func_(src8_ptr, src_stride, xoffset, yoffset, ref8_ptr,
                               ref_stride, second_pred8_ptr, msk_ptr, msk_stride,
@@ -319,9 +318,7 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, ExtremeValues) {
 
 using std::tr1::make_tuple;
 
-// TODO(david.barker): Re-enable this once we have vectorized
-// versions of the masked_compound_* functions
-#if 0 && HAVE_SSSE3
+#if HAVE_SSSE3
 INSTANTIATE_TEST_CASE_P(
     SSSE3_C_COMPARE, MaskedSubPixelVarianceTest,
     ::testing::Values(
@@ -490,5 +487,5 @@ INSTANTIATE_TEST_CASE_P(
                    AOM_BITS_12)));
 #endif  // CONFIG_HIGHBITDEPTH
 
-#endif  // 0 && HAVE_SSSE3
+#endif  // HAVE_SSSE3
 }  // namespace

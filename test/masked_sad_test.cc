@@ -25,7 +25,7 @@
 using libaom_test::ACMRandom;
 
 namespace {
-const int number_of_iterations = 500;
+const int number_of_iterations = 200;
 
 typedef unsigned int (*MaskedSADFunc)(const uint8_t *src, int src_stride,
                                       const uint8_t *ref, int ref_stride,
@@ -159,9 +159,7 @@ TEST_P(HighbdMaskedSADTest, OperationCheck) {
 
 using std::tr1::make_tuple;
 
-// TODO(david.barker): Re-enable this once we have vectorized
-// versions of the masked_compound_* functions
-#if 0 && HAVE_SSSE3
+#if HAVE_SSSE3
 INSTANTIATE_TEST_CASE_P(
     SSSE3_C_COMPARE, MaskedSADTest,
     ::testing::Values(
@@ -221,5 +219,5 @@ INSTANTIATE_TEST_CASE_P(SSSE3_C_COMPARE, HighbdMaskedSADTest,
                             make_tuple(&aom_highbd_masked_sad4x4_ssse3,
                                        &aom_highbd_masked_sad4x4_c)));
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // 0 && HAVE_SSSE3
+#endif  // HAVE_SSSE3
 }  // namespace
