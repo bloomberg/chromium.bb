@@ -56,7 +56,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason) const override {}
-  void ReportLocalLoadFailed(const KURL&) const override {}
   bool ShouldBypassMainWorldCSP() const override { return false; }
   bool IsSVGImageChromeClient() const override { return false; }
   void CountUsage(UseCounter::Feature) const override {}

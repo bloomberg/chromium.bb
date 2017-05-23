@@ -479,11 +479,6 @@ bool SendBeaconCommon(LocalFrame* frame,
 }  // namespace
 
 void PingLoader::LoadImage(LocalFrame* frame, const KURL& url) {
-  if (!frame->GetDocument()->GetSecurityOrigin()->CanDisplay(url)) {
-    FrameLoader::ReportLocalLoadFailed(frame, url.GetString());
-    return;
-  }
-
   ResourceRequest request(url);
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
   FinishPingRequestInitialization(request, frame,

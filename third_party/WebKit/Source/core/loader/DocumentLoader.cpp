@@ -35,6 +35,7 @@
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -467,7 +468,9 @@ bool DocumentLoader::RedirectReceived(
   RefPtr<SecurityOrigin> redirecting_origin =
       SecurityOrigin::Create(redirect_response.Url());
   if (!redirecting_origin->CanDisplay(request_url)) {
-    FrameLoader::ReportLocalLoadFailed(frame_, request_url.GetString());
+    frame_->Console().AddMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
+        "Not allowed to load local resource: " + request_url.GetString()));
     fetcher_->StopFetching();
     return false;
   }

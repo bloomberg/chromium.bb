@@ -186,8 +186,10 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
 
   if (origin_restriction != FetchParameters::kNoOriginRestriction &&
       security_origin && !security_origin->CanDisplay(url)) {
-    if (reporting_policy == SecurityViolationReportingPolicy::kReport)
-      ReportLocalLoadFailed(url);
+    if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+      AddConsoleMessage("Not allowed to load local resource: " +
+                        url.GetString());
+    }
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::requestResource URL was not "
                                  "allowed by SecurityOrigin::CanDisplay";
     return ResourceRequestBlockedReason::kOther;

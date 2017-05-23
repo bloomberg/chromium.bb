@@ -67,9 +67,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual void DispatchDidBlockRequest(const ResourceRequest&,
                                        const FetchInitiatorInfo&,
                                        ResourceRequestBlockedReason) const = 0;
-  // TODO(kinuko): Consider implementing this on ExecutionContext and
-  // remove this virtual method.
-  virtual void ReportLocalLoadFailed(const KURL&) const = 0;
   virtual bool ShouldBypassMainWorldCSP() const = 0;
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual void CountUsage(UseCounter::Feature) const = 0;
