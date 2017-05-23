@@ -15,14 +15,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
@@ -42,7 +40,6 @@
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -54,12 +51,9 @@
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using bookmarks::BookmarkModel;
 using history::HistoryService;
 using image_fetcher::CreateIOSImageDecoder;
 using image_fetcher::ImageFetcherImpl;
-using ios::BookmarkModelFactory;
-using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::PersistentScheduler;
@@ -108,7 +102,6 @@ IOSChromeContentSuggestionsServiceFactory::
     : BrowserStateKeyedServiceFactory(
           "ContentSuggestionsService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(IOSChromeLargeIconServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());

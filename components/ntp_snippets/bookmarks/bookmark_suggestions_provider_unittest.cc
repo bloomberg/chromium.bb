@@ -18,7 +18,6 @@
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
-#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -53,15 +52,13 @@ class BookmarkSuggestionsProviderTest : public ::testing::Test {
                     _, Category::FromKnownCategory(KnownCategories::BOOKMARKS),
                     CategoryStatus::AVAILABLE))
         .RetiresOnSaturation();
-    BookmarkSuggestionsProvider::RegisterProfilePrefs(test_prefs_.registry());
-    provider_ = base::MakeUnique<BookmarkSuggestionsProvider>(
-        &observer_, model_.get(), &test_prefs_);
+    provider_ =
+        base::MakeUnique<BookmarkSuggestionsProvider>(&observer_, model_.get());
   }
 
  protected:
   std::unique_ptr<bookmarks::BookmarkModel> model_;
   StrictMock<MockContentSuggestionsProviderObserver> observer_;
-  TestingPrefServiceSimple test_prefs_;
   std::unique_ptr<BookmarkSuggestionsProvider> provider_;
 };
 
