@@ -232,6 +232,16 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         return mTestCommon.getPaymentInstrumentLabel(index);
     }
 
+    /** Returns the label of the selected payment instrument. */
+    protected String getSelectedPaymentInstrumentLabel() throws ExecutionException {
+        return mTestCommon.getSelectedPaymentInstrumentLabel();
+    }
+
+    /**  Returns the total amount in order summary section. */
+    protected String getOrderSummaryTotal() throws ExecutionException {
+        return mTestCommon.getOrderSummaryTotal();
+    }
+
     /**
      *  Returns the label corresponding to the contact detail suggestion at the specified
      *  |suggestionIndex|.

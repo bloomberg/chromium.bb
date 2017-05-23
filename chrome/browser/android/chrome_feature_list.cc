@@ -224,7 +224,7 @@ const base::Feature kVrCustomTabBrowsing{"VrCustomTabBrowsing",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebPaymentsSingleAppUiSkip{
     "WebPaymentsSingleAppUiSkip", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -38,6 +38,7 @@ import org.chromium.ui.base.WindowAndroid;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +77,7 @@ public class AndroidPaymentApp
     private static final String EXTRA_MERCHANT_NAME = "merchantName";
     private static final String EXTRA_METHOD_DATA = "methodData";
     private static final String EXTRA_METHOD_NAMES = "methodNames";
+    private static final String EXTRA_MODIFIERS = "modifiers";
     private static final String EXTRA_PAYMENT_REQUEST_ID = "paymentRequestId";
     private static final String EXTRA_PAYMENT_REQUEST_ORIGIN = "paymentRequestOrigin";
     private static final String EXTRA_TOP_LEVEL_CERTIFICATE_CHAIN = "topLevelCertificateChain";
@@ -376,6 +378,10 @@ public class AndroidPaymentApp
         }
         extras.putParcelable(EXTRA_METHOD_DATA, methodDataBundle);
 
+        if (modifiers != null) {
+            extras.putString(EXTRA_MODIFIERS, serializeModifiers(modifiers.values()));
+        }
+
         String serializedTotalAmount = serializeTotalAmount(total.amount);
         extras.putString(EXTRA_TOTAL,
                 serializedTotalAmount == null ? EMPTY_JSON_DATA : serializedTotalAmount);
@@ -495,6 +501,51 @@ public class AndroidPaymentApp
 
         json.endObject();
         // }}} item
+    }
+
+    private static String serializeModifiers(Collection<PaymentDetailsModifier> modifiers) {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriter json = new JsonWriter(stringWriter);
+        try {
+            json.beginArray();
+            for (PaymentDetailsModifier modifier : modifiers) {
+                serializeModifier(modifier, json);
+            }
+            json.endArray();
+        } catch (IOException e) {
+            return EMPTY_JSON_DATA;
+        }
+        return stringWriter.toString();
+    }
+
+    private static void serializeModifier(PaymentDetailsModifier modifier, JsonWriter json)
+            throws IOException {
+        // {{{
+        json.beginObject();
+
+        // total {{{
+        if (modifier.total != null) {
+            json.name("total");
+            serializePaymentItem(modifier.total, json);
+        } else {
+            json.name("total").nullValue();
+        }
+        // }}} total
+
+        // supportedMethods {{{
+        json.name("supportedMethods").beginArray();
+        for (String method : modifier.methodData.supportedMethods) {
+            json.value(method);
+        }
+        json.endArray();
+        // }}} supportedMethods
+
+        // data {{{
+        json.name("data").value(modifier.methodData.stringifiedData);
+        // }}}
+
+        json.endObject();
+        // }}}
     }
 
     @Override
