@@ -69,6 +69,10 @@ MessageView::MessageView(MessageCenterController* controller,
       slide_out_controller_(this, this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  // Paint to a dedicated layer to make the layer non-opaque.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
   background_view_->set_background(
@@ -99,8 +103,6 @@ gfx::Insets MessageView::GetShadowInsets() {
 
 void MessageView::SetIsNested() {
   is_nested_ = true;
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
 
   const auto& shadow =
       gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
