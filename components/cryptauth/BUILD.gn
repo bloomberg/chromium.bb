@@ -66,6 +66,8 @@ static_library("cryptauth") {
     "secure_context.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
+    "session_keys.cc",
+    "session_keys.h",
     "switches.cc",
     "switches.h",
     "sync_scheduler.cc",
@@ -164,6 +166,7 @@ source_set("unit_tests") {
     "remote_beacon_seed_fetcher_unittest.cc",
     "remote_device_loader_unittest.cc",
     "secure_channel_unittest.cc",
+    "session_keys_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
     "wire_message_unittest.cc",
   ]

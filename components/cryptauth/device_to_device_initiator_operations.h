@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H_
 #define COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/cryptauth/session_keys.h"
 
 namespace cryptauth {
 
@@ -43,7 +45,7 @@ class DeviceToDeviceInitiatorOperations {
   // called with the validation outcome. If validation succeeded, then the
   // second argument will contain the session symmetric key derived from the
   // [Responder Auth] message.
-  typedef base::Callback<void(bool, const std::string&)>
+  typedef base::Callback<void(bool, const SessionKeys&)>
       ValidateResponderAuthCallback;
 
   // Creates the [Hello] message, which is the first message that is sent:
@@ -89,6 +91,7 @@ class DeviceToDeviceInitiatorOperations {
 
   // Creates the [Initiator Auth] message, which allows the responder to
   // authenticate the initiator:
+  // |session_keys|: The session symmetric keys.
   // |persistent_symmetric_key|: The long-term symmetric key that is shared by
   //     the initiator and responder.
   // |responder_auth_message|: The [Responder Auth] message sent previously to
@@ -98,7 +101,7 @@ class DeviceToDeviceInitiatorOperations {
   // |callback|: Invoked upon operation completion with the serialized message
   //     or an empty string.
   static void CreateInitiatorAuthMessage(
-      const std::string& session_symmetric_key,
+      const SessionKeys& session_keys,
       const std::string& persistent_symmetric_key,
       const std::string& responder_auth_message,
       SecureMessageDelegate* secure_message_delegate,

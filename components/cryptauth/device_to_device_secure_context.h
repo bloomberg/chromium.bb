@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/secure_context.h"
+#include "components/cryptauth/session_keys.h"
 
 namespace securemessage {
 class Header;
@@ -24,7 +25,7 @@ class DeviceToDeviceSecureContext : public SecureContext {
  public:
   DeviceToDeviceSecureContext(
       std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
-      const std::string& symmetric_key,
+      const SessionKeys& session_keys,
       const std::string& responder_auth_message_,
       ProtocolVersion protocol_version);
 
@@ -51,8 +52,11 @@ class DeviceToDeviceSecureContext : public SecureContext {
   // Delegate for handling the creation and unwrapping of SecureMessages.
   std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
-  // The symmetric key used to create and unwrap messages.
-  const std::string symmetric_key_;
+  // The symmetric key used for encryption.
+  const std::string encryption_key_;
+
+  // The symmetric key used for decryption.
+  const std::string decryption_key_;
 
   // The [Responder Auth] message received from the remote device during
   // authentication.
@@ -61,8 +65,11 @@ class DeviceToDeviceSecureContext : public SecureContext {
   // The protocol version supported by the remote device.
   const ProtocolVersion protocol_version_;
 
-  // The last sequence number of the message sent or received.
-  int last_sequence_number_;
+  // The last sequence number of the message sent.
+  int last_encode_sequence_number_;
+
+  // The last sequence number of the message received.
+  int last_decode_sequence_number_;
 
   base::WeakPtrFactory<DeviceToDeviceSecureContext> weak_ptr_factory_;
 

@@ -19,6 +19,7 @@
 #include "components/cryptauth/device_to_device_responder_operations.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/secure_context.h"
+#include "components/cryptauth/session_keys.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -269,7 +270,7 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest, AuthenticateSucceeds) {
 
   bool initiator_auth_validated = false;
   DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
-      initiator_auth, session_symmetric_key_,
+      initiator_auth, SessionKeys(session_symmetric_key_),
       remote_device_.persistent_symmetric_key, responder_auth_message,
       secure_message_delegate_,
       base::Bind(&SaveBooleanResult, &initiator_auth_validated));

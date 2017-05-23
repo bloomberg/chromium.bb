@@ -11,6 +11,7 @@
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/proto/securemessage.pb.h"
+#include "components/cryptauth/session_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cryptauth {
@@ -27,16 +28,34 @@ void SaveResult(std::string* result_out, const std::string& result) {
   *result_out = result;
 }
 
+// The responder's secure context will have the encoding / decoding keys
+// inverted.
+class InvertedSessionKeys : public SessionKeys {
+ public:
+  explicit InvertedSessionKeys(const std::string& master_symmetric_key)
+      : SessionKeys(master_symmetric_key) {}
+
+  InvertedSessionKeys() : SessionKeys() {}
+
+  InvertedSessionKeys(const InvertedSessionKeys& other) : SessionKeys(other) {}
+
+  std::string initiator_encode_key() const override {
+    return SessionKeys::responder_encode_key();
+  }
+  std::string responder_encode_key() const override {
+    return SessionKeys::initiator_encode_key();
+  }
+};
+
 }  // namespace
 
 class ProximityAuthDeviceToDeviceSecureContextTest : public testing::Test {
  protected:
   ProximityAuthDeviceToDeviceSecureContextTest()
-      : secure_context_(
-            base::MakeUnique<FakeSecureMessageDelegate>(),
-            kSymmetricKey,
-            kResponderAuthMessage,
-            kProtocolVersion) {}
+      : secure_context_(base::MakeUnique<FakeSecureMessageDelegate>(),
+                        SessionKeys(kSymmetricKey),
+                        kResponderAuthMessage,
+                        kProtocolVersion) {}
 
   DeviceToDeviceSecureContext secure_context_;
 };
@@ -74,10 +93,17 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, DecodeInvalidMessage) {
 
 TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, EncodeAndDecode) {
   // Initialize second secure channel with the same parameters as the first.
+  InvertedSessionKeys inverted_session_keys(kSymmetricKey);
   DeviceToDeviceSecureContext secure_context2(
-      base::MakeUnique<FakeSecureMessageDelegate>(), kSymmetricKey,
+      base::MakeUnique<FakeSecureMessageDelegate>(), inverted_session_keys,
       kResponderAuthMessage, kProtocolVersion);
   std::string message = "encrypt this message";
+
+  SessionKeys session_keys(kSymmetricKey);
+  EXPECT_EQ(session_keys.initiator_encode_key(),
+            inverted_session_keys.responder_encode_key());
+  EXPECT_EQ(session_keys.responder_encode_key(),
+            inverted_session_keys.initiator_encode_key());
 
   // Pass some messages between the two secure contexts.
   for (int i = 0; i < 3; ++i) {
@@ -96,8 +122,9 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest,
        DecodeInvalidSequenceNumber) {
   // Initialize second secure channel with the same parameters as the first.
   DeviceToDeviceSecureContext secure_context2(
-      base::MakeUnique<FakeSecureMessageDelegate>(), kSymmetricKey,
-      kResponderAuthMessage, kProtocolVersion);
+      base::MakeUnique<FakeSecureMessageDelegate>(),
+      InvertedSessionKeys(kSymmetricKey), kResponderAuthMessage,
+      kProtocolVersion);
 
   // Send a few messages over the first secure context.
   std::string message = "encrypt this message";

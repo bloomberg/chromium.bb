@@ -106,11 +106,19 @@ message DeviceToDeviceMessage {
 // Sent as the first message from initiator to responder in an unauthenticated
 // Diffie-Hellman Key Exchange.
 message InitiatorHello {
+  // The session public key to send to the responder.
   optional GenericPublicKey public_dh_key = 1;
+
+  // The protocol version.
+  optional int32 protocol_version = 2 [default = 0];
 }
 
 // Sent inside the header of the first message from the responder to the
 // initiator in an unauthenticated Diffie-Hellman Key Exchange.
 message ResponderHello {
+  // The session public key to send to the initiator.
   optional GenericPublicKey public_dh_key = 1;
+
+  // The protocol version.
+  optional int32 protocol_version = 2 [default = 0];
 }

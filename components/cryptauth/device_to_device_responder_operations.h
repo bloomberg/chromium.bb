@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/cryptauth/session_keys.h"
 
 namespace cryptauth {
 
@@ -92,8 +93,7 @@ class DeviceToDeviceResponderOperations {
   // is properly signed and encrypted.
   // |initiator_auth_message|: The bytes of the [Local Auth] message to
   // validate.
-  // |session_symmetric_key|: The derived symmetric key used just for the
-  //     session.
+  // |session_keys|: The derived symmetric keys used just for the session.
   // |persistent_symmetric_key|: The long-term symmetric key that is shared by
   //     the initiator and responder.
   // |secure_message_delegate|: Delegate for SecureMessage operations. This
@@ -102,7 +102,7 @@ class DeviceToDeviceResponderOperations {
   //     |responder_auth_message| is validated successfully.
   static void ValidateInitiatorAuthMessage(
       const std::string& initiator_auth_message,
-      const std::string& session_symmetric_key,
+      const SessionKeys& session_keys,
       const std::string& persistent_symmetric_key,
       const std::string& responder_auth_message,
       SecureMessageDelegate* secure_message_delegate,
