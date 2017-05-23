@@ -626,9 +626,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 mToolbarButtonsContainer.setVisibility(View.VISIBLE);
                 mToolbarButtonsContainer.setTranslationX(0);
 
-                mExpandButton.setAlpha(1.f);
-                mExpandButton.setVisibility(View.VISIBLE);
-                mExpandButton.setTranslationX(0);
+                if (!mUseToolbarHandle) {
+                    mExpandButton.setAlpha(1.f);
+                    mExpandButton.setVisibility(View.VISIBLE);
+                    mExpandButton.setTranslationX(0);
+                }
+
                 requestLayout();
             } else {
                 mToolbarButtonVisibilityPercent = 0.f;
