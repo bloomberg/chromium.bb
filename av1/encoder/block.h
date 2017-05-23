@@ -209,8 +209,11 @@ struct macroblock {
   // This is needed when using the 8x8 Daala distortion metric during RDO,
   // because it evaluates distortion in a different order than the underlying
   // 4x4 blocks are coded.
-  int rate_4x4[256];
-#endif
+  int rate_4x4[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+#if CONFIG_CB4X4
+  DECLARE_ALIGNED(16, uint8_t, decoded_8x8[8 * 8]);
+#endif  // CONFIG_CB4X4
+#endif  // CONFIG_DAALA_DIST
 #if CONFIG_CFL
   // Whether luma needs to be stored during RDO.
   int cfl_store_y;

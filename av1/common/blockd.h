@@ -310,6 +310,9 @@ typedef struct RD_STATS {
   int64_t rdcost;
   int64_t sse;
   int skip;  // sse should equal to dist when skip == 1
+#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+  int64_t dist_y;
+#endif
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
 #if CONFIG_VAR_TX
@@ -1164,8 +1167,8 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
 #endif
 
 #if CONFIG_DAALA_DIST
-void av1_foreach_8x8_transformed_block_in_plane(
-    const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
+void av1_foreach_8x8_transformed_block_in_yplane(
+    const MACROBLOCKD *const xd, BLOCK_SIZE bsize,
     foreach_transformed_block_visitor visit,
     foreach_transformed_block_visitor mi_visit, void *arg);
 #endif
