@@ -64,30 +64,30 @@
 
 - (NSArray<EditorField*>*)editorFields {
   EditorField* name =
-      [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
+      [[EditorField alloc] initWithAutofillUIType:AutofillUITypeProfileFullName
                                         fieldType:EditorFieldTypeTextField
                                             label:@"Name"
                                             value:@"John Doe"
                                          required:YES];
-  EditorField* country =
-      [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
-                                        fieldType:EditorFieldTypeSelector
-                                            label:@"Country"
-                                            value:@"CAN"
-                                         required:YES];
+  EditorField* country = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileHomeAddressCountry
+                   fieldType:EditorFieldTypeSelector
+                       label:@"Country"
+                       value:@"CAN"
+                    required:YES];
   [country setDisplayValue:@"Canada"];
-  EditorField* address =
-      [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
-                                        fieldType:EditorFieldTypeTextField
-                                            label:@"Address"
-                                            value:@""
-                                         required:YES];
-  EditorField* postalCode =
-      [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
-                                        fieldType:EditorFieldTypeTextField
-                                            label:@"Postal Code"
-                                            value:@""
-                                         required:NO];
+  EditorField* address = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileHomeAddressStreet
+                   fieldType:EditorFieldTypeTextField
+                       label:@"Address"
+                       value:@""
+                    required:YES];
+  EditorField* postalCode = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileHomeAddressZip
+                   fieldType:EditorFieldTypeTextField
+                       label:@"Postal Code"
+                       value:@""
+                    required:NO];
 
   return @[ name, country, address, postalCode ];
 }
