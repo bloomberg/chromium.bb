@@ -32,7 +32,7 @@ ExtensionNavigationThrottle::ExtensionNavigationThrottle(
 ExtensionNavigationThrottle::~ExtensionNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
-ExtensionNavigationThrottle::WillStartRequest() {
+ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
   ExtensionRegistry* registry =
@@ -151,6 +151,22 @@ ExtensionNavigationThrottle::WillStartRequest() {
   }
 
   return content::NavigationThrottle::PROCEED;
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+ExtensionNavigationThrottle::WillStartRequest() {
+  return WillStartOrRedirectRequest();
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+ExtensionNavigationThrottle::WillRedirectRequest() {
+  ThrottleCheckResult result = WillStartOrRedirectRequest();
+  if (result == BLOCK_REQUEST) {
+    // TODO(nick): https://crbug.com/695421 means that BLOCK_REQUEST does not
+    // work here. Once PlzNavigate is enabled 100%, just return |result|.
+    return CANCEL;
+  }
+  return result;
 }
 
 const char* ExtensionNavigationThrottle::GetNameForLogging() {
