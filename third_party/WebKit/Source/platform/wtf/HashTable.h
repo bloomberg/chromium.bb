@@ -776,6 +776,9 @@ class HashTable final
   ValueType* Lookup(KeyPeekInType key) {
     return Lookup<IdentityTranslatorType, KeyPeekInType>(key);
   }
+  const ValueType* Lookup(KeyPeekInType key) const {
+    return Lookup<IdentityTranslatorType, KeyPeekInType>(key);
+  }
   template <typename HashTranslator, typename T>
   ValueType* Lookup(const T&);
   template <typename HashTranslator, typename T>
@@ -823,7 +826,7 @@ class HashTable final
   template <typename HashTranslator, typename T>
   LookupType LookupForWriting(const T&);
 
-  void erase(ValueType*);
+  void erase(const ValueType*);
 
   bool ShouldExpand() const {
     return (key_count_ + deleted_count_) * kMaxLoad >= table_size_;
@@ -850,9 +853,10 @@ class HashTable final
   ValueType* Reinsert(ValueType&&);
 
   static void InitializeBucket(ValueType& bucket);
-  static void DeleteBucket(ValueType& bucket) {
+  static void DeleteBucket(const ValueType& bucket) {
     bucket.~ValueType();
-    Traits::ConstructDeletedValue(bucket, Allocator::kIsGarbageCollected);
+    Traits::ConstructDeletedValue(const_cast<ValueType&>(bucket),
+                                  Allocator::kIsGarbageCollected);
   }
 
   FullLookupType MakeLookupResult(ValueType* position,
@@ -864,13 +868,13 @@ class HashTable final
   iterator MakeIterator(ValueType* pos) {
     return iterator(pos, table_ + table_size_, this);
   }
-  const_iterator MakeConstIterator(ValueType* pos) const {
+  const_iterator MakeConstIterator(const ValueType* pos) const {
     return const_iterator(pos, table_ + table_size_, this);
   }
   iterator MakeKnownGoodIterator(ValueType* pos) {
     return iterator(pos, table_ + table_size_, this, kHashItemKnownGood);
   }
-  const_iterator MakeKnownGoodConstIterator(ValueType* pos) const {
+  const_iterator MakeKnownGoodConstIterator(const ValueType* pos) const {
     return const_iterator(pos, table_ + table_size_, this, kHashItemKnownGood);
   }
 
@@ -1009,6 +1013,7 @@ template <typename HashTranslator, typename T>
 inline Value*
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Lookup(const T& key) {
+  // Call the const version of Lookup<HashTranslator, T>().
   return const_cast<Value*>(
       const_cast<const HashTable*>(this)->Lookup<HashTranslator>(key));
 }
@@ -1429,7 +1434,7 @@ inline typename HashTable<Key,
                           Allocator>::const_iterator
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Find(const T& key) const {
-  ValueType* entry = const_cast<HashTable*>(this)->Lookup<HashTranslator>(key);
+  const ValueType* entry = Lookup<HashTranslator>(key);
   if (!entry)
     return end();
 
@@ -1451,7 +1456,7 @@ bool HashTable<Key,
                Traits,
                KeyTraits,
                Allocator>::Contains(const T& key) const {
-  return const_cast<HashTable*>(this)->Lookup<HashTranslator>(key);
+  return Lookup<HashTranslator>(key);
 }
 
 template <typename Key,
@@ -1467,7 +1472,7 @@ void HashTable<Key,
                HashFunctions,
                Traits,
                KeyTraits,
-               Allocator>::erase(ValueType* pos) {
+               Allocator>::erase(const ValueType* pos) {
   RegisterModification();
 #if DUMP_HASHTABLE_STATS
   atomicIncrement(&HashTableStats::instance().numRemoves);
@@ -1498,7 +1503,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     erase(iterator it) {
   if (it == end())
     return;
-  erase(const_cast<ValueType*>(it.iterator_.position_));
+  erase(it.iterator_.position_);
 }
 
 template <typename Key,
@@ -1513,7 +1518,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     erase(const_iterator it) {
   if (it == end())
     return;
-  erase(const_cast<ValueType*>(it.position_));
+  erase(it.position_);
 }
 
 template <typename Key,

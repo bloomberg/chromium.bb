@@ -592,7 +592,7 @@ template <typename T,
           typename Y>
 typename HashMap<T, U, V, W, X, Y>::MappedPeekType
 HashMap<T, U, V, W, X, Y>::at(KeyPeekInType key) const {
-  ValueType* entry = const_cast<HashTableType&>(impl_).Lookup(key);
+  const ValueType* entry = impl_.Lookup(key);
   if (!entry)
     return MappedTraits::Peek(MappedTraits::EmptyValue());
   return MappedTraits::Peek(entry->value);
