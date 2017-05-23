@@ -20,6 +20,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "storage/common/storage_histograms.h"
 
 namespace content {
 
@@ -80,8 +81,8 @@ HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
 
 // AppCacheDiskCacheInterface ----------------------------------------
 
-AppCacheDiskCacheInterface::AppCacheDiskCacheInterface()
-    : weak_factory_(this) {}
+AppCacheDiskCacheInterface::AppCacheDiskCacheInterface(const char* uma_name)
+    : uma_name_(uma_name), weak_factory_(this) {}
 
 base::WeakPtr<AppCacheDiskCacheInterface>
 AppCacheDiskCacheInterface::GetWeakPtr() {
@@ -293,7 +294,10 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       read_position_ += result;
     }
   }
+  if (result > 0 && disk_cache_)
+    storage::RecordBytesRead(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
+  // Note: |this| may have been deleted by the completion callback.
 }
 
 void AppCacheResponseReader::OnOpenEntryComplete() {
@@ -385,7 +389,10 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
     else
       info_size_ = result;
   }
+  if (result > 0 && disk_cache_)
+    storage::RecordBytesWritten(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
+  // Note: |this| may have been deleted by the completion callback.
 }
 
 void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
@@ -489,7 +496,10 @@ void AppCacheResponseMetadataWriter::OnOpenEntryComplete() {
 
 void AppCacheResponseMetadataWriter::OnIOComplete(int result) {
   DCHECK(result < 0 || write_amount_ == result);
+  if (result > 0 && disk_cache_)
+    storage::RecordBytesWritten(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
+  // Note: |this| may have been deleted by the completion callback.
 }
 
 }  // namespace content

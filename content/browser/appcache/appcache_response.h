@@ -94,7 +94,8 @@ class CONTENT_EXPORT AppCacheDiskCacheInterface {
     virtual ~Entry() {}
   };
 
-  AppCacheDiskCacheInterface();
+  // The uma_name pointer must remain valid for the life of the object.
+  AppCacheDiskCacheInterface(const char* uma_name);
 
   virtual int CreateEntry(int64_t key,
                           Entry** entry,
@@ -105,11 +106,13 @@ class CONTENT_EXPORT AppCacheDiskCacheInterface {
   virtual int DoomEntry(int64_t key,
                         const net::CompletionCallback& callback) = 0;
 
+  const char* uma_name() const { return uma_name_; }
   base::WeakPtr<AppCacheDiskCacheInterface> GetWeakPtr();
 
  protected:
   virtual ~AppCacheDiskCacheInterface();
 
+  const char* uma_name_;
   base::WeakPtrFactory<AppCacheDiskCacheInterface> weak_factory_;
 };
 

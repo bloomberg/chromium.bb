@@ -111,6 +111,8 @@ class UMALogger {
   virtual void RecordErrorAt(MethodID method) const = 0;
   virtual void RecordOSError(MethodID method,
                              base::File::Error error) const = 0;
+  virtual void RecordBytesRead(int amount) const = 0;
+  virtual void RecordBytesWritten(int amount) const = 0;
 };
 
 class RetrierProvider {
@@ -166,9 +168,10 @@ class ChromiumEnv : public leveldb::Env,
   static const char* FileErrorString(base::File::Error error);
 
  private:
-  virtual void RecordErrorAt(MethodID method) const;
-  virtual void RecordOSError(MethodID method,
-                             base::File::Error error) const;
+  void RecordErrorAt(MethodID method) const override;
+  void RecordOSError(MethodID method, base::File::Error error) const override;
+  void RecordBytesRead(int amount) const override;
+  void RecordBytesWritten(int amount) const override;
   void RecordOpenFilesLimit(const std::string& type);
   base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;

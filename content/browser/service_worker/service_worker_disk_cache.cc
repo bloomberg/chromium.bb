@@ -7,7 +7,9 @@
 namespace content {
 
 ServiceWorkerDiskCache::ServiceWorkerDiskCache()
-    : AppCacheDiskCache(true /* use_simple_cache */) {}
+    : AppCacheDiskCache(true /* use_simple_cache */) {
+  uma_name_ = "DiskCache.ServiceWorker";
+}
 
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
     int64_t resource_id,

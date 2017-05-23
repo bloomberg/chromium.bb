@@ -15,7 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -102,6 +102,18 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
 #endif
 }
 
+// To avoid a dependency on storage_histograms.h and the storageLib,
+// we re-implement the BytesCountHistogram functions here.
+void RecordStorageBytesWritten(const char* label, int amount) {
+  const std::string name = "Storage.BytesWritten.";
+  base::UmaHistogramCounts10M(name + label, amount);
+}
+
+void RecordStorageBytesRead(const char* label, int amount) {
+  const std::string name = "Storage.BytesRead.";
+  base::UmaHistogramCounts10M(name + label, amount);
+}
+
 class ChromiumFileLock : public FileLock {
  public:
   ChromiumFileLock(base::File file, const std::string& name)
@@ -176,10 +188,11 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
       uma_logger_->RecordErrorAt(kSequentialFileRead);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          kSequentialFileRead, error);
-    } else {
-      *result = Slice(scratch, bytes_read);
-      return Status::OK();
     }
+    if (bytes_read > 0)
+      uma_logger_->RecordBytesRead(bytes_read);
+    *result = Slice(scratch, bytes_read);
+    return Status::OK();
   }
 
   Status Skip(uint64_t n) override {
@@ -215,16 +228,16 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
               char* scratch) const override {
     TRACE_EVENT2("leveldb", "ChromiumRandomAccessFile::Read", "offset", offset,
                  "size", n);
-    Status s;
-    int r = file_.Read(offset, scratch, n);
-    *result = Slice(scratch, (r < 0) ? 0 : r);
-    if (r < 0) {
-      // An error: return a non-ok status
-      s = MakeIOError(filename_, "Could not perform read",
-                      kRandomAccessFileRead);
+    int bytes_read = file_.Read(offset, scratch, n);
+    *result = Slice(scratch, (bytes_read < 0) ? 0 : bytes_read);
+    if (bytes_read < 0) {
       uma_logger_->RecordErrorAt(kRandomAccessFileRead);
+      return MakeIOError(filename_, "Could not perform read",
+                         kRandomAccessFileRead);
     }
-    return s;
+    if (bytes_read > 0)
+      uma_logger_->RecordBytesRead(bytes_read);
+    return Status::OK();
   }
 
  private:
@@ -303,7 +316,8 @@ Status ChromiumWritableFile::Append(const Slice& data) {
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileAppend, error);
   }
-
+  if (bytes_written > 0)
+    uma_logger_->RecordBytesWritten(bytes_written);
   return Status::OK();
 }
 
@@ -912,15 +926,23 @@ void ChromiumEnv::RecordErrorAt(MethodID method) const {
   GetMethodIOErrorHistogram()->Add(method);
 }
 
-void ChromiumEnv::RecordLockFileAncestors(int num_missing_ancestors) const {
-  GetLockFileAncestorHistogram()->Add(num_missing_ancestors);
-}
-
 void ChromiumEnv::RecordOSError(MethodID method,
                                 base::File::Error error) const {
   DCHECK_LT(error, 0);
   RecordErrorAt(method);
   GetOSErrorHistogram(method, -base::File::FILE_ERROR_MAX)->Add(-error);
+}
+
+void ChromiumEnv::RecordBytesRead(int amount) const {
+  RecordStorageBytesRead(name_.c_str(), amount);
+}
+
+void ChromiumEnv::RecordBytesWritten(int amount) const {
+  RecordStorageBytesWritten(name_.c_str(), amount);
+}
+
+void ChromiumEnv::RecordLockFileAncestors(int num_missing_ancestors) const {
+  GetLockFileAncestorHistogram()->Add(num_missing_ancestors);
 }
 
 base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,
