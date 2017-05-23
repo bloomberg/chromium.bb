@@ -149,10 +149,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-  // Clicking in another view should clear focus and the selection.
+  // Clicking in another view should clear focus.
   ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   // Clicking in the omnibox again should take focus and select all text again.
   ASSERT_NO_FATAL_FAILURE(Click(ui_controls::LEFT,
@@ -245,7 +244,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   // Take the focus away from the omnibox.
   ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   // Tapping in the omnibox should take focus and select all text.
   const gfx::Rect omnibox_bounds = BrowserView::GetBrowserViewForBrowser(
@@ -255,10 +253,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-  // Tapping in another view should clear focus and the selection.
+  // Tapping in another view should clear focus.
   ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   // Tapping in the omnibox again should take focus and select all text again.
   ASSERT_NO_FATAL_FAILURE(Tap(tap_location, tap_location));

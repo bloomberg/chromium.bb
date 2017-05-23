@@ -782,9 +782,9 @@ void OmniboxViewViews::OnBlur() {
   // at least call CloseOmniboxPopup(), so that if ZeroSuggest is in the
   // midst of running but hasn't yet opened the popup, it will be halted.
   // If we fully reverted in this case, we'd lose the cursor/highlight
-  // information saved above.
-  if (!model()->user_input_in_progress() && model()->popup_model()->IsOpen() &&
-      text() != model()->PermanentText())
+  // information saved above. Note: popup_model() can be null in tests.
+  if (!model()->user_input_in_progress() && model()->popup_model() &&
+      model()->popup_model()->IsOpen() && text() != model()->PermanentText())
     RevertAll();
   else
     CloseOmniboxPopup();
@@ -792,17 +792,27 @@ void OmniboxViewViews::OnBlur() {
   // Tell the model to reset itself.
   model()->OnKillFocus();
 
-  // Make sure the beginning of the text is visible.
-  SelectRange(gfx::Range(0));
-
-  GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+  // When deselected, elide and reset scroll position. After eliding, the old
+  // scroll offset is meaningless (since the string is guaranteed to fit within
+  // the view). The scroll must be reset or the text may be rendered partly or
+  // wholly off-screen.
+  //
+  // Important: Since the URL can contain bidirectional text, it is important to
+  // set the display offset directly to 0 (not simply scroll to the start of the
+  // text, since the start of the text may not be at the left edge).
+  gfx::RenderText* render_text = GetRenderText();
+  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+  render_text->SetDisplayOffset(0);
 
   // Focus changes can affect the visibility of any keyword hint.
-  if (model()->is_keyword_hint())
-    location_bar_view_->Layout();
+  // |location_bar_view_| can be null in tests.
+  if (location_bar_view_) {
+    if (model()->is_keyword_hint())
+      location_bar_view_->Layout();
 
-  // The location bar needs to repaint without a focus ring.
-  location_bar_view_->SchedulePaint();
+    // The location bar needs to repaint without a focus ring.
+    location_bar_view_->SchedulePaint();
+  }
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
