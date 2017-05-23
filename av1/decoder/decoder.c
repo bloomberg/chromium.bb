@@ -444,7 +444,10 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   // border.
   if (pbi->dec_tile_row == -1 && pbi->dec_tile_col == -1)
 #endif  // CONFIG_EXT_TILE
-    aom_extend_frame_inner_borders(cm->frame_to_show);
+    // TODO(debargha): Fix encoder side mv range, so that we can use the
+    // inner border extension. As of now use the larger extension.
+    // aom_extend_frame_inner_borders(cm->frame_to_show);
+    aom_extend_frame_borders(cm->frame_to_show);
 
   aom_clear_system_state();
 

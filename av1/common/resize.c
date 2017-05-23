@@ -816,11 +816,11 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
 #endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_HIGHBITDEPTH
-static void resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                    YV12_BUFFER_CONFIG *dst, int bd) {
+void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
+                                 YV12_BUFFER_CONFIG *dst, int bd) {
 #else
-static void resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                    YV12_BUFFER_CONFIG *dst) {
+void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
+                                 YV12_BUFFER_CONFIG *dst) {
 #endif  // CONFIG_HIGHBITDEPTH
   // TODO(dkovalev): replace YV12_BUFFER_CONFIG with aom_image_t
   int i;
@@ -855,8 +855,8 @@ static void resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
 YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
                                                YV12_BUFFER_CONFIG *unscaled,
                                                YV12_BUFFER_CONFIG *scaled) {
-  if (cm->mi_cols * MI_SIZE != unscaled->y_width ||
-      cm->mi_rows * MI_SIZE != unscaled->y_height) {
+  if (cm->width != unscaled->y_crop_width ||
+      cm->height != unscaled->y_crop_height) {
     // For 2x2 scaling down.
     aom_scale_frame(unscaled, scaled, unscaled->y_buffer, 9, 2, 1, 2, 1, 0);
     aom_extend_frame_borders(scaled);
@@ -869,14 +869,107 @@ YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
                                           YV12_BUFFER_CONFIG *scaled) {
-  if (cm->width != unscaled->y_width || cm->height != unscaled->y_height) {
+  if (cm->width != unscaled->y_crop_width ||
+      cm->height != unscaled->y_crop_height) {
 #if CONFIG_HIGHBITDEPTH
-    resize_and_extend_frame(unscaled, scaled, (int)cm->bit_depth);
+    av1_resize_and_extend_frame(unscaled, scaled, (int)cm->bit_depth);
 #else
-    resize_and_extend_frame(unscaled, scaled);
+    av1_resize_and_extend_frame(unscaled, scaled);
 #endif  // CONFIG_HIGHBITDEPTH
     return scaled;
   } else {
     return unscaled;
   }
 }
+
+#if CONFIG_FRAME_SUPERRES
+void av1_calculate_superres_size(const AV1_COMMON *cm, int *width,
+                                 int *height) {
+  *width = *width * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
+  *height = *height * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
+}
+
+// TODO(afergs): Look for in-place upscaling
+// TODO(afergs): aom_ vs av1_ functions? Which can I use?
+// Upscale decoded image.
+void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
+  if (av1_superres_unscaled(cm)) return;
+
+  YV12_BUFFER_CONFIG copy_buffer;
+  memset(&copy_buffer, 0, sizeof(copy_buffer));
+
+  YV12_BUFFER_CONFIG *const frame_to_show = get_frame_new_buffer(cm);
+
+  if (aom_alloc_frame_buffer(&copy_buffer, cm->width, cm->height,
+                             cm->subsampling_x, cm->subsampling_y,
+#ifdef CONFIG_HIGHBITDEPTH
+                             cm->use_highbitdepth,
+#endif  // CONFIG_HIGHBITDEPTH
+                             AOM_BORDER_IN_PIXELS, cm->byte_alignment))
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate copy buffer for superres upscaling");
+
+  // Copy function assumes the frames are the same size, doesn't copy bit_depth.
+  aom_yv12_copy_frame(frame_to_show, &copy_buffer);
+  copy_buffer.bit_depth = frame_to_show->bit_depth;
+  assert(copy_buffer.y_crop_width == cm->width);
+  assert(copy_buffer.y_crop_height == cm->height);
+
+  // Realloc the current frame buffer at a higher resolution in place.
+  if (pool != NULL) {
+    // Use callbacks if on the decoder.
+    aom_codec_frame_buffer_t *fb =
+        &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer;
+    aom_release_frame_buffer_cb_fn_t release_fb_cb = pool->release_fb_cb;
+    aom_get_frame_buffer_cb_fn_t cb = pool->get_fb_cb;
+    void *cb_priv = pool->cb_priv;
+
+    // Realloc with callback does not release the frame buffer - release first.
+    if (release_fb_cb(cb_priv, fb))
+      aom_internal_error(
+          &cm->error, AOM_CODEC_MEM_ERROR,
+          "Failed to free current frame buffer before superres upscaling");
+
+    if (aom_realloc_frame_buffer(
+            frame_to_show, cm->superres_upscaled_width,
+            cm->superres_upscaled_height, cm->subsampling_x, cm->subsampling_y,
+#ifdef CONFIG_HIGHBITDEPTH
+            cm->use_highbitdepth,
+#endif  // CONFIG_HIGHBITDEPTH
+            AOM_BORDER_IN_PIXELS, cm->byte_alignment, fb, cb, cb_priv))
+      aom_internal_error(
+          &cm->error, AOM_CODEC_MEM_ERROR,
+          "Failed to allocate current frame buffer for superres upscaling");
+  } else {
+    // Don't use callbacks on the encoder.
+    if (aom_alloc_frame_buffer(frame_to_show, cm->superres_upscaled_width,
+                               cm->superres_upscaled_height, cm->subsampling_x,
+                               cm->subsampling_y,
+#ifdef CONFIG_HIGHBITDEPTH
+                               cm->use_highbitdepth,
+#endif  // CONFIG_HIGHBITDEPTH
+                               AOM_BORDER_IN_PIXELS, cm->byte_alignment))
+      aom_internal_error(
+          &cm->error, AOM_CODEC_MEM_ERROR,
+          "Failed to reallocate current frame buffer for superres upscaling");
+  }
+  // TODO(afergs): verify frame_to_show is correct after realloc
+  //               encoder:
+  //               decoder:
+  frame_to_show->bit_depth = copy_buffer.bit_depth;
+  assert(frame_to_show->y_crop_width == cm->superres_upscaled_width);
+  assert(frame_to_show->y_crop_height == cm->superres_upscaled_height);
+
+  // Scale up and back into frame_to_show.
+  assert(frame_to_show->y_crop_width != cm->width);
+  assert(frame_to_show->y_crop_height != cm->height);
+#if CONFIG_HIGHBITDEPTH
+  av1_resize_and_extend_frame(&copy_buffer, frame_to_show, (int)cm->bit_depth);
+#else
+  av1_resize_and_extend_frame(&copy_buffer, frame_to_show);
+#endif  // CONFIG_HIGHBITDEPTH
+
+  // Free the copy buffer
+  aom_free_frame_buffer(&copy_buffer);
+}
+#endif  // CONFIG_FRAME_SUPERRES

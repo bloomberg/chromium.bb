@@ -94,8 +94,8 @@ static int kf_high = 5000;
 static int kf_low = 400;
 
 double av1_resize_rate_factor(const AV1_COMP *cpi) {
-  return (double)(cpi->resize_scale_den * cpi->resize_scale_den) /
-         (cpi->resize_scale_num * cpi->resize_scale_num);
+  return (double)(cpi->oxcf.width * cpi->oxcf.height) /
+         (cpi->common.width * cpi->common.height);
 }
 
 // Functions to compute the active minq lookup table entries based on a
@@ -1081,7 +1081,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int *bottom_index,
   }
 
   // Modify active_best_quality for downscaled normal frames.
-  if (!av1_resize_unscaled(cpi) && !frame_is_kf_gf_arf(cpi)) {
+  if (!av1_frame_unscaled(cm) && !frame_is_kf_gf_arf(cpi)) {
     int qdelta = av1_compute_qdelta_by_rate(
         rc, cm->frame_type, active_best_quality, 2.0, cm->bit_depth);
     active_best_quality =
@@ -1164,7 +1164,7 @@ void av1_rc_set_frame_target(AV1_COMP *cpi, int target) {
   rc->this_frame_target = target;
 
   // Modify frame size target when down-scaled.
-  if (cpi->oxcf.resize_mode == RESIZE_DYNAMIC && !av1_resize_unscaled(cpi))
+  if (!av1_frame_unscaled(cm))
     rc->this_frame_target =
         (int)(rc->this_frame_target * av1_resize_rate_factor(cpi));
 
@@ -1663,3 +1663,59 @@ void av1_set_target_rate(AV1_COMP *cpi) {
     vbr_rate_correction(cpi, &target_rate);
   av1_rc_set_frame_target(cpi, target_rate);
 }
+
+static unsigned int lcg_rand16(unsigned int *state) {
+  *state = (unsigned int)(*state * 1103515245ULL + 12345);
+  return *state / 65536 % 32768;
+}
+
+void av1_calculate_next_scaled_size(AV1_COMP *cpi, int *width, int *height) {
+  AV1EncoderConfig *oxcf = &cpi->oxcf;
+
+  // TODO(afergs): Get width from frame instead?
+  *width = oxcf->width;
+  *height = oxcf->height;
+
+  if (oxcf->resize_mode == RESIZE_FIXED) {
+    *width = oxcf->scaled_frame_width;
+    *height = oxcf->scaled_frame_height;
+    return;
+  }
+  if (oxcf->resize_mode == RESIZE_DYNAMIC) {
+    // NOTE: RESIZE_DYNAMIC defaults to random now.
+    static unsigned int seed = 56789;
+    if (oxcf->pass == 2 || oxcf->pass == 0) {
+      int scale_num = lcg_rand16(&seed) % 4 + 13;
+      int scale_den = 16;
+      if (!(cpi->oxcf.width * scale_num / scale_den * 2 < oxcf->width ||
+            cpi->oxcf.height * scale_num / scale_den * 2 < oxcf->height)) {
+        *width = cpi->oxcf.width * scale_num / scale_den;
+        *height = cpi->oxcf.height * scale_num / scale_den;
+      }
+    }
+  }
+}
+
+#if CONFIG_FRAME_SUPERRES
+#define RANDOM_SUPERRES 1
+int av1_calculate_next_superres_scale(AV1_COMP *cpi, int width, int height) {
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  (void)width;
+  (void)height;
+  (void)oxcf;
+#if RANDOM_SUPERRES
+  if (cpi->common.frame_type != KEY_FRAME) {
+    if (oxcf->pass == 2 || oxcf->pass == 0) {
+      static unsigned int seed = 34567;
+      int new_num = lcg_rand16(&seed) % 9 + 8;
+      if (new_num * width / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->width ||
+          new_num * height / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->height)
+        new_num = SUPERRES_SCALE_DENOMINATOR;
+      cpi->common.superres_scale_numerator = new_num;
+      return new_num;
+    }
+  }
+#endif  // RANDOM_SUPERRES
+  return 16;
+}
+#endif  // CONFIG_FRAME_SUPERRES

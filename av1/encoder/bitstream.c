@@ -4172,8 +4172,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 
 static void write_render_size(const AV1_COMMON *cm,
                               struct aom_write_bit_buffer *wb) {
-  const int scaling_active =
-      cm->width != cm->render_width || cm->height != cm->render_height;
+  const int scaling_active = !av1_resize_unscaled(cm);
   aom_wb_write_bit(wb, scaling_active);
   if (scaling_active) {
     aom_wb_write_literal(wb, cm->render_width - 1, 16);
@@ -4189,7 +4188,6 @@ static void write_superres_scale(const AV1_COMMON *const cm,
     aom_wb_write_bit(wb, 0);  // no scaling
   } else {
     aom_wb_write_bit(wb, 1);  // scaling, write scale factor
-    // TODO(afergs): write factor to the compressed header instead
     aom_wb_write_literal(
         wb, cm->superres_scale_numerator - SUPERRES_SCALE_NUMERATOR_MIN,
         SUPERRES_SCALE_BITS);
@@ -4199,13 +4197,15 @@ static void write_superres_scale(const AV1_COMMON *const cm,
 
 static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb) {
+#if CONFIG_FRAME_SUPERRES
+  aom_wb_write_literal(wb, cm->superres_upscaled_width - 1, 16);
+  aom_wb_write_literal(wb, cm->superres_upscaled_height - 1, 16);
+  write_superres_scale(cm, wb);
+#else
   aom_wb_write_literal(wb, cm->width - 1, 16);
   aom_wb_write_literal(wb, cm->height - 1, 16);
-
-  write_render_size(cm, wb);
-#if CONFIG_FRAME_SUPERRES
-  write_superres_scale(cm, wb);
 #endif  // CONFIG_FRAME_SUPERRES
+  write_render_size(cm, wb);
 }
 
 static void write_frame_size_with_refs(AV1_COMP *cpi,
@@ -4218,20 +4218,26 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
     YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, ref_frame);
 
     if (cfg != NULL) {
+#if CONFIG_FRAME_SUPERRES
+      found = cm->superres_upscaled_width == cfg->y_crop_width &&
+              cm->superres_upscaled_height == cfg->y_crop_height;
+#else
       found =
           cm->width == cfg->y_crop_width && cm->height == cfg->y_crop_height;
+#endif
       found &= cm->render_width == cfg->render_width &&
                cm->render_height == cfg->render_height;
     }
     aom_wb_write_bit(wb, found);
     if (found) {
+#if CONFIG_FRAME_SUPERRES
+      write_superres_scale(cm, wb);
+#endif  // CONFIG_FRAME_SUPERRES
       break;
     }
   }
 
-  if (!found) {
-    write_frame_size(cm, wb);
-  }
+  if (!found) write_frame_size(cm, wb);
 }
 
 static void write_sync_code(struct aom_write_bit_buffer *wb) {
@@ -4369,11 +4375,6 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 #endif
-
-#if CONFIG_FRAME_SUPERRES
-  // TODO(afergs): Remove - this is just to stop superres from breaking
-  cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
-#endif  // CONFIG_FRAME_SUPERRES
 
   if (cm->frame_type == KEY_FRAME) {
     write_sync_code(wb);

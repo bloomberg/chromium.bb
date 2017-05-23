@@ -49,6 +49,9 @@
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
+#if CONFIG_FRAME_SUPERRES
+#include "av1/common/resize.h"
+#endif  // CONFIG_FRAME_SUPERRES
 #include "av1/common/seg_common.h"
 #include "av1/common/thread_common.h"
 #include "av1/common/tile_common.h"
@@ -2203,6 +2206,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                     partition,
 #endif
                     bsize);
+
 #if !(CONFIG_MOTION_VAR && CONFIG_NCOBMC)
 #if CONFIG_SUPERTX
   if (!supertx_enabled)
@@ -3020,31 +3024,30 @@ static InterpFilter read_frame_interp_filter(struct aom_read_bit_buffer *rb) {
 }
 
 static void setup_render_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+#if CONFIG_FRAME_SUPERRES
+  cm->render_width = cm->superres_upscaled_width;
+  cm->render_height = cm->superres_upscaled_height;
+#else
   cm->render_width = cm->width;
   cm->render_height = cm->height;
+#endif  // CONFIG_FRAME_SUPERRES
   if (aom_rb_read_bit(rb))
     av1_read_frame_size(rb, &cm->render_width, &cm->render_height);
 }
 
 #if CONFIG_FRAME_SUPERRES
 // TODO(afergs): make "struct aom_read_bit_buffer *const rb"?
-static void setup_superres_size(AV1_COMMON *const cm,
-                                struct aom_read_bit_buffer *rb, int *width,
-                                int *height) {
-  // TODO(afergs): Save input resolution - it's the upscaled resolution
+static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
+                           int *width, int *height) {
+  cm->superres_upscaled_width = *width;
+  cm->superres_upscaled_height = *height;
   if (aom_rb_read_bit(rb)) {
     cm->superres_scale_numerator =
         (uint8_t)aom_rb_read_literal(rb, SUPERRES_SCALE_BITS);
     cm->superres_scale_numerator += SUPERRES_SCALE_NUMERATOR_MIN;
     // Don't edit cm->width or cm->height directly, or the buffers won't get
     // resized correctly
-    // TODO(afergs): Should the render resolution not be modified? It's the same
-    // by default (ie. when it isn't sent)...
-    // resize_context_buffers() will change cm->width to equal cm->render_width,
-    // then they'll be the same again
-    *width = *width * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
-    *height =
-        *width * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
+    av1_calculate_superres_size(cm, width, height);
   } else {
     // 1:1 scaling - ie. no scaling, scale not provided
     cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
@@ -3097,10 +3100,10 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   int width, height;
   BufferPool *const pool = cm->buffer_pool;
   av1_read_frame_size(rb, &width, &height);
-  setup_render_size(cm, rb);
 #if CONFIG_FRAME_SUPERRES
-  setup_superres_size(cm, rb, &width, &height);
+  setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
+  setup_render_size(cm, rb);
   resize_context_buffers(cm, width, height);
 
   lock_buffer_pool(pool);
@@ -3149,6 +3152,9 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
       height = buf->y_crop_height;
       cm->render_width = buf->render_width;
       cm->render_height = buf->render_height;
+#if CONFIG_FRAME_SUPERRES
+      setup_superres(cm, rb, &width, &height);
+#endif  // CONFIG_FRAME_SUPERRES
       found = 1;
       break;
     }
@@ -3156,10 +3162,10 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 
   if (!found) {
     av1_read_frame_size(rb, &width, &height);
-    setup_render_size(cm, rb);
 #if CONFIG_FRAME_SUPERRES
-    setup_superres_size(cm, rb, &width, &height);
+    setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
+    setup_render_size(cm, rb);
   }
 
   if (width <= 0 || height <= 0)
@@ -5186,6 +5192,19 @@ static void make_update_tile_list_dec(AV1Decoder *pbi, int tile_rows,
 }
 #endif
 
+#if CONFIG_FRAME_SUPERRES
+void superres_post_decode(AV1Decoder *pbi) {
+  AV1_COMMON *const cm = &pbi->common;
+  BufferPool *const pool = cm->buffer_pool;
+
+  if (av1_superres_unscaled(cm)) return;
+
+  lock_buffer_pool(pool);
+  av1_superres_upscale(cm, pool);
+  unlock_buffer_pool(pool);
+}
+#endif  // CONFIG_FRAME_SUPERRES
+
 void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                       const uint8_t *data_end, const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
@@ -5281,14 +5300,23 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_TEMPMV_SIGNALING
   if (cm->use_prev_frame_mvs) {
     assert(!cm->error_resilient_mode && cm->prev_frame &&
-           cm->width == last_fb_ref_buf->buf->y_width &&
-           cm->height == last_fb_ref_buf->buf->y_height &&
+#if CONFIG_FRAME_SUPERRES
+           cm->width == cm->last_width && cm->height == cm->last_height &&
+#else
+           cm->width == last_fb_ref_buf->buf->y_crop_width &&
+           cm->height == last_fb_ref_buf->buf->y_crop_height &&
+#endif  // CONFIG_FRAME_SUPERRES
            !cm->prev_frame->intra_only);
   }
 #else
   cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
+#if CONFIG_FRAME_SUPERRES
+                           cm->width == cm->last_width &&
+                           cm->height == cm->last_height &&
+#else
                            cm->width == cm->prev_frame->buf.y_crop_width &&
                            cm->height == cm->prev_frame->buf.y_crop_height &&
+#endif  // CONFIG_FRAME_SUPERRES
                            !cm->last_intra_only && cm->last_show_frame &&
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
@@ -5360,6 +5388,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
   }
 #endif  // CONFIG_CDEF
+
+#if CONFIG_FRAME_SUPERRES
+  superres_post_decode(pbi);
+#endif  // CONFIG_FRAME_SUPERRES
 
 #if CONFIG_LOOP_RESTORATION
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||

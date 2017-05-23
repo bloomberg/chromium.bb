@@ -21,6 +21,7 @@
 #include "av1/common/entropymode.h"
 #include "av1/common/thread_common.h"
 #include "av1/common/onyxc_int.h"
+#include "av1/common/resize.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #if CONFIG_ANS
 #include "aom_dsp/ans.h"
@@ -372,7 +373,7 @@ typedef struct AV1_COMP {
 
   YV12_BUFFER_CONFIG *source;
   YV12_BUFFER_CONFIG *last_source;  // NULL for first frame and alt_ref frames
-  YV12_BUFFER_CONFIG *un_scaled_source;
+  YV12_BUFFER_CONFIG *unscaled_source;
   YV12_BUFFER_CONFIG scaled_source;
   YV12_BUFFER_CONFIG *unscaled_last_source;
   YV12_BUFFER_CONFIG scaled_last_source;
@@ -601,17 +602,9 @@ typedef struct AV1_COMP {
   TileBufferEnc tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
 
   int resize_state;
-  int resize_scale_num;
-  int resize_scale_den;
-  int resize_next_scale_num;
-  int resize_next_scale_den;
   int resize_avg_qp;
   int resize_buffer_underflow;
   int resize_count;
-
-#if CONFIG_FRAME_SUPERRES
-  int superres_pending;
-#endif  // CONFIG_FRAME_SUPERRES
 
   // VARIANCE_AQ segment map refresh
   int vaq_refresh;
@@ -831,23 +824,22 @@ static INLINE void uref_cnt_fb(EncRefCntBuffer *ubufs, int *uidx,
   ubufs[new_uidx].ref_count++;
 }
 
-// Returns 1 if a resize is pending and 0 otherwise.
-static INLINE int av1_resize_pending(const struct AV1_COMP *cpi) {
-  return cpi->resize_scale_num != cpi->resize_next_scale_num ||
-         cpi->resize_scale_den != cpi->resize_next_scale_den;
-}
-
 // Returns 1 if a frame is unscaled and 0 otherwise.
-static INLINE int av1_resize_unscaled(const struct AV1_COMP *cpi) {
-  return cpi->resize_scale_num == cpi->resize_scale_den;
+static INLINE int av1_resize_unscaled(const AV1_COMMON *cm) {
+#if CONFIG_FRAME_SUPERRES
+  return cm->superres_upscaled_width == cm->render_width &&
+         cm->superres_upscaled_height == cm->render_height;
+#else
+  return cm->width == cm->render_width && cm->height == cm->render_height;
+#endif  // CONFIG_FRAME_SUPERRES
 }
 
-// Moves resizing to the next state. This is just setting the numerator and
-// denominator to the next numerator and denominator, causing
-// av1_resize_pending to subsequently return false.
-static INLINE void av1_resize_step(struct AV1_COMP *cpi) {
-  cpi->resize_scale_num = cpi->resize_next_scale_num;
-  cpi->resize_scale_den = cpi->resize_next_scale_den;
+static INLINE int av1_frame_unscaled(const AV1_COMMON *cm) {
+#if CONFIG_FRAME_SUPERRES
+  return av1_superres_unscaled(cm) && av1_resize_unscaled(cm);
+#else
+  return av1_resize_unscaled(cm);
+#endif  // CONFIG_FRAME_SUPERRES
 }
 
 #ifdef __cplusplus

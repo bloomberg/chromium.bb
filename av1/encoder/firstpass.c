@@ -1231,27 +1231,6 @@ static void setup_rf_level_maxq(AV1_COMP *cpi) {
   }
 }
 
-void av1_calculate_next_scaled_size(const AV1_COMP *cpi,
-                                    int *scaled_frame_width,
-                                    int *scaled_frame_height) {
-  *scaled_frame_width =
-      cpi->oxcf.width * cpi->resize_next_scale_num / cpi->resize_next_scale_den;
-  *scaled_frame_height = cpi->oxcf.height * cpi->resize_next_scale_num /
-                         cpi->resize_next_scale_den;
-}
-
-#if CONFIG_FRAME_SUPERRES
-void av1_calculate_superres_size(const AV1_COMP *cpi, int *encoded_width,
-                                 int *encoded_height) {
-  *encoded_width = cpi->oxcf.scaled_frame_width *
-                   cpi->common.superres_scale_numerator /
-                   SUPERRES_SCALE_DENOMINATOR;
-  *encoded_height = cpi->oxcf.scaled_frame_height *
-                    cpi->common.superres_scale_numerator /
-                    SUPERRES_SCALE_DENOMINATOR;
-}
-#endif  // CONFIG_FRAME_SUPERRES
-
 void av1_init_second_pass(AV1_COMP *cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
@@ -2291,12 +2270,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     twopass->section_intra_rating = calculate_section_intra_ratio(
         start_pos, twopass->stats_in_end, rc->baseline_gf_interval);
   }
-
-  if (oxcf->resize_mode == RESIZE_DYNAMIC) {
-    // Default to starting GF groups at normal frame size.
-    // TODO(afergs): Make a function for this
-    cpi->resize_next_scale_num = cpi->resize_next_scale_den;
-  }
 }
 
 // Threshold for use of the lagging second reference frame. High second ref
@@ -2638,12 +2611,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // The count of bits left is adjusted elsewhere based on real coded frame
   // sizes.
   twopass->modified_error_left -= kf_group_err;
-
-  if (oxcf->resize_mode == RESIZE_DYNAMIC) {
-    // Default to normal-sized frame on keyframes.
-    // TODO(afergs): Make a function for this
-    cpi->resize_next_scale_num = cpi->resize_next_scale_den;
-  }
 }
 
 // Define the reference buffers that will be updated post encode.
