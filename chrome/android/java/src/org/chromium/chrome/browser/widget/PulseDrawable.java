@@ -68,7 +68,7 @@ public class PulseDrawable extends Drawable implements Animatable {
         PulseDrawable.Painter painter = new PulseDrawable.Painter() {
             @Override
             public void modifyDrawable(PulseDrawable drawable, float interpolation) {
-                drawable.setAlpha((int) MathUtils.interpolate(12, 75, interpolation));
+                drawable.setAlpha((int) MathUtils.interpolate(12, 75, 1.f - interpolation));
             }
 
             @Override
