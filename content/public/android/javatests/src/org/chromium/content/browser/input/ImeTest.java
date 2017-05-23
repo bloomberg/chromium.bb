@@ -819,7 +819,6 @@ public class ImeTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/725532")
     @Feature({"TextInput", "Main"})
     public void testFinishComposingText() throws Throwable {
         mRule.focusElementAndWaitForStateUpdate("textarea");
@@ -1156,7 +1155,6 @@ public class ImeTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/725532")
     @Feature({"TextInput", "Main"})
     public void testNavigateTextWithDpadKeyCodes() throws Throwable {
         mRule.focusElementAndWaitForStateUpdate("textarea");
