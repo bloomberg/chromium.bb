@@ -231,6 +231,10 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   pane_layout->StartRow(0, 0);
   // This is owned by its parent. It's the container passed to FillContentView.
   content_view_ = new views::View;
+  content_view_->SetPaintToLayer();
+  content_view_->layer()->SetFillsBoundsOpaquely(true);
+  content_view_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorWHITE));
   pane_layout->AddView(content_view_);
   pane_->SizeToPreferredSize();
 
