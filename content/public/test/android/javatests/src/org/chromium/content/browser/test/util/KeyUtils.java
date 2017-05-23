@@ -98,7 +98,7 @@ public class KeyUtils {
                 }
             }
         });
-        i.waitForIdleSync();
+        if (!ThreadUtils.runningOnUiThread()) i.waitForIdleSync();
     }
 
     private static void dispatchKeyEventToActivity(final Instrumentation i, final Activity a,

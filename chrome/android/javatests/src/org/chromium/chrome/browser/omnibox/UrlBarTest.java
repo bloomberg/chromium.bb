@@ -17,6 +17,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.InputMethodManager;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,6 +66,43 @@ public class UrlBarTest {
             "data:text/plain,H"
             + new String(new char[9000]).replace('\0', 'u')
             + "ge!";
+
+    // Prevent real keyboard app from interfering with test result. After calling this function,
+    // real keyboard app will interact with null InputConnection while the test can still interact
+    // with BaseInputConnection's method and thus affects EditText's Editable through
+    // {@link UrlBar#getInputConnection()}. https://crbug.com/723901 for details.
+    private void startIgnoringImeUntilRestart(final UrlBar urlBar) {
+        urlBar.setIgnoreImeForTest(true);
+        InputMethodManager imm =
+                (InputMethodManager) mActivityTestRule.getActivity().getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
+        imm.restartInput(urlBar);
+    }
+
+    private void toggleFocusAndIgnoreImeOperations(final UrlBar urlBar, final boolean gainFocus) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                OmniboxTestUtils.toggleUrlBarFocus(urlBar, gainFocus);
+                if (gainFocus) startIgnoringImeUntilRestart(urlBar);
+            }
+        });
+    }
+
+    private void runInputConnectionMethodOnUiThreadBlocking(final Runnable runnable) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                UrlBar urlBar = getUrlBar();
+                // Note: in order for this to work correctly, the following conditions should be met
+                // 1) Unset and set ignoreImeForTest within one UI loop.
+                // 2) Do not restartInput() in between.
+                urlBar.setIgnoreImeForTest(false);
+                runnable.run();
+                urlBar.setIgnoreImeForTest(true);
+            }
+        });
+    }
 
     private UrlBar getUrlBar() {
         return (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -186,7 +224,7 @@ public class UrlBarTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         // Verify that setting a new string will clear the autocomplete.
         setTextAndVerifyNoAutocomplete(urlBar, "test");
@@ -269,9 +307,8 @@ public class UrlBarTest {
     public void testAutocompleteUpdatedOnSelection() throws InterruptedException, TimeoutException {
         mActivityTestRule.startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
-
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         // Verify that setting a selection before the autocomplete clears it.
         verifySelectionState("test", "ing is fun", 1, 1, false, "test", "test", true, "test");
@@ -354,7 +391,7 @@ public class UrlBarTest {
         setAutocompleteController(controller);
 
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -384,7 +421,7 @@ public class UrlBarTest {
 
         stubLocationBarAutocomplete();
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing");
@@ -404,8 +441,13 @@ public class UrlBarTest {
         };
         setAutocompleteController(controller);
 
-        KeyUtils.singleKeyEventView(
-                InstrumentationRegistry.getInstrumentation(), urlBar, KeyEvent.KEYCODE_DEL);
+        runInputConnectionMethodOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                KeyUtils.singleKeyEventView(
+                        InstrumentationRegistry.getInstrumentation(), urlBar, KeyEvent.KEYCODE_DEL);
+            }
+        });
 
         CriteriaHelper.pollUiThread(Criteria.equals("test", new Callable<String>() {
             @Override
@@ -427,7 +469,7 @@ public class UrlBarTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
@@ -477,7 +519,7 @@ public class UrlBarTest {
         setAutocompleteController(controller);
 
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
@@ -518,7 +560,7 @@ public class UrlBarTest {
         stubLocationBarAutocomplete();
 
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
         // Valid case (cursor at the end of text, single character, matches previous autocomplete).
@@ -594,7 +636,7 @@ public class UrlBarTest {
         stubLocationBarAutocomplete();
 
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
         setTextAndVerifyNoAutocomplete(urlBar, "a");
@@ -626,12 +668,12 @@ public class UrlBarTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
 
         // Verify that defocusing the UrlBar clears the autocomplete.
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
+        toggleFocusAndIgnoreImeOperations(urlBar, false);
         AutocompleteState state = getAutocompleteState(urlBar, null);
         Assert.assertFalse(state.hasAutocomplete);
     }
@@ -645,7 +687,7 @@ public class UrlBarTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
         setTextAndVerifyNoAutocomplete(urlBar, "test");
@@ -678,7 +720,7 @@ public class UrlBarTest {
         stubLocationBarAutocomplete();
 
         final UrlBar urlBar = getUrlBar();
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
         Assert.assertNotNull(urlBar.getInputConnection());
@@ -796,7 +838,7 @@ public class UrlBarTest {
 
         UrlBar urlBar = getUrlBar();
         Assert.assertNotNull(urlBar);
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
     }
 
@@ -806,7 +848,7 @@ public class UrlBarTest {
     @RetryOnFailure
     public void testCopyHuge() throws InterruptedException {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
-        OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
+        toggleFocusAndIgnoreImeOperations(getUrlBar(), true);
         Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
     }
 
@@ -816,7 +858,7 @@ public class UrlBarTest {
     @RetryOnFailure
     public void testCutHuge() throws InterruptedException {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
-        OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
+        toggleFocusAndIgnoreImeOperations(getUrlBar(), true);
         Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
     }
 
