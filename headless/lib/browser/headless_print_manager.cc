@@ -173,6 +173,31 @@ HeadlessPrintManager::GetPrintParamsFromSettings(
 bool HeadlessPrintManager::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+  if (!printing_rfh_ &&
+      (message.type() == PrintHostMsg_GetDefaultPrintSettings::ID ||
+       message.type() == PrintHostMsg_ScriptedPrint::ID)) {
+    std::string type;
+    switch (message.type()) {
+      case PrintHostMsg_GetDefaultPrintSettings::ID:
+        type = "GetDefaultPrintSettings";
+        break;
+      case PrintHostMsg_ScriptedPrint::ID:
+        type = "ScriptedPrint";
+        break;
+      default:
+        type = "Unknown";
+        break;
+    }
+    DLOG(ERROR)
+        << "Unexpected message received before GetPDFContents is called: "
+        << type;
+
+    // TODO: consider propagating the error back to the caller, rather than
+    // effectively dropping the request.
+    render_frame_host->Send(IPC::SyncMessage::GenerateReply(&message));
+    return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HeadlessPrintManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
@@ -233,12 +258,6 @@ void HeadlessPrintManager::OnDidGetPrintedPagesCount(int cookie,
 
 void HeadlessPrintManager::OnDidPrintPage(
     const PrintHostMsg_DidPrintPage_Params& params) {
-  if (!callback_) {
-    DLOG(ERROR)
-        << "Unexpected PrintHostMsg_DidPrintPage message from the renderer";
-    return;
-  }
-
   const bool metafile_must_be_valid = expecting_first_page_;
   expecting_first_page_ = false;
 
