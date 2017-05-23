@@ -40,6 +40,7 @@
 #if OS(MACOSX)
 #include "core/events/WheelEvent.h"
 #endif
+#include "core/dom/AXObject.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameTypes.h"
@@ -57,7 +58,6 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "modules/accessibility/AXObjectImpl.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBMetadata.h"
