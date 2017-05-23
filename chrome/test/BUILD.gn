@@ -117,7 +117,6 @@ static_library("test_support") {
     "//components/gcm_driver:test_support",
     "//components/gcm_driver/crypto:test_support",
     "//components/gcm_driver/instance_id:test_support",
-    "//components/guest_view/browser:test_support",
     "//components/history/core/test:test",
     "//components/infobars/core",
     "//components/metrics:test_support",
@@ -138,7 +137,6 @@ static_library("test_support") {
     "//components/toolbar:test_support",
     "//components/update_client:test_support",
     "//components/web_resource:test_support",
-    "//components/zoom:test_support",
     "//content/public/app:both",
     "//content/public/child",
     "//content/public/common",
@@ -182,12 +180,15 @@ static_library("test_support") {
       "base/test_browser_window.cc",
       "base/test_browser_window.h",
     ]
+  } else {
+    public_deps += [ "//components/zoom:test_support" ]
   }
 
   if (enable_extensions) {
     public_deps += [
       "//apps:test_support",
       "//chrome/common/extensions/api",
+      "//components/guest_view/browser:test_support",
       "//extensions:test_support",
     ]
   }

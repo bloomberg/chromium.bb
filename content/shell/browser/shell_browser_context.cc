@@ -123,10 +123,12 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   BrowserContext::Initialize(this, path_);
 }
 
+#if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath&) {
   return std::unique_ptr<ZoomLevelDelegate>();
 }
+#endif  // !defined(OS_ANDROID)
 
 base::FilePath ShellBrowserContext::GetPath() const {
   return path_;

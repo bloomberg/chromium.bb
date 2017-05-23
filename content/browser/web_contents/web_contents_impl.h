@@ -68,7 +68,6 @@ class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class DateTimeChooserAndroid;
 class FindRequestManager;
-class HostZoomMapObserver;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class LoaderIOThreadNotifier;
@@ -103,7 +102,9 @@ class CreateNewWindowParams;
 
 #if defined(OS_ANDROID)
 class WebContentsAndroid;
-#endif
+#else  // !defined(OS_ANDROID)
+class HostZoomMapObserver;
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PepperPlaybackObserver;
@@ -242,6 +243,7 @@ class CONTENT_EXPORT WebContentsImpl
   // bitmap.
   void AddAccessibilityMode(AccessibilityMode mode);
 
+#if !defined(OS_ANDROID)
   // Set a temporary zoom level for the frames associated with this WebContents.
   // If |is_temporary| is true, we are setting a new temporary zoom level,
   // otherwise we are clearing a previously set temporary zoom level.
@@ -256,6 +258,7 @@ class CONTENT_EXPORT WebContentsImpl
   void UpdateZoomIfNecessary(const std::string& scheme,
                              const std::string& host,
                              double level);
+#endif  // !defined(OS_ANDROID)
 
   // Adds a new binding set to the WebContents. Returns a closure which may be
   // used to remove the binding set at any time. The closure is safe to call
@@ -606,7 +609,9 @@ class CONTENT_EXPORT WebContentsImpl
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;
+#if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() override;
+#endif  // !defined(OS_ANDROID)
   FrameTree* GetFrameTree() override;
   void SetIsVirtualKeyboardRequested(bool requested) override;
   bool IsVirtualKeyboardRequested() override;
@@ -1560,13 +1565,17 @@ class CONTENT_EXPORT WebContentsImpl
   std::unique_ptr<PepperPlaybackObserver> pepper_playback_observer_;
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
+#if !defined(OS_ANDROID)
   std::unique_ptr<HostZoomMapObserver> host_zoom_map_observer_;
+#endif  // !defined(OS_ANDROID)
 
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 
   PageImportanceSignals page_importance_signals_;
 
+#if !defined(OS_ANDROID)
   bool page_scale_factor_is_one_;
+#endif  // !defined(OS_ANDROID)
 
   // TextInputManager tracks the IME-related state for all the
   // RenderWidgetHostViews on this WebContents. Only exists on the outermost

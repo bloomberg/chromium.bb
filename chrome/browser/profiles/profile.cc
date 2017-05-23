@@ -19,7 +19,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/sync/base/sync_prefs.h"
-#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
@@ -31,6 +30,10 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "content/public/browser/host_zoom_map.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -63,9 +66,11 @@ TestingProfile* Profile::AsTestingProfile() {
   return NULL;
 }
 
+#if !defined(OS_ANDROID)
 ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
   return NULL;
 }
+#endif  // !defined(OS_ANDROID)
 
 Profile::Delegate::~Delegate() {
 }
@@ -120,8 +125,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
 #endif
   registry->RegisterStringPref(prefs::kSelectFileLastDirectory, std::string());
+#if !defined(OS_ANDROID)
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
+#endif  // !defined(OS_ANDROID)
   registry->RegisterStringPref(prefs::kDefaultApps, "install");
   registry->RegisterBooleanPref(prefs::kSpeechRecognitionFilterProfanities,
                                 true);
@@ -246,8 +253,10 @@ bool ProfileCompare::operator()(Profile* a, Profile* b) const {
   return a->GetOriginalProfile() < b->GetOriginalProfile();
 }
 
+#if !defined(OS_ANDROID)
 double Profile::GetDefaultZoomLevelForProfile() {
   return GetDefaultStoragePartition(this)
       ->GetHostZoomMap()
       ->GetDefaultZoomLevel();
 }
+#endif  // !defined(OS_ANDROID)

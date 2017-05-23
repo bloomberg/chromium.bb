@@ -79,10 +79,12 @@ base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.GetPath();
 }
 
+#if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return std::unique_ptr<ZoomLevelDelegate>();
 }
+#endif  // !defined(OS_ANDROID)
 
 bool TestBrowserContext::IsOffTheRecord() const {
   return is_off_the_record_;

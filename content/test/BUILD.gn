@@ -634,7 +634,6 @@ test("content_browsertests") {
     "../browser/frame_host/render_widget_host_view_child_frame_browsertest.cc",
     "../browser/generic_sensor_browsertest.cc",
     "../browser/gpu/gpu_ipc_browsertests.cc",
-    "../browser/host_zoom_map_impl_browsertest.cc",
     "../browser/indexed_db/indexed_db_browsertest.cc",
     "../browser/indexed_db/mock_browsertest_indexed_db_class_factory.cc",
     "../browser/indexed_db/mock_browsertest_indexed_db_class_factory.h",
@@ -706,7 +705,6 @@ test("content_browsertests") {
     "../browser/webkit_browsertest.cc",
     "../browser/webui/web_ui_browsertest.cc",
     "../browser/webui/web_ui_mojo_browsertest.cc",
-    "../browser/zoom_browsertest.cc",
     "../child/site_isolation_stats_gatherer_browsertest.cc",
     "../renderer/accessibility/render_accessibility_impl_browsertest.cc",
     "../renderer/blink_platform_audio_hardware_browsertest.cc",
@@ -909,7 +907,11 @@ test("content_browsertests") {
     use_default_launcher = false
   } else {
     # Non-Android.
-    sources += [ "../browser/speech/speech_recognition_browsertest.cc" ]
+    sources += [
+      "../browser/host_zoom_map_impl_browsertest.cc",
+      "../browser/speech/speech_recognition_browsertest.cc",
+      "../browser/zoom_browsertest.cc",
+    ]
   }
 
   if (is_mac) {
@@ -1132,7 +1134,6 @@ test("content_unittests") {
     "../browser/gpu/gpu_data_manager_testing_autogen.h",
     "../browser/gpu/gpu_data_manager_testing_entry_enums_autogen.h",
     "../browser/gpu/gpu_data_manager_testing_exceptions_autogen.h",
-    "../browser/host_zoom_map_impl_unittest.cc",
     "../browser/indexed_db/indexed_db_active_blob_registry_unittest.cc",
     "../browser/indexed_db/indexed_db_backing_store_unittest.cc",
     "../browser/indexed_db/indexed_db_cleanup_on_io_error_unittest.cc",
@@ -1752,6 +1753,7 @@ test("content_unittests") {
   } else {
     # Non-Android.
     sources += [
+      "../browser/host_zoom_map_impl_unittest.cc",
       "../browser/speech/chunked_byte_buffer_unittest.cc",
       "../browser/speech/endpointer/endpointer_unittest.cc",
       "../browser/speech/speech_recognition_engine_unittest.cc",

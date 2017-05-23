@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/features/features.h"
@@ -25,6 +24,7 @@
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/guest_view/browser/guest_view_base.h"
 #include "extensions/browser/process_manager.h"
 #endif
 

@@ -16,9 +16,12 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
-#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+#if !defined(OS_ANDROID)
+#include "components/zoom/zoom_observer.h"
+#endif  // !defined(OS_ANDROID)
 
 namespace content {
 class WebContents;
@@ -32,8 +35,12 @@ class AutofillPopupControllerImpl;
 class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
-      public content::WebContentsObserver,
-      public zoom::ZoomObserver {
+      public content::WebContentsObserver
+#if !defined(OS_ANDROID)
+      ,
+      public zoom::ZoomObserver
+#endif  // !defined(OS_ANDROID)
+{
  public:
   ~ChromeAutofillClient() override;
 
@@ -88,9 +95,11 @@ class ChromeAutofillClient
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
 
+#if !defined(OS_ANDROID)
   // ZoomObserver implementation.
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
+#endif  // !defined(OS_ANDROID)
 
  private:
   explicit ChromeAutofillClient(content::WebContents* web_contents);
