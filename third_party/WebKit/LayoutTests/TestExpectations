@@ -3085,6 +3085,9 @@ crbug.com/715405 virtual/mojo-loading/http/tests/inspector/network/waterfall-ima
 crbug.com/714166 http/tests/inspector/network/waterfall-images.html [ Skip ]
 crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass ]
 
+crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ NeedsRebaseline ]
+crbug.com/646010 virtual/disable-spinvalidation/paint/selection/text-selection-newline-rtl-double-linebreak.html [ NeedsRebaseline ]
+
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/XMLHttpRequest/FormData-append.html [ Failure Pass ]
