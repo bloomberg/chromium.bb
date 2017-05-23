@@ -114,9 +114,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
       HasPaymentInstrumentCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void DidHasPaymentInstrument(int64_t registration_id,
-                               const std::string& instrument_key,
-                               DeletePaymentInstrumentCallback callback,
+  void DidHasPaymentInstrument(DeletePaymentInstrumentCallback callback,
                                const std::vector<std::string>& data,
                                ServiceWorkerStatusCode status);
 
