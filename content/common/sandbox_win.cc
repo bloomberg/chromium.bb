@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
@@ -583,6 +584,33 @@ bool IsAppContainerEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
+                                      sandbox::TargetPolicy* policy) {
+  DCHECK_NE(policy->GetJobLevel(), sandbox::JOB_NONE);
+
+#ifdef _WIN64
+  int64_t GB = 1024 * 1024 * 1024;
+  size_t memory_limit = 4 * GB;
+
+  // Note that this command line flag hasn't been fetched by all
+  // callers of SetJobLevel, only those in this file.
+  if (cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
+      switches::kGpuProcess) {
+    // Allow the GPU process's sandbox to access more physical memory if
+    // it's available on the system.
+    int64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
+    if (physical_memory > 16 * GB) {
+      memory_limit = 16 * GB;
+    } else if (physical_memory > 8 * GB) {
+      memory_limit = 8 * GB;
+    }
+  }
+  return policy->SetJobMemoryLimit(memory_limit);
+#else
+  return sandbox::SBOX_ALL_OK;
+#endif
+}
+
 }  // namespace
 
 sandbox::ResultCode SetJobLevel(const base::CommandLine& cmd_line,
@@ -592,13 +620,11 @@ sandbox::ResultCode SetJobLevel(const base::CommandLine& cmd_line,
   if (!ShouldSetJobLevel(cmd_line))
     return policy->SetJobLevel(sandbox::JOB_NONE, 0);
 
-#ifdef _WIN64
-  sandbox::ResultCode ret =
-      policy->SetJobMemoryLimit(4ULL * 1024 * 1024 * 1024);
+  sandbox::ResultCode ret = policy->SetJobLevel(job_level, ui_exceptions);
   if (ret != sandbox::SBOX_ALL_OK)
     return ret;
-#endif
-  return policy->SetJobLevel(job_level, ui_exceptions);
+
+  return SetJobMemoryLimit(cmd_line, policy);
 }
 
 // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
