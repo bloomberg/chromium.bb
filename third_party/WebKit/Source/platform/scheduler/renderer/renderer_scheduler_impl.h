@@ -408,7 +408,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void AddQueueToWakeUpBudgetPool(TaskQueue* queue);
 
   void RecordTaskMetrics(TaskQueue::QueueType queue_type,
-                         base::TimeDelta duration);
+                         base::TimeTicks start_time,
+                         base::TimeTicks end_time);
 
   void RecordTaskDurationPerQueueType(TaskQueue::QueueType queue_type,
                                       base::TimeDelta duration);

@@ -59164,6 +59164,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.BackgroundRendererMainThreadLoad" units="%">
+  <obsolete>
+    Replaced with RendererScheduler.BackgroundRendererMainThreadLoad2 as of May
+    2017.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     Renderer main thread load when renderer is backgrounded, i.e. percentage of
@@ -59172,6 +59176,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This metric is emitted when the renderer main thread task is completed or
     renderer is backgrounded or foregrounded, at most once per minute per
     renderer amortized.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.BackgroundRendererMainThreadLoad2" units="%">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Renderer main thread load when renderer is backgrounded, i.e. percentage of
+    time spent on running tasks.
+
+    This metric is emitted when the renderer main thread task is completed or
+    renderer is backgrounded or foregrounded, at most once per minute per
+    renderer amortized.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
   </summary>
 </histogram>
 
@@ -59185,6 +59204,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.ForegroundRendererMainThreadLoad" units="%">
+  <obsolete>
+    Replaced with RendererScheduler.ForegroundRendererMainThreadLoad2 as of May
+    2017.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     Renderer main thread load when renderer is foregrounded, i.e. percentage of
@@ -59196,8 +59219,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.ForegroundRendererMainThreadLoad2" units="%">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Renderer main thread load when renderer is foregrounded, i.e. percentage of
+    time spent on running tasks.
+
+    This metric is emitted when the renderer main thread task is completed or
+    renderer is backgrounded or foregrounded, at most once per minute per
+    renderer amortized.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.NumberOfTasksPerQueueType"
     enum="RendererSchedulerTaskQueueType">
+  <obsolete>
+    Replaced with RendererScheduler.NumberOfTasksPerQueueType2 as of May 2017.
+  </obsolete>
   <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per task queue type. Used to
@@ -59206,7 +59247,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.NumberOfTasksPerQueueType2"
+    enum="RendererSchedulerTaskQueueType">
+  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <summary>
+    The number of completed renderer tasks split per task queue type. Used to
+    monitor usage of each type of task queue. Reported each time when task is
+    completed.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskDurationPerQueueType"
+    enum="RendererSchedulerTaskQueueType" units="ms">
+  <obsolete>
+    Replaced with RendererScheduler.TaskDurationPerQueueType2 as of May 2017.
+  </obsolete>
+  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <summary>
+    Total duration of renderer tasks split per task queue type. Used to monitor
+    usage of each type of task queues. Reported each time when task is completed
+    and current accumulated duration is longer than 1ms.
+
+    This metric is susceptible to problematic outliers and should be analyzed
+    with custom scripts accounting for that rather than from a dashboard.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.TaskDurationPerQueueType2"
     enum="RendererSchedulerTaskQueueType" units="ms">
   <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
   <summary>
@@ -59216,6 +59286,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This metric is susceptible to problematic outliers and should be analyzed
     with custom scripts accounting for that rather than from a dashboard.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
   </summary>
 </histogram>
 
@@ -59241,11 +59314,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.TaskTime" units="microseconds">
+  <obsolete>
+    Replaced with RendererScheduler.TaskTime2 as of May 2017.
+  </obsolete>
   <owner>sunyunjia@chromium.org</owner>
   <owner>tdresser@chromium.org</owner>
   <summary>
     The duration of every task queued in the _renderer_ scheduler to see the
     distribution of the task duration.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.TaskTime2" units="microseconds">
+  <owner>sunyunjia@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    The duration of every task queued in the _renderer_ scheduler to see the
+    distribution of the task duration.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
   </summary>
 </histogram>
 
