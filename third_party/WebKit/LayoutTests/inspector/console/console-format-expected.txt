@@ -104,7 +104,7 @@ CONSOLE MESSAGE: line 12: test
 CONSOLE MESSAGE: line 13: test
 Tests that console logging dumps proper messages.
 
-console-format.html:22 Array(10)
+ console-format.html:22 Array(10)
 console-format.html:23 Array(10)
 console-format.html:24 Array(10)
 console-format.html:25 Test for zero "0" in formatter
