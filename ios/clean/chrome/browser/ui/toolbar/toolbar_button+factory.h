@@ -29,6 +29,8 @@
 + (instancetype)reloadToolbarButton;
 // Stop ToolbarButton.
 + (instancetype)stopToolbarButton;
+// Star ToolbarButton.
++ (instancetype)starToolbarButton;
 
 @end
 

@@ -28,8 +28,6 @@ source_set("toolbar") {
 
 source_set("toolbar_ui") {
   sources = [
-    "toolbar_constants.h",
-    "toolbar_constants.mm",
     "toolbar_consumer.h",
     "toolbar_view_controller.h",
     "toolbar_view_controller.mm",
@@ -54,6 +52,8 @@ source_set("toolbar_components_ui") {
     "toolbar_button.h",
     "toolbar_button.mm",
     "toolbar_component_options.h",
+    "toolbar_constants.h",
+    "toolbar_constants.mm",
   ]
   deps = [
     "//base",
