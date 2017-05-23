@@ -80,19 +80,21 @@ class ScopedAddListenerObserver : public EventRouter::Observer {
         callback_(callback),
         event_router_(EventRouter::EventRouter::Get(profile)) {
     DCHECK(profile);
-    DCHECK(event_router_);
     event_router_->RegisterObserver(this, event_name);
   }
 
-  ~ScopedAddListenerObserver() { event_router_->UnregisterObserver(this); }
+  ~ScopedAddListenerObserver() override {
+    event_router_->UnregisterObserver(this);
+  }
 
   // EventRouter::Observer overrides.
   void OnListenerAdded(const EventListenerInfo& details) override {
     // Call the callback only once, as the listener may be added multiple times.
-    if (details.extension_id == extension_id_ && !callback_.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback_);
-      callback_ = base::Closure();
-    }
+    if (details.extension_id != extension_id_ || !callback_)
+      return;
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::ResetAndReturn(&callback_));
   }
 
  private:

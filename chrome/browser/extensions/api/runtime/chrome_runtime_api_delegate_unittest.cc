@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
@@ -45,9 +46,8 @@ class TestEventRouter : public EventRouter {
   using Entry = std::pair<std::string, std::string>;
 
   bool ExtensionHasEventListener(const std::string& extension_id,
-                                 const std::string& event_name) override {
-    return fake_registry_.find(Entry(extension_id, event_name)) !=
-           fake_registry_.end();
+                                 const std::string& event_name) const override {
+    return base::ContainsKey(fake_registry_, Entry(extension_id, event_name));
   }
 
   // Pretend that |extension_id| is listening for |event_name|.
@@ -160,15 +160,15 @@ class UpdateCheckResultCatcher {
 
   void OnResult(const RuntimeAPIDelegate::UpdateCheckResult& result) {
     EXPECT_EQ(nullptr, result_.get());
-    result_.reset(new RuntimeAPIDelegate::UpdateCheckResult(
-        result.success, result.response, result.version));
+    result_ = base::MakeUnique<RuntimeAPIDelegate::UpdateCheckResult>(
+        result.success, result.response, result.version);
     if (run_loop_)
       run_loop_->Quit();
   }
 
   std::unique_ptr<RuntimeAPIDelegate::UpdateCheckResult> WaitForResult() {
     if (!result_) {
-      run_loop_.reset(new base::RunLoop);
+      run_loop_ = base::MakeUnique<base::RunLoop>();
       run_loop_->Run();
     }
     return std::move(result_);
@@ -191,14 +191,15 @@ class ChromeRuntimeAPIDelegateTest : public ExtensionServiceTestWithInstall {
     ChromeRuntimeAPIDelegate::set_tick_clock_for_tests(&clock_);
 
     InitializeExtensionServiceWithUpdater();
-    runtime_delegate_.reset(new ChromeRuntimeAPIDelegate(browser_context()));
+    runtime_delegate_ =
+        base::MakeUnique<ChromeRuntimeAPIDelegate>(browser_context());
     service()->updater()->SetExtensionCacheForTesting(nullptr);
     EventRouterFactory::GetInstance()->SetTestingFactory(
         browser_context(), &TestEventRouterFactoryFunction);
 
     // Setup the ExtensionService so that extension updates won't complete
     // installation until the extension is idle.
-    update_install_gate_.reset(new UpdateInstallGate(service()));
+    update_install_gate_ = base::MakeUnique<UpdateInstallGate>(service());
     service()->RegisterInstallGate(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    update_install_gate_.get());
     static_cast<TestExtensionSystem*>(ExtensionSystem::Get(browser_context()))
