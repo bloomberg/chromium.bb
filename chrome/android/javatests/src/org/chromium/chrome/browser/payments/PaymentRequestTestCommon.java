@@ -338,6 +338,31 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         });
     }
 
+    protected String getSelectedPaymentInstrumentLabel() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                OptionSection section = ((OptionSection) mUI.getPaymentMethodSectionForTest());
+                int size = section.getNumberOfOptionLabelsForTest();
+                for (int i = 0; i < size; i++) {
+                    if (section.getOptionRowAtIndex(i).isChecked()) {
+                        return section.getOptionRowAtIndex(i).getLabelText().toString();
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    protected String getOrderSummaryTotal() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return mUI.getOrderSummaryTotalTextViewForTest().getText().toString();
+            }
+        });
+    }
+
     protected String getContactDetailsSuggestionLabel(final int suggestionIndex)
             throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {

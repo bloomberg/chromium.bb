@@ -1360,6 +1360,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @VisibleForTesting
+    public TextView getOrderSummaryTotalTextViewForTest() {
+        return mOrderSummarySection.getSummaryRightTextView();
+    }
+
+    @VisibleForTesting
     public ViewGroup getShippingAddressSectionForTest() {
         return mShippingAddressSection;
     }
