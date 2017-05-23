@@ -272,7 +272,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Find) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Attributes) {
+// TODO(crbug.com/725420) Flaky
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_Attributes) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "attributes.html"))
       << message_;
