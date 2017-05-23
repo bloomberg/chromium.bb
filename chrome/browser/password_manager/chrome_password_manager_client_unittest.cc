@@ -85,10 +85,10 @@ class MockPasswordProtectionService
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD2(IsPingingEnabled, bool(const base::Feature&, RequestOutcome*));
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
-  MOCK_METHOD3(MaybeStartPasswordFieldOnFocusRequest,
-               void(const GURL&, const GURL&, const GURL&));
-  MOCK_METHOD2(MaybeStartProtectedPasswordEntryRequest,
-               void(const GURL&, const std::string&));
+  MOCK_METHOD4(MaybeStartPasswordFieldOnFocusRequest,
+               void(WebContents*, const GURL&, const GURL&, const GURL&));
+  MOCK_METHOD3(MaybeStartProtectedPasswordEntryRequest,
+               void(WebContents*, const GURL&, const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);
@@ -619,7 +619,7 @@ TEST_F(ChromePasswordManagerClientTest,
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
   EXPECT_CALL(*client->password_protection_service(),
-              MaybeStartPasswordFieldOnFocusRequest(_, _, _))
+              MaybeStartPasswordFieldOnFocusRequest(_, _, _, _))
       .Times(1);
   client->CheckSafeBrowsingReputation(GURL("http://foo.com/submit"),
                                       GURL("http://foo.com/iframe.html"));
@@ -633,7 +633,7 @@ TEST_F(ChromePasswordManagerClientTest,
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
   EXPECT_CALL(*client->password_protection_service(),
-              MaybeStartProtectedPasswordEntryRequest(_, _))
+              MaybeStartProtectedPasswordEntryRequest(_, _, _))
       .Times(1);
   client->CheckProtectedPasswordEntry(std::string("saved_domain.com"));
 }

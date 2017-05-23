@@ -7,7 +7,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/safe_browsing_db/database_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -15,10 +15,12 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace safe_browsing {
 
 PasswordProtectionRequest::PasswordProtectionRequest(
+    WebContents* web_contents,
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
@@ -26,13 +28,13 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     LoginReputationClientRequest::TriggerType type,
     PasswordProtectionService* pps,
     int request_timeout_in_ms)
-    : main_frame_url_(main_frame_url),
+    : web_contents_(web_contents),
+      main_frame_url_(main_frame_url),
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
       saved_domain_(saved_domain),
       request_type_(type),
       password_protection_service_(pps),
-      database_manager_(password_protection_service_->database_manager()),
       request_timeout_in_ms_(request_timeout_in_ms),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -50,9 +52,7 @@ void PasswordProtectionRequest::Start() {
 void PasswordProtectionRequest::CheckWhitelistOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool* match_whitelist = new bool(false);
-  // TODO(jialiul): Move CheckCsdWhitelistOnIOThread to
-  // PasswordProtectionRequest class, since PasswordProtectionService no longer
-  // need it.
+
   tracker_.PostTaskAndReply(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
       base::Bind(&PasswordProtectionService::CheckCsdWhitelistOnIOThread,

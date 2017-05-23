@@ -27409,6 +27409,7 @@ from previous Chrome versions.
   <int value="11" label="Service destroyed"/>
   <int value="12" label="Disabled due to feature disabled"/>
   <int value="13" label="Disabled due to user population"/>
+  <int value="14" label="URL not valid for reputation computing"/>
 </enum>
 
 <enum name="PasswordProtectionVerdict" type="int">
