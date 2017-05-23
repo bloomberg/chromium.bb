@@ -12,6 +12,12 @@ function firstPartLoaded()
         assert_true(internals.isLoading(url), "The image should be loading before window.stop().");
     }
     window.stop();
+
+    // We emulate window load event to signal testharness.js that we don't
+    // have to wait for window load event (that will never occur because
+    // we've called window.stop()) before test completes.
+    dispatchEvent(new Event('load'));
+
     window.setTimeout(t.step_func(function() {
         if (window.internals) {
             assert_false(internals.isLoading(url), "The image should not be loading after window.stop().");
