@@ -491,6 +491,14 @@ class Document::NetworkStateObserver final
   DEFINE_INLINE_VIRTUAL_TRACE() { ContextLifecycleObserver::Trace(visitor); }
 };
 
+Document* Document::Create(const Document& document) {
+  Document* new_document = new Document(
+      DocumentInit::FromContext(const_cast<Document*>(&document), BlankURL()));
+  new_document->SetSecurityOrigin(document.GetSecurityOrigin());
+  new_document->SetContextFeatures(document.GetContextFeatures());
+  return new_document;
+}
+
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(0, kCreateDocument),

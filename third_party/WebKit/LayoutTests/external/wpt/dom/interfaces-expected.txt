@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1570 tests; 1440 PASS, 130 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1570 tests; 1565 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Event interface: existence and properties of interface object 
 PASS Event interface object length 
@@ -260,131 +260,131 @@ PASS Document interface: operation prepend([object Object],[object Object])
 PASS Document interface: operation append([object Object],[object Object]) 
 PASS Document interface: operation querySelector(DOMString) 
 PASS Document interface: operation querySelectorAll(DOMString) 
-FAIL Document interface: new Document() must inherit property "implementation" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "URL" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "documentURI" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "origin" with the proper type (3) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "compatMode" with the proper type (4) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "characterSet" with the proper type (5) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "charset" with the proper type (6) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "inputEncoding" with the proper type (7) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "contentType" with the proper type (8) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "doctype" with the proper type (9) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "documentElement" with the proper type (10) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "getElementsByTagName" with the proper type (11) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling getElementsByTagName(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "getElementsByTagNameNS" with the proper type (12) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling getElementsByTagNameNS(DOMString,DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "getElementsByClassName" with the proper type (13) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling getElementsByClassName(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createElement" with the proper type (14) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createElement(DOMString,ElementCreationOptions) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createElementNS" with the proper type (15) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createElementNS(DOMString,DOMString,ElementCreationOptions) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createDocumentFragment" with the proper type (16) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createTextNode" with the proper type (17) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createTextNode(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createCDATASection" with the proper type (18) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createCDATASection(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createComment" with the proper type (19) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createComment(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createProcessingInstruction" with the proper type (20) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createProcessingInstruction(DOMString,DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "importNode" with the proper type (21) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling importNode(Node,boolean) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "adoptNode" with the proper type (22) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling adoptNode(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createAttribute" with the proper type (23) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createAttribute(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createAttributeNS" with the proper type (24) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createAttributeNS(DOMString,DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createEvent" with the proper type (25) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createEvent(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createRange" with the proper type (26) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createNodeIterator" with the proper type (27) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createNodeIterator(Node,unsigned long,NodeFilter) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "createTreeWalker" with the proper type (28) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling createTreeWalker(Node,unsigned long,NodeFilter) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "getElementById" with the proper type (29) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling getElementById(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "children" with the proper type (30) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "firstElementChild" with the proper type (31) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "lastElementChild" with the proper type (32) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "childElementCount" with the proper type (33) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "prepend" with the proper type (34) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling prepend([object Object],[object Object]) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "append" with the proper type (35) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling append([object Object],[object Object]) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "querySelector" with the proper type (36) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling querySelector(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "querySelectorAll" with the proper type (37) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: calling querySelectorAll(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "ELEMENT_NODE" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "ATTRIBUTE_NODE" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "TEXT_NODE" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "CDATA_SECTION_NODE" with the proper type (3) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "ENTITY_REFERENCE_NODE" with the proper type (4) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "ENTITY_NODE" with the proper type (5) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "PROCESSING_INSTRUCTION_NODE" with the proper type (6) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "COMMENT_NODE" with the proper type (7) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_NODE" with the proper type (8) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_TYPE_NODE" with the proper type (9) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_FRAGMENT_NODE" with the proper type (10) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "NOTATION_NODE" with the proper type (11) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "nodeType" with the proper type (12) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "nodeName" with the proper type (13) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "baseURI" with the proper type (14) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "isConnected" with the proper type (15) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "ownerDocument" with the proper type (16) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "getRootNode" with the proper type (17) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling getRootNode(GetRootNodeOptions) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "parentNode" with the proper type (18) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "parentElement" with the proper type (19) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "hasChildNodes" with the proper type (20) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "childNodes" with the proper type (21) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "firstChild" with the proper type (22) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "lastChild" with the proper type (23) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "previousSibling" with the proper type (24) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "nextSibling" with the proper type (25) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "nodeValue" with the proper type (26) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "textContent" with the proper type (27) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "normalize" with the proper type (28) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "cloneNode" with the proper type (29) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling cloneNode(boolean) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "isEqualNode" with the proper type (30) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling isEqualNode(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "isSameNode" with the proper type (31) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling isSameNode(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_POSITION_DISCONNECTED" with the proper type (32) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_POSITION_PRECEDING" with the proper type (33) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_POSITION_FOLLOWING" with the proper type (34) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_POSITION_CONTAINS" with the proper type (35) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_POSITION_CONTAINED_BY" with the proper type (36) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC" with the proper type (37) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "compareDocumentPosition" with the proper type (38) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling compareDocumentPosition(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "contains" with the proper type (39) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling contains(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "lookupPrefix" with the proper type (40) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling lookupPrefix(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "lookupNamespaceURI" with the proper type (41) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling lookupNamespaceURI(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "isDefaultNamespace" with the proper type (42) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling isDefaultNamespace(DOMString) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "insertBefore" with the proper type (43) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling insertBefore(Node,Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "appendChild" with the proper type (44) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling appendChild(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "replaceChild" with the proper type (45) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling replaceChild(Node,Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: new Document() must inherit property "removeChild" with the proper type (46) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Node interface: calling removeChild(Node) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL EventTarget interface: new Document() must inherit property "addEventListener" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL EventTarget interface: calling addEventListener(DOMString,EventListener,[object Object],[object Object]) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL EventTarget interface: new Document() must inherit property "removeEventListener" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL EventTarget interface: calling removeEventListener(DOMString,EventListener,[object Object],[object Object]) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL EventTarget interface: new Document() must inherit property "dispatchEvent" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL EventTarget interface: calling dispatchEvent(Event) on new Document() with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
+PASS Document interface: new Document() must inherit property "implementation" with the proper type (0) 
+PASS Document interface: new Document() must inherit property "URL" with the proper type (1) 
+PASS Document interface: new Document() must inherit property "documentURI" with the proper type (2) 
+PASS Document interface: new Document() must inherit property "origin" with the proper type (3) 
+PASS Document interface: new Document() must inherit property "compatMode" with the proper type (4) 
+PASS Document interface: new Document() must inherit property "characterSet" with the proper type (5) 
+PASS Document interface: new Document() must inherit property "charset" with the proper type (6) 
+PASS Document interface: new Document() must inherit property "inputEncoding" with the proper type (7) 
+PASS Document interface: new Document() must inherit property "contentType" with the proper type (8) 
+PASS Document interface: new Document() must inherit property "doctype" with the proper type (9) 
+PASS Document interface: new Document() must inherit property "documentElement" with the proper type (10) 
+PASS Document interface: new Document() must inherit property "getElementsByTagName" with the proper type (11) 
+PASS Document interface: calling getElementsByTagName(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "getElementsByTagNameNS" with the proper type (12) 
+PASS Document interface: calling getElementsByTagNameNS(DOMString,DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "getElementsByClassName" with the proper type (13) 
+PASS Document interface: calling getElementsByClassName(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createElement" with the proper type (14) 
+PASS Document interface: calling createElement(DOMString,ElementCreationOptions) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createElementNS" with the proper type (15) 
+PASS Document interface: calling createElementNS(DOMString,DOMString,ElementCreationOptions) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createDocumentFragment" with the proper type (16) 
+PASS Document interface: new Document() must inherit property "createTextNode" with the proper type (17) 
+PASS Document interface: calling createTextNode(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createCDATASection" with the proper type (18) 
+PASS Document interface: calling createCDATASection(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createComment" with the proper type (19) 
+PASS Document interface: calling createComment(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createProcessingInstruction" with the proper type (20) 
+PASS Document interface: calling createProcessingInstruction(DOMString,DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "importNode" with the proper type (21) 
+PASS Document interface: calling importNode(Node,boolean) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "adoptNode" with the proper type (22) 
+PASS Document interface: calling adoptNode(Node) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createAttribute" with the proper type (23) 
+PASS Document interface: calling createAttribute(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createAttributeNS" with the proper type (24) 
+PASS Document interface: calling createAttributeNS(DOMString,DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createEvent" with the proper type (25) 
+PASS Document interface: calling createEvent(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createRange" with the proper type (26) 
+PASS Document interface: new Document() must inherit property "createNodeIterator" with the proper type (27) 
+PASS Document interface: calling createNodeIterator(Node,unsigned long,NodeFilter) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "createTreeWalker" with the proper type (28) 
+PASS Document interface: calling createTreeWalker(Node,unsigned long,NodeFilter) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "getElementById" with the proper type (29) 
+PASS Document interface: calling getElementById(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "children" with the proper type (30) 
+PASS Document interface: new Document() must inherit property "firstElementChild" with the proper type (31) 
+PASS Document interface: new Document() must inherit property "lastElementChild" with the proper type (32) 
+PASS Document interface: new Document() must inherit property "childElementCount" with the proper type (33) 
+PASS Document interface: new Document() must inherit property "prepend" with the proper type (34) 
+PASS Document interface: calling prepend([object Object],[object Object]) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "append" with the proper type (35) 
+PASS Document interface: calling append([object Object],[object Object]) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "querySelector" with the proper type (36) 
+PASS Document interface: calling querySelector(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Document interface: new Document() must inherit property "querySelectorAll" with the proper type (37) 
+PASS Document interface: calling querySelectorAll(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "ELEMENT_NODE" with the proper type (0) 
+PASS Node interface: new Document() must inherit property "ATTRIBUTE_NODE" with the proper type (1) 
+PASS Node interface: new Document() must inherit property "TEXT_NODE" with the proper type (2) 
+PASS Node interface: new Document() must inherit property "CDATA_SECTION_NODE" with the proper type (3) 
+PASS Node interface: new Document() must inherit property "ENTITY_REFERENCE_NODE" with the proper type (4) 
+PASS Node interface: new Document() must inherit property "ENTITY_NODE" with the proper type (5) 
+PASS Node interface: new Document() must inherit property "PROCESSING_INSTRUCTION_NODE" with the proper type (6) 
+PASS Node interface: new Document() must inherit property "COMMENT_NODE" with the proper type (7) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_NODE" with the proper type (8) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_TYPE_NODE" with the proper type (9) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_FRAGMENT_NODE" with the proper type (10) 
+PASS Node interface: new Document() must inherit property "NOTATION_NODE" with the proper type (11) 
+PASS Node interface: new Document() must inherit property "nodeType" with the proper type (12) 
+PASS Node interface: new Document() must inherit property "nodeName" with the proper type (13) 
+PASS Node interface: new Document() must inherit property "baseURI" with the proper type (14) 
+PASS Node interface: new Document() must inherit property "isConnected" with the proper type (15) 
+PASS Node interface: new Document() must inherit property "ownerDocument" with the proper type (16) 
+PASS Node interface: new Document() must inherit property "getRootNode" with the proper type (17) 
+PASS Node interface: calling getRootNode(GetRootNodeOptions) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "parentNode" with the proper type (18) 
+PASS Node interface: new Document() must inherit property "parentElement" with the proper type (19) 
+PASS Node interface: new Document() must inherit property "hasChildNodes" with the proper type (20) 
+PASS Node interface: new Document() must inherit property "childNodes" with the proper type (21) 
+PASS Node interface: new Document() must inherit property "firstChild" with the proper type (22) 
+PASS Node interface: new Document() must inherit property "lastChild" with the proper type (23) 
+PASS Node interface: new Document() must inherit property "previousSibling" with the proper type (24) 
+PASS Node interface: new Document() must inherit property "nextSibling" with the proper type (25) 
+PASS Node interface: new Document() must inherit property "nodeValue" with the proper type (26) 
+PASS Node interface: new Document() must inherit property "textContent" with the proper type (27) 
+PASS Node interface: new Document() must inherit property "normalize" with the proper type (28) 
+PASS Node interface: new Document() must inherit property "cloneNode" with the proper type (29) 
+PASS Node interface: calling cloneNode(boolean) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "isEqualNode" with the proper type (30) 
+PASS Node interface: calling isEqualNode(Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "isSameNode" with the proper type (31) 
+PASS Node interface: calling isSameNode(Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "DOCUMENT_POSITION_DISCONNECTED" with the proper type (32) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_POSITION_PRECEDING" with the proper type (33) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_POSITION_FOLLOWING" with the proper type (34) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_POSITION_CONTAINS" with the proper type (35) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_POSITION_CONTAINED_BY" with the proper type (36) 
+PASS Node interface: new Document() must inherit property "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC" with the proper type (37) 
+PASS Node interface: new Document() must inherit property "compareDocumentPosition" with the proper type (38) 
+PASS Node interface: calling compareDocumentPosition(Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "contains" with the proper type (39) 
+PASS Node interface: calling contains(Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "lookupPrefix" with the proper type (40) 
+PASS Node interface: calling lookupPrefix(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "lookupNamespaceURI" with the proper type (41) 
+PASS Node interface: calling lookupNamespaceURI(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "isDefaultNamespace" with the proper type (42) 
+PASS Node interface: calling isDefaultNamespace(DOMString) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "insertBefore" with the proper type (43) 
+PASS Node interface: calling insertBefore(Node,Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "appendChild" with the proper type (44) 
+PASS Node interface: calling appendChild(Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "replaceChild" with the proper type (45) 
+PASS Node interface: calling replaceChild(Node,Node) on new Document() with too few arguments must throw TypeError 
+PASS Node interface: new Document() must inherit property "removeChild" with the proper type (46) 
+PASS Node interface: calling removeChild(Node) on new Document() with too few arguments must throw TypeError 
+PASS EventTarget interface: new Document() must inherit property "addEventListener" with the proper type (0) 
+PASS EventTarget interface: calling addEventListener(DOMString,EventListener,[object Object],[object Object]) on new Document() with too few arguments must throw TypeError 
+PASS EventTarget interface: new Document() must inherit property "removeEventListener" with the proper type (1) 
+PASS EventTarget interface: calling removeEventListener(DOMString,EventListener,[object Object],[object Object]) on new Document() with too few arguments must throw TypeError 
+PASS EventTarget interface: new Document() must inherit property "dispatchEvent" with the proper type (2) 
+PASS EventTarget interface: calling dispatchEvent(Event) on new Document() with too few arguments must throw TypeError 
 PASS XMLDocument interface: existence and properties of interface object 
 PASS XMLDocument interface object length 
 PASS XMLDocument interface object name 
