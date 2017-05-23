@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/base64url.h"
+#include "base/big_endian.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "crypto/random.h"
@@ -21,6 +23,7 @@ namespace {
 const char kExamplePlaintext[] = "Example plaintext";
 
 // Expected sizes of the different input given to the cryptographer.
+constexpr size_t kUncompressedPointSize = 65;
 constexpr size_t kEcdhSharedSecretSize = 32;
 constexpr size_t kAuthSecretSize = 16;
 constexpr size_t kSaltSize = 16;
@@ -80,7 +83,7 @@ const unsigned char kCommonAuthSecret[] = {0x25, 0xF2, 0xC2, 0xB8, 0x19, 0xD8,
 static_assert(arraysize(kCommonAuthSecret) == 16,
               "Auth secrets must be 16 bytes in size.");
 
-// Test vectors containing reference input for draft-ietf-webpush-encryption-03
+// Test vectors containing reference input for draft-ietf-webpush-encryption
 // that was created using an separate JavaScript implementation of the draft.
 struct TestVector {
   const char* const input;
@@ -114,6 +117,30 @@ const TestVector kEncryptionTestVectorsDraft03[] = {
       0x9D, 0x28, 0xF3, 0x73},
      4096,
      "8s-Tzq8Cn_eobL6uEcNDXL7K"}};
+
+const TestVector kEncryptionTestVectorsDraft08[] = {
+    // Simple message.
+    {"Hello, world!",
+     {0x0B, 0x32, 0xE2, 0xD1, 0x6A, 0xBF, 0x4F, 0x2C, 0x49, 0xEA, 0xF7,
+      0x5D, 0x71, 0x7D, 0x89, 0xA9, 0xA7, 0x5E, 0x21, 0xB2, 0xB5, 0x51,
+      0xE6, 0x4C, 0x08, 0x68, 0xD3, 0x6F, 0x8F, 0x72, 0x7E, 0x14},
+     {0xD3, 0xF2, 0x78, 0xBD, 0x8D, 0xDD, 0x84, 0x99, 0x66, 0x08, 0xD7, 0x0F,
+      0xBA, 0x9B, 0x60, 0xFC},
+     {0x15, 0x4A, 0xD7, 0x73, 0x92, 0xBD, 0x3B, 0xCF, 0x6F, 0x98, 0xDC, 0x9B,
+      0x8B, 0x56, 0xFB, 0xBD},
+     4096,
+     "3biYN3Aa30D30bKJMdGlEyYPrz7Wg293NYc31rb6"},
+    // Empty message.
+    {"",
+     {0x3F, 0xD8, 0x95, 0x2C, 0xA2, 0x11, 0xBD, 0x7B, 0x57, 0xB2, 0x00,
+      0xBD, 0x57, 0x68, 0x3F, 0xF0, 0x14, 0x57, 0x5F, 0xB1, 0x9F, 0x15,
+      0x4F, 0x11, 0xF0, 0x4D, 0xA2, 0xE8, 0x4C, 0xEA, 0x74, 0x3B},
+     {0xB1, 0xE1, 0xC7, 0x32, 0x4C, 0xAA, 0x56, 0x32, 0x68, 0x20, 0x0F, 0x26,
+      0x3F, 0x48, 0x4D, 0x99},
+     {0xE9, 0x39, 0x45, 0xBC, 0x96, 0x96, 0x88, 0x76, 0xFC, 0xA1, 0xAD, 0xE4,
+      0x9D, 0x28, 0xF3, 0x73},
+     4096,
+     "5OXY345WYPyIvsF7hx4swuA"}};
 
 const TestVector kDecryptionTestVectorsDraft03[] = {
     // Simple message.
@@ -183,14 +210,46 @@ const TestVector kDecryptionTestVectorsDraft03[] = {
      8,
      nullptr}};
 
+const TestVector kDecryptionTestVectorsDraft08[] = {
+    // Simple message.
+    {"baIDPDv-Do_x1RVtlFDex2uCvd3Ugrv-gJG3sWeg",
+     {0x4D, 0x3A, 0x6C, 0xBA, 0xD8, 0x1D, 0x8E, 0x68, 0x8B, 0xE6, 0x76,
+      0xA7, 0xFF, 0x60, 0xC7, 0xFE, 0x77, 0xE2, 0x6D, 0x37, 0xF6, 0x12,
+      0x44, 0xE2, 0x25, 0xFE, 0xE1, 0xD8, 0xCF, 0x8A, 0xA8, 0x33},
+     {0x62, 0x36, 0xAC, 0xCA, 0x74, 0xD4, 0x49, 0x49, 0x6B, 0x27, 0xB4, 0xF7,
+      0xC1, 0xE5, 0x30, 0x9A},
+     {0x1C, 0xA7, 0xFD, 0x98, 0x1A, 0xE4, 0xA7, 0x92, 0xE1, 0xB6, 0xA1, 0xE3,
+      0x41, 0x63, 0x87, 0x76},
+     4096,
+     "Hello, world!"},
+    // Simple message with 16 bytes of padding.
+    {"6Zq7GKQ7zRxeOWoYR71Nx7xJzCZUUNhz6bhV1-ZIg6dVra0x1uWXms5gHp6F6A",
+     {0x8B, 0x38, 0x8E, 0x22, 0xD5, 0xC4, 0xFD, 0x65, 0x8A, 0xBB, 0xD9,
+      0x58, 0xBD, 0xF5, 0xFF, 0x79, 0xCF, 0x9D, 0xBD, 0x87, 0x16, 0x7E,
+      0x93, 0x84, 0x20, 0x8E, 0x8D, 0x49, 0x41, 0x7D, 0x8E, 0x8F},
+     {0x3E, 0x65, 0xC7, 0x1F, 0x75, 0x7A, 0x43, 0xC4, 0x78, 0x6C, 0x64, 0x99,
+      0x49, 0xA0, 0xC4, 0xB2},
+     {0x43, 0x4D, 0x30, 0x8E, 0xE4, 0x76, 0xB5, 0xD0, 0x87, 0xFC, 0x04, 0xD1,
+      0x2E, 0x35, 0x75, 0x63},
+     4096,
+     "Hello, world!"},
+    // Empty message.
+    {"bHU7ponA7WAGB0onUybG9nQ",
+     {0x68, 0x72, 0x3D, 0x13, 0xE7, 0x50, 0xFA, 0x3E, 0xA0, 0x59, 0x33,
+      0xF1, 0x73, 0xA8, 0xE8, 0xCD, 0x8D, 0xD4, 0x3C, 0xDC, 0xDE, 0x06,
+      0x35, 0x5F, 0x51, 0xBB, 0xB2, 0x57, 0x97, 0x72, 0x9D, 0xFB},
+     {0x84, 0xB2, 0x2A, 0xE7, 0xC6, 0xC0, 0xCE, 0x5F, 0xAD, 0x37, 0x06, 0x7F,
+      0xD1, 0xFD, 0x10, 0x87},
+     {0x9B, 0xC5, 0x8D, 0x5F, 0xD6, 0xD2, 0xA6, 0xBD, 0xAF, 0x4B, 0xD9, 0x60,
+      0xC6, 0xB4, 0x50, 0x0F},
+     4096,
+     ""}};
+
 }  // namespace
 
-class GCMMessageCryptographerTest : public ::testing::Test {
+class GCMMessageCryptographerTestBase : public ::testing::Test {
  public:
   void SetUp() override {
-    cryptographer_ = base::MakeUnique<GCMMessageCryptographer>(
-        GCMMessageCryptographer::Version::DRAFT_03);
-
     recipient_public_key_.assign(
         kCommonRecipientPublicKey,
         kCommonRecipientPublicKey + arraysize(kCommonRecipientPublicKey));
@@ -218,15 +277,6 @@ class GCMMessageCryptographerTest : public ::testing::Test {
   }
 
  protected:
-  // Generates a cryptographically secure random salt of 16-octets in size, the
-  // required length as expected by the HKDF.
-  std::string GenerateRandomSalt() {
-    std::string salt;
-
-    crypto::RandBytes(base::WriteInto(&salt, kSaltSize + 1), kSaltSize);
-    return salt;
-  }
-
   // Public keys of the recipient and sender as uncompressed P-256 EC points.
   std::string recipient_public_key_;
   std::string sender_public_key_;
@@ -236,12 +286,33 @@ class GCMMessageCryptographerTest : public ::testing::Test {
 
   // Authentication secret to use in tests where no specific value is expected.
   std::string auth_secret_;
+};
+
+class GCMMessageCryptographerTest
+    : public GCMMessageCryptographerTestBase,
+      public testing::WithParamInterface<GCMMessageCryptographer::Version> {
+ public:
+  void SetUp() override {
+    GCMMessageCryptographerTestBase::SetUp();
+
+    cryptographer_ = base::MakeUnique<GCMMessageCryptographer>(GetParam());
+  }
+
+ protected:
+  // Generates a cryptographically secure random salt of 16-octets in size, the
+  // required length as expected by the HKDF.
+  std::string GenerateRandomSalt() {
+    std::string salt;
+
+    crypto::RandBytes(base::WriteInto(&salt, kSaltSize + 1), kSaltSize);
+    return salt;
+  }
 
   // The GCMMessageCryptographer instance to use for the tests.
   std::unique_ptr<GCMMessageCryptographer> cryptographer_;
 };
 
-TEST_F(GCMMessageCryptographerTest, RoundTrip) {
+TEST_P(GCMMessageCryptographerTest, RoundTrip) {
   const std::string salt = GenerateRandomSalt();
 
   size_t record_size = 0;
@@ -261,7 +332,7 @@ TEST_F(GCMMessageCryptographerTest, RoundTrip) {
   EXPECT_EQ(kExamplePlaintext, plaintext);
 }
 
-TEST_F(GCMMessageCryptographerTest, RoundTripEmptyMessage) {
+TEST_P(GCMMessageCryptographerTest, RoundTripEmptyMessage) {
   const std::string salt = GenerateRandomSalt();
   const std::string message = "";
 
@@ -282,7 +353,7 @@ TEST_F(GCMMessageCryptographerTest, RoundTripEmptyMessage) {
   EXPECT_EQ(message, plaintext);
 }
 
-TEST_F(GCMMessageCryptographerTest, InvalidRecordSize) {
+TEST_P(GCMMessageCryptographerTest, InvalidRecordSize) {
   const std::string salt = GenerateRandomSalt();
 
   size_t record_size = 0;
@@ -307,21 +378,36 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordSize) {
       auth_secret_, salt, ciphertext, ciphertext.size() - 16, &plaintext));
 }
 
-TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
-  std::string message = std::string(sizeof(uint16_t), '\0') + kExamplePlaintext;
+TEST_P(GCMMessageCryptographerTest, InvalidRecordPadding) {
+  std::string message;
+  switch (GetParam()) {
+    case GCMMessageCryptographer::Version::DRAFT_03:
+      message.append(sizeof(uint8_t), '\00');  // padding length octets
+      message.append(sizeof(uint8_t), '\01');
+
+      message.append(sizeof(uint8_t), '\00');  // padding octet
+      message.append(kExamplePlaintext);
+      break;
+    case GCMMessageCryptographer::Version::DRAFT_08:
+      message.append(kExamplePlaintext);
+      message.append(sizeof(uint8_t), '\x02');  // padding delimiter octet
+      message.append(sizeof(uint8_t), '\x00');  // padding octet
+      break;
+  }
 
   const std::string salt = GenerateRandomSalt();
 
   const std::string prk =
       cryptographer_->encryption_scheme_->DerivePseudoRandomKey(
-          ecdh_shared_secret_, auth_secret_);
+          recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
+          auth_secret_);
   const std::string content_encryption_key =
       cryptographer_->DeriveContentEncryptionKey(recipient_public_key_,
                                                  sender_public_key_, prk, salt);
   const std::string nonce = cryptographer_->DeriveNonce(
       recipient_public_key_, sender_public_key_, prk, salt);
 
-  ASSERT_GT(message.size(), 1u);
+  ASSERT_GT(message.size(), 2u);
   const size_t record_size = message.size() + 1;
 
   std::string ciphertext, plaintext;
@@ -336,36 +422,67 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
   // Note that GCMMessageCryptographer::Decrypt removes the padding.
   EXPECT_EQ(kExamplePlaintext, plaintext);
 
-  // Now run the same steps again, but say that there are four padding octets.
-  // This should be rejected because the padding will not be all zeros.
-  message[0] = 4;
+  // Now run the same steps again, but have invalid padding length indicators.
+  // (Only applicable to draft-ietf-webpush-encryption-03.)
+  if (GetParam() == GCMMessageCryptographer::Version::DRAFT_03) {
+    // Padding that will spill over in the payload.
+    {
+      message[1] = 4;
 
-  ASSERT_TRUE(cryptographer_->TransformRecord(
-      GCMMessageCryptographer::Direction::ENCRYPT, message,
-      content_encryption_key, nonce, &ciphertext));
+      ASSERT_TRUE(cryptographer_->TransformRecord(
+          GCMMessageCryptographer::Direction::ENCRYPT, message,
+          content_encryption_key, nonce, &ciphertext));
 
-  ASSERT_FALSE(cryptographer_->Decrypt(
-      recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
-      auth_secret_, salt, ciphertext, record_size, &plaintext));
+      ASSERT_FALSE(cryptographer_->Decrypt(
+          recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
+          auth_secret_, salt, ciphertext, record_size, &plaintext));
+    }
 
-  // Do the same but changing the second octet indicating padding size, leaving
-  // the first octet at zero.
-  message[0] = 0;
-  message[1] = 4;
+    // More padding octets than the length of the message.
+    {
+      message[1] = 64;
 
-  ASSERT_TRUE(cryptographer_->TransformRecord(
-      GCMMessageCryptographer::Direction::ENCRYPT, message,
-      content_encryption_key, nonce, &ciphertext));
+      ASSERT_TRUE(cryptographer_->TransformRecord(
+          GCMMessageCryptographer::Direction::ENCRYPT, message,
+          content_encryption_key, nonce, &ciphertext));
 
-  ASSERT_FALSE(cryptographer_->Decrypt(
-      recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
-      auth_secret_, salt, ciphertext, record_size, &plaintext));
+      ASSERT_FALSE(cryptographer_->Decrypt(
+          recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
+          auth_secret_, salt, ciphertext, record_size, &plaintext));
+    }
 
-  // Run the same steps again, but say that there are more padding octets than
-  // the length of the message.
-  message[0] = 64;
+    // Correct the |message| to be valid again. (A single byte of padding.)
+    message[1] = 1;
+  }
 
-  EXPECT_GT(static_cast<size_t>(message[0]), message.size());
+  // Run tests for a missing delimiter in the record.
+  // (Only applicable to draft-ietf-webpush-encryption-03.)
+  if (GetParam() == GCMMessageCryptographer::Version::DRAFT_08) {
+    message[message.size() - 2] = 0x00;
+
+    ASSERT_TRUE(cryptographer_->TransformRecord(
+        GCMMessageCryptographer::Direction::ENCRYPT, message,
+        content_encryption_key, nonce, &ciphertext));
+
+    ASSERT_FALSE(cryptographer_->Decrypt(
+        recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
+        auth_secret_, salt, ciphertext, record_size, &plaintext));
+
+    // Correct the |message| to be valid again. (Proper padding delimiter.)
+    message[message.size() - 2] = 0x02;
+  }
+
+  // Finally run a test to make sure that we validate that all padding bytes are
+  // set to zeros. The position of the padding byte depends on the version.
+  switch (GetParam()) {
+    case GCMMessageCryptographer::Version::DRAFT_03:
+      message[2] = 0x13;
+      break;
+    case GCMMessageCryptographer::Version::DRAFT_08:
+      message[message.size() - 1] = 0x13;
+      break;
+  }
+
   ASSERT_TRUE(cryptographer_->TransformRecord(
       GCMMessageCryptographer::Direction::ENCRYPT, message,
       content_encryption_key, nonce, &ciphertext));
@@ -375,7 +492,7 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
       auth_secret_, salt, ciphertext, record_size, &plaintext));
 }
 
-TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsPRK) {
+TEST_P(GCMMessageCryptographerTest, AuthSecretAffectsPRK) {
   std::string first_auth_secret, second_auth_secret;
 
   crypto::RandBytes(base::WriteInto(&first_auth_secret, kAuthSecretSize + 1),
@@ -384,9 +501,11 @@ TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsPRK) {
                     kAuthSecretSize);
 
   ASSERT_NE(cryptographer_->encryption_scheme_->DerivePseudoRandomKey(
-                ecdh_shared_secret_, first_auth_secret),
+                recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
+                first_auth_secret),
             cryptographer_->encryption_scheme_->DerivePseudoRandomKey(
-                ecdh_shared_secret_, second_auth_secret));
+                recipient_public_key_, sender_public_key_, ecdh_shared_secret_,
+                second_auth_secret));
 
   std::string salt = GenerateRandomSalt();
 
@@ -426,10 +545,19 @@ TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsPRK) {
   EXPECT_EQ(kExamplePlaintext, second_plaintext);
 }
 
+INSTANTIATE_TEST_CASE_P(
+    GCMMessageCryptographerTestBase,
+    GCMMessageCryptographerTest,
+    ::testing::Values(GCMMessageCryptographer::Version::DRAFT_03,
+                      GCMMessageCryptographer::Version::DRAFT_08));
+
 class GCMMessageCryptographerTestVectorTest
-    : public GCMMessageCryptographerTest {};
+    : public GCMMessageCryptographerTestBase {};
 
 TEST_F(GCMMessageCryptographerTestVectorTest, EncryptionVectorsDraft03) {
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Version::DRAFT_03);
+
   std::string ecdh_shared_secret, auth_secret, salt, ciphertext, output;
   size_t record_size = 0;
 
@@ -448,10 +576,10 @@ TEST_F(GCMMessageCryptographerTestVectorTest, EncryptionVectorsDraft03) {
     salt.assign(kEncryptionTestVectorsDraft03[i].salt,
                 kEncryptionTestVectorsDraft03[i].salt + kSaltSize);
 
-    ASSERT_TRUE(cryptographer_->Encrypt(
-        recipient_public_key_, sender_public_key_, ecdh_shared_secret,
-        auth_secret, salt, kEncryptionTestVectorsDraft03[i].input, &record_size,
-        &ciphertext));
+    ASSERT_TRUE(cryptographer.Encrypt(recipient_public_key_, sender_public_key_,
+                                      ecdh_shared_secret, auth_secret, salt,
+                                      kEncryptionTestVectorsDraft03[i].input,
+                                      &record_size, &ciphertext));
 
     base::Base64UrlEncode(ciphertext, base::Base64UrlEncodePolicy::OMIT_PADDING,
                           &output);
@@ -462,6 +590,9 @@ TEST_F(GCMMessageCryptographerTestVectorTest, EncryptionVectorsDraft03) {
 }
 
 TEST_F(GCMMessageCryptographerTestVectorTest, DecryptionVectorsDraft03) {
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Version::DRAFT_03);
+
   std::string input, ecdh_shared_secret, auth_secret, salt, plaintext;
   for (size_t i = 0; i < arraysize(kDecryptionTestVectorsDraft03); ++i) {
     SCOPED_TRACE(i);
@@ -483,7 +614,7 @@ TEST_F(GCMMessageCryptographerTestVectorTest, DecryptionVectorsDraft03) {
                 kDecryptionTestVectorsDraft03[i].salt + kSaltSize);
 
     const bool has_output = kDecryptionTestVectorsDraft03[i].output;
-    const bool result = cryptographer_->Decrypt(
+    const bool result = cryptographer.Decrypt(
         recipient_public_key_, sender_public_key_, ecdh_shared_secret,
         auth_secret, salt, input, kDecryptionTestVectorsDraft03[i].record_size,
         &plaintext);
@@ -498,16 +629,93 @@ TEST_F(GCMMessageCryptographerTestVectorTest, DecryptionVectorsDraft03) {
   }
 }
 
+TEST_F(GCMMessageCryptographerTestVectorTest, EncryptionVectorsDraft08) {
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Version::DRAFT_08);
+
+  std::string ecdh_shared_secret, auth_secret, salt, ciphertext, output;
+  size_t record_size = 0;
+
+  for (size_t i = 0; i < arraysize(kEncryptionTestVectorsDraft08); ++i) {
+    SCOPED_TRACE(i);
+
+    ecdh_shared_secret.assign(
+        kEncryptionTestVectorsDraft08[i].ecdh_shared_secret,
+        kEncryptionTestVectorsDraft08[i].ecdh_shared_secret +
+            kEcdhSharedSecretSize);
+
+    auth_secret.assign(
+        kEncryptionTestVectorsDraft08[i].auth_secret,
+        kEncryptionTestVectorsDraft08[i].auth_secret + kAuthSecretSize);
+
+    salt.assign(kEncryptionTestVectorsDraft08[i].salt,
+                kEncryptionTestVectorsDraft08[i].salt + kSaltSize);
+
+    ASSERT_TRUE(cryptographer.Encrypt(recipient_public_key_, sender_public_key_,
+                                      ecdh_shared_secret, auth_secret, salt,
+                                      kEncryptionTestVectorsDraft08[i].input,
+                                      &record_size, &ciphertext));
+
+    base::Base64UrlEncode(ciphertext, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                          &output);
+
+    EXPECT_EQ(kEncryptionTestVectorsDraft08[i].record_size, record_size);
+    EXPECT_EQ(kEncryptionTestVectorsDraft08[i].output, output);
+  }
+}
+
+TEST_F(GCMMessageCryptographerTestVectorTest, DecryptionVectorsDraft08) {
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Version::DRAFT_08);
+
+  std::string input, ecdh_shared_secret, auth_secret, salt, plaintext;
+
+  for (size_t i = 0; i < arraysize(kDecryptionTestVectorsDraft08); ++i) {
+    SCOPED_TRACE(i);
+
+    ASSERT_TRUE(base::Base64UrlDecode(
+        kDecryptionTestVectorsDraft08[i].input,
+        base::Base64UrlDecodePolicy::IGNORE_PADDING, &input));
+
+    ecdh_shared_secret.assign(
+        kDecryptionTestVectorsDraft08[i].ecdh_shared_secret,
+        kDecryptionTestVectorsDraft08[i].ecdh_shared_secret +
+            kEcdhSharedSecretSize);
+
+    auth_secret.assign(
+        kDecryptionTestVectorsDraft08[i].auth_secret,
+        kDecryptionTestVectorsDraft08[i].auth_secret + kAuthSecretSize);
+
+    salt.assign(kDecryptionTestVectorsDraft08[i].salt,
+                kDecryptionTestVectorsDraft08[i].salt + kSaltSize);
+
+    const bool has_output = kDecryptionTestVectorsDraft08[i].output;
+    const bool result = cryptographer.Decrypt(
+        recipient_public_key_, sender_public_key_, ecdh_shared_secret,
+        auth_secret, salt, input, kDecryptionTestVectorsDraft08[i].record_size,
+        &plaintext);
+
+    if (!has_output) {
+      EXPECT_FALSE(result);
+      continue;
+    }
+
+    EXPECT_TRUE(result);
+    EXPECT_EQ(kDecryptionTestVectorsDraft08[i].output, plaintext);
+  }
+}
+
 class GCMMessageCryptographerReferenceTest : public ::testing::Test {
  protected:
   // Computes the shared secret between the sender and the receiver. The sender
   // must have a key-pair containing a X.509 SubjectPublicKeyInfo block and a
   // ASN.1-encoded PKCS #8 EncryptedPrivateKeyInfo block, whereas the receiver
   // must have a public key in uncompressed EC point format.
-  void ComputeSharedSecret(const char* encoded_sender_private_key,
-                           const char* encoded_sender_public_key_x509,
-                           const char* encoded_receiver_public_key,
-                           std::string* shared_secret) const {
+  void ComputeSharedSecret(
+      const base::StringPiece& encoded_sender_private_key,
+      const base::StringPiece& encoded_sender_public_key_x509,
+      const base::StringPiece& encoded_receiver_public_key,
+      std::string* shared_secret) const {
     std::string sender_private_key, sender_public_key_x509, receiver_public_key;
     ASSERT_TRUE(base::Base64UrlDecode(
         encoded_sender_private_key,
@@ -613,6 +821,144 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft03) {
                                     ciphertext, record_size, &plaintext));
 
   ASSERT_EQ(kPlaintext, plaintext);
+}
+
+// Reference test included for the Version::DRAFT_08 implementation.
+// https://tools.ietf.org/html/draft-ietf-webpush-encryption-08
+// https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-07
+TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
+  // The 16-byte prearranged secret between the sender and receiver.
+  const char kAuthSecret[] = "BTBZMqHH6r4Tts7J_aSIgg";
+
+  // The keying material used by the sender to encrypt the |kCiphertext|.
+  const char kSenderPrivate[] =
+      "MIGxMBwGCiqGSIb3DQEMAQMwDgQIScUGT5GSrLoCAggABIGQMr4LCZNVg8uqAo5MSUrI5cCV"
+      "AyQzjG7jdSXooDx_yPXgwMskoNzKhBXIG0AZF7MBimdXFTg_wlv38empWRr_-x4fnQiIBKya"
+      "pt6uBOfYVuE_nnhqudqvSxiiv6hikBvxS2zabgph8-vFPQG10uUv8xkAO6vPdtTABCUzCXQU"
+      "p1QmuP471ZdaNAMuCPmxry-C";
+  const char kSenderPublicX509[] =
+      "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE_jP0qw3qcZFNtVgj9ztUlI9BMG2SBzLbuaWa"
+      "UyhkgiAOWXp7e8JguhwieZhYCZLpOXMALzASooro8Gu7eOXsDw";
+
+  // The keying material used by the recipient to decrypt the |kCiphertext|.
+  const char kRecipientPrivate[] =
+      "MIGxMBwGCiqGSIb3DQEMAQMwDgQIFMj5PQ6zlvwCAggABIGQfr9ZUZd5kr5Wf3AnThoNI8mr"
+      "V3dkpfaKWc725soIIny8V1l_-8AkfbsisM7VpEmZMWKhjSoCKtq970vb-27xUGUCtxy6Mhij"
+      "r4suUqirpM1noA1oKd0O0ap7_zHG4X6j2iA-4UPC0T4lSIscgmRZJWKQeA_7U0pUfryhTolM"
+      "o175tTl399amT66tOGI2wn3O";
+  const char kRecipientPublicKeyUncompressed[] =
+      "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZ"
+      "GH6SRpkNtoIAiw4";
+  const char kRecipientPublicX509[] =
+      "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJXGyvs3942BVGq8e0PTNNmwRzr5VX4m8t7GG"
+      "pTM5FzFo7OLr4BhZe9MEebhuPI-OztV3ylkYfpJGmQ22ggCLDg";
+
+  // The plain text of the message, as well as the encrypted reference message.
+  const char kPlaintext[] = "When I grow up, I want to be a watermelon";
+  const char kReferenceMessage[] =
+      "DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_"
+      "c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_"
+      "yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_"
+      "Qulcy4a-fN";
+
+  std::string message;
+  ASSERT_TRUE(base::Base64UrlDecode(kReferenceMessage,
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &message));
+
+  // TODO(peter): Break out the following in a separate message parser class so
+  // that it can be reused by the GCMEncryptionProvider (on the receiving path)
+  // and the gcm_crypto_test_helpers.cc file (on the sending path) too.
+  //
+  // The message contains a binary header in the following format:
+  //     [ salt(16) | record_size(4) | sender_public_key_len(1) |
+  //       sender_public_key(sender_public_key_len) ]
+  //
+  // For Web Push Encryption, which uses a P-256 sender key as uncompressed
+  // P-256 EC points, the length of the sender key is 65 bytes, making the
+  // total, fixed length of the header 86 bytes.
+  //
+  // The regular AEAD_AES_128_GCM ciphertext follows immediately after this. The
+  // minimum overhead for a single record is 18 bytes. This means that an
+  // incoming message must be at least 104 bytes in size.
+  ASSERT_GE(message.size(), 104u);
+
+  const char* current = &message.front();
+
+  uint32_t record_size;
+  uint8_t sender_public_key_length;
+
+  base::StringPiece salt(current, kSaltSize);
+  current += kSaltSize;
+
+  base::ReadBigEndian(current, &record_size);
+  current += sizeof(record_size);
+
+  base::ReadBigEndian(current, &sender_public_key_length);
+  current += sizeof(sender_public_key_length);
+
+  ASSERT_EQ(sender_public_key_length, kUncompressedPointSize);
+
+  base::StringPiece sender_public_key(current, sender_public_key_length);
+  current += sender_public_key_length;
+
+  base::StringPiece ciphertext(
+      current, message.size() - kSaltSize - sizeof(record_size) -
+                   sizeof(sender_public_key_length) - sender_public_key_length);
+
+  std::string sender_shared_secret, receiver_shared_secret;
+
+  // Compute the shared secrets between the sender and receiver's keys.
+  ASSERT_NO_FATAL_FAILURE(ComputeSharedSecret(kSenderPrivate, kSenderPublicX509,
+                                              kRecipientPublicKeyUncompressed,
+                                              &sender_shared_secret));
+
+  // Compute the shared secret based on the sender's public key, which isn't a
+  // constant but instead is included in the message's binary header.
+  std::string sender_private_key, sender_public_key_x509;
+  ASSERT_TRUE(base::Base64UrlDecode(kRecipientPrivate,
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &sender_private_key));
+  ASSERT_TRUE(base::Base64UrlDecode(kRecipientPublicX509,
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &sender_public_key_x509));
+
+  ASSERT_TRUE(ComputeSharedP256Secret(sender_private_key,
+                                      sender_public_key_x509, sender_public_key,
+                                      &receiver_shared_secret));
+
+  ASSERT_GT(sender_shared_secret.size(), 0u);
+  ASSERT_EQ(sender_shared_secret, receiver_shared_secret);
+
+  // Decode the public keys of both parties and the auth secret.
+  std::string recipient_public_key, auth_secret;
+  ASSERT_TRUE(base::Base64UrlDecode(kRecipientPublicKeyUncompressed,
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &recipient_public_key));
+  ASSERT_TRUE(base::Base64UrlDecode(
+      kAuthSecret, base::Base64UrlDecodePolicy::IGNORE_PADDING, &auth_secret));
+
+  // Attempt to decrypt the message using a GCMMessageCryptographer for this
+  // version of the draft, and then re-encrypt it agian to make sure it matches.
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Version::DRAFT_08);
+
+  std::string plaintext;
+
+  ASSERT_TRUE(cryptographer.Decrypt(recipient_public_key, sender_public_key,
+                                    sender_shared_secret, auth_secret, salt,
+                                    ciphertext, record_size, &plaintext));
+  ASSERT_EQ(kPlaintext, plaintext);
+
+  size_t record_size2;
+  std::string ciphertext2;
+
+  ASSERT_TRUE(cryptographer.Encrypt(recipient_public_key, sender_public_key,
+                                    sender_shared_secret, auth_secret, salt,
+                                    kPlaintext, &record_size2, &ciphertext2));
+
+  EXPECT_GE(record_size2, record_size);
+  EXPECT_EQ(ciphertext2, ciphertext);
 }
 
 }  // namespace gcm

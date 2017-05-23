@@ -51,12 +51,18 @@ class WebPushEncryptionDraft03
 
   // GCMMessageCryptographer::EncryptionScheme implementation.
   std::string DerivePseudoRandomKey(
+      const base::StringPiece& /* recipient_public_key */,
+      const base::StringPiece& /* sender_public_key */,
       const base::StringPiece& ecdh_shared_secret,
       const base::StringPiece& auth_secret) override {
-    std::stringstream info_stream;
-    info_stream << "Content-Encoding: auth" << '\x00';
+    const char kInfo[] = "Content-Encoding: auth";
 
-    crypto::HKDF hkdf(ecdh_shared_secret, auth_secret, info_stream.str(),
+    std::string info;
+    info.reserve(sizeof(kInfo) + 1);
+    info.append(kInfo);
+    info.append(1, '\0');
+
+    crypto::HKDF hkdf(ecdh_shared_secret, auth_secret, info,
                       32, /* key_bytes_to_generate */
                       0,  /* iv_bytes_to_generate */
                       0 /* subkey_secret_bytes_to_generate */);
@@ -123,6 +129,19 @@ class WebPushEncryptionDraft03
     return record;
   }
 
+  // The |ciphertext| must be at least of size kAuthenticationTagBytes with two
+  // padding bytes, which is the case for an empty message with zero padding.
+  // The |record_size| must be large enough to use only one record.
+  // https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-03#section-2
+  bool ValidateCiphertextSize(size_t ciphertext_size,
+                              size_t record_size) override {
+    return ciphertext_size >=
+               sizeof(uint16_t) +
+                   GCMMessageCryptographer::kAuthenticationTagBytes &&
+           ciphertext_size <=
+               record_size + GCMMessageCryptographer::kAuthenticationTagBytes;
+  }
+
   // The record padding in draft-ietf-webpush-encryption-03 is included at the
   // beginning of the record. The first two bytes indicate the length of the
   // padding. All padding bytes immediately follow, and must be set to zero.
@@ -157,6 +176,118 @@ class WebPushEncryptionDraft03
   DISALLOW_COPY_AND_ASSIGN(WebPushEncryptionDraft03);
 };
 
+// Implementation of draft 08 of the Web Push Encryption standard:
+// https://tools.ietf.org/html/draft-ietf-webpush-encryption-08
+// https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-07
+class WebPushEncryptionDraft08
+    : public GCMMessageCryptographer::EncryptionScheme {
+ public:
+  WebPushEncryptionDraft08() = default;
+  ~WebPushEncryptionDraft08() override = default;
+
+  // GCMMessageCryptographer::EncryptionScheme implementation.
+  std::string DerivePseudoRandomKey(
+      const base::StringPiece& recipient_public_key,
+      const base::StringPiece& sender_public_key,
+      const base::StringPiece& ecdh_shared_secret,
+      const base::StringPiece& auth_secret) override {
+    DCHECK_EQ(recipient_public_key.size(), 65u);
+    DCHECK_EQ(sender_public_key.size(), 65u);
+
+    const char kInfo[] = "WebPush: info";
+
+    std::string info;
+    info.reserve(sizeof(kInfo) + 1 + 65 + 65);
+    info.append(kInfo);
+    info.append(1, '\0');
+
+    recipient_public_key.AppendToString(&info);
+    sender_public_key.AppendToString(&info);
+
+    crypto::HKDF hkdf(ecdh_shared_secret, auth_secret, info,
+                      32, /* key_bytes_to_generate */
+                      0,  /* iv_bytes_to_generate */
+                      0 /* subkey_secret_bytes_to_generate */);
+
+    return hkdf.client_write_key().as_string();
+  }
+
+  // The info string used for generating the content encryption key and the
+  // nonce was simplified in draft-ietf-webpush-encryption-08, because the
+  // public keys of both the recipient and the sender are now in the PRK.
+  std::string GenerateInfoForContentEncoding(
+      EncodingType type,
+      const base::StringPiece& /* recipient_public_key */,
+      const base::StringPiece& /* sender_public_key */) override {
+    std::stringstream info_stream;
+    info_stream << "Content-Encoding: ";
+
+    switch (type) {
+      case EncodingType::CONTENT_ENCRYPTION_KEY:
+        info_stream << "aes128gcm";
+        break;
+      case EncodingType::NONCE:
+        info_stream << "nonce";
+        break;
+    }
+
+    info_stream << '\x00';
+    return info_stream.str();
+  }
+
+  // draft-ietf-webpush-encryption-08 defines that the padding follows the
+  // plaintext of a message. A delimiter byte (0x02 for the final record) will
+  // be added, and then zero or more bytes of padding.
+  //
+  // TODO(peter): Add support for message padding if the GCMMessageCryptographer
+  // starts encrypting payloads for reasons other than testing.
+  std::string CreateRecord(const base::StringPiece& plaintext) override {
+    std::string record;
+    record.reserve(plaintext.size() + sizeof(uint8_t));
+    plaintext.AppendToString(&record);
+
+    record.append(sizeof(uint8_t), '\x02');
+    return record;
+  }
+
+  // The |ciphertext| must be at least of size kAuthenticationTagBytes with one
+  // padding delimiter, which is the case for an empty message with minimal
+  // padding. The |record_size| must be large enough to use only one record.
+  // https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-08#section-2
+  bool ValidateCiphertextSize(size_t ciphertext_size,
+                              size_t record_size) override {
+    return ciphertext_size >=
+               sizeof(uint8_t) +
+                   GCMMessageCryptographer::kAuthenticationTagBytes &&
+           ciphertext_size <=
+               record_size + GCMMessageCryptographer::kAuthenticationTagBytes;
+  }
+
+  // The record padding in draft-ietf-webpush-encryption-08 is included at the
+  // end of the record. The length is not defined, but all padding bytes must be
+  // zero until the delimiter (0x02) is found.
+  bool ValidateAndRemovePadding(base::StringPiece& record) override {
+    DCHECK_GE(record.size(), 1u);
+
+    size_t padding_length = 1;
+    for (; padding_length <= record.size(); ++padding_length) {
+      size_t offset = record.size() - padding_length;
+
+      if (record[offset] == 0x02 /* padding delimiter octet */)
+        break;
+
+      if (record[offset] != 0x00 /* valid padding byte */)
+        return false;
+    }
+
+    record.remove_suffix(padding_length);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebPushEncryptionDraft08);
+};
+
 }  // namespace
 
 const size_t GCMMessageCryptographer::kAuthenticationTagBytes = 16;
@@ -166,6 +297,9 @@ GCMMessageCryptographer::GCMMessageCryptographer(Version version) {
   switch (version) {
     case Version::DRAFT_03:
       encryption_scheme_ = base::MakeUnique<WebPushEncryptionDraft03>();
+      return;
+    case Version::DRAFT_08:
+      encryption_scheme_ = base::MakeUnique<WebPushEncryptionDraft08>();
       return;
   }
 
@@ -192,7 +326,7 @@ bool GCMMessageCryptographer::Encrypt(
   DCHECK(ciphertext);
 
   std::string prk = encryption_scheme_->DerivePseudoRandomKey(
-      ecdh_shared_secret, auth_secret);
+      recipient_public_key, sender_public_key, ecdh_shared_secret, auth_secret);
 
   std::string content_encryption_key = DeriveContentEncryptionKey(
       recipient_public_key, sender_public_key, prk, salt);
@@ -235,7 +369,7 @@ bool GCMMessageCryptographer::Decrypt(
     return false;
 
   std::string prk = encryption_scheme_->DerivePseudoRandomKey(
-      ecdh_shared_secret, auth_secret);
+      recipient_public_key, sender_public_key, ecdh_shared_secret, auth_secret);
 
   std::string content_encryption_key = DeriveContentEncryptionKey(
       recipient_public_key, sender_public_key, prk, salt);
@@ -243,12 +377,8 @@ bool GCMMessageCryptographer::Decrypt(
   std::string nonce =
       DeriveNonce(recipient_public_key, sender_public_key, prk, salt);
 
-  // The |ciphertext| must be at least of size kAuthenticationTagBytes, which
-  // is the case when an empty message with a zero padding length has been
-  // received. The |record_size| must be large enough to use only one record.
-  // https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-03#section-2
-  if (ciphertext.size() < sizeof(uint16_t) + kAuthenticationTagBytes ||
-      ciphertext.size() > record_size + kAuthenticationTagBytes) {
+  if (!encryption_scheme_->ValidateCiphertextSize(ciphertext.size(),
+                                                  record_size)) {
     return false;
   }
 
