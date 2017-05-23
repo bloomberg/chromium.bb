@@ -65,7 +65,8 @@ static void OnPageShown(
     JNIEnv* env,
     const JavaParamRef<jclass>& caller,
     const JavaParamRef<jintArray>& jcategories,
-    const JavaParamRef<jintArray>& jsuggestions_per_category) {
+    const JavaParamRef<jintArray>& jsuggestions_per_category,
+    jint j_visible_categories_count) {
   std::vector<int> categories_int;
   JavaIntArrayToIntVector(env, jcategories, &categories_int);
   std::vector<int> suggestions_per_category_int;
@@ -78,7 +79,8 @@ static void OnPageShown(
         std::make_pair(Category::FromIDValue(categories_int[i]),
                        suggestions_per_category_int[i]));
   }
-  ntp_snippets::metrics::OnPageShown(suggestions_per_category);
+  ntp_snippets::metrics::OnPageShown(suggestions_per_category,
+                                     j_visible_categories_count);
   GetUserClassifier()->OnEvent(UserClassifier::Metric::NTP_OPENED);
 }
 

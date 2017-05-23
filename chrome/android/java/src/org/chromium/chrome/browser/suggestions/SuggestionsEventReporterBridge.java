@@ -20,8 +20,9 @@ public class SuggestionsEventReporterBridge implements SuggestionsEventReporter 
     }
 
     @Override
-    public void onPageShown(int[] categories, int[] suggestionsPerCategory) {
-        nativeOnPageShown(categories, suggestionsPerCategory);
+    public void onPageShown(
+            int[] categories, int[] suggestionsPerCategory, int visibleCategoriesCount) {
+        nativeOnPageShown(categories, suggestionsPerCategory, visibleCategoriesCount);
     }
 
     @Override
@@ -86,7 +87,8 @@ public class SuggestionsEventReporterBridge implements SuggestionsEventReporter 
         nativeOnColdStart();
     }
 
-    private static native void nativeOnPageShown(int[] categories, int[] suggestionsPerCategory);
+    private static native void nativeOnPageShown(
+            int[] categories, int[] suggestionsPerCategory, int visibleCategoriesCount);
     private static native void nativeOnSuggestionShown(int globalPosition, int category,
             int positionInCategory, long publishTimestampMs, float score, long fetchTimestampMs);
     private static native void nativeOnSuggestionOpened(int globalPosition, int category,

@@ -42935,6 +42935,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ContentSuggestions.SectionCountOnNtpOpened"
+    units="sections">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: The number of suggestion sections that were shown at the time an
+    NTP was opened. All shown sections (including empty ones) are counted.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ContentSuggestions.Shown" units="index">
   <owner>treib@chromium.org</owner>
   <summary>
