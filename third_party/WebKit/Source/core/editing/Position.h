@@ -51,6 +51,7 @@ enum class PositionAnchorType : unsigned {
 };
 
 // Instances of |PositionTemplate<Strategy>| are immutable.
+// TODO(editing-dev): Make constructor of |PositionTemplate| take |const Node*|.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   DISALLOW_NEW();
