@@ -497,6 +497,8 @@ gfx::ICCProfile GetTestingICCProfile(const std::string& name) {
     return gfx::ICCProfileForTestingColorSpin();
   } else if (name == "adobeRGB") {
     return gfx::ICCProfileForTestingAdobeRGB();
+  } else if (name == "reset") {
+    return gfx::ICCProfileForLayoutTests();
   }
   return gfx::ICCProfile();
 }

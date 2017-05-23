@@ -83,6 +83,7 @@ class GFX_EXPORT ICCProfile {
   friend ICCProfile ICCProfileForTestingNoAnalyticTrFn();
   friend ICCProfile ICCProfileForTestingA2BOnly();
   friend ICCProfile ICCProfileForTestingOvershoot();
+  friend ICCProfile ICCProfileForLayoutTests();
   static const uint64_t test_id_adobe_rgb_;
   static const uint64_t test_id_color_spin_;
   static const uint64_t test_id_generic_rgb_;
