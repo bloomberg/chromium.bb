@@ -155,6 +155,7 @@ class SurfaceSynchronizationTest : public testing::Test,
   void OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) override {
     damaged_surfaces_.insert(surface_id);
   }
+  void OnSurfaceDiscarded(const SurfaceId& surface_id) override {}
 
  protected:
   testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;

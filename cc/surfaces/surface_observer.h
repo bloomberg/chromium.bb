@@ -18,6 +18,9 @@ class SurfaceObserver {
   // Runs when a Surface is damaged. *changed should be set to true if this
   // causes a Display to be damaged.
   virtual void OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) = 0;
+
+  // Called when a surface is garbage-collected.
+  virtual void OnSurfaceDiscarded(const SurfaceId& surface_id) = 0;
 };
 
 }  // namespace cc

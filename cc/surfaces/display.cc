@@ -412,6 +412,11 @@ void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {
 
 void Display::OnSurfaceCreated(const SurfaceInfo& surface_info) {}
 
+void Display::OnSurfaceDiscarded(const SurfaceId& surface_id) {
+  if (aggregator_)
+    aggregator_->ReleaseResources(surface_id);
+}
+
 const SurfaceId& Display::CurrentSurfaceId() {
   return current_surface_id_;
 }
