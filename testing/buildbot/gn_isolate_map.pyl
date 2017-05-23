@@ -754,10 +754,6 @@
     "label": "//mash:mash_unittests",
     "type": "windowed_test_launcher",
   },
-  "mus_gpu_unittests": {
-    "label": "//services/ui/gpu:mus_gpu_unittests",
-    "type": "console_test_launcher",
-  },
   "nacl_helper_nonsfi_unittests": {
     "label": "//components/nacl/loader:nacl_helper_nonsfi_unittests",
     "type": "raw",

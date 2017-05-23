@@ -285,7 +285,6 @@
     'mojo_public_system_unittests.exe',
     'mojo_system_unittests.exe',
     'mus_demo_library.dll',
-    'mus_gpu_unittests.exe',
     'nacl_irt_x86_32.nexe',
     'nacl_irt_x86_64.nexe',
     'nacl_loader_unittests.exe',

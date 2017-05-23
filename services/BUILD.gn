@@ -27,6 +27,7 @@ service_test("service_unittests") {
   if (use_aura) {
     deps += [
       "//services/ui/clipboard:tests",
+      "//services/ui/gpu:tests",
       "//services/ui/ime:tests",
       "//services/ui/input_devices:tests",
       "//services/ui/public/cpp/tests",
@@ -61,12 +62,14 @@ catalog("service_unittests_catalog") {
     "//services/device:tests_catalog",
     "//services/identity:tests_catalog",
     "//services/preferences:tests_catalog",
+    "//services/resource_coordinator:tests_catalog",
     "//services/video_capture:tests_catalog",
   ]
 
   if (use_aura) {
     catalog_deps += [
       "//services/ui/clipboard:tests_catalog",
+      "//services/ui/gpu:tests_catalog",
       "//services/ui/ime:tests_catalog",
     ]
 
