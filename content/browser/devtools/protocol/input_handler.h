@@ -75,6 +75,8 @@ class InputHandler : public DevToolsDomainHandler,
                                       Maybe<int> modifiers,
                                       Maybe<int> click_count) override;
 
+  Response SetIgnoreInputEvents(bool ignore) override;
+
   void SynthesizePinchGesture(
       int x,
       int y,
@@ -141,6 +143,7 @@ class InputHandler : public DevToolsDomainHandler,
   float page_scale_factor_;
   gfx::SizeF scrollable_viewport_size_;
   int last_id_;
+  bool ignore_input_events_ = false;
   base::WeakPtrFactory<InputHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
