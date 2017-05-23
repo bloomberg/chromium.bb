@@ -432,13 +432,15 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
-  // to |profiles| and returns 0. If no valid set can be found, returns the
-  // failure reasons and, if applicable, the RAPPOR metric to log to
-  // |rappor_metric_name|. The return value is a bitmask of
+  // to |upload_request.profiles| and returns 0. If no valid set can be found,
+  // returns the failure reasons and, if applicable, the RAPPOR metric to log to
+  // |rappor_metric_name|. Appends any experiments that were triggered to
+  // |upload_request.active_experiments|. The return value is a bitmask of
   // |AutofillMetrics::CardUploadDecisionMetric|.
-  int GetProfilesForCreditCardUpload(const CreditCard& card,
-                                     std::vector<AutofillProfile>* profiles,
-                                     std::string* rappor_metric_name) const;
+  int SetProfilesForCreditCardUpload(
+      const CreditCard& card,
+      payments::PaymentsClient::UploadRequestDetails* upload_request,
+      std::string* rappor_metric_name) const;
 
   // Returns metric relevant to the CVC field based on values in
   // |found_cvc_field_|, |found_value_in_cvc_field_| and
