@@ -50,7 +50,7 @@ class AX_EXPORT AXPlatformNode {
   AXPlatformNode();
   virtual ~AXPlatformNode();
 
-  AXPlatformNode* GetFromUniqueId(int32_t unique_id);
+  virtual AXPlatformNode* GetFromUniqueId(int32_t unique_id);
 
   int32_t unique_id_;
 };
