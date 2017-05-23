@@ -262,7 +262,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_Normal) {
   ASSERT_EQ(1U, output_frames_.size());
 }
 
-// Verify current behavior for 0 byte frames. FFmpeg simply ignores
+// Verify current behavior for 0 byte frames. FFmpegVideoDecoder simply ignores
 // the 0 byte frames.
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
   Initialize();

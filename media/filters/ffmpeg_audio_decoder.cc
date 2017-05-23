@@ -185,6 +185,12 @@ bool FFmpegAudioDecoder::FFmpegDecode(
   } else {
     packet.data = const_cast<uint8_t*>(buffer->data());
     packet.size = buffer->data_size();
+
+    // Since we're not at EOS and there is no data available in the current
+    // buffer, simply return and let the caller provide more data.
+    // crbug.com/663438 has more context on 0-byte buffers.
+    if (!packet.size)
+      return true;
   }
 
   // Each audio packet may contain several frames, so we must call the decoder
