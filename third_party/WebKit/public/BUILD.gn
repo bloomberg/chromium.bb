@@ -714,7 +714,6 @@ mojom("mojo_bindings") {
     "platform/modules/fetch/fetch_api_request.mojom",
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/keyboard_lock/keyboard_lock.mojom",
-    "platform/modules/mediasession/media_session.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/permissions/permission.mojom",
@@ -765,10 +764,13 @@ mojom("android_mojo_bindings") {
     "platform/modules/installation/installation.mojom",
     "platform/modules/installedapp/installed_app_provider.mojom",
     "platform/modules/installedapp/related_application.mojom",
+    "platform/modules/mediasession/media_session.mojom",
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
     "//components/payments/mojom",
+    "//mojo/common:common_custom_types",
+    "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
 
