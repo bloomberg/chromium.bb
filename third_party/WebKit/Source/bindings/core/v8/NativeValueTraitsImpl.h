@@ -430,13 +430,10 @@ struct NativeValueTraits<IDLRecord<K, V>>
     // While we could pass v8::ONLY_ENUMERABLE below, doing so breaks
     // web-platform-tests' headers-record.html and deviates from the spec
     // algorithm.
-    // Symbols are being skipped due to
-    // https://github.com/heycam/webidl/issues/294.
     if (!v8_object
              ->GetOwnPropertyNames(context,
                                    static_cast<v8::PropertyFilter>(
-                                       v8::PropertyFilter::ALL_PROPERTIES |
-                                       v8::PropertyFilter::SKIP_SYMBOLS))
+                                       v8::PropertyFilter::ALL_PROPERTIES))
              .ToLocal(&keys)) {
       exception_state.RethrowV8Exception(block.Exception());
       return ImplType();
@@ -464,11 +461,14 @@ struct NativeValueTraits<IDLRecord<K, V>>
         return ImplType();
       }
 
+      // V8's GetOwnPropertyNames() does not convert numeric property indices
+      // to strings, so we have to do it ourselves.
+      if (!key->IsName())
+        key = key->ToString(context).ToLocalChecked();
+
       // "4.1. Let desc be ? O.[[GetOwnProperty]](key)."
       v8::Local<v8::Value> desc;
-      if (!v8_object
-               ->GetOwnPropertyDescriptor(
-                   context, key->ToString(context).ToLocalChecked())
+      if (!v8_object->GetOwnPropertyDescriptor(context, key.As<v8::Name>())
                .ToLocal(&desc)) {
         exception_state.RethrowV8Exception(block.Exception());
         return ImplType();
