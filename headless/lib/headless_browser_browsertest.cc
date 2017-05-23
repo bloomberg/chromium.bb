@@ -895,4 +895,19 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, TraceUsingBrowserDevToolsTarget) {
   EXPECT_LT(0u, tracing_data->GetSize());
 }
 
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+  EXPECT_FALSE(
+      EvaluateScript(web_contents, "window.print()")->HasExceptionDetails());
+}
+
 }  // namespace headless
