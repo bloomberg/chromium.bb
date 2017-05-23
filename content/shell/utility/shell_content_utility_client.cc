@@ -90,11 +90,13 @@ class NetworkServiceTestImpl : public mojom::NetworkServiceTest {
   ~NetworkServiceTestImpl() override = default;
 
   // mojom::NetworkServiceTest implementation.
-  void AddRules(std::vector<mojom::RulePtr> rules) override {
+  void AddRules(std::vector<mojom::RulePtr> rules,
+                AddRulesCallback callback) override {
     for (const auto& rule : rules) {
       test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
                                                    rule->replacement);
     }
+    std::move(callback).Run();
   }
 
  private:
