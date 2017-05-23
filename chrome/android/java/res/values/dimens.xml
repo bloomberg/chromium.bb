@@ -98,7 +98,7 @@
     <dimen name="infobar_big_icon_margin">16dp</dimen>
 
     <!-- Dimensions for compact infobars are a little shorter. -->
-    <dimen name="infobar_compact_size">48dp</dimen>
+    <dimen name="infobar_compact_size">56dp</dimen>
 
     <!-- Dimensions for compact translate infobar. -->
     <dimen name="infobar_translate_fade_edge_length">18dp</dimen>
