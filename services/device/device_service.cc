@@ -26,7 +26,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "device/nfc/nfc_provider.mojom.h"
 #include "jni/InterfaceRegistrar_jni.h"
 #include "services/device/android/register_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"

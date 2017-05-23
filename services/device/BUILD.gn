@@ -26,7 +26,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//device/generic_sensor",
-    "//device/nfc:mojo_bindings",
     "//device/sensors",
     "//device/sensors/public/interfaces",
     "//device/wake_lock",
@@ -164,14 +163,13 @@ if (is_android) {
     java_files = [ "android/java/src/org/chromium/services/device/InterfaceRegistrar.java" ]
     deps = [
       "//base:base_java",
-      "//device/nfc:mojo_bindings_java",
-      "//device/nfc/android:java",
-      "//device/nfc/public/java:nfc_java",
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
       "//services/device/battery/android:battery_monitor_java",
+      "//services/device/nfc/android:java",
       "//services/device/public/interfaces:interfaces_java",
+      "//services/device/public/java:nfc_java",
       "//services/device/screen_orientation:java",
       "//services/device/time_zone_monitor:java",
       "//services/device/vibration/android:vibration_manager_java",

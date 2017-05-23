@@ -59,7 +59,7 @@
 #include "ui/base/page_transition_types.h"
 
 #if defined(OS_ANDROID)
-#include "device/nfc/nfc.mojom.h"
+#include "services/device/public/interfaces/nfc.mojom.h"
 #endif
 
 class GURL;

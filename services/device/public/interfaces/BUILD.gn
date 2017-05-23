@@ -9,6 +9,8 @@ mojom("interfaces") {
     "battery_monitor.mojom",
     "battery_status.mojom",
     "fingerprint.mojom",
+    "nfc.mojom",
+    "nfc_provider.mojom",
     "power_monitor.mojom",
     "time_zone_monitor.mojom",
     "vibration_manager.mojom",

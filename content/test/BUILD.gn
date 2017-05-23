@@ -264,7 +264,6 @@ static_library("test_support") {
     "//content/utility:for_content_tests",
     "//device/base/synchronization",
     "//device/geolocation",
-    "//device/nfc:mojo_bindings",
     "//ipc:test_support",
     "//media",
     "//media/capture",
