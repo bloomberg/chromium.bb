@@ -120,26 +120,9 @@ class WTF_EXPORT ScopedLogger {
 #define CRASH() IMMEDIATE_CRASH()
 #endif
 
-// ASSERT
-//  These macros are compiled out of release builds.
-//  Expressions inside them are evaluated in debug builds only.
-//  This is deprecated. We should use:
-//    - DCHECK() for ASSERT()
-#if OS(WIN)
-// FIXME: Change to use something other than ASSERT to avoid this conflict with
-// the underlying platform.
-#undef ASSERT
-#endif
-
 #define DCHECK_AT(assertion, file, line)                            \
   LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), \
               DCHECK_IS_ON() ? !(assertion) : false)
-
-#if DCHECK_IS_ON()
-#define ASSERT(assertion) DCHECK(assertion)
-#else
-#define ASSERT(assertion) ((void)0)
-#endif
 
 // Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
 // that code testing this macro has included this header.
