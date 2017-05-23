@@ -669,6 +669,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsConfig.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SuggestionsSource.java",
+  "java/src/org/chromium/chrome/browser/offlinepages/CCTRequestStatus.java",
   "java/src/org/chromium/chrome/browser/offlinepages/DeviceConditions.java",
   "java/src/org/chromium/chrome/browser/offlinepages/BackgroundOfflinerTask.java",
   "java/src/org/chromium/chrome/browser/offlinepages/BackgroundGcmScheduler.java",

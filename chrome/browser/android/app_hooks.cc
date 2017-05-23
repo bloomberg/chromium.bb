@@ -23,5 +23,13 @@ bool AppHooks::ShouldDetectVideoFullscreen() {
   return Java_AppHooks_shouldDetectVideoFullscreen(env, app_hooks_obj);
 }
 
+ScopedJavaLocalRef<jobject> AppHooks::GetOfflinePagesCCTRequestDoneCallback() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> app_hooks_obj = Java_AppHooks_get(env);
+
+  return Java_AppHooks_getOfflinePagesCCTRequestDoneCallback(env,
+                                                             app_hooks_obj);
+}
+
 }  // namespace android
 }  // namespace chrome

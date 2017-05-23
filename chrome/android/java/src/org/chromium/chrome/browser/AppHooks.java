@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.media.VideoPersister;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderAndroid;
+import org.chromium.chrome.browser.offlinepages.CCTRequestStatus;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
@@ -290,5 +292,14 @@ public abstract class AppHooks {
     @CalledByNative
     public boolean shouldDetectVideoFullscreen() {
         return false;
+    }
+
+    /**
+     * @return A callback that will be run each time an offline page is saved in the custom tabs
+     * namespace.
+     */
+    @CalledByNative
+    public Callback<CCTRequestStatus> getOfflinePagesCCTRequestDoneCallback() {
+        return null;
     }
 }
