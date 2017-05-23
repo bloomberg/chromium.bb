@@ -244,9 +244,17 @@ function runTests(config) {
                   'executeScript should never have been executed!');
             });
       } catch (e) {
-        assertEq(
-            'Invalid value for argument 2. Property \'frameId\': ' +
-                'Value must not be less than 0.',
+        assertTrue(
+            // JS-based bindings.
+            e.message == 'Invalid value for argument 2. Property \'frameId\':' +
+                         ' Value must not be less than 0.' ||
+            // Native bindings.
+            e.message == 'Error in invocation of tabs.executeScript(' +
+                         'optional integer tabId, ' +
+                         'extensionTypes.InjectDetails details, ' +
+                         'optional function callback): Error at parameter ' +
+                         '\'details\': Error at property \'frameId\': ' +
+                         'Value must be at least 0.',
             e.message);
         chrome.test.succeed();
       }
@@ -367,9 +375,17 @@ function runTests(config) {
               chrome.test.fail('insertCSS should never have been executed!');
             });
       } catch (e) {
-        assertEq(
-            'Invalid value for argument 2. Property \'frameId\': ' +
-                'Value must not be less than 0.',
+        assertTrue(
+            // JS-based bindings.
+            e.message == 'Invalid value for argument 2. Property \'frameId\':' +
+                         ' Value must not be less than 0.' ||
+            // Native bindings.
+            e.message == 'Error in invocation of tabs.insertCSS(' +
+                         'optional integer tabId, ' +
+                         'extensionTypes.InjectDetails details, ' +
+                         'optional function callback): Error at parameter ' +
+                         '\'details\': Error at property \'frameId\': ' +
+                         'Value must be at least 0.',
             e.message);
         chrome.test.succeed();
       }
