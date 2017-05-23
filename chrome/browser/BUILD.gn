@@ -1301,6 +1301,8 @@ split_static_library("browser") {
     "ssl/chrome_ssl_host_state_delegate_factory.h",
     "ssl/common_name_mismatch_handler.cc",
     "ssl/common_name_mismatch_handler.h",
+    "ssl/ignore_errors_cert_verifier.cc",
+    "ssl/ignore_errors_cert_verifier.h",
     "ssl/security_state_tab_helper.cc",
     "ssl/security_state_tab_helper.h",
     "ssl/ssl_blocking_page.cc",

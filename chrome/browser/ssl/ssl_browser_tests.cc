@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -54,6 +55,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/network_time/network_time_test_utils.h"
@@ -319,7 +321,10 @@ class SSLUITest : public InProcessBrowserTest {
         https_server_mismatched_(net::EmbeddedTestServer::TYPE_HTTPS),
         wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
-                            net::GetWebSocketTestDataDirectory()) {
+                            net::GetWebSocketTestDataDirectory()),
+        wss_server_mismatched_(net::SpawnedTestServer::TYPE_WSS,
+                               SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
+                               net::GetWebSocketTestDataDirectory()) {
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
     https_server_expired_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -656,6 +661,7 @@ class SSLUITest : public InProcessBrowserTest {
   net::EmbeddedTestServer https_server_expired_;
   net::EmbeddedTestServer https_server_mismatched_;
   net::SpawnedTestServer wss_server_expired_;
+  net::SpawnedTestServer wss_server_mismatched_;
 
  protected:
   // Navigates to an interstitial and clicks through the certificate
@@ -711,6 +717,42 @@ class SSLUITestIgnoreCertErrors : public SSLUITest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Browser will ignore certificate errors.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+};
+
+static std::string MakeCertSPKIFingerprint(net::X509Certificate* cert) {
+  net::HashValue hash = GetSPKIHash(cert);
+  std::string hash_base64;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(hash.data()),
+                        hash.size()),
+      &hash_base64);
+  return hash_base64;
+}
+
+class SSLUITestIgnoreCertErrorsBySPKIHTTPS : public SSLUITest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    std::string whitelist_flag = MakeCertSPKIFingerprint(
+        https_server_mismatched_.GetCertificate().get());
+    // Browser will ignore certificate errors for chains matching one of the
+    // public keys from the list.
+    command_line->AppendSwitchASCII(switches::kIgnoreCertificateErrorsSPKIList,
+                                    whitelist_flag);
+  }
+};
+
+class SSLUITestIgnoreCertErrorsBySPKIWSS : public SSLUITest {
+ public:
+  SSLUITestIgnoreCertErrorsBySPKIWSS() : SSLUITest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    std::string whitelist_flag =
+        MakeCertSPKIFingerprint(wss_server_expired_.GetCertificate().get());
+    // Browser will ignore certificate errors for chains matching one of the
+    // public keys from the list.
+    command_line->AppendSwitchASCII(switches::kIgnoreCertificateErrorsSPKIList,
+                                    whitelist_flag);
   }
 };
 
@@ -2738,6 +2780,83 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
   const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
 }
+
+// Visit a page and establish a WebSocket connection over bad https with
+// --ignore-certificate-errors-spki-list. The connection should be established
+// without interstitial page showing.
+#if !defined(OS_CHROMEOS)  // Chrome OS does not support the flag.
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIWSS, TestWSSExpired) {
+  ASSERT_TRUE(wss_server_expired_.Start());
+
+  // Setup page title observer.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+
+  // Visit bad HTTPS page.
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("https");
+  ui_test_utils::NavigateToURL(browser(),
+                               wss_server_expired_.GetURL("connect_check.html")
+                                   .ReplaceComponents(replacements));
+
+  // We shouldn't have an interstitial page showing here.
+
+  // Test page run a WebSocket wss connection test. The result will be shown
+  // as page title.
+  const base::string16 result = watcher.WaitAndGetTitle();
+  EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
+}
+#endif  // !defined(OS_CHROMEOS)
+
+// Test that HTTPS pages with a bad certificate don't show an interstitial if
+// the public key matches a value from --ignore-certificate-errors-spki-list.
+#if !defined(OS_CHROMEOS)  // Chrome OS does not support the flag.
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIHTTPS, TestHTTPS) {
+  ASSERT_TRUE(https_server_mismatched_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_mismatched_.GetURL("/ssl/page_with_subresource.html"));
+
+  // We should see no interstitial. The script tag in the page should have
+  // loaded and ran (and wasn't blocked by the certificate error).
+  CheckAuthenticatedState(tab, AuthState::NONE);
+  base::string16 title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &title);
+  EXPECT_EQ(title, base::ASCIIToUTF16("This script has loaded"));
+}
+#endif  // !defined(OS_CHROMEOS)
+
+// Test subresources from an origin with a bad certificate are loaded if the
+// public key matches a value from --ignore-certificate-errors-spki-list.
+#if !defined(OS_CHROMEOS)  // Chrome OS does not support the flag.
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIHTTPS,
+                       TestInsecureSubresource) {
+  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(https_server_mismatched_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::string replacement_path;
+  GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_with_unsafe_image.html",
+      https_server_mismatched_.host_port_pair(), &replacement_path);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+
+  // We should see no interstitial.
+  CheckAuthenticatedState(tab, AuthState::NONE);
+  // In order to check that the image was loaded, check its width.
+  // The actual image (Google logo) is 276 pixels wide.
+  int img_width = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      tab, "window.domAutomationController.send(ImageWidth());", &img_width));
+  EXPECT_GT(img_width, 200);
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // Verifies that the interstitial can proceed, even if JavaScript is disabled.
 // http://crbug.com/322948

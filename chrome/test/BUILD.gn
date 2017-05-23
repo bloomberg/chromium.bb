@@ -3247,6 +3247,7 @@ test("unit_tests") {
     "../browser/signin/test_signin_client_builder.cc",
     "../browser/signin/test_signin_client_builder.h",
     "../browser/ssl/chrome_expect_ct_reporter_unittest.cc",
+    "../browser/ssl/ignore_errors_cert_verifier_unittest.cc",
     "../browser/ssl/security_state_tab_helper_unittest.cc",
     "../browser/ssl/ssl_error_handler_unittest.cc",
     "../browser/status_icons/status_icon_menu_model_unittest.cc",

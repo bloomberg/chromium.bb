@@ -157,6 +157,7 @@ extern const char kForceVariationIds[];
 extern const char kHomePage[];
 extern const char kHostResolverRetryAttempts[];
 extern const char kHostRules[];
+extern const char kIgnoreCertificateErrorsSPKIList[];
 extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kIncognito[];
 extern const char kInstallChromeApp[];
