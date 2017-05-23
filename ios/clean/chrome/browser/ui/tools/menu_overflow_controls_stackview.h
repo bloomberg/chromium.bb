@@ -18,6 +18,8 @@
 @property(nonatomic, strong) ToolbarButton* reloadButton;
 // Stop ToolbarButton.
 @property(nonatomic, strong) ToolbarButton* stopButton;
+// Star ToolbarButton.
+@property(nonatomic, strong) ToolbarButton* starButton;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLS_MENU_OVERFLOW_CONTROLS_STACKVIEW_H_
