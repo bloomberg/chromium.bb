@@ -126,6 +126,7 @@ source_set("chromeos") {
     "//ui/display",
     "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
+    "//ui/events/blink",
     "//ui/events/devices",
     "//ui/events/platform",
     "//ui/file_manager",
