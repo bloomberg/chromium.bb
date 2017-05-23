@@ -6,16 +6,12 @@
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_ANALYZER_H_
 
 #include "base/files/file.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 
 namespace safe_browsing {
 namespace dmg {
 
-// Analyzes a DMG file and reports the results.
-// TODO(rsesek): Rename zip_analyzer::Results to something more generic.
-void AnalyzeDMGFile(base::File dmg_file,
-                    safe_browsing::zip_analyzer::Results* results);
-
+void AnalyzeDMGFile(base::File dmg_file, ArchiveAnalyzerResults* results);
 
 }  // namespace dmg
 }  // namespace safe_browsing

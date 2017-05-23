@@ -13,4 +13,4 @@ deps = [
   "//components/safe_browsing:csd_proto",
 ]
 
-type_mappings = [ "chrome.mojom.SafeArchiveAnalyzerResults=safe_browsing::zip_analyzer::Results" ]
+type_mappings = [ "chrome.mojom.SafeArchiveAnalyzerResults=safe_browsing::ArchiveAnalyzerResults" ]

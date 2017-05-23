@@ -504,6 +504,8 @@ static_library("common") {
 
     if (safe_browsing_mode == 1) {
       sources += [
+        "safe_browsing/archive_analyzer_results.cc",
+        "safe_browsing/archive_analyzer_results.h",
         "safe_browsing/binary_feature_extractor.cc",
         "safe_browsing/binary_feature_extractor.h",
         "safe_browsing/binary_feature_extractor_mac.cc",
@@ -524,8 +526,6 @@ static_library("common") {
         "safe_browsing/protobuf_message_write_macros.h",
         "safe_browsing/zip_analyzer.cc",
         "safe_browsing/zip_analyzer.h",
-        "safe_browsing/zip_analyzer_results.cc",
-        "safe_browsing/zip_analyzer_results.h",
       ]
 
       public_deps += [ "//ipc" ]

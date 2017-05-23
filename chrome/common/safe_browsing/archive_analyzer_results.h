@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains the zip file analysis implementation for download
+// This file contains the archive analyzer analysis implementation for download
 // protection, which runs in a sandboxed utility process.
 
-#ifndef CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_RESULTS_H_
-#define CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_RESULTS_H_
+#ifndef CHROME_COMMON_SAFE_BROWSING_ARCHIVE_ANALYZER_RESULTS_H_
+#define CHROME_COMMON_SAFE_BROWSING_ARCHIVE_ANALYZER_RESULTS_H_
 
 #include <vector>
 
@@ -14,21 +14,19 @@
 #include "components/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
-namespace zip_analyzer {
 
-struct Results {
+struct ArchiveAnalyzerResults {
   bool success;
   bool has_executable;
   bool has_archive;
   google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>
       archived_binary;
   std::vector<base::FilePath> archived_archive_filenames;
-  Results();
-  Results(const Results& other);
-  ~Results();
+  ArchiveAnalyzerResults();
+  ArchiveAnalyzerResults(const ArchiveAnalyzerResults& other);
+  ~ArchiveAnalyzerResults();
 };
 
-}  // namespace zip_analyzer
 }  // namespace safe_browsing
 
-#endif  // CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_RESULTS_H_
+#endif  // CHROME_COMMON_SAFE_BROWSING_ARCHIVE_ANALYZER_RESULTS_H_
