@@ -95,7 +95,7 @@ def SetBuildrootState(branchname, buildroot):
 
 
 @StageDecorator
-def CleanBuildroot(branchname, buildroot):
+def CleanBuildroot(buildroot, repo):
   """Some kinds of branch transitions break builds.
 
   This method tries to detect cases where that can happen, and clobber what's
@@ -103,8 +103,8 @@ def CleanBuildroot(branchname, buildroot):
   if necessary.
 
   Args:
-    branchname: Name of branch to checkout.
     buildroot: Directory with old buildroot to clean as needed.
+    repo: repository.RepoRepository instance.
   """
   old_buildroot_layout, old_branch = GetBuildrootState(buildroot)
 
@@ -112,25 +112,33 @@ def CleanBuildroot(branchname, buildroot):
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
     osutils.RmDir(buildroot, ignore_missing=True, sudo=True)
 
-  elif old_branch != branchname:
-    logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
-    logging.info('Unmatched branch: %s -> %s', old_branch, branchname)
+  else:
+    if old_branch != repo.branch:
+      logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
+      logging.info('Unmatched branch: %s -> %s', old_branch, repo.branch)
 
-    logging.info('Remove Chroot.')
-    osutils.RmDir(os.path.join(buildroot, 'chroot'),
-                  ignore_missing=True, sudo=True)
+      logging.info('Remove Chroot.')
+      osutils.RmDir(os.path.join(buildroot, 'chroot'),
+                    ignore_missing=True, sudo=True)
 
-    logging.info('Remove Chrome checkout.')
-    osutils.RmDir(os.path.join(buildroot, '.cache', 'distfiles'),
-                  ignore_missing=True, sudo=True)
+      logging.info('Remove Chrome checkout.')
+      osutils.RmDir(os.path.join(buildroot, '.cache', 'distfiles'),
+                    ignore_missing=True, sudo=True)
+
+    try:
+      # If there is any failure doing the cleanup, wipe everything.
+      repo.BuildRootGitCleanup(prune_all=True)
+    except Exception:
+      logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
+      repository.ClearBuildRoot(buildroot)
 
   # Ensure buildroot exists.
   osutils.SafeMakedirs(buildroot)
-  SetBuildrootState(branchname, buildroot)
+  SetBuildrootState(repo.branch, buildroot)
 
 
 @StageDecorator
-def InitialCheckout(branchname, buildroot, git_cache_dir):
+def InitialCheckout(repo):
   """Preliminary ChromeOS checkout.
 
   Perform a complete checkout of ChromeOS on the specified branch. This does NOT
@@ -143,27 +151,11 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
   used.
 
   Args:
-    branchname: Name of branch to checkout.
-    buildroot: Directory to checkout into.
-    git_cache_dir: Directory to use for git cache. None to not use it.
+    repo: repository.RepoRepository instance.
   """
-  logging.PrintBuildbotStepText('Branch: %s' % branchname)
+  logging.PrintBuildbotStepText('Branch: %s' % repo.branch)
   logging.info('Bootstrap script starting initial sync on branch: %s',
-               branchname)
-
-  site_config = config_lib.GetConfig()
-  manifest_url = site_config.params['MANIFEST_INT_URL']
-
-  repo = repository.RepoRepository(manifest_url, buildroot,
-                                   branch=branchname,
-                                   git_cache_dir=git_cache_dir)
-  try:
-    # If there is any failure doing the cleanup, wipe everything.
-    repo.BuildRootGitCleanup(prune_all=True)
-  except Exception:
-    logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
-    repository.ClearBuildRoot(buildroot)
-
+               repo.branch)
   repo.Sync(detach=True)
 
 
@@ -223,12 +215,19 @@ def main(argv):
   buildroot = options.buildroot
   git_cache_dir = options.git_cache_dir
 
+  site_config = config_lib.GetConfig()
+  manifest_url = site_config.params['MANIFEST_INT_URL']
+
+  repo = repository.RepoRepository(manifest_url, buildroot,
+                                   branch=branchname,
+                                   git_cache_dir=git_cache_dir)
+
   # Sometimes, we have to cleanup things that can break cbuildbot, especially
   # on the branch.
-  CleanBuildroot(branchname, buildroot)
+  CleanBuildroot(buildroot, repo)
 
   # Get a checkout close enough the branched cbuildbot can handle it.
-  InitialCheckout(branchname, buildroot, git_cache_dir)
+  InitialCheckout(repo)
 
   # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
   try:

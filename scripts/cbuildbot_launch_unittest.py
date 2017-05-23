@@ -57,53 +57,15 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
       self.assertEqual(options.buildroot, expected_buildroot)
       self.assertEqual(options.git_cache_dir, expected_cache_dir)
 
-  def testInitialCheckoutMin(self):
+  def testInitialCheckout(self):
     """Test InitialCheckout with minimum settings."""
-    mock_repo = self.PatchObject(repository, 'RepoRepository', autospec=True)
+    mock_repo = mock.MagicMock()
+    mock_repo.branch = 'branch'
 
-    cbuildbot_launch.InitialCheckout(None, '/buildroot', None)
-
-    self.assertEqual(mock_repo.mock_calls, [
-        mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
-                  branch=None, git_cache_dir=None),
-        mock.call().BuildRootGitCleanup(prune_all=True),
-        mock.call().Sync(detach=True),
-    ])
-
-  def testInitialCheckoutMax(self):
-    """Test InitialCheckout with all settings."""
-    mock_repo = self.PatchObject(repository, 'RepoRepository', autospec=True)
-
-    cbuildbot_launch.InitialCheckout(
-        'release-R56-9000.B', '/buildroot', '/git-cache')
+    cbuildbot_launch.InitialCheckout(mock_repo)
 
     self.assertEqual(mock_repo.mock_calls, [
-        mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
-                  branch='release-R56-9000.B', git_cache_dir='/git-cache'),
-        mock.call().BuildRootGitCleanup(prune_all=True),
-        mock.call().Sync(detach=True),
-    ])
-
-  def testInitialCheckoutCleanupError(self):
-    """Test we wipe buildroot when cleanup fails."""
-    mock_clean = self.PatchObject(
-        repository.RepoRepository, 'BuildRootGitCleanup', autospec=True,
-        side_effect=FakeException)
-    mock_sync = self.PatchObject(
-        repository.RepoRepository, 'Sync', autospec=True)
-    mock_remove = self.PatchObject(
-        repository, 'ClearBuildRoot', autospec=True)
-
-    cbuildbot_launch.InitialCheckout('master', '/buildroot', None)
-
-    self.assertEqual(mock_clean.mock_calls, [
-        mock.call(mock.ANY, prune_all=True),
-    ])
-    self.assertEqual(mock_sync.mock_calls, [
-        mock.call(mock.ANY, detach=True),
-    ])
-    self.assertEqual(mock_remove.mock_calls, [
-        mock.call('/buildroot'),
+        mock.call.Sync(detach=True),
     ])
 
   def testConfigureGlobalEnvironment(self):
@@ -170,6 +132,10 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
                      autospec=True, return_value=(constants.REEXEC_API_MAJOR,
                                                   constants.REEXEC_API_MINOR))
+    mock_repo = mock.MagicMock()
+    mock_repo.branch = 'master'
+    mock_repo_create = self.PatchObject(repository, 'RepoRepository',
+                                        autospec=True, return_value=mock_repo)
     mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildroot',
                                   autospec=True)
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
@@ -177,13 +143,18 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
     cbuildbot_launch.main(['--buildroot', '/buildroot', 'config'])
 
+    # Did we create the repo instance correctly?
+    self.assertEqual(mock_repo_create.mock_calls,
+                     [mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
+                                git_cache_dir=None, branch='master')])
+
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call('master', '/buildroot')])
+                     [mock.call('/buildroot', mock_repo)])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
-                     [mock.call('master', '/buildroot', None)])
+                     [mock.call(mock_repo)])
 
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
@@ -197,6 +168,10 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
                      autospec=True, return_value=(constants.REEXEC_API_MAJOR,
                                                   constants.REEXEC_API_MINOR))
+    mock_repo = mock.MagicMock()
+    mock_repo.branch = 'branch'
+    mock_repo_create = self.PatchObject(repository, 'RepoRepository',
+                                        autospec=True, return_value=mock_repo)
     mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildroot',
                                   autospec=True)
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
@@ -207,13 +182,18 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
                            '--git-cache-dir', '/git-cache',
                            'config'])
 
+    # Did we create the repo instance correctly?
+    self.assertEqual(mock_repo_create.mock_calls,
+                     [mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
+                                git_cache_dir='/git-cache', branch='branch')])
+
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call('branch', '/buildroot')])
+                     [mock.call('/buildroot', mock_repo)])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
-                     [mock.call('branch', '/buildroot', '/git-cache')])
+                     [mock.call(mock_repo)])
 
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
@@ -237,6 +217,8 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     self.general = os.path.join(self.root, 'general/general')
     # TODO: Add .cache, and distfiles.
 
+    self.mock_repo = mock.MagicMock()
+
   def populateBuildroot(self, state=None):
     """Create standard buildroot contents for cleanup."""
     osutils.SafeMakedirs(self.root)
@@ -250,15 +232,18 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
 
   def testNoBuildroot(self):
     """Test CleanBuildroot with no history."""
-    cbuildbot_launch.CleanBuildroot('master', self.root)
+    self.mock_repo.branch = 'master'
+
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 master')
 
   def testBuildrootNoState(self):
     """Test CleanBuildroot with no state information."""
     self.populateBuildroot()
+    self.mock_repo.branch = 'master'
 
-    cbuildbot_launch.CleanBuildroot('master', self.root)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 master')
     self.assertNotExists(self.repo)
@@ -268,8 +253,9 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
   def testBuildrootFormatMismatch(self):
     """Test CleanBuildroot with no state information."""
     self.populateBuildroot('0 master')
+    self.mock_repo.branch = 'master'
 
-    cbuildbot_launch.CleanBuildroot('master', self.root)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 master')
     self.assertNotExists(self.repo)
@@ -279,8 +265,9 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
   def testBuildrootBranchChange(self):
     """Test CleanBuildroot with a change in branches."""
     self.populateBuildroot('1 branchA')
+    self.mock_repo.branch = 'branchB'
 
-    cbuildbot_launch.CleanBuildroot('branchB', self.root)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 branchB')
     self.assertExists(self.repo)
@@ -290,13 +277,27 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
   def testBuildrootBranchMatch(self):
     """Test CleanBuildroot with no change in branch."""
     self.populateBuildroot('1 branchA')
+    self.mock_repo.branch = 'branchA'
 
-    cbuildbot_launch.CleanBuildroot('branchA', self.root)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 branchA')
     self.assertExists(self.repo)
     self.assertExists(self.chroot)
     self.assertExists(self.general)
+
+  def testBuildrootRepoCleanFailure(self):
+    """Test CleanBuildroot with repo checkout failure."""
+    self.populateBuildroot('1 branchA')
+    self.mock_repo.branch = 'branchA'
+    self.mock_repo.BuildRootGitCleanup.side_effect = Exception
+
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+
+    self.assertEqual(osutils.ReadFile(self.state), '1 branchA')
+    self.assertNotExists(self.repo)
+    self.assertNotExists(self.chroot)
+    self.assertNotExists(self.general)
 
   def testGetBuildrootState(self):
     """Test GetBuildrootState."""
