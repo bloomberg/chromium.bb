@@ -69,18 +69,19 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                      kAmountSectionWidth);
 
   layout->StartRow(0, 0);
-  std::unique_ptr<views::Label> label_text;
-  std::unique_ptr<views::Label> amount_text;
-  if (emphasize) {
-    label_text = CreateMediumLabel(label);
-    amount_text = CreateMediumLabel(amount);
-  } else {
-    label_text = base::MakeUnique<views::Label>(label);
-    amount_text = base::MakeUnique<views::Label>(amount);
-  }
+  std::unique_ptr<views::Label> label_text =
+      base::MakeUnique<views::Label>(label);
+  std::unique_ptr<views::Label> amount_text =
+      base::MakeUnique<views::Label>(amount);
   amount_text->set_id(static_cast<int>(amount_label_id));
   amount_text->SetMultiLine(true);
   amount_text->SetAllowCharacterBreak(true);
+  if (emphasize) {
+    label_text->SetFontList(
+        label_text->font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+    amount_text->SetFontList(
+        amount_text->font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  }
   layout->AddView(label_text.release());
   layout->AddView(amount_text.release());
 
