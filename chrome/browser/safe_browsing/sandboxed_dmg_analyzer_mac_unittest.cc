@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
   }
 
   void AnalyzeFile(const base::FilePath& path,
-                   zip_analyzer::Results* results) {
+                   ArchiveAnalyzerResults* results) {
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedDMGAnalyzer> analyzer(
@@ -52,7 +52,7 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
   class ResultsGetter {
    public:
     ResultsGetter(const base::Closure& next_closure,
-                  zip_analyzer::Results* results)
+                  ArchiveAnalyzerResults* results)
         : next_closure_(next_closure), results_(results) {}
 
     SandboxedDMGAnalyzer::ResultCallback GetCallback() {
@@ -61,13 +61,13 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
     }
 
    private:
-    void ResultsCallback(const zip_analyzer::Results& results) {
+    void ResultsCallback(const ArchiveAnalyzerResults& results) {
       *results_ = results;
       next_closure_.Run();
     }
 
     base::Closure next_closure_;
-    zip_analyzer::Results* results_;
+    ArchiveAnalyzerResults* results_;
 
     DISALLOW_COPY_AND_ASSIGN(ResultsGetter);
   };
@@ -80,7 +80,7 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
   base::FilePath path;
   ASSERT_NO_FATAL_FAILURE(path = GetFilePath("mach_o_in_dmg.dmg"));
 
-  zip_analyzer::Results results;
+  ArchiveAnalyzerResults results;
   AnalyzeFile(path, &results);
 
   EXPECT_TRUE(results.success);

@@ -13,10 +13,10 @@
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "components/safe_browsing/csd.pb.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -96,7 +96,7 @@ void AnalyzeContainedFile(
 
 void AnalyzeZipFile(base::File zip_file,
                     base::File temp_file,
-                    Results* results) {
+                    ArchiveAnalyzerResults* results) {
   std::set<base::FilePath> archived_archive_filenames;
   scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
       new BinaryFeatureExtractor());

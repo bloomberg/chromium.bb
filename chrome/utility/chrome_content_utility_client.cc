@@ -64,8 +64,8 @@
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/common/safe_archive_analyzer.mojom.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #if defined(OS_MACOSX)
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
 #endif
@@ -170,7 +170,7 @@ class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
     DCHECK(temporary_file.IsValid());
     DCHECK(zip_file.IsValid());
 
-    safe_browsing::zip_analyzer::Results results;
+    safe_browsing::ArchiveAnalyzerResults results;
     safe_browsing::zip_analyzer::AnalyzeZipFile(
         std::move(zip_file), std::move(temporary_file), &results);
     callback.Run(results);
@@ -180,7 +180,7 @@ class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
                       const AnalyzeDmgFileCallback& callback) override {
 #if defined(OS_MACOSX)
     DCHECK(dmg_file.IsValid());
-    safe_browsing::zip_analyzer::Results results;
+    safe_browsing::ArchiveAnalyzerResults results;
     safe_browsing::dmg::AnalyzeDMGFile(std::move(dmg_file), &results);
     callback.Run(results);
 #else

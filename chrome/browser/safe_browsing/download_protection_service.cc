@@ -45,10 +45,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/common/url_constants.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_util.h"
@@ -720,7 +720,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     analyzer_->Start();
   }
 
-  void OnZipAnalysisFinished(const zip_analyzer::Results& results) {
+  void OnZipAnalysisFinished(const ArchiveAnalyzerResults& results) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(ClientDownloadRequest::ZIPPED_EXECUTABLE, type_);
     if (!service_)
@@ -779,7 +779,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     dmg_analysis_start_time_ = base::TimeTicks::Now();
   }
 
-  void OnDmgAnalysisFinished(const zip_analyzer::Results& results) {
+  void OnDmgAnalysisFinished(const ArchiveAnalyzerResults& results) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(ClientDownloadRequest::MAC_EXECUTABLE, type_);
     if (!service_)

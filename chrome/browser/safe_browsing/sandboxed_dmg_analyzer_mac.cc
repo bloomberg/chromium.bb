@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,8 +51,9 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
 void SandboxedDMGAnalyzer::ReportFileFailure() {
   DCHECK(!utility_process_mojo_client_);
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback_, Results()));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback_, ArchiveAnalyzerResults()));
 }
 
 void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {
@@ -63,8 +64,8 @@ void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {
       content::UtilityProcessMojoClient<chrome::mojom::SafeArchiveAnalyzer>>(
       l10n_util::GetStringUTF16(
           IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
-  utility_process_mojo_client_->set_error_callback(
-      base::Bind(&SandboxedDMGAnalyzer::AnalyzeFileDone, this, Results()));
+  utility_process_mojo_client_->set_error_callback(base::Bind(
+      &SandboxedDMGAnalyzer::AnalyzeFileDone, this, ArchiveAnalyzerResults()));
 
   utility_process_mojo_client_->Start();
 
@@ -73,7 +74,8 @@ void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {
       base::Bind(&SandboxedDMGAnalyzer::AnalyzeFileDone, this));
 }
 
-void SandboxedDMGAnalyzer::AnalyzeFileDone(const Results& results) {
+void SandboxedDMGAnalyzer::AnalyzeFileDone(
+    const ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   utility_process_mojo_client_.reset();

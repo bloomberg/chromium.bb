@@ -19,9 +19,9 @@
 #include "ipc/ipc_message_macros.h"
 
 #if defined(FULL_SAFE_BROWSING)
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
 #include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #endif
 
 // Singly-included section for typedefs.
@@ -112,7 +112,7 @@ IPC_PROTOBUF_MESSAGE_TRAITS_BEGIN(
   IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_COMPLEX_MEMBER(image_headers)
 IPC_PROTOBUF_MESSAGE_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
+IPC_STRUCT_TRAITS_BEGIN(safe_browsing::ArchiveAnalyzerResults)
   IPC_STRUCT_TRAITS_MEMBER(success)
   IPC_STRUCT_TRAITS_MEMBER(has_executable)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
