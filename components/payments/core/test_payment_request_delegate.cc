@@ -59,7 +59,7 @@ autofill::RegionDataLoader* TestPaymentRequestDelegate::GetRegionDataLoader() {
   return nullptr;
 }
 
-ukm::UkmService* TestPaymentRequestDelegate::GetUkmService() {
+ukm::UkmRecorder* TestPaymentRequestDelegate::GetUkmRecorder() {
   return nullptr;
 }
 

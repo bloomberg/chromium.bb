@@ -105,7 +105,7 @@ metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
   return nullptr;
 }
 
-ukm::UkmService* TestingApplicationContext::GetUkmService() {
+ukm::UkmRecorder* TestingApplicationContext::GetUkmRecorder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }

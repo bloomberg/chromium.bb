@@ -23,7 +23,7 @@
 #include "components/translate/core/browser/ranker_model.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/ukm/test_ukm_service.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -75,9 +75,7 @@ class TranslateRankerImplTest : public ::testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
-  ukm::TestUkmService* GetTestUkmService() {
-    return ukm_service_test_harness_.test_ukm_service();
-  }
+  ukm::TestUkmRecorder* GetTestUkmRecorder() { return &test_ukm_recorder_; }
   metrics::TranslateEventProto tep1_ =
       CreateTranslateEvent("fr", "en", 1, 0, 3);
   metrics::TranslateEventProto tep2_ =
@@ -86,7 +84,7 @@ class TranslateRankerImplTest : public ::testing::Test {
       CreateTranslateEvent("es", "de", 4, 5, 6);
 
  private:
-  ukm::UkmServiceTestingHarness ukm_service_test_harness_;
+  ukm::TestUkmRecorder test_ukm_recorder_;
 
   // Override the default URL fetcher to return custom responses for tests.
   net::TestURLFetcherFactory url_fetcher_factory_;
@@ -184,7 +182,7 @@ std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
   locale_weight["zh-cn"] = 0.12f;  // Normalized to lowercase.
 
   auto impl = base::MakeUnique<TranslateRankerImpl>(base::FilePath(), GURL(),
-                                                    GetTestUkmService());
+                                                    GetTestUkmRecorder());
   impl->OnModelAvailable(std::move(model));
   base::RunLoop().RunUntilIdle();
   return impl;
@@ -371,13 +369,13 @@ TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 
-  ASSERT_EQ(2U, GetTestUkmService()->sources_count());
+  ASSERT_EQ(2U, GetTestUkmRecorder()->sources_count());
   EXPECT_EQ(
       url0.spec(),
-      GetTestUkmService()->GetSourceForUrl(url0.spec().c_str())->url().spec());
+      GetTestUkmRecorder()->GetSourceForUrl(url0.spec().c_str())->url().spec());
   EXPECT_EQ(
       url1.spec(),
-      GetTestUkmService()->GetSourceForUrl(url1.spec().c_str())->url().spec());
+      GetTestUkmRecorder()->GetSourceForUrl(url1.spec().c_str())->url().spec());
 }
 
 TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {

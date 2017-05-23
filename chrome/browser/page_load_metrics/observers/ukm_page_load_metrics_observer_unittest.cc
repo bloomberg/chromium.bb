@@ -10,9 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/metrics/proto/ukm/entry.pb.h"
-#include "components/ukm/test_ukm_service.h"
-#include "components/ukm/ukm_entry.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -71,99 +69,83 @@ class UkmPageLoadMetricsObserverTest
         .Times(AnyNumber())
         .WillRepeatedly(Return(base::Optional<base::TimeDelta>()));
 
-    TestingBrowserProcess::GetGlobal()->SetUkmService(
-        ukm_service_test_harness_.test_ukm_service());
+    TestingBrowserProcess::GetGlobal()->SetUkmRecorder(&test_ukm_recorder_);
   }
 
-  size_t ukm_source_count() {
-    return ukm_service_test_harness_.test_ukm_service()->sources_count();
-  }
+  size_t ukm_source_count() { return test_ukm_recorder_.sources_count(); }
 
-  size_t ukm_entry_count() {
-    return ukm_service_test_harness_.test_ukm_service()->entries_count();
-  }
+  size_t ukm_entry_count() { return test_ukm_recorder_.entries_count(); }
 
   MockNetworkQualityProvider& mock_network_quality_provider() {
     return mock_network_quality_provider_;
   }
 
   const ukm::UkmSource* GetUkmSourceForUrl(const char* url) {
-    return ukm_service_test_harness_.test_ukm_service()->GetSourceForUrl(url);
+    return test_ukm_recorder_.GetSourceForUrl(url);
   }
 
-  const ukm::UkmEntry* GetUkmEntry(size_t entry_index) {
-    return ukm_service_test_harness_.test_ukm_service()->GetEntry(entry_index);
+  const ukm::mojom::UkmEntry* GetUkmEntry(size_t entry_index) {
+    return test_ukm_recorder_.GetEntry(entry_index);
   }
 
-  std::vector<const ukm::UkmEntry*> GetUkmEntriesForSourceID(
-      int32_t source_id) {
-    std::vector<const ukm::UkmEntry*> entries;
+  std::vector<const ukm::mojom::UkmEntry*> GetUkmEntriesForSourceID(
+      ukm::SourceId source_id) {
+    std::vector<const ukm::mojom::UkmEntry*> entries;
     for (size_t i = 0; i < ukm_entry_count(); ++i) {
-      const ukm::UkmEntry* entry = GetUkmEntry(i);
-      if (entry->source_id() == source_id)
+      const ukm::mojom::UkmEntry* entry = GetUkmEntry(i);
+      if (entry->source_id == source_id)
         entries.push_back(entry);
     }
     return entries;
   }
 
-  // Provides a single merged ukm::Entry proto that contains all metrics from
-  // the given |entries|. |entries| must be non-empty, and all |entries| must
-  // have the same |source_id| and |event_hash|.
-  ukm::Entry GetMergedEntryProto(
-      const std::vector<const ukm::UkmEntry*>& entries) {
+  // Provides a single merged ukm::mojom::UkmEntry proto that contains all
+  // metrics from the given |entries|. |entries| must be non-empty, and all
+  // |entries| must have the same |source_id| and |event_hash|.
+  ukm::mojom::UkmEntryPtr GetMergedEntry(
+      const std::vector<const ukm::mojom::UkmEntry*>& entries) {
     EXPECT_FALSE(entries.empty());
-    ukm::Entry merged_entry;
-    for (auto* entry : entries) {
-      ukm::Entry entry_proto;
-      entry->PopulateProto(&entry_proto);
-      EXPECT_TRUE(entry_proto.has_source_id());
-      EXPECT_TRUE(entry_proto.has_event_hash());
-      if (merged_entry.has_source_id()) {
-        EXPECT_EQ(merged_entry.source_id(), entry_proto.source_id());
-        EXPECT_EQ(merged_entry.event_hash(), entry_proto.event_hash());
+    ukm::mojom::UkmEntryPtr merged_entry = ukm::mojom::UkmEntry::New();
+    for (const auto* entry : entries) {
+      if (merged_entry->event_hash) {
+        EXPECT_EQ(merged_entry->source_id, entry->source_id);
+        EXPECT_EQ(merged_entry->event_hash, entry->event_hash);
+      } else {
+        merged_entry->event_hash = entry->event_hash;
+        merged_entry->source_id = entry->source_id;
       }
-      merged_entry.MergeFrom(entry_proto);
+      for (const auto& metric : entry->metrics) {
+        merged_entry->metrics.emplace_back(metric->Clone());
+      }
     }
     return merged_entry;
   }
 
-  ukm::Entry GetMergedEntryProtoForSourceID(int32_t source_id) {
-    ukm::Entry entry = GetMergedEntryProto(GetUkmEntriesForSourceID(source_id));
-    EXPECT_EQ(source_id, entry.source_id());
-    EXPECT_TRUE(entry.has_event_hash());
+  ukm::mojom::UkmEntryPtr GetMergedEntryForSourceID(ukm::SourceId source_id) {
+    ukm::mojom::UkmEntryPtr entry =
+        GetMergedEntry(GetUkmEntriesForSourceID(source_id));
+    EXPECT_EQ(source_id, entry->source_id);
+    EXPECT_NE(0UL, entry->event_hash);
     return entry;
   }
 
-  static const ukm::Entry_Metric* FindMetric(
-      const char* name,
-      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics)
-      WARN_UNUSED_RESULT {
-    for (const auto& metric : metrics) {
-      if (metric.metric_hash() == base::HashMetricName(name))
-        return &metric;
-    }
-    return nullptr;
+  static bool HasMetric(const char* name,
+                        const ukm::mojom::UkmEntry* entry) WARN_UNUSED_RESULT {
+    return ukm::TestUkmRecorder::FindMetric(entry, name) != nullptr;
   }
 
-  static bool HasMetric(
-      const char* name,
-      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics)
-      WARN_UNUSED_RESULT {
-    return FindMetric(name, metrics) != nullptr;
-  }
-
-  static void ExpectMetric(
-      const char* name,
-      int64_t expected_value,
-      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
-    const ukm::Entry_Metric* metric = FindMetric(name, metrics);
+  static void ExpectMetric(const char* name,
+                           int64_t expected_value,
+                           const ukm::mojom::UkmEntry* entry) {
+    const ukm::mojom::UkmMetric* metric =
+        ukm::TestUkmRecorder::FindMetric(entry, name);
     EXPECT_NE(nullptr, metric) << "Failed to find metric: " << name;
-    EXPECT_EQ(expected_value, metric->value());
+    EXPECT_EQ(expected_value, metric->value);
   }
 
  private:
   MockNetworkQualityProvider mock_network_quality_provider_;
-  ukm::UkmServiceTestingHarness ukm_service_test_harness_;
+  ukm::TestUkmRecorder test_ukm_recorder_;
 };
 
 TEST_F(UkmPageLoadMetricsObserverTest, NoMetrics) {
@@ -199,22 +181,19 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
-  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
-  EXPECT_EQ(entry_proto.source_id(), source->id());
-  EXPECT_EQ(entry_proto.event_hash(),
+  ukm::mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source->id());
+  EXPECT_EQ(entry->source_id, source->id());
+  EXPECT_EQ(entry->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_FALSE(entry_proto.metrics().empty());
+  EXPECT_FALSE(entry->metrics.empty());
   ExpectMetric(internal::kUkmPageTransition, ui::PAGE_TRANSITION_LINK,
-               entry_proto.metrics());
-  ExpectMetric(internal::kUkmParseStartName, 100, entry_proto.metrics());
-  ExpectMetric(internal::kUkmDomContentLoadedName, 200, entry_proto.metrics());
-  ExpectMetric(internal::kUkmFirstContentfulPaintName, 300,
-               entry_proto.metrics());
-  ExpectMetric(internal::kUkmLoadEventName, 500, entry_proto.metrics());
-  EXPECT_FALSE(
-      HasMetric(internal::kUkmFirstMeaningfulPaintName, entry_proto.metrics()));
-  EXPECT_TRUE(
-      HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
+               entry.get());
+  ExpectMetric(internal::kUkmParseStartName, 100, entry.get());
+  ExpectMetric(internal::kUkmDomContentLoadedName, 200, entry.get());
+  ExpectMetric(internal::kUkmFirstContentfulPaintName, 300, entry.get());
+  ExpectMetric(internal::kUkmLoadEventName, 500, entry.get());
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName, entry.get()));
+  EXPECT_TRUE(HasMetric(internal::kUkmForegroundDurationName, entry.get()));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
@@ -236,26 +215,23 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
-  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
-  EXPECT_EQ(entry_proto.source_id(), source->id());
-  EXPECT_EQ(entry_proto.event_hash(),
+  ukm::mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source->id());
+  EXPECT_EQ(entry->source_id, source->id());
+  EXPECT_EQ(entry->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
 
   // Make sure that only the following metrics are logged. In particular, no
   // paint/document/etc timing metrics should be logged for failed provisional
   // loads.
-  EXPECT_EQ(5, entry_proto.metrics().size());
+  EXPECT_EQ(5ul, entry->metrics.size());
   ExpectMetric(internal::kUkmPageTransition, ui::PAGE_TRANSITION_LINK,
-               entry_proto.metrics());
+               entry.get());
   ExpectMetric(internal::kUkmEffectiveConnectionType,
-               net::EFFECTIVE_CONNECTION_TYPE_2G, entry_proto.metrics());
+               net::EFFECTIVE_CONNECTION_TYPE_2G, entry.get());
   ExpectMetric(internal::kUkmNetErrorCode,
-               static_cast<int64_t>(net::ERR_TIMED_OUT) * -1,
-               entry_proto.metrics());
-  EXPECT_TRUE(
-      HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
-  EXPECT_TRUE(
-      HasMetric(internal::kUkmFailedProvisionaLoadName, entry_proto.metrics()));
+               static_cast<int64_t>(net::ERR_TIMED_OUT) * -1, entry.get());
+  EXPECT_TRUE(HasMetric(internal::kUkmForegroundDurationName, entry.get()));
+  EXPECT_TRUE(HasMetric(internal::kUkmFailedProvisionaLoadName, entry.get()));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
@@ -277,15 +253,13 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
-  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
-  EXPECT_EQ(entry_proto.source_id(), source->id());
-  EXPECT_EQ(entry_proto.event_hash(),
+  ukm::mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source->id());
+  EXPECT_EQ(entry->source_id, source->id());
+  EXPECT_EQ(entry->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_FALSE(entry_proto.metrics().empty());
-  ExpectMetric(internal::kUkmFirstMeaningfulPaintName, 600,
-               entry_proto.metrics());
-  EXPECT_TRUE(
-      HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
+  EXPECT_FALSE(entry->metrics.empty());
+  ExpectMetric(internal::kUkmFirstMeaningfulPaintName, 600, entry.get());
+  EXPECT_TRUE(HasMetric(internal::kUkmForegroundDurationName, entry.get()));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
@@ -319,32 +293,26 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   EXPECT_NE(source1->id(), source2->id());
 
   EXPECT_GE(ukm_entry_count(), 2ul);
-  ukm::Entry entry1_proto = GetMergedEntryProtoForSourceID(source1->id());
-  ukm::Entry entry2_proto = GetMergedEntryProtoForSourceID(source2->id());
-  EXPECT_NE(entry1_proto.source_id(), entry2_proto.source_id());
+  ukm::mojom::UkmEntryPtr entry1 = GetMergedEntryForSourceID(source1->id());
+  ukm::mojom::UkmEntryPtr entry2 = GetMergedEntryForSourceID(source2->id());
+  EXPECT_NE(entry1->source_id, entry2->source_id);
 
-  EXPECT_EQ(entry1_proto.source_id(), source1->id());
-  EXPECT_EQ(entry1_proto.event_hash(),
+  EXPECT_EQ(entry1->source_id, source1->id());
+  EXPECT_EQ(entry1->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_FALSE(entry1_proto.metrics().empty());
-  ExpectMetric(internal::kUkmFirstContentfulPaintName, 200,
-               entry1_proto.metrics());
-  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName,
-                         entry2_proto.metrics()));
-  EXPECT_TRUE(
-      HasMetric(internal::kUkmForegroundDurationName, entry1_proto.metrics()));
+  EXPECT_FALSE(entry1->metrics.empty());
+  ExpectMetric(internal::kUkmFirstContentfulPaintName, 200, entry1.get());
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName, entry2.get()));
+  EXPECT_TRUE(HasMetric(internal::kUkmForegroundDurationName, entry1.get()));
 
-  EXPECT_EQ(entry2_proto.source_id(), source2->id());
-  EXPECT_EQ(entry2_proto.event_hash(),
+  EXPECT_EQ(entry2->source_id, source2->id());
+  EXPECT_EQ(entry2->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_FALSE(entry2_proto.metrics().empty());
-  EXPECT_FALSE(HasMetric(internal::kUkmParseStartName, entry2_proto.metrics()));
-  EXPECT_FALSE(HasMetric(internal::kUkmFirstContentfulPaintName,
-                         entry2_proto.metrics()));
-  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName,
-                         entry2_proto.metrics()));
-  EXPECT_TRUE(
-      HasMetric(internal::kUkmForegroundDurationName, entry2_proto.metrics()));
+  EXPECT_FALSE(entry2->metrics.empty());
+  EXPECT_FALSE(HasMetric(internal::kUkmParseStartName, entry2.get()));
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstContentfulPaintName, entry2.get()));
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName, entry2.get()));
+  EXPECT_TRUE(HasMetric(internal::kUkmForegroundDurationName, entry2.get()));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
@@ -365,15 +333,15 @@ TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
-  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
-  EXPECT_EQ(entry_proto.source_id(), source->id());
-  EXPECT_EQ(entry_proto.event_hash(),
+  ukm::mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source->id());
+  EXPECT_EQ(entry->source_id, source->id());
+  EXPECT_EQ(entry->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_FALSE(entry_proto.metrics().empty());
+  EXPECT_FALSE(entry->metrics.empty());
   ExpectMetric(internal::kUkmEffectiveConnectionType,
-               net::EFFECTIVE_CONNECTION_TYPE_3G, entry_proto.metrics());
-  ExpectMetric(internal::kUkmHttpRttEstimate, 100, entry_proto.metrics());
-  ExpectMetric(internal::kUkmTransportRttEstimate, 200, entry_proto.metrics());
+               net::EFFECTIVE_CONNECTION_TYPE_3G, entry.get());
+  ExpectMetric(internal::kUkmHttpRttEstimate, 100, entry.get());
+  ExpectMetric(internal::kUkmTransportRttEstimate, 200, entry.get());
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
@@ -389,11 +357,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
-  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
-  EXPECT_EQ(entry_proto.source_id(), source->id());
-  EXPECT_EQ(entry_proto.event_hash(),
+  ukm::mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source->id());
+  EXPECT_EQ(entry->source_id, source->id());
+  EXPECT_EQ(entry->event_hash,
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_FALSE(entry_proto.metrics().empty());
+  EXPECT_FALSE(entry->metrics.empty());
   ExpectMetric(internal::kUkmPageTransition, ui::PAGE_TRANSITION_RELOAD,
-               entry_proto.metrics());
+               entry.get());
 }

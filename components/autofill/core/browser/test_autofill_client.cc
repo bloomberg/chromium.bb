@@ -47,8 +47,8 @@ rappor::RapporServiceImpl* TestAutofillClient::GetRapporServiceImpl() {
   return rappor_service_.get();
 }
 
-ukm::UkmService* TestAutofillClient::GetUkmService() {
-  return ukm_service_test_harness_.test_ukm_service();
+ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
+  return &test_ukm_recorder_;
 }
 
 SaveCardBubbleController* TestAutofillClient::GetSaveCardBubbleController() {

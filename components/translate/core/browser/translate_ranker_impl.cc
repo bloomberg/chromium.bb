@@ -27,8 +27,8 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/ukm/ukm_entry_builder.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "components/variations/variations_associated_data.h"
 #include "url/gurl.h"
 
@@ -136,8 +136,8 @@ void TranslateRankerFeatures::WriteTo(std::ostream& stream) const {
 
 TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
                                          const GURL& model_url,
-                                         ukm::UkmService* ukm_service)
-    : ukm_service_(ukm_service),
+                                         ukm::UkmRecorder* ukm_recorder)
+    : ukm_recorder_(ukm_recorder),
       is_logging_enabled_(true),
       is_query_enabled_(base::FeatureList::IsEnabled(kTranslateRankerQuery)),
       is_enforcement_enabled_(
@@ -296,15 +296,15 @@ void TranslateRankerImpl::FlushTranslateEvents(
 void TranslateRankerImpl::SendEventToUKM(
     const metrics::TranslateEventProto& event,
     const GURL& url) {
-  if (!ukm_service_) {
+  if (!ukm_recorder_) {
     DVLOG(3) << "No UKM service.";
     return;
   }
   DVLOG(3) << "Sending event for url: " << url.spec();
-  int32_t source_id = ukm_service_->GetNewSourceID();
-  ukm_service_->UpdateSourceURL(source_id, url);
+  ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
+  ukm_recorder_->UpdateSourceURL(source_id, url);
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm_service_->GetEntryBuilder(source_id, "Translate");
+      ukm_recorder_->GetEntryBuilder(source_id, "Translate");
   // The metrics added here should be kept in sync with the documented
   // metrics in tools/metrics/ukm/ukm.xml.
   // TODO(hamelphi): Remove hashing functions once UKM accepts strings metrics.

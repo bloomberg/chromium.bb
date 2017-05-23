@@ -125,7 +125,7 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
 
   autofill::RegionDataLoader* GetRegionDataLoader() override { return nullptr; }
 
-  ukm::UkmService* GetUkmService() override { return nullptr; }
+  ukm::UkmRecorder* GetUkmRecorder() override { return nullptr; }
 
  private:
   std::string locale_;

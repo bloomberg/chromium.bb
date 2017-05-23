@@ -33,7 +33,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
           result_delegate) override;
   AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
-  ukm::UkmService* GetUkmService() override;
+  ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
 

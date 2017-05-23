@@ -8,7 +8,6 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
-#include "components/ukm/ukm_entry.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_source.h"
 #include "url/gurl.h"
@@ -57,15 +56,15 @@ void DebugPage::StartDataRequest(
     data.append("<h2>Sources</h2>");
     for (const auto& kv : ukm_service->sources_) {
       const auto* src = kv.second.get();
-      data.append(base::StringPrintf("<p>Id:%d Url:%s</p>", src->id(),
+      data.append(base::StringPrintf("<p>Id:%" PRId64 " Url:%s</p>", src->id(),
                                      src->url().spec().c_str()));
     }
 
     data.append("<h2>Entries</h2>");
     for (const auto& v : ukm_service->entries_) {
       const auto* entry = v.get();
-      data.append(base::StringPrintf("<h3>Id:%d Hash:%" PRIu64 "</h3>",
-                                     entry->source_id(), entry->event_hash()));
+      data.append(base::StringPrintf("<h3>Id:%" PRId64 " Hash:%" PRIu64 "</h3>",
+                                     entry->source_id, entry->event_hash));
     }
   }
 

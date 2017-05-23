@@ -19,7 +19,7 @@
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/persisted_logs_metrics_impl.h"
-#include "components/ukm/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_entry_builder.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
@@ -27,6 +27,24 @@
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace ukm {
+
+// A small shim exposing UkmRecorder methods to tests.
+class TestRecordingHelper {
+ public:
+  TestRecordingHelper(UkmRecorder* recorder) : recorder_(recorder) {}
+
+  void UpdateSourceURL(SourceId source_id, const GURL& url) {
+    recorder_->UpdateSourceURL(source_id, url);
+  };
+
+  std::unique_ptr<UkmEntryBuilder> GetEntryBuilder(SourceId source_id,
+                                                   const char* event_name) {
+    return recorder_->GetEntryBuilder(source_id, event_name);
+  }
+
+ private:
+  UkmRecorder* recorder_;
+};
 
 namespace {
 
@@ -147,21 +165,22 @@ TEST_F(UkmServiceTest, EnableDisableSchedule) {
 
 TEST_F(UkmServiceTest, PersistAndPurge) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Should init, generate a log, and start an upload for source.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client_.uploader()->is_uploading());
   // Flushes the generated log to disk and generates a new entry.
   {
     std::unique_ptr<UkmEntryBuilder> builder =
-        service.GetEntryBuilder(id, "PageLoad");
+        recorder.GetEntryBuilder(id, "PageLoad");
     builder->AddMetric("FirstContentfulPaint", 300);
   }
   service.Flush();
@@ -172,16 +191,17 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
 
 TEST_F(UkmServiceTest, SourceSerialization) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/initial"));
-  service.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/initial"));
+  recorder.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
@@ -198,14 +218,15 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
 TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     std::unique_ptr<UkmEntryBuilder> foo_builder =
         service.GetEntryBuilder(id, "foo");
@@ -261,14 +282,15 @@ TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
 
 TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   {
     std::unique_ptr<UkmEntryBuilder> builder =
@@ -282,6 +304,7 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
 
 TEST_F(UkmServiceTest, MetricsProviderTest) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
 
   metrics::TestMetricsProvider* provider = new metrics::TestMetricsProvider();
   service.RegisterMetricsProvider(
@@ -296,8 +319,8 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     std::unique_ptr<UkmEntryBuilder> builder =
         service.GetEntryBuilder(id, "PageLoad");
@@ -316,6 +339,7 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
 
 TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
@@ -328,8 +352,8 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 0);
 
-  int32_t id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Includes a Source, so will persist.
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
@@ -343,7 +367,7 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 2);
 
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     std::unique_ptr<UkmEntryBuilder> builder =
         service.GetEntryBuilder(id, "PageLoad");
@@ -359,9 +383,9 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
 }
 
 TEST_F(UkmServiceTest, GetNewSourceID) {
-  int32_t id1 = UkmService::GetNewSourceID();
-  int32_t id2 = UkmService::GetNewSourceID();
-  int32_t id3 = UkmService::GetNewSourceID();
+  ukm::SourceId id1 = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id2 = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id3 = UkmRecorder::GetNewSourceID();
   EXPECT_NE(id1, id2);
   EXPECT_NE(id1, id3);
   EXPECT_NE(id2, id3);
@@ -376,16 +400,17 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
 
     ClearPrefs();
     UkmService service(&prefs_, &client_);
+    TestRecordingHelper recorder(&service);
     EXPECT_EQ(GetPersistedLogCount(), 0);
     service.Initialize();
     task_runner_->RunUntilIdle();
     service.EnableRecording();
     service.EnableReporting();
 
-    int32_t id = UkmService::GetNewSourceID();
-    service.UpdateSourceURL(id, GURL("https://google.com/initial"));
-    service.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
-    service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+    ukm::SourceId id = UkmRecorder::GetNewSourceID();
+    recorder.UpdateSourceURL(id, GURL("https://google.com/initial"));
+    recorder.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
+    recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
     service.Flush();
     EXPECT_EQ(GetPersistedLogCount(), 1);
@@ -413,14 +438,15 @@ TEST_F(UkmServiceTest, RecordSessionId) {
 
     ClearPrefs();
     UkmService service(&prefs_, &client_);
+    TestRecordingHelper recorder(&service);
     EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
     task_runner_->RunUntilIdle();
     service.EnableRecording();
     service.EnableReporting();
 
-    auto id = UkmService::GetNewSourceID();
-    service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+    auto id = UkmRecorder::GetNewSourceID();
+    recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
     service.Flush();
     EXPECT_EQ(1, GetPersistedLogCount());
@@ -438,18 +464,19 @@ TEST_F(UkmServiceTest, SourceSize) {
 
   ClearPrefs();
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
-  id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar2"));
-  id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar3"));
+  auto id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+  id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar2"));
+  id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar3"));
 
   service.Flush();
   EXPECT_EQ(1, GetPersistedLogCount());
@@ -462,13 +489,14 @@ TEST_F(UkmServiceTest, SourceSize) {
 
 TEST_F(UkmServiceTest, PurgeMidUpload) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
-  auto id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+  auto id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
   // Should init, generate a log, and start an upload.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client_.uploader()->is_uploading());
@@ -488,14 +516,15 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
 
   ClearPrefs();
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmService::GetNewSourceID();
-  service.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+  auto id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
 
   {
     std::unique_ptr<UkmEntryBuilder> builder =
@@ -533,17 +562,18 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
 
 TEST_F(UkmServiceTest, SourceURLLength) {
   UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmService::GetNewSourceID();
+  auto id = UkmRecorder::GetNewSourceID();
 
   // This URL is too long to be recorded fully.
   const std::string long_string = "https://" + std::string(10000, 'a');
-  service.UpdateSourceURL(id, GURL(long_string));
+  recorder.UpdateSourceURL(id, GURL(long_string));
 
   service.Flush();
   EXPECT_EQ(1, GetPersistedLogCount());

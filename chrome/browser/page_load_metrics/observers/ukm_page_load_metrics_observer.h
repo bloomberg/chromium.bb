@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/ukm/ukm_service.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "ui/base/page_transition_types.h"
 
@@ -88,7 +89,7 @@ class UkmPageLoadMetricsObserver
       network_quality_provider_;
 
   // Unique UKM identifier for the page load we are recording metrics for.
-  const int32_t source_id_;
+  const ukm::SourceId source_id_;
 
   // Network quality estimates.
   net::EffectiveConnectionType effective_connection_type_ =

@@ -11,12 +11,10 @@ static_library("ukm") {
   sources = [
     "persisted_logs_metrics_impl.cc",
     "persisted_logs_metrics_impl.h",
-    "ukm_entry.cc",
-    "ukm_entry.h",
-    "ukm_entry_builder.cc",
-    "ukm_entry_builder.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
+    "ukm_recorder_impl.cc",
+    "ukm_recorder_impl.h",
     "ukm_reporting_service.cc",
     "ukm_reporting_service.h",
     "ukm_rotation_scheduler.cc",
@@ -25,6 +23,11 @@ static_library("ukm") {
     "ukm_service.h",
     "ukm_source.cc",
     "ukm_source.h",
+  ]
+
+  public_deps = [
+    "//components/metrics/proto",
+    "//components/ukm/public",
   ]
 
   deps = [
@@ -56,12 +59,13 @@ static_library("observers") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "test_ukm_service.cc",
-    "test_ukm_service.h",
+    "test_ukm_recorder.cc",
+    "test_ukm_recorder.h",
   ]
 
   public_deps = [
     ":ukm",
+    "//components/metrics/proto",
   ]
   deps = [
     "//base",

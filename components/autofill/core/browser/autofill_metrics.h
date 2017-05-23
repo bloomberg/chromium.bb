@@ -18,10 +18,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_field_data.h"
-
-namespace ukm {
-class UkmService;
-}  // namespace ukm
+#include "components/ukm/public/ukm_recorder.h"
 
 namespace internal {
 // Name constants are exposed here so they can be referenced from tests.
@@ -624,7 +621,7 @@ class AutofillMetrics {
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
-    explicit FormInteractionsUkmLogger(ukm::UkmService* ukm_service);
+    explicit FormInteractionsUkmLogger(ukm::UkmRecorder* ukm_recorder);
 
     const GURL& url() const { return url_; }
 
@@ -648,8 +645,8 @@ class AutofillMetrics {
     int64_t MillisecondsSinceFormParsed() const;
     void GetNewSourceID();
 
-    ukm::UkmService* ukm_service_;  // Weak reference.
-    int32_t source_id_ = -1;
+    ukm::UkmRecorder* ukm_recorder_;  // Weak reference.
+    ukm::SourceId source_id_ = -1;
     GURL url_;
     base::TimeTicks form_parsed_timestamp_;
   };
@@ -821,20 +818,20 @@ class AutofillMetrics {
 
   // Logs the card upload decisions ukm for the specified |url|.
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
-  static void LogCardUploadDecisionsUkm(ukm::UkmService* ukm_service,
+  static void LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
                                         const GURL& url,
                                         int upload_decision_metrics);
 
   // Logs the developer engagement ukm for the specified |url| and autofill
   // fields in the form structure. |developer_engagement_metrics| is a bitmask
   // of |AutofillMetrics::DeveloperEngagementMetric|.
-  static void LogDeveloperEngagementUkm(ukm::UkmService* ukm_service,
+  static void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
                                         const GURL& url,
                                         int developer_engagement_metrics);
 
   // Logs the the |ukm_entry_name| with the specified |url| and the specified
   // |metrics|. Returns whether the ukm was sucessfully logged.
-  static bool LogUkm(ukm::UkmService* ukm_service,
+  static bool LogUkm(ukm::UkmRecorder* ukm_recorder,
                      const GURL& url,
                      const std::string& ukm_entry_name,
                      const std::vector<std::pair<const char*, int>>& metrics);

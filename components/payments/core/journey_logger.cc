@@ -8,8 +8,8 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/ukm/ukm_entry_builder.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/public/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_recorder.h"
 
 namespace payments {
 
@@ -65,11 +65,11 @@ std::string GetHistogramNameSuffix(
 
 JourneyLogger::JourneyLogger(bool is_incognito,
                              const GURL& url,
-                             ukm::UkmService* ukm_service)
+                             ukm::UkmRecorder* ukm_recorder)
     : is_incognito_(is_incognito),
       events_(EVENT_INITIATED),
       url_(url),
-      ukm_service_(ukm_service) {}
+      ukm_recorder_(ukm_recorder) {}
 
 JourneyLogger::~JourneyLogger() {
   if (was_show_called_)
@@ -242,14 +242,15 @@ void JourneyLogger::RecordCanMakePaymentEffectOnCompletion(
 }
 
 void JourneyLogger::RecordUrlKeyedMetrics(CompletionStatus completion_status) {
-  if (!ukm_service_ || !url_.is_valid())
+  if (!ukm_recorder_ || !url_.is_valid())
     return;
 
   // Record the Checkout Funnel UKM.
-  int32_t source_id = ukm_service_->GetNewSourceID();
-  ukm_service_->UpdateSourceURL(source_id, url_);
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
-      source_id, internal::kUKMCheckoutEventsEntryName);
+  ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
+  ukm_recorder_->UpdateSourceURL(source_id, url_);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id,
+                                     internal::kUKMCheckoutEventsEntryName);
   builder->AddMetric(internal::kUKMCompletionStatusMetricName,
                      completion_status);
   builder->AddMetric(internal::kUKMEventsMetricName, events_);

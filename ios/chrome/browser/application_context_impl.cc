@@ -32,6 +32,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "components/ukm/ukm_service.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
@@ -142,7 +143,7 @@ void ApplicationContextImpl::OnAppEnterForeground() {
   variations::VariationsService* variations_service = GetVariationsService();
   if (variations_service)
     variations_service->OnAppEnterForeground();
-  ukm::UkmService* ukm_service = GetUkmService();
+  ukm::UkmService* ukm_service = GetMetricsServicesManager()->GetUkmService();
   if (ukm_service)
     ukm_service->OnAppEnterForeground();
 }
@@ -171,7 +172,7 @@ void ApplicationContextImpl::OnAppEnterBackground() {
   metrics::MetricsService* metrics_service = GetMetricsService();
   if (metrics_service && local_state)
     metrics_service->OnAppEnterBackground();
-  ukm::UkmService* ukm_service = GetUkmService();
+  ukm::UkmService* ukm_service = GetMetricsServicesManager()->GetUkmService();
   if (ukm_service)
     ukm_service->OnAppEnterBackground();
 
@@ -230,7 +231,7 @@ metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
   return GetMetricsServicesManager()->GetMetricsService();
 }
 
-ukm::UkmService* ApplicationContextImpl::GetUkmService() {
+ukm::UkmRecorder* ApplicationContextImpl::GetUkmRecorder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetMetricsServicesManager()->GetUkmService();
 }
