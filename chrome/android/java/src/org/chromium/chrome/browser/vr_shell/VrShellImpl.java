@@ -43,6 +43,7 @@ import org.chromium.content.browser.MotionEventSynthesizer;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowAndroidProvider;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -448,6 +449,11 @@ public class VrShellImpl
         mTabModelSelectorTabObserver.destroy();
         mTab.removeObserver(mTabObserver);
         restoreTabFromVR();
+
+        if (mTab != null) {
+            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+        }
+
         mContentVirtualDisplay.destroy();
         super.shutdown();
     }

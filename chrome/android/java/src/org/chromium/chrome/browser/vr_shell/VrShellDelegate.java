@@ -904,7 +904,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mVrShell.pause();
         removeVrViews();
         destroyVrShell();
-        mActivity.getFullscreenManager().setPositionsForTabToNonFullscreen();
         if (disableVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
 
         promptForFeedbackIfNeeded(stayingInChrome);
