@@ -128,29 +128,29 @@ void PaymentRequest::PopulateProfileCache() {
     return;
 
   profile_cache_.reserve(profiles_to_suggest.size());
-
-  std::vector<autofill::AutofillProfile*> raw_profiles_for_filtering;
-  raw_profiles_for_filtering.reserve(profiles_to_suggest.size());
-
   for (const auto* profile : profiles_to_suggest) {
     profile_cache_.push_back(*profile);
-    raw_profiles_for_filtering.push_back(&profile_cache_.back());
+    shipping_profiles_.push_back(&profile_cache_.back());
+  }
+
+  // If the merchant provided a shipping option, select a suitable default
+  // shipping profile. We pick the profile that is most complete, going down
+  // the list in Frecency order.
+  // TODO(crbug.com/719652): Have a proper ordering of shipping addresses by
+  // completeness.
+  if (selected_shipping_option_) {
+    selected_shipping_profile_ = shipping_profiles_[0];
+    for (autofill::AutofillProfile* profile : shipping_profiles_) {
+      if (profile_comparator_.IsShippingComplete(profile)) {
+        selected_shipping_profile_ = profile;
+        break;
+      }
+    }
   }
 
   // Contact profiles are deduped and ordered in completeness.
   contact_profiles_ =
-      profile_comparator_.FilterProfilesForContact(raw_profiles_for_filtering);
-
-  // Shipping profiles are ordered by completeness.
-  shipping_profiles_ =
-      profile_comparator_.FilterProfilesForShipping(raw_profiles_for_filtering);
-
-  // If the merchant provided a shipping option, and the highest-ranking
-  // shipping profile is usable, select it.
-  if (selected_shipping_option_ && !shipping_profiles_.empty() &&
-      profile_comparator_.IsShippingComplete(shipping_profiles_[0])) {
-    selected_shipping_profile_ = shipping_profiles_[0];
-  }
+      profile_comparator_.FilterProfilesForContact(shipping_profiles_);
 
   // If the highest-ranking contact profile is usable, select it. Otherwise,
   // select none.

@@ -238,21 +238,25 @@ void PaymentRequestState::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager_->GetProfilesToSuggest();
 
-  std::vector<autofill::AutofillProfile*> raw_profiles_for_filtering;
-  raw_profiles_for_filtering.reserve(profiles.size());
-
   // PaymentRequest may outlive the Profiles returned by the Data Manager.
   // Thus, we store copies, and return a vector of pointers to these copies
   // whenever Profiles are requested.
   for (size_t i = 0; i < profiles.size(); i++) {
     profile_cache_.push_back(
         base::MakeUnique<autofill::AutofillProfile>(*profiles[i]));
-    raw_profiles_for_filtering.push_back(profile_cache_.back().get());
+
+    shipping_profiles_.push_back(profile_cache_[i].get());
   }
 
+  std::vector<autofill::AutofillProfile*> raw_profiles_for_filtering(
+      profile_cache_.size());
+  std::transform(profile_cache_.begin(), profile_cache_.end(),
+                 raw_profiles_for_filtering.begin(),
+                 [](const std::unique_ptr<autofill::AutofillProfile>& p) {
+                   return p.get();
+                 });
+
   contact_profiles_ = profile_comparator()->FilterProfilesForContact(
-      raw_profiles_for_filtering);
-  shipping_profiles_ = profile_comparator()->FilterProfilesForShipping(
       raw_profiles_for_filtering);
 
   // Create the list of available instruments. A copy of each card will be made
@@ -265,17 +269,22 @@ void PaymentRequestState::PopulateProfileCache() {
 
 void PaymentRequestState::SetDefaultProfileSelections() {
   // Only pre-select an address if the merchant provided at least one selected
-  // shipping option, and the top profile is complete. Assumes that profiles
-  // have already been sorted for completeness and frecency.
-  if (!shipping_profiles().empty() && spec_->selected_shipping_option() &&
-      profile_comparator()->IsShippingComplete(shipping_profiles_[0])) {
-    selected_shipping_profile_ = shipping_profiles()[0];
+  // shipping option.
+  if (!shipping_profiles().empty() && spec_->selected_shipping_option()) {
+    // Choose any complete shipping profile, or default to the most frecent
+    // address if no complete address could be found.
+    selected_shipping_profile_ = shipping_profiles_[0];
+    for (autofill::AutofillProfile* profile : shipping_profiles_) {
+      if (profile_comparator_.IsShippingComplete(profile)) {
+        selected_shipping_profile_ = profile;
+        break;
+      }
+    }
   }
 
   // Contact profiles were ordered by completeness in addition to frecency;
   // the first one is the best default selection.
-  if (!contact_profiles().empty() &&
-      profile_comparator()->IsContactInfoComplete(contact_profiles_[0]))
+  if (!contact_profiles().empty())
     selected_contact_profile_ = contact_profiles()[0];
 
   // TODO(crbug.com/702063): Change this code to prioritize instruments by use
