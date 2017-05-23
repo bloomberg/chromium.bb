@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
+#include "chrome/browser/android/offline_pages/cct_request_observer.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/prerendering_offliner.h"
@@ -88,6 +89,8 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   DownloadNotifyingObserver::CreateAndStartObserving(
       request_coordinator,
       base::MakeUnique<android::OfflinePageNotificationBridge>());
+
+  CCTRequestObserver::AttachToRequestCoordinator(request_coordinator);
 
   return request_coordinator;
 }

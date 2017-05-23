@@ -2137,6 +2137,8 @@ split_static_library("browser") {
     sources += [
       "android/offline_pages/background_scheduler_bridge.cc",
       "android/offline_pages/background_scheduler_bridge.h",
+      "android/offline_pages/cct_request_observer.cc",
+      "android/offline_pages/cct_request_observer.h",
       "android/offline_pages/downloads/offline_page_download_bridge.cc",
       "android/offline_pages/downloads/offline_page_download_bridge.h",
       "android/offline_pages/downloads/offline_page_infobar_delegate.cc",
@@ -4234,6 +4236,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsBridge.java",
       "../android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerBridge.java",
+      "../android/java/src/org/chromium/chrome/browser/offlinepages/CCTRequestStatus.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/SavePageRequest.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageDownloadBridge.java",

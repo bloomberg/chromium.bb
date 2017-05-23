@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_APP_HOOKS_H_
 
 #include <jni.h>
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 
 namespace chrome {
@@ -14,6 +15,8 @@ namespace android {
 class AppHooks {
  public:
   static bool ShouldDetectVideoFullscreen();
+  static base::android::ScopedJavaLocalRef<jobject>
+  GetOfflinePagesCCTRequestDoneCallback();
 
  private:
   AppHooks();
