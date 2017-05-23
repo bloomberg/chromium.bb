@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -31,10 +32,13 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+using base::Bucket;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::InSequence;
+using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnArg;
@@ -232,6 +236,7 @@ class IconCacherTestPopularSites : public IconCacherTestBase {
 };
 
 TEST_F(IconCacherTestPopularSites, LargeCached) {
+  base::HistogramTester histogram_tester;
   base::MockCallback<base::Closure> done;
   EXPECT_CALL(done, Run()).Times(0);
   base::RunLoop loop;
@@ -249,9 +254,13 @@ TEST_F(IconCacherTestPopularSites, LargeCached) {
   WaitForMainThreadTasksToFinish();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
+              IsEmpty());
 }
 
 TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchSucceeded) {
+  base::HistogramTester histogram_tester;
   base::MockCallback<base::Closure> done;
   base::RunLoop loop;
   {
@@ -271,6 +280,9 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchSucceeded) {
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
+              ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, SmallNotCachedAndFetchSucceeded) {
@@ -298,6 +310,7 @@ TEST_F(IconCacherTestPopularSites, SmallNotCachedAndFetchSucceeded) {
 }
 
 TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchFailed) {
+  base::HistogramTester histogram_tester;
   base::MockCallback<base::Closure> done;
   EXPECT_CALL(done, Run()).Times(0);
   {
@@ -316,9 +329,14 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchFailed) {
   WaitForMainThreadTasksToFinish();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.TileFaviconFetchSuccess.Popular"),
+      ElementsAre(Bucket(/*bucket=*/false, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, HandlesEmptyCallbacksNicely) {
+  base::HistogramTester histogram_tester;
   EXPECT_CALL(*image_fetcher_, SetDataUseServiceName(_));
   EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(_));
   EXPECT_CALL(*image_fetcher_, StartOrQueueNetworkRequest(_, _, _, _))
@@ -330,9 +348,15 @@ TEST_F(IconCacherTestPopularSites, HandlesEmptyCallbacksNicely) {
   // Even though the callbacks are not called, the icon gets written out.
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::FAVICON));
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::TOUCH_ICON));
+  // The histogram gets reported despite empty callbacks.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.TileFaviconFetchSuccess.Popular"),
+      ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, ProvidesDefaultIconAndSucceedsWithFetching) {
+  base::HistogramTester histogram_tester;
   // The returned data string is not used by the mocked decoder.
   ON_CALL(mock_resource_delegate_, GetRawDataResource(12345, _, _))
       .WillByDefault(Return(""));
@@ -376,6 +400,12 @@ TEST_F(IconCacherTestPopularSites, ProvidesDefaultIconAndSucceedsWithFetching) {
   fetch_loop.Run();  // Wait for the updated image.
   EXPECT_THAT(GetCachedIconFor(site_.url, favicon_base::TOUCH_ICON).Size(),
               Eq(gfx::Size(128, 128)));  // Compares dimensions, not objects.
+  // The histogram gets reported only once (for the downloaded icon, not for the
+  // default one).
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.TileFaviconFetchSuccess.Popular"),
+      ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchPerformedOnlyOnce) {
@@ -430,6 +460,8 @@ class IconCacherTestMostLikely : public IconCacherTestBase {
 
 TEST_F(IconCacherTestMostLikely, Cached) {
   GURL page_url("http://www.site.com");
+  base::HistogramTester histogram_tester;
+
   GURL icon_url("http://www.site.com/favicon.png");
   PreloadIcon(page_url, icon_url, favicon_base::TOUCH_ICON, 128, 128);
 
@@ -446,10 +478,14 @@ TEST_F(IconCacherTestMostLikely, Cached) {
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::FAVICON));
   EXPECT_TRUE(IconIsCachedFor(page_url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TileFaviconFetchSuccess.Server"),
+              IsEmpty());
 }
 
 TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
   GURL page_url("http://www.site.com");
+  base::HistogramTester histogram_tester;
 
   base::MockCallback<base::Closure> done;
   base::RunLoop loop;
@@ -479,10 +515,15 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::FAVICON));
   EXPECT_TRUE(IconIsCachedFor(page_url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.TileFaviconFetchSuccess.Server"),
+      ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
   GURL page_url("http://www.site.com");
+  base::HistogramTester histogram_tester;
 
   base::MockCallback<base::Closure> done;
   {
@@ -511,6 +552,10 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::FAVICON));
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.TileFaviconFetchSuccess.Server"),
+      ElementsAre(Bucket(/*bucket=*/false, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestMostLikely, HandlesEmptyCallbacksNicely) {
