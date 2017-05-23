@@ -747,10 +747,18 @@ void ScrollView::EnableViewPortLayer() {
     return;
 
   viewport_layer_enabled_ = true;
-  background_color_ = SK_ColorWHITE;
-  contents_viewport_->set_background(
-      Background::CreateSolidBackground(background_color_));
+
   contents_viewport_->SetPaintToLayer();
+
+  if (scroll_with_layers_enabled_) {
+    background_color_ = SK_ColorWHITE;
+    contents_viewport_->set_background(
+        Background::CreateSolidBackground(background_color_));
+  } else {
+    // We may have transparent children who want to blend into the default
+    // background.
+    contents_viewport_->layer()->SetFillsBoundsOpaquely(false);
+  }
   contents_viewport_->layer()->SetMasksToBounds(true);
 }
 
