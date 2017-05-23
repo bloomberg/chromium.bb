@@ -20,10 +20,8 @@ var allTests = [
             button.addEventListener(EventType.ALERT, function() {
               chrome.test.succeed();
             }, true);
-            var cx = Math.floor(
-                button.location.left + button.location.width / 2);
-            var cy = Math.floor(
-                button.location.top + button.location.height / 2);
+            var cx = button.location.left + button.location.width / 2;
+            var cy = button.location.top + button.location.height / 2;
             desktop.hitTest(cx, cy, EventType.ALERT);
           }
         }

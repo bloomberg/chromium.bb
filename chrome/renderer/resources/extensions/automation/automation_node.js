@@ -398,8 +398,8 @@ AutomationNodeImpl.prototype = {
     // Convert from global to tree-relative coordinates.
     var location = GetLocation(this.treeID, GetRootID(this.treeID));
     this.performAction_('hitTest',
-                        { x: x - location.left,
-                          y: y - location.top,
+                        { x: Math.floor(x - location.left),
+                          y: Math.floor(y - location.top),
                           eventToFire: eventToFire });
   },
 
