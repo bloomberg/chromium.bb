@@ -234,7 +234,8 @@ class TabTest : public BlockCleanupTest {
     [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
     std::unique_ptr<web::NavigationContext> context1 =
         web::NavigationContextImpl::CreateNavigationContext(
-            web_state_impl_.get(), userUrl);
+            web_state_impl_.get(), userUrl,
+            ui::PageTransition::PAGE_TRANSITION_TYPED);
     web_state_impl_->OnNavigationStarted(context1.get());
     [tab_ webWillAddPendingURL:redirectUrl
                     transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT];
@@ -247,7 +248,8 @@ class TabTest : public BlockCleanupTest {
 
     std::unique_ptr<web::NavigationContext> context2 =
         web::NavigationContextImpl::CreateNavigationContext(
-            web_state_impl_.get(), redirectUrl);
+            web_state_impl_.get(), redirectUrl,
+            ui::PageTransition::PAGE_TRANSITION_TYPED);
     web_state_impl_->OnNavigationStarted(context2.get());
     [[tab_ navigationManagerImpl]->GetSessionController() commitPendingItem];
     web_state_impl_->UpdateHttpResponseHeaders(redirectUrl);

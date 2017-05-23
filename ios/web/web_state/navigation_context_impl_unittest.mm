@@ -33,10 +33,14 @@ class NavigationContextImplTest : public PlatformTest {
 // Tests CreateNavigationContext factory method.
 TEST_F(NavigationContextImplTest, NavigationContext) {
   std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateNavigationContext(&web_state_, url_);
+      NavigationContextImpl::CreateNavigationContext(
+          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK);
   ASSERT_TRUE(context);
 
   EXPECT_EQ(&web_state_, context->GetWebState());
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      context->GetPageTransition(),
+      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK));
   EXPECT_EQ(url_, context->GetUrl());
   EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->GetError());
@@ -46,7 +50,8 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
 // Tests NavigationContextImpl Setters.
 TEST_F(NavigationContextImplTest, Setters) {
   std::unique_ptr<NavigationContextImpl> context =
-      NavigationContextImpl::CreateNavigationContext(&web_state_, url_);
+      NavigationContextImpl::CreateNavigationContext(
+          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK);
   ASSERT_TRUE(context);
 
   ASSERT_FALSE(context->IsSameDocument());

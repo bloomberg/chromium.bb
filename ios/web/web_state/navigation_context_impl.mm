@@ -13,10 +13,12 @@ namespace web {
 
 // static
 std::unique_ptr<NavigationContextImpl>
-NavigationContextImpl::CreateNavigationContext(WebState* web_state,
-                                               const GURL& url) {
+NavigationContextImpl::CreateNavigationContext(
+    WebState* web_state,
+    const GURL& url,
+    ui::PageTransition page_transition) {
   std::unique_ptr<NavigationContextImpl> result(
-      new NavigationContextImpl(web_state, url));
+      new NavigationContextImpl(web_state, url, page_transition));
   return result;
 }
 
@@ -36,6 +38,10 @@ WebState* NavigationContextImpl::GetWebState() {
 
 const GURL& NavigationContextImpl::GetUrl() const {
   return url_;
+}
+
+ui::PageTransition NavigationContextImpl::GetPageTransition() const {
+  return page_transition_;
 }
 
 bool NavigationContextImpl::IsSameDocument() const {
@@ -72,9 +78,11 @@ void NavigationContextImpl::SetNavigationItemUniqueID(int unique_id) {
 }
 
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
-                                             const GURL& url)
+                                             const GURL& url,
+                                             ui::PageTransition page_transition)
     : web_state_(web_state),
       url_(url),
+      page_transition_(page_transition),
       is_same_document_(false),
       error_(nil),
       response_headers_(nullptr) {}

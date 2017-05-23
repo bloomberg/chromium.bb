@@ -22,7 +22,8 @@ class NavigationContextImpl : public NavigationContext {
   // Response headers will ne null.
   static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
       WebState* web_state,
-      const GURL& url);
+      const GURL& url,
+      ui::PageTransition page_transition);
 
 #ifndef NDEBUG
   // Returns human readable description of this object.
@@ -32,6 +33,7 @@ class NavigationContextImpl : public NavigationContext {
   // NavigationContext overrides:
   WebState* GetWebState() override;
   const GURL& GetUrl() const override;
+  ui::PageTransition GetPageTransition() const override;
   bool IsSameDocument() const override;
   NSError* GetError() const override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
@@ -48,10 +50,13 @@ class NavigationContextImpl : public NavigationContext {
   void SetNavigationItemUniqueID(int unique_id);
 
  private:
-  NavigationContextImpl(WebState* web_state, const GURL& url);
+  NavigationContextImpl(WebState* web_state,
+                        const GURL& url,
+                        ui::PageTransition page_transition);
 
   WebState* web_state_ = nullptr;
   GURL url_;
+  ui::PageTransition page_transition_;
   bool is_same_document_ = false;
   base::scoped_nsobject<NSError> error_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;

@@ -1340,7 +1340,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                   transition:(ui::PageTransition)transition {
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
-                                                          pageURL);
+                                                          pageURL, transition);
   _webStateImpl->OnNavigationStarted(context.get());
   [[self sessionController] pushNewItemWithURL:pageURL
                                    stateObject:stateObject
@@ -1353,8 +1353,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)replaceStateWithPageURL:(const GURL&)pageURL
                     stateObject:(NSString*)stateObject {
   std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
-                                                          pageURL);
+      web::NavigationContextImpl::CreateNavigationContext(
+          _webStateImpl, pageURL,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT);
   _webStateImpl->OnNavigationStarted(context.get());
   [[self sessionController] updateCurrentItemWithURL:pageURL
                                          stateObject:stateObject];
@@ -1529,8 +1530,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
   }
   std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
-                                                          requestURL);
+      web::NavigationContextImpl::CreateNavigationContext(
+          _webStateImpl, requestURL, transition);
 
   web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
   // TODO(crbug.com/676129): AddPendingItem does not always create a pending
@@ -4176,17 +4177,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
   std::unique_ptr<web::NavigationContextImpl> context;
+  const ui::PageTransition loadHTMLTransition =
+      ui::PageTransition::PAGE_TRANSITION_TYPED;
   if (_webStateImpl->HasWebUI()) {
     // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
     // should not be treated as a navigation, but WKNavigationDelegate callbacks
     // still expect a valid context.
-    context =
-        web::NavigationContextImpl::CreateNavigationContext(_webStateImpl, URL);
+    context = web::NavigationContextImpl::CreateNavigationContext(
+        _webStateImpl, URL, loadHTMLTransition);
   } else {
-    context = [self
-        registerLoadRequestForURL:URL
-                         referrer:web::Referrer()
-                       transition:ui::PageTransition::PAGE_TRANSITION_TYPED];
+    context = [self registerLoadRequestForURL:URL
+                                     referrer:web::Referrer()
+                                   transition:loadHTMLTransition];
   }
   [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
