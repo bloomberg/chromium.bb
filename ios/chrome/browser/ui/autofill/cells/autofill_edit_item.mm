@@ -29,6 +29,7 @@ const CGFloat kLabelAndFieldGap = 5;
 @synthesize textFieldName = _textFieldName;
 @synthesize textFieldValue = _textFieldValue;
 @synthesize cardTypeIcon = _cardTypeIcon;
+@synthesize inputView = _inputView;
 @synthesize textFieldEnabled = _textFieldEnabled;
 @synthesize autofillUIType = _autofillUIType;
 @synthesize required = _required;
@@ -60,6 +61,7 @@ const CGFloat kLabelAndFieldGap = 5;
   [cell.textField addTarget:self
                      action:@selector(textFieldChanged:)
            forControlEvents:UIControlEventEditingChanged];
+  cell.textField.inputView = self.inputView;
   cell.cardTypeIconView.image = self.cardTypeIcon;
 }
 

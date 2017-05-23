@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/payments/address_edit_view_controller.h"
+#import "ios/chrome/browser/ui/payments/country_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 
 namespace autofill {
@@ -38,7 +39,8 @@ class PaymentRequest;
 // provided in the initializer.
 @interface AddressEditCoordinator
     : ChromeCoordinator<AddressEditViewControllerDelegate,
-                        PaymentRequestEditViewControllerValidator>
+                        PaymentRequestEditViewControllerValidator,
+                        CountrySelectionCoordinatorDelegate>
 
 // The address to be edited, if any. This pointer is not owned by this class
 // and should outlive it.

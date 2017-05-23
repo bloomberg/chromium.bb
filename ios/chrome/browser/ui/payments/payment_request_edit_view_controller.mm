@@ -68,17 +68,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface PaymentRequestEditViewController ()<
-    AutofillEditAccessoryDelegate,
-    UITextFieldDelegate> {
+@interface PaymentRequestEditViewController ()<AutofillEditAccessoryDelegate,
+                                               UITextFieldDelegate,
+                                               UIPickerViewDataSource,
+                                               UIPickerViewDelegate> {
   // The currently focused cell. May be nil.
   __weak AutofillEditCell* _currentEditingCell;
 
   AutofillEditAccessoryView* _accessoryView;
 }
 
+// The map of autofill types to the fields definitions for the editor.
+@property(nonatomic, strong)
+    NSMutableDictionary<NSNumber*, EditorField*>* fieldsMap;
+
 // The list of field definitions for the editor.
 @property(nonatomic, strong) NSArray<EditorField*>* fields;
+
+// The map of autofill types to lists of UIPickerView options.
+@property(nonatomic, strong)
+    NSMutableDictionary<NSNumber*, NSArray<NSString*>*>* options;
+
+// The map of autofill types to UIPickerView views.
+@property(nonatomic, strong)
+    NSMutableDictionary<NSNumber*, UIPickerView*>* pickerViews;
 
 // Returns the indexPath for the same row as that of |indexPath| in a section
 // with the given offset relative to that of |indexPath|. May return nil.
@@ -106,12 +119,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize dataSource = _dataSource;
 @synthesize delegate = _delegate;
 @synthesize validatorDelegate = _validatorDelegate;
+@synthesize fieldsMap = _fieldsMap;
 @synthesize fields = _fields;
+@synthesize options = _options;
+@synthesize pickerViews = _pickerViews;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
   self = [super initWithStyle:style];
   if (self) {
     _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
+    _options = [[NSMutableDictionary alloc] init];
+    _pickerViews = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -139,6 +157,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
 
+  [self.pickerViews removeAllObjects];
+
   CollectionViewItem* headerItem = [_dataSource headerItem];
   if (headerItem) {
     [headerItem setType:ItemTypeHeader];
@@ -147,21 +167,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   // Iterate over the fields and add the respective sections and items.
-  int sectionIdentifier = static_cast<int>(SectionIdentifierFirstField);
-  for (EditorField* field in self.fields) {
+  [self.fields enumerateObjectsUsingBlock:^(EditorField* field,
+                                            NSUInteger index, BOOL* stop) {
+    NSInteger sectionIdentifier = SectionIdentifierFirstField + index;
     [model addSectionWithIdentifier:sectionIdentifier];
     switch (field.fieldType) {
       case EditorFieldTypeTextField: {
         AutofillEditItem* item =
             [[AutofillEditItem alloc] initWithType:ItemTypeTextField];
         item.textFieldName = field.label;
-        item.textFieldEnabled = YES;
+        item.textFieldEnabled = field.enabled;
         item.textFieldValue = field.value;
         item.required = field.isRequired;
         item.autofillUIType = field.autofillUIType;
-        [model addItem:item
-            toSectionWithIdentifier:static_cast<NSInteger>(sectionIdentifier)];
+        [model addItem:item toSectionWithIdentifier:sectionIdentifier];
         field.item = item;
+
         break;
       }
       case EditorFieldTypeSelector: {
@@ -172,8 +193,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         item.required = field.isRequired;
         item.autofillUIType = field.autofillUIType;
         item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
-        [model addItem:item
-            toSectionWithIdentifier:static_cast<NSInteger>(sectionIdentifier)];
+        [model addItem:item toSectionWithIdentifier:sectionIdentifier];
         field.item = item;
         break;
       }
@@ -181,9 +201,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         NOTREACHED();
     }
 
-    field.sectionIdentifier = static_cast<NSInteger>(sectionIdentifier);
-    ++sectionIdentifier;
-  }
+    field.sectionIdentifier = sectionIdentifier;
+  }];
 
   [self loadFooterItems];
 }
@@ -204,6 +223,42 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)setEditorFields:(NSArray<EditorField*>*)fields {
   self.fields = fields;
+  self.fieldsMap = [[NSMutableDictionary alloc] initWithCapacity:fields.count];
+  // Iterate over the fields and populate the map.
+  [self.fields enumerateObjectsUsingBlock:^(EditorField* field,
+                                            NSUInteger index, BOOL* stop) {
+    NSNumber* key = [NSNumber numberWithInt:field.autofillUIType];
+    [self.fieldsMap setObject:field forKey:key];
+  }];
+}
+
+- (void)setOptions:(NSArray<NSString*>*)options
+    forEditorField:(EditorField*)field {
+  DCHECK(field.fieldType == EditorFieldTypeTextField);
+  AutofillEditItem* item =
+      base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
+
+  // Enable the previously disabled text field and reset its value.
+  item.textFieldEnabled = YES;
+  item.textFieldValue = nil;
+
+  // Cache the options if there are any and set the text field's UIPickerView.
+  if (options.count) {
+    NSNumber* key = [NSNumber numberWithInt:field.autofillUIType];
+    [self.options setObject:options forKey:key];
+
+    UIPickerView* pickerView = [[UIPickerView alloc] initWithFrame:CGRectZero];
+    pickerView.delegate = self;
+    pickerView.dataSource = self;
+    [self.pickerViews setObject:pickerView forKey:key];
+    item.inputView = pickerView;
+  }
+
+  // Reload the item.
+  NSIndexPath* indexPath =
+      [self.collectionViewModel indexPathForItemType:ItemTypeTextField
+                                   sectionIdentifier:field.sectionIdentifier];
+  [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
 #pragma mark - UITextFieldDelegate
@@ -217,23 +272,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)textFieldDidEndEditing:(UITextField*)textField {
   DCHECK(_currentEditingCell == AutofillEditCellForTextField(textField));
 
-  // Validate the text field.
   CollectionViewModel* model = self.collectionViewModel;
 
   NSIndexPath* indexPath = [self indexPathForCurrentTextField];
   AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
       [model itemAtIndexPath:indexPath]);
 
-  // Create a dummy EditorField for validation only.
-  EditorField* fieldForValidation =
-      [[EditorField alloc] initWithAutofillUIType:item.autofillUIType
-                                        fieldType:EditorFieldTypeTextField
-                                            label:nil
-                                            value:textField.text
-                                         required:item.required];
+  // Find and validate the respective editor field.
+  NSNumber* key = [NSNumber numberWithInt:item.autofillUIType];
+  EditorField* field = self.fieldsMap[key];
+  DCHECK(field);
+  field.value = textField.text;
   NSString* errorMessage =
       [_validatorDelegate paymentRequestEditViewController:self
-                                             validateField:fieldForValidation];
+                                             validateField:field];
   NSInteger sectionIdentifier =
       [model sectionIdentifierForSection:[indexPath section]];
   [self addOrRemoveErrorMessage:errorMessage
@@ -270,6 +322,42 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)closePressed {
   [[_currentEditingCell textField] resignFirstResponder];
+}
+
+#pragma mark - UIPickerViewDataSource methods
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView*)thePickerView {
+  return 1;
+}
+
+- (NSInteger)pickerView:(UIPickerView*)thePickerView
+    numberOfRowsInComponent:(NSInteger)component {
+  NSArray<NSNumber*>* indices =
+      [self.pickerViews allKeysForObject:thePickerView];
+  DCHECK(indices.count == 1);
+  NSArray<NSString*>* options = self.options[indices[0]];
+  return options.count;
+}
+
+#pragma mark - UIPickerViewDelegate methods
+
+- (NSString*)pickerView:(UIPickerView*)thePickerView
+            titleForRow:(NSInteger)row
+           forComponent:(NSInteger)component {
+  NSArray<NSNumber*>* indices =
+      [self.pickerViews allKeysForObject:thePickerView];
+  DCHECK(indices.count == 1);
+  NSArray<NSString*>* options = self.options[indices[0]];
+  DCHECK(row < static_cast<NSInteger>(options.count));
+  return options[row];
+}
+
+- (void)pickerView:(UIPickerView*)thePickerView
+      didSelectRow:(NSInteger)row
+       inComponent:(NSInteger)component {
+  DCHECK(_currentEditingCell);
+  _currentEditingCell.textField.text =
+      [self pickerView:thePickerView titleForRow:row forComponent:component];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -332,9 +420,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
           hasSectionForSectionIdentifier:SectionIdentifierHeader])
     index--;
   DCHECK(index >= 0 && index < static_cast<NSInteger>(self.fields.count));
-  [_delegate
-      paymentRequestEditViewController:self
-                        didSelectField:[self.fields objectAtIndex:index]];
+  EditorField* field = [self.fields objectAtIndex:index];
+
+  // If a selector field is selected, blur the focused text field.
+  if (field.fieldType == EditorFieldTypeSelector)
+    [[_currentEditingCell textField] resignFirstResponder];
+
+  [_delegate paymentRequestEditViewController:self didSelectField:field];
 }
 
 #pragma mark MDCCollectionViewStylingDelegate

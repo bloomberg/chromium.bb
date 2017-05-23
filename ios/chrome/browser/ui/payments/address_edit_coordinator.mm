@@ -23,6 +23,9 @@ using ::AutofillTypeFromAutofillUIType;
 
 @interface AddressEditCoordinator ()
 
+@property(nonatomic, strong)
+    CountrySelectionCoordinator* countrySelectionCoordinator;
+
 @property(nonatomic, strong) AddressEditViewController* viewController;
 
 @property(nonatomic, strong) AddressEditMediator* mediator;
@@ -34,6 +37,7 @@ using ::AutofillTypeFromAutofillUIType;
 @synthesize address = _address;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
+@synthesize countrySelectionCoordinator = _countrySelectionCoordinator;
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 
@@ -50,6 +54,7 @@ using ::AutofillTypeFromAutofillUIType;
   self.mediator =
       [[AddressEditMediator alloc] initWithPaymentRequest:self.paymentRequest
                                                   address:self.address];
+  [self.mediator setConsumer:self.viewController];
   [self.viewController setDataSource:self.mediator];
   [self.viewController loadModel];
 
@@ -61,6 +66,8 @@ using ::AutofillTypeFromAutofillUIType;
 
 - (void)stop {
   [self.viewController.navigationController popViewControllerAnimated:YES];
+  [self.countrySelectionCoordinator stop];
+  self.countrySelectionCoordinator = nil;
   self.viewController = nil;
 }
 
@@ -79,7 +86,13 @@ using ::AutofillTypeFromAutofillUIType;
             (PaymentRequestEditViewController*)controller
                           didSelectField:(EditorField*)field {
   if (field.autofillUIType == AutofillUITypeProfileHomeAddressCountry) {
-    // TODO(crbug.com/602666): Change the fields according to the selection.
+    self.countrySelectionCoordinator = [[CountrySelectionCoordinator alloc]
+        initWithBaseViewController:self.viewController];
+    [self.countrySelectionCoordinator setCountries:self.mediator.countries];
+    [self.countrySelectionCoordinator
+        setSelectedCountryCode:self.mediator.selectedCountryCode];
+    [self.countrySelectionCoordinator setDelegate:self];
+    [self.countrySelectionCoordinator start];
   }
 }
 
@@ -93,6 +106,19 @@ using ::AutofillTypeFromAutofillUIType;
 - (void)addressEditViewControllerDidCancel:
     (AddressEditViewController*)controller {
   [self.delegate addressEditCoordinatorDidCancel:self];
+}
+
+#pragma mark - CountrySelectionCoordinatorDelegate
+
+- (void)countrySelectionCoordinator:(CountrySelectionCoordinator*)coordinator
+           didSelectCountryWithCode:(NSString*)countryCode {
+  if (self.mediator.selectedCountryCode != countryCode) {
+    [self.mediator setSelectedCountryCode:countryCode];
+    [self.viewController loadModel];
+    [self.viewController.collectionView reloadData];
+  }
+  [self.countrySelectionCoordinator stop];
+  self.countrySelectionCoordinator = nil;
 }
 
 @end

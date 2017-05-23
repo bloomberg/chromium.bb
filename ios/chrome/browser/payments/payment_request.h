@@ -70,7 +70,7 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   payments::CurrencyFormatter* GetOrCreateCurrencyFormatter();
 
   // Returns the autofill::RegionDataLoader instance for this PaymentRequest.
-  autofill::RegionDataLoader* GetRegionDataLoader();
+  virtual autofill::RegionDataLoader* GetRegionDataLoader();
 
   // Returns the available autofill profiles for this user to be used as
   // shipping profiles.

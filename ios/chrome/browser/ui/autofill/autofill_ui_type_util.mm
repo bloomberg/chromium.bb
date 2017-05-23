@@ -26,16 +26,22 @@ AutofillUIType AutofillUITypeFromAutofillType(autofill::ServerFieldType type) {
       return AutofillUITypeProfileFullName;
     case autofill::COMPANY_NAME:
       return AutofillUITypeProfileCompanyName;
+    case autofill::ADDRESS_HOME_STREET_ADDRESS:
+      return AutofillUITypeProfileHomeAddressStreet;
     case autofill::ADDRESS_HOME_LINE1:
       return AutofillUITypeProfileHomeAddressLine1;
     case autofill::ADDRESS_HOME_LINE2:
       return AutofillUITypeProfileHomeAddressLine2;
+    case autofill::ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return AutofillUITypeProfileHomeAddressDependentLocality;
     case autofill::ADDRESS_HOME_CITY:
       return AutofillUITypeProfileHomeAddressCity;
     case autofill::ADDRESS_HOME_STATE:
       return AutofillUITypeProfileHomeAddressState;
     case autofill::ADDRESS_HOME_ZIP:
       return AutofillUITypeProfileHomeAddressZip;
+    case autofill::ADDRESS_HOME_SORTING_CODE:
+      return AutofillUITypeProfileHomeAddressSortingCode;
     case autofill::ADDRESS_HOME_COUNTRY:
       return AutofillUITypeProfileHomeAddressCountry;
     case autofill::PHONE_HOME_WHOLE_NUMBER:
@@ -64,16 +70,22 @@ autofill::ServerFieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
       return autofill::NAME_FULL;
     case AutofillUITypeProfileCompanyName:
       return autofill::COMPANY_NAME;
+    case AutofillUITypeProfileHomeAddressStreet:
+      return autofill::ADDRESS_HOME_STREET_ADDRESS;
     case AutofillUITypeProfileHomeAddressLine1:
       return autofill::ADDRESS_HOME_LINE1;
     case AutofillUITypeProfileHomeAddressLine2:
       return autofill::ADDRESS_HOME_LINE2;
+    case AutofillUITypeProfileHomeAddressDependentLocality:
+      return autofill::ADDRESS_HOME_DEPENDENT_LOCALITY;
     case AutofillUITypeProfileHomeAddressCity:
       return autofill::ADDRESS_HOME_CITY;
     case AutofillUITypeProfileHomeAddressState:
       return autofill::ADDRESS_HOME_STATE;
     case AutofillUITypeProfileHomeAddressZip:
       return autofill::ADDRESS_HOME_ZIP;
+    case AutofillUITypeProfileHomeAddressSortingCode:
+      return autofill::ADDRESS_BILLING_SORTING_CODE;
     case AutofillUITypeProfileHomeAddressCountry:
       return autofill::ADDRESS_HOME_COUNTRY;
     case AutofillUITypeProfileHomePhoneWholeNumber:
