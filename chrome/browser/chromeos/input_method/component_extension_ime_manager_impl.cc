@@ -45,10 +45,6 @@ struct WhitelistedComponentExtensionIME {
         // Official Google XKB Input.
         extension_ime_util::kXkbExtensionId, IDR_GOOGLE_XKB_MANIFEST,
     },
-    {
-        // Google input tools.
-        extension_ime_util::kT13nExtensionId, IDR_GOOGLE_INPUT_TOOLS_MANIFEST,
-    },
 #else
     {
         // Open-sourced ChromeOS xkb extension.
