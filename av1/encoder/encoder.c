@@ -507,9 +507,6 @@ static void save_coding_context(AV1_COMP *cpi) {
     av1_copy(cc->nmv_costs_hp, cpi->nmv_costs_hp);
   }
 
-  av1_copy(cc->nmvcosts, cpi->nmvcosts);
-  av1_copy(cc->nmvcosts_hp, cpi->nmvcosts_hp);
-
   av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
   av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
 
@@ -528,9 +525,6 @@ static void restore_coding_context(AV1_COMP *cpi) {
     av1_copy(cpi->nmv_costs, cc->nmv_costs);
     av1_copy(cpi->nmv_costs_hp, cc->nmv_costs_hp);
   }
-
-  av1_copy(cpi->nmvcosts, cc->nmvcosts);
-  av1_copy(cpi->nmvcosts_hp, cc->nmvcosts_hp);
 
   av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
   av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
@@ -2050,41 +2044,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 }
 
-#ifndef M_LOG2_E
-#define M_LOG2_E 0.693147180559945309417
-#endif
-#define log2f(x) (log(x) / (float)M_LOG2_E)
-
-static void cal_nmvsadcosts(int *mvsadcost[2]) {
-  int i = 1;
-
-  mvsadcost[0][0] = 0;
-  mvsadcost[1][0] = 0;
-
-  do {
-    double z = 256 * (2 * (log2f(8 * i) + .6));
-    mvsadcost[0][i] = (int)z;
-    mvsadcost[1][i] = (int)z;
-    mvsadcost[0][-i] = (int)z;
-    mvsadcost[1][-i] = (int)z;
-  } while (++i <= MV_MAX);
-}
-
-static void cal_nmvsadcosts_hp(int *mvsadcost[2]) {
-  int i = 1;
-
-  mvsadcost[0][0] = 0;
-  mvsadcost[1][0] = 0;
-
-  do {
-    double z = 256 * (2 * (log2f(8 * i) + .6));
-    mvsadcost[0][i] = (int)z;
-    mvsadcost[1][i] = (int)z;
-    mvsadcost[0][-i] = (int)z;
-    mvsadcost[1][-i] = (int)z;
-  } while (++i <= MV_MAX);
-}
-
 static INLINE void init_upsampled_ref_frame_bufs(AV1_COMP *cpi) {
   int i;
 
@@ -2167,11 +2126,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     memset(cpi->nmv_costs_hp, 0, sizeof(cpi->nmv_costs_hp));
   }
 
-  memset(cpi->nmvcosts, 0, sizeof(cpi->nmvcosts));
-  memset(cpi->nmvcosts_hp, 0, sizeof(cpi->nmvcosts_hp));
-  memset(cpi->nmvsadcosts, 0, sizeof(cpi->nmvsadcosts));
-  memset(cpi->nmvsadcosts_hp, 0, sizeof(cpi->nmvsadcosts_hp));
-
   for (i = 0; i < (sizeof(cpi->mbgraph_stats) / sizeof(cpi->mbgraph_stats[0]));
        i++) {
     CHECK_MEM_ERROR(
@@ -2239,13 +2193,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     cpi->td.mb.nmvcost_hp[i][0] = &cpi->nmv_costs_hp[i][0][MV_MAX];
     cpi->td.mb.nmvcost_hp[i][1] = &cpi->nmv_costs_hp[i][1][MV_MAX];
   }
-  cpi->td.mb.nmvsadcost[0] = &cpi->nmvsadcosts[0][MV_MAX];
-  cpi->td.mb.nmvsadcost[1] = &cpi->nmvsadcosts[1][MV_MAX];
-  cal_nmvsadcosts(cpi->td.mb.nmvsadcost);
-
-  cpi->td.mb.nmvsadcost_hp[0] = &cpi->nmvsadcosts_hp[0][MV_MAX];
-  cpi->td.mb.nmvsadcost_hp[1] = &cpi->nmvsadcosts_hp[1][MV_MAX];
-  cal_nmvsadcosts_hp(cpi->td.mb.nmvsadcost_hp);
 
 #ifdef OUTPUT_YUV_SKINMAP
   yuv_skinmap_file = fopen("skinmap.yuv", "ab");
