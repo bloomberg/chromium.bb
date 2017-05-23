@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Window document with doctype 
-FAIL new Document() Illegal constructor
-Harness: the test ran to completion.
-

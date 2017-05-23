@@ -261,6 +261,11 @@ class CORE_EXPORT Document : public ContainerNode,
   static Document* Create(const DocumentInit& initializer = DocumentInit()) {
     return new Document(initializer);
   }
+  // Factory for web-exposed Document constructor. The argument document must be
+  // a document instance representing window.document, and it works as the
+  // source of ExecutionContext and security origin of the new document.
+  // https://dom.spec.whatwg.org/#dom-document-document
+  static Document* Create(const Document&);
   ~Document() override;
 
   MediaQueryMatcher& GetMediaQueryMatcher();

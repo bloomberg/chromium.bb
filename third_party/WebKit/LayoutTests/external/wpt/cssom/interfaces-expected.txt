@@ -1,12 +1,12 @@
 This is a testharness.js-based test.
-Found 187 tests; 156 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 187 tests; 159 PASS, 28 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Document interface: attribute styleSheets 
 FAIL Document must be primary interface of document assert_equals: document's prototype is not Document.prototype expected object "[object Document]" but got object "[object HTMLDocument]"
 FAIL Stringification of document assert_equals: class string of document expected "[object Document]" but got "[object HTMLDocument]"
 PASS Document interface: document must inherit property "styleSheets" with the proper type (0) 
-FAIL Document must be primary interface of new Document() assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Stringification of new Document() assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Document interface: new Document() must inherit property "styleSheets" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
+PASS Document must be primary interface of new Document() 
+PASS Stringification of new Document() 
+PASS Document interface: new Document() must inherit property "styleSheets" with the proper type (0) 
 PASS ProcessingInstruction interface: attribute sheet 
 PASS HTMLElement interface: attribute style 
 PASS SVGElement interface: attribute style 
