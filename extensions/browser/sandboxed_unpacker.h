@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_SANDBOXED_UNPACKER_H_
 #define EXTENSIONS_BROWSER_SANDBOXED_UNPACKER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -173,6 +174,10 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
     UNZIP_FAILED,
     DIRECTORY_MOVE_FAILED,
+
+    // SandboxedUnpacker::ValidateSignature()
+    CRX_FILE_IS_DELTA_UPDATE,
+    CRX_EXPECTED_HASH_INVALID,
 
     NUM_FAILURE_REASONS
   };

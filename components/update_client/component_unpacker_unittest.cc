@@ -161,7 +161,7 @@ TEST_F(ComponentUnpackerTest, UnpackFileHashMismatch) {
                                         base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(UnpackerError::kInvalidId, result_.error);
+  EXPECT_EQ(UnpackerError::kInvalidFile, result_.error);
   EXPECT_EQ(0, result_.extended_error);
 
   EXPECT_TRUE(result_.unpack_path.empty());

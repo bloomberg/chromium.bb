@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -21,16 +20,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "components/crx_file/crx_file.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
-#include "crypto/secure_hash.h"
-#include "crypto/sha2.h"
 #include "third_party/zlib/google/zip.h"
-
-using crypto::SecureHash;
-using crx_file::CrxFile;
 
 namespace update_client {
 
@@ -89,33 +83,16 @@ bool ComponentUnpacker::Verify() {
     error_ = UnpackerError::kInvalidParams;
     return false;
   }
-  // First, validate the CRX header and signature. As of today
-  // this is SHA1 with RSA 1024.
-  std::string public_key_bytes;
-  std::string public_key_base64;
-  CrxFile::Header header;
-  CrxFile::ValidateError error = CrxFile::ValidateSignature(
-      path_, std::string(), &public_key_base64, nullptr, &header);
-  if (error != CrxFile::ValidateError::NONE ||
-      !base::Base64Decode(public_key_base64, &public_key_bytes)) {
+  const std::vector<std::vector<uint8_t>> required_keys = {pk_hash_};
+  const crx_file::VerifierResult result =
+      crx_file::Verify(path_, crx_file::VerifierFormat::CRX2_OR_CRX3,
+                       required_keys, std::vector<uint8_t>(), nullptr, nullptr);
+  if (result != crx_file::VerifierResult::OK_FULL &&
+      result != crx_file::VerifierResult::OK_DELTA) {
     error_ = UnpackerError::kInvalidFile;
     return false;
   }
-  is_delta_ = CrxFile::HeaderIsDelta(header);
-
-  // File is valid and the digital signature matches. Now make sure
-  // the public key hash matches the expected hash. If they do we fully
-  // trust this CRX.
-  uint8_t hash[crypto::kSHA256Length] = {};
-  std::unique_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
-  sha256->Update(public_key_bytes.data(), public_key_bytes.size());
-  sha256->Finish(hash, arraysize(hash));
-
-  if (!std::equal(pk_hash_.begin(), pk_hash_.end(), hash)) {
-    VLOG(1) << "Hash mismatch: " << path_.value();
-    error_ = UnpackerError::kInvalidId;
-    return false;
-  }
+  is_delta_ = result == crx_file::VerifierResult::OK_DELTA;
   VLOG(1) << "Verification successful: " << path_.value();
   return true;
 }

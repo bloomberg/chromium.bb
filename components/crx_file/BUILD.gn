@@ -4,8 +4,10 @@
 
 static_library("crx_file") {
   sources = [
-    "crx_file.cc",
-    "crx_file.h",
+    "crx2_file.cc",
+    "crx2_file.h",
+    "crx_verifier.cc",
+    "crx_verifier.h",
     "id_util.cc",
     "id_util.h",
   ]

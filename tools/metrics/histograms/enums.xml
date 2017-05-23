@@ -12828,6 +12828,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="31" label="ERROR_SERIALIZING_CATALOG"/>
   <int value="32" label="ERROR_SAVING_CATALOG"/>
   <int value="33" label="CRX_HASH_VERIFICATION_FAILED"/>
+  <int value="34" label="CRX_FILE_IS_DELTA_UPDATE"/>
+  <int value="35" label="CRX_EXPECTED_HASH_INVALID"/>
 </enum>
 
 <enum name="ExternalDeviceAction" type="int">
