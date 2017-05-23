@@ -31,6 +31,7 @@ import android.view.Surface;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.nio.ByteBuffer;
@@ -54,10 +55,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public void onOpened(CameraDevice cameraDevice) {
             mCameraDevice = cameraDevice;
             changeCameraStateAndNotify(CameraState.CONFIGURING);
-            if (!createPreviewObjects()) {
-                changeCameraStateAndNotify(CameraState.STOPPED);
-                nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error configuring camera");
-            }
+            if (createPreviewObjectsAndStartPreview()) return;
+
+            changeCameraStateAndNotify(CameraState.STOPPED);
+            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error configuring camera");
         }
 
         @Override
@@ -86,7 +87,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         @Override
         public void onConfigured(CameraCaptureSession cameraCaptureSession) {
-            Log.d(TAG, "onConfigured");
+            Log.d(TAG, "CrPreviewSessionListener.onConfigured");
             mPreviewSession = cameraCaptureSession;
             try {
                 // This line triggers the preview. A |listener| is registered to receive the actual
@@ -108,7 +109,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 Log.e(TAG, "setRepeatingRequest: ", ex);
                 return;
             }
-            // Now wait for trigger on CrImageReaderListener.onImageAvailable();
+            // Now wait for trigger on CrPreviewReaderListener.onImageAvailable();
             nativeOnStarted(mNativeVideoCaptureDeviceAndroid);
             changeCameraStateAndNotify(CameraState.STARTED);
         }
@@ -124,7 +125,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     // Internal class implementing an ImageReader listener for Preview frames. Gets pinged when a
     // new frame is been captured and downloads it to memory-backed buffers.
-    private class CrImageReaderListener implements ImageReader.OnImageAvailableListener {
+    private class CrPreviewReaderListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
             try (Image image = reader.acquireLatestImage()) {
@@ -169,7 +170,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         @Override
         public void onConfigured(CameraCaptureSession session) {
-            Log.d(TAG, "onConfigured");
+            Log.d(TAG, "CrPhotoSessionListener.onConfigured");
             try {
                 // This line triggers a single photo capture. No |listener| is registered, so we
                 // will get notified via a CrPhotoSessionListener. Since |handler| is null, we'll
@@ -232,18 +233,30 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 return;
             }
 
-            if (createPreviewObjects()) return;
+            if (createPreviewObjectsAndStartPreview()) return;
 
             nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error restarting preview");
         }
     };
 
-    // Inner Runnable to restart capture, must be run on application context looper.
-    private final Runnable mRestartCapture = new Runnable() {
+    // Inner Runnable to reconfigure the preview session, must be run on application context looper.
+    private final Runnable mReconfigureCaptureTask = new Runnable() {
         @Override
         public void run() {
-            mPreviewSession.close(); // Asynchronously kill the CaptureSession.
-            createPreviewObjects();
+            ThreadUtils.assertOnUiThread();
+            assert mPreviewRequestBuilder != null : "preview request builder";
+            assert mPreviewSession != null : "preview session";
+
+            // Reuse most of |mPreviewRequestBuilder| since it has expensive items inside that have
+            // to do with preview, e.g. the ImageReader and its associated Surface.
+            configureCommonCaptureSettings(mPreviewRequestBuilder);
+
+            try {
+                mPreviewSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
+            } catch (CameraAccessException | SecurityException | IllegalStateException
+                    | IllegalArgumentException ex) {
+                Log.e(TAG, "setRepeatingRequest: ", ex);
+            }
         }
     };
 
@@ -272,6 +285,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
     private CaptureRequest mPreviewRequest;
+    private CaptureRequest.Builder mPreviewRequestBuilder;
     private Handler mMainHandler;
     private ImageReader mImageReader = null;
 
@@ -312,8 +326,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         nativeOnPhotoTaken(mNativeVideoCaptureDeviceAndroid, callbackId, new byte[0]);
     }
 
-    private boolean createPreviewObjects() {
-        Log.d(TAG, "createPreviewObjects");
+    private boolean createPreviewObjectsAndStartPreview() {
         if (mCameraDevice == null) return false;
 
         // Create an ImageReader and plug a thread looper into it to have
@@ -323,31 +336,32 @@ public class VideoCaptureCamera2 extends VideoCapture {
         HandlerThread thread = new HandlerThread("CameraPreview");
         thread.start();
         final Handler backgroundHandler = new Handler(thread.getLooper());
-        final CrImageReaderListener imageReaderListener = new CrImageReaderListener();
+        final CrPreviewReaderListener imageReaderListener = new CrPreviewReaderListener();
         mImageReader.setOnImageAvailableListener(imageReaderListener, backgroundHandler);
 
-        // The Preview template specifically means "high frame rate is given
-        // priority over the highest-quality post-processing".
-        CaptureRequest.Builder previewRequestBuilder = null;
         try {
-            previewRequestBuilder =
+            // TEMPLATE_PREVIEW specifically means "high frame rate is given
+            // priority over the highest-quality post-processing".
+            mPreviewRequestBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "createCaptureRequest: ", ex);
             return false;
         }
-        if (previewRequestBuilder == null) {
-            Log.e(TAG, "previewRequestBuilder error");
+
+        if (mPreviewRequestBuilder == null) {
+            Log.e(TAG, "mPreviewRequestBuilder error");
             return false;
         }
+
         // Construct an ImageReader Surface and plug it into our CaptureRequest.Builder.
-        previewRequestBuilder.addTarget(mImageReader.getSurface());
+        mPreviewRequestBuilder.addTarget(mImageReader.getSurface());
 
         // A series of configuration options in the PreviewBuilder
-        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-        previewRequestBuilder.set(
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+        mPreviewRequestBuilder.set(
                 CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_FAST);
-        previewRequestBuilder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_FAST);
+        mPreviewRequestBuilder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_FAST);
 
         // Depending on the resolution and other parameters, stabilization might not be available,
         // see https://crbug.com/718387.
@@ -357,23 +371,23 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 CameraCharacteristics.CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES);
         for (int mode : stabilizationModes) {
             if (mode == CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON) {
-                previewRequestBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
                         CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON);
                 break;
             }
         }
 
-        configureCommonCaptureSettings(previewRequestBuilder);
+        configureCommonCaptureSettings(mPreviewRequestBuilder);
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         // TODO(mcasas): release this Surface when not needed, https://crbug.com/643884.
         surfaceList.add(mImageReader.getSurface());
 
-        mPreviewRequest = previewRequestBuilder.build();
-        final CrPreviewSessionListener captureSessionListener =
-                new CrPreviewSessionListener(mPreviewRequest);
+        mPreviewRequest = mPreviewRequestBuilder.build();
+
         try {
-            mCameraDevice.createCaptureSession(surfaceList, captureSessionListener, null);
+            mCameraDevice.createCaptureSession(
+                    surfaceList, new CrPreviewSessionListener(mPreviewRequest), null);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "createCaptureSession: ", ex);
             return false;
@@ -649,6 +663,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public boolean allocate(int width, int height, int frameRate) {
         Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
+        ThreadUtils.assertOnUiThread();
         synchronized (mCameraStateLock) {
             if (mCameraState == CameraState.OPENING || mCameraState == CameraState.CONFIGURING) {
                 Log.e(TAG, "allocate() invoked while Camera is busy opening/configuring.");
@@ -704,7 +719,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public boolean startCapture() {
-        Log.d(TAG, "startCapture");
+        ThreadUtils.assertOnUiThread();
         changeCameraStateAndNotify(CameraState.OPENING);
         final CameraManager manager =
                 (CameraManager) ContextUtils.getApplicationContext().getSystemService(
@@ -733,7 +748,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public boolean stopCapture() {
-        Log.d(TAG, "stopCapture");
+        ThreadUtils.assertOnUiThread();
 
         // With Camera2 API, the capture is started asynchronously, which will cause problem if
         // stopCapture comes too quickly. Without stopping the previous capture properly, the next
@@ -767,6 +782,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
+        ThreadUtils.assertOnUiThread();
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         PhotoCapabilities.Builder builder = new PhotoCapabilities.Builder();
 
@@ -962,6 +978,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             double exposureCompensation, int whiteBalanceMode, double iso,
             boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
             boolean hasTorch, boolean torch, double colorTemperature) {
+        ThreadUtils.assertOnUiThread();
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -1035,13 +1052,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         final Handler mainHandler =
                 new Handler(ContextUtils.getApplicationContext().getMainLooper());
-        mainHandler.removeCallbacks(mRestartCapture);
-        mainHandler.post(mRestartCapture);
+        mainHandler.removeCallbacks(mReconfigureCaptureTask);
+        mainHandler.post(mReconfigureCaptureTask);
     }
 
     @Override
     public boolean takePhoto(final long callbackId) {
-        Log.d(TAG, "takePhoto");
+        ThreadUtils.assertOnUiThread();
         if (mCameraDevice == null || mCameraState != CameraState.STARTED) return false;
 
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
@@ -1074,8 +1091,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         try {
             photoRequestBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "mCameraDevice.createCaptureRequest() error");
+        } catch (CameraAccessException ex) {
+            Log.e(TAG, "createCaptureRequest() error ", ex);
             return false;
         }
         if (photoRequestBuilder == null) {
