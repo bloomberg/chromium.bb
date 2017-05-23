@@ -851,24 +851,34 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerTest,
 
   SetPromptResponseType(PermissionRequestManager::ACCEPT_ALL);
 
-  RequestPermissions(
-      GetWebContents(),
-      CreateRequestWithType(example_audio_id(), std::string(),
-                            content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
-  ASSERT_EQ(2u, TotalPromptRequestCount());
+  {
+    // Test that with the kRequireSecureOriginsForPepperMediaRequests flag
+    // disabled that permission will be denied. TODO(raymes): Remove this when
+    // crbug.com/526324 is fixed.
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (static_cast<TestType>(GetParam()) ==
+        TestType::TEST_WITH_GROUPED_MEDIA_REQUESTS) {
+      scoped_feature_list.InitWithFeatures(
+          {features::kUsePermissionManagerForMediaRequests},
+          {features::kRequireSecureOriginsForPepperMediaRequests});
+    } else {
+      scoped_feature_list.InitWithFeatures(
+          {}, {features::kRequireSecureOriginsForPepperMediaRequests});
+    }
+    RequestPermissions(
+        GetWebContents(),
+        CreateRequestWithType(example_audio_id(), std::string(),
+                              content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
+        base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                   base::Unretained(this)));
+    ASSERT_EQ(2u, TotalPromptRequestCount());
 
-  ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+    ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
+    ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+    ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  }
 
-  // Test that with the kRequireSecureOriginsForPepperMediaRequests flag enabled
-  // that permission will be denied.
   ResetPromptCounters();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kRequireSecureOriginsForPepperMediaRequests);
   RequestPermissions(
       GetWebContents(),
       CreateRequestWithType(example_audio_id(), example_video_id(),

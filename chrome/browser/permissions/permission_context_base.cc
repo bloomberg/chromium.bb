@@ -36,6 +36,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -226,10 +227,17 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   }
 
   if (IsRestrictedToSecureOrigins()) {
+    if (!content::IsOriginSecure(requesting_origin)) {
+      return PermissionResult(CONTENT_SETTING_BLOCK,
+                              PermissionStatusSource::UNSPECIFIED);
+    }
+
     // TODO(raymes): We should check the entire chain of embedders here whenever
     // possible as this corresponds to the requirements of the secure contexts
-    // spec and matches what is implemented in blink.
-    if (!content::IsOriginSecure(requesting_origin) ||
+    // spec and matches what is implemented in blink. Right now we just check
+    // the top level and requesting origins. Note: chrome-extension:// origins
+    // are currently exempt from checking the embedder chain. crbug.com/530507.
+    if (!requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
         !content::IsOriginSecure(embedding_origin)) {
       return PermissionResult(CONTENT_SETTING_BLOCK,
                               PermissionStatusSource::UNSPECIFIED);

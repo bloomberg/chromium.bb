@@ -208,7 +208,7 @@ const base::Feature kRenderingPipelineThrottling{
 // origins.
 const base::Feature kRequireSecureOriginsForPepperMediaRequests{
     "RequireSecureOriginsForPepperMediaRequests",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
