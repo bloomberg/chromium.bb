@@ -57,7 +57,7 @@ public class BrowserAccessibilityManager {
     protected static final int ACTION_SCROLL_RIGHT = 0x0102003b;
 
     private final AccessibilityNodeProvider mAccessibilityNodeProvider;
-    private ContentViewCore mContentViewCore;
+    protected ContentViewCore mContentViewCore;
     private final AccessibilityManager mAccessibilityManager;
     private final RenderCoordinates mRenderCoordinates;
     private long mNativeObj;
@@ -955,20 +955,23 @@ public class BrowserAccessibilityManager {
 
     @SuppressLint("NewApi")
     @CalledByNative
-    private void setAccessibilityNodeInfoText(
-            AccessibilityNodeInfo node, String text, boolean annotateAsLink,
-            boolean isEditableText) {
-        CharSequence charSequence = text;
+    private void setAccessibilityNodeInfoText(AccessibilityNodeInfo node, String text,
+            boolean annotateAsLink, boolean isEditableText, String language) {
+        CharSequence computedText = computeText(text, isEditableText, language);
+        if (isEditableText) {
+            node.setText(computedText);
+        } else {
+            node.setContentDescription(computedText);
+        }
+    }
+
+    protected CharSequence computeText(String text, boolean annotateAsLink, String language) {
         if (annotateAsLink) {
             SpannableString spannable = new SpannableString(text);
             spannable.setSpan(new URLSpan(""), 0, spannable.length(), 0);
-            charSequence = spannable;
+            return spannable;
         }
-        if (isEditableText) {
-            node.setText(charSequence);
-        } else {
-            node.setContentDescription(charSequence);
-        }
+        return text;
     }
 
     @CalledByNative

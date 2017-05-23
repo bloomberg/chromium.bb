@@ -5,7 +5,13 @@
 package org.chromium.content.browser.accessibility;
 
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
+import android.text.SpannableString;
+import android.text.style.LocaleSpan;
 import android.util.SparseArray;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -13,6 +19,8 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
+
+import java.util.Locale;
 
 /**
  * Subclass of BrowserAccessibilityManager for Lollipop.
@@ -22,10 +30,21 @@ import org.chromium.content.browser.ContentViewCore;
 public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibilityManager {
     private static SparseArray<AccessibilityAction> sAccessibilityActionMap =
             new SparseArray<AccessibilityAction>();
+    private String mSystemLanguageTag;
 
     LollipopBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         super(nativeBrowserAccessibilityManagerAndroid, contentViewCore);
+
+        // Cache the system language and set up a listener for when it changes.
+        IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
+        mContentViewCore.getContext().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                mSystemLanguageTag = Locale.getDefault().toLanguageTag();
+            }
+        }, filter);
+        mSystemLanguageTag = Locale.getDefault().toLanguageTag();
     }
 
     @Override
@@ -122,5 +141,22 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
             sAccessibilityActionMap.put(actionId, action);
         }
         node.addAction(action);
+    }
+
+    @Override
+    protected CharSequence computeText(String text, boolean annotateAsLink, String language) {
+        CharSequence charSequence = super.computeText(text, annotateAsLink, language);
+        if (!language.isEmpty() && !language.equals(mSystemLanguageTag)) {
+            SpannableString spannable;
+            if (charSequence instanceof SpannableString) {
+                spannable = (SpannableString) charSequence;
+            } else {
+                spannable = new SpannableString(charSequence);
+            }
+            Locale locale = Locale.forLanguageTag(language);
+            spannable.setSpan(new LocaleSpan(locale), 0, spannable.length(), 0);
+            return spannable;
+        }
+        return charSequence;
     }
 }
