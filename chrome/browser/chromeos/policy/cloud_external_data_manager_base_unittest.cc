@@ -27,6 +27,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "crypto/sha2.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -75,7 +76,8 @@ class FakeURLFetcherFactory : public net::FakeURLFetcherFactory {
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* delegate) override;
+      net::URLFetcherDelegate* delegate,
+      net::NetworkTrafficAnnotationTag traffic_annotation) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
@@ -92,10 +94,11 @@ std::unique_ptr<net::URLFetcher> FakeURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* delegate) {
+    net::URLFetcherDelegate* delegate,
+    net::NetworkTrafficAnnotationTag traffic_annotation) {
   std::unique_ptr<net::URLFetcher> fetcher =
-      net::FakeURLFetcherFactory::CreateURLFetcher(id, url, request_type,
-                                                   delegate);
+      net::FakeURLFetcherFactory::CreateURLFetcher(
+          id, url, request_type, delegate, traffic_annotation);
   EXPECT_TRUE(fetcher);
   return fetcher;
 }

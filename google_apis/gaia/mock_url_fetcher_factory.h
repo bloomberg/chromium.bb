@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
@@ -52,7 +53,8 @@ class MockURLFetcherFactory : public net::URLFetcherFactory,
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) override {
+      net::URLFetcherDelegate* d,
+      net::NetworkTrafficAnnotationTag traffic_annotation) override {
     return std::unique_ptr<net::URLFetcher>(
         new T(success_, url, results_, request_type, d));
   }

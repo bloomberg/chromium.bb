@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -63,19 +64,22 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
   }
   virtual ~MockUrlFetcherFactory() {}
 
-  MOCK_METHOD4(CreateURLFetcherMock,
-               URLFetcher*(int id,
-                           const GURL& url,
-                           URLFetcher::RequestType request_type,
-                           URLFetcherDelegate* d));
+  MOCK_METHOD5(
+      CreateURLFetcherMock,
+      URLFetcher*(int id,
+                  const GURL& url,
+                  URLFetcher::RequestType request_type,
+                  URLFetcherDelegate* d,
+                  net::NetworkTrafficAnnotationTag traffic_annotation));
 
   std::unique_ptr<URLFetcher> CreateURLFetcher(
       int id,
       const GURL& url,
       URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d) override {
+      URLFetcherDelegate* d,
+      net::NetworkTrafficAnnotationTag traffic_annotation) override {
     return std::unique_ptr<URLFetcher>(
-        CreateURLFetcherMock(id, url, request_type, d));
+        CreateURLFetcherMock(id, url, request_type, d, traffic_annotation));
   }
 };
 
@@ -127,7 +131,7 @@ class OAuth2ApiCallFlowTest : public testing::Test {
     EXPECT_CALL(flow_, CreateApiCallUrl()).WillOnce(Return(url));
     TestURLFetcher* url_fetcher =
         CreateURLFetcher(url, succeeds, status, std::string());
-    EXPECT_CALL(factory_, CreateURLFetcherMock(_, url, _, _))
+    EXPECT_CALL(factory_, CreateURLFetcherMock(_, url, _, _, _))
         .WillOnce(Return(url_fetcher));
     return url_fetcher;
   }
