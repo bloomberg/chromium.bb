@@ -315,14 +315,27 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
-float GetGdkWindowScalingFactor() {
-  GValue scale = G_VALUE_INIT;
-  g_value_init(&scale, G_TYPE_INT);
-  if (!gdk_screen_get_setting(gdk_screen_get_default(),
-                              "gdk-window-scaling-factor", &scale))
-    return -1;
+float GtkDpiToScaleFactor(int dpi) {
+  // GTK multiplies the DPI by 1024 before storing it.
+  return dpi / (1024 * kDefaultDPI);
+}
 
-  return g_value_get_int(&scale);
+gint GetGdkScreenSettingInt(const char* setting_name) {
+  GValue value = G_VALUE_INIT;
+  g_value_init(&value, G_TYPE_INT);
+  if (!gdk_screen_get_setting(gdk_screen_get_default(), setting_name, &value))
+    return -1;
+  return g_value_get_int(&value);
+}
+
+float GetScaleFromGdkScreenSettings() {
+  gint window_scale = GetGdkScreenSettingInt("gdk-window-scaling-factor");
+  if (window_scale <= 0)
+    return -1;
+  gint font_dpi = GetGdkScreenSettingInt("gdk-unscaled-dpi");
+  if (font_dpi <= 0)
+    return -1;
+  return window_scale * GtkDpiToScaleFactor(font_dpi);
 }
 
 float GetScaleFromXftDPI() {
@@ -330,15 +343,16 @@ float GetScaleFromXftDPI() {
   CHECK(gtk_settings);
   gint gtk_dpi = -1;
   g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, nullptr);
-  // GTK multiplies the DPI by 1024 before storing it.
-  return (gtk_dpi > 0) ? gtk_dpi / (1024 * kDefaultDPI) : -1;
+  if (gtk_dpi <= 0)
+    return -1;
+  return GtkDpiToScaleFactor(gtk_dpi);
 }
 
 float GetRawDeviceScaleFactor() {
   if (display::Display::HasForceDeviceScaleFactor())
     return display::Display::GetForcedDeviceScaleFactor();
 
-  float scale = GetGdkWindowScalingFactor();
+  float scale = GetScaleFromGdkScreenSettings();
   if (scale > 0)
     return scale;
 
