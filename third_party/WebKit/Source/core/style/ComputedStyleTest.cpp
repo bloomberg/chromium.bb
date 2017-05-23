@@ -102,7 +102,7 @@ TEST(ComputedStyleTest,
   EXPECT_TRUE(diff.TransformChanged());
 }
 
-TEST(CompuetedStyleTest, HasOutlineWithCurrentColor) {
+TEST(ComputedStyleTest, HasOutlineWithCurrentColor) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   EXPECT_FALSE(style->HasOutline());
   EXPECT_FALSE(style->HasOutlineWithCurrentColor());
@@ -114,7 +114,7 @@ TEST(CompuetedStyleTest, HasOutlineWithCurrentColor) {
   EXPECT_TRUE(style->HasOutlineWithCurrentColor());
 }
 
-TEST(CompuetedStyleTest, HasBorderColorReferencingCurrentColor) {
+TEST(ComputedStyleTest, HasBorderColorReferencingCurrentColor) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
   style->SetBorderBottomColor(StyleColor::CurrentColor());
@@ -123,6 +123,16 @@ TEST(CompuetedStyleTest, HasBorderColorReferencingCurrentColor) {
   EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
   style->SetBorderBottomStyle(EBorderStyle::kSolid);
   EXPECT_TRUE(style->HasBorderColorReferencingCurrentColor());
+}
+
+TEST(ComputedStyleTest, BorderWidth) {
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetBorderBottomWidth(5);
+  EXPECT_EQ(style->BorderBottomWidth(), 0);
+  EXPECT_EQ(style->BorderBottom().Width(), 5);
+  style->SetBorderBottomStyle(EBorderStyle::kSolid);
+  EXPECT_EQ(style->BorderBottomWidth(), 5);
+  EXPECT_EQ(style->BorderBottom().Width(), 5);
 }
 
 }  // namespace blink

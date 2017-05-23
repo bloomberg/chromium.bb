@@ -47,6 +47,7 @@ TEST(CollapsedBorderValueTest, SolidNonZeroWidthTransparent) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
   style->SetBorderLeftStyle(EBorderStyle::kSolid);
+  EXPECT_EQ(style->BorderLeft().Width(), 5);
   CollapsedBorderValue v(style->BorderLeft(), Color(), kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
   EXPECT_EQ(5u, v.Width());
@@ -65,6 +66,7 @@ TEST(CollapsedBorderValueTest, None) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
   style->SetBorderLeftStyle(EBorderStyle::kNone);
+  EXPECT_EQ(style->BorderLeft().Width(), 5);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
@@ -85,6 +87,7 @@ TEST(CollapsedBorderValueTest, Hidden) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
   style->SetBorderLeftStyle(EBorderStyle::kHidden);
+  EXPECT_EQ(style->BorderLeft().Width(), 5);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
@@ -105,6 +108,7 @@ TEST(CollapsedBorderValueTest, SolidNonZeroWidthNonTransparent) {
   auto style = ComputedStyle::Create();
   style->SetBorderLeftWidth(5);
   style->SetBorderLeftStyle(EBorderStyle::kSolid);
+  EXPECT_EQ(style->BorderLeft().Width(), 5);
   CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
                          kBorderPrecedenceCell);
   EXPECT_TRUE(v.Exists());
