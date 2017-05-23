@@ -50,8 +50,10 @@ namespace payments {
 
 namespace {
 
-// Number of years (including the current one) to be shown in the expiration
-// year dropdown.
+// Number of years to be shown in the expiration year dropdown. If the card's
+// year is outside of the range of
+// [currentYear, currentYear+kNumberOfExpirationYears], then the UI shows an
+// additional entry for the card's expiration year.
 const int kNumberOfExpirationYears = 10;
 
 // Opacity of card network icons when they are not selected and are displayed
@@ -78,17 +80,30 @@ std::vector<base::string16> GetExpirationMonthItems(int* default_index) {
   return months;
 }
 
-// Returns the items that are in the expiration year dropdown, with the first
-// year being the current year.
-std::vector<base::string16> GetExpirationYearItems() {
+// Returns the items that are in the expiration year dropdown.
+std::vector<base::string16> GetExpirationYearItems(
+    const autofill::CreditCard* card_to_edit) {
   std::vector<base::string16> years;
-  years.reserve(kNumberOfExpirationYears);
+  years.reserve(kNumberOfExpirationYears + 1);
 
   base::Time::Exploded now_exploded;
   autofill::AutofillClock::Now().LocalExplode(&now_exploded);
+
+  if (card_to_edit && card_to_edit->expiration_year() < now_exploded.year) {
+    years.push_back(
+        base::UTF8ToUTF16(std::to_string(card_to_edit->expiration_year())));
+  }
+
   for (int i = 0; i < kNumberOfExpirationYears; i++) {
     years.push_back(base::UTF8ToUTF16(std::to_string(now_exploded.year + i)));
   }
+
+  if (card_to_edit && card_to_edit->expiration_year() >=
+                          now_exploded.year + kNumberOfExpirationYears) {
+    years.push_back(
+        base::UTF8ToUTF16(std::to_string(card_to_edit->expiration_year())));
+  }
+
   return years;
 }
 
@@ -472,7 +487,7 @@ CreditCardEditorViewController::GetComboboxModelForType(
     }
     case autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return base::MakeUnique<ui::SimpleComboboxModel>(
-          GetExpirationYearItems());
+          GetExpirationYearItems(credit_card_to_edit_));
     case kBillingAddressType:
       // The combobox filled with potential billing addresses. It's fine to pass
       // empty string as the default selected guid if there are no cards being
