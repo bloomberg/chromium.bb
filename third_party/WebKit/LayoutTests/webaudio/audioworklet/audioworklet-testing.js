@@ -13,7 +13,7 @@
 function isAudioWorkletEnabled() {
   return {
     onContentShell: Boolean(window.internals) &&
-                    Boolean(window.internals.runtimeFlags.audioWorkletEnabled),
+        Boolean(window.internals.runtimeFlags.audioWorkletEnabled),
     onBrowser: Boolean(window.Worklet) && Boolean(window.audioWorklet)
   };
 }

@@ -1,7 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Oscillator Node: sawtooth</title>
+    <title>
+      Test Oscillator Node: sawtooth
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
@@ -9,23 +11,20 @@
     <script src="../resources/buffer-loader.js"></script>
     <script src="../resources/oscillator-testing.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
       let tester = OscillatorTestingUtils;
 
-      audit.define("test", (task, should) => {
-        let context = new OfflineAudioContext(1, tester.sampleRate *
-          tester.lengthInSeconds, tester.sampleRate);
+      audit.define('test', (task, should) => {
+        let context = new OfflineAudioContext(
+            1, tester.sampleRate * tester.lengthInSeconds, tester.sampleRate);
 
         // The thresholds are experimentally determined.
-        tester.setThresholds({
-          snr: 92.858,
-          maxDiff: 0.0001
-        });
-        tester.runTest(context, "sawtooth",
-          "Sawtooth Oscillator with Exponential Sweep", task, should);
+        tester.setThresholds({snr: 92.858, maxDiff: 0.0001});
+        tester.runTest(
+            context, 'sawtooth', 'Sawtooth Oscillator with Exponential Sweep',
+            task, should);
       });
 
       audit.run();

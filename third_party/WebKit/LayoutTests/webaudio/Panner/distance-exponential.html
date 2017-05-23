@@ -1,15 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      distance-exponential.html
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/distance-model-testing.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
       audit.define(
@@ -28,6 +30,5 @@
 
       audit.run();
     </script>
-
   </body>
 </html>

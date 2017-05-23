@@ -1,81 +1,87 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test setTargetAtTime Approach to Limit</title>
+    <title>
+      Test setTargetAtTime Approach to Limit
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-      var audit = Audit.createTaskRunner();
+      audit.define('approach 1', (task, should) => {
+        let sampleRate = 48000;
 
-      audit.define("approach 1", (task, should) => {
-        var sampleRate = 48000;
+        // A really short time constant so that setTargetAtTime approaches the
+        // limiting value well before the end of the test.
+        let timeConstant = 0.001;
 
-        // A really short time constant so that setTargetAtTime approaches the limiting value well
-        // before the end of the test.
-        var timeConstant = 0.001;
-
-        // Find the time where setTargetAtTime is close enough to the limit.  Since we're
-        // approaching 1, use a value of eps smaller than kSetTargetThreshold (5e-7) in
-        // AudioParamTimeline.cpp.  This is to account for round-off in the actual implementation
-        // (which uses a filter and not the formula.)
-        var limitThreshold = 1e-7;
+        // Find the time where setTargetAtTime is close enough to the limit.
+        // Since we're approaching 1, use a value of eps smaller than
+        // kSetTargetThreshold (5e-7) in AudioParamTimeline.cpp.  This is to
+        // account for round-off in the actual implementation (which uses a
+        // filter and not the formula.)
+        let limitThreshold = 1e-7;
 
         runTest(should, {
-            sampleRate: sampleRate,
-            v0: 0,
-            v1: 1,
-            timeConstant: timeConstant,
-            eps: limitThreshold,
-            // Experimentally determined
-            threshold: 2.4e-5
+          sampleRate: sampleRate,
+          v0: 0,
+          v1: 1,
+          timeConstant: timeConstant,
+          eps: limitThreshold,
+          // Experimentally determined
+          threshold: 2.4e-5
         }).then(() => task.done());
       })
 
-      audit.define("approach 0", (task, should) => {
-        // Use the equation for setTargetAtTime to figure out when we are close to 0:
+      audit.define('approach 0', (task, should) => {
+        // Use the equation for setTargetAtTime to figure out when we are close
+        // to 0:
         //
         //   v(t) = exp(-t/tau)
         //
         // So find t such that exp(-t/tau) <= eps.  Thus t >= - tau * log(eps).
         //
-        // For eps, use 1e-20 (kSetTargetZeroThreshold in AudioParamTimeline.cpp).
+        // For eps, use 1e-20 (kSetTargetZeroThreshold in
+        // AudioParamTimeline.cpp).
 
-        var sampleRate = 48000;
+        let sampleRate = 48000;
 
-        // A really short time constant so that setTargetAtTime approaches the limiting value well
-        // before the end of the test.
-        var timeConstant = 0.001;
+        // A really short time constant so that setTargetAtTime approaches the
+        // limiting value well before the end of the test.
+        let timeConstant = 0.001;
 
-        // Find the time where setTargetAtTime is close enough to the limit.  Since we're
-        // approaching 0, use a value of eps smaller than kSetTargetZeroThreshold (1e-20) in
-        // AudioParamTimeline.cpp.  This is to account for round-off in the actual implementation
-        // (which uses a filter and not the formula.)
-        var limitThreshold = 1e-21;
+        // Find the time where setTargetAtTime is close enough to the limit.
+        // Since we're approaching 0, use a value of eps smaller than
+        // kSetTargetZeroThreshold (1e-20) in AudioParamTimeline.cpp.  This is
+        // to account for round-off in the actual implementation (which uses a
+        // filter and not the formula.)
+        let limitThreshold = 1e-21;
 
         runTest(should, {
-            sampleRate: sampleRate,
-            v0: 1,
-            v1: 0,
-            timeConstant: timeConstant,
-            eps: limitThreshold,
-            // Experimentally determined
-            threshold: 1.3e-7
+          sampleRate: sampleRate,
+          v0: 1,
+          v1: 0,
+          timeConstant: timeConstant,
+          eps: limitThreshold,
+          // Experimentally determined
+          threshold: 1.3e-7
         }).then(() => task.done());
       });
 
       function findLimitTime(v0, v1, timeConstant, eps) {
-        // Find the time at which the setTargetAtTime is close enough to the target value |v1| where
-        // we can consider the curve to have reached its limiting value.
+        // Find the time at which the setTargetAtTime is close enough to the
+        // target value |v1| where we can consider the curve to have reached its
+        // limiting value.
         //
         // If v1 = 0, |eps| is the absolute error between the actual value and
-        // |v1|.  Otherwise, |eps| is the relative error between the actual value and |v1|.
+        // |v1|.  Otherwise, |eps| is the relative error between the actual
+        // value and |v1|.
         //
         // The curve is
         //
@@ -94,22 +100,23 @@
         //   t >= timeConstant * log(abs(v1-v0)/eps/v1)
 
         if (v1)
-          return timeConstant * Math.log(Math.abs(v1-v0)/eps/v1);
+          return timeConstant * Math.log(Math.abs(v1 - v0) / eps / v1);
         else
-          return timeConstant * Math.log(v0/eps);
+          return timeConstant * Math.log(v0 / eps);
       }
 
       function runTest(should, options) {
-        var renderLength = 1;
+        let renderLength = 1;
 
-        var context = new OfflineAudioContext(1, renderLength * sampleRate, options.sampleRate);
+        let context = new OfflineAudioContext(
+            1, renderLength * sampleRate, options.sampleRate);
 
-        // A constant source 
-        var source = context.createBufferSource();
+        // A constant source
+        let source = context.createBufferSource();
         source.buffer = createConstantBuffer(context, 1, 1);
         source.loop = true;
 
-        var gain = context.createGain();
+        let gain = context.createGain();
         gain.gain.setValueAtTime(options.v0, 0);
         gain.gain.setTargetAtTime(options.v1, 0, options.timeConstant);
 
@@ -118,27 +125,30 @@
 
         source.start();
 
-        return context.startRendering().then(function (resultBuffer) {
-          var actual = resultBuffer.getChannelData(0);
-          var expected = createExponentialApproachArray(0, renderLength,
-            options.v0, options.v1,
-            options.sampleRate, options.timeConstant);
+        return context.startRendering().then(function(resultBuffer) {
+          let actual = resultBuffer.getChannelData(0);
+          let expected = createExponentialApproachArray(
+              0, renderLength, options.v0, options.v1, options.sampleRate,
+              options.timeConstant);
 
-          var message = "setTargetAtTime(" + options.v1 + ", 0, " + options.timeConstant + ")";
+          let message = 'setTargetAtTime(' + options.v1 + ', 0, ' +
+              options.timeConstant + ')';
 
-          // Determine where the tail of the curve begins.  (Where the curve has basically reached
-          // the limit value.)
-          var tailTime = findLimitTime(options.v0, options.v1, options.timeConstant, options.eps);
-          var tailFrame = Math.ceil(tailTime * options.sampleRate);
+          // Determine where the tail of the curve begins.  (Where the curve has
+          // basically reached the limit value.)
+          let tailTime = findLimitTime(
+              options.v0, options.v1, options.timeConstant, options.eps);
+          let tailFrame = Math.ceil(tailTime * options.sampleRate);
 
-          should(actual.slice(0, tailFrame),
-              "Initial output of " + tailFrame + " samples for " + message)
-            .beCloseToArray(expected.slice(0, tailFrame), {
-              absoluteThreshold: options.threshold
-            });
+          should(
+              actual.slice(0, tailFrame),
+              'Initial output of ' + tailFrame + ' samples for ' + message)
+              .beCloseToArray(
+                  expected.slice(0, tailFrame),
+                  {absoluteThreshold: options.threshold});
 
-          should(actual.slice(tailFrame), "Tail output for " + message)
-            .containValues([options.v1]);
+          should(actual.slice(tailFrame), 'Tail output for ' + message)
+              .containValues([options.v1]);
         });
       }
 

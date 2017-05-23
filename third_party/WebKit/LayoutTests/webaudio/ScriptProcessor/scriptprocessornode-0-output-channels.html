@@ -1,20 +1,21 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Connecting 0-output channel ScriptProcessor to Another Node </title>
+    <title>
+      Test Connecting 0-output channel ScriptProcessor to Another Node
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
-      var audit = Audit.createTaskRunner();
-      var context;
-      var scriptNode1;
-      var scriptNode2;
-      var analyzer;
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
+      let context;
+      let scriptNode1;
+      let scriptNode2;
+      let analyzer;
 
       audit.define('initialize', (task, should) => {
         should(function() {

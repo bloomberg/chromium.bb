@@ -16,13 +16,14 @@
  * @return {AudioBuffer}
  */
 function createShiftedImpulseBuffer(context, numberOfChannels, frameLength) {
-    var shiftedImpulseBuffer = context.createBuffer(numberOfChannels, frameLength, context.sampleRate);
-    for (var channel = 0; channel < numberOfChannels; ++channel) {
-      var data = shiftedImpulseBuffer.getChannelData(channel);
-      data[channel] = 1;
-    }
+  let shiftedImpulseBuffer =
+      context.createBuffer(numberOfChannels, frameLength, context.sampleRate);
+  for (let channel = 0; channel < numberOfChannels; ++channel) {
+    let data = shiftedImpulseBuffer.getChannelData(channel);
+    data[channel] = 1;
+  }
 
-    return shiftedImpulseBuffer;
+  return shiftedImpulseBuffer;
 }
 
 /**
@@ -35,10 +36,10 @@ function createShiftedImpulseBuffer(context, numberOfChannels, frameLength) {
 function stringifyBuffer(audioBuffer, frameLength, frameOffset) {
   frameOffset = (frameOffset || 0);
 
-  var stringifiedBuffer = '';
-  for (var channel = 0; channel < audioBuffer.numberOfChannels; ++channel) {
-    var channelData = audioBuffer.getChannelData(channel);
-    for (var i = 0; i < frameLength; ++i)
+  let stringifiedBuffer = '';
+  for (let channel = 0; channel < audioBuffer.numberOfChannels; ++channel) {
+    let channelData = audioBuffer.getChannelData(channel);
+    for (let i = 0; i < frameLength; ++i)
       stringifiedBuffer += channelData[i + frameOffset] + ' ';
     stringifiedBuffer += '\n';
   }
@@ -58,19 +59,20 @@ function stringifyBuffer(audioBuffer, frameLength, frameOffset) {
  * @return {Number}                     Computed number of channels.
  */
 function computeNumberOfChannels(connections, channelCount, channelCountMode) {
-  if (channelCountMode == "explicit")
+  if (channelCountMode == 'explicit')
     return channelCount;
 
   // Must have at least one channel.
-  var computedNumberOfChannels = 1;
+  let computedNumberOfChannels = 1;
 
   // Compute "computedNumberOfChannels" based on all the connections.
-  for (var i = 0; i < connections.length; ++i) {
-    var connectionNumberOfChannels = parseInt(connections[i]);
-    computedNumberOfChannels = Math.max(computedNumberOfChannels, connectionNumberOfChannels);
+  for (let i = 0; i < connections.length; ++i) {
+    let connectionNumberOfChannels = parseInt(connections[i]);
+    computedNumberOfChannels =
+        Math.max(computedNumberOfChannels, connectionNumberOfChannels);
   }
 
-  if (channelCountMode == "clamped-max")
+  if (channelCountMode == 'clamped-max')
     computedNumberOfChannels = Math.min(computedNumberOfChannels, channelCount);
 
   return computedNumberOfChannels;
@@ -83,15 +85,15 @@ function computeNumberOfChannels(connections, channelCount, channelCountMode) {
  */
 function speakersSum(input, output) {
   if (input.length != output.length) {
-    throw '[mixing-rules.js] speakerSum(): buffer lengths mismatch (input: '
-      + input.length + ', output: ' + output.length + ')';
+    throw '[mixing-rules.js] speakerSum(): buffer lengths mismatch (input: ' +
+        input.length + ', output: ' + output.length + ')';
   }
 
   if (input.numberOfChannels === output.numberOfChannels) {
-    for (var channel = 0; channel < output.numberOfChannels; ++channel) {
-      var inputChannel = input.getChannelData(channel);
-      var outputChannel = output.getChannelData(channel);
-      for (var i = 0; i < outputChannel.length; i++)
+    for (let channel = 0; channel < output.numberOfChannels; ++channel) {
+      let inputChannel = input.getChannelData(channel);
+      let outputChannel = output.getChannelData(channel);
+      for (let i = 0; i < outputChannel.length; i++)
         outputChannel[i] += inputChannel[i];
     }
   } else if (input.numberOfChannels < output.numberOfChannels) {
@@ -108,16 +110,17 @@ function speakersSum(input, output) {
  */
 function discreteSum(input, output) {
   if (input.length != output.length) {
-    throw '[mixing-rules.js] speakerSum(): buffer lengths mismatch (input: '
-      + input.length + ', output: ' + output.length + ')';
+    throw '[mixing-rules.js] speakerSum(): buffer lengths mismatch (input: ' +
+        input.length + ', output: ' + output.length + ')';
   }
 
-  var numberOfChannels = Math.min(input.numberOfChannels, output.numberOfChannels)
+  let numberOfChannels =
+      Math.min(input.numberOfChannels, output.numberOfChannels)
 
-  for (var channel = 0; channel < numberOfChannels; ++channel) {
-    var inputChannel = input.getChannelData(channel);
-    var outputChannel = output.getChannelData(channel);
-    for (var i = 0; i < outputChannel.length; i++)
+          for (let channel = 0; channel < numberOfChannels; ++channel) {
+    let inputChannel = input.getChannelData(channel);
+    let outputChannel = output.getChannelData(channel);
+    for (let i = 0; i < outputChannel.length; i++)
       outputChannel[i] += inputChannel[i];
   }
 }
@@ -128,9 +131,9 @@ function discreteSum(input, output) {
  * @param  {AudioBuffer} output         Output audio buffer.
  */
 function processUpMix(input, output) {
-  var numberOfInputChannels = input.numberOfChannels;
-  var numberOfOutputChannels = output.numberOfChannels;
-  var i, length = output.length;
+  let numberOfInputChannels = input.numberOfChannels;
+  let numberOfOutputChannels = output.numberOfChannels;
+  let i, length = output.length;
 
   // Up-mixing: 1 -> 2, 1 -> 4
   //   output.L += input
@@ -139,9 +142,9 @@ function processUpMix(input, output) {
   //   output.SR += 0 (in the case of 1 -> 4)
   if ((numberOfInputChannels === 1 && numberOfOutputChannels === 2) ||
       (numberOfInputChannels === 1 && numberOfOutputChannels === 4)) {
-    var inputChannel = input.getChannelData(0);
-    var outputChannel0 = output.getChannelData(0);
-    var outputChannel1 = output.getChannelData(1);
+    let inputChannel = input.getChannelData(0);
+    let outputChannel0 = output.getChannelData(0);
+    let outputChannel1 = output.getChannelData(1);
     for (i = 0; i < length; i++) {
       outputChannel0[i] += inputChannel[i];
       outputChannel1[i] += inputChannel[i];
@@ -158,8 +161,8 @@ function processUpMix(input, output) {
   //   output.SL += 0
   //   output.SR += 0
   if (numberOfInputChannels == 1 && numberOfOutputChannels == 6) {
-    var inputChannel = input.getChannelData(0);
-    var outputChannel2 = output.getChannelData(2);
+    let inputChannel = input.getChannelData(0);
+    let outputChannel2 = output.getChannelData(2);
     for (i = 0; i < length; i++)
       outputChannel2[i] += inputChannel[i];
 
@@ -175,10 +178,10 @@ function processUpMix(input, output) {
   //   output.SR += 0
   if ((numberOfInputChannels === 2 && numberOfOutputChannels === 4) ||
       (numberOfInputChannels === 2 && numberOfOutputChannels === 6)) {
-    var inputChannel0 = input.getChannelData(0);
-    var inputChannel1 = input.getChannelData(1);
-    var outputChannel0 = output.getChannelData(0);
-    var outputChannel1 = output.getChannelData(1);
+    let inputChannel0 = input.getChannelData(0);
+    let inputChannel1 = input.getChannelData(1);
+    let outputChannel0 = output.getChannelData(0);
+    let outputChannel1 = output.getChannelData(1);
     for (i = 0; i < length; i++) {
       outputChannel0[i] += inputChannel0[i];
       outputChannel1[i] += inputChannel1[i];
@@ -195,14 +198,14 @@ function processUpMix(input, output) {
   //   output.SL += input.SL
   //   output.SR += input.SR
   if (numberOfInputChannels === 4 && numberOfOutputChannels === 6) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var inputChannel2 = input.getChannelData(2); // input.SL
-    var inputChannel3 = input.getChannelData(3); // input.SR
-    var outputChannel0 = output.getChannelData(0); // output.L
-    var outputChannel1 = output.getChannelData(1); // output.R
-    var outputChannel4 = output.getChannelData(4); // output.SL
-    var outputChannel5 = output.getChannelData(5); // output.SR
+    let inputChannel0 = input.getChannelData(0);    // input.L
+    let inputChannel1 = input.getChannelData(1);    // input.R
+    let inputChannel2 = input.getChannelData(2);    // input.SL
+    let inputChannel3 = input.getChannelData(3);    // input.SR
+    let outputChannel0 = output.getChannelData(0);  // output.L
+    let outputChannel1 = output.getChannelData(1);  // output.R
+    let outputChannel4 = output.getChannelData(4);  // output.SL
+    let outputChannel5 = output.getChannelData(5);  // output.SR
     for (i = 0; i < length; i++) {
       outputChannel0[i] += inputChannel0[i];
       outputChannel1[i] += inputChannel1[i];
@@ -223,16 +226,16 @@ function processUpMix(input, output) {
  * @param  {AudioBuffer} output         Output audio buffer.
  */
 function processDownMix(input, output) {
-  var numberOfInputChannels = input.numberOfChannels;
-  var numberOfOutputChannels = output.numberOfChannels;
-  var i, length = output.length;
+  let numberOfInputChannels = input.numberOfChannels;
+  let numberOfOutputChannels = output.numberOfChannels;
+  let i, length = output.length;
 
   // Down-mixing: 2 -> 1
   //   output += 0.5 * (input.L + input.R)
   if (numberOfInputChannels === 2 && numberOfOutputChannels === 1) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var outputChannel0 = output.getChannelData(0);
+    let inputChannel0 = input.getChannelData(0);  // input.L
+    let inputChannel1 = input.getChannelData(1);  // input.R
+    let outputChannel0 = output.getChannelData(0);
     for (i = 0; i < length; i++)
       outputChannel0[i] += 0.5 * (inputChannel0[i] + inputChannel1[i]);
 
@@ -242,14 +245,15 @@ function processDownMix(input, output) {
   // Down-mixing: 4 -> 1
   //   output += 0.25 * (input.L + input.R + input.SL + input.SR)
   if (numberOfInputChannels === 4 && numberOfOutputChannels === 1) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var inputChannel2 = input.getChannelData(2); // input.SL
-    var inputChannel3 = input.getChannelData(3); // input.SR
-    var outputChannel0 = output.getChannelData(0);
+    let inputChannel0 = input.getChannelData(0);  // input.L
+    let inputChannel1 = input.getChannelData(1);  // input.R
+    let inputChannel2 = input.getChannelData(2);  // input.SL
+    let inputChannel3 = input.getChannelData(3);  // input.SR
+    let outputChannel0 = output.getChannelData(0);
     for (i = 0; i < length; i++) {
-      outputChannel0[i] += 0.25 * (inputChannel0[i] + inputChannel1[i]
-        + inputChannel2[i] + inputChannel3[i]);
+      outputChannel0[i] += 0.25 *
+          (inputChannel0[i] + inputChannel1[i] + inputChannel2[i] +
+           inputChannel3[i]);
     }
 
     return;
@@ -259,17 +263,17 @@ function processDownMix(input, output) {
   //   output += sqrt(1/2) * (input.L + input.R) + input.C
   //            + 0.5 * (input.SL + input.SR)
   if (numberOfInputChannels === 6 && numberOfOutputChannels === 1) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var inputChannel2 = input.getChannelData(2); // input.C
-    var inputChannel4 = input.getChannelData(4); // input.SL
-    var inputChannel5 = input.getChannelData(5); // input.SR
-    var outputChannel0 = output.getChannelData(0);
-    var scaleSqrtHalf = Math.sqrt(0.5);
+    let inputChannel0 = input.getChannelData(0);  // input.L
+    let inputChannel1 = input.getChannelData(1);  // input.R
+    let inputChannel2 = input.getChannelData(2);  // input.C
+    let inputChannel4 = input.getChannelData(4);  // input.SL
+    let inputChannel5 = input.getChannelData(5);  // input.SR
+    let outputChannel0 = output.getChannelData(0);
+    let scaleSqrtHalf = Math.sqrt(0.5);
     for (i = 0; i < length; i++) {
       outputChannel0[i] +=
-        scaleSqrtHalf * (inputChannel0[i] + inputChannel1[i])
-        + inputChannel2[i] + 0.5 * (inputChannel4[i] + inputChannel5[i]);
+          scaleSqrtHalf * (inputChannel0[i] + inputChannel1[i]) +
+          inputChannel2[i] + 0.5 * (inputChannel4[i] + inputChannel5[i]);
     }
 
     return;
@@ -279,12 +283,12 @@ function processDownMix(input, output) {
   //   output.L += 0.5 * (input.L + input.SL)
   //   output.R += 0.5 * (input.R + input.SR)
   if (numberOfInputChannels == 4 && numberOfOutputChannels == 2) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var inputChannel2 = input.getChannelData(2); // input.SL
-    var inputChannel3 = input.getChannelData(3); // input.SR
-    var outputChannel0 = output.getChannelData(0); // output.L
-    var outputChannel1 = output.getChannelData(1); // output.R
+    let inputChannel0 = input.getChannelData(0);    // input.L
+    let inputChannel1 = input.getChannelData(1);    // input.R
+    let inputChannel2 = input.getChannelData(2);    // input.SL
+    let inputChannel3 = input.getChannelData(3);    // input.SR
+    let outputChannel0 = output.getChannelData(0);  // output.L
+    let outputChannel1 = output.getChannelData(1);  // output.R
     for (i = 0; i < length; i++) {
       outputChannel0[i] += 0.5 * (inputChannel0[i] + inputChannel2[i]);
       outputChannel1[i] += 0.5 * (inputChannel1[i] + inputChannel3[i]);
@@ -297,19 +301,19 @@ function processDownMix(input, output) {
   //   output.L += input.L + sqrt(1/2) * (input.C + input.SL)
   //   output.R += input.R + sqrt(1/2) * (input.C + input.SR)
   if (numberOfInputChannels == 6 && numberOfOutputChannels == 2) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var inputChannel2 = input.getChannelData(2); // input.C
-    var inputChannel4 = input.getChannelData(4); // input.SL
-    var inputChannel5 = input.getChannelData(5); // input.SR
-    var outputChannel0 = output.getChannelData(0); // output.L
-    var outputChannel1 = output.getChannelData(1); // output.R
-    var scaleSqrtHalf = Math.sqrt(0.5);
+    let inputChannel0 = input.getChannelData(0);    // input.L
+    let inputChannel1 = input.getChannelData(1);    // input.R
+    let inputChannel2 = input.getChannelData(2);    // input.C
+    let inputChannel4 = input.getChannelData(4);    // input.SL
+    let inputChannel5 = input.getChannelData(5);    // input.SR
+    let outputChannel0 = output.getChannelData(0);  // output.L
+    let outputChannel1 = output.getChannelData(1);  // output.R
+    let scaleSqrtHalf = Math.sqrt(0.5);
     for (i = 0; i < length; i++) {
-      outputChannel0[i] += inputChannel0[i]
-        + scaleSqrtHalf * (inputChannel2[i] + inputChannel4[i]);
-      outputChannel1[i] += inputChannel1[i]
-        + scaleSqrtHalf * (inputChannel2[i] + inputChannel5[i]);
+      outputChannel0[i] += inputChannel0[i] +
+          scaleSqrtHalf * (inputChannel2[i] + inputChannel4[i]);
+      outputChannel1[i] += inputChannel1[i] +
+          scaleSqrtHalf * (inputChannel2[i] + inputChannel5[i]);
     }
 
     return;
@@ -321,16 +325,16 @@ function processDownMix(input, output) {
   //   output.SL += input.SL
   //   output.SR += input.SR
   if (numberOfInputChannels === 6 && numberOfOutputChannels === 4) {
-    var inputChannel0 = input.getChannelData(0); // input.L
-    var inputChannel1 = input.getChannelData(1); // input.R
-    var inputChannel2 = input.getChannelData(2); // input.C
-    var inputChannel4 = input.getChannelData(4); // input.SL
-    var inputChannel5 = input.getChannelData(5); // input.SR
-    var outputChannel0 = output.getChannelData(0); // output.L
-    var outputChannel1 = output.getChannelData(1); // output.R
-    var outputChannel2 = output.getChannelData(2); // output.SL
-    var outputChannel3 = output.getChannelData(3); // output.SR
-    var scaleSqrtHalf = Math.sqrt(0.5);
+    let inputChannel0 = input.getChannelData(0);    // input.L
+    let inputChannel1 = input.getChannelData(1);    // input.R
+    let inputChannel2 = input.getChannelData(2);    // input.C
+    let inputChannel4 = input.getChannelData(4);    // input.SL
+    let inputChannel5 = input.getChannelData(5);    // input.SR
+    let outputChannel0 = output.getChannelData(0);  // output.L
+    let outputChannel1 = output.getChannelData(1);  // output.R
+    let outputChannel2 = output.getChannelData(2);  // output.SL
+    let outputChannel3 = output.getChannelData(3);  // output.SR
+    let scaleSqrtHalf = Math.sqrt(0.5);
     for (i = 0; i < length; i++) {
       outputChannel0[i] += inputChannel0[i] + scaleSqrtHalf * inputChannel2[i];
       outputChannel1[i] += inputChannel1[i] + scaleSqrtHalf * inputChannel2[i];

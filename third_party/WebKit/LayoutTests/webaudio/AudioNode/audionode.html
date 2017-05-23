@@ -1,90 +1,93 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script> 
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-</head>
+  <head>
+    <title>
+      audionode.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <div id="description"></div>
+    <div id="console"></div>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-<body>
-<div id="description"></div>
-<div id="console"></div>
+      let context = 0;
+      let context2 = 0;
+      let context3 = 0;
 
-<script>
-let audit = Audit.createTaskRunner();
+      audit.define(
+          {label: 'test', description: 'Basic tests for AudioNode API.'},
+          function(task, should) {
 
-let context = 0;
-let context2 = 0;
-let context3 = 0;
+            context = new AudioContext();
+            window.audioNode = context.createBufferSource();
 
-audit.define({
-  label: 'test',
-  description: 'Basic tests for AudioNode API.'
-}, function(task, should) {
+            // Check input and output numbers of AudioSourceNode.
+            should(audioNode.numberOfInputs, 'AudioBufferSource.numberOfInputs')
+                .beEqualTo(0);
+            should(
+                audioNode.numberOfOutputs, 'AudioBufferSource.numberOfOutputs')
+                .beEqualTo(1);
 
-  context = new AudioContext();
-  window.audioNode = context.createBufferSource();
+            // Check input and output numbers of AudioDestinationNode
+            should(
+                context.destination.numberOfInputs,
+                'AudioContext.destination.numberOfInputs')
+                .beEqualTo(1);
+            should(
+                context.destination.numberOfOutputs,
+                'AudioContext.destination.numberOfOutputs')
+                .beEqualTo(0);
 
-  // Check input and output numbers of AudioSourceNode.
-  should(audioNode.numberOfInputs, 'AudioBufferSource.numberOfInputs')
-      .beEqualTo(0);
-  should(audioNode.numberOfOutputs, 'AudioBufferSource.numberOfOutputs')
-      .beEqualTo(1);
+            // Try calling connect() method with illegal values.
+            should(
+                () => audioNode.connect(0, 0, 0), 'audioNode.connect(0, 0, 0)')
+                .throw('TypeError');
+            should(
+                () => audioNode.connect(null, 0, 0),
+                'audioNode.connect(null, 0, 0)')
+                .throw('TypeError');
+            should(
+                () => audioNode.connect(context.destination, 5, 0),
+                'audioNode.connect(context.destination, 5, 0)')
+                .throw('IndexSizeError');
+            should(
+                () => audioNode.connect(context.destination, 0, 5),
+                'audioNode.connect(context.destination, 0, 5)')
+                .throw('IndexSizeError');
 
-  // Check input and output numbers of AudioDestinationNode
-  should(
-      context.destination.numberOfInputs,
-      'AudioContext.destination.numberOfInputs')
-      .beEqualTo(1);
-  should(
-      context.destination.numberOfOutputs,
-      'AudioContext.destination.numberOfOutputs')
-      .beEqualTo(0);
+            should(
+                () => audioNode.connect(context.destination, 0, 0),
+                'audioNode.connect(context.destination, 0, 0)')
+                .notThrow();
 
-  // Try calling connect() method with illegal values.
-  should(() => audioNode.connect(0, 0, 0), 'audioNode.connect(0, 0, 0)')
-      .throw('TypeError');
-  should(() => audioNode.connect(null, 0, 0), 'audioNode.connect(null, 0, 0)')
-      .throw('TypeError');
-  should(
-      () => audioNode.connect(context.destination, 5, 0),
-      'audioNode.connect(context.destination, 5, 0)')
-      .throw('IndexSizeError');
-  should(
-      () => audioNode.connect(context.destination, 0, 5),
-      'audioNode.connect(context.destination, 0, 5)')
-      .throw('IndexSizeError');
+            // Create a new context and try to connect the other context's node
+            // to this one.
+            context2 = new AudioContext();
+            should(
+                () => window.audioNode.connect(context2.destination),
+                'Connecting a node to a different context')
+                .throw('InvalidAccessError');
 
-  should(
-      () => audioNode.connect(context.destination, 0, 0),
-      'audioNode.connect(context.destination, 0, 0)')
-      .notThrow();
+            // 3-arg AudioContext doesn't create an offline context anymore.
+            should(
+                () => context3 = new AudioContext(1, 44100, 44100),
+                'context3 = new AudioContext(1, 44100, 44100)')
+                .throw('TypeError');
 
-  // Create a new context and try to connect the other context's node to this
-  // one.
-  context2 = new AudioContext();
-  should(
-      () => window.audioNode.connect(context2.destination),
-      'Connecting a node to a different context')
-      .throw('InvalidAccessError');
+            // Ensure it is an EventTarget
+            should(
+                audioNode instanceof EventTarget, 'AudioNode is an EventTarget')
+                .beTrue();
 
-  // 3-arg AudioContext doesn't create an offline context anymore.
-  should(
-      () => context3 = new AudioContext(1, 44100, 44100),
-      'context3 = new AudioContext(1, 44100, 44100)')
-      .throw('TypeError');
+            task.done();
+          });
 
-  // Ensure it is an EventTarget
-  should(audioNode instanceof EventTarget, 'AudioNode is an EventTarget')
-      .beTrue();
-
-  task.done();
-});
-
-audit.run();
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

@@ -1,59 +1,60 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script> 
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-<script src="../resources/delay-testing.js"></script>
-</head>
+  <head>
+    <title>
+      delaynode-maxdelaylimit.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="../resources/delay-testing.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-<body>
-<script>
-let audit = Audit.createTaskRunner();
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'Tests attribute and maximum allowed delay of DelayNode'
+          },
+          function(task, should) {
 
-audit.define({
-  label: "test",
-  description: "Tests attribute and maximum allowed delay of DelayNode"
-}, function (task, should) {
-        
-    // Create offline audio context.
-    var context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);
-    var toneBuffer = createToneBuffer(context, 20, 20 * toneLengthSeconds, sampleRate); // 20Hz tone
-    
-    var bufferSource = context.createBufferSource();
-    bufferSource.buffer = toneBuffer;
+            // Create offline audio context.
+            let context = new OfflineAudioContext(
+                1, sampleRate * renderLengthSeconds, sampleRate);
+            let toneBuffer = createToneBuffer(
+                context, 20, 20 * toneLengthSeconds, sampleRate);  // 20Hz tone
 
-    window.context = context;
-    should(() => context.createDelay(180))
-      .throw();
-    should(() => context.createDelay(0))
-      .throw();
-    should(() => context.createDelay(-1))
-      .throw();
-    should(() => context.createDelay(NaN))
-      .throw();
-;
-    var delay = context.createDelay(179);
-    delay.delayTime.value = delayTimeSeconds;
-    window.delay = delay;
-    should(delay.delayTime.value,
-      "delay.delayTime.value = " + delayTimeSeconds)
-      .beEqualTo(delayTimeSeconds);
+            let bufferSource = context.createBufferSource();
+            bufferSource.buffer = toneBuffer;
 
-    bufferSource.connect(delay);
-    delay.connect(context.destination);
-    bufferSource.start(0);
-    
-    context.startRendering()
-      .then(buffer => checkDelayedResult(buffer, toneBuffer, should))
-      .then(() => task.done());
-});
+            window.context = context;
+            should(() => context.createDelay(180)).throw();
+            should(() => context.createDelay(0)).throw();
+            should(() => context.createDelay(-1)).throw();
+            should(() => context.createDelay(NaN)).throw();
+            ;
+            let delay = context.createDelay(179);
+            delay.delayTime.value = delayTimeSeconds;
+            window.delay = delay;
+            should(
+                delay.delayTime.value,
+                'delay.delayTime.value = ' + delayTimeSeconds)
+                .beEqualTo(delayTimeSeconds);
 
-audit.run();
+            bufferSource.connect(delay);
+            delay.connect(context.destination);
+            bufferSource.start(0);
 
-</script>
+            context.startRendering()
+                .then(buffer => checkDelayedResult(buffer, toneBuffer, should))
+                .then(() => task.done());
+          });
 
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

@@ -1,14 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      Test Neutering by decodeAudioData
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit.js"></script>
-    <title>Test Neutering by decodeAudioData </title>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       // Any valid rate will do. Just need something to create an offline
       // context.
       let sampleRate = 44100;
@@ -26,12 +27,11 @@
           context = new OfflineAudioContext(1, 1, sampleRate);
         }, 'Context creation').notThrow();
 
-        Audit.loadFileFromUrl(
-                '../resources/hyper-reality/laughter.wav')
+        Audit.loadFileFromUrl('../resources/hyper-reality/laughter.wav')
             .then(response => {
-                encodedAudio = response;
-                should(true, 'Loading of encoded audio file')
-                    .message('succeeded', 'failed');
+              encodedAudio = response;
+              should(true, 'Loading of encoded audio file')
+                  .message('succeeded', 'failed');
             })
             .then(() => task.done());
       });

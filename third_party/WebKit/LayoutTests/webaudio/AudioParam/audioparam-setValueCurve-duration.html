@@ -1,36 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      Test setValueCurveAtTime with Huge Duration
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
-    <title>Test setValueCurveAtTime with Huge Duration</title>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
+      let sampleRate = 48000;
+      let renderFrames = 1000;
 
-      var sampleRate = 48000;
-      var renderFrames = 1000;
-      
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
-      audit.define("long duration", (task, should) => {
+      audit.define('long duration', (task, should) => {
         // We only need to generate a small number of frames for this test.
-        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
-        var src = context.createBufferSource();
+        let context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        let src = context.createBufferSource();
 
         // Constant source of amplitude 1, looping.
         src.buffer = createConstantBuffer(context, 1, 1);
         src.loop = true;
 
-        // Automate the gain with a setValueCurve with a very long duration.  The duration should
-        // produce a frame number greater than 2^64 (larger than the largest size_t value).
-        var gain = context.createGain();
-        var duration = Math.pow(2, 64);
-        var curve = Float32Array.from([0, 1]);
+        // Automate the gain with a setValueCurve with a very long duration.
+        // The duration should produce a frame number greater than 2^64 (larger
+        // than the largest size_t value).
+        let gain = context.createGain();
+        let duration = Math.pow(2, 64);
+        let curve = Float32Array.from([0, 1]);
         gain.gain.setValueCurveAtTime(curve, 0, duration);
 
         // Create the graph and go!
@@ -38,21 +39,24 @@
         gain.connect(context.destination);
         src.start();
 
-        context.startRendering().then(function (result) {
-           // Find the maximum value of the buffer.
-           var max = Math.max.apply(null, result.getChannelData(0));
+        context.startRendering()
+            .then(function(result) {
+              // Find the maximum value of the buffer.
+              let max = Math.max.apply(null, result.getChannelData(0));
 
-           // The automation does linear interpolation between 0 and 1 from time 0 to duration.
-           // Hence the max value of the interpolation occurs at the end of the rendering.  Compute
-           // this value.
+              // The automation does linear interpolation between 0 and 1 from
+              // time 0 to duration. Hence the max value of the interpolation
+              // occurs at the end of the rendering.  Compute this value.
 
-           var expectedMax = (renderFrames / sampleRate) * (1 / duration);
+              let expectedMax = (renderFrames / sampleRate) * (1 / duration);
 
-           var message = "setValueCurve([" + curve + "], 0, " + duration + ")";
+              let message =
+                  'setValueCurve([' + curve + '], 0, ' + duration + ')';
 
-           should(max, "Max amplitude of " + message)
-             .beLessThanOrEqualTo(expectedMax);
-        }).then(() => task.done());
+              should(max, 'Max amplitude of ' + message)
+                  .beLessThanOrEqualTo(expectedMax);
+            })
+            .then(() => task.done());
       });
 
       audit.run();

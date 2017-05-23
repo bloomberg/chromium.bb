@@ -1,143 +1,141 @@
 <!DOCTYPE html>
-
 <!--
 Tests that AudioChannelSplitter works correctly.
 -->
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script> 
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-</head>
+  <head>
+    <title>
+      audiochannelsplitter.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-<body>
+      let sampleRate = 44100.0;
+      let lengthInSampleFrames = 512;
 
-<script>
-var audit = Audit.createTaskRunner();
+      let context = 0;
+      let sourceBuffer;
+      let sourceNode;
+      let channelSplitter;
+      let channelMerger;
 
-var sampleRate = 44100.0;
-var lengthInSampleFrames = 512;
+      function createStereoBufferWithDCOffset(length, sampleRate, offset) {
+        let buffer = context.createBuffer(2, length, sampleRate);
+        let n = buffer.length;
+        let channelL = buffer.getChannelData(0);
+        let channelR = buffer.getChannelData(1);
 
-var context = 0;
-var sourceBuffer;
-var sourceNode;
-var channelSplitter;
-var channelMerger;
+        for (let i = 0; i < n; ++i) {
+          channelL[i] = offset;
+          channelR[i] = -1.0 * offset;
+        }
 
-function createStereoBufferWithDCOffset(length, sampleRate, offset) {
-    var buffer = context.createBuffer(2, length, sampleRate);
-    var n = buffer.length;
-    var channelL = buffer.getChannelData(0);
-    var channelR = buffer.getChannelData(1);
+        return buffer;
+      }
 
-    for (var i = 0; i < n; ++i) {
-        channelL[i] = offset;
-        channelR[i] = -1.0 * offset;
-    }
+      // checkResult() checks that the rendered buffer is stereo and that the
+      // left channel is all -1 and right channel all +1. In other words, we've
+      // reversed the order of the two channels.
+      function checkResult(buffer, should) {
+        let success = true;
 
-    return buffer;
-}
+        if (buffer.numberOfChannels == 2) {
+          let bufferDataL = buffer.getChannelData(0);
+          let bufferDataR = buffer.getChannelData(1);
 
-// checkResult() checks that the rendered buffer is stereo and that the left channel is all -1 and right channel all +1.
-// In other words, we've reversed the order of the two channels.
-function checkResult(buffer, should) {
+          success = should(bufferDataL, 'Left channel').beConstantValueOf(-1) &&
+              success;
+          success = should(bufferDataR, 'Right channel').beConstantValueOf(1) &&
+              success;
+        } else {
+          success = false;
+        }
 
-    var success = true;
+        should(success, 'Left and right channels were exchanged')
+            .message('correctly', 'incorrectly');
+      }
 
-    if (buffer.numberOfChannels == 2) {
-        var bufferDataL = buffer.getChannelData(0);
-        var bufferDataR = buffer.getChannelData(1);
+      audit.define(
+          {
+            label: 'construction',
+            description: 'Construction of ChannelSplitterNode'
+          },
+          function(task, should) {
 
-        success = should(bufferDataL, "Left channel")
-          .beConstantValueOf(-1) && success;
-        success = should(bufferDataR, "Right channel")
-          .beConstantValueOf(1) && success;
-    } else {
-        success = false;
-    }
+            // Create stereo offline audio context.
+            context =
+                new OfflineAudioContext(2, lengthInSampleFrames, sampleRate);
 
-    should(success, "Left and right channels were exchanged")
-      .message("correctly", "incorrectly");
-}
+            let splitternode;
+            should(() => {
+              let splitternode = context.createChannelSplitter(0);
+            }, 'createChannelSplitter(0)').throw('IndexSizeError');
 
-audit.define({
-  label: "construction",
-  description: "Construction of ChannelSplitterNode"
-}, function (task, should) {
+            should(() => {
+              splitternode = context.createChannelSplitter(33);
+            }, 'createChannelSplitter(33)').throw('IndexSizeError');
 
-    // Create stereo offline audio context.
-    context = new OfflineAudioContext(2, lengthInSampleFrames, sampleRate);
+            should(() => {
+              splitternode = context.createChannelSplitter(32);
+            }, 'splitternode = context.createChannelSplitter(32)').notThrow();
 
-    var splitternode;
-    should(() => {
-      var splitternode = context.createChannelSplitter(0);
-      }, "createChannelSplitter(0)")
-      .throw("IndexSizeError");
+            should(splitternode.numberOfOutputs, 'splitternode.numberOfOutputs')
+                .beEqualTo(32);
+            should(splitternode.numberOfInputs, 'splitternode.numberOfInputs')
+                .beEqualTo(1)
 
-    should(() => {
-      splitternode = context.createChannelSplitter(33);
-      }, "createChannelSplitter(33)")
-      .throw("IndexSizeError");
+            should(() => {
+              splitternode = context.createChannelSplitter();
+            }, 'splitternode = context.createChannelSplitter()').notThrow();
 
-    should(() => {
-        splitternode = context.createChannelSplitter(32);
-      }, "splitternode = context.createChannelSplitter(32)")
-      .notThrow();
+            should(splitternode.numberOfOutputs, 'splitternode.numberOfOutputs')
+                .beEqualTo(6);
 
-    should(splitternode.numberOfOutputs,
-      "splitternode.numberOfOutputs")
-      .beEqualTo(32);
-    should(splitternode.numberOfInputs,
-      "splitternode.numberOfInputs")
-      .beEqualTo(1)
+            task.done();
+          });
 
-    should(() => {
-      splitternode = context.createChannelSplitter();
-      }, "splitternode = context.createChannelSplitter()")
-      .notThrow();
+      audit.define(
+          {
+            label: 'functionality',
+            description: 'Functionality of ChannelSplitterNode'
+          },
+          function(task, should) {
 
-    should(splitternode.numberOfOutputs,
-      "splitternode.numberOfOutputs")
-      .beEqualTo(6);
+            // Create a stereo buffer, with all +1 values in left channel, all
+            // -1 in right channel.
+            sourceBuffer = createStereoBufferWithDCOffset(
+                lengthInSampleFrames, sampleRate, 1);
 
-    task.done();
-});
+            sourceNode = context.createBufferSource();
+            sourceNode.buffer = sourceBuffer;
 
-audit.define({
-  label: "functionality",
-  description: "Functionality of ChannelSplitterNode"
-}, function (task, should) {      
+            // Create a channel splitter and connect it so that it split the
+            // stereo stream into two mono streams.
+            channelSplitter = context.createChannelSplitter(2);
+            sourceNode.connect(channelSplitter);
 
-    // Create a stereo buffer, with all +1 values in left channel, all -1 in right channel.
-    sourceBuffer = createStereoBufferWithDCOffset(lengthInSampleFrames, sampleRate, 1);
+            // Create a channel merger to merge the output of channel splitter.
+            channelMerger = context.createChannelMerger();
+            channelMerger.connect(context.destination);
 
-    sourceNode = context.createBufferSource();
-    sourceNode.buffer = sourceBuffer;
+            // When merging, exchange channel layout: left->right, right->left
+            channelSplitter.connect(channelMerger, 0, 1);
+            channelSplitter.connect(channelMerger, 1, 0);
 
-    // Create a channel splitter and connect it so that it split the stereo stream into two mono streams.
-    channelSplitter = context.createChannelSplitter(2);
-    sourceNode.connect(channelSplitter);
+            sourceNode.start(0);
 
-    // Create a channel merger to merge the output of channel splitter.
-    channelMerger = context.createChannelMerger();
-    channelMerger.connect(context.destination);
+            context.startRendering()
+                .then(buffer => checkResult(buffer, should))
+                .then(task.done.bind(task));
+          });
 
-    // When merging, exchange channel layout: left->right, right->left
-    channelSplitter.connect(channelMerger, 0, 1);
-    channelSplitter.connect(channelMerger, 1, 0);
-
-    sourceNode.start(0);
-
-    context.startRendering()
-      .then(buffer => checkResult(buffer, should))
-      .then(task.done.bind(task));
-});
-
-audit.run();
-
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

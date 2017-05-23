@@ -1,19 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Constructor: IIRFilter</title>
+    <title>
+      Test Constructor: IIRFilter
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="audionodeoptions.js"></script>
   </head>
-
   <body>
-    <script>
-      var context;
+    <script id="layout-test-code">
+      let context;
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
       audit.define('initialize', (task, should) => {
         context = initializeContext(should);
@@ -48,9 +49,9 @@
       });
 
       audit.define('constructor options', (task, should) => {
-        var node;
+        let node;
 
-        var options = {feedback: [1, .5]};
+        let options = {feedback: [1, .5]};
         should(
             () => {
               node = new IIRFilterNode(context, options);
@@ -76,28 +77,28 @@
       // TODO(rtoy): This functionality test should be moved out to a separate
       // file.
       audit.define('functionality', (task, should) => {
-        var options = {feedback: [1, .5], feedforward: [1, 1]};
+        let options = {feedback: [1, .5], feedforward: [1, 1]};
 
         // Create two-channel offline context; sample rate and length are fairly
         // arbitrary.  Channel 0 contains the test output and channel 1 contains
         // the expected output.
-        var sampleRate = 48000;
-        var renderLength = 0.125;
-        var testContext =
+        let sampleRate = 48000;
+        let renderLength = 0.125;
+        let testContext =
             new OfflineAudioContext(2, renderLength * sampleRate, sampleRate);
 
         // The test node uses the constructor.  The reference node creates the
         // same filter but uses the old factory method.
-        var testNode = new IIRFilterNode(testContext, options);
-        var refNode = testContext.createIIRFilter(
+        let testNode = new IIRFilterNode(testContext, options);
+        let refNode = testContext.createIIRFilter(
             Float32Array.from(options.feedforward),
             Float32Array.from(options.feedback));
 
-        var source = testContext.createOscillator();
+        let source = testContext.createOscillator();
         source.connect(testNode);
         source.connect(refNode);
 
-        var merger = testContext.createChannelMerger(
+        let merger = testContext.createChannelMerger(
             testContext.destination.channelCount);
 
         testNode.connect(merger, 0, 0);
@@ -108,8 +109,8 @@
         source.start();
         testContext.startRendering()
             .then(function(resultBuffer) {
-              var actual = resultBuffer.getChannelData(0);
-              var expected = resultBuffer.getChannelData(1);
+              let actual = resultBuffer.getChannelData(0);
+              let expected = resultBuffer.getChannelData(1);
 
               // The output from the two channels should be exactly equal
               // because exactly the same IIR filter should have been created.

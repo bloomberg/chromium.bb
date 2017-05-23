@@ -11,14 +11,14 @@
  */
 
 
-(function () {
+(function() {
 
   'use strict';
 
   // Selected methods from testharness.js.
   let testharnessProperties = [
-    'test', 'async_test', 'promise_test', 'promise_rejects',
-    'generate_tests', 'setup', 'done', 'assert_true', 'assert_false'
+    'test', 'async_test', 'promise_test', 'promise_rejects', 'generate_tests',
+    'setup', 'done', 'assert_true', 'assert_false'
   ];
 
   // Check if testharness.js is properly loaded. Throw otherwise.
@@ -29,29 +29,29 @@
 })();
 
 
-window.Audit = (function () {
+window.Audit = (function() {
 
   'use strict';
 
   // NOTE: Moving this method (or any other code above) will change the location
   // of 'CONSOLE ERROR...' message in the expected text files.
-  function _logError (message) {
+  function _logError(message) {
     console.error('[audit.js] ' + message);
   }
 
-  function _logPassed (message) {
-    test(function (arg) {
+  function _logPassed(message) {
+    test(function(arg) {
       assert_true(true);
     }, message);
   }
 
-  function _logFailed (message, detail) {
-    test(function () {
+  function _logFailed(message, detail) {
+    test(function() {
       assert_true(false, detail);
     }, message);
   }
 
-  function _throwException (message) {
+  function _throwException(message) {
     throw new Error(message);
   }
 
@@ -63,7 +63,7 @@ window.Audit = (function () {
   };
 
   // Generate a descriptive string from a target value in various types.
-  function _generateDescription (target, options) {
+  function _generateDescription(target, options) {
     let targetString;
 
     switch (typeof target) {
@@ -71,9 +71,9 @@ window.Audit = (function () {
         // Handle Arrays.
         if (target instanceof Array || target instanceof Float32Array ||
             target instanceof Float64Array || target instanceof Uint8Array) {
-          let arrayElements = target.length < options.numberOfArrayElements
-              ? String(target)
-              : String(target.slice(0, options.numberOfArrayElements)) + '...';
+          let arrayElements = target.length < options.numberOfArrayElements ?
+              String(target) :
+              String(target.slice(0, options.numberOfArrayElements)) + '...';
           targetString = '[' + arrayElements + ']';
         } else {
           targetString = '' + String(targetString).split(/[\s\]]/)[1];
@@ -90,12 +90,10 @@ window.Audit = (function () {
   // Return a string suitable for printing one failed element in
   // |beCloseToArray|.
   function _formatFailureEntry(index, actual, expected, abserr, threshold) {
-    return '\t[' + index + ']\t'
-      + actual.toExponential(16) + '\t'
-      + expected.toExponential(16) + '\t'
-      + abserr.toExponential(16) + '\t'
-      + (abserr / Math.abs(expected)).toExponential(16) + '\t'
-      + threshold.toExponential(16);
+    return '\t[' + index + ']\t' + actual.toExponential(16) + '\t' +
+        expected.toExponential(16) + '\t' + abserr.toExponential(16) + '\t' +
+        (abserr / Math.abs(expected)).toExponential(16) + '\t' +
+        threshold.toExponential(16);
   }
 
   // Compute the error threshold criterion for |beCloseToArray|
@@ -111,8 +109,7 @@ window.Audit = (function () {
    * @param {String} actualDescription  String description of the test target.
    */
   class Should {
-
-    constructor (parentTask, actual, actualDescription) {
+    constructor(parentTask, actual, actualDescription) {
       this._task = parentTask;
 
       this._actual = actual;
@@ -138,7 +135,7 @@ window.Audit = (function () {
       };
     }
 
-    _processArguments (args) {
+    _processArguments(args) {
       if (args.length === 0)
         return;
 
@@ -155,7 +152,7 @@ window.Audit = (function () {
       }
     }
 
-    _buildResultText () {
+    _buildResultText() {
       if (this._result === null)
         _throwException('Illegal invocation: the assertion is not finished.');
 
@@ -171,30 +168,29 @@ window.Audit = (function () {
       }
 
       // For the assertion with a single operand.
-      this._detail = this._detail.replace(
-          /\$\{actual\}/g, this._actualDescription);
+      this._detail =
+          this._detail.replace(/\$\{actual\}/g, this._actualDescription);
 
       // If there is a second operand (i.e. expected value), we have to build
       // the string for it as well.
       if (this._expected !== null) {
-        this._detail = this._detail.replace(
-            /\$\{expected\}/g, this._expectedDescription);
+        this._detail =
+            this._detail.replace(/\$\{expected\}/g, this._expectedDescription);
       }
 
       // If there is any property in |_options|, replace the property name
       // with the value.
       for (let name in this._options) {
-        if (name === 'numberOfErrors'
-            || name === 'numberOfArrayElements'
-            || name === 'verbose') {
+        if (name === 'numberOfErrors' || name === 'numberOfArrayElements' ||
+            name === 'verbose') {
           continue;
         }
 
         // The RegExp key string contains special character. Take care of it.
         let re = '\$\{' + name + '\}';
         re = re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
-        this._detail = this._detail.replace(new RegExp(re, 'g'),
-            _generateDescription(this._options[name]));
+        this._detail = this._detail.replace(
+            new RegExp(re, 'g'), _generateDescription(this._options[name]));
       }
 
       // If the test failed, add the actual value at the end.
@@ -203,7 +199,7 @@ window.Audit = (function () {
       }
     }
 
-    _finalize () {
+    _finalize() {
       if (this._result) {
         _logPassed('  ' + this._detail);
       } else {
@@ -216,7 +212,7 @@ window.Audit = (function () {
       // TODO(hongchan): configurable 'detail' message.
     }
 
-    _assert (condition, passDetail, failDetail) {
+    _assert(condition, passDetail, failDetail) {
       this._result = Boolean(condition);
       this._detail = this._result ? passDetail : failDetail;
       this._buildResultText();
@@ -225,11 +221,11 @@ window.Audit = (function () {
       return this._result;
     }
 
-    get result () {
+    get result() {
       return this._result;
     }
 
-    get detail () {
+    get detail() {
       return this._detail;
     }
 
@@ -261,11 +257,10 @@ window.Audit = (function () {
      * @result
      *   "PASS   An empty object does exist."
      */
-    exist () {
+    exist() {
       return this._assert(
           this._actual !== null && this._actual !== undefined,
-          '${actual} does exist.',
-          '${actual} does not exist.');
+          '${actual} does exist.', '${actual} does not exist.');
     }
 
     /**
@@ -286,7 +281,7 @@ window.Audit = (function () {
      *   "PASS   Assigning e to f threw ReferenceError: [error message
      *       omitted]."
      */
-    throw () {
+    throw() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -299,9 +294,9 @@ window.Audit = (function () {
         // Catch did not happen, so the test is failed.
         failDetail = '${actual} did not throw an exception.';
       } catch (error) {
-        let errorMessage = this._options.omitErrorMessage
-            ? ': [error message omitted]'
-            : ': "' + error.message + '"';
+        let errorMessage = this._options.omitErrorMessage ?
+            ': [error message omitted]' :
+            ': "' + error.message + '"';
         if (this._expected === null || this._expected === undefined) {
           // The expected error type was not given.
           didThrowCorrectly = true;
@@ -312,8 +307,8 @@ window.Audit = (function () {
           passDetail = '${actual} threw ${expected}' + errorMessage + '.';
         } else {
           didThrowCorrectly = false;
-          failDetail = '${actual} threw "' + error.name
-            + '" instead of ${expected}.';
+          failDetail =
+              '${actual} threw "' + error.name + '" instead of ${expected}.';
         }
       }
 
@@ -330,7 +325,7 @@ window.Audit = (function () {
      * @result
      *   "PASS   let foo = "bar" did not throw an exception."
      */
-    notThrow () {
+    notThrow() {
       this._printActualForFailure = false;
 
       let didThrowCorrectly = false;
@@ -341,8 +336,8 @@ window.Audit = (function () {
         passDetail = '${actual} did not throw an exception.';
       } catch (error) {
         didThrowCorrectly = true;
-        failDetail = '${actual} incorrectly threw ' + error.name + ': "'
-            + error.message + '".';
+        failDetail = '${actual} incorrectly threw ' + error.name + ': "' +
+            error.message + '".';
       }
 
       return this._assert(!didThrowCorrectly, passDetail, failDetail);
@@ -362,14 +357,17 @@ window.Audit = (function () {
      *   "PASS   My promise resolved correctly."
      *   "FAIL X My promise rejected *INCORRECTLY* with _ERROR_."
      */
-    beResolved () {
-      return this._actual.then(function (result) {
-          this._assert(true, '${actual} resolved correctly.', null);
-          return result;
-        }.bind(this), function (error) {
-          this._assert(false, null,
-              '${actual} rejected incorrectly with ' + error + '.');
-        }.bind(this));
+    beResolved() {
+      return this._actual.then(
+          function(result) {
+            this._assert(true, '${actual} resolved correctly.', null);
+            return result;
+          }.bind(this),
+          function(error) {
+            this._assert(
+                false, null,
+                '${actual} rejected incorrectly with ' + error + '.');
+          }.bind(this));
     }
 
     /**
@@ -382,13 +380,15 @@ window.Audit = (function () {
      *   "PASS   My promise rejected correctly (with _ERROR_)."
      *   "FAIL X My promise resolved *INCORRECTLY*."
      */
-    beRejected () {
-      return this._actual.then(function () {
-          this._assert(false, null, '${actual} resolved incorrectly.');
-        }.bind(this), function (error) {
-          this._assert(true,
-              '${actual} rejected correctly with ' + error + '.', null);
-        }.bind(this));
+    beRejected() {
+      return this._actual.then(
+          function() {
+            this._assert(false, null, '${actual} resolved incorrectly.');
+          }.bind(this),
+          function(error) {
+            this._assert(
+                true, '${actual} rejected correctly with ' + error + '.', null);
+          }.bind(this));
     }
 
     /**
@@ -413,8 +413,9 @@ window.Audit = (function () {
           function(error) {
             if (this._expected !== error.name) {
               this._assert(
-                  false, null, '${actual} rejected correctly but got ' +
-                      error.name + ' instead of ' + this._expected + '.');
+                  false, null,
+                  '${actual} rejected correctly but got ' + error.name +
+                      ' instead of ' + this._expected + '.');
             } else {
               this._assert(
                   true,
@@ -433,10 +434,9 @@ window.Audit = (function () {
      * @result
      *   "PASS   3 < 5 is true."
      */
-    beTrue () {
+    beTrue() {
       return this._assert(
-          this._actual === true,
-          '${actual} is true.',
+          this._actual === true, '${actual} is true.',
           '${actual} is not true.');
     }
 
@@ -449,10 +449,9 @@ window.Audit = (function () {
      * @result
      *   "PASS   3 > 5 is false."
      */
-    beFalse () {
+    beFalse() {
       return this._assert(
-          this._actual === false,
-          '${actual} is false.',
+          this._actual === false, '${actual} is false.',
           '${actual} is not false.');
     }
 
@@ -465,11 +464,10 @@ window.Audit = (function () {
      * @result
      *   "PASS   1 is equal to 1."
      */
-    beEqualTo () {
+    beEqualTo() {
       this._processArguments(arguments);
       return this._assert(
-          this._actual === this._expected,
-          '${actual} is equal to ${expected}.',
+          this._actual === this._expected, '${actual} is equal to ${expected}.',
           '${actual} is not equal to ${expected}.');
     }
 
@@ -482,7 +480,7 @@ window.Audit = (function () {
      * @result
      *   "PASS   1 is not equal to 2."
      */
-    notBeEqualTo () {
+    notBeEqualTo() {
       this._processArguments(arguments);
       return this._assert(
           this._actual !== this._expected,
@@ -499,13 +497,12 @@ window.Audit = (function () {
      * @result
      *   "PASS   2 is greater than or equal to 2."
      */
-    beGreaterThan () {
+    beGreaterThan() {
       this._processArguments(arguments);
       return this._assert(
           this._actual > this._expected,
-           '${actual} is greater than ${expected}.',
-           '${actual} is not greater than ${expected}.'
-        );
+          '${actual} is greater than ${expected}.',
+          '${actual} is not greater than ${expected}.');
     }
 
     /**
@@ -517,13 +514,12 @@ window.Audit = (function () {
      * @result
      *   "PASS   2 is greater than 1."
      */
-    beGreaterThanOrEqualTo () {
+    beGreaterThanOrEqualTo() {
       this._processArguments(arguments);
       return this._assert(
           this._actual >= this._expected,
-           '${actual} is greater than or equal to ${expected}.',
-           '${actual} is not greater than or equal to ${expected}.'
-        );
+          '${actual} is greater than or equal to ${expected}.',
+          '${actual} is not greater than or equal to ${expected}.');
     }
 
     /**
@@ -535,13 +531,11 @@ window.Audit = (function () {
      * @result
      *   "PASS   1 is less than 2."
      */
-    beLessThan () {
+    beLessThan() {
       this._processArguments(arguments);
       return this._assert(
-          this._actual < this._expected,
-           '${actual} is less than ${expected}.',
-           '${actual} is not less than ${expected}.'
-        );
+          this._actual < this._expected, '${actual} is less than ${expected}.',
+          '${actual} is not less than ${expected}.');
     }
 
     /**
@@ -553,13 +547,12 @@ window.Audit = (function () {
      * @result
      *   "PASS   1 is less than or equal to 1."
      */
-    beLessThanOrEqualTo () {
+    beLessThanOrEqualTo() {
       this._processArguments(arguments);
       return this._assert(
           this._actual <= this._expected,
-           '${actual} is less than or equal to ${expected}.',
-           '${actual} is not less than or equal to ${expected}.'
-        );
+          '${actual} is less than or equal to ${expected}.',
+          '${actual} is not less than or equal to ${expected}.');
     }
 
     /**
@@ -571,7 +564,7 @@ window.Audit = (function () {
      * @result
      *   "PASS   [1,1,1] contains only the constant 1."
      */
-    beConstantValueOf () {
+    beConstantValueOf() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -593,15 +586,15 @@ window.Audit = (function () {
         passDetail = '${actual} contains only the constant ${expected}.';
       } else {
         let counter = 0;
-        failDetail = 'Expected ${expected} for all values but found '
-            + numberOfErrors + ' unexpected values: ';
+        failDetail = 'Expected ${expected} for all values but found ' +
+            numberOfErrors + ' unexpected values: ';
         failDetail += '\n\tIndex\tActual';
         for (let errorIndex in errors) {
-          failDetail += '\n\t[' + errorIndex + ']'
-              + '\t' + errors[errorIndex];
+          failDetail += '\n\t[' + errorIndex + ']' +
+              '\t' + errors[errorIndex];
           if (++counter >= this._options.numberOfErrors) {
-            failDetail += '\n\t...and ' + (numberOfErrors - counter)
-              + ' more errors.';
+            failDetail +=
+                '\n\t...and ' + (numberOfErrors - counter) + ' more errors.';
             break;
           }
         }
@@ -622,7 +615,7 @@ window.Audit = (function () {
      *   "FAIL X [0,0,0] should have contain at least one value different
      *     from 0."
      */
-    notBeConstantValueOf () {
+    notBeConstantValueOf() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -662,7 +655,7 @@ window.Audit = (function () {
      * @result
      *   "[1,2,3] is identical to the array [1,2,3]."
      */
-    beEqualToArray () {
+    beEqualToArray() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -689,16 +682,17 @@ window.Audit = (function () {
         passDetail = '${actual} is identical to the array ${expected}.';
       } else {
         let counter = 0;
-        failDetail = '${actual} expected to be equal to the array ${expected} '
-            + 'but differs in ' + errorIndices.length + ' places:'
-            + '\n\tIndex\tActual\t\t\tExpected';
+        failDetail =
+            '${actual} expected to be equal to the array ${expected} ' +
+            'but differs in ' + errorIndices.length + ' places:' +
+            '\n\tIndex\tActual\t\t\tExpected';
         for (let index of errorIndices) {
-          failDetail += '\n\t[' + index + ']'
-            + '\t' + this._actual[index].toExponential(16)
-            + '\t' + this._expected[index].toExponential(16);
+          failDetail += '\n\t[' + index + ']' +
+              '\t' + this._actual[index].toExponential(16) + '\t' +
+              this._expected[index].toExponential(16);
           if (++counter >= this._options.numberOfErrors) {
-            failDetail += '\n\t...and ' + (errorIndices.length - counter)
-              + ' more errors.';
+            failDetail += '\n\t...and ' + (errorIndices.length - counter) +
+                ' more errors.';
             break;
           }
         }
@@ -718,7 +712,7 @@ window.Audit = (function () {
      *   "PASS   [1,1,3,3,2] contains all the expected values in the correct
      *           order: [1,3,2].
      */
-    containValues () {
+    containValues() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -729,10 +723,7 @@ window.Audit = (function () {
       // Collect the unique value sequence from the actual.
       for (let i = 0, prev = null; i < this._actual.length; i++) {
         if (this._actual[i] !== prev) {
-          indexedActual.push({
-              index: i,
-              value: this._actual[i]
-            });
+          indexedActual.push({index: i, value: this._actual[i]});
           prev = this._actual[i];
         }
       }
@@ -748,11 +739,11 @@ window.Audit = (function () {
 
       return this._assert(
           passed,
-          '${actual} contains all the expected values in the correct order: '
-            + '${expected}.',
-          '${actual} expected to have the value sequence of ${expected} but '
-            + 'got ' + this._actual[firstErrorIndex] + ' at index '
-            + firstErrorIndex + '.');
+          '${actual} contains all the expected values in the correct order: ' +
+              '${expected}.',
+          '${actual} expected to have the value sequence of ${expected} but ' +
+              'got ' + this._actual[firstErrorIndex] + ' at index ' +
+              firstErrorIndex + '.');
     }
 
     /**
@@ -767,7 +758,7 @@ window.Audit = (function () {
      *           of 0.06."
      *
      */
-    notGlitch () {
+    notGlitch() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -780,13 +771,13 @@ window.Audit = (function () {
         let diff = Math.abs(actual[index - 1] - actual[index]);
         if (diff >= expected) {
           passed = false;
-          failDetail = '${actual} has a glitch at index ' + index + ' of size '
-            + diff + '.';
+          failDetail = '${actual} has a glitch at index ' + index +
+              ' of size ' + diff + '.';
         }
       }
 
       passDetail =
-        '${actual} has no glitch above the threshold of ${expected}.';
+          '${actual} has no glitch above the threshold of ${expected}.';
 
       return this._assert(passed, passDetail, failDetail);
     }
@@ -803,7 +794,7 @@ window.Audit = (function () {
      * @param {Object} options              Options for assertion.
      * @param {Number} options.threshold    Threshold value for the comparison.
      */
-    beCloseTo () {
+    beCloseTo() {
       this._processArguments(arguments);
 
       // The threshold is relative except when |expected| is zero, in which case
@@ -817,7 +808,7 @@ window.Audit = (function () {
           error <= this._options.threshold,
           '${actual} is ${expected} within an error of ${threshold}.',
           '${actual} is not close to ${expected} within a relative error of ' +
-            '${threshold} (RelErr=' + error + ').');
+              '${threshold} (RelErr=' + error + ').');
     }
 
     /**
@@ -836,7 +827,7 @@ window.Audit = (function () {
      * @param {Number} options.absoluteThreshold    Absolute threshold.
      * @param {Number} options.relativeThreshold    Relative threshold.
      */
-    beCloseToArray () {
+    beCloseToArray() {
       this._processArguments(arguments);
       this._printActualForFailure = false;
 
@@ -867,9 +858,8 @@ window.Audit = (function () {
         let absExpected = Math.abs(expected[index]);
         let relError = diff / absExpected;
 
-        if (diff > Math.max(absErrorThreshold,
-                            relErrorThreshold * absExpected)) {
-
+        if (diff >
+            Math.max(absErrorThreshold, relErrorThreshold * absExpected)) {
           if (diff > maxAbsError) {
             maxAbsErrorIndex = index;
             maxAbsError = diff;
@@ -892,26 +882,26 @@ window.Audit = (function () {
 
       if (numberOfErrors === 0) {
         // The assertion was successful.
-        passDetail = '${actual} equals ${expected} with an element-wise '
-          + 'tolerance of ' + maxAllowedErrorDetail + '.';
+        passDetail = '${actual} equals ${expected} with an element-wise ' +
+            'tolerance of ' + maxAllowedErrorDetail + '.';
       } else {
         // Failed. Prepare the detailed failure log.
         passed = false;
-        failDetail = '${actual} does not equal ${expected} with an '
-          + 'element-wise tolerance of ' + maxAllowedErrorDetail + '.\n';
+        failDetail = '${actual} does not equal ${expected} with an ' +
+            'element-wise tolerance of ' + maxAllowedErrorDetail + '.\n';
 
         // Print out actual, expected, absolute error, and relative error.
         let counter = 0;
-        failDetail += '\tIndex\tActual\t\t\tExpected\t\tAbsError'
-            + '\t\tRelError\t\tTest threshold';
+        failDetail += '\tIndex\tActual\t\t\tExpected\t\tAbsError' +
+            '\t\tRelError\t\tTest threshold';
         let printedIndices = [];
         for (let index in errors) {
-          failDetail += '\n' + _formatFailureEntry(
-                                   index, actual[index],
-                                   expected[index], errors[index],
-                                   _closeToThreshold(
-                                       absErrorThreshold, relErrorThreshold,
-                                       expected[index]));
+          failDetail +=
+              '\n' +
+              _formatFailureEntry(
+                  index, actual[index], expected[index], errors[index],
+                  _closeToThreshold(
+                      absErrorThreshold, relErrorThreshold, expected[index]));
 
           printedIndices.push(index);
           if (++counter > this._options.numberOfErrors) {
@@ -924,9 +914,9 @@ window.Audit = (function () {
         // Finalize the error log: print out the location of both the maxAbs
         // error and the maxRel error so we can adjust thresholds appropriately
         // in the test.
-        failDetail += '\n'
-            + '\tMax AbsError of ' + maxAbsError.toExponential(16)
-            + ' at index of ' + maxAbsErrorIndex + '.\n';
+        failDetail += '\n' +
+            '\tMax AbsError of ' + maxAbsError.toExponential(16) +
+            ' at index of ' + maxAbsErrorIndex + '.\n';
         if (printedIndices.find(element => {
               return element == maxAbsErrorIndex;
             }) === undefined) {
@@ -973,9 +963,8 @@ window.Audit = (function () {
      *   "PASS   The message is truthful!"
      */
     message(passDetail, failDetail) {
-      return this._assert(this._actual,
-                          '${actual} ' + passDetail,
-                          '${actual} ' + failDetail);
+      return this._assert(
+          this._actual, '${actual} ' + passDetail, '${actual} ' + failDetail);
     }
 
     /**
@@ -989,7 +978,7 @@ window.Audit = (function () {
      *   "PASS   BaseAudioContext.prototype has an own property of
      *       'createGain'."
      */
-    haveOwnProperty () {
+    haveOwnProperty() {
       this._processArguments(arguments);
 
       return this._assert(
@@ -1011,7 +1000,7 @@ window.Audit = (function () {
      *   "PASS   BaseAudioContext.prototype does not have an own property of
      *       'startRendering'."
      */
-    notHaveOwnProperty () {
+    notHaveOwnProperty() {
       this._processArguments(arguments);
 
       return this._assert(
@@ -1032,7 +1021,7 @@ window.Audit = (function () {
      * @result
      *   "PASS   A buffer source node inherits from 'AudioScheduledSourceNode'."
      */
-    inheritFrom () {
+    inheritFrom() {
       this._processArguments(arguments);
 
       let prototypes = [];
@@ -1051,11 +1040,7 @@ window.Audit = (function () {
 
 
   // Task Class state enum.
-  const TaskState = {
-    PENDING: 0,
-    STARTED: 1,
-    FINISHED: 2
-  };
+  const TaskState = {PENDING: 0, STARTED: 1, FINISHED: 2};
 
 
   /**
@@ -1063,7 +1048,6 @@ window.Audit = (function () {
    * @description WebAudio testing task. Managed by TaskRunner.
    */
   class Task {
-
     /**
      * Task constructor.
      * @param  {Object} taskRunner Reference of associated task runner.
@@ -1075,7 +1059,7 @@ window.Audit = (function () {
      * @param  {Function} taskFunction Task function to be performed.
      * @return {Object} Task object.
      */
-    constructor (taskRunner, taskLabel, taskFunction) {
+    constructor(taskRunner, taskLabel, taskFunction) {
       this._taskRunner = taskRunner;
       this._taskFunction = taskFunction;
 
@@ -1087,11 +1071,13 @@ window.Audit = (function () {
           _throwException('Task.constructor:: task label must be string.');
         }
         this._label = taskLabel.label;
-        this._description = (typeof taskLabel.description === 'string')
-            ? taskLabel.description : null;
+        this._description = (typeof taskLabel.description === 'string') ?
+            taskLabel.description :
+            null;
       } else {
-        _throwException('Task.constructor:: task label must be a string or ' +
-                        'a dictionary.');
+        _throwException(
+            'Task.constructor:: task label must be a string or ' +
+            'a dictionary.');
       }
 
       this._state = TaskState.PENDING;
@@ -1101,20 +1087,20 @@ window.Audit = (function () {
       this._failedAssertions = 0;
     }
 
-    get label () {
+    get label() {
       return this._label;
     }
 
-    get state () {
+    get state() {
       return this._state;
     }
 
-    get result () {
+    get result() {
       return this._result;
     }
 
     // Start the assertion chain.
-    should (actual, actualDescription) {
+    should(actual, actualDescription) {
       // If no argument is given, we cannot proceed. Halt.
       if (arguments.length === 0)
         _throwException('Task.should:: requires at least 1 argument.');
@@ -1124,20 +1110,19 @@ window.Audit = (function () {
 
     // Run this task. |this| task will be passed into the user-supplied test
     // task function.
-    run () {
+    run() {
       this._state = TaskState.STARTED;
 
       // Print out the task entry with label and description.
-      _logPassed('> [' + this._label + '] '
-          + (this._description ? this._description : ''));
+      _logPassed(
+          '> [' + this._label + '] ' +
+          (this._description ? this._description : ''));
 
-      this._taskFunction(
-          this,
-          this.should.bind(this));
+      this._taskFunction(this, this.should.bind(this));
     }
 
     // Update the task success based on the individual assertion/test inside.
-    update (subTask) {
+    update(subTask) {
       // After one of tests fails within a task, the result is irreversible.
       if (subTask.result === false) {
         this._result = false;
@@ -1148,32 +1133,31 @@ window.Audit = (function () {
     }
 
     // Finish the current task and start the next one if available.
-    done () {
+    done() {
       this._state = TaskState.FINISHED;
 
       let message = '< [' + this._label + '] ';
 
       if (this._result) {
-        message += 'All assertions passed. (total ' + this._totalAssertions
-          + ' assertions)';
+        message += 'All assertions passed. (total ' + this._totalAssertions +
+            ' assertions)';
         _logPassed(message);
       } else {
-        message += this._failedAssertions + ' out of ' + this._totalAssertions
-          + ' assertions were failed.'
+        message += this._failedAssertions + ' out of ' + this._totalAssertions +
+            ' assertions were failed.'
         _logFailed(message);
       }
 
       this._taskRunner._runNextTask();
     }
 
-    isPassed () {
+    isPassed() {
       return this._state === TaskState.FINISHED && this._result;
     }
 
-    toString () {
+    toString() {
       return '"' + this._label + '": ' + this._description;
     }
-
   }
 
 
@@ -1182,19 +1166,16 @@ window.Audit = (function () {
    * @description WebAudio testing task runner. Manages tasks.
    */
   class TaskRunner {
-
-    constructor () {
+    constructor() {
       this._tasks = {};
       this._taskSequence = [];
       this._currentTaskIndex = -1;
 
       // Configure testharness.js for the async operation.
-      setup (new Function (), {
-        explicit_done: true
-      });
+      setup(new Function(), {explicit_done: true});
     }
 
-    _runNextTask () {
+    _runNextTask() {
       if (this._currentTaskIndex < this._taskSequence.length) {
         this._tasks[this._taskSequence[this._currentTaskIndex++]].run();
       } else {
@@ -1202,7 +1183,7 @@ window.Audit = (function () {
       }
     }
 
-    _finish () {
+    _finish() {
       let numberOfFailures = 0;
       for (let taskIndex in this._taskSequence) {
         let task = this._tasks[this._taskSequence[taskIndex]];
@@ -1211,11 +1192,12 @@ window.Audit = (function () {
 
       let prefix = '# AUDIT TASK RUNNER FINISHED: ';
       if (numberOfFailures > 0) {
-        _logFailed(prefix + numberOfFailures + ' out of '
-          + this._taskSequence.length + ' tasks were failed.');
+        _logFailed(
+            prefix + numberOfFailures + ' out of ' + this._taskSequence.length +
+            ' tasks were failed.');
       } else {
-        _logPassed(prefix + this._taskSequence.length
-          + ' tasks ran successfully.');
+        _logPassed(
+            prefix + this._taskSequence.length + ' tasks ran successfully.');
       }
 
       // From testharness.js, report back to the test infrastructure that
@@ -1225,7 +1207,7 @@ window.Audit = (function () {
 
     // |taskLabel| can be either a string or a dictionary. See Task constructor
     // for the detail.
-    define (taskLabel, taskFunction) {
+    define(taskLabel, taskFunction) {
       let task = new Task(this, taskLabel, taskFunction);
       if (this._tasks.hasOwnProperty(task.label)) {
         _throwException('Audit.define:: Duplicate task definition.');
@@ -1238,7 +1220,7 @@ window.Audit = (function () {
     // Start running all the tasks scheduled. Multiple task names can be passed
     // to execute them sequentially. Zero argument will perform all defined
     // tasks in the order of definition.
-    run () {
+    run() {
       // Display the beginning of the test suite.
       _logPassed('# AUDIT TASK RUNNER STARTED.');
 
@@ -1267,7 +1249,6 @@ window.Audit = (function () {
       this._currentTaskIndex = 0;
       this._runNextTask();
     }
-
   }
 
   /**
@@ -1282,7 +1263,7 @@ window.Audit = (function () {
    *       });
    *   });
    */
-  function loadFileFromUrl (fileUrl) {
+  function loadFileFromUrl(fileUrl) {
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest();
       xhr.open('GET', fileUrl, true);
@@ -1296,8 +1277,8 @@ window.Audit = (function () {
           resolve(xhr.response);
         } else {
           let errorMessage = 'loadFile: Request failed when loading ' +
-              fileUrl + '. ' + xhr.statusText + '. (status = ' +
-              xhr.status + ')';
+              fileUrl + '. ' + xhr.statusText + '. (status = ' + xhr.status +
+              ')';
           if (reject) {
             reject(errorMessage);
           } else {
@@ -1341,10 +1322,11 @@ window.Audit = (function () {
      *                                              comparison with the expected
      *                                              result file.
      */
-    createTaskRunner: function (options) {
+    createTaskRunner: function(options) {
       if (options && options.requireResultFile == true) {
-        _logError('this test requires the explicit comparison with the '
-            + 'expected result when it runs with run-webkit-tests.');
+        _logError(
+            'this test requires the explicit comparison with the ' +
+            'expected result when it runs with run-webkit-tests.');
       }
 
       return new TaskRunner();

@@ -1,58 +1,61 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script> 
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-<script src="../resources/delay-testing.js"></script>
-</head>
+  <head>
+    <title>
+      delaynode.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="../resources/delay-testing.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-<body>
-<script>
-let audit = Audit.createTaskRunner();
+      audit.define(
+          {
+            label: 'test',
+            description: 'Tests attribute and basic functionality of DelayNode'
+          },
+          function(task, should) {
 
-audit.define({
-  label: "test",
-  description: "Tests attribute and basic functionality of DelayNode"
-}, function (task, should) {
+            // Create offline audio context.
+            let context = new OfflineAudioContext(
+                1, sampleRate * renderLengthSeconds, sampleRate);
+            let toneBuffer = createToneBuffer(
+                context, 20, 20 * toneLengthSeconds, sampleRate);  // 20Hz tone
 
-    // Create offline audio context.
-    let context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);
-    let toneBuffer = createToneBuffer(context, 20, 20 * toneLengthSeconds, sampleRate); // 20Hz tone
-    
-    let bufferSource = context.createBufferSource();
-    bufferSource.buffer = toneBuffer;
+            let bufferSource = context.createBufferSource();
+            bufferSource.buffer = toneBuffer;
 
-    let delay = context.createDelay();
-    
-    window.delay = delay;
-    should(delay.numberOfInputs, "delay.numberOfInputs")
-      .beEqualTo(1);
-    should(delay.numberOfOutputs, "delay.numberOfOutputs")
-      .beEqualTo(1);
-    should(delay.delayTime.defaultValue, "delay.delayTime.defaultValue")
-      .beEqualTo(0.0);
-    should(delay.delayTime.value, "delay.delayTime.value")
-      .beEqualTo(0.0);
+            let delay = context.createDelay();
 
-    delay.delayTime.value = delayTimeSeconds;
-    should(delay.delayTime.value, "delay.delayTime.value = " + delayTimeSeconds)
-      .beEqualTo(delayTimeSeconds);
+            window.delay = delay;
+            should(delay.numberOfInputs, 'delay.numberOfInputs').beEqualTo(1);
+            should(delay.numberOfOutputs, 'delay.numberOfOutputs').beEqualTo(1);
+            should(delay.delayTime.defaultValue, 'delay.delayTime.defaultValue')
+                .beEqualTo(0.0);
+            should(delay.delayTime.value, 'delay.delayTime.value')
+                .beEqualTo(0.0);
 
-    bufferSource.connect(delay);
-    delay.connect(context.destination);
-    bufferSource.start(0);
-    
-    context.startRendering()
-      .then(buffer => checkDelayedResult(buffer, toneBuffer, should))
-      .then(task.done.bind(task));
-});
+            delay.delayTime.value = delayTimeSeconds;
+            should(
+                delay.delayTime.value,
+                'delay.delayTime.value = ' + delayTimeSeconds)
+                .beEqualTo(delayTimeSeconds);
 
-audit.run();
+            bufferSource.connect(delay);
+            delay.connect(context.destination);
+            bufferSource.start(0);
 
-</script>
+            context.startRendering()
+                .then(buffer => checkDelayedResult(buffer, toneBuffer, should))
+                .then(task.done.bind(task));
+          });
 
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

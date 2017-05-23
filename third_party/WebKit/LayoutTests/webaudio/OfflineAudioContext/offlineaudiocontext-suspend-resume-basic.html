@@ -1,24 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      offlineaudiocontext-suspend-resume-basic.html
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
-      var sampleRate = 44100;
-      var renderDuration = 1;
-      var renderQuantum = 128;
+    <script id="layout-test-code">
+      let sampleRate = 44100;
+      let renderDuration = 1;
+      let renderQuantum = 128;
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
       // Task: Calling suspend with no argument, negative time or the time
       // beyond the maximum render duration reject the promise.
       audit.define('suspend-invalid-argument', (task, should) => {
-        var context =
+        let context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
         should(context.suspend(), 'context.suspend()').beRejected();
@@ -30,7 +32,7 @@
 
       // Task: Scheduling a suspend in the past should be rejected.
       audit.define('suspend-in-the-past', (task, should) => {
-        var context =
+        let context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
         context.suspend(0.5).then(function() {
@@ -57,7 +59,7 @@
       // Task: suspending after rendering is finished must be rejected with the
       // properly clamped frame/time information.
       audit.define('suspend-after-render-completion', (task, should) => {
-        var context =
+        let context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
         context.startRendering()
             .then(function() {
@@ -72,13 +74,13 @@
       // Task: Calling multiple suspends at the same rendering quantum should
       // reject the promise.
       audit.define('identical-suspend-time', (task, should) => {
-        var context =
+        let context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
         // |suspendTime1| and |suspendTime2| are identical when quantized to
         // the render quantum size.
-        var suspendTime1 = renderQuantum / sampleRate;
-        var suspendTime2 = 1.5 * renderQuantum / sampleRate;
+        let suspendTime1 = renderQuantum / sampleRate;
+        let suspendTime2 = 1.5 * renderQuantum / sampleRate;
 
         should(
             () => context.suspend(suspendTime1).then(() => context.resume()),
@@ -97,13 +99,13 @@
       audit.define('resume-before-suspend', (task, should) => {
 
         // Make the render length 5 times longer to minimize the flakiness.
-        var longRenderDuration = renderDuration * 5;
-        var context = new OfflineAudioContext(
+        let longRenderDuration = renderDuration * 5;
+        let context = new OfflineAudioContext(
             1, sampleRate * longRenderDuration, sampleRate);
 
         // Create dummy audio graph to slow the rendering.
-        var osc = context.createOscillator();
-        var lpf = context.createBiquadFilter();
+        let osc = context.createOscillator();
+        let lpf = context.createBiquadFilter();
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(0.1, 0.0);
         osc.frequency.linearRampToValueAtTime(1000, longRenderDuration * 0.5);
@@ -135,7 +137,7 @@
       // Task: Calling resume on a context that is not started should reject the
       // promise.
       audit.define('resume-without-suspend', (task, should) => {
-        var context =
+        let context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
         should(context.resume(), 'Resuming a context without starting it')
@@ -145,6 +147,5 @@
 
       audit.run();
     </script>
-
   </body>
 </html>

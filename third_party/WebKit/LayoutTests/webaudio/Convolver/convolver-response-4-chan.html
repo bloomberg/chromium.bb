@@ -1,21 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Convolver Channel Outputs for Response with 4 channels</title>
+    <title>
+      Test Convolver Channel Outputs for Response with 4 channels
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       // Test various convolver configurations when the convolver response has
       // a four channels.
 
       // Fairly arbitrary sample rate, except that we want the rate to be a
       // power of two so that 1/sampleRate is exactly respresentable as a
-      // single-precision float. 
+      // single-precision float.
       let sampleRate = 8192;
 
       // A fairly arbitrary number of frames, except the number of frames should
@@ -97,49 +98,49 @@
           });
 
       audit.define(
-        {
-          label: 'delayed buffer set',
-          description: 'Delayed set of 4-channel response'
-        },
-        (task, should) => {
-          // Don't really care about the output for this test.  It's to verify
-          // we don't crash in a debug build when setting the convolver buffer
-          // after creating the graph.
-          let context = new OfflineAudioContext(1, renderFrames, sampleRate);
-          let src = new OscillatorNode(context);
-          let convolver = new ConvolverNode(context, {
-            disableNormalization: true
+          {
+            label: 'delayed buffer set',
+            description: 'Delayed set of 4-channel response'
+          },
+          (task, should) => {
+            // Don't really care about the output for this test.  It's to verify
+            // we don't crash in a debug build when setting the convolver buffer
+            // after creating the graph.
+            let context = new OfflineAudioContext(1, renderFrames, sampleRate);
+            let src = new OscillatorNode(context);
+            let convolver =
+                new ConvolverNode(context, {disableNormalization: true});
+            let buffer = new AudioBuffer({
+              numberOfChannels: 4,
+              length: 4,
+              sampleRate: context.sampleRate
+            });
+
+            // Impulse responses for the convolver aren't important, as long as
+            // it's not all zeroes.
+            for (let k = 0; k < buffer.numberOfChannels; ++k) {
+              buffer.getChannelData(k).fill(1);
+            }
+
+            src.connect(convolver).connect(context.destination);
+
+            // Set the buffer after a few render quanta have passed.  The actual
+            // value must be least one, but is otherwise arbitrary.
+            context.suspend(512 / context.sampleRate)
+                .then(() => convolver.buffer = buffer)
+                .then(() => context.resume());
+
+            src.start();
+            context.startRendering()
+                .then(audioBuffer => {
+                  // Just make sure output is not silent.
+                  should(
+                      audioBuffer.getChannelData(0),
+                      'Output with delayed setting of convolver buffer')
+                      .notBeConstantValueOf(0);
+                })
+                .then(() => task.done());
           });
-          let buffer = new AudioBuffer({
-            numberOfChannels: 4,
-            length: 4,
-            sampleRate: context.sampleRate
-          });
-
-          // Impulse responses for the convolver aren't important, as long as
-          // it's not all zeroes.
-          for (let k = 0; k < buffer.numberOfChannels; ++k) {
-            buffer.getChannelData(k).fill(1);
-          }
-
-          src.connect(convolver).connect(context.destination);
-
-          // Set the buffer after a few render quanta have passed.  The actual
-          // value must be least one, but is otherwise arbitrary.
-          context.suspend(512 / context.sampleRate)
-            .then(() => convolver.buffer = buffer)
-            .then(() => context.resume());
-
-         src.start();
-         context.startRendering()
-           .then(audioBuffer => {
-             // Just make sure output is not silent.
-             should(audioBuffer.getChannelData(0),
-                 'Output with delayed setting of convolver buffer')
-               .notBeConstantValueOf(0);
-           })
-           .then(() => task.done());
-        });
 
       function fourChannelResponseTest(options, should) {
         // Create an 4-channel offline context.  The first two channels are for

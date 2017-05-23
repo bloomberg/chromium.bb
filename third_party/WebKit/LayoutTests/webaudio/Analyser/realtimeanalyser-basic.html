@@ -1,56 +1,57 @@
 <!DOCTYPE html>
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-</head>
+  <head>
+    <title>
+      realtimeanalyser-basic.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let context = 0;
 
-<body>
+      let audit = Audit.createTaskRunner();
 
-<script>
+      audit.define('Basic AnalyserNode test', function(task, should) {
+        context = new AudioContext();
+        let analyser = context.createAnalyser();
 
-var context = 0;
+        should(analyser.numberOfInputs, 'Number of inputs for AnalyserNode')
+            .beEqualTo(1);
 
-var audit = Audit.createTaskRunner();
+        should(analyser.numberOfOutputs, 'Number of outputs for AnalyserNode')
+            .beEqualTo(1);
 
-audit.define("Basic AnalyserNode test", function (task, should) {
-    context = new AudioContext();
-    var analyser = context.createAnalyser();
+        should(analyser.minDecibels, 'Default minDecibels value')
+            .beEqualTo(-100);
 
-    should(analyser.numberOfInputs, "Number of inputs for AnalyserNode")
-      .beEqualTo(1);
+        should(analyser.maxDecibels, 'Default maxDecibels value')
+            .beEqualTo(-30);
 
-    should(analyser.numberOfOutputs, "Number of outputs for AnalyserNode")
-      .beEqualTo(1);
+        should(
+            analyser.smoothingTimeConstant,
+            'Default smoothingTimeConstant value')
+            .beEqualTo(0.8);
 
-    should(analyser.minDecibels, "Default minDecibels value")
-      .beEqualTo(-100);
+        let expectedValue = -50 - (1 / 3);
+        analyser.minDecibels = expectedValue;
 
-    should(analyser.maxDecibels, "Default maxDecibels value")
-      .beEqualTo(-30);
+        should(analyser.minDecibels, 'node.minDecibels = ' + expectedValue)
+            .beEqualTo(expectedValue);
 
-    should(analyser.smoothingTimeConstant, "Default smoothingTimeConstant value")
-      .beEqualTo(0.8);
-    
-    var expectedValue = -50 - (1/3);
-    analyser.minDecibels = expectedValue;
+        expectedValue = -40 - (1 / 3);
+        analyser.maxDecibels = expectedValue;
 
-    should(analyser.minDecibels, "node.minDecibels = " + expectedValue)
-      .beEqualTo(expectedValue);
+        should(analyser.maxDecibels, 'node.maxDecibels = ' + expectedValue)
+            .beEqualTo(expectedValue);
 
-    expectedValue = -40 - (1/3);
-    analyser.maxDecibels = expectedValue;
+        task.done();
+      });
 
-    should(analyser.maxDecibels, "node.maxDecibels = " + expectedValue)
-      .beEqualTo(expectedValue);
-
-    task.done();
-});
-
-audit.run();
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

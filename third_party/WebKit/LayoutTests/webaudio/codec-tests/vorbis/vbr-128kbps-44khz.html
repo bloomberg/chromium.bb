@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-
 <html>
   <head>
-    <script type="text/javascript" src="../../resources/audio-codec-test.js"></script>
+    <title>
+      vbr-128kbps-44khz.html
+    </title>
+    <script src="../../resources/audio-codec-test.js"></script>
     <script src="../../resources/audit-util.js"></script>
-    <script type="text/javascript" src="../../resources/buffer-loader.js"></script>
-    <script>
-      var url = "../../resources/media/vbr-128kbps-44khz.ogg";
-
-      window.onload = function () { runDecodingTest(url) };
-    </script>
+    <script src="../../resources/buffer-loader.js"></script>
   </head>
   <body>
+    <script id="layout-test-code">
+      let url = '../../resources/media/vbr-128kbps-44khz.ogg';
+
+      window.onload = function() {
+        runDecodingTest(url)
+      };
+    </script>
   </body>
 </html>

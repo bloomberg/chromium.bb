@@ -1,28 +1,30 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      offlineaudiocontext-suspend-resume-promise.html
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
-      var audit = Audit.createTaskRunner();
-      var context;
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
+      let context;
 
       // The sample rate is multiple of the rendering quantum, so suspension
       // times fall in to the render quantum boundary.
-      var renderQuantum = 128;
+      let renderQuantum = 128;
 
-      var sampleRate = renderQuantum * 100;
-      var renderDuration = 2;
-      var scheduledSuspendTime = 0;
+      let sampleRate = renderQuantum * 100;
+      let renderDuration = 2;
+      let scheduledSuspendTime = 0;
 
       // With the sample rate setting above, this ensures suspension time fall
       // in to the render quantum boundary.
-      var suspendInterval = 0.25;
+      let suspendInterval = 0.25;
 
       function onSuspended(should) {
         if (context.state === 'suspended' &&
@@ -58,29 +60,32 @@
         }
       }
 
-      audit.define({
-        label: 'test',
-        description: 'Promise resolution of resume() and suspend()'
-      }, (task, should) => {
-        context = new OfflineAudioContext(1, sampleRate * renderDuration,
-          sampleRate);
+      audit.define(
+          {
+            label: 'test',
+            description: 'Promise resolution of resume() and suspend()'
+          },
+          (task, should) => {
+            context = new OfflineAudioContext(
+                1, sampleRate * renderDuration, sampleRate);
 
-        // Schedule the first suspension.
-        should(() => context.suspend(scheduledSuspendTime)
-            .then(() =>
-              onSuspended(should)),
-            'Scheduling a new suspend at ' + scheduledSuspendTime +
-            ' second(s)')
-          .notThrow();
+            // Schedule the first suspension.
+            should(
+                () => context.suspend(scheduledSuspendTime)
+                          .then(() => onSuspended(should)),
+                'Scheduling a new suspend at ' + scheduledSuspendTime +
+                    ' second(s)')
+                .notThrow();
 
-        context.startRendering().then(function () {
-          should(context.state, 'Promise context.state')
-            .beEqualTo('closed');
-        }).then(() => task.done());
-      });
+            context.startRendering()
+                .then(function() {
+                  should(context.state, 'Promise context.state')
+                      .beEqualTo('closed');
+                })
+                .then(() => task.done());
+          });
 
       audit.run();
     </script>
-
   </body>
 </html>

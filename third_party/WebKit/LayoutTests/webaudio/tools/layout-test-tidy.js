@@ -353,8 +353,8 @@ class TidyTask {
       Util.logAndExit('TidyTask.processHTML_', 'Invalid <script> element.');
 
     // Start with clang-foramt, then HTMLTidy and RegExp substitution.
-    Module.runClangFormat(
-        scriptElement.textContent, OPTIONS.ClangFormat, 3, this)
+    Module
+        .runClangFormat(scriptElement.textContent, OPTIONS.ClangFormat, 3, this)
         .then((formattedCodeString) => {
           // Replace the original code with clang-formatted code.
           scriptElement.textContent = formattedCodeString;

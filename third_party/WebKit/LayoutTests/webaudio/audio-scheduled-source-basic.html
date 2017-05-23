@@ -1,17 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test AudioScheduledSourceNode</title>
+    <title>
+      Test AudioScheduledSourceNode
+    </title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script src="resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
-      var context = new AudioContext();
+    <script id="layout-test-code">
+      let context = new AudioContext();
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
       audit.define(
           {
@@ -32,17 +33,18 @@
             description: 'Test properties on derived nodes'
           },
           function(task, should) {
-            var expectedProperties = ['start', 'stop', 'onended'];
+            let expectedProperties = ['start', 'stop', 'onended'];
 
             // AudioScheduledSourceNode must have these properties.
             for (p in expectedProperties) {
-              should(AudioScheduledSourceNode.prototype,
-                     'AudioScheduledSourceNode.prototype')
+              should(
+                  AudioScheduledSourceNode.prototype,
+                  'AudioScheduledSourceNode.prototype')
                   .haveOwnProperty(expectedProperties[p]);
             }
 
             // ConstantSource and Oscillator must not
-            var nodes = ['ConstantSourceNode', 'OscillatorNode'];
+            let nodes = ['ConstantSourceNode', 'OscillatorNode'];
             for (n in nodes) {
               for (p in expectedProperties) {
                 should(window[nodes[n]].prototype, nodes[n] + '.prototype')
@@ -54,14 +56,16 @@
             // have the others.
             for (p in expectedProperties) {
               if (expectedProperties[p] !== 'start') {
-                should(AudioBufferSourceNode.prototype,
-                       'AudioBufferSourceNode.prototype')
+                should(
+                    AudioBufferSourceNode.prototype,
+                    'AudioBufferSourceNode.prototype')
                     .notHaveOwnProperty(expectedProperties[p]);
               }
             }
 
-            should(AudioBufferSourceNode.prototype,
-                   'AudioBufferSourceNode.prototype')
+            should(
+                AudioBufferSourceNode.prototype,
+                'AudioBufferSourceNode.prototype')
                 .haveOwnProperty('start');
 
             task.done();
