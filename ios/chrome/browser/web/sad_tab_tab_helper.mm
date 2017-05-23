@@ -8,8 +8,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
+#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -62,6 +65,14 @@ void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
 void SadTabTabHelper::RenderProcessGone() {
   if (!delegate_ || [delegate_ isTabVisibleForTabHelper:this]) {
     PresentSadTab(web_state()->GetLastCommittedURL());
+  }
+}
+
+void SadTabTabHelper::DidFinishNavigation(
+    web::NavigationContext* navigation_context) {
+  if (navigation_context->GetUrl().host() == kChromeUICrashHost &&
+      navigation_context->GetUrl().scheme() == kChromeUIScheme) {
+    PresentSadTab(navigation_context->GetUrl());
   }
 }
 

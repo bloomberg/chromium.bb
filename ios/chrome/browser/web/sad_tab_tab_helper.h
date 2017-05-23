@@ -49,6 +49,7 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   // WebStateObserver:
   void RenderProcessGone() override;
+  void DidFinishNavigation(web::NavigationContext* navigation_context) override;
 
   // A TabHelperDelegate that can control aspects of this tab helper's behavior.
   __weak id<SadTabTabHelperDelegate> delegate_;

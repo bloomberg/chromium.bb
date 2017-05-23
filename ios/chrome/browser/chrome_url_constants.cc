@@ -29,6 +29,7 @@ const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIAppleFlagsHost[] = "ui-alternatives";
 const char kChromeUIBookmarksHost[] = "bookmarks";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
+const char kChromeUICrashHost[] = "crash";
 const char kChromeUIChromeURLsHost[] = "chrome-urls";
 const char kChromeUICrashesHost[] = "crashes";
 const char kChromeUICreditsHost[] = "credits";
