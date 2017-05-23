@@ -44,6 +44,9 @@ class GClientEvalTest(unittest.TestCase):
   def test_plus(self):
     self.assertEqual('foo', gclient_eval._gclient_eval('"f" + "o" + "o"', {}))
 
+  def test_format(self):
+    self.assertEqual('foo', gclient_eval._gclient_eval('"%s" % "foo"', {}))
+
   def test_not_expression(self):
     with self.assertRaises(SyntaxError) as cm:
       gclient_eval._gclient_eval('def foo():\n  pass', {})

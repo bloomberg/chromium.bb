@@ -25,7 +25,7 @@ _GCLIENT_SCHEMA = schema.Schema({
     # List of host names from which dependencies are allowed (whitelist).
     # NOTE: when not present, all hosts are allowed.
     # NOTE: scoped to current DEPS file, not recursive.
-    schema.Optional('allowed_hosts'): [basestring],
+    schema.Optional('allowed_hosts'): [schema.Optional(basestring)],
 
     # Mapping from paths to repo and revision to check out under that path.
     # Applying this mapping to the on-disk checkout is the main purpose
@@ -38,7 +38,12 @@ _GCLIENT_SCHEMA = schema.Schema({
     schema.Optional('deps'): {schema.Optional(basestring): basestring},
 
     # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
-    schema.Optional('deps_os'): {basestring: {basestring: basestring}},
+    # Also see 'target_os'.
+    schema.Optional('deps_os'): {
+        schema.Optional(basestring): {
+            schema.Optional(basestring): schema.Or(basestring, None)
+        }
+    },
 
     # Hooks executed after gclient sync (unless suppressed), or explicitly
     # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
@@ -46,33 +51,41 @@ _GCLIENT_SCHEMA = schema.Schema({
     schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
 
     # Similar to 'hooks', also keyed by OS.
-    schema.Optional('hooks_os'): {basestring: _GCLIENT_HOOKS_SCHEMA},
+    schema.Optional('hooks_os'): {
+        schema.Optional(basestring): _GCLIENT_HOOKS_SCHEMA
+    },
 
     # Rules which #includes are allowed in the directory.
     # Also see 'skip_child_includes' and 'specific_include_rules'.
-    schema.Optional('include_rules'): [basestring],
+    schema.Optional('include_rules'): [schema.Optional(basestring)],
 
     # Hooks executed before processing DEPS. See 'hooks' for more details.
     schema.Optional('pre_deps_hooks'): _GCLIENT_HOOKS_SCHEMA,
 
     # Whitelists deps for which recursion should be enabled.
     schema.Optional('recursedeps'): [
-        schema.Or(basestring, (basestring, basestring))
+        schema.Optional(schema.Or(basestring, (basestring, basestring)))
     ],
 
     # Blacklists directories for checking 'include_rules'.
-    schema.Optional('skip_child_includes'): [basestring],
+    schema.Optional('skip_child_includes'): [schema.Optional(basestring)],
 
     # Mapping from paths to include rules specific for that path.
     # See 'include_rules' for more details.
-    schema.Optional('specific_include_rules'): {basestring: [basestring]},
+    schema.Optional('specific_include_rules'): {
+        schema.Optional(basestring): [basestring]
+    },
+
+    # List of additional OS names to consider when selecting dependencies
+    # from deps_os.
+    schema.Optional('target_os'): [schema.Optional(basestring)],
 
     # For recursed-upon sub-dependencies, check out their own dependencies
     # relative to the paren't path, rather than relative to the .gclient file.
     schema.Optional('use_relative_paths'): bool,
 
     # Variables that can be referenced using Var() - see 'deps'.
-    schema.Optional('vars'): {basestring: basestring},
+    schema.Optional('vars'): {schema.Optional(basestring): basestring},
 })
 
 
@@ -112,6 +125,8 @@ def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
       return global_scope[node.func.id](*args)
     elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
       return _convert(node.left) + _convert(node.right)
+    elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
+      return _convert(node.left) % _convert(node.right)
     else:
       raise ValueError(
           'unexpected AST node: %s (file %r, line %s)' % (
