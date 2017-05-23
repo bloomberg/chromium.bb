@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -341,6 +342,32 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestBasicCardTest,
   EXPECT_EQ("mastercard", supported_card_networks[0]);
   EXPECT_EQ("visa", supported_card_networks[1]);
   EXPECT_EQ("jcb", supported_card_networks[2]);
+}
+
+// Test harness integrating with DialogBrowserTest to present the dialog in an
+// interactive manner for visual testing.
+class PaymentsRequestVisualTest
+    : public SupportsTestDialog<PaymentRequestNoShippingTest> {
+ protected:
+  PaymentsRequestVisualTest() {}
+
+  // TestBrowserDialog:
+  void ShowDialog(const std::string& name) override {
+    InvokePaymentRequestUI();
+  }
+
+  bool AlwaysCloseAsynchronously() override {
+    // Bypassing Widget::CanClose() causes payments::JourneyLogger to see the
+    // show, but not the close, resulting in a DCHECK in its destructor.
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentsRequestVisualTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PaymentsRequestVisualTest, InvokeDialog_NoShipping) {
+  RunDialog();
 }
 
 }  // namespace payments
