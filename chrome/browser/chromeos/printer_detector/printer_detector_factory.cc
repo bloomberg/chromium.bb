@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -41,6 +42,11 @@ PrinterDetectorFactory::PrinterDetectorFactory()
 }
 
 PrinterDetectorFactory::~PrinterDetectorFactory() {
+}
+
+content::BrowserContext* PrinterDetectorFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 KeyedService* PrinterDetectorFactory::BuildServiceInstanceFor(
