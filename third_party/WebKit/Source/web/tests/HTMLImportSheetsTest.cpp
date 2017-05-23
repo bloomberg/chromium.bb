@@ -57,7 +57,7 @@ TEST_F(HTMLImportSheetsTest, UpdateStyleSheetList) {
   import_doc->GetStyleEngine().StyleSheetsForStyleSheetList(*import_doc);
 
   EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsActiveStyleUpdate());
-  EXPECT_FALSE(import_doc->GetStyleEngine().NeedsActiveStyleUpdate());
+  EXPECT_TRUE(import_doc->GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
 }  // namespace blink

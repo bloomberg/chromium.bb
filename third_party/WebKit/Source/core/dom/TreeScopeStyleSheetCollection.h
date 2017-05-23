@@ -54,7 +54,7 @@ class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
   bool MediaQueryAffectingValueChanged();
 
   virtual bool IsShadowTreeStyleSheetCollection() const { return false; }
-  void CollectStyleSheetsForList();
+  void UpdateStyleSheetList();
 
   DECLARE_VIRTUAL_TRACE();
 

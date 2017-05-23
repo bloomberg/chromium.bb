@@ -94,17 +94,17 @@ inline Document* StyleEngine::Master() {
   return import->Master();
 }
 
-TreeScopeStyleSheetCollection* StyleEngine::EnsureStyleSheetCollectionFor(
+TreeScopeStyleSheetCollection& StyleEngine::EnsureStyleSheetCollectionFor(
     TreeScope& tree_scope) {
   if (tree_scope == document_)
-    return &GetDocumentStyleSheetCollection();
+    return GetDocumentStyleSheetCollection();
 
   StyleSheetCollectionMap::AddResult result =
       style_sheet_collection_map_.insert(&tree_scope, nullptr);
   if (result.is_new_entry)
     result.stored_value->value =
         new ShadowTreeStyleSheetCollection(ToShadowRoot(tree_scope));
-  return result.stored_value->value.Get();
+  return *result.stored_value->value.Get();
 }
 
 TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
@@ -122,37 +122,21 @@ TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
 const HeapVector<TraceWrapperMember<StyleSheet>>&
 StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
   DCHECK(Master());
+  TreeScopeStyleSheetCollection& collection =
+      EnsureStyleSheetCollectionFor(tree_scope);
   if (Master()->IsActive()) {
-    if (IsMaster()) {
-      // TODO(rune@opera.com): Replace with UpdateStyleSheetList().
+    if (all_tree_scopes_dirty_) {
+      // If all tree scopes are dirty, update all of active style. Otherwise, we
+      // would have to mark all tree scopes explicitly dirty for stylesheet list
+      // or repeatedly update the stylesheet list on styleSheets access. Note
+      // that this can only happen once if we kDidLayoutWithPendingSheets in
+      // Document::UpdateStyleAndLayoutTreeIgnoringPendingStyleSheets.
       UpdateActiveStyle();
     } else {
-      UpdateStyleSheetList(tree_scope);
+      collection.UpdateStyleSheetList();
     }
   }
-
-  if (tree_scope == document_)
-    return GetDocumentStyleSheetCollection().StyleSheetsForStyleSheetList();
-
-  DCHECK(IsMaster());
-  return EnsureStyleSheetCollectionFor(tree_scope)
-      ->StyleSheetsForStyleSheetList();
-}
-
-void StyleEngine::UpdateStyleSheetList(TreeScope& tree_scope) {
-  // TODO(rune@opera.com): currently only for import documents.
-  DCHECK(!IsMaster());
-  DCHECK(tree_scope.GetDocument() == GetDocument());
-
-  if (tree_scope != GetDocument())
-    return;
-  if (!ShouldUpdateDocumentStyleSheetCollection())
-    return;
-
-  GetDocumentStyleSheetCollection().CollectStyleSheetsForList();
-  // Avoid updating the styleSheets list repeatedly. Only safe for imports.
-  document_scope_dirty_ = false;
-  DCHECK(!all_tree_scopes_dirty_);
+  return collection.StyleSheetsForStyleSheetList();
 }
 
 void StyleEngine::InjectAuthorSheet(StyleSheetContents* author_sheet) {
@@ -226,10 +210,7 @@ void StyleEngine::AddStyleSheetCandidateNode(Node& node) {
 
   DCHECK(!IsXSLStyleSheet(node));
   TreeScope& tree_scope = node.GetTreeScope();
-  TreeScopeStyleSheetCollection* collection =
-      EnsureStyleSheetCollectionFor(tree_scope);
-  DCHECK(collection);
-  collection->AddStyleSheetCandidateNode(node);
+  EnsureStyleSheetCollectionFor(tree_scope).AddStyleSheetCandidateNode(node);
 
   SetNeedsActiveStyleUpdate(tree_scope);
   if (tree_scope != document_)
@@ -322,14 +303,8 @@ void StyleEngine::UpdateActiveStyleSheetsInImport(
   // all_tree_scopes_dirty_ should only be set on main documents, never html
   // imports.
   DCHECK(!all_tree_scopes_dirty_);
-  // Make sure we don't re-collect sheets for style sheet list.
+  // Mark false for consistency. It is never checked for import documents.
   document_scope_dirty_ = false;
-  // Dirty tree scopes shadow trees do not affect the main document. Just leave
-  // them dirty here and re-collect when styleSheets is queried on shadow roots
-  // inside html import documents.
-  // tree_scopes_removed_ is irrelevant for html imports as the sheets do not
-  // affect style and removing a shadow tree is reflected directly in
-  // StyleSheetList accessing length or items.
 }
 
 void StyleEngine::UpdateActiveStyleSheetsInShadow(
@@ -545,13 +520,16 @@ void StyleEngine::MarkTreeScopeDirty(TreeScope& scope) {
     return;
   }
 
-  DCHECK(style_sheet_collection_map_.Contains(&scope));
+  TreeScopeStyleSheetCollection* collection = StyleSheetCollectionFor(scope);
+  DCHECK(collection);
+  collection->MarkSheetListDirty();
   dirty_tree_scopes_.insert(&scope);
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
 void StyleEngine::MarkDocumentDirty() {
   document_scope_dirty_ = true;
+  document_style_sheet_collection_->MarkSheetListDirty();
   if (RuntimeEnabledFeatures::cssViewportEnabled())
     ViewportRulesChanged();
   if (GetDocument().ImportLoader())
