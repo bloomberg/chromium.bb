@@ -557,6 +557,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_EQ(1U, request->state()->available_instruments().size());
   EXPECT_EQ(request->state()->available_instruments().back().get(),
             request->state()->selected_instrument());
+  EXPECT_TRUE(request->state()->selected_instrument()->IsCompleteForPayment());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
