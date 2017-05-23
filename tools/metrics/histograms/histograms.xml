@@ -44125,6 +44125,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.TileFaviconFetchSuccess.Popular"
+    enum="BooleanSuccess">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Mobile only. The result of fetching a favicon for a tile on the New Tab
+    Page. This is recorded for each gray PopularSites tile on the New Tab Page
+    once per updating the set of tiles (notably upon each NTP impression).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TileFaviconFetchSuccess.Server"
+    enum="BooleanSuccess">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Mobile only. The result of fetching a favicon for a tile on the New Tab
+    Page. This is recorded for each gray MostVisited tile on the New Tab Page
+    once per lifetime of Chrome (there as an in-memory cache of failed
+    requests).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.TileOfflineAvailable" enum="MostVisitedTileIndex">
   <owner>treib@chromium.org</owner>
   <summary>

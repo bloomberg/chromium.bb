@@ -83,6 +83,8 @@ class IconCacherImpl : public IconCacher {
       const GURL& page_url,
       const favicon_base::LargeIconResult& result);
 
+  void OnMostLikelyFaviconDownloaded(const GURL& request_url, bool success);
+
   bool StartRequest(const GURL& request_url,
                     const base::Closure& icon_available);
   void FinishRequestAndNotifyIconAvailable(const GURL& request_url,
