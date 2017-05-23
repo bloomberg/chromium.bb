@@ -54,10 +54,12 @@ bool TrackpadInputStrategy::HandlePan(const ViewMatrix::Vector2D& translation,
   return true;
 }
 
-void TrackpadInputStrategy::TrackTouchInput(
+bool TrackpadInputStrategy::TrackTouchInput(
     const ViewMatrix::Point& touch_point,
     const DesktopViewport& viewport) {
   // Do nothing. The cursor position is independent of the touch position.
+  // |touch_point| is always valid.
+  return true;
 }
 
 ViewMatrix::Point TrackpadInputStrategy::GetCursorPosition() const {

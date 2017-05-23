@@ -25,7 +25,7 @@ class TrackpadInputStrategy : public InputStrategy {
                  Gesture simultaneous_gesture,
                  DesktopViewport* viewport) override;
 
-  void TrackTouchInput(const ViewMatrix::Point& touch_point,
+  bool TrackTouchInput(const ViewMatrix::Point& touch_point,
                        const DesktopViewport& viewport) override;
 
   ViewMatrix::Point GetCursorPosition() const override;
