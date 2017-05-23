@@ -64,7 +64,7 @@ using DownloadTargetCallback =
 using DownloadOpenDelayedCallback = base::Callback<void(bool)>;
 
 // Called with the result of CheckForFileExistence().
-using CheckForFileExistenceCallback = base::Callback<void(bool result)>;
+using CheckForFileExistenceCallback = base::OnceCallback<void(bool result)>;
 
 using DownloadIdCallback = base::Callback<void(uint32_t)>;
 
@@ -152,9 +152,8 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   virtual void ShowDownloadInShell(DownloadItem* download) {}
 
   // Checks whether a downloaded file still exists.
-  virtual void CheckForFileExistence(
-      DownloadItem* download,
-      const CheckForFileExistenceCallback& callback) {}
+  virtual void CheckForFileExistence(DownloadItem* download,
+                                     CheckForFileExistenceCallback callback) {}
 
   // Return a GUID string used for identifying the application to the system AV
   // function for scanning downloaded files. If no GUID is provided or if the

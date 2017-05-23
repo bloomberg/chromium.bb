@@ -5,6 +5,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -212,8 +212,11 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       next_download_id_(content::DownloadItem::kInvalidId),
       download_prefs_(new DownloadPrefs(profile)),
-      weak_ptr_factory_(this) {
-}
+      check_for_file_existence_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      weak_ptr_factory_(this) {}
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
   // If a DownloadManager was set for this, Shutdown() must be called.
@@ -533,29 +536,28 @@ void ChromeDownloadManagerDelegate::ShowDownloadInShell(
   platform_util::ShowItemInFolder(profile_, platform_path);
 }
 
+void ContinueCheckingForFileExistence(
+    content::CheckForFileExistenceCallback callback) {
+  std::move(callback).Run(false);
+}
+
 void ChromeDownloadManagerDelegate::CheckForFileExistence(
     DownloadItem* download,
-    const content::CheckForFileExistenceCallback& callback) {
+    content::CheckForFileExistenceCallback callback) {
 #if defined(OS_CHROMEOS)
   drive::DownloadHandler* drive_download_handler =
       drive::DownloadHandler::GetForProfile(profile_);
   if (drive_download_handler &&
       drive_download_handler->IsDriveDownload(download)) {
-    drive_download_handler->CheckForFileExistence(download, callback);
+    drive_download_handler->CheckForFileExistence(download,
+                                                  std::move(callback));
     return;
   }
 #endif
-  static const char kSequenceToken[] = "ChromeDMD-FileExistenceChecker";
-  base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetNamedSequenceToken(kSequenceToken),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   base::PostTaskAndReplyWithResult(
-      task_runner.get(),
-      FROM_HERE,
-      base::Bind(&base::PathExists, download->GetTargetFilePath()),
-      callback);
+      check_for_file_existence_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&base::PathExists, download->GetTargetFilePath()),
+      std::move(callback));
 }
 
 std::string
