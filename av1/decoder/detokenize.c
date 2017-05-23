@@ -156,10 +156,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_AOM_QM
 
   if (counts) {
-#if !(CONFIG_DAALA_EC || CONFIG_ANS)
+#if !(CONFIG_DAALA_EC || CONFIG_ANS) || !CONFIG_EC_ADAPT
     coef_counts = counts->coef[tx_size_ctx][type][ref];
     eob_branch_count = counts->eob_branch[tx_size_ctx][type][ref];
-#elif !CONFIG_EC_ADAPT
+#endif
+#if (CONFIG_DAALA_EC || CONFIG_ANS) && !CONFIG_EC_ADAPT
     blockz_count = counts->blockz_count[tx_size_ctx][type][ref][ctx];
 #endif
   }
