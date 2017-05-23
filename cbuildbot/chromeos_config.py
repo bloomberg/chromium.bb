@@ -2230,6 +2230,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'poppy',
       'scarlet',
       'tatl',
+      'veyron_jerry',
       'whirlwind',
       'wooten',
       'oak'

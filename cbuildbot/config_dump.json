@@ -14942,6 +14942,7 @@
             "stumpy-paladin",
             "tatl-paladin",
             "tricky-paladin",
+            "veyron_jerry-paladin",
             "veyron_mighty-paladin",
             "veyron_minnie-paladin",
             "veyron_pinky-paladin",
@@ -25776,6 +25777,7 @@
     },
     "veyron_jerry-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_jerry"
         ],
