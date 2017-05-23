@@ -69,6 +69,8 @@
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -98,8 +100,19 @@ struct RegulatoryLabel {
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
 base::string16 GetAllowedConnectionTypesMessage() {
-  if (help_utils_chromeos::IsUpdateOverCellularAllowed()) {
-    return l10n_util::GetStringUTF16(IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED);
+  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
+                                              ->network_state_handler()
+                                              ->DefaultNetwork();
+  const bool cellular = network && network->IsConnectedState() &&
+                        network->type() == shill::kTypeCellular;
+
+  if (help_utils_chromeos::IsUpdateOverCellularAllowed(
+          true /* interactive */)) {
+    return cellular
+               ? l10n_util::GetStringUTF16(
+                     IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC)
+               : l10n_util::GetStringUTF16(
+                     IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED);
   } else {
     return l10n_util::GetStringUTF16(
         IDS_UPGRADE_NETWORK_LIST_CELLULAR_DISALLOWED);

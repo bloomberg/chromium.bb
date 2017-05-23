@@ -11,8 +11,12 @@
 
 namespace help_utils_chromeos {
 
-// Returns true if update over cellular networks is enabled.
-bool IsUpdateOverCellularAllowed();
+// Returns true if updates over cellular networks are allowed. If |interactive|
+// is true (e.g. the user clicked on a 'check for updates' button), updates over
+// cellular are allowed unless prohibited by policy. If |interactive| is false,
+// updates over cellular may be allowed by default for the device type, or by
+// policy.
+bool IsUpdateOverCellularAllowed(bool interactive);
 
 // Returns localized name for the connection |type|.
 base::string16 GetConnectionTypeAsUTF16(const std::string& type);
