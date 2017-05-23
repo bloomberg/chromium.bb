@@ -80,6 +80,8 @@ class WebServiceWorkerNetworkProviderForFrame
     return provider_->IsControlledByServiceWorker();
   }
 
+  int GetProviderID() const override { return provider_->provider_id(); }
+
   int64_t ServiceWorkerID() override {
     if (provider_->context() && provider_->context()->controller())
       return provider_->context()->controller()->version_id();

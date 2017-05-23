@@ -103,6 +103,8 @@ class WebServiceWorkerNetworkProviderImpl
     request.SetExtraData(extra_data.release());
   }
 
+  int GetProviderID() const override { return provider_->provider_id(); }
+
  private:
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
 };
