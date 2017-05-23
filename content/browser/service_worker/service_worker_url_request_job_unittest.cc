@@ -715,7 +715,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
   EXPECT_FALSE(HasWork());
