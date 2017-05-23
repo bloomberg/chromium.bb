@@ -80,8 +80,6 @@ class BleAdvertiser {
     std::unique_ptr<device::BluetoothAdvertisement::ServiceData>
     CreateServiceData() const;
 
-    std::string ServiceDataInHex() const;
-
     scoped_refptr<device::BluetoothAdapter> adapter_;
     bool is_initializing_advertising_;
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
