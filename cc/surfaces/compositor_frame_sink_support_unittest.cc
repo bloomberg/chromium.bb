@@ -673,9 +673,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   // Give id2 a frame that references local_surface_id_.
   {
-    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     CompositorFrame frame = MakeCompositorFrame();
-    frame.render_pass_list.push_back(std::move(render_pass));
     frame.metadata.referenced_surfaces.push_back(
         SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support2->SubmitCompositorFrame(local_surface_id2, std::move(frame));
@@ -686,9 +684,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
   support2->EvictCurrentSurface();
   // Give local_surface_id_ a frame that references id2.
   {
-    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     CompositorFrame frame = MakeCompositorFrame();
-    frame.render_pass_list.push_back(std::move(render_pass));
     frame.metadata.referenced_surfaces.push_back(id2);
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
@@ -717,9 +713,7 @@ void CopyRequestTestCallback(bool* called,
 
 TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   {
-    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     CompositorFrame frame = MakeCompositorFrame();
-    frame.render_pass_list.push_back(std::move(render_pass));
     frame.metadata.referenced_surfaces.push_back(
         SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));

@@ -22,6 +22,7 @@ CompositorFrame MakeEmptyCompositorFrame() {
   frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
   frame.metadata.begin_frame_ack.sequence_number =
       BeginFrameArgs::kStartingFrameNumber;
+  frame.metadata.begin_frame_ack.has_damage = true;
   frame.metadata.device_scale_factor = 1;
   return frame;
 }

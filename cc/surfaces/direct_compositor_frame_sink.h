@@ -76,11 +76,12 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   base::ThreadChecker thread_checker_;
 
   const FrameSinkId frame_sink_id_;
-  LocalSurfaceId delegated_local_surface_id_;
+  LocalSurfaceId local_surface_id_;
   SurfaceManager* surface_manager_;
   LocalSurfaceIdAllocator local_surface_id_allocator_;
   Display* display_;
   gfx::Size last_swap_frame_size_;
+  float device_scale_factor_ = 1.f;
   bool is_lost_ = false;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 

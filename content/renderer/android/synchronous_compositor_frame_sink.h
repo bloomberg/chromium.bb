@@ -156,6 +156,9 @@ class SynchronousCompositorFrameSink
   std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   cc::LocalSurfaceId child_local_surface_id_;
   cc::LocalSurfaceId root_local_surface_id_;
+  gfx::Size child_size_;
+  gfx::Size display_size_;
+  float device_scale_factor_ = 0;
   // Uses surface_manager_.
   std::unique_ptr<cc::CompositorFrameSinkSupport> root_support_;
   // Uses surface_manager_.

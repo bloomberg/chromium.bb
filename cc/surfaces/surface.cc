@@ -24,10 +24,10 @@ namespace cc {
 static const int kFrameIndexStart = 2;
 
 Surface::Surface(
-    const SurfaceId& id,
+    const SurfaceInfo& surface_info,
     base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support)
-    : surface_id_(id),
-      previous_frame_surface_id_(id),
+    : surface_info_(surface_info),
+      previous_frame_surface_id_(surface_info.id()),
       compositor_frame_sink_support_(std::move(compositor_frame_sink_support)),
       surface_manager_(compositor_frame_sink_support_->surface_manager()),
       frame_index_(kFrameIndexStart),
@@ -55,9 +55,19 @@ void Surface::Close() {
   closed_ = true;
 }
 
-void Surface::QueueFrame(CompositorFrame frame,
+bool Surface::QueueFrame(CompositorFrame frame,
                          const base::Closure& callback,
                          const WillDrawCallback& will_draw_callback) {
+  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
+  float device_scale_factor = frame.metadata.device_scale_factor;
+
+  if (frame_size != surface_info_.size_in_pixels() ||
+      device_scale_factor != surface_info_.device_scale_factor()) {
+    TRACE_EVENT_INSTANT0("cc", "Surface invariants violation",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
   if (closed_) {
     if (compositor_frame_sink_support_) {
       ReturnedResourceArray resources;
@@ -65,7 +75,7 @@ void Surface::QueueFrame(CompositorFrame frame,
       compositor_frame_sink_support_->ReturnResources(resources);
     }
     callback.Run();
-    return;
+    return true;
   }
 
   TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
@@ -114,6 +124,8 @@ void Surface::QueueFrame(CompositorFrame frame,
 
   // Returns resources for the previous pending frame.
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_pending_frame_data));
+
+  return true;
 }
 
 void Surface::RequestCopyOfOutput(
@@ -307,7 +319,7 @@ void Surface::RunWillDrawCallback(const gfx::Rect& damage_rect) {
   if (!active_frame_data_ || active_frame_data_->will_draw_callback.is_null())
     return;
 
-  active_frame_data_->will_draw_callback.Run(surface_id_.local_surface_id(),
+  active_frame_data_->will_draw_callback.Run(surface_id().local_surface_id(),
                                              damage_rect);
 }
 
