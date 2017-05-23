@@ -698,7 +698,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
   states.push_back(ScreenlockState::PHONE_NOT_LOCKABLE);
   states.push_back(ScreenlockState::PHONE_UNSUPPORTED);
   states.push_back(ScreenlockState::RSSI_TOO_LOW);
-  states.push_back(ScreenlockState::TX_POWER_TOO_HIGH);
+  states.push_back(ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW);
   states.push_back(ScreenlockState::AUTHENTICATED);
 
   for (size_t i = 0; i < states.size(); ++i) {

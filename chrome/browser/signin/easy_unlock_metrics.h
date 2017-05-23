@@ -49,7 +49,7 @@ enum EasyUnlockAuthEvent {
   // though.
   PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE = 14,
   // Password is used because phone is not right next to the Chromebook.
-  PASSWORD_ENTRY_TX_POWER_TOO_HIGH = 15,
+  PASSWORD_ENTRY_TX_POWER_TOO_HIGH = 15,  // DEPRECATED
   // Password is used because Easy sign-in failed.
   PASSWORD_ENTRY_LOGIN_FAILED = 16,
   // Password is used because pairing data is changed for a "new" Chromebook
@@ -60,7 +60,7 @@ enum EasyUnlockAuthEvent {
   PASSWORD_ENTRY_NO_SCREENLOCK_STATE_HANDLER = 18,
   // Password is used because the phone is (a) locked, and (b) not right next to
   // the Chromebook.
-  PASSWORD_ENTRY_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH = 19,
+  PASSWORD_ENTRY_PHONE_LOCKED_AND_RSSI_TOO_LOW = 19,
 
   EASY_UNLOCK_AUTH_EVENT_COUNT  // Must be the last entry.
 };

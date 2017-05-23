@@ -34,16 +34,11 @@ enum class ScreenlockState {
   // signal strength is too low, i.e. the phone is roughly more than 30 feet
   // away, and therefore is not allowed to unlock the device.
   RSSI_TOO_LOW,
-  // A phone eligible to unlock the local device is found, but the local
-  // device's transmission power is too high, indicating that the phone is
-  // (probably) more than 1 foot away, and therefore is not allowed to unlock
-  // the device.
-  TX_POWER_TOO_HIGH,
   // A phone eligible to unlock the local device is found; but (a) the phone is
   // locked, and (b) the local device's transmission power is too high,
   // indicating that the phone is (probably) more than 1 foot away, and
   // therefore is not allowed to unlock the device.
-  PHONE_LOCKED_AND_TX_POWER_TOO_HIGH,
+  PHONE_LOCKED_AND_RSSI_TOO_LOW,
   // The local device can be unlocked using proximity-based authentication.
   AUTHENTICATED,
 };
