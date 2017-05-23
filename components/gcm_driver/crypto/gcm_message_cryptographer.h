@@ -17,9 +17,11 @@
 namespace gcm {
 
 // Messages delivered through GCM may be encrypted according to the IETF Web
-// Push protocol. We support the third draft of ietf-webpush-encryption:
+// Push protocol. We support two versions of ietf-webpush-encryption. The user
+// of this class must pass in the version to use when constructing an instance.
 //
 // https://tools.ietf.org/html/draft-ietf-webpush-encryption-03
+// https://tools.ietf.org/html/draft-ietf-webpush-encryption-08 (WGLC)
 //
 // This class implements the ability to encrypt or decrypt such messages using
 // AEAD_AES_128_GCM with a 16-octet authentication tag. The encrypted payload
@@ -31,6 +33,9 @@ namespace gcm {
 // messages provided that a cryptographically-strong random salt is used.
 class GCMMessageCryptographer {
  public:
+  // Size, in bytes, of the authentication tag included in the messages.
+  static const size_t kAuthenticationTagBytes;
+
   // Salt size, in bytes, that will be used together with the key to create a
   // unique content encryption key for a given message.
   static const size_t kSaltSize;
@@ -38,9 +43,10 @@ class GCMMessageCryptographer {
   // Version of the encryption scheme desired by the consumer.
   enum class Version {
     // https://tools.ietf.org/html/draft-ietf-webpush-encryption-03
-    DRAFT_03
+    DRAFT_03,
 
-    // TODO(peter): Add support for ietf-webpush-encryption-08.
+    // https://tools.ietf.org/html/draft-ietf-webpush-encryption-08 (WGLC)
+    DRAFT_08
   };
 
   // Interface that different versions of the encryption scheme must implement.
@@ -54,6 +60,8 @@ class GCMMessageCryptographer {
     // Derives the pseudo random key (PRK) to use for deriving the content
     // encryption key and the nonce.
     virtual std::string DerivePseudoRandomKey(
+        const base::StringPiece& recipient_public_key,
+        const base::StringPiece& sender_public_key,
         const base::StringPiece& ecdh_shared_secret,
         const base::StringPiece& auth_secret) = 0;
 
@@ -66,6 +74,10 @@ class GCMMessageCryptographer {
 
     // Creates an encryption record to contain the given |plaintext|.
     virtual std::string CreateRecord(const base::StringPiece& plaintext) = 0;
+
+    // Validates that the |ciphertext_size| is valid following the scheme.
+    virtual bool ValidateCiphertextSize(size_t ciphertext_size,
+                                        size_t record_size) = 0;
 
     // Verifies that the padding included in |record| is valid and removes it
     // from the StringPiece. Returns whether the padding was valid.
@@ -122,9 +134,6 @@ class GCMMessageCryptographer {
  private:
   FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, AuthSecretAffectsPRK);
   FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, InvalidRecordPadding);
-
-  // Size, in bytes, of the authentication tag included in the messages.
-  static const size_t kAuthenticationTagBytes;
 
   enum class Direction { ENCRYPT, DECRYPT };
 
