@@ -19,7 +19,6 @@
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
@@ -43,6 +42,10 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
+
+#if !defined(OS_ANDROID)
+#include "content/browser/host_zoom_map_impl.h"
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_private_storage_helper.h"
@@ -490,8 +493,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->push_messaging_context_ =
       new PushMessagingContext(context, partition->service_worker_context_);
 
+#if !defined(OS_ANDROID)
   partition->host_zoom_level_context_ = new HostZoomLevelContext(
       context->CreateZoomLevelDelegate(partition_path));
+#endif  // !defined(OS_ANDROID)
 
   partition->platform_notification_context_ =
       new PlatformNotificationContextImpl(path, context,
@@ -576,6 +581,7 @@ ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
   return service_worker_context_.get();
 }
 
+#if !defined(OS_ANDROID)
 HostZoomMap* StoragePartitionImpl::GetHostZoomMap() {
   DCHECK(host_zoom_level_context_.get());
   return host_zoom_level_context_->GetHostZoomMap();
@@ -589,6 +595,7 @@ ZoomLevelDelegate* StoragePartitionImpl::GetZoomLevelDelegate() {
   DCHECK(host_zoom_level_context_.get());
   return host_zoom_level_context_->GetZoomLevelDelegate();
 }
+#endif  // !defined(OS_ANDROID)
 
 PlatformNotificationContextImpl*
 StoragePartitionImpl::GetPlatformNotificationContext() {

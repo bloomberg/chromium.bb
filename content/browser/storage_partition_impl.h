@@ -22,7 +22,6 @@
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -36,6 +35,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_store.h"
 #include "storage/browser/quota/special_storage_policy.h"
+
+#if !defined(OS_ANDROID)
+#include "content/browser/host_zoom_level_context.h"
+#endif
 
 namespace content {
 
@@ -75,9 +78,11 @@ class CONTENT_EXPORT  StoragePartitionImpl
   IndexedDBContextImpl* GetIndexedDBContext() override;
   CacheStorageContextImpl* GetCacheStorageContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
+#if !defined(OS_ANDROID)
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
+#endif  // !defined(OS_ANDROID)
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
@@ -233,7 +238,9 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<PushMessagingContext> push_messaging_context_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+#if !defined(OS_ANDROID)
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
+#endif  // !defined(OS_ANDROID)
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
   scoped_refptr<BackgroundSyncContext> background_sync_context_;

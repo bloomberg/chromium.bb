@@ -152,9 +152,11 @@ class TestStoragePartition : public StoragePartition {
   PlatformNotificationContext* GetPlatformNotificationContext() override {
     return nullptr;
   }
+#if !defined(OS_ANDROID)
   HostZoomMap* GetHostZoomMap() override { return nullptr; }
   HostZoomLevelContext* GetHostZoomLevelContext() override { return nullptr; }
   ZoomLevelDelegate* GetZoomLevelDelegate() override { return nullptr; }
+#endif  // !defined(OS_ANDROID)
 
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,

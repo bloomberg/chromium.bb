@@ -38,7 +38,6 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -49,9 +48,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
-#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
@@ -65,6 +62,10 @@
 #if defined(OS_ANDROID)
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proxy_config/proxy_prefs.h"
+#else  // !defined(OS_ANDROID)
+#include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
+#include "components/zoom/zoom_event_manager.h"
+#include "content/public/browser/host_zoom_map.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -93,7 +94,9 @@
 
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
+#if !defined(OS_ANDROID)
 using content::HostZoomMap;
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 namespace {
@@ -148,7 +151,9 @@ void OffTheRecordProfileImpl::Init() {
          IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
              IncognitoModePrefs::DISABLED);
 
+#if !defined(OS_ANDROID)
   TrackZoomLevelsFromParent();
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
@@ -204,6 +209,7 @@ void OffTheRecordProfileImpl::InitIoData() {
   io_data_.reset(new OffTheRecordProfileIOData::Handle(this));
 }
 
+#if !defined(OS_ANDROID)
 void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
   DCHECK_NE(INCOGNITO_PROFILE, profile_->GetProfileType());
 
@@ -228,6 +234,7 @@ void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
           base::Bind(&OffTheRecordProfileImpl::UpdateDefaultZoomLevel,
                      base::Unretained(this)));
 }
+#endif  // !defined(OS_ANDROID)
 
 std::string OffTheRecordProfileImpl::GetProfileUserName() const {
   // Incognito profile should not return the username.
@@ -246,12 +253,14 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
 
+#if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return base::MakeUnique<ChromeZoomLevelOTRDelegate>(
       zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
+#endif  // !defined(OS_ANDROID)
 
 scoped_refptr<base::SequencedTaskRunner>
 OffTheRecordProfileImpl::GetIOTaskRunner() {
@@ -521,6 +530,7 @@ Profile* Profile::CreateOffTheRecordProfile() {
   return profile;
 }
 
+#if !defined(OS_ANDROID)
 void OffTheRecordProfileImpl::OnParentZoomLevelChanged(
     const HostZoomMap::ZoomLevelChange& change) {
   HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
@@ -550,6 +560,7 @@ void OffTheRecordProfileImpl::UpdateDefaultZoomLevel() {
   zoom::ZoomEventManager::GetForBrowserContext(this)
       ->OnDefaultZoomLevelChanged();
 }
+#endif  // !defined(OS_ANDROID)
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::CreateProxyConfigTracker() {
 #if defined(OS_CHROMEOS)

@@ -128,7 +128,6 @@ source_set("browser_sources") {
     "guest_mode.cc",
     "guest_mode.h",
     "histogram_fetcher.h",
-    "host_zoom_map.h",
     "indexed_db_context.h",
     "indexed_db_info.h",
     "interstitial_page.h",
@@ -285,7 +284,6 @@ source_set("browser_sources") {
     "websocket_handshake_request_info.h",
     "worker_service.h",
     "worker_service_observer.h",
-    "zoom_level_delegate.h",
     "zygote_handle_linux.h",
     "zygote_host_linux.h",
   ]
@@ -342,6 +340,10 @@ source_set("browser_sources") {
   }
 
   if (!is_android) {
-    sources += [ "devtools_frontend_host.h" ]
+    sources += [
+      "devtools_frontend_host.h",
+      "host_zoom_map.h",
+      "zoom_level_delegate.h",
+    ]
   }
 }

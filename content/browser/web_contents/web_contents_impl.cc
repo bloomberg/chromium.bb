@@ -57,8 +57,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
-#include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/host_zoom_map_observer.h"
 #include "content/browser/loader/loader_io_thread_notifier.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
@@ -152,6 +150,9 @@
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "services/device/public/interfaces/nfc.mojom.h"
+#else  // !OS_ANDROID
+#include "content/browser/host_zoom_map_impl.h"
+#include "content/browser/host_zoom_map_observer.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_MACOSX)
@@ -508,7 +509,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       audio_stream_monitor_(this),
       bluetooth_connected_device_count_(0),
       virtual_keyboard_requested_(false),
+#if !defined(OS_ANDROID)
       page_scale_factor_is_one_(true),
+#endif  // !defined(OS_ANDROID)
       mouse_lock_widget_(nullptr),
       is_overlay_content_(false),
       loading_weak_factory_(this),
@@ -526,7 +529,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #endif
 
   loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
+#if !defined(OS_ANDROID)
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
+#endif  // !defined(OS_ANDROID)
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -1062,6 +1067,7 @@ void WebContentsImpl::RequestAXTreeSnapshot(
   }
 }
 
+#if !defined(OS_ANDROID)
 void WebContentsImpl::SetTemporaryZoomLevel(double level,
                                             bool temporary_zoom_enabled) {
   SendPageMessage(new PageMsg_SetZoomLevel(
@@ -1094,6 +1100,7 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
 
   UpdateZoom(level);
 }
+#endif  // !defined(OS_ANDROID)
 
 base::Closure WebContentsImpl::AddBindingSet(
     const std::string& interface_name,
@@ -3850,6 +3857,9 @@ void WebContentsImpl::OnUpdateZoomLimits(RenderViewHostImpl* source,
 
 void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
                                                float page_scale_factor) {
+#if !defined(OS_ANDROID)
+  // While page scale factor is used on mobile, this PageScaleFactorIsOne logic
+  // is only needed on desktop.
   bool is_one = page_scale_factor == 1.f;
   if (is_one != page_scale_factor_is_one_) {
     page_scale_factor_is_one_ = is_one;
@@ -3863,6 +3873,7 @@ void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
           page_scale_factor_is_one_);
     }
   }
+#endif  // !defined(OS_ANDROID)
 
   for (auto& observer : observers_)
     observer.OnPageScaleFactorChanged(page_scale_factor);
@@ -4457,6 +4468,7 @@ WebContents* WebContentsImpl::GetAsWebContents() {
   return this;
 }
 
+#if !defined(OS_ANDROID)
 double WebContentsImpl::GetPendingPageZoomLevel() {
   NavigationEntry* pending_entry = GetController().GetPendingEntry();
   if (!pending_entry)
@@ -4466,6 +4478,7 @@ double WebContentsImpl::GetPendingPageZoomLevel() {
   return HostZoomMap::GetForWebContents(this)->GetZoomLevelForHostAndScheme(
       url.scheme(), net::GetHostOrSpecFromURL(url));
 }
+#endif  // !defined(OS_ANDROID)
 
 bool WebContentsImpl::HideDownloadUI() const {
   return is_overlay_content_;

@@ -769,12 +769,6 @@ source_set("browser") {
     "histogram_subscriber.h",
     "histogram_synchronizer.cc",
     "histogram_synchronizer.h",
-    "host_zoom_level_context.cc",
-    "host_zoom_level_context.h",
-    "host_zoom_map_impl.cc",
-    "host_zoom_map_impl.h",
-    "host_zoom_map_observer.cc",
-    "host_zoom_map_observer.h",
     "image_capture/image_capture_impl.cc",
     "image_capture/image_capture_impl.h",
     "indexed_db/cursor_impl.cc",
@@ -1956,6 +1950,12 @@ source_set("browser") {
       # Devtools frontend not included in Android
       "devtools/devtools_frontend_host_impl.cc",
       "devtools/devtools_frontend_host_impl.h",
+      "host_zoom_level_context.cc",
+      "host_zoom_level_context.h",
+      "host_zoom_map_impl.cc",
+      "host_zoom_map_impl.h",
+      "host_zoom_map_observer.cc",
+      "host_zoom_map_observer.h",
 
       # Most speech code is non-Android.
       "speech/audio_buffer.cc",

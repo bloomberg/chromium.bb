@@ -18,12 +18,15 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
-#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/features.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/host_zoom_map.h"
 #include "extensions/features/features.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "content/public/browser/host_zoom_map.h"
+#endif
 
 class MediaDeviceIDSalt;
 class PrefService;
@@ -74,8 +77,10 @@ class ProfileImpl : public Profile {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // content::BrowserContext implementation:
+#if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
+#endif
   base::FilePath GetPath() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
@@ -119,7 +124,9 @@ class ProfileImpl : public Profile {
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
+#if !defined(OS_ANDROID)
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
+#endif
   PrefService* GetOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContext() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;

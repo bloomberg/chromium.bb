@@ -22,7 +22,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_capturer.mojom.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/guest_view/browser/guest_view_manager.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -42,6 +41,10 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/guest_view/browser/guest_view_manager.h"
 #endif
 
 using content::WebContents;
@@ -129,10 +132,13 @@ bool CoreTabHelper::GetStatusTextForWebContents(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "467185 CoreTabHelper::GetStatusTextForWebContents1"));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* guest_manager = guest_view::GuestViewManager::FromBrowserContext(
       source->GetBrowserContext());
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   if (!source->IsLoading() ||
       source->GetLoadState().state == net::LOAD_STATE_IDLE) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile2(
@@ -143,6 +149,9 @@ bool CoreTabHelper::GetStatusTextForWebContents(
     return guest_manager->ForEachGuest(
         source, base::Bind(&CoreTabHelper::GetStatusTextForWebContents,
                            status_text));
+#else  // !BUILDFLAG(ENABLE_EXTENSIONS)
+    return false;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   }
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
@@ -226,6 +235,7 @@ bool CoreTabHelper::GetStatusTextForWebContents(
     case net::LOAD_STATE_READING_RESPONSE:
       break;
   }
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!guest_manager)
     return false;
 
@@ -237,6 +247,9 @@ bool CoreTabHelper::GetStatusTextForWebContents(
   return guest_manager->ForEachGuest(
       source, base::Bind(&CoreTabHelper::GetStatusTextForWebContents,
                          status_text));
+#else  // !BUILDFLAG(ENABLE_EXTENSIONS)
+  return false;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

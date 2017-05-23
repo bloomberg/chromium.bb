@@ -442,10 +442,6 @@ split_static_library("ui") {
     "webui/version_ui.cc",
     "webui/version_ui.h",
     "window_sizer/window_sizer_mac.mm",
-    "zoom/chrome_zoom_level_otr_delegate.cc",
-    "zoom/chrome_zoom_level_otr_delegate.h",
-    "zoom/chrome_zoom_level_prefs.cc",
-    "zoom/chrome_zoom_level_prefs.h",
   ]
 
   defines = []
@@ -516,7 +512,6 @@ split_static_library("ui") {
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/google/core/browser",
-    "//components/guest_view/browser",
     "//components/history/content/browser",
     "//components/image_fetcher/core",
     "//components/infobars/core",
@@ -581,7 +576,6 @@ split_static_library("ui") {
     "//components/version_ui",
     "//components/web_cache/browser",
     "//components/web_resource",
-    "//components/zoom",
     "//content/app/resources",
     "//content/public/common",
     "//crypto",
@@ -636,6 +630,7 @@ split_static_library("ui") {
   if (enable_extensions) {
     deps += [
       "//components/drive",
+      "//components/guest_view/browser",
       "//extensions/browser",
       "//extensions/strings",
     ]
@@ -1194,6 +1189,10 @@ split_static_library("ui") {
       "webui/uber/uber_ui.h",
       "window_sizer/window_sizer.cc",
       "window_sizer/window_sizer.h",
+      "zoom/chrome_zoom_level_otr_delegate.cc",
+      "zoom/chrome_zoom_level_otr_delegate.h",
+      "zoom/chrome_zoom_level_prefs.cc",
+      "zoom/chrome_zoom_level_prefs.h",
     ]
     deps += [
       "//apps",
@@ -1204,6 +1203,7 @@ split_static_library("ui") {
       "//components/feedback/proto",
       "//components/proximity_auth/webui",
       "//components/web_modal",
+      "//components/zoom",
       "//device/bluetooth",
       "//extensions/common:mojo",
       "//mash/public/interfaces",
@@ -3553,7 +3553,6 @@ static_library("test_support") {
     "//components/sessions",
     "//components/toolbar",
     "//components/translate/content/browser",
-    "//components/zoom",
     "//content/public/browser",
     "//content/public/common",
     "//content/test:test_support",
@@ -3602,7 +3601,10 @@ static_library("test_support") {
       "test/test_confirm_bubble_model.cc",
       "test/test_confirm_bubble_model.h",
     ]
-    deps += [ "//chrome/test:test_support_ui" ]
+    deps += [
+      "//chrome/test:test_support_ui",
+      "//components/zoom",
+    ]
   }
 
   if (enable_extensions) {

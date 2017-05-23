@@ -36,7 +36,6 @@
 #include "components/sessions/core/session_id.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
-#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
@@ -53,6 +52,10 @@
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
+
+#if !defined(OS_ANDROID)
+#include "components/zoom/zoom_observer.h"
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
@@ -110,7 +113,9 @@ class Browser : public TabStripModelObserver,
                 public CoreTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperDelegate,
+#if !defined(OS_ANDROID)
                 public zoom::ZoomObserver,
+#endif  // !defined(OS_ANDROID)
                 public content::PageNavigator,
                 public content::NotificationObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -715,9 +720,11 @@ class Browser : public TabStripModelObserver,
   void URLStarredChanged(content::WebContents* web_contents,
                          bool starred) override;
 
+#if !defined(OS_ANDROID)
   // Overridden from ZoomObserver:
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
+#endif  // !defined(OS_ANDROID)
 
   // Overridden from SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,
