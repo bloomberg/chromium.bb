@@ -40,6 +40,7 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sth_distributor_provider.h"
+#include "chrome/browser/ssl/ignore_errors_cert_verifier.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -610,7 +611,11 @@ void IOThread::Init() {
       base::MakeUnique<net::MultiThreadedCertVerifier>(
           new chromeos::CertVerifyProcChromeOS()));
 #else
-  globals_->cert_verifier = net::CertVerifier::CreateDefault();
+  globals_->cert_verifier = IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+      command_line, net::CertVerifier::CreateDefault());
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
+      command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
 #endif
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());

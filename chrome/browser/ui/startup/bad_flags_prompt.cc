@@ -62,6 +62,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kDisableWebRtcEncryption,
 #endif
     switches::kIgnoreCertificateErrors,
+    switches::kIgnoreCertificateErrorsSPKIList,
     switches::kReduceSecurityForTesting,
     invalidation::switches::kSyncAllowInsecureXmppConnection,
 

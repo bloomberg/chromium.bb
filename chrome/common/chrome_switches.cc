@@ -525,6 +525,19 @@ const char kHostResolverRetryAttempts[]     = "host-resolver-retry-attempts";
 // proxy connection, and the endpoint host in a SOCKS proxy connection).
 const char kHostRules[]                     = "host-rules";
 
+// A set of public key hashes for which to ignore certificate-related errors.
+//
+// If the certificate chain presented by the server does not validate, and one
+// or more certificates have public key hashes that match a key from this list,
+// the error is ignored.
+//
+// The switch value must a be a comma-separated list of Base64-encoded SHA-256
+// SPKI Fingerprints (RFC 7469, Section 2.4).
+//
+// This switch has no effect unless --user-data-dir is also present.
+const char kIgnoreCertificateErrorsSPKIList[] =
+    "ignore-certificate-errors-spki-list";
+
 // Causes net::URLFetchers to ignore requests for SSL client certificates,
 // causing them to attempt an unauthenticated SSL/TLS session. This is intended
 // for use when testing various service URLs (eg: kPromoServerURL, kSbURLPrefix,

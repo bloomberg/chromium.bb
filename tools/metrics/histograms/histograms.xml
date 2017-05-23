@@ -33657,6 +33657,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.Certificate.IgnoreCertificateErrorsSPKIListPresent"
+    enum="BooleanPresent">
+  <owner>martinkr@google.com</owner>
+  <summary>
+    Whether certificate validation was disabled for a set of public keys because
+    the --ignore-certificate-errors-spki-list switch was set on startup.
+  </summary>
+</histogram>
+
 <histogram name="Net.Certificate.IgnoreErrors" enum="BooleanEnabled">
   <owner>martinkr@google.com</owner>
   <summary>
