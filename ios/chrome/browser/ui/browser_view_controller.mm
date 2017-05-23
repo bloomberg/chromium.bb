@@ -3086,6 +3086,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
           [[ExternalFileController alloc] initWithURL:url
                                          browserState:_browserState];
     }
+  } else if (url_host == kChromeUICrashHost) {
+    // There is no native controller for kChromeUICrashHost, it is instead
+    // handled as any other renderer crash by the SadTabTabHelper.
+    // nativeController must be set to nil to prevent defaulting to a
+    // PageNotAvailableController.
+    nativeController = nil;
   } else {
     DCHECK(![self hasControllerForURL:url]);
     // In any other case the PageNotAvailableController is returned.
