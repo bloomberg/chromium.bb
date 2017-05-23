@@ -21,11 +21,17 @@ function runTest() {
     } else {
         // Right now there is a bug that srcset does not properly deal with dynamic changes to the scale factor,
         // so to work around that, we must reload the page to get the new image.
-        sessionStorage.pageReloaded = true;
-        if (window.internals) {
-            internals.evictAllResources();
-        }
-        document.location.reload(true);
+        //
+        // At the time of the Document load event, there might be other
+        // ongoing tasks that can cause new images to be loaded. To evict
+        // those images, we delay evictAllResources() call a little.
+        setTimeout(function() {
+          sessionStorage.pageReloaded = true;
+          if (window.internals) {
+              internals.evictAllResources();
+          }
+          document.location.reload(true);
+        }, 300);
     }
 }
 
