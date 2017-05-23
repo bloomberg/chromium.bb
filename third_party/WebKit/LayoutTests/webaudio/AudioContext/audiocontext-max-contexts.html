@@ -1,41 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-</head>
-<body>
-<script>
-let audit = Audit.createTaskRunner();
+  <head>
+    <title>
+      audiocontext-max-contexts.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-let contextsToCreate = 10;
+      let contextsToCreate = 10;
 
-function reachHardwareContextsLimit() {
-  let context = [];
-  for (let i = 0; i < contextsToCreate; ++i)
-    context[i] = new AudioContext();
-}
+      function reachHardwareContextsLimit() {
+        let context = [];
+        for (let i = 0; i < contextsToCreate; ++i)
+          context[i] = new AudioContext();
+      }
 
 
-audit.define(
-    {
-      label: 'hardware-context-limit',
-      description: 'AudioContext throws when hardware context limit is reached'
-    },
-    function(task, should) {
-      should(
-          function() {
-            reachHardwareContextsLimit();
+      audit.define(
+          {
+            label: 'hardware-context-limit',
+            description:
+                'AudioContext throws when hardware context limit is reached'
           },
-          'Create ' + contextsToCreate + ' concurrent AudioContext\'s')
-          .throw('NotSupportedError');
+          function(task, should) {
+            should(
+                function() {
+                  reachHardwareContextsLimit();
+                },
+                'Create ' + contextsToCreate + ' concurrent AudioContext\'s')
+                .throw('NotSupportedError');
 
-      task.done();
-    });
+            task.done();
+          });
 
-audit.run();
-</script>
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

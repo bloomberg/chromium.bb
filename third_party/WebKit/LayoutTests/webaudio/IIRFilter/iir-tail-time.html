@@ -1,15 +1,16 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Tail Time for IIRFilter</title>
+    <title>
+      Test Tail Time for IIRFilter
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
       let renderQuantumFrames = 128;
 
@@ -111,8 +112,8 @@
 
         let pole = 0.99;
         let IIROptions = {
-          feedforward: [0,0,1],
-          feedback: [1, -2*pole, pole*pole]
+          feedforward: [0, 0, 1],
+          feedback: [1, -2 * pole, pole * pole]
         };
 
         // We can analytically compute the impulse response of this filter to be
@@ -127,7 +128,7 @@
         let tail = 1781.213;
         runTest(should, IIROptions, tail, '2 repeated poles')
             .then(() => task.done());
-      
+
       });
 
       audit.define('4-th order', (task, should) => {

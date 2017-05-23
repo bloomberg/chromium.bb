@@ -1,67 +1,67 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>
+      audiochannelmerger-basic.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-<head>
-  <script src="../../resources/testharness.js"></script>
-  <script src="../../resources/testharnessreport.js"></script> 
-  <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audit.js"></script>
-</head>
+      // Task: Checking constraints in ChannelMergerNode.
+      audit.define('exceptions-channels', (task, should) => {
+        let context = new OfflineAudioContext(2, 128, 44100);
+        let merger;
 
-<body>
-  <script>
+        should(function() {
+          merger = context.createChannelMerger();
+        }, 'context.createChannelMerger()').notThrow();
 
-    var audit = Audit.createTaskRunner();
+        should(function() {
+          merger = context.createChannelMerger(0);
+        }, 'context.createChannelMerger(0)').throw('IndexSizeError');
 
-    // Task: Checking constraints in ChannelMergerNode.
-    audit.define('exceptions-channels', (task, should) => {
-      var context = new OfflineAudioContext(2, 128, 44100);
-      var merger;
+        should(function() {
+          merger = context.createChannelMerger(32);
+        }, 'context.createChannelMerger(32)').notThrow();
 
-      should(function () {
-        merger = context.createChannelMerger();
-      }, 'context.createChannelMerger()').notThrow();
+        // Can't create a channel merger with 33 channels because the audio
+        // context has a 32-channel-limit in Chrome.
+        should(function() {
+          merger = context.createChannelMerger(33);
+        }, 'context.createChannelMerger(33)').throw('IndexSizeError');
 
-      should(function () {
-        merger = context.createChannelMerger(0);
-      }, 'context.createChannelMerger(0)').throw('IndexSizeError');
+        task.done();
+      });
 
-      should(function () {
-        merger = context.createChannelMerger(32);
-      }, 'context.createChannelMerger(32)').notThrow();
+      // Task: checking the channel-related properties have the correct value
+      // and can't be changed.
+      audit.define('exceptions-properties', (task, should) => {
+        let context = new OfflineAudioContext(2, 128, 44100);
+        let merger = context.createChannelMerger();
 
-      // Can't create a channel merger with 33 channels because the audio
-      // context has a 32-channel-limit in Chrome.
-      should(function () {
-        merger = context.createChannelMerger(33);
-      }, 'context.createChannelMerger(33)').throw('IndexSizeError');
+        should(merger.channelCount, 'merger.channelCount').beEqualTo(1);
 
-      task.done();
-    });
+        should(function() {
+          merger.channelCount = 3;
+        }, 'merger.channelCount = 3').throw('InvalidStateError');
 
-    // Task: checking the channel-related properties have the correct value and 
-    // can't be changed.
-    audit.define('exceptions-properties', (task, should) => {
-      var context = new OfflineAudioContext(2, 128, 44100);
-      var merger = context.createChannelMerger();
+        should(merger.channelCountMode, 'merger.channelCountMode')
+            .beEqualTo('explicit');
 
-      should(merger.channelCount, 'merger.channelCount').beEqualTo(1);
+        should(function() {
+          merger.channelCountMode = 'max';
+        }, 'merger.channelCountMode = "max"').throw('InvalidStateError');
 
-      should(function () {
-        merger.channelCount = 3;
-      }, 'merger.channelCount = 3').throw('InvalidStateError');
+        task.done();
+      });
 
-      should(merger.channelCountMode, 'merger.channelCountMode').beEqualTo('explicit');
-
-      should(function () {
-        merger.channelCountMode = 'max';
-      }, 'merger.channelCountMode = "max"').throw('InvalidStateError');
-
-      task.done();
-    });
-
-    audit.run();
-  </script>
-</body>
-
+      audit.run();
+    </script>
+  </body>
 </html>

@@ -21,162 +21,161 @@ var bufferSource;
 var panner;
 var position;
 var time;
-      
+
 var renderedBuffer;
 var renderedLeft;
 var renderedRight;
 
 function createGraph(context, nodeCount, positionSetter) {
-    bufferSource = new Array(nodeCount);
-    panner = new Array(nodeCount);
-    position = new Array(nodeCount);
-    time = new Array(nodeCount);
-    // Angle between panner locations.  (nodeCount - 1 because we want
-    // to include both 0 and 180 deg.
-    var angleStep = Math.PI / (nodeCount - 1);
+  bufferSource = new Array(nodeCount);
+  panner = new Array(nodeCount);
+  position = new Array(nodeCount);
+  time = new Array(nodeCount);
+  // Angle between panner locations.  (nodeCount - 1 because we want
+  // to include both 0 and 180 deg.
+  let angleStep = Math.PI / (nodeCount - 1);
 
-    if (numberOfChannels == 2) {
-        impulse = createStereoImpulseBuffer(context, pulseLengthFrames);
-    }
-    else
-        impulse = createImpulseBuffer(context, pulseLengthFrames);
+  if (numberOfChannels == 2) {
+    impulse = createStereoImpulseBuffer(context, pulseLengthFrames);
+  } else
+    impulse = createImpulseBuffer(context, pulseLengthFrames);
 
-    for (var k = 0; k < nodeCount; ++k) {
-        bufferSource[k] = context.createBufferSource();
-        bufferSource[k].buffer = impulse;
+  for (let k = 0; k < nodeCount; ++k) {
+    bufferSource[k] = context.createBufferSource();
+    bufferSource[k].buffer = impulse;
 
-        panner[k] = context.createPanner();
-        panner[k].panningModel = "equalpower";
-        panner[k].distanceModel = "linear";
+    panner[k] = context.createPanner();
+    panner[k].panningModel = 'equalpower';
+    panner[k].distanceModel = 'linear';
 
-        var angle = angleStep * k;
-        position[k] = {angle : angle, x : Math.cos(angle), z : Math.sin(angle)};
-        positionSetter(panner[k], position[k].x, 0, position[k].z);
+    let angle = angleStep * k;
+    position[k] = {angle: angle, x: Math.cos(angle), z: Math.sin(angle)};
+    positionSetter(panner[k], position[k].x, 0, position[k].z);
 
-        bufferSource[k].connect(panner[k]);
-        panner[k].connect(context.destination);
+    bufferSource[k].connect(panner[k]);
+    panner[k].connect(context.destination);
 
-        // Start the source
-        time[k] = k * timeStep;
-        bufferSource[k].start(time[k]);
-    }
+    // Start the source
+    time[k] = k * timeStep;
+    bufferSource[k].start(time[k]);
+  }
 }
 
-function createTestAndRun(context, should, nodeCount, numberOfSourceChannels,
-    positionSetter) {
-    numberOfChannels = numberOfSourceChannels;
+function createTestAndRun(
+    context, should, nodeCount, numberOfSourceChannels, positionSetter) {
+  numberOfChannels = numberOfSourceChannels;
 
-    createGraph(context, nodeCount, positionSetter);
+  createGraph(context, nodeCount, positionSetter);
 
-    return context.startRendering()
-        .then(buffer => checkResult(buffer, should));
+  return context.startRendering().then(buffer => checkResult(buffer, should));
 }
 
 // Map our position angle to the azimuth angle (in degrees).
 //
 // An angle of 0 corresponds to an azimuth of 90 deg; pi, to -90 deg.
 function angleToAzimuth(angle) {
-    return 90 - angle * 180 / Math.PI;
+  return 90 - angle * 180 / Math.PI;
 }
 
 // The gain caused by the EQUALPOWER panning model
 function equalPowerGain(angle) {
-    var azimuth = angleToAzimuth(angle);
+  let azimuth = angleToAzimuth(angle);
 
-    if (numberOfChannels == 1) {
-        var panPosition = (azimuth + 90) / 180;
+  if (numberOfChannels == 1) {
+    let panPosition = (azimuth + 90) / 180;
 
-        var gainL = Math.cos(0.5 * Math.PI * panPosition);
-        var gainR = Math.sin(0.5 * Math.PI * panPosition);
+    let gainL = Math.cos(0.5 * Math.PI * panPosition);
+    let gainR = Math.sin(0.5 * Math.PI * panPosition);
 
-        return { left : gainL, right : gainR };
+    return {left: gainL, right: gainR};
+  } else {
+    if (azimuth <= 0) {
+      let panPosition = (azimuth + 90) / 90;
+
+      let gainL = 1 + Math.cos(0.5 * Math.PI * panPosition);
+      let gainR = Math.sin(0.5 * Math.PI * panPosition);
+
+      return {left: gainL, right: gainR};
     } else {
-        if (azimuth <= 0) {
-            var panPosition = (azimuth + 90) / 90;
-    
-            var gainL = 1 + Math.cos(0.5 * Math.PI * panPosition);
-            var gainR = Math.sin(0.5 * Math.PI * panPosition);
-    
-            return { left : gainL, right : gainR };
-        } else {
-            var panPosition = azimuth / 90;
-    
-            var gainL = Math.cos(0.5 * Math.PI * panPosition);
-            var gainR = 1 + Math.sin(0.5 * Math.PI * panPosition);
-    
-            return { left : gainL, right : gainR };
-        }
+      let panPosition = azimuth / 90;
+
+      let gainL = Math.cos(0.5 * Math.PI * panPosition);
+      let gainR = 1 + Math.sin(0.5 * Math.PI * panPosition);
+
+      return {left: gainL, right: gainR};
     }
+  }
 }
 
 function checkResult(renderedBuffer, should) {
-    renderedLeft = renderedBuffer.getChannelData(0);
-    renderedRight = renderedBuffer.getChannelData(1);
+  renderedLeft = renderedBuffer.getChannelData(0);
+  renderedRight = renderedBuffer.getChannelData(1);
 
-    // The max error we allow between the rendered impulse and the
-    // expected value.  This value is experimentally determined.  Set
-    // to 0 to make the test fail to see what the actual error is.
-    var maxAllowedError = 1.3e-6;
-  
-    var success = true;
+  // The max error we allow between the rendered impulse and the
+  // expected value.  This value is experimentally determined.  Set
+  // to 0 to make the test fail to see what the actual error is.
+  let maxAllowedError = 1.3e-6;
 
-    // Number of impulses found in the rendered result.
-    var impulseCount = 0;
+  let success = true;
 
-    // Max (relative) error and the index of the maxima for the left
-    // and right channels.
-    var maxErrorL = 0;
-    var maxErrorIndexL = 0;
-    var maxErrorR = 0;
-    var maxErrorIndexR = 0;
+  // Number of impulses found in the rendered result.
+  let impulseCount = 0;
 
-    // Number of impulses that don't match our expected locations.
-    var timeCount = 0;
+  // Max (relative) error and the index of the maxima for the left
+  // and right channels.
+  let maxErrorL = 0;
+  let maxErrorIndexL = 0;
+  let maxErrorR = 0;
+  let maxErrorIndexR = 0;
 
-    // Locations of where the impulses aren't at the expected locations.
-    var timeErrors = new Array();
+  // Number of impulses that don't match our expected locations.
+  let timeCount = 0;
 
-    for (var k = 0; k < renderedLeft.length; ++k) {
-        // We assume that the left and right channels start at the same instant.
-        if (renderedLeft[k] != 0 || renderedRight[k] != 0) {
-            // The expected gain for the left and right channels.
-            var pannerGain = equalPowerGain(position[impulseCount].angle);
-            var expectedL = pannerGain.left;
-            var expectedR = pannerGain.right;
+  // Locations of where the impulses aren't at the expected locations.
+  let timeErrors = new Array();
 
-            // Absolute error in the gain.
-            var errorL = Math.abs(renderedLeft[k] - expectedL);
-            var errorR = Math.abs(renderedRight[k] - expectedR);
+  for (let k = 0; k < renderedLeft.length; ++k) {
+    // We assume that the left and right channels start at the same instant.
+    if (renderedLeft[k] != 0 || renderedRight[k] != 0) {
+      // The expected gain for the left and right channels.
+      let pannerGain = equalPowerGain(position[impulseCount].angle);
+      let expectedL = pannerGain.left;
+      let expectedR = pannerGain.right;
 
-            if (Math.abs(errorL) > maxErrorL) {
-                maxErrorL = Math.abs(errorL);
-                maxErrorIndexL = impulseCount;
-            }
-            if (Math.abs(errorR) > maxErrorR) {
-                maxErrorR = Math.abs(errorR);
-                maxErrorIndexR = impulseCount;
-            }
+      // Absolute error in the gain.
+      let errorL = Math.abs(renderedLeft[k] - expectedL);
+      let errorR = Math.abs(renderedRight[k] - expectedR);
 
-            // Keep track of the impulses that didn't show up where we
-            // expected them to be.
-            var expectedOffset = timeToSampleFrame(time[impulseCount], sampleRate);
-            if (k != expectedOffset) {
-                timeErrors[timeCount] = { actual : k, expected : expectedOffset};
-                ++timeCount;
-            }
-            ++impulseCount;
-        }
+      if (Math.abs(errorL) > maxErrorL) {
+        maxErrorL = Math.abs(errorL);
+        maxErrorIndexL = impulseCount;
+      }
+      if (Math.abs(errorR) > maxErrorR) {
+        maxErrorR = Math.abs(errorR);
+        maxErrorIndexR = impulseCount;
+      }
+
+      // Keep track of the impulses that didn't show up where we
+      // expected them to be.
+      let expectedOffset = timeToSampleFrame(time[impulseCount], sampleRate);
+      if (k != expectedOffset) {
+        timeErrors[timeCount] = {actual: k, expected: expectedOffset};
+        ++timeCount;
+      }
+      ++impulseCount;
     }
+  }
 
-    should(impulseCount, "Number of impulses found")
-        .beEqualTo(nodesToCreate);
+  should(impulseCount, 'Number of impulses found').beEqualTo(nodesToCreate);
 
-    should(timeErrors.map(x => x.actual), "Offsets of impulses at the wrong position")
-        .beEqualToArray(timeErrors.map(x => x.expected));
+  should(
+      timeErrors.map(x => x.actual),
+      'Offsets of impulses at the wrong position')
+      .beEqualToArray(timeErrors.map(x => x.expected));
 
-    should(maxErrorL, "Error in left channel gain values")
-        .beLessThanOrEqualTo(maxAllowedError);
+  should(maxErrorL, 'Error in left channel gain values')
+      .beLessThanOrEqualTo(maxAllowedError);
 
-    should(maxErrorR, "Error in right channel gain values")
-        .beLessThanOrEqualTo(maxAllowedError);
+  should(maxErrorR, 'Error in right channel gain values')
+      .beLessThanOrEqualTo(maxAllowedError);
 }

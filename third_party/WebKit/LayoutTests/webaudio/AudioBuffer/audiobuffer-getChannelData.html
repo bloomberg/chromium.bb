@@ -1,56 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      Test AudioBuffer.getChannelData() Returns the Same Object
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
-    <title>Test AudioBuffer.getChannelData() Returns the Same Object</title>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
+      let sampleRate = 48000;
+      let renderDuration = 0.5;
 
-      var sampleRate = 48000;
-      var renderDuration = 0.5;
+      let audit = Audit.createTaskRunner();
 
-      var audit = Audit.createTaskRunner();
+      audit.define('buffer-eq', (task, should) => {
+        // Verify that successive calls to getChannelData return the same
+        // buffer.
+        let context = new AudioContext();
+        let channelCount = 2;
+        let frameLength = 1000;
+        let buffer =
+            context.createBuffer(channelCount, frameLength, context.sampleRate);
 
-      audit.define("buffer-eq", (task, should) => {
-        // Verify that successive calls to getChannelData return the same buffer.
-        var context = new AudioContext();
-        var channelCount = 2;
-        var frameLength = 1000;
-        var buffer = context.createBuffer(channelCount, frameLength, context.sampleRate);
+        for (let c = 0; c < channelCount; ++c) {
+          let a = buffer.getChannelData(c);
+          let b = buffer.getChannelData(c);
 
-        for (var c = 0; c < channelCount; ++c) {
-          var a = buffer.getChannelData(c);
-          var b = buffer.getChannelData(c);
-
-          let message = "buffer.getChannelData(" + c + ")";
-          should(a === b, message + " === " + message)
-            .beEqualTo(true);
+          let message = 'buffer.getChannelData(' + c + ')';
+          should(a === b, message + ' === ' + message).beEqualTo(true);
         }
 
         task.done();
       });
 
-      audit.define("buffer-not-eq", (task, should) => {
-        var context = new AudioContext();
-        var channelCount = 2;
-        var frameLength = 1000;
-        var buffer1 = context.createBuffer(channelCount, frameLength, context.sampleRate);
-        var buffer2 = context.createBuffer(channelCount, frameLength, context.sampleRate);
-        var success = true;
+      audit.define('buffer-not-eq', (task, should) => {
+        let context = new AudioContext();
+        let channelCount = 2;
+        let frameLength = 1000;
+        let buffer1 =
+            context.createBuffer(channelCount, frameLength, context.sampleRate);
+        let buffer2 =
+            context.createBuffer(channelCount, frameLength, context.sampleRate);
+        let success = true;
 
-        for (var c = 0; c < channelCount; ++c) {
-          var a = buffer1.getChannelData(c);
-          var b = buffer2.getChannelData(c);
+        for (let c = 0; c < channelCount; ++c) {
+          let a = buffer1.getChannelData(c);
+          let b = buffer2.getChannelData(c);
 
-          let message = "getChannelData(" + c + ")";
-          should(a === b, "buffer1." + message + " === buffer2." + message)
-            .beEqualTo(false) && success;
+          let message = 'getChannelData(' + c + ')';
+          should(a === b, 'buffer1.' + message + ' === buffer2.' + message)
+                  .beEqualTo(false) &&
+              success;
         }
 
         task.done();

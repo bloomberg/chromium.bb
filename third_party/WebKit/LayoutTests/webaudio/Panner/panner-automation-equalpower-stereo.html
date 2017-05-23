@@ -1,15 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      panner-automation-equalpower-stereo.html
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/panner-model-testing.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
       // To test the panner, we create a number of panner nodes
@@ -38,9 +40,8 @@
                 })
                 .then(() => task.done());
           });
-      
+
       audit.run();
     </script>
-
   </body>
 </html>

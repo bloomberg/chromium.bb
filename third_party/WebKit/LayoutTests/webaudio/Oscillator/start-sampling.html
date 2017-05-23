@@ -1,22 +1,23 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Sampling of Oscillator Start Times</title>
+    <title>
+      Test Sampling of Oscillator Start Times
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       // Experimentation indicates that this sample rate with a 440 Hz
       // oscillator makes for a large difference in the difference signal if the
       // oscillator start isn't sampled correctly.
       let defaultSampleRate = 24000;
       let renderDuration = 1;
       let renderFrames = renderDuration * defaultSampleRate;
-      
+
       let audit = Audit.createTaskRunner();
 
       audit.define(
@@ -82,13 +83,13 @@
       function testStartSampling(should, startFrame, thresholds) {
         // Start the oscillator in the middle of a sample frame and compare
         // against the theoretical result.
-        let context = new OfflineAudioContext(1, renderFrames,
-          defaultSampleRate);
+        let context =
+            new OfflineAudioContext(1, renderFrames, defaultSampleRate);
         let osc = context.createOscillator();
         osc.connect(context.destination);
         osc.start(startFrame / context.sampleRate);
 
-        return context.startRendering().then(function (result) {
+        return context.startRendering().then(function(result) {
           let actual = result.getChannelData(0);
           let expected = new Array(actual.length);
           expected.fill(0);
@@ -97,21 +98,20 @@
           //
           //   sin(2*pi*f*(t-t0))
           //
-          // where f is the oscillator frequency and t0 is the start time. 
+          // where f is the oscillator frequency and t0 is the start time.
           let actualStart = Math.ceil(startFrame);
           let omega = 2 * Math.PI * osc.frequency.value / context.sampleRate;
           for (let k = actualStart; k < actual.length; ++k) {
             expected[k] = Math.sin(omega * (k - startFrame));
           }
 
-          let prefix = "Oscillator.start(" + startFrame + " frames)";
-          should(actual, prefix)
-            .beCloseToArray(expected, {
-              absoluteThreshold: thresholds.error
-            });
+          let prefix = 'Oscillator.start(' + startFrame + ' frames)';
+          should(actual, prefix).beCloseToArray(expected, {
+            absoluteThreshold: thresholds.error
+          });
           let snr = 10 * Math.log10(computeSNR(actual, expected));
-          should(snr, prefix + ": SNR (dB)")
-            .beGreaterThanOrEqualTo(thresholds.snrThreshold);
+          should(snr, prefix + ': SNR (dB)')
+              .beGreaterThanOrEqualTo(thresholds.snrThreshold);
         })
       }
 
@@ -143,8 +143,7 @@
         let osc2 = context.createOscillator();
         // Creates a cosine wave.
         let wave = context.createPeriodicWave(
-          Float32Array.from([0, 1]),
-          Float32Array.from([0, 0]));
+            Float32Array.from([0, 1]), Float32Array.from([0, 0]));
         osc2.setPeriodicWave(wave);
 
         osc2.connect(merger, 0, 1);
@@ -158,7 +157,7 @@
         osc.start();
         osc2.start(quarterWaveTime);
 
-        return context.startRendering().then(function (result) {
+        return context.startRendering().then(function(result) {
           // Channel 0 = diff
           // Channel 1 = osc with start
           // Channel 2 = osc with gain
@@ -170,13 +169,13 @@
           let oscGain = result.getChannelData(2);
           let snr = 10 * Math.log10(computeSNR(oscStart, oscGain));
 
-          let prefix = "Sample rate " + sampleRate + ": Delayed cosine oscillator";
-          should(oscStart, prefix)
-            .beCloseToArray(oscGain, {
-              absoluteThreshold: thresholds.error
-            });
-          should(snr, prefix + ": SNR (dB)")
-            .beGreaterThanOrEqualTo(thresholds.snrThreshold);
+          let prefix =
+              'Sample rate ' + sampleRate + ': Delayed cosine oscillator';
+          should(oscStart, prefix).beCloseToArray(oscGain, {
+            absoluteThreshold: thresholds.error
+          });
+          should(snr, prefix + ': SNR (dB)')
+              .beGreaterThanOrEqualTo(thresholds.snrThreshold);
         });
       }
 

@@ -1,14 +1,16 @@
-<!doctype>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      audiobuffer-resample.html
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
       // These are global to make debugging a little easier.
@@ -54,7 +56,8 @@
         renderedData = buffer.getChannelData(0);
         let length = renderedData.length;
         // Generate a reference sine wave at the context rate
-        let trueReference = createSineBuffer(context, toneFrequency, context.sampleRate);
+        let trueReference =
+            createSineBuffer(context, toneFrequency, context.sampleRate);
         trueData = trueReference.getChannelData(0);
 
         // To compare the actual output against the reference, we compute the
@@ -81,33 +84,30 @@
         else
           snr = 10 * Math.log10(signalEnergy / noiseEnergy);
 
-        should(maxError, "Peak error between actual and reference data")
-          .beLessThan(peakThreshold);
+        should(maxError, 'Peak error between actual and reference data')
+            .beLessThan(peakThreshold);
 
-        should(snr, "SNR")
-          .beGreaterThan(snrThreshold);
+        should(snr, 'SNR').beGreaterThan(snrThreshold);
       }
 
-      audit.define("Test resampling of an AudioBuffer",
-        function(task, should) {
-          context = new OfflineAudioContext(1, lengthInSeconds *
-            sampleRate,
-            sampleRate);
+      audit.define('Test resampling of an AudioBuffer', function(task, should) {
+        context = new OfflineAudioContext(
+            1, lengthInSeconds * sampleRate, sampleRate);
 
-          // Create a sine wave in a buffer that's different from the context rate
-          // to test resampling.
-          buffer = createSineBuffer(context, toneFrequency, bufferRate);
-          source = context.createBufferSource();
-          source.buffer = buffer;
-          source.connect(context.destination);
-          source.start();
+        // Create a sine wave in a buffer that's different from the context rate
+        // to test resampling.
+        buffer = createSineBuffer(context, toneFrequency, bufferRate);
+        source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+        source.start();
 
-          context.startRendering()
+        context.startRendering()
             .then(function(buffer) {
               checkResult(buffer, should);
             })
             .then(task.done.bind(task));
-        });
+      });
 
       audit.run();
     </script>

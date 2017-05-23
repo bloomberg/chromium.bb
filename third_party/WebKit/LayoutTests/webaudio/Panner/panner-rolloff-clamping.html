@@ -1,51 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Clamping of PannerNode rolloffFactor</title>
+    <title>
+      Test Clamping of PannerNode rolloffFactor
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       // Fairly arbitrary sample rate and render frames.
-      var sampleRate = 16000;
-      var renderFrames = 2048;
-      
-      var audit = Audit.createTaskRunner();
+      let sampleRate = 16000;
+      let renderFrames = 2048;
 
-      audit.define("linear-clamp-low", (task, should) => {
+      let audit = Audit.createTaskRunner();
+
+      audit.define('linear-clamp-low', (task, should) => {
         runTest(should, {
-          distanceModel: "linear",
+          distanceModel: 'linear',
           // Fairly arbitrary value outside the nominal range
           rolloffFactor: -1,
           clampedRolloff: 0
         }).then(() => task.done());
       });
 
-      audit.define("linear-clamp-high", (task, should) => {
+      audit.define('linear-clamp-high', (task, should) => {
         runTest(should, {
-          distanceModel: "linear",
+          distanceModel: 'linear',
           // Fairly arbitrary value outside the nominal range
           rolloffFactor: 2,
           clampedRolloff: 1
         }).then(() => task.done());
       });
 
-      audit.define("inverse-clamp", (task, should) => {
+      audit.define('inverse-clamp', (task, should) => {
         runTest(should, {
-          distanceModel: "inverse",
+          distanceModel: 'inverse',
           // Fairly arbitrary value outside the nominal range
           rolloffFactor: -1,
           clampedRolloff: 0
         }).then(() => task.done());
       });
 
-      audit.define("exponential-clamp", (task, should) => {
+      audit.define('exponential-clamp', (task, should) => {
         runTest(should, {
-          distanceModel: "exponential",
+          distanceModel: 'exponential',
           // Fairly arbitrary value outside the nominal range
           rolloffFactor: -2,
           clampedRolloff: 0
@@ -66,17 +67,15 @@
       function runTest(should, options) {
         // Offline context with two channels.  The first channel is the panner
         // node under test.  The second channel is the reference panner node.
-        var context = new OfflineAudioContext(2, renderFrames, sampleRate);
+        let context = new OfflineAudioContext(2, renderFrames, sampleRate);
 
         // The source for the panner nodes.  This is fairly arbitrary.
-        var src = new OscillatorNode(context, {
-          type: "sawtooth"
-        });
+        let src = new OscillatorNode(context, {type: 'sawtooth'});
 
         // Create the test panner with the specified rolloff factor.  The
         // position is fairly arbitrary, but something that is not the default
         // is good to show the distance model had some effect.
-        var pannerTest = new PannerNode(context, {
+        let pannerTest = new PannerNode(context, {
           rolloffFactor: options.rolloffFactor,
           distanceModel: options.distanceModel,
           positionX: 5000
@@ -84,7 +83,7 @@
 
         // Create the reference panner with the rolloff factor clamped to the
         // appropriate limit.
-        var pannerRef = new PannerNode(context, {
+        let pannerRef = new PannerNode(context, {
           rolloffFactor: options.clampedRolloff,
           distanceModel: options.distanceModel,
           positionX: 5000
@@ -92,9 +91,7 @@
 
 
         // Connect the source to the panners to the destination appropriately.
-        var merger = new ChannelMergerNode(context, {
-          numberOfInputs: 2
-        });
+        let merger = new ChannelMergerNode(context, {numberOfInputs: 2});
 
 
         src.connect(pannerTest).connect(merger, 0, 0);
@@ -104,19 +101,17 @@
 
         src.start();
 
-        return context.startRendering()
-          .then(function (resultBuffer) {
-            // The two channels should be the same due to the clamping.  Verify
-            // that they are the same.
-            var actual = resultBuffer.getChannelData(0);
-            var expected = resultBuffer.getChannelData(1);
+        return context.startRendering().then(function(resultBuffer) {
+          // The two channels should be the same due to the clamping.  Verify
+          // that they are the same.
+          let actual = resultBuffer.getChannelData(0);
+          let expected = resultBuffer.getChannelData(1);
 
-            var message = 'Panner distanceModel: "' + options.distanceModel +
+          let message = 'Panner distanceModel: "' + options.distanceModel +
               '", rolloffFactor: ' + options.rolloffFactor;
 
-            should(actual, message)
-              .beEqualToArray(expected);
-          });
+          should(actual, message).beEqualToArray(expected);
+        });
       }
 
       audit.run();

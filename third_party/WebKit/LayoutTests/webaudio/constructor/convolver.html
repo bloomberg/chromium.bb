@@ -1,19 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Constructor: Convolver</title>
+    <title>
+      Test Constructor: Convolver
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="audionodeoptions.js"></script>
   </head>
-
   <body>
-    <script>
-      var context;
+    <script id="layout-test-code">
+      let context;
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
       audit.define('initialize', (task, should) => {
         context = initializeContext(should);
@@ -57,8 +58,8 @@
       });
 
       audit.define('nullable buffer', (task, should) => {
-        var node;
-        var options = {buffer: null};
+        let node;
+        let options = {buffer: null};
 
         should(
             () => {
@@ -73,13 +74,13 @@
       });
 
       audit.define('construct with options', (task, should) => {
-        var buf = context.createBuffer(1, 1, context.sampleRate);
-        var options = {buffer: buf, disableNormalization: false};
+        let buf = context.createBuffer(1, 1, context.sampleRate);
+        let options = {buffer: buf, disableNormalization: false};
 
-        var message =
+        let message =
             'node = new ConvolverNode(c, ' + JSON.stringify(options) + ')';
 
-        var node;
+        let node;
         should(() => {
           node = new ConvolverNode(context, options);
         }, message).notThrow();

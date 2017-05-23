@@ -1,19 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Constructor: AnalyserNode</title>
+    <title>
+      Test Constructor: AnalyserNode
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="audionodeoptions.js"></script>
   </head>
-
   <body>
-    <script>
-      var context;
+    <script id="layout-test-code">
+      let context;
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
       audit.define('initialize', (task, should) => {
         context = initializeContext(should);
@@ -57,7 +58,7 @@
       });
 
       audit.define('constructor with options', (task, should) => {
-        var options = {
+        let options = {
           fftSize: 32,
           maxDecibels: 1,
           minDecibels: -13,
@@ -66,8 +67,9 @@
           smoothingTimeConstant: 0.125
         };
 
-        var node;
-        should(() => {
+        let node;
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node1 = new AnalyserNode(c, ' + JSON.stringify(options) + ')')
@@ -87,24 +89,28 @@
       });
 
       audit.define('construct invalid options', (task, should) => {
-        var node;
+        let node;
 
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, {fftSize: 33});
             },
             'node = new AnalyserNode(c, { fftSize: 33 })')
             .throw('IndexSizeError');
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, {maxDecibels: -500});
             },
             'node = new AnalyserNode(c, { maxDecibels: -500 })')
             .throw('IndexSizeError');
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, {minDecibels: -10});
             },
             'node = new AnalyserNode(c, { minDecibels: -10 })')
             .throw('IndexSizeError');
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, {smoothingTimeConstant: 2});
             },
             'node = new AnalyserNode(c, { smoothingTimeConstant: 2 })')
@@ -119,34 +125,38 @@
       });
 
       audit.define('setting min/max', (task, should) => {
-        var node;
+        let node;
 
         // Recall the default values of minDecibels and maxDecibels are -100,
         // and -30, respectively.  Setting both values in the constructor should
         // not signal an error in any of the following cases.
-        var options = {minDecibels: -10, maxDecibels: 20};
-        should(() => {
+        let options = {minDecibels: -10, maxDecibels: 20};
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node = new AnalyserNode(c, ' + JSON.stringify(options) + ')')
             .notThrow();
 
         options = {maxDecibels: 20, minDecibels: -10};
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node = new AnalyserNode(c, ' + JSON.stringify(options) + ')')
             .notThrow();
 
         options = {minDecibels: -200, maxDecibels: -150};
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node = new AnalyserNode(c, ' + JSON.stringify(options) + ')')
             .notThrow();
 
         options = {maxDecibels: -150, minDecibels: -200};
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node = new AnalyserNode(c, ' + JSON.stringify(options) + ')')
@@ -154,14 +164,16 @@
 
         // But these should signal because minDecibel > maxDecibel
         options = {maxDecibels: -150, minDecibels: -10};
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node = new AnalyserNode(c, ' + JSON.stringify(options) + ')')
             .throw('IndexSizeError');
 
         options = {minDecibels: -10, maxDecibels: -150};
-        should(() => {
+        should(
+            () => {
               node = new AnalyserNode(context, options);
             },
             'node = new AnalyserNode(c, ' + JSON.stringify(options) + ')')

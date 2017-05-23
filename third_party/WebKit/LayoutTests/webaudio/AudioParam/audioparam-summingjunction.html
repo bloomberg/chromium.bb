@@ -1,121 +1,120 @@
 <!DOCTYPE html>
-
 <!--
 Tests that multiple audio-rate signals (AudioNode outputs) can be connected to an AudioParam
 and that these signals are summed, along with the AudioParams intrinsic value.
 -->
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script> 
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-<script src="../resources/mix-testing.js"></script>
+  <head>
+    <title>
+      audioparam-summingjunction.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="../resources/mix-testing.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-</head>
-<body>
+      let sampleRate = 44100.0;
+      let lengthInSeconds = 1;
 
-<script>
-let audit = Audit.createTaskRunner();
+      let context = 0;
 
-let sampleRate = 44100.0;
-let lengthInSeconds = 1;
+      // Buffers used by the two gain controlling sources.
+      let linearRampBuffer;
+      let toneBuffer;
+      let toneFrequency = 440;
 
-let context = 0;
+      // Arbitrary non-zero value.
+      let baselineGain = 5;
 
-// Buffers used by the two gain controlling sources.
-let linearRampBuffer;
-let toneBuffer;
-let toneFrequency = 440;
+      // Allow for a small round-off error.
+      let maxAllowedError = 1e-6;
 
-// Arbitrary non-zero value.
-let baselineGain = 5;
+      function checkResult(renderedBuffer, should) {
+        let renderedData = renderedBuffer.getChannelData(0);
 
-// Allow for a small round-off error.
-let maxAllowedError = 1e-6;
+        // Get buffer data from the two sources used to control gain.
+        let linearRampData = linearRampBuffer.getChannelData(0);
+        let toneData = toneBuffer.getChannelData(0);
 
-function checkResult(renderedBuffer, should) {
-  let renderedData = renderedBuffer.getChannelData(0);
+        let n = renderedBuffer.length;
 
-  // Get buffer data from the two sources used to control gain.
-  let linearRampData = linearRampBuffer.getChannelData(0);
-  let toneData = toneBuffer.getChannelData(0);
+        should(n, 'Rendered signal length').beEqualTo(linearRampBuffer.length);
 
-  let n = renderedBuffer.length;
+        // Check that the rendered result exactly matches the sum of the
+        // intrinsic gain plus the two sources used to control gain. This is
+        // because we're changing the gain of a signal having constant value 1.
+        let success = true;
+        for (let i = 0; i < n; ++i) {
+          let expectedValue = baselineGain + linearRampData[i] + toneData[i];
+          let error = Math.abs(expectedValue - renderedData[i]);
 
-  should(n, 'Rendered signal length').beEqualTo(linearRampBuffer.length);
+          if (error > maxAllowedError) {
+            success = false;
+            break;
+          }
+        }
 
-  // Check that the rendered result exactly matches the sum of the intrinsic
-  // gain plus the two sources used to control gain.
-  // This is because we're changing the gain of a signal having constant value
-  // 1.
-  let success = true;
-  for (let i = 0; i < n; ++i) {
-    let expectedValue = baselineGain + linearRampData[i] + toneData[i];
-    let error = Math.abs(expectedValue - renderedData[i]);
+        should(
+            success,
+            'Rendered signal matches sum of two audio-rate gain changing signals plus baseline gain')
+            .beTrue();
+      }
 
-    if (error > maxAllowedError) {
-      success = false;
-      break;
-    }
-  }
+      audit.define('test', function(task, should) {
+        let sampleFrameLength = sampleRate * lengthInSeconds;
 
-  should(
-      success,
-      'Rendered signal matches sum of two audio-rate gain changing signals plus baseline gain')
-      .beTrue();
-}
+        // Create offline audio context.
+        context = new OfflineAudioContext(1, sampleFrameLength, sampleRate);
 
-audit.define('test', function(task, should) {
-  let sampleFrameLength = sampleRate * lengthInSeconds;
+        // Create buffer used by the source which will have its gain controlled.
+        let constantOneBuffer =
+            createConstantBuffer(context, sampleFrameLength, 1);
+        let constantSource = context.createBufferSource();
+        constantSource.buffer = constantOneBuffer;
 
-  // Create offline audio context.
-  context = new OfflineAudioContext(1, sampleFrameLength, sampleRate);
+        // Create 1st buffer used to control gain (a linear ramp).
+        linearRampBuffer = createLinearRampBuffer(context, sampleFrameLength);
+        let gainSource1 = context.createBufferSource();
+        gainSource1.buffer = linearRampBuffer;
 
-  // Create buffer used by the source which will have its gain controlled.
-  let constantOneBuffer = createConstantBuffer(context, sampleFrameLength, 1);
-  let constantSource = context.createBufferSource();
-  constantSource.buffer = constantOneBuffer;
+        // Create 2st buffer used to control gain (a simple sine wave tone).
+        toneBuffer =
+            createToneBuffer(context, toneFrequency, lengthInSeconds, 1);
+        let gainSource2 = context.createBufferSource();
+        gainSource2.buffer = toneBuffer;
 
-  // Create 1st buffer used to control gain (a linear ramp).
-  linearRampBuffer = createLinearRampBuffer(context, sampleFrameLength);
-  let gainSource1 = context.createBufferSource();
-  gainSource1.buffer = linearRampBuffer;
+        // Create a gain node controlling the gain of constantSource and make
+        // the connections.
+        let gainNode = context.createGain();
 
-  // Create 2st buffer used to control gain (a simple sine wave tone).
-  toneBuffer = createToneBuffer(context, toneFrequency, lengthInSeconds, 1);
-  let gainSource2 = context.createBufferSource();
-  gainSource2.buffer = toneBuffer;
+        // Intrinsic baseline gain.
+        // This gain value should be summed with gainSource1 and gainSource2.
+        gainNode.gain.value = baselineGain;
 
-  // Create a gain node controlling the gain of constantSource and make the
-  // connections.
-  let gainNode = context.createGain();
+        constantSource.connect(gainNode);
+        gainNode.connect(context.destination);
 
-  // Intrinsic baseline gain.
-  // This gain value should be summed with gainSource1 and gainSource2.
-  gainNode.gain.value = baselineGain;
+        // Connect two audio-rate signals to control the .gain AudioParam.
+        gainSource1.connect(gainNode.gain);
+        gainSource2.connect(gainNode.gain);
 
-  constantSource.connect(gainNode);
-  gainNode.connect(context.destination);
+        // Start all sources at time 0.
+        constantSource.start(0);
+        gainSource1.start(0);
+        gainSource2.start(0);
 
-  // Connect two audio-rate signals to control the .gain AudioParam.
-  gainSource1.connect(gainNode.gain);
-  gainSource2.connect(gainNode.gain);
+        context.startRendering().then(buffer => {
+          checkResult(buffer, should);
+          task.done();
+        });
+      });
 
-  // Start all sources at time 0.
-  constantSource.start(0);
-  gainSource1.start(0);
-  gainSource2.start(0);
-
-  context.startRendering().then(buffer => {
-    checkResult(buffer, should);
-    task.done();
-  });
-});
-
-audit.run();
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

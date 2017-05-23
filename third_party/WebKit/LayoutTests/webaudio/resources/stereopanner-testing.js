@@ -1,32 +1,32 @@
-var StereoPannerTest = (function () {
+var StereoPannerTest = (function() {
 
   // Constants
-  var PI_OVER_TWO = Math.PI * 0.5;
+  let PI_OVER_TWO = Math.PI * 0.5;
 
-  var gSampleRate = 44100;
+  let gSampleRate = 44100;
 
   // Time step when each panner node starts.
-  var gTimeStep = 0.001;
+  let gTimeStep = 0.001;
 
   // How many panner nodes to create for the test
-  var gNodesToCreate = 100;
+  let gNodesToCreate = 100;
 
   // Total render length for all of our nodes.
-  var gRenderLength = gTimeStep * (gNodesToCreate + 1) + gSampleRate;
+  let gRenderLength = gTimeStep * (gNodesToCreate + 1) + gSampleRate;
 
   // Calculates channel gains based on equal power panning model.
   // See: http://webaudio.github.io/web-audio-api/#panning-algorithm
   function getChannelGain(pan, numberOfChannels) {
     // The internal panning clips the pan value between -1, 1.
     pan = Math.min(Math.max(pan, -1), 1);
-    var gainL, gainR;
+    let gainL, gainR;
     // Consider number of channels and pan value's polarity.
     if (numberOfChannels == 1) {
-      var panRadian = (pan * 0.5 + 0.5) * PI_OVER_TWO;
+      let panRadian = (pan * 0.5 + 0.5) * PI_OVER_TWO;
       gainL = Math.cos(panRadian);
       gainR = Math.sin(panRadian);
     } else {
-      var panRadian = (pan <= 0 ? pan + 1 : pan) * PI_OVER_TWO;
+      let panRadian = (pan <= 0 ? pan + 1 : pan) * PI_OVER_TWO;
       if (pan <= 0) {
         gainL = 1 + Math.cos(panRadian);
         gainR = Math.sin(panRadian);
@@ -35,10 +35,7 @@ var StereoPannerTest = (function () {
         gainR = 1 + Math.sin(panRadian);
       }
     }
-    return {
-      gainL: gainL,
-      gainR: gainR
-    };
+    return {gainL: gainL, gainR: gainR};
   }
 
 
@@ -49,7 +46,6 @@ var StereoPannerTest = (function () {
    * @param {Object} options.numberOfInputChannels Number of input channels
    */
   function Test(should, options) {
-
     // Primary test flag.
     this.success = true;
 
@@ -90,27 +86,27 @@ var StereoPannerTest = (function () {
     this.maxErrorIndexL = 0;
     this.maxErrorIndexR = 0;
 
-    // The maximum value to use for panner pan value. The value will range from -panLimit to
-    // +panLimit.
+    // The maximum value to use for panner pan value. The value will range from
+    // -panLimit to +panLimit.
     this.panLimit = 1.0625;
   }
 
 
-  Test.prototype.init = function () {
+  Test.prototype.init = function() {
     this.context = new OfflineAudioContext(2, gRenderLength, gSampleRate);
   };
 
   // Prepare an audio graph for testing. Create multiple impulse generators and
   // panner nodes, then play them sequentially while varying the pan position.
-  Test.prototype.prepare = function () {
-    var impulse;
-    var impulseLength = Math.round(gTimeStep * gSampleRate);
-    var sources = [];
-    var panners = [];
+  Test.prototype.prepare = function() {
+    let impulse;
+    let impulseLength = Math.round(gTimeStep * gSampleRate);
+    let sources = [];
+    let panners = [];
 
     // Moves the pan value for each panner by pan step unit from -2 to 2.
     // This is to check if the internal panning value is clipped properly.
-    var panStep = (2 * this.panLimit) / (gNodesToCreate - 1);
+    let panStep = (2 * this.panLimit) / (gNodesToCreate - 1);
 
     if (this.numberOfInputChannels === 1) {
       impulse = createImpulseBuffer(this.context, impulseLength);
@@ -118,7 +114,7 @@ var StereoPannerTest = (function () {
       impulse = createStereoImpulseBuffer(this.context, impulseLength);
     }
 
-    for (var i = 0; i < gNodesToCreate; i++) {
+    for (let i = 0; i < gNodesToCreate; i++) {
       sources[i] = this.context.createBufferSource();
       panners[i] = this.context.createStereoPanner();
       sources[i].connect(panners[i]);
@@ -134,20 +130,17 @@ var StereoPannerTest = (function () {
   };
 
 
-  Test.prototype.verify = function () {
-    var chanL = this.renderedBufferL;
-    var chanR = this.renderedBufferR;
-    for (var i = 0; i < chanL.length; i++) {
+  Test.prototype.verify = function() {
+    let chanL = this.renderedBufferL;
+    let chanR = this.renderedBufferR;
+    for (let i = 0; i < chanL.length; i++) {
       // Left and right channels must start at the same instant.
       if (chanL[i] !== 0 || chanR[i] !== 0) {
-
         // Get amount of error between actual and expected gain.
-        var expected = getChannelGain(
-          this.panPositions[this.impulseIndex],
-          this.numberOfInputChannels
-        );
-        var errorL = Math.abs(chanL[i] - expected.gainL);
-        var errorR = Math.abs(chanR[i] - expected.gainR);
+        let expected = getChannelGain(
+            this.panPositions[this.impulseIndex], this.numberOfInputChannels);
+        let errorL = Math.abs(chanL[i] - expected.gainL);
+        let errorR = Math.abs(chanR[i] - expected.gainR);
 
         if (errorL > this.maxErrorL) {
           this.maxErrorL = errorL;
@@ -160,15 +153,10 @@ var StereoPannerTest = (function () {
 
         // Keep track of the impulses that didn't show up where we expected
         // them to be.
-        var expectedOffset = timeToSampleFrame(
-          this.onsets[this.impulseIndex],
-          gSampleRate
-        );
+        let expectedOffset =
+            timeToSampleFrame(this.onsets[this.impulseIndex], gSampleRate);
         if (i != expectedOffset) {
-          this.errors.push({
-            actual: i,
-            expected: expectedOffset
-          });
+          this.errors.push({actual: i, expected: expectedOffset});
         }
 
         this.impulseIndex++;
@@ -177,39 +165,39 @@ var StereoPannerTest = (function () {
   };
 
 
-  Test.prototype.showResult = function () {
-    this.should(this.impulseIndex, this.prefix + "Number of impulses found")
-      .beEqualTo(gNodesToCreate);
+  Test.prototype.showResult = function() {
+    this.should(this.impulseIndex, this.prefix + 'Number of impulses found')
+        .beEqualTo(gNodesToCreate);
 
-    this.should(this.errors.length, this.prefix + "Number of impulse at the wrong offset")
-      .beEqualTo(0);
+    this.should(
+            this.errors.length,
+            this.prefix + 'Number of impulse at the wrong offset')
+        .beEqualTo(0);
 
-    this.should(this.maxErrorL, this.prefix + "Left channel error magnitude")
-      .beLessThanOrEqualTo(this.maxAllowedError);
+    this.should(this.maxErrorL, this.prefix + 'Left channel error magnitude')
+        .beLessThanOrEqualTo(this.maxAllowedError);
 
-    this.should(this.maxErrorR, this.prefix + "Right channel error magnitude")
-      .beLessThanOrEqualTo(this.maxAllowedError);
+    this.should(this.maxErrorR, this.prefix + 'Right channel error magnitude')
+        .beLessThanOrEqualTo(this.maxAllowedError);
   };
 
-  Test.prototype.run = function () {
+  Test.prototype.run = function() {
 
     this.init();
     this.prepare();
 
-    return this.context.startRendering()
-      .then(renderedBuffer => {
-        this.renderedBufferL = renderedBuffer.getChannelData(0);
-        this.renderedBufferR = renderedBuffer.getChannelData(1);
-        this.verify();
-        this.showResult();
-      });
+    return this.context.startRendering().then(renderedBuffer => {
+      this.renderedBufferL = renderedBuffer.getChannelData(0);
+      this.renderedBufferR = renderedBuffer.getChannelData(1);
+      this.verify();
+      this.showResult();
+    });
   };
 
   return {
-    create: function (should, options) {
+    create: function(should, options) {
       return new Test(should, options);
     }
   };
 
 })();
-

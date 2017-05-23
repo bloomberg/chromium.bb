@@ -1,65 +1,67 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-</head>
+  <head>
+    <title>
+      audiobuffersource-channels.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
+      let context;
+      let source;
 
-<body>
-<script>
-let audit = Audit.createTaskRunner();
-let context;
-let source;
+      audit.define(
+          {
+            label: 'validate .buffer',
+            description:
+                'Validatation of AudioBuffer in .buffer attribute setter'
+          },
+          function(task, should) {
+            context = new AudioContext();
+            source = context.createBufferSource();
 
-audit.define(
-    {
-      label: 'validate .buffer',
-      description: 'Validatation of AudioBuffer in .buffer attribute setter'
-    },
-    function(task, should) {
-      context = new AudioContext();
-      source = context.createBufferSource();
+            // Make sure we can't set to something which isn't an AudioBuffer.
+            should(function() {
+              source.buffer = 57;
+            }, 'source.buffer = 57').throw('TypeError');
 
-      // Make sure we can't set to something which isn't an AudioBuffer.
-      should(function() {
-        source.buffer = 57;
-      }, 'source.buffer = 57').throw('TypeError');
+            should(function() {
+              source.buffer = null;
+            }, 'source.buffer = null').throw('TypeError');
 
-      should(function() {
-        source.buffer = null;
-      }, 'source.buffer = null').throw('TypeError');
+            // Check that mono buffer can be set.
+            should(function() {
+              let monoBuffer =
+                  context.createBuffer(1, 1024, context.sampleRate);
+              let testSource = context.createBufferSource();
+              testSource.buffer = monoBuffer;
+            }, 'Setting source with mono buffer').notThrow();
 
-      // Check that mono buffer can be set.
-      should(function() {
-        let monoBuffer = context.createBuffer(1, 1024, context.sampleRate);
-        let testSource = context.createBufferSource();
-        testSource.buffer = monoBuffer;
-      }, 'Setting source with mono buffer').notThrow();
+            // Check that stereo buffer can be set.
+            should(function() {
+              let stereoBuffer =
+                  context.createBuffer(2, 1024, context.sampleRate);
+              let testSource = context.createBufferSource();
+              testSource.buffer = stereoBuffer;
+            }, 'Setting source with stereo buffer').notThrow();
 
-      // Check that stereo buffer can be set.
-      should(function() {
-        let stereoBuffer = context.createBuffer(2, 1024, context.sampleRate);
-        let testSource = context.createBufferSource();
-        testSource.buffer = stereoBuffer;
-      }, 'Setting source with stereo buffer').notThrow();
+            // Check buffers with more than two channels.
+            for (let i = 3; i < 10; ++i) {
+              should(function() {
+                let buffer = context.createBuffer(i, 1024, context.sampleRate);
+                let testSource = context.createBufferSource();
+                testSource.buffer = buffer;
+              }, 'Setting source with ' + i + ' channels buffer').notThrow();
+            }
+            task.done();
+          });
 
-      // Check buffers with more than two channels.
-      for (let i = 3; i < 10; ++i) {
-        should(function() {
-          let buffer = context.createBuffer(i, 1024, context.sampleRate);
-          let testSource = context.createBufferSource();
-          testSource.buffer = buffer;
-        }, 'Setting source with ' + i + ' channels buffer').notThrow();
-      }
-      task.done();
-    });
-
-audit.run();
-
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

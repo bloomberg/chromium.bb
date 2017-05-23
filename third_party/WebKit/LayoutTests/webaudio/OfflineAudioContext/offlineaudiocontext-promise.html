@@ -1,39 +1,41 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <title>
+      OfflineAudioContext.startRendering Promise with oncomplete
+    </title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
-    <title>OfflineAudioContext.startRendering Promise with oncomplete</title>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
-      var context;
-      var promise;
-      var renderedData;
-      var promiseData;
+      let context;
+      let promise;
+      let renderedData;
+      let promiseData;
 
-      var sampleRate = 48000;
-      var renderSeconds = 1;
-      var renderFrames = sampleRate * renderSeconds;
-      var contextChannels = 2;
+      let sampleRate = 48000;
+      let renderSeconds = 1;
+      let renderFrames = sampleRate * renderSeconds;
+      let contextChannels = 2;
 
       function compareData(should) {
-        // The spec implies that the same buffer is returned by both oncomplete and the promise.
-        // Check that they are identical.
+        // The spec implies that the same buffer is returned by both oncomplete
+        // and the promise. Check that they are identical.
 
-        should(renderedData === promiseData,
-          "AudioBuffer returned by oncomplete and promise are identical")
-          .beTrue();
+        should(
+            renderedData === promiseData,
+            'AudioBuffer returned by oncomplete and promise are identical')
+            .beTrue();
       }
 
-      function checkResult (task, should, event) {
+      function checkResult(task, should, event) {
         renderedData = event.renderedBuffer;
-        promise.then(function (result) {
+        promise.then(function(result) {
           promiseData = result;
           compareData(should);
           task.done();
@@ -52,14 +54,14 @@
             context = new OfflineAudioContext(
                 contextChannels, renderFrames, sampleRate);
 
-            var buffer =
+            let buffer =
                 context.createBuffer(contextChannels, renderFrames, sampleRate);
-            for (var k = 0; k < renderFrames; ++k) {
+            for (let k = 0; k < renderFrames; ++k) {
               buffer.getChannelData(0)[k] = 1;
               buffer.getChannelData(1)[k] = 2;
             }
 
-            var source = context.createBufferSource();
+            let source = context.createBufferSource();
             source.buffer = buffer;
             source.connect(context.destination);
             source.start();
@@ -74,6 +76,5 @@
 
       audit.run();
     </script>
-    
   </body>
 </html>

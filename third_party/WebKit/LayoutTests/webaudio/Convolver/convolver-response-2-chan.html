@@ -1,21 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Convolver Channel Outputs for Response with 2 channels</title>
+    <title>
+      Test Convolver Channel Outputs for Response with 2 channels
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
   </head>
-
   <body>
-    <script>
+    <script id="layout-test-code">
       // Test various convolver configurations when the convolver response has
       // a stereo response.
 
       // Fairly arbitrary sample rate, except that we want the rate to be a
       // power of two so that 1/sampleRate is exactly respresentable as a
-      // single-precision float. 
+      // single-precision float.
       let sampleRate = 8192;
 
       // A fairly arbitrary number of frames, except the number of frames should

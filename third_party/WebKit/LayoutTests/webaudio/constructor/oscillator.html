@@ -1,19 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Test Constructor: Oscillator</title>
+    <title>
+      Test Constructor: Oscillator
+    </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="audionodeoptions.js"></script>
   </head>
-
   <body>
-    <script>
-      var context;
+    <script id="layout-test-code">
+      let context;
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
       audit.define('initialize', (task, should) => {
         context = initializeContext(should);
@@ -49,8 +50,8 @@
       });
 
       audit.define('constructor options', (task, should) => {
-        var node;
-        var options = {type: 'sawtooth', detune: 7, frequency: 918};
+        let node;
+        let options = {type: 'sawtooth', detune: 7, frequency: 918};
 
         should(
             () => {
@@ -76,12 +77,9 @@
           type: 'sine',
           periodicWave: new PeriodicWave(context, {real: [1, 1]})
         };
-        should(
-            () => {
-              node = new OscillatorNode(context, options);
-            },
-            'new OscillatorNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
+        should(() => {
+          node = new OscillatorNode(context, options);
+        }, 'new OscillatorNode(c, ' + JSON.stringify(options) + ')').notThrow();
 
         options = {type: 'custom'};
         should(

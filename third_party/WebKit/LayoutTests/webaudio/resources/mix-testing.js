@@ -1,23 +1,23 @@
 var toneLengthSeconds = 1;
 
 // Create a buffer with multiple channels.
-// The signal frequency in each channel is the multiple of that in the first channel.
+// The signal frequency in each channel is the multiple of that in the first
+// channel.
 function createToneBuffer(context, frequency, duration, numberOfChannels) {
-    var sampleRate = context.sampleRate;
-    var sampleFrameLength = duration * sampleRate;
-    
-    var audioBuffer = context.createBuffer(numberOfChannels, sampleFrameLength, sampleRate);
+  let sampleRate = context.sampleRate;
+  let sampleFrameLength = duration * sampleRate;
 
-    var n = audioBuffer.length;
+  let audioBuffer =
+      context.createBuffer(numberOfChannels, sampleFrameLength, sampleRate);
 
-    for (var k = 0; k < numberOfChannels; ++k)
-    {
-        var data = audioBuffer.getChannelData(k);
+  let n = audioBuffer.length;
 
-        for (var i = 0; i < n; ++i)
-            data[i] = Math.sin(frequency * (k + 1) * 2.0*Math.PI * i / sampleRate);
-    }
+  for (let k = 0; k < numberOfChannels; ++k) {
+    let data = audioBuffer.getChannelData(k);
 
-    return audioBuffer;
+    for (let i = 0; i < n; ++i)
+      data[i] = Math.sin(frequency * (k + 1) * 2.0 * Math.PI * i / sampleRate);
+  }
+
+  return audioBuffer;
 }
-

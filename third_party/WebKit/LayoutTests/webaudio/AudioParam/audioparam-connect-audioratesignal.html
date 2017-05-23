@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <!-- 
 Tests that an audio-rate signal (AudioNode output) can be connected to an
 AudioParam.  Specifically, this tests that an audio-rate signal coming from an
@@ -9,98 +8,96 @@ AudioBufferSourceNode will be the audio source having its gain changed.  We load
 this one with an AudioBuffer containing a constant value of 1.  Thus it's easy
 to check that the resultant signal should be equal to the gain-scaling curve.
 -->
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script> 
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
+  <head>
+    <title>
+      audioparam-connect-audioratesignal.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
 
-</head>
-<body>
+      let sampleRate = 44100.0;
+      let lengthInSeconds = 1;
 
-<script>
-let audit = Audit.createTaskRunner();
+      let context = 0;
+      let constantOneBuffer = 0;
+      let linearRampBuffer = 0;
 
-let sampleRate = 44100.0;
-let lengthInSeconds = 1;
+      function checkResult(renderedBuffer, should) {
+        let renderedData = renderedBuffer.getChannelData(0);
+        let expectedData = linearRampBuffer.getChannelData(0);
+        let n = renderedBuffer.length;
 
-let context = 0;
-let constantOneBuffer = 0;
-let linearRampBuffer = 0;
+        should(n, 'Rendered signal length').beEqualTo(linearRampBuffer.length);
 
-function checkResult(renderedBuffer, should) {
-  let renderedData = renderedBuffer.getChannelData(0);
-  let expectedData = linearRampBuffer.getChannelData(0);
-  let n = renderedBuffer.length;
+        // Check that the rendered result exactly matches the buffer used to
+        // control gain.  This is because we're changing the gain of a signal
+        // having constant value 1.
+        let success = true;
+        for (let i = 0; i < n; ++i) {
+          if (renderedData[i] != expectedData[i]) {
+            success = false;
+            break;
+          }
+        }
 
-  should(n, 'Rendered signal length').beEqualTo(linearRampBuffer.length);
+        should(
+            success,
+            'Rendered signal exactly matches the audio-rate gain changing signal')
+            .beTrue();
+      }
 
-  // Check that the rendered result exactly matches the buffer used to control
-  // gain.  This is because we're changing the gain of a signal having constant
-  // value 1.
-  let success = true;
-  for (let i = 0; i < n; ++i) {
-    if (renderedData[i] != expectedData[i]) {
-      success = false;
-      break;
-    }
-  }
+      audit.define('test', function(task, should) {
+        let sampleFrameLength = sampleRate * lengthInSeconds;
 
-  should(
-      success,
-      'Rendered signal exactly matches the audio-rate gain changing signal')
-      .beTrue();
-}
+        // Create offline audio context.
+        context = new OfflineAudioContext(1, sampleFrameLength, sampleRate);
 
-audit.define('test', function(task, should) {
-  let sampleFrameLength = sampleRate * lengthInSeconds;
+        // Create buffer used by the source which will have its gain controlled.
+        constantOneBuffer = createConstantBuffer(context, sampleFrameLength, 1);
 
-  // Create offline audio context.
-  context = new OfflineAudioContext(1, sampleFrameLength, sampleRate);
+        // Create buffer used to control gain.
+        linearRampBuffer = createLinearRampBuffer(context, sampleFrameLength);
 
-  // Create buffer used by the source which will have its gain controlled.
-  constantOneBuffer = createConstantBuffer(context, sampleFrameLength, 1);
+        // Create the two sources.
 
-  // Create buffer used to control gain.
-  linearRampBuffer = createLinearRampBuffer(context, sampleFrameLength);
+        let constantSource = context.createBufferSource();
+        constantSource.buffer = constantOneBuffer;
 
-  // Create the two sources.
+        let gainChangingSource = context.createBufferSource();
+        gainChangingSource.buffer = linearRampBuffer;
 
-  let constantSource = context.createBufferSource();
-  constantSource.buffer = constantOneBuffer;
+        // Create a gain node controlling the gain of constantSource and make
+        // the connections.
+        let gainNode = context.createGain();
 
-  let gainChangingSource = context.createBufferSource();
-  gainChangingSource.buffer = linearRampBuffer;
+        // Intrinsic baseline gain of zero.
+        gainNode.gain.value = 0;
 
-  // Create a gain node controlling the gain of constantSource and make the
-  // connections.
-  let gainNode = context.createGain();
+        constantSource.connect(gainNode);
+        gainNode.connect(context.destination);
 
-  // Intrinsic baseline gain of zero.
-  gainNode.gain.value = 0;
+        // Connect an audio-rate signal to control the .gain AudioParam.
+        // This is the heart of what is being tested.
+        gainChangingSource.connect(gainNode.gain);
 
-  constantSource.connect(gainNode);
-  gainNode.connect(context.destination);
+        // Start both sources at time 0.
+        constantSource.start(0);
+        gainChangingSource.start(0);
 
-  // Connect an audio-rate signal to control the .gain AudioParam.
-  // This is the heart of what is being tested.
-  gainChangingSource.connect(gainNode.gain);
+        context.startRendering().then(buffer => {
+          checkResult(buffer, should);
+          task.done();
+        });
+      });
 
-  // Start both sources at time 0.
-  constantSource.start(0);
-  gainChangingSource.start(0);
-
-  context.startRendering().then(buffer => {
-    checkResult(buffer, should);
-    task.done();
-  });
-});
-
-audit.run();
-
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>

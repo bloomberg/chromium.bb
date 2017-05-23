@@ -1,131 +1,134 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/audit-util.js"></script>
-<script src="../resources/audit.js"></script>
-</head>
+  <head>
+    <title>
+      automatic-pull-node.html
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      // This test verifies that the AudioBasicInspectorNode based nodes work
+      // correctly
 
-<body>
+      let audit = Audit.createTaskRunner();
 
-<script>
-// This test verifies that the AudioBasicInspectorNode based nodes work correctly
+      let sampleRate = 44100.0;
+      // We carefully arrange the renderLengthInFrames to be a multiple of the
+      // AudioNode rendering quantum (AudioNode::ProcessingSizeInFrames) so that
+      // AudioSourceNode will not feed tailing zeroes into the context and fail
+      // this test.
+      let renderLengthInFrames = 256;
+      let fftSize = 64;
 
-var audit = Audit.createTaskRunner();
+      let audioDataOne = 255;   // Audio data 1.0 in Uint8 format will be 255.
+      let audioDataZero = 128;  // Audio data 0 in Uint8 format will be 128.
 
-var sampleRate = 44100.0;
-// We carefully arrange the renderLengthInFrames to be a multiple of the
-// AudioNode rendering quantum (AudioNode::ProcessingSizeInFrames) so that
-// AudioSourceNode will not feed tailing zeroes into the context and fail this
-// test.
-var renderLengthInFrames = 256;
-var fftSize = 64;
+      let context;
+      let constantBuffer;
+      let bufferSource;
+      let analyser;
 
-var audioDataOne = 255; // Audio data 1.0 in Uint8 format will be 255.
-var audioDataZero = 128; // Audio data 0 in Uint8 format will be 128.
+      function constructCommonGraph() {
+        // Create offline audio context.
+        context = new OfflineAudioContext(1, renderLengthInFrames, sampleRate);
+        constantBuffer = createConstantBuffer(context, renderLengthInFrames, 1);
 
-var context;
-var constantBuffer;
-var bufferSource;
-var analyser;
+        bufferSource = context.createBufferSource();
+        bufferSource.buffer = constantBuffer;
 
-function constructCommonGraph() {
-  // Create offline audio context.
-  context = new OfflineAudioContext(1, renderLengthInFrames, sampleRate);
-  constantBuffer = createConstantBuffer(context, renderLengthInFrames, 1);
+        analyser = context.createAnalyser();
+        analyser.fftSize = fftSize;
 
-  bufferSource = context.createBufferSource();
-  bufferSource.buffer = constantBuffer;
+        bufferSource.connect(analyser);
+      }
 
-  analyser = context.createAnalyser();
-  analyser.fftSize = fftSize;
+      function test1Finished(should) {
+        let timeDomainData = new Uint8Array(fftSize);
+        analyser.getByteTimeDomainData(timeDomainData);
 
-  bufferSource.connect(analyser);
-}
+        should(
+            timeDomainData[0] >= audioDataOne,
+            'RealtimeAnalyserNode got pulled when connected from upstream node but not to downstream node')
+            .beTrue();
+      }
 
-function test1Finished(should) {
-  var timeDomainData = new Uint8Array(fftSize);
-  analyser.getByteTimeDomainData(timeDomainData);
+      // To verify the realtimeAnalyser can pull data when there is an upstream
+      // node connected to it but it's not connected to a downstream node.
+      audit.define('test1', function(task, should) {
+        constructCommonGraph();
 
-  should(timeDomainData[0] >= audioDataOne,
-      "RealtimeAnalyserNode got pulled when connected from upstream node but not to downstream node"
-    )
-    .beTrue();
-}
+        bufferSource.start(0);
 
-// To verify the realtimeAnalyser can pull data when there is an upstream node
-// connected to it but it's not connected to a downstream node.
-audit.define("test1", function (task, should) {
-  constructCommonGraph();
+        context.startRendering()
+            .then(function() {
+              test1Finished(should);
+            })
+            .then(task.done.bind(task));
+      });
 
-  bufferSource.start(0);
+      function test2Finished(should) {
+        let timeDomainData = new Uint8Array(fftSize);
+        analyser.getByteTimeDomainData(timeDomainData);
 
-  context.startRendering()
-    .then(function () {
-      test1Finished(should);
-    })
-    .then(task.done.bind(task));
-});
+        should(
+            timeDomainData[0] >= audioDataOne,
+            'RealtimeAnalyserNode got pulled when connected from upstream node and to destination node')
+            .beTrue();
+      }
 
-function test2Finished(should) {
-  var timeDomainData = new Uint8Array(fftSize);
-  analyser.getByteTimeDomainData(timeDomainData);
+      // To verify the realtimeAnalyser can process normally when there is an
+      // upstream node connected to it and it's also connected to a downstream
+      // node which ultimately connect to audio destination.
+      audit.define('test2', function(task, should) {
+        constructCommonGraph();
 
-  should(timeDomainData[0] >= audioDataOne,
-      "RealtimeAnalyserNode got pulled when connected from upstream node and to destination node"
-    )
-    .beTrue();
-}
+        analyser.connect(context.destination);
 
-// To verify the realtimeAnalyser can process normally when there is an upstream
-// node connected to it and it's also connected to a downstream node which
-// ultimately connect to audio destination.
-audit.define("test2", function (task, should) {
-  constructCommonGraph();
+        bufferSource.start(0);
 
-  analyser.connect(context.destination);
+        context.startRendering()
+            .then(function() {
+              test2Finished(should);
+            })
+            .then(task.done.bind(task));
+      });
 
-  bufferSource.start(0);
+      function test3Finished(should) {
+        let timeDomainData = new Uint8Array(fftSize);
+        analyser.getByteTimeDomainData(timeDomainData);
 
-  context.startRendering()
-    .then(function () {
-      test2Finished(should);
-    })
-    .then(task.done.bind(task));
-});
+        // If realtimeAnalyser hasn't pulled any data, the data in buffer will
+        // be 0.
+        should(
+            timeDomainData[0] == audioDataZero,
+            'RealtimeAnalyserNode didn\'t get pulled when it should not')
+            .beTrue();
+        ;
+      }
 
-function test3Finished(should) {
-  var timeDomainData = new Uint8Array(fftSize);
-  analyser.getByteTimeDomainData(timeDomainData);
+      // To verify the realtimeAnalyser will stop pulling if it is connected to
+      // a downstream node which is not ultimatly connected to any audio
+      // destination.
+      audit.define('test3', function(task, should) {
+        constructCommonGraph();
 
-  // If realtimeAnalyser hasn't pulled any data, the data in buffer will be 0.
-  should(timeDomainData[0] == audioDataZero,
-      "RealtimeAnalyserNode didn't get pulled when it should not")
-    .beTrue();;
-}
+        let gain = context.createGain();
+        analyser.connect(gain);
 
-// To verify the realtimeAnalyser will stop pulling if it is connected to a
-// downstream node which is not ultimatly connected to any audio destination.
-audit.define("test3", function (task, should) {
-  constructCommonGraph();
+        bufferSource.start(0);
 
-  var gain = context.createGain();
-  analyser.connect(gain);
+        context.startRendering()
+            .then(function() {
+              test3Finished(should);
+            })
+            .then(task.done.bind(task));
+      });
 
-  bufferSource.start(0);
-
-  context.startRendering()
-    .then(function () {
-      test3Finished(should);
-    })
-    .then(task.done.bind(task));
-});
-
-audit.run();
-
-</script>
-
-</body>
+      audit.run();
+    </script>
+  </body>
 </html>
