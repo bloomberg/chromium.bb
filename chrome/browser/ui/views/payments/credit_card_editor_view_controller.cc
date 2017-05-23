@@ -89,7 +89,7 @@ std::vector<base::string16> GetExpirationYearItems() {
 }
 
 bool IsCardExpired(const base::string16& month,
-                   base::string16& year,
+                   const base::string16& year,
                    const std::string& app_locale) {
   autofill::CreditCard card;
   card.SetExpirationMonthFromString(month, app_locale);
@@ -502,6 +502,7 @@ void CreditCardEditorViewController::ButtonPressed(views::Button* sender,
 
 void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
     const autofill::AutofillProfile& profile) {
+  state()->AddAutofillShippingProfile(false, profile);
   views::Combobox* address_combobox = static_cast<views::Combobox*>(
       dialog()->GetViewByID(GetInputFieldViewId(kBillingAddressType)));
   autofill::AddressComboboxModel* model =
