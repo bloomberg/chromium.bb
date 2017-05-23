@@ -118,9 +118,6 @@ bool PaymentsProfileComparator::IsContactEqualOrSuperset(
 
 int PaymentsProfileComparator::GetContactCompletenessScore(
     const autofill::AutofillProfile* profile) const {
-  if (!profile)
-    return 0;
-
   // Create a bitmask of the fields that are both present and required.
   ProfileFields present =
       ~GetMissingProfileFields(profile) & GetRequiredProfileFieldsForContact();
@@ -137,16 +134,40 @@ bool PaymentsProfileComparator::IsContactInfoComplete(
            GetRequiredProfileFieldsForContact());
 }
 
-bool PaymentsProfileComparator::IsContactMoreComplete(
-    const autofill::AutofillProfile* p1,
-    const autofill::AutofillProfile* p2) const {
-  return GetContactCompletenessScore(p1) > GetContactCompletenessScore(p2);
-}
-
 base::string16 PaymentsProfileComparator::GetStringForMissingContactFields(
     const autofill::AutofillProfile& profile) const {
   return GetStringForMissingFields(GetMissingProfileFields(&profile) &
                                    GetRequiredProfileFieldsForContact());
+}
+
+std::vector<autofill::AutofillProfile*>
+PaymentsProfileComparator::FilterProfilesForShipping(
+    const std::vector<autofill::AutofillProfile*>& profiles) const {
+  // Since we'll be changing the order/contents of the const input vector,
+  // we make a copy.
+  std::vector<autofill::AutofillProfile*> processed = profiles;
+
+  std::stable_sort(
+      processed.begin(), processed.end(),
+      std::bind(&PaymentsProfileComparator::IsShippingMoreComplete, this,
+                std::placeholders::_1, std::placeholders::_2));
+
+  // TODO(crbug.com/722949): Remove profiles with no relevant information, or
+  // which are subsets of more-complete profiles.
+
+  return processed;
+}
+
+int PaymentsProfileComparator::GetShippingCompletenessScore(
+    const autofill::AutofillProfile* profile) const {
+  // Create a bitmask of the fields that are both present and required.
+  ProfileFields present =
+      ~GetMissingProfileFields(profile) & GetRequiredProfileFieldsForShipping();
+
+  // Count how many are set. The completeness of the address is weighted so as
+  // to dominate the other fields.
+  return !!(present & kName) + !!(present & kPhone) +
+         (10 * !!(present & kAddress));
 }
 
 bool PaymentsProfileComparator::IsShippingComplete(
@@ -246,6 +267,18 @@ bool PaymentsProfileComparator::AreRequiredAddressFieldsPresent(
                                                            app_locale());
 
   return autofill::addressinput::HasAllRequiredFields(*data);
+}
+
+bool PaymentsProfileComparator::IsContactMoreComplete(
+    const autofill::AutofillProfile* p1,
+    const autofill::AutofillProfile* p2) const {
+  return GetContactCompletenessScore(p1) > GetContactCompletenessScore(p2);
+}
+
+bool PaymentsProfileComparator::IsShippingMoreComplete(
+    const autofill::AutofillProfile* p1,
+    const autofill::AutofillProfile* p2) const {
+  return GetShippingCompletenessScore(p1) > GetShippingCompletenessScore(p2);
 }
 
 }  // namespace payments

@@ -237,8 +237,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   OpenContactInfoScreen();
 
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
-  EXPECT_EQ(request->state()->contact_profiles().front(),
-            request->state()->selected_contact_profile());
+
+  // No contact profiles are selected because both are incomplete.
+  EXPECT_EQ(nullptr, request->state()->selected_contact_profile());
 
   views::View* list_view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::CONTACT_INFO_SHEET_LIST_VIEW));
@@ -269,6 +270,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
             profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
                              GetLocale()));
 
+  // Expect the newly-completed profile to be selected.
   EXPECT_EQ(2U, request->state()->contact_profiles().size());
   EXPECT_EQ(request->state()->contact_profiles().back(), profile);
 }
