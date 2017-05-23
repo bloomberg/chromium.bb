@@ -79,11 +79,11 @@ test(function() {
     var inputAsMatrix = input.asMatrix();
     assert_equals(inputAsMatrix.is2D(), input.is2D());
 
-    var expectedMatrix = input.is2D() ? new CSSMatrixComponent(input.x, 0, 0, input.y, 0, 0) :
-        new CSSMatrixComponent(input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1);
+    var expectedMatrix = input.is2D() ? new CSSMatrixComponent(new DOMMatrixReadOnly([input.x, 0, 0, input.y, 0, 0])) :
+        new CSSMatrixComponent(new DOMMatrixReadOnly([input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1]));
     for (var attribute in expectedMatrix) {
-      if (typeof expectedMatrix[attribute] === "number") {
-        assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);
+      if (attribute == "matrix") {
+        assert_matrix_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
       } else {
         assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
       }
@@ -100,4 +100,14 @@ test(function() {
   assert_equals(actual.y, 2);
   assert_equals(actual.z, 3);
 }, "Test that x, y, z are mutable attributes.");
+
+function assert_array_approx_equals(actual, expected) {
+  for (var i = 0; i < actual.length; i++) {
+    assert_approx_equals(actual[i], expected[i], EPSILON);
+  }
+}
+
+function assert_matrix_approx_equals(actual, expected) {
+  assert_array_approx_equals(actual.toFloat64Array(), expected.toFloat64Array());
+}
 </script>
