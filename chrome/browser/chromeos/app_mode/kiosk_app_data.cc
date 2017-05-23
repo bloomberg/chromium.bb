@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
@@ -78,18 +77,14 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
             const base::FilePath& crx_file)
       : client_(client),
         crx_file_(crx_file),
-        success_(false) {
-  }
+        success_(false),
+        task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void Start() {
-    base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-    base::SequencedWorkerPool::SequenceToken token =
-        pool->GetNamedSequenceToken("KioskAppData.CrxLoaderWorker");
-    task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
-        token,
-        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&CrxLoader::StartOnBlockingPool, this));
+                           base::BindOnce(&CrxLoader::StartInThreadPool, this));
   }
 
   bool success() const { return success_; }
@@ -122,21 +117,21 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
       icon_ = install_icon;
       required_platform_version_ = info->required_platform_version;
     }
-    NotifyFinishedOnBlockingPool();
+    NotifyFinishedInThreadPool();
   }
   void OnUnpackFailure(const extensions::CrxInstallError& error) override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     success_ = false;
-    NotifyFinishedOnBlockingPool();
+    NotifyFinishedInThreadPool();
   }
 
-  void StartOnBlockingPool() {
+  void StartInThreadPool() {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     if (!temp_dir_.CreateUniqueTempDir()) {
       success_ = false;
-      NotifyFinishedOnBlockingPool();
+      NotifyFinishedInThreadPool();
       return;
     }
 
@@ -147,7 +142,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     unpacker->StartWithCrx(extensions::CRXFileInfo(crx_file_));
   }
 
-  void NotifyFinishedOnBlockingPool() {
+  void NotifyFinishedInThreadPool() {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     if (!temp_dir_.Delete()) {
@@ -171,7 +166,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
   base::FilePath crx_file_;
   bool success_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
 
   // Extracted meta data.
