@@ -2474,7 +2474,7 @@ void DXVAVideoDecodeAccelerator::CopySurface(
                  << "  E_INVALIDARG= " << E_INVALIDARG;
 
       // Release the processor and fall back to StretchRect()
-      processor_ = NULL;
+      processor_ = nullptr;
     }
   }
 

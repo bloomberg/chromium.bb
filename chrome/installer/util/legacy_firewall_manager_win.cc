@@ -35,7 +35,7 @@ bool LegacyFirewallManager::Init(const base::string16& app_name,
   hr = firewall_policy->get_CurrentProfile(current_profile_.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
-    current_profile_ = NULL;
+    current_profile_ = nullptr;
     return false;
   }
 
