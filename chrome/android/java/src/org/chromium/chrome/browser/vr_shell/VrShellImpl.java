@@ -136,8 +136,7 @@ public class VrShellImpl
         getUiLayout().setCloseButtonListener(new Runnable() {
             @Override
             public void run() {
-                mDelegate.shutdownVr(true /* disableVrMode */, false /* canReenter */,
-                        true /* stayingInChrome */);
+                mDelegate.shutdownVr(true, false);
             }
         });
 

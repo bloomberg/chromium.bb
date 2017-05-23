@@ -85,8 +85,7 @@ public class VrUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                vrDelegate.shutdownVr(true /* disableVrMode */, false /* canReenter */,
-                        true /* stayingInChrome */);
+                vrDelegate.shutdownVr(false /* isPausing */, false /* showTransition */);
             }
         });
     }
@@ -146,13 +145,12 @@ public class VrUtils {
     }
 
     /**
-     * Determines is there is any InfoBar present in the given View hierarchy.
+     * Determines whether an InfoBar prompting the user to install/update VR
+     * Services is present.
      * @param parentView The View to start the search in
      * @return Whether the InfoBar is present
      */
-    public static boolean isInfoBarPresent(View parentView) {
-        // TODO(ymalik): This will return true if any infobar is present. Is it
-        // possible to determine the type of infobar present (e.g. Feedback)?
+    public static boolean isUpdateInstallInfoBarPresent(View parentView) {
         // InfoBarContainer will be present regardless of whether an InfoBar
         // is actually there, but InfoBarLayout is only present if one is
         // currently showing.
@@ -161,7 +159,7 @@ public class VrUtils {
         } else if (parentView instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) parentView;
             for (int i = 0; i < group.getChildCount(); i++) {
-                if (isInfoBarPresent(group.getChildAt(i))) return true;
+                if (isUpdateInstallInfoBarPresent(group.getChildAt(i))) return true;
             }
         }
         return false;
