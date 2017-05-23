@@ -10,7 +10,7 @@
 
 namespace ui {
 
-using SwapCompletionCallback = base::Callback<void(gfx::SwapResult)>;
+using SwapCompletionOnceCallback = base::OnceCallback<void(gfx::SwapResult)>;
 
 }  // namespace ui
 

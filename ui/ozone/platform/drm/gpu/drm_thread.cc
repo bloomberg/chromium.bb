@@ -166,12 +166,12 @@ void DrmThread::GetScanoutFormats(
 
 void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
                                  const std::vector<OverlayPlane>& planes,
-                                 const SwapCompletionCallback& callback) {
+                                 SwapCompletionOnceCallback callback) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window)
-    window->SchedulePageFlip(planes, callback);
+    window->SchedulePageFlip(planes, std::move(callback));
   else
-    callback.Run(gfx::SwapResult::SWAP_ACK);
+    std::move(callback).Run(gfx::SwapResult::SWAP_ACK);
 }
 
 void DrmThread::GetVSyncParameters(
