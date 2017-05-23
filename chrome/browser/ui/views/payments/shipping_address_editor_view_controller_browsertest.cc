@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       FocusFirstInvalidField_Name) {
+                       FocusFirstField_Name) {
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -564,13 +564,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
           EditorViewController::GetInputFieldViewId(autofill::NAME_FULL)));
   DCHECK(textfield);
   EXPECT_TRUE(textfield->text().empty());
-  EXPECT_TRUE(textfield->invalid());
+  // Field is not invalid because there is nothing in it.
+  EXPECT_FALSE(textfield->invalid());
   EXPECT_TRUE(textfield->HasFocus());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FocusFirstInvalidField_NotName) {
-  // Add address with the name set, so that another view takes focus.
+  // Add address with only the name set, so that another view takes focus.
   autofill::AutofillProfile profile;
   profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
                   base::ASCIIToUTF16(kNameFull), "fr_CA");

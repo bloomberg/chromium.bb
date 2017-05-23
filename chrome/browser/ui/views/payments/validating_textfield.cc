@@ -16,14 +16,11 @@ ValidatingTextfield::~ValidatingTextfield() {}
 
 void ValidatingTextfield::OnBlur() {
   Textfield::OnBlur();
+  was_blurred_ = true;
 
-  // The first validation should be on a blur. The subsequent validations will
-  // occur when the content changes. Do not validate if the view is being
-  // removed.
-  if (!was_blurred_ && !being_removed_) {
-    was_blurred_ = true;
+  // Do not validate if the view is being removed.
+  if (!being_removed_)
     Validate();
-  }
 
   if (!text().empty() && delegate_->ShouldFormat())
     SetText(delegate_->Format(text()));
@@ -36,28 +33,22 @@ void ValidatingTextfield::ViewHierarchyChanged(
 }
 
 void ValidatingTextfield::OnContentsChanged() {
+  // This is called on every keystroke.
   if (!text().empty() && GetCursorPosition() == text().length() &&
       delegate_->ShouldFormat()) {
     SetText(delegate_->Format(text()));
   }
 
-  // Validation on every keystroke only happens if the field has been validated
-  // before as part of a blur.
-  if (!was_blurred_)
-    return;
-
   Validate();
 }
 
 bool ValidatingTextfield::IsValid() {
-  bool valid = delegate_->IsValidTextfield(this);
-  SetInvalid(!valid);
-  return valid;
+  return delegate_->IsValidTextfield(this);
 }
 
 void ValidatingTextfield::Validate() {
   // TextfieldValueChanged may have side-effects, such as displaying errors.
-  SetInvalid(!delegate_->TextfieldValueChanged(this));
+  SetInvalid(!delegate_->TextfieldValueChanged(this, was_blurred_));
 }
 
 }  // namespace payments

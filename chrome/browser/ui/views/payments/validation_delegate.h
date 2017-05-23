@@ -27,8 +27,10 @@ class ValidationDelegate {
   virtual bool IsValidCombobox(views::Combobox* combobox) = 0;
 
   // Notifications to let delegate react to input field changes and also let
-  // caller know if the new values are valid.
-  virtual bool TextfieldValueChanged(views::Textfield* textfield) = 0;
+  // caller know if the new values are valid. |was_blurred| indicates if the
+  // field has yet to be blurred once by the user.
+  virtual bool TextfieldValueChanged(views::Textfield* textfield,
+                                     bool was_blurred) = 0;
   virtual bool ComboboxValueChanged(views::Combobox* combobox) = 0;
 
   // Lets the delegate know that the model of the combobox has changed, e.g.,

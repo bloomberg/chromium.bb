@@ -52,9 +52,10 @@ bool ProfileMatchesFullName(base::StringPiece16 full_name,
                             const autofill::AutofillProfile& profile);
 
 // Returns the Payment Request API basic card payment spec data for the provided
-// autofill credit card |type|.  Will set the type and the icon to "generic" for
-// any unrecognized type.
-const PaymentRequestData& GetPaymentRequestData(const std::string& type);
+// autofill credit card |network|.  Will set the network and the icon to
+// "generic" for any unrecognized type.
+const PaymentRequestData& GetPaymentRequestData(
+    const std::string& issuer_network);
 
 // Returns the autofill credit card issuer network string for the provided
 // Payment Request API basic card payment spec |basic_card_card_issuer_network|.

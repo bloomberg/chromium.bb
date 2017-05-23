@@ -91,10 +91,19 @@ void EditorViewController::DisplayErrorMessageForField(
   const auto& label_view_it = error_labels_.find(type);
   DCHECK(label_view_it != error_labels_.end());
 
-  label_view_it->second->RemoveAllChildViews(/*delete_children=*/true);
-  if (!error_message.empty()) {
-    label_view_it->second->AddChildView(
-        CreateErrorLabelView(error_message, type).release());
+  if (error_message.empty()) {
+    label_view_it->second->RemoveAllChildViews(/*delete_children=*/true);
+  } else {
+    if (!label_view_it->second->has_children()) {
+      // If there was no error label view, add it.
+      label_view_it->second->AddChildView(
+          CreateErrorLabelView(error_message, type).release());
+    } else {
+      // The error view is the only child, and has a Label as only child itself.
+      static_cast<views::Label*>(
+          label_view_it->second->child_at(0)->child_at(0))
+          ->SetText(error_message);
+    }
   }
   RelayoutPane();
 }
@@ -187,8 +196,10 @@ EditorViewController::CreateComboboxForField(const EditorField& field) {
       base::MakeUnique<ValidatingCombobox>(GetComboboxModelForType(field.type),
                                            CreateValidationDelegate(field));
   base::string16 initial_value = GetInitialValueForType(field.type);
-  if (!initial_value.empty())
+  if (!initial_value.empty()) {
     combobox->SelectValue(initial_value);
+    combobox->SetInvalid(!combobox->IsValid());
+  }
   // Using autofill field type as a view ID.
   combobox->set_id(GetInputFieldViewId(field.type));
   combobox->set_listener(this);
@@ -344,7 +355,13 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER) {
     ValidatingTextfield* text_field =
         new ValidatingTextfield(CreateValidationDelegate(field));
-    text_field->SetText(GetInitialValueForType(field.type));
+    // Set the initial value and validity state.
+    base::string16 initial_value = GetInitialValueForType(field.type);
+    text_field->SetText(initial_value);
+    *valid = text_field->IsValid();
+    if (!initial_value.empty())
+      text_field->SetInvalid(!(*valid));
+
     if (field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER)
       text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
     text_field->set_controller(this);
@@ -352,7 +369,6 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
     text_field->set_id(GetInputFieldViewId(field.type));
     text_fields_.insert(std::make_pair(text_field, field));
     focusable_field = text_field;
-    *valid = text_field->IsValid();
 
     // |text_field| will now be owned by |row|.
     layout->AddView(text_field, 1, 1, views::GridLayout::FILL,
