@@ -40,7 +40,8 @@ class ReportingContextImpl : public ReportingContext {
       : ReportingContext(policy,
                          base::MakeUnique<base::DefaultClock>(),
                          base::MakeUnique<base::DefaultTickClock>(),
-                         ReportingUploader::Create(request_context)) {}
+                         ReportingUploader::Create(request_context),
+                         ReportingDelegate::Create(request_context)) {}
 };
 
 }  // namespace
@@ -72,12 +73,13 @@ void ReportingContext::NotifyCacheUpdated() {
 ReportingContext::ReportingContext(const ReportingPolicy& policy,
                                    std::unique_ptr<base::Clock> clock,
                                    std::unique_ptr<base::TickClock> tick_clock,
-                                   std::unique_ptr<ReportingUploader> uploader)
+                                   std::unique_ptr<ReportingUploader> uploader,
+                                   std::unique_ptr<ReportingDelegate> delegate)
     : policy_(policy),
       clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       uploader_(std::move(uploader)),
-      delegate_(ReportingDelegate::Create()),
+      delegate_(std::move(delegate)),
       cache_(base::MakeUnique<ReportingCache>(this)),
       endpoint_manager_(base::MakeUnique<ReportingEndpointManager>(this)),
       delivery_agent_(ReportingDeliveryAgent::Create(this)),

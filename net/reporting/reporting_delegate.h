@@ -18,6 +18,8 @@ class Origin;
 
 namespace net {
 
+class URLRequestContext;
+
 class NET_EXPORT ReportingDelegate {
  public:
   virtual ~ReportingDelegate();
@@ -38,7 +40,8 @@ class NET_EXPORT ReportingDelegate {
   virtual bool CanUseClient(const url::Origin& origin,
                             const GURL& endpoint) const = 0;
 
-  static std::unique_ptr<ReportingDelegate> Create();
+  static std::unique_ptr<ReportingDelegate> Create(
+      URLRequestContext* request_context);
 };
 
 }  // namespace net

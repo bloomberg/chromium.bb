@@ -182,6 +182,12 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       const net::URLRequest& request,
       const GURL& target_url,
       const GURL& referrer_url) const override;
+  bool OnCanQueueReportingReport(const url::Origin& origin) const override;
+  bool OnCanSendReportingReport(const url::Origin& origin) const override;
+  bool OnCanSetReportingClient(const url::Origin& origin,
+                               const GURL& endpoint) const override;
+  bool OnCanUseReportingClient(const url::Origin& origin,
+                               const GURL& endpoint) const override;
 
   // Convenience function for reporting network usage to the
   // |data_use_aggregator_|.
