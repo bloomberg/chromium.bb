@@ -211,11 +211,17 @@ std::vector<InputHandler*> InputHandler::ForAgentHost(
 
 void InputHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   ClearPendingKeyAndMouseCallbacks();
-  if (host_)
+  if (host_) {
     host_->GetRenderWidgetHost()->RemoveInputEventObserver(this);
+    if (ignore_input_events_)
+      host_->GetRenderWidgetHost()->SetIgnoreInputEvents(false);
+  }
   host_ = host;
-  if (host)
+  if (host) {
     host->GetRenderWidgetHost()->AddInputEventObserver(this);
+    if (ignore_input_events_)
+      host_->GetRenderWidgetHost()->SetIgnoreInputEvents(true);
+  }
 }
 
 void InputHandler::OnInputEvent(const blink::WebInputEvent& event) {
@@ -246,8 +252,12 @@ void InputHandler::OnSwapCompositorFrame(
 
 Response InputHandler::Disable() {
   ClearPendingKeyAndMouseCallbacks();
-  if (host_)
+  if (host_) {
     host_->GetRenderWidgetHost()->RemoveInputEventObserver(this);
+    if (ignore_input_events_)
+      host_->GetRenderWidgetHost()->SetIgnoreInputEvents(false);
+  }
+  ignore_input_events_ = false;
   return Response::OK();
 }
 
@@ -455,6 +465,13 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
     host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
   else
     host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
+  return Response::OK();
+}
+
+Response InputHandler::SetIgnoreInputEvents(bool ignore) {
+  ignore_input_events_ = ignore;
+  if (host_)
+    host_->GetRenderWidgetHost()->SetIgnoreInputEvents(ignore);
   return Response::OK();
 }
 
