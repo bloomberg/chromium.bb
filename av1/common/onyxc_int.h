@@ -561,17 +561,19 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 
 static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {
   int i;
+  int row_offset = mi_row;
+  int col_offset = mi_col;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     struct macroblockd_plane *const pd = &xd->plane[i];
 #if CONFIG_CHROMA_SUB8X8
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
       // Offset the buffer pointer
-      if (pd->subsampling_y && (mi_row & 0x01)) mi_row -= 1;
-      if (pd->subsampling_x && (mi_col & 0x01)) mi_col -= 1;
+      if (pd->subsampling_y && (mi_row & 0x01)) row_offset = mi_row - 1;
+      if (pd->subsampling_x && (mi_col & 0x01)) col_offset = mi_col - 1;
     }
 #endif
-    int above_idx = mi_col << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
-    int left_idx = (mi_row & MAX_MIB_MASK)
+    int above_idx = col_offset << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+    int left_idx = (row_offset & MAX_MIB_MASK)
                    << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
     pd->above_context = &xd->above_context[i][above_idx >> pd->subsampling_x];
     pd->left_context = &xd->left_context[i][left_idx >> pd->subsampling_y];
