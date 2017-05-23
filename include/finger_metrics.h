@@ -5,6 +5,8 @@
 #ifndef GESTURES_FINGER_METRICS_H_
 #define GESTURES_FINGER_METRICS_H_
 
+#include <cmath>
+
 #include "gestures/include/gestures.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/vector.h"
