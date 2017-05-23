@@ -78,3 +78,14 @@ td.title-link {
   padding: 4px;
   word-break: break-all;
 }
+
+button {
+  min-height: 30px;
+}
+
+.vertical-buttons > button {
+  float: left;
+  margin-right: 5px;
+  max-width: 100px;
+  min-height: 40px;
+}
