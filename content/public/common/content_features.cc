@@ -183,7 +183,7 @@ const base::Feature kPurgeAndSuspend {
 
 // RAF aligned mouse input events support.
 const base::Feature kRafAlignedMouseInputEvents{
-    "RafAlignedMouseInput", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RafAlignedMouseInput", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // RAF aligned touch input events support.
 const base::Feature kRafAlignedTouchInputEvents{
