@@ -13036,8 +13036,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.NcnOffline.Result"
-    enum="DnsProbe.ObsoleteProbeResult">
+<histogram name="DnsProbe.Probe.NcnOffline.Result">
   <obsolete>
     Removed 7/2013.
   </obsolete>
@@ -13057,8 +13056,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.NcnOnline.Result"
-    enum="DnsProbe.ObsoleteProbeResult">
+<histogram name="DnsProbe.Probe.NcnOnline.Result">
   <obsolete>
     Removed 7/2013.
   </obsolete>
@@ -13068,7 +13066,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.Result" enum="DnsProbe.ObsoleteProbeResult">
+<histogram name="DnsProbe.Probe.Result">
   <obsolete>
     Renamed 7/2013 to DnsProbe.ProbeResult.  (Also switched to the full
     DnsProbe.ProbeStatus enum.)
@@ -46403,9 +46401,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Omnibox.ProgressBarBreakPointUpdateCount"
     units="break point updates">
-  <obselete>
+  <obsolete>
     Obselete 05/16/2017. Data is unused (crbug.com/719801).
-  </obselete>
+  </obsolete>
   <owner>kkimlabs@chromium.org</owner>
   <summary>
     The number of progress bar break point updates from page load started to
@@ -46414,9 +46412,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Omnibox.ProgressBarUpdateCount" units="frame updates">
-  <obselete>
+  <obsolete>
     Obselete 05/16/2017. Data is unused (crbug.com/719801).
-  </obselete>
+  </obsolete>
   <owner>kkimlabs@chromium.org</owner>
   <summary>
     The number of progress bar frame updates from page load started to page load
@@ -72083,16 +72081,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram base="true" name="Storage.BytesRead" units="bytes">
   <owner>michaeln@chromium.org</owner>
-  <summary>
-    The number of bytes read. Recorded on each read.
-  </summary>
+  <summary>The number of bytes read. Recorded on each read.</summary>
 </histogram>
 
 <histogram base="true" name="Storage.BytesWritten" units="bytes">
   <owner>michaeln@chromium.org</owner>
-  <summary>
-    The number of bytes written. Recorded on each write.
-  </summary>
+  <summary>The number of bytes written. Recorded on each write.</summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.CBDChosenReason"
@@ -82167,8 +82161,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>philipel@chromium.org</owner>
   <summary>
     A successful probing attempt for a given bitrate, triggered by an update to
-    the max configured bitrate. NOTE! This is not the resulting bitrate from
-    a probing attempt, see WebRTC.BWE.MidCallProbing.ProbedKbps.
+    the max configured bitrate. NOTE! This is not the resulting bitrate from a
+    probing attempt, see WebRTC.BWE.MidCallProbing.ProbedKbps.
   </summary>
 </histogram>
 
