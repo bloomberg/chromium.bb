@@ -585,7 +585,7 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
           "invalidateAd", machine_name, user_name,
           static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG));
       return;
-    case authpolicy::ERROR_BAD_MACHINE_NAME:
+    case authpolicy::ERROR_INVALID_MACHINE_NAME:
       CallJS("invalidateAd", machine_name, user_name,
              static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID));
       return;

@@ -44,7 +44,7 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseMachineName) {
   authpolicy_client()->JoinAdDomain(
       "", kCorrectUserName, /* password_fd */ -1,
       base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_BAD_MACHINE_NAME, error);
+        EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
       }));
   authpolicy_client()->JoinAdDomain(
       "too_long_machine_name", kCorrectUserName, /* password_fd */ -1,
@@ -54,12 +54,12 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseMachineName) {
   authpolicy_client()->JoinAdDomain(
       "invalid:name", kCorrectUserName, /* password_fd */ -1,
       base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_BAD_MACHINE_NAME, error);
+        EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
       }));
   authpolicy_client()->JoinAdDomain(
       ">nvalidname", kCorrectUserName, /* password_fd */ -1,
       base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_BAD_MACHINE_NAME, error);
+        EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
       }));
 
   base::RunLoop().RunUntilIdle();
