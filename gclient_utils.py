@@ -813,8 +813,7 @@ class ExecutionQueue(object):
   """Runs a set of WorkItem that have interdependencies and were WorkItem are
   added as they are processed.
 
-  In gclient's case, Dependencies sometime needs to be run out of order due to
-  From() keyword. This class manages that all the required dependencies are run
+  This class manages that all the required dependencies are run
   before running each one.
 
   Methods of this class are thread safe.

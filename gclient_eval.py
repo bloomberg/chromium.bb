@@ -33,8 +33,6 @@ _GCLIENT_SCHEMA = schema.Schema({
     #
     # The following functions are allowed:
     #
-    #   File(): specifies to expect to checkout a file instead of a directory
-    #   From(): used to fetch a dependency definition from another DEPS file
     #   Var(): allows variable substitution (either from 'vars' dict below,
     #          or command-line override)
     schema.Optional('deps'): {schema.Optional(basestring): basestring},
