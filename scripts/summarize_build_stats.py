@@ -9,6 +9,7 @@ from __future__ import print_function
 import datetime
 import itertools
 import numpy
+import operator
 import re
 import sys
 
@@ -308,6 +309,11 @@ class CLStatsEngine(object):
           for x in blames:
             patch_blame_counts[x] = patch_blame_counts.get(x, 0) + 1
 
+    patch_reason_html = ''
+    for k, v in reversed(sorted(patch_reason_counts.iteritems(),
+                                key=operator.itemgetter(1))):
+      patch_reason_html += '<tr><td>%s</td><td>%d</td></tr>\n' % (k, v)
+
     good_patch_count = len(self.claction_history.GetSubmittedPatches(False))
     false_rejection_count = {}
     bad_cl_candidates = {}
@@ -402,6 +408,7 @@ class CLStatsEngine(object):
         'false_rejection_cq': false_rejection_count[constants.CQ],
         'build_blame_counts': build_blame_counts,
         'patch_blame_counts': patch_blame_counts,
+        'patch_reason_html': patch_reason_html,
     }
 
     s = summary
@@ -637,26 +644,7 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
 
 <h2>Top reasons that good changes were rejected</h2>
 <table>
-  <tr>
-    <th><b>Number of rejections</b></th>
-    <th><b>Explanation</b></th>
-  </tr>
- <tr>
-   <td>[_<replace>X</replace>_]</td>
-   <td>_<replace>REPLACE</replace>_</td>
- </tr>
- <tr>
-   <td>[_<replace>X</replace>_]</td>
-   <td>_<replace>REPLACE</replace>_</td>
- </tr>
- <tr>
-   <td>[_<replace>X</replace>_]</td>
-   <td>_<replace>REPLACE</replace>_</td>
- </tr>
- <tr>
-   <td>[_<replace>X</replace>_]</td>
-   <td>_<replace>REPLACE</replace>_</td>
- </tr>
+{patch_reason_html}
 </table>
 
 <h2>Which issues or CLs caused the most false rejections this week?</h2>
@@ -674,7 +662,7 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
 
 <h2>What was the patch turnaround time?</h2>
 <p id="note"> Copy/Paste in the histogram from the top of <a href="https://chromiumos-build-annotator.googleplex.com/build_annotations/builds_list/master-paladin/?num_builds={total_builds}&latest_build_id={last_build_id}">the completed build annotation page.</a>
-_<replace>IMAGE PLACEHOLDER</replace>_<br>
+_<replace>IMAGE PLACEHOLDER</replace>_<br></p>
 <br>
 
 <i>Generated on {datetime}</i>
