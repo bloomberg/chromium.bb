@@ -241,9 +241,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   virtual bool GetServiceTextureId(uint32_t client_texture_id,
                                    uint32_t* service_texture_id);
 
-  // Provides detail about a lost context if one occurred.
-  virtual error::ContextLostReason GetContextLostReason() = 0;
-
   // Clears a level sub area of a 2D texture.
   // Returns false if a GL error should be generated.
   virtual bool ClearLevel(Texture* texture,

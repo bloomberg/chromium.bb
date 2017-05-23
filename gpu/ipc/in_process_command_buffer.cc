@@ -227,7 +227,6 @@ bool InProcessCommandBuffer::MakeCurrent() {
   }
   if (!decoder_->MakeCurrent()) {
     DLOG(ERROR) << "Context lost because MakeCurrent failed.";
-    command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
     command_buffer_->SetParseError(gpu::error::kLostContext);
     return false;
   }
