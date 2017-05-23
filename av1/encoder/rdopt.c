@@ -10078,6 +10078,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_MOTION_VAR
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
+
   if (check_num_overlappable_neighbors(mbmi) &&
       is_motion_variation_allowed_bsize(bsize)) {
     av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
@@ -12612,8 +12613,13 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     i = 0;
     do {  // for each mi in the above row
       const int mi_col_offset = i;
-      const MB_MODE_INFO *const above_mbmi =
+      const MB_MODE_INFO *above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+#if CONFIG_CHROMA_SUB8X8
+      if (above_mbmi->sb_type < BLOCK_8X8)
+        above_mbmi =
+            &xd->mi[mi_col_offset + 1 + mi_row_offset * xd->mi_stride]->mbmi;
+#endif
       const BLOCK_SIZE a_bsize = AOMMAX(above_mbmi->sb_type, BLOCK_8X8);
       const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
       const int neighbor_bw = mi_step * MI_SIZE;
@@ -12686,8 +12692,14 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     i = 0;
     do {  // for each mi in the left column
       const int mi_row_offset = i;
-      const MB_MODE_INFO *const left_mbmi =
+      MB_MODE_INFO *left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+
+#if CONFIG_CHROMA_SUB8X8
+      if (left_mbmi->sb_type < BLOCK_8X8)
+        left_mbmi =
+            &xd->mi[mi_col_offset + (mi_row_offset + 1) * xd->mi_stride]->mbmi;
+#endif
       const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
       const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
       const int neighbor_bh = mi_step * MI_SIZE;

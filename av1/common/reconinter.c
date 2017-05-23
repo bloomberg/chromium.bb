@@ -1761,9 +1761,12 @@ const uint8_t *av1_get_obmc_mask_flipped(int length) {
 void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                       int mi_row, int mi_col) {
   int i, mi_step;
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
   xd->mi[0]->mbmi.overlappable_neighbors[0] = 0;
   xd->mi[0]->mbmi.overlappable_neighbors[1] = 0;
+
+  if (!is_motion_variation_allowed_bsize(mbmi->sb_type)) return;
 
   if (xd->up_available) {
     const int ilimit = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
@@ -1773,8 +1776,15 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       MODE_INFO *above_mi =
           xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
       MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
-
-      mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
+#if CONFIG_CHROMA_SUB8X8
+      if (above_mbmi->sb_type < BLOCK_8X8) {
+        ++mi_col_offset;
+        above_mbmi =
+            &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+      }
+#endif
+      BLOCK_SIZE above_bsize = AOMMAX(above_mbmi->sb_type, BLOCK_8X8);
+      mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_bsize]);
 
       if (is_neighbor_overlappable(above_mbmi))
         xd->mi[0]->mbmi.overlappable_neighbors[0]++;
@@ -1790,7 +1800,15 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
       MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
 
-      mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
+#if CONFIG_CHROMA_SUB8X8
+      if (left_mbmi->sb_type < BLOCK_8X8) {
+        ++mi_row_offset;
+        left_mbmi =
+            &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+      }
+#endif
+      BLOCK_SIZE left_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
+      mi_step = AOMMIN(xd->n8_h, mi_size_high[left_bsize]);
 
       if (is_neighbor_overlappable(left_mbmi))
         xd->mi[0]->mbmi.overlappable_neighbors[1]++;
@@ -1855,9 +1873,17 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     i = 0;
     do {  // for each mi in the above row
-      const int mi_col_offset = i;
-      const MB_MODE_INFO *const above_mbmi =
+      int mi_col_offset = i;
+      MB_MODE_INFO *above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+#if CONFIG_CHROMA_SUB8X8
+      if (above_mbmi->sb_type < BLOCK_8X8) {
+        ++mi_col_offset;
+        above_mbmi =
+            &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+      }
+#endif
+
       const BLOCK_SIZE a_bsize = AOMMAX(BLOCK_8X8, above_mbmi->sb_type);
       const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
 
@@ -1904,9 +1930,17 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     i = 0;
     do {  // for each mi in the left column
-      const int mi_row_offset = i;
-      const MB_MODE_INFO *const left_mbmi =
+      int mi_row_offset = i;
+      MB_MODE_INFO *left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+#if CONFIG_CHROMA_SUB8X8
+      if (left_mbmi->sb_type < BLOCK_8X8) {
+        ++mi_row_offset;
+        left_mbmi =
+            &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+      }
+#endif
+
       const BLOCK_SIZE l_bsize = AOMMAX(BLOCK_8X8, left_mbmi->sb_type);
       const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
 
@@ -1980,6 +2014,14 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     int mi_x, mi_y, bw, bh;
     MODE_INFO *above_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
+
+#if CONFIG_CHROMA_SUB8X8
+    if (above_mbmi->sb_type < BLOCK_8X8) {
+      ++mi_col_offset;
+      above_mbmi = &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+    }
+#endif
+
     const BLOCK_SIZE a_bsize = AOMMAX(BLOCK_8X8, above_mbmi->sb_type);
     MB_MODE_INFO backup_mbmi;
 
@@ -2061,6 +2103,14 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     int mi_x, mi_y, bw, bh;
     MODE_INFO *left_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
+
+#if CONFIG_CHROMA_SUB8X8
+    if (left_mbmi->sb_type < BLOCK_8X8) {
+      ++mi_row_offset;
+      left_mbmi = &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+    }
+#endif
+
     const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
     MB_MODE_INFO backup_mbmi;
 
