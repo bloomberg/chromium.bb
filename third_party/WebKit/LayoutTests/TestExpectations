@@ -3124,3 +3124,7 @@ crbug.com/723841 virtual/mojo-loading/http/tests/dom/script-module-load-incomple
 crbug.com/725016 [ Win ] editing/selection/doubleclick-beside-cr-span.html [ Skip ]
 crbug.com/725016 [ Win ] fast/forms/number/number-stepup-stepdown-from-renderer.html [ Skip ]
 crbug.com/725016 [ Win ] storage/indexeddb/objectstore-keycursor.html [ Skip ]
+crbug.com/725455 [ Linux ] nfc/mock-nfc.html [ Failure ]
+crbug.com/725455 [ Linux ] nfc/nfc-block-iframe.html [ Failure ]
+crbug.com/725455 [ Linux ] nfc/push.html [ Failure ]
+crbug.com/725455 [ Linux ] nfc/watch.html [ Failure ]
