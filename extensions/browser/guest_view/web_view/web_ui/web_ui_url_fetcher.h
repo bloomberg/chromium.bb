@@ -30,13 +30,13 @@ class WebUIURLFetcher : public net::URLFetcherDelegate {
   // - whether the request is success.
   // - If yes, the content of the file.
   using WebUILoadFileCallback =
-      base::Callback<void(bool, std::unique_ptr<std::string>)>;
+      base::OnceCallback<void(bool, std::unique_ptr<std::string>)>;
 
   WebUIURLFetcher(content::BrowserContext* context,
                   int render_process_id,
                   int render_frame_id,
                   const GURL& url,
-                  const WebUILoadFileCallback& callback);
+                  WebUILoadFileCallback callback);
   ~WebUIURLFetcher() override;
 
   void Start();
