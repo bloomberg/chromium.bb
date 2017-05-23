@@ -16,6 +16,7 @@
 #import "ios/web/test/web_int_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -33,6 +34,9 @@ ACTION_P3(VerifyNewPageStartedContext, web_state, url, context) {
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   ASSERT_FALSE((*context)->GetResponseHeaders());
@@ -50,6 +54,9 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
   ASSERT_TRUE((*context));
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   ASSERT_TRUE((*context)->GetResponseHeaders());
@@ -65,11 +72,17 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
 // Verifies correctness of |NavigationContext| (|arg0|) for same page navigation
 // passed to |DidFinishNavigation|. Stores |NavigationContext| in |context|
 // pointer.
-ACTION_P3(VerifySameDocumentStartedContext, web_state, url, context) {
+ACTION_P4(VerifySameDocumentStartedContext,
+          web_state,
+          url,
+          context,
+          page_transition) {
   *context = arg0;
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      page_transition, (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
@@ -78,11 +91,17 @@ ACTION_P3(VerifySameDocumentStartedContext, web_state, url, context) {
 // Verifies correctness of |NavigationContext| (|arg0|) for same page navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P3(VerifySameDocumentFinishedContext, web_state, url, context) {
+ACTION_P4(VerifySameDocumentFinishedContext,
+          web_state,
+          url,
+          context,
+          page_transition) {
   ASSERT_EQ(*context, arg0);
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
@@ -100,6 +119,9 @@ ACTION_P3(VerifyNewNativePageStartedContext, web_state, url, context) {
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
@@ -116,6 +138,9 @@ ACTION_P3(VerifyNewNativePageFinishedContext, web_state, url, context) {
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
@@ -184,18 +209,24 @@ TEST_F(StartAndFinishNavigationTest, UserInitiatedHashChangeNavigation) {
   // Perform same-page navigation.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
   EXPECT_CALL(*observer_, DidStartNavigation(_))
-      .WillOnce(
-          VerifySameDocumentStartedContext(web_state(), hash_url, &context));
+      .WillOnce(VerifySameDocumentStartedContext(
+          web_state(), hash_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_TYPED));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(
-          VerifySameDocumentFinishedContext(web_state(), hash_url, &context));
+      .WillOnce(VerifySameDocumentFinishedContext(
+          web_state(), hash_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_TYPED));
   LoadUrl(hash_url);
 
   // Perform same-page navigation by going back.
   EXPECT_CALL(*observer_, DidStartNavigation(_))
-      .WillOnce(VerifySameDocumentStartedContext(web_state(), url, &context));
+      .WillOnce(VerifySameDocumentStartedContext(
+          web_state(), url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySameDocumentFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifySameDocumentFinishedContext(
+          web_state(), url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->GoBack();
   });
@@ -219,11 +250,13 @@ TEST_F(StartAndFinishNavigationTest, RendererInitiatedHashChangeNavigation) {
   // Perform same-page navigation using JavaScript.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
   EXPECT_CALL(*observer_, DidStartNavigation(_))
-      .WillOnce(
-          VerifySameDocumentStartedContext(web_state(), hash_url, &context));
+      .WillOnce(VerifySameDocumentStartedContext(
+          web_state(), hash_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(
-          VerifySameDocumentFinishedContext(web_state(), hash_url, &context));
+      .WillOnce(VerifySameDocumentFinishedContext(
+          web_state(), hash_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   ExecuteJavaScript(@"window.location.hash = '#1'");
 }
 
@@ -245,21 +278,25 @@ TEST_F(StartAndFinishNavigationTest, StateNavigation) {
   // Perform push state using JavaScript.
   const GURL push_url = HttpServer::MakeUrl("http://chromium.test/test.html");
   EXPECT_CALL(*observer_, DidStartNavigation(_))
-      .WillOnce(
-          VerifySameDocumentStartedContext(web_state(), push_url, &context));
+      .WillOnce(VerifySameDocumentStartedContext(
+          web_state(), push_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(
-          VerifySameDocumentFinishedContext(web_state(), push_url, &context));
+      .WillOnce(VerifySameDocumentFinishedContext(
+          web_state(), push_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   ExecuteJavaScript(@"window.history.pushState('', 'Test', 'test.html')");
 
   // Perform replace state using JavaScript.
   const GURL replace_url = HttpServer::MakeUrl("http://chromium.test/1.html");
   EXPECT_CALL(*observer_, DidStartNavigation(_))
-      .WillOnce(
-          VerifySameDocumentStartedContext(web_state(), replace_url, &context));
+      .WillOnce(VerifySameDocumentStartedContext(
+          web_state(), replace_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySameDocumentFinishedContext(web_state(), replace_url,
-                                                  &context));
+      .WillOnce(VerifySameDocumentFinishedContext(
+          web_state(), replace_url, &context,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
   ExecuteJavaScript(@"window.history.replaceState('', 'Test', '1.html')");
 }
 

@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ui/base/page_transition_types.h"
+
 class GURL;
 
 namespace net {
@@ -29,6 +31,9 @@ class NavigationContext {
 
   // The URL the WebState is navigating to.
   virtual const GURL& GetUrl() const = 0;
+
+  // Returns the page transition type for this navigation.
+  virtual ui::PageTransition GetPageTransition() const = 0;
 
   // Whether the navigation happened within the same document. Examples of same
   // document navigations are:
