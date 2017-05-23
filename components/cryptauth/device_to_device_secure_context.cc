@@ -20,22 +20,28 @@ namespace {
 // The version to put in the GcmMetadata field.
 const int kGcmMetadataVersion = 1;
 
-// The sequence number of the last message used during authentication. These
+// The sequence number of the last message sent during authentication. These
 // messages are sent and received before the SecureContext is created.
-const int kAuthenticationSequenceNumber = 2;
+const int kAuthenticationEncodeSequenceNumber = 1;
+
+// The sequence number of the last message received during authentication. These
+// messages are sent and received before the SecureContext is created.
+const int kAuthenticationDecodeSequenceNumber = 1;
 
 }  // namespace
 
 DeviceToDeviceSecureContext::DeviceToDeviceSecureContext(
     std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
-    const std::string& symmetric_key,
+    const SessionKeys& session_keys,
     const std::string& responder_auth_message,
     ProtocolVersion protocol_version)
     : secure_message_delegate_(std::move(secure_message_delegate)),
-      symmetric_key_(symmetric_key),
+      encryption_key_(session_keys.initiator_encode_key()),
+      decryption_key_(session_keys.responder_encode_key()),
       responder_auth_message_(responder_auth_message),
       protocol_version_(protocol_version),
-      last_sequence_number_(kAuthenticationSequenceNumber),
+      last_encode_sequence_number_(kAuthenticationEncodeSequenceNumber),
+      last_decode_sequence_number_(kAuthenticationDecodeSequenceNumber),
       weak_ptr_factory_(this) {}
 
 DeviceToDeviceSecureContext::~DeviceToDeviceSecureContext() {}
@@ -47,7 +53,7 @@ void DeviceToDeviceSecureContext::Decode(const std::string& encoded_message,
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
 
   secure_message_delegate_->UnwrapSecureMessage(
-      encoded_message, symmetric_key_, unwrap_options,
+      encoded_message, decryption_key_, unwrap_options,
       base::Bind(&DeviceToDeviceSecureContext::HandleUnwrapResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -61,7 +67,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
 
   // Wrap |message| inside a DeviceToDeviceMessage proto.
   securemessage::DeviceToDeviceMessage device_to_device_message;
-  device_to_device_message.set_sequence_number(++last_sequence_number_);
+  device_to_device_message.set_sequence_number(++last_encode_sequence_number_);
   device_to_device_message.set_message(message);
 
   SecureMessageDelegate::CreateOptions create_options;
@@ -70,7 +76,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
   gcm_metadata.SerializeToString(&create_options.public_metadata);
 
   secure_message_delegate_->CreateSecureMessage(
-      device_to_device_message.SerializeAsString(), symmetric_key_,
+      device_to_device_message.SerializeAsString(), encryption_key_,
       create_options, callback);
 }
 
@@ -97,9 +103,11 @@ void DeviceToDeviceSecureContext::HandleUnwrapResult(
   }
 
   // Check that the sequence number matches the expected sequence number.
-  if (device_to_device_message.sequence_number() != last_sequence_number_ + 1) {
-    PA_LOG(ERROR) << "Expected sequence_number=" << last_sequence_number_ + 1
-                  << ", but got " << device_to_device_message.sequence_number();
+  if (device_to_device_message.sequence_number() !=
+      last_decode_sequence_number_ + 1) {
+    PA_LOG(ERROR) << "Expected sequence_number="
+                  << last_decode_sequence_number_ + 1 << ", but got "
+                  << device_to_device_message.sequence_number();
     callback.Run(std::string());
     return;
   }
@@ -114,7 +122,7 @@ void DeviceToDeviceSecureContext::HandleUnwrapResult(
     return;
   }
 
-  last_sequence_number_++;
+  last_decode_sequence_number_++;
   callback.Run(device_to_device_message.message());
 }
 

@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/proto/securemessage.pb.h"
 #include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/session_keys.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
@@ -24,10 +26,13 @@ const char kPayloadFiller[] = "\xae";
 // The version to put in the GcmMetadata field.
 const int kGcmMetadataVersion = 1;
 
+// The D2D protocol version.
+const int kD2DProtocolVersion = 1;
+
 // Callback for DeviceToDeviceInitiatorOperations::CreateInitiatorAuthMessage(),
 // after the inner message is created.
 void OnInnerMessageCreatedForInitiatorAuth(
-    const std::string& session_symmetric_key,
+    const SessionKeys& session_keys,
     SecureMessageDelegate* secure_message_delegate,
     const DeviceToDeviceInitiatorOperations::MessageCallback& callback,
     const std::string& inner_message) {
@@ -44,7 +49,7 @@ void OnInnerMessageCreatedForInitiatorAuth(
   // Store the inner message inside a DeviceToDeviceMessage proto.
   securemessage::DeviceToDeviceMessage device_to_device_message;
   device_to_device_message.set_message(inner_message);
-  device_to_device_message.set_sequence_number(2);
+  device_to_device_message.set_sequence_number(1);
 
   // Create and return the outer message, which wraps the inner message.
   SecureMessageDelegate::CreateOptions create_options;
@@ -52,8 +57,8 @@ void OnInnerMessageCreatedForInitiatorAuth(
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   gcm_metadata.SerializeToString(&create_options.public_metadata);
   secure_message_delegate->CreateSecureMessage(
-      device_to_device_message.SerializeAsString(), session_symmetric_key,
-      create_options, callback);
+      device_to_device_message.SerializeAsString(),
+      session_keys.initiator_encode_key(), create_options, callback);
 }
 
 // Helper struct containing all the context needed to validate the
@@ -101,7 +106,7 @@ void BeginResponderAuthValidation(ValidateResponderAuthMessageContext context) {
   if (!encrypted_message.ParseFromString(context.responder_auth_message) ||
       !header_and_body.ParseFromString(encrypted_message.header_and_body())) {
     PA_LOG(WARNING) << "Failed to parse [Responder Hello] message";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
@@ -114,7 +119,7 @@ void BeginResponderAuthValidation(ValidateResponderAuthMessageContext context) {
       gcm_metadata.version() != kGcmMetadataVersion) {
     PA_LOG(WARNING) << "Failed to validate GcmMetadata in "
                     << "[Responder Auth] header.";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
@@ -125,7 +130,7 @@ void BeginResponderAuthValidation(ValidateResponderAuthMessageContext context) {
           &context.responder_session_public_key)) {
     PA_LOG(INFO) << "Failed to extract responder session public key in "
                  << "[Responder Auth] header.";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
@@ -146,7 +151,8 @@ void OnSessionSymmetricKeyDerived(ValidateResponderAuthMessageContext context,
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
   context.secure_message_delegate->UnwrapSecureMessage(
-      context.responder_auth_message, session_symmetric_key, unwrap_options,
+      context.responder_auth_message,
+      SessionKeys(session_symmetric_key).responder_encode_key(), unwrap_options,
       base::Bind(&OnOuterMessageUnwrappedForResponderAuth, context));
 }
 
@@ -158,7 +164,7 @@ void OnOuterMessageUnwrappedForResponderAuth(
     const securemessage::Header& header) {
   if (!verified) {
     PA_LOG(INFO) << "Failed to unwrap outer [Responder Auth] message.";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
@@ -167,7 +173,7 @@ void OnOuterMessageUnwrappedForResponderAuth(
   if (!device_to_device_message.ParseFromString(payload) ||
       device_to_device_message.sequence_number() != 1) {
     PA_LOG(INFO) << "Failed to validate DeviceToDeviceMessage payload.";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
@@ -191,7 +197,7 @@ void OnMiddleMessageUnwrappedForResponderAuth(
     const securemessage::Header& header) {
   if (!verified) {
     PA_LOG(INFO) << "Failed to unwrap middle [Responder Auth] message.";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
@@ -222,11 +228,11 @@ void OnInnerMessageUnwrappedForResponderAuth(
       gcm_metadata.type() != UNLOCK_KEY_SIGNED_CHALLENGE) {
     PA_LOG(WARNING) << "Failed to validate GcmMetadata in inner-most "
                     << "[Responder Auth] message.";
-    context.callback.Run(false, std::string());
+    context.callback.Run(false, SessionKeys());
     return;
   }
 
-  context.callback.Run(verified, context.session_symmetric_key);
+  context.callback.Run(verified, SessionKeys(context.session_symmetric_key));
 }
 
 }  // namespace
@@ -238,13 +244,14 @@ void DeviceToDeviceInitiatorOperations::CreateHelloMessage(
     SecureMessageDelegate* secure_message_delegate,
     const MessageCallback& callback) {
   // Decode public key into the |initator_hello| proto.
-  securemessage::InitiatorHello initator_hello;
-  if (!initator_hello.mutable_public_dh_key()->ParseFromString(
+  securemessage::InitiatorHello initiator_hello;
+  if (!initiator_hello.mutable_public_dh_key()->ParseFromString(
           session_public_key)) {
     PA_LOG(ERROR) << "Unable to parse user's public key";
     callback.Run(std::string());
     return;
   }
+  initiator_hello.set_protocol_version(kD2DProtocolVersion);
 
   // The [Hello] message has the structure:
   // {
@@ -255,7 +262,7 @@ void DeviceToDeviceInitiatorOperations::CreateHelloMessage(
   SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::NONE;
   create_options.signature_scheme = securemessage::HMAC_SHA256;
-  initator_hello.SerializeToString(&create_options.public_metadata);
+  initiator_hello.SerializeToString(&create_options.public_metadata);
   secure_message_delegate->CreateSecureMessage(
       kPayloadFiller, persistent_symmetric_key, create_options, callback);
 }
@@ -299,7 +306,7 @@ void DeviceToDeviceInitiatorOperations::ValidateResponderAuthMessage(
 
 // static
 void DeviceToDeviceInitiatorOperations::CreateInitiatorAuthMessage(
-    const std::string& session_symmetric_key,
+    const SessionKeys& session_keys,
     const std::string& persistent_symmetric_key,
     const std::string& responder_auth_message,
     SecureMessageDelegate* secure_message_delegate,
@@ -322,7 +329,7 @@ void DeviceToDeviceInitiatorOperations::CreateInitiatorAuthMessage(
   create_options.associated_data = responder_auth_message;
   secure_message_delegate->CreateSecureMessage(
       kPayloadFiller, persistent_symmetric_key, create_options,
-      base::Bind(&OnInnerMessageCreatedForInitiatorAuth, session_symmetric_key,
+      base::Bind(&OnInnerMessageCreatedForInitiatorAuth, session_keys,
                  secure_message_delegate, callback));
 }
 
