@@ -45,15 +45,6 @@
         color: var(--google-green-500);
       }
 
-      #subpageDiv {
-        -webkit-border-start: var(--cr-separator-line);
-        -webkit-padding-start: 20px;
-      }
-
-      :host-context([dir=rtl]) #subpageDiv > button {
-        transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
-      }
-
       iron-icon {
         height: 24px;
         width: 24px;
@@ -87,15 +78,13 @@
       </template>
       <template is="dom-if"
           if="[[isSubpageButtonVisible_(networkState, showButtons)]]">
-        <div id="subpageDiv" class="layout horizontal">
-          <!-- iron-list captures 'enter' so handle it here explicitly. -->
-          <iron-a11y-keys keys="enter" on-keys-pressed="fireShowDetails_">
-          </iron-a11y-keys>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
-              aria-label$="[[ariaLabel]]">
-          </button>
-        </div>
+        <!-- iron-list captures 'enter' so handle it here explicitly. -->
+        <iron-a11y-keys keys="enter" on-keys-pressed="fireShowDetails_">
+        </iron-a11y-keys>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
+            aria-label$="[[ariaLabel]]">
+        </button>
       </template>
     </div>
   </template>
