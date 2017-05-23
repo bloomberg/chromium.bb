@@ -11,11 +11,11 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
-#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -306,8 +306,8 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     gfx::Point origin = gfx::ScreenPointFromNSPoint(anchor);
     chrome::ContentSettingBubbleViewsBridge::Show(
-        [web_contents->GetTopLevelNativeWindow() contentView],
-        model, web_contents, origin);
+        [web_contents->GetTopLevelNativeWindow() contentView], model,
+        web_contents, origin, this);
   } else {
     // If the bubble is already opened, close it. Otherwise, open a new bubble.
     if (bubbleWindow_ && [bubbleWindow_ isVisible]) {

@@ -9,8 +9,17 @@ namespace views {
 class BubbleDialogDelegateView;
 }
 
+class LocationBarDecoration;
+
+// Returns the manage password icon decoration in the omnibox.
+LocationBarDecoration* GetManagePasswordDecoration(
+    views::BubbleDialogDelegateView* bubble);
+
 // Monitors |bubble|'s parent window for size changes, and updates the bubble
-// anchor. The monitor will be deleted when |bubble| is closed.
-void KeepBubbleAnchored(views::BubbleDialogDelegateView* bubble);
+// anchor. The monitor will be deleted when |bubble| is closed. If |decoration|
+// is provided, the decoration will be set to active in this function. It will
+// be set to inactive when |bubble| is closed.
+void KeepBubbleAnchored(views::BubbleDialogDelegateView* bubble,
+                        LocationBarDecoration* decoration = nullptr);
 
 #endif  // CHROME_BROWSER_UI_COCOA_BUBBLE_ANCHOR_HELPER_VIEWS_H_

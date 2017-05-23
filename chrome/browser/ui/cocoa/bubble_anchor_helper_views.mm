@@ -7,6 +7,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -17,7 +21,8 @@ namespace {
 // Widget closes.
 class BubbleAnchorHelper : public views::WidgetObserver {
  public:
-  explicit BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble);
+  BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble,
+                     LocationBarDecoration* decoration);
 
  private:
   // Observe |name| on the bubble parent window with a block to call ReAnchor().
@@ -40,20 +45,40 @@ class BubbleAnchorHelper : public views::WidgetObserver {
   CGFloat horizontal_offset_;  // Offset from the left or right.
   CGFloat vertical_offset_;    // Offset from the top.
 
+  // The omnibox decoration that |bubble_| is anchored to.
+  // Weak. The lifetime is tied to the controller of the bubble's parent
+  // window, which owns a LocationBarViewMac that directly owns |decoration_|.
+  LocationBarDecoration* decoration_;
+
   DISALLOW_COPY_AND_ASSIGN(BubbleAnchorHelper);
 };
 
 }  // namespace
 
-void KeepBubbleAnchored(views::BubbleDialogDelegateView* bubble) {
-  new BubbleAnchorHelper(bubble);
+LocationBarDecoration* GetManagePasswordDecoration(
+    views::BubbleDialogDelegateView* bubble) {
+  BrowserWindowController* window_controller = [BrowserWindowController
+      browserWindowControllerForWindow:[bubble->parent_window() window]];
+  LocationBarViewMac* location_bar = [window_controller locationBarBridge];
+  return location_bar ? location_bar->manage_passwords_decoration() : nullptr;
 }
 
-BubbleAnchorHelper::BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble)
-    : observer_tokens_([[NSMutableArray alloc] init]), bubble_(bubble) {
+void KeepBubbleAnchored(views::BubbleDialogDelegateView* bubble,
+                        LocationBarDecoration* decoration) {
+  new BubbleAnchorHelper(bubble, decoration);
+}
+
+BubbleAnchorHelper::BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble,
+                                       LocationBarDecoration* decoration)
+    : observer_tokens_([[NSMutableArray alloc] init]),
+      bubble_(bubble),
+      decoration_(decoration) {
   DCHECK(bubble->GetWidget());
   DCHECK(bubble->parent_window());
   bubble->GetWidget()->AddObserver(this);
+
+  if (decoration_)
+    decoration_->SetActive(true);
 
   NSRect parent_frame = [[bubble->parent_window() window] frame];
   NSRect bubble_frame = [bubble->GetWidget()->GetNativeWindow() frame];
@@ -102,6 +127,10 @@ void BubbleAnchorHelper::ReAnchor() {
 }
 
 void BubbleAnchorHelper::OnWidgetDestroying(views::Widget* widget) {
+  // NativeWidgetMac guarantees that a child's OnWidgetDestroying() is invoked
+  // before the parent NSWindow has closed.
+  if (decoration_)
+    decoration_->SetActive(false);
   widget->RemoveObserver(this);
   for (id token in observer_tokens_.get())
     [[NSNotificationCenter defaultCenter] removeObserver:token];
