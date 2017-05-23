@@ -290,9 +290,7 @@ class GPU_EXPORT Texture final : public TextureBase {
     --framebuffer_attachment_count_;
   }
 
-  void SetImmutable(bool immutable) {
-    immutable_ = immutable;
-  }
+  void SetImmutable(bool immutable);
 
   bool IsImmutable() const {
     return immutable_;
@@ -325,6 +323,14 @@ class GPU_EXPORT Texture final : public TextureBase {
   void ApplyFormatWorkarounds(FeatureInfo* feature_info);
 
   bool EmulatingRGB();
+
+  // In GLES2 "texture complete" means it has all required mips for filtering
+  // down to a 1x1 pixel texture, they are in the correct order, they are all
+  // the same format.
+  bool texture_complete() const {
+    DCHECK(!completeness_dirty_);
+    return texture_complete_;
+  }
 
   static bool ColorRenderable(const FeatureInfo* feature_info,
                               GLenum internal_format,
@@ -419,16 +425,10 @@ class GPU_EXPORT Texture final : public TextureBase {
 
   void MarkLevelAsInternalWorkaround(GLenum target, GLint level);
 
-  // In GLES2 "texture complete" means it has all required mips for filtering
-  // down to a 1x1 pixel texture, they are in the correct order, they are all
-  // the same format.
-  bool texture_complete() const {
-    return texture_complete_;
-  }
-
   // In GLES2 "cube complete" means all 6 faces level 0 are defined, all the
   // same format, all the same dimensions and all width = height.
   bool cube_complete() const {
+    DCHECK(!completeness_dirty_);
     return cube_complete_;
   }
 
@@ -613,11 +613,12 @@ class GPU_EXPORT Texture final : public TextureBase {
   // Whether or not this texture is "texture complete"
   bool texture_complete_;
 
-  // Whether mip levels have changed and should be reverified.
-  bool texture_mips_dirty_;
-
   // Whether or not this texture is "cube complete"
   bool cube_complete_;
+
+  // Whether mip levels, base_level, or max_level have changed and
+  // texture_completeness_ and cube_completeness_ should be reverified.
+  bool completeness_dirty_;
 
   // Whether or not this texture is non-power-of-two
   bool npot_;
