@@ -126,12 +126,6 @@ class TextInputManagerTester {
   // created).
   bool IsTextInputStateChanged();
 
-  // Returns true if there is a focused <input> and populates |user_initiated|
-  // with the information whether it was triggered by user interaction in the
-  // given view.
-  bool GetTextSelectionUserInitiatedForView(RenderWidgetHostView* view,
-                                            bool* user_initiated);
-
  private:
   // The actual internal observer of the TextInputManager.
   class InternalObserver;

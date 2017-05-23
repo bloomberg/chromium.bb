@@ -343,12 +343,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Called when the widget receives a mouse event.
   void RenderWidgetWillHandleMouseEvent();
 
-  // Notifies the browser of text selection changes made.
-  void SetSelectedText(const base::string16& selection_text,
-                       size_t offset,
-                       const gfx::Range& range,
-                       bool user_initiated);
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Get/set the plugin which will be used to handle document find requests.
   void set_plugin_find_handler(PepperPluginInstanceImpl* plugin) {
@@ -473,6 +467,9 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsFTPDirectoryListing() override;
   void AttachGuest(int element_instance_id) override;
   void DetachGuest(int element_instance_id) override;
+  void SetSelectedText(const base::string16& selection_text,
+                       size_t offset,
+                       const gfx::Range& range) override;
   void EnsureMojoBuiltinsAreAvailable(v8::Isolate* isolate,
                                       v8::Local<v8::Context> context) override;
   void AddMessageToConsole(ConsoleMessageLevel level,
@@ -1021,7 +1018,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // it has changed.
   // TODO(varunjain): delete this method once we figure out how to keep
   // selection handles in sync with the webpage.
-  void SyncSelectionIfRequired(bool user_initiated);
+  void SyncSelectionIfRequired();
 
   bool RunJavaScriptDialog(JavaScriptDialogType type,
                            const base::string16& message,

@@ -410,13 +410,12 @@ void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
 
 void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
                                                  size_t offset,
-                                                 const gfx::Range& range,
-                                                 bool user_initiated) {
+                                                 const gfx::Range& range) {
   RenderWidgetHostViewBase* view = should_forward_text_selection_
                                        ? GetOwnerRenderWidgetHostView()
                                        : platform_view_.get();
   if (view)
-    view->SelectionChanged(text, offset, range, user_initiated);
+    view->SelectionChanged(text, offset, range);
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(

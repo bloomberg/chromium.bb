@@ -2493,10 +2493,9 @@ void RenderFrameHostImpl::OnSerializeAsMHTMLResponse(
 
 void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
                                              uint32_t offset,
-                                             const gfx::Range& range,
-                                             bool user_initiated) {
+                                             const gfx::Range& range) {
   has_selection_ = !text.empty();
-  GetRenderWidgetHost()->SelectionChanged(text, offset, range, user_initiated);
+  GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
 
 void RenderFrameHostImpl::OnFocusedNodeChanged(
