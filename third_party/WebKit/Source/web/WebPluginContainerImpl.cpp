@@ -111,13 +111,27 @@ namespace blink {
 
 // Public methods --------------------------------------------------------------
 
-void WebPluginContainerImpl::SetParent(FrameView* parent) {
-  DCHECK(!parent || !parent_);
-  if (!parent || !parent->IsVisible())
-    SetParentVisible(false);
-  parent_ = parent;
-  if (parent && parent->IsVisible())
-    SetParentVisible(true);
+FrameView* WebPluginContainerImpl::ParentFrameView() const {
+  if (!is_attached_)
+    return nullptr;
+
+  LocalFrame* frame = element_->GetDocument().GetFrame();
+  if (!frame)
+    return nullptr;
+
+  return frame->View();
+}
+
+void WebPluginContainerImpl::Attach() {
+  DCHECK(!is_attached_);
+  is_attached_ = true;
+  SetParentVisible(true);
+}
+
+void WebPluginContainerImpl::Detach() {
+  DCHECK(is_attached_);
+  SetParentVisible(false);
+  is_attached_ = false;
 }
 
 void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
@@ -129,7 +143,8 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
                                    const CullRect& cull_rect) const {
-  if (!parent_)
+  FrameView* parent = ParentFrameView();
+  if (!parent)
     return;
 
   // Don't paint anything if the plugin doesn't intersect.
@@ -156,20 +171,21 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
 
   // The plugin is positioned in the root frame's coordinates, so it needs to
   // be painted in them too.
-  IntPoint origin = parent_->ContentsToRootFrame(IntPoint(0, 0));
+  IntPoint origin = parent->ContentsToRootFrame(IntPoint(0, 0));
   context.Translate(static_cast<float>(-origin.X()),
                     static_cast<float>(-origin.Y()));
 
   WebCanvas* canvas = context.Canvas();
 
-  IntRect window_rect = parent_->ContentsToRootFrame(cull_rect.rect_);
+  IntRect window_rect = parent->ContentsToRootFrame(cull_rect.rect_);
   web_plugin_->Paint(canvas, window_rect);
 
   context.Restore();
 }
 
 void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
-  if (!parent_)
+  FrameView* parent = ParentFrameView();
+  if (!parent)
     return;
 
   LayoutBox* layout_object = ToLayoutBox(element_->GetLayoutObject());
@@ -431,8 +447,9 @@ void WebPluginContainerImpl::ScheduleAnimation() {
 }
 
 void WebPluginContainerImpl::ReportGeometry() {
+  FrameView* parent = ParentFrameView();
   // We cannot compute geometry without a parent or layoutObject.
-  if (!parent_ || !element_ || !element_->GetLayoutObject() || !web_plugin_)
+  if (!parent || !element_ || !element_->GetLayoutObject() || !web_plugin_)
     return;
 
   IntRect window_rect, clip_rect, unobscured_rect;
@@ -575,7 +592,8 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
   if (Page* page = element_->GetDocument().GetPage()) {
     if (ScrollingCoordinator* scrolling_coordinator =
             page->GetScrollingCoordinator()) {
-      if (parent_)
+      FrameView* parent = ParentFrameView();
+      if (parent)
         scrolling_coordinator->NotifyGeometryChanged();
     }
   }
@@ -583,21 +601,23 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
 
 WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
     const WebPoint& point_in_root_frame) {
-  if (!parent_)
+  FrameView* parent = ParentFrameView();
+  if (!parent)
     return point_in_root_frame;
-  WebPoint point_in_content = parent_->RootFrameToContents(point_in_root_frame);
+  WebPoint point_in_content = parent->RootFrameToContents(point_in_root_frame);
   return RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
       FloatPoint(point_in_content), kUseTransforms));
 }
 
 WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
     const WebPoint& point_in_local) {
-  if (!parent_)
+  FrameView* parent = ParentFrameView();
+  if (!parent)
     return point_in_local;
   IntPoint absolute_point =
       RoundedIntPoint(element_->GetLayoutObject()->LocalToAbsolute(
           FloatPoint(point_in_local), kUseTransforms));
-  return parent_->ContentsToRootFrame(absolute_point);
+  return parent->ContentsToRootFrame(absolute_point);
 }
 
 void WebPluginContainerImpl::DidReceiveResponse(
@@ -666,6 +686,7 @@ bool WebPluginContainerImpl::WantsWheelEvents() {
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element,
                                                WebPlugin* web_plugin)
     : WebPluginContainerBase(element->GetDocument().GetFrame()),
+      is_attached_(false),
       element_(element),
       web_plugin_(web_plugin),
       web_layer_(nullptr),
@@ -699,7 +720,6 @@ void WebPluginContainerImpl::Dispose() {
 }
 
 DEFINE_TRACE(WebPluginContainerImpl) {
-  visitor->Trace(parent_);
   visitor->Trace(element_);
   WebPluginContainerBase::Trace(visitor);
 }
@@ -707,12 +727,12 @@ DEFINE_TRACE(WebPluginContainerImpl) {
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
   // We cache the parent FrameView here as the plugin widget could be deleted
   // in the call to HandleEvent. See http://b/issue?id=1362948
-  FrameView* parent_view = parent_;
+  FrameView* parent = ParentFrameView();
 
   // TODO(dtapuska): Move WebMouseEventBuilder into the anonymous namespace
   // in this class.
   WebMouseEventBuilder transformed_event(
-      parent_, LayoutItem(element_->GetLayoutObject()), *event);
+      parent, LayoutItem(element_->GetLayoutObject()), *event);
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
     return;
 
@@ -728,11 +748,11 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
   // A windowless plugin can change the cursor in response to a mouse move
   // event.  We need to reflect the changed cursor in the frame view as the
   // mouse is moved in the boundaries of the windowless plugin.
-  Page* page = parent_view->GetFrame().GetPage();
+  Page* page = parent->GetFrame().GetPage();
   if (!page)
     return;
   page->GetChromeClient().SetCursorForPlugin(
-      cursor_info, &parent_view->GetFrame().LocalFrameRoot());
+      cursor_info, &parent->GetFrame().LocalFrameRoot());
 }
 
 void WebPluginContainerImpl::HandleDragEvent(MouseEvent* event) {
@@ -769,9 +789,8 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent* event) {
   WebFloatPoint absolute_location = event->NativeEvent().PositionInRootFrame();
 
   // Translate the root frame position to content coordinates.
-  if (parent_) {
-    absolute_location = parent_->RootFrameToContents(absolute_location);
-  }
+  if (FrameView* parent = ParentFrameView())
+    absolute_location = parent->RootFrameToContents(absolute_location);
 
   IntPoint local_point =
       RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
@@ -834,9 +853,8 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     WebFloatPoint absolute_location = transformed_event.touches[i].position;
 
     // Translate the root frame position to content coordinates.
-    if (parent_) {
-      absolute_location = parent_->RootFrameToContents(absolute_location);
-    }
+    if (FrameView* parent = ParentFrameView())
+      absolute_location = parent->RootFrameToContents(absolute_location);
 
     IntPoint local_point =
         RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
@@ -916,8 +934,9 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent* event) {
 }
 
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent* event) {
+  FrameView* parent = ParentFrameView();
   WebMouseEventBuilder web_event(
-      parent_, LayoutItem(element_->GetLayoutObject()), *event);
+      parent, LayoutItem(element_->GetLayoutObject()), *event);
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 
@@ -929,14 +948,13 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent* event) {
 }
 
 void WebPluginContainerImpl::FocusPlugin() {
-  LocalFrame& containing_frame = parent_->GetFrame();
-  if (Page* current_page = containing_frame.GetPage())
-    current_page->GetFocusController().SetFocusedElement(element_,
-                                                         &containing_frame);
-  else
-    containing_frame.GetDocument()->SetFocusedElement(
+  if (Page* current_page = GetFrame()->GetPage()) {
+    current_page->GetFocusController().SetFocusedElement(element_, GetFrame());
+  } else {
+    GetFrame()->GetDocument()->SetFocusedElement(
         element_, FocusParams(SelectionBehaviorOnFocus::kNone,
                               kWebFocusTypeNone, nullptr));
+  }
 }
 
 void WebPluginContainerImpl::IssuePaintInvalidations() {
