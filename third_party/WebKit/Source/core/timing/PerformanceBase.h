@@ -182,6 +182,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   PerformanceEntryVector server_timing_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
+  Member<PerformanceEntry> first_paint_timing_;
+  Member<PerformanceEntry> first_contentful_paint_timing_;
 
   double time_origin_;
 

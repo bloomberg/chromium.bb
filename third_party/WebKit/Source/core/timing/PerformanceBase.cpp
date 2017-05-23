@@ -108,6 +108,10 @@ PerformanceEntryVector PerformanceBase::getEntries() {
   }
 
   entries.AppendVector(server_timing_buffer_);
+  if (first_paint_timing_)
+    entries.push_back(first_paint_timing_);
+  if (first_contentful_paint_timing_)
+    entries.push_back(first_contentful_paint_timing_);
 
   std::sort(entries.begin(), entries.end(),
             PerformanceEntry::StartTimeCompareLessThan);
@@ -150,11 +154,15 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
     case PerformanceEntry::kServer:
       entries.AppendVector(server_timing_buffer_);
       break;
-    // Unsupported for Paint, LongTask, TaskAttribution.
+    case PerformanceEntry::kPaint:
+      if (first_paint_timing_)
+        entries.push_back(first_paint_timing_);
+      if (first_contentful_paint_timing_)
+        entries.push_back(first_contentful_paint_timing_);
+      break;
+    // Unsupported for LongTask, TaskAttribution.
     // Per the spec, these entries can only be accessed via
     // Performance Observer. No separate buffer is maintained.
-    case PerformanceEntry::kPaint:
-      break;
     case PerformanceEntry::kLongTask:
       break;
     case PerformanceEntry::kTaskAttribution:
@@ -406,8 +414,14 @@ void PerformanceBase::AddPaintTiming(PerformancePaintTiming::PaintType type,
                                      double start_time) {
   if (!RuntimeEnabledFeatures::performancePaintTimingEnabled())
     return;
+
   PerformanceEntry* entry = new PerformancePaintTiming(
       type, MonotonicTimeToDOMHighResTimeStamp(start_time));
+  // Always buffer First Paint & First Contentful Paint.
+  if (type == PerformancePaintTiming::PaintType::kFirstPaint)
+    first_paint_timing_ = entry;
+  else if (type == PerformancePaintTiming::PaintType::kFirstContentfulPaint)
+    first_contentful_paint_timing_ = entry;
   NotifyObserversOfEntry(*entry);
 }
 
@@ -599,6 +613,8 @@ DEFINE_TRACE(PerformanceBase) {
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(server_timing_buffer_);
+  visitor->Trace(first_paint_timing_);
+  visitor->Trace(first_contentful_paint_timing_);
   visitor->Trace(observers_);
   visitor->Trace(active_observers_);
   visitor->Trace(suspended_observers_);
