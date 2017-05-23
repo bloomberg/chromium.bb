@@ -37,9 +37,9 @@ namespace {
 
 // Network status in the context of device update.
 enum NetworkStatus {
-  // It's allowed in device policy to use current network for update.
+  // It's allowed to use current network for update.
   NETWORK_STATUS_ALLOWED = 0,
-  // It's disallowed in device policy to use current network for update.
+  // It's disallowed to use current network for update.
   NETWORK_STATUS_DISALLOWED,
   // Device is in offline state.
   NETWORK_STATUS_OFFLINE
@@ -47,16 +47,18 @@ enum NetworkStatus {
 
 const bool kDefaultAutoUpdateDisabled = false;
 
-NetworkStatus GetNetworkStatus(const chromeos::NetworkState* network) {
+NetworkStatus GetNetworkStatus(bool interactive,
+                               const chromeos::NetworkState* network) {
   if (!network || !network->IsConnectedState())  // Offline state.
     return NETWORK_STATUS_OFFLINE;
-  // The connection type checking strategy must be the same as the one
-  // used in update engine.
+
   if (network->type() == shill::kTypeBluetooth)
     return NETWORK_STATUS_DISALLOWED;
-  // Allow updates over cellular by default in chrome, as update engine still
-  // needs to check device policy and user preferences when checking for
-  // updates to decide whether to proceed to downloading.
+
+  if (network->type() == shill::kTypeCellular &&
+      !help_utils_chromeos::IsUpdateOverCellularAllowed(interactive)) {
+    return NETWORK_STATUS_DISALLOWED;
+  }
   return NETWORK_STATUS_ALLOWED;
 }
 
@@ -74,8 +76,10 @@ bool IsAutoUpdateDisabled() {
 }
 
 // Returns whether an update is allowed. If not, it calls the callback with
-// the appropriate status.
-bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
+// the appropriate status. |interactive| indicates whether the user is actively
+// checking for updates.
+bool EnsureCanUpdate(bool interactive,
+                     const VersionUpdater::StatusCallback& callback) {
   if (IsAutoUpdateDisabled()) {
     callback.Run(VersionUpdater::DISABLED_BY_ADMIN, 0, std::string(), 0,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY));
@@ -89,7 +93,7 @@ bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
 
   // Don't allow an update if we're currently offline or connected
   // to a network for which updates are disallowed.
-  NetworkStatus status = GetNetworkStatus(network);
+  NetworkStatus status = GetNetworkStatus(interactive, network);
   if (status == NETWORK_STATUS_OFFLINE) {
     callback.Run(VersionUpdater::FAILED_OFFLINE, 0, std::string(), 0,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
@@ -116,7 +120,8 @@ VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {
 void VersionUpdaterCros::GetUpdateStatus(const StatusCallback& callback) {
   callback_ = callback;
 
-  if (!EnsureCanUpdate(callback))
+  // User is not actively checking for updates.
+  if (!EnsureCanUpdate(false /* interactive */, callback))
     return;
 
   UpdateEngineClient* update_engine_client =
@@ -132,7 +137,8 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback,
                                         const PromoteCallback&) {
   callback_ = callback;
 
-  if (!EnsureCanUpdate(callback))
+  // User is actively checking for updates.
+  if (!EnsureCanUpdate(true /* interactive */, callback))
     return;
 
   UpdateEngineClient* update_engine_client =

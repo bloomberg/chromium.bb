@@ -98,7 +98,10 @@ struct RegulatoryLabel {
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
 base::string16 GetAllowedConnectionTypesMessage() {
-  if (help_utils_chromeos::IsUpdateOverCellularAllowed()) {
+  // Old help page does not support interactive-updates over cellular, so just
+  // sets |interactive| to false to make its behavior the same as before.
+  if (help_utils_chromeos::IsUpdateOverCellularAllowed(
+          false /* interactive */)) {
     return l10n_util::GetStringUTF16(IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED);
   } else {
     return l10n_util::GetStringUTF16(

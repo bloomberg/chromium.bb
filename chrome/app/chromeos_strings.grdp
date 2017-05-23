@@ -5784,6 +5784,9 @@ Battery full
   <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_DISALLOWED" desc="Status label: for updates you need to connect to an Ethernet or Wi-Fi">
     To check for updates, please use Ethernet or Wi-Fi.
   </message>
+  <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC" desc="Status label: for automatic updates you need to connect to an Ethernet or Wi-Fi">
+    Automatic updates only happen over Ethernet or Wi-Fi.
+  </message>
 
   <!-- EOL Notification Strings -->
   <message name="IDS_ABOUT_PAGE_EOL_EOL" desc="The message in the about page to inform the user that software updates for this device are no longer available.">

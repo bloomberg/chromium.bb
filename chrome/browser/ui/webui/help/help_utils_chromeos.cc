@@ -20,11 +20,11 @@
 
 namespace help_utils_chromeos {
 
-bool IsUpdateOverCellularAllowed() {
-  // If this is a Cellular First device, the default is to allow updates
-  // over cellular.
+bool IsUpdateOverCellularAllowed(bool interactive) {
+  // If this is a Cellular First device or the user actively checks for update,
+  // the default is to allow updates over cellular.
   bool default_update_over_cellular_allowed =
-      chromeos::switches::IsCellularFirstDevice();
+      interactive ? true : chromeos::switches::IsCellularFirstDevice();
 
   // Device Policy overrides the defaults.
   chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
@@ -46,7 +46,9 @@ bool IsUpdateOverCellularAllowed() {
     if (connection_type == 4)
       return true;
   }
-  return default_update_over_cellular_allowed;
+  // Device policy does not allow updates over cellular, as cellular is not
+  // included in allowed connection types for updates.
+  return false;
 }
 
 base::string16 GetConnectionTypeAsUTF16(const std::string& type) {

@@ -217,7 +217,8 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
     return false;
   if (network->type() == shill::kTypeBluetooth ||
       (network->type() == shill::kTypeCellular &&
-       !help_utils_chromeos::IsUpdateOverCellularAllowed())) {
+       !help_utils_chromeos::IsUpdateOverCellularAllowed(
+           false /* interactive */))) {
     return false;
   }
   return true;
