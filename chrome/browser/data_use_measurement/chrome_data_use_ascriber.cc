@@ -41,6 +41,7 @@ ChromeDataUseAscriber::ChromeDataUseAscriber() {
 ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(subframe_to_mainframe_map_.empty());
+  // DCHECK(pending_navigation_global_request_id_.empty());
   // |data_use_recorders_| can be non empty, when mainframe url requests are
   // created but no mainframe navigations take place.
   // TODO(rajendrant): Enable this check when fixed for unittests.
@@ -274,6 +275,7 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
   }
   subframe_to_mainframe_map_.erase(key);
   visible_main_render_frames_.erase(key);
+  pending_navigation_global_request_id_.erase(key);
 }
 
 void ChromeDataUseAscriber::DidStartMainFrameNavigation(
@@ -285,21 +287,41 @@ void ChromeDataUseAscriber::DidStartMainFrameNavigation(
 }
 
 void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
-    GURL gurl,
     content::GlobalRequestID global_request_id,
     int render_process_id,
-    int render_frame_id,
-    bool is_same_page_navigation,
-    void* navigation_handle) {
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  pending_navigation_global_request_id_.insert(
+      std::make_pair(RenderFrameHostID(render_process_id, render_frame_id),
+                     global_request_id));
+}
+
+void ChromeDataUseAscriber::DidFinishNavigation(int render_process_id,
+                                                int render_frame_id,
+                                                GURL gurl,
+                                                bool is_same_page_navigation,
+                                                uint32_t page_transition) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  RenderFrameHostID mainframe(render_process_id, render_frame_id);
+
+  // Find the global request id of the pending navigation.
+  auto global_request_id =
+      pending_navigation_global_request_id_.find(mainframe);
+
+  // TODO(rajendrant): Analyze why global request ID was not found in
+  // pending navigation map, in tests.
+  if (global_request_id == pending_navigation_global_request_id_.end())
+    return;
+
   // Find the DataUseRecorderEntry the frame is associated with
-  auto frame_it = main_render_frame_data_use_map_.find(
-      RenderFrameHostID(render_process_id, render_frame_id));
+  auto frame_it = main_render_frame_data_use_map_.find(mainframe);
 
   // Find the pending navigation entry.
   auto navigation_iter =
-      pending_navigation_data_use_map_.find(global_request_id);
+      pending_navigation_data_use_map_.find(global_request_id->second);
+  pending_navigation_global_request_id_.erase(global_request_id);
+
   // We might not find a navigation entry since the pending navigation may not
   // have caused any HTTP or HTTPS URLRequests to be made.
   if (navigation_iter == pending_navigation_data_use_map_.end()) {
@@ -309,7 +331,9 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       DataUseRecorderEntry old_frame_entry = frame_it->second;
       DataUse::TrafficType old_traffic_type =
           old_frame_entry->data_use().traffic_type();
+      old_frame_entry->set_page_transition(page_transition);
       main_render_frame_data_use_map_.erase(frame_it);
+      NotifyPageLoadCommit(old_frame_entry);
       if (old_frame_entry->IsDataUseComplete()) {
         NotifyDataUseCompleted(old_frame_entry);
         data_use_recorders_.erase(old_frame_entry);
@@ -318,22 +342,21 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       // Add a new recorder to the render frame map to replace the deleted one.
       DataUseRecorderEntry entry = data_use_recorders_.emplace(
           data_use_recorders_.end(), old_traffic_type);
-      std::pair<int, int> frame_key =
-          RenderFrameHostID(render_process_id, render_frame_id);
-      entry->set_main_frame_id(frame_key);
-      main_render_frame_data_use_map_.insert(std::make_pair(frame_key, entry));
+      entry->set_main_frame_id(mainframe);
+      main_render_frame_data_use_map_.insert(std::make_pair(mainframe, entry));
     }
     return;
   }
 
   DataUseRecorderEntry entry = navigation_iter->second;
   pending_navigation_data_use_map_.erase(navigation_iter);
-  entry->set_main_frame_id(
-      RenderFrameHostID(render_process_id, render_frame_id));
+  entry->set_main_frame_id(mainframe);
 
   // If the frame has already been deleted then mark this navigation as having
   // completed its data use.
   if (frame_it == main_render_frame_data_use_map_.end()) {
+    entry->set_page_transition(page_transition);
+    NotifyPageLoadCommit(entry);
     if (entry->IsDataUseComplete()) {
       NotifyDataUseCompleted(entry);
       data_use_recorders_.erase(entry);
@@ -341,6 +364,9 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
     return;
   }
   DataUseRecorderEntry old_frame_entry = frame_it->second;
+  old_frame_entry->set_page_transition(page_transition);
+  NotifyPageLoadCommit(old_frame_entry);
+
   if (is_same_page_navigation) {
     old_frame_entry->MergeFrom(&(*entry));
 
@@ -363,8 +389,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       NotifyDataUseCompleted(old_frame_entry);
       data_use_recorders_.erase(old_frame_entry);
 
-      if (visible_main_render_frames_.find(
-              RenderFrameHostID(render_process_id, render_frame_id)) !=
+      if (visible_main_render_frames_.find(mainframe) !=
           visible_main_render_frames_.end()) {
         entry->set_is_visible(true);
       }
@@ -380,22 +405,13 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       data_use.set_url(gurl);
     }
 
-    main_render_frame_data_use_map_.insert(std::make_pair(
-        RenderFrameHostID(render_process_id, render_frame_id), entry));
+    main_render_frame_data_use_map_.insert(std::make_pair(mainframe, entry));
   }
 }
 
-void ChromeDataUseAscriber::DidFinishNavigation(int render_process_id,
-                                                int render_frame_id,
-                                                uint32_t page_transition) {
-  auto frame_it = main_render_frame_data_use_map_.find(
-      RenderFrameHostID(render_process_id, render_frame_id));
-  if (frame_it != main_render_frame_data_use_map_.end()) {
-    frame_it->second->set_page_transition(page_transition);
-
-    for (auto& observer : observers_)
-      observer.OnPageLoadCommit(&frame_it->second->data_use());
-  }
+void ChromeDataUseAscriber::NotifyPageLoadCommit(DataUseRecorderEntry entry) {
+  for (auto& observer : observers_)
+    observer.OnPageLoadCommit(&entry->data_use());
 }
 
 void ChromeDataUseAscriber::NotifyDataUseCompleted(DataUseRecorderEntry entry) {
@@ -445,10 +461,18 @@ void ChromeDataUseAscriber::RenderFrameHostChanged(int old_render_process_id,
                                                    int old_render_frame_id,
                                                    int new_render_process_id,
                                                    int new_render_frame_id) {
-  if (visible_main_render_frames_.find(
-          RenderFrameHostID(old_render_process_id, old_render_frame_id)) !=
+  RenderFrameHostID old_frame(old_render_process_id, old_render_frame_id);
+  if (visible_main_render_frames_.find(old_frame) !=
       visible_main_render_frames_.end()) {
     WasShownOrHidden(new_render_process_id, new_render_frame_id, true);
+  }
+  auto pending_navigation_iter =
+      pending_navigation_global_request_id_.find(old_frame);
+  if (pending_navigation_iter != pending_navigation_global_request_id_.end()) {
+    pending_navigation_global_request_id_.insert(std::make_pair(
+        RenderFrameHostID(new_render_process_id, new_render_frame_id),
+        pending_navigation_iter->second));
+    pending_navigation_global_request_id_.erase(pending_navigation_iter);
   }
 }
 

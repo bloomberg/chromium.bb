@@ -88,12 +88,9 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // Called when a main frame navigation is ready to be committed in a
   // renderer.
   void ReadyToCommitMainFrameNavigation(
-      GURL gurl,
       content::GlobalRequestID global_request_id,
       int render_process_id,
-      int render_frame_id,
-      bool is_same_page_navigation,
-      void* navigation_handle);
+      int render_frame_id);
 
   // Called every time the WebContents changes visibility.
   void WasShownOrHidden(int main_render_process_id,
@@ -108,6 +105,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
 
   void DidFinishNavigation(int render_process_id,
                            int render_frame_id,
+                           GURL gurl,
+                           bool is_same_page_navigation,
                            uint32_t page_transition);
 
  private:
@@ -142,6 +141,7 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   DataUseRecorderEntry GetOrCreateDataUseRecorderEntry(
       net::URLRequest* request);
 
+  void NotifyPageLoadCommit(DataUseRecorderEntry entry);
   void NotifyDataUseCompleted(DataUseRecorderEntry entry);
 
   DataUseRecorderEntry CreateNewDataUseRecorder(
@@ -158,7 +158,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // ascribing entities go away.
   DataUseRecorderList data_use_recorders_;
 
-  // Map from RenderFrameHost to the DataUseRecorderEntry in
+  // TODO(rajendrant): Combine the multiple hash_maps keyed by
+  // RenderFrameHostID. Map from RenderFrameHost to the DataUseRecorderEntry in
   // |data_use_recorders_| that the main frame ascribes data use to.
   base::hash_map<RenderFrameHostID, DataUseRecorderEntry>
       main_render_frame_data_use_map_;
@@ -175,6 +176,12 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                      DataUseRecorderEntry,
                      GlobalRequestIDHash>
       pending_navigation_data_use_map_;
+
+  // Contains the global requestid of pending navigations in the mainframe. This
+  // is needed to support navigations that transfer from one mainframe to
+  // another.
+  base::hash_map<RenderFrameHostID, content::GlobalRequestID>
+      pending_navigation_global_request_id_;
 
   // Contains the mainframe IDs that are currently visible.
   base::hash_set<RenderFrameHostID> visible_main_render_frames_;
