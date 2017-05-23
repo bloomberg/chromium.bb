@@ -1312,7 +1312,8 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   compositor_->SetViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
-  compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());
+  compositor_->SetRasterColorSpace(
+      screen_info_.icc_profile.GetParametricColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
   compositor_->SetLocalSurfaceId(local_surface_id_);
   // For background pages and certain tests, we don't want to trigger

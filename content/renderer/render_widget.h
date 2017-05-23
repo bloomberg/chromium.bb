@@ -838,6 +838,8 @@ class CONTENT_EXPORT RenderWidget
   void UpdateTextInputStateInternal(bool show_virtual_keyboard,
                                     bool reply_to_request);
 
+  gfx::ColorSpace GetRasterColorSpace() const;
+
   // Indicates whether this widget has focus.
   bool has_focus_;
 

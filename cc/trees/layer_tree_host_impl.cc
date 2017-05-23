@@ -1352,11 +1352,23 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
 }
 
 gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
+  gfx::ColorSpace result;
   if (!settings_.enable_color_correct_rasterization)
-    return gfx::ColorSpace();
-  if (!sync_tree())
-    return gfx::ColorSpace::CreateSRGB();
-  return sync_tree()->raster_color_space();
+    return result;
+
+  // The pending tree will have the most recently updated color space, so
+  // prefer that.
+  if (pending_tree_)
+    result = pending_tree_->raster_color_space();
+  else if (active_tree_)
+    result = active_tree_->raster_color_space();
+
+  // Always specify a color space if color correct rasterization is requested
+  // (not specifying a color space indicates that no color conversion is
+  // required).
+  if (!result.IsValid())
+    result = gfx::ColorSpace::CreateSRGB();
+  return result;
 }
 
 void LayerTreeHostImpl::RequestImplSideInvalidation() {
