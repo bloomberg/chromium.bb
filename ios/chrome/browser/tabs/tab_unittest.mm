@@ -9,8 +9,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -56,50 +54,54 @@
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
-using web::WebStateImpl;
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-static const char kAppSettingsUrl[] = "app-settings://";
-static const char kNewTabUrl[] = "chrome://newtab/";
-static const char kGoogleUserUrl[] = "http://google.com";
-static const char kGoogleRedirectUrl[] = "http://www.google.fr/";
+namespace {
+const char kAppSettingsUrl[] = "app-settings://";
+const char kNewTabUrl[] = "chrome://newtab/";
+const char kGoogleUserUrl[] = "http://google.com";
+const char kGoogleRedirectUrl[] = "http://www.google.fr/";
 static NSString* const kGoogleTitle = @"Google";
-static const char kOtherUserUrl[] = "http://other.com";
-static const char kOtherRedirectUrl[] = "http://other.fr/";
-static NSString* const kOtherTitle = @"Other";
+const char kOtherUserUrl[] = "http://other.com";
+const char kOtherRedirectUrl[] = "http://other.fr/";
+NSString* const kOtherTitle = @"Other";
 const char kContentDispositionWithFilename[] =
     "attachment; filename=\"suggested_filename.pdf\"";
 const char kContentDispositionWithoutFilename[] =
     "attachment; parameter=parameter_value";
 const char kInvalidFilenameUrl[] = "http://www.hostname.com/";
 const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
+}  // namespace
 
 @interface ArrayTabModel : TabModel {
  @private
-  base::scoped_nsobject<NSMutableArray> tabsForTesting_;
+  NSMutableArray* _tabsForTesting;
 }
 @end
 
 @implementation ArrayTabModel
-- (id)init {
+- (instancetype)init {
   if ((self = [super init]))
-    tabsForTesting_.reset([[NSMutableArray alloc] initWithCapacity:1]);
+    _tabsForTesting = [[NSMutableArray alloc] initWithCapacity:1];
   return self;
 }
 
 - (void)addTabForTesting:(Tab*)tab {
-  [tabsForTesting_ addObject:tab];
+  [_tabsForTesting addObject:tab];
 }
 
 - (NSUInteger)indexOfTab:(Tab*)tab {
-  return [tabsForTesting_ indexOfObject:tab];
+  return [_tabsForTesting indexOfObject:tab];
 }
 
 - (NSUInteger)count {
-  return [tabsForTesting_ count];
+  return [_tabsForTesting count];
 }
 
 - (void)closeTabAtIndex:(NSUInteger)index {
-  [tabsForTesting_ removeObjectAtIndex:index];
+  [_tabsForTesting removeObjectAtIndex:index];
 }
 @end
 
@@ -148,9 +150,9 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
  public:
   FakeChromeBrowserProvider(id<NativeAppMetadata> metadata) {
     FakeNativeAppWhitelistManager* fakeManager =
-        [[[FakeNativeAppWhitelistManager alloc] init] autorelease];
+        [[FakeNativeAppWhitelistManager alloc] init];
     fakeManager.metadata = metadata;
-    manager_.reset([fakeManager retain]);
+    manager_.reset(fakeManager);
   }
   ~FakeChromeBrowserProvider() override {}
 
@@ -187,8 +189,6 @@ class TabTest : public BlockCleanupTest {
         ios::BookmarkModelFactory::GetForBrowserState(
             chrome_browser_state_.get()));
     ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
-    history_service_ = ios::HistoryServiceFactory::GetForBrowserState(
-        chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
 
     ios::ChromeBrowserState* browser_state = chrome_browser_state_.get();
     if (UseOffTheRecordBrowserState())
@@ -197,17 +197,17 @@ class TabTest : public BlockCleanupTest {
     mock_web_controller_ =
         [OCMockObject niceMockForClass:[CRWWebController class]];
     web::WebState::CreateParams create_params(browser_state);
-    web_state_impl_ = base::MakeUnique<WebStateImpl>(create_params);
+    web_state_impl_ = base::MakeUnique<web::WebStateImpl>(create_params);
     web_state_impl_->SetWebController(mock_web_controller_);
     web_state_impl_->GetNavigationManagerImpl().InitializeSession();
     web::WebStateImpl* web_state_impl = web_state_impl_.get();
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturnValue:OCMOCK_VALUE(web_state_impl)] webStateImpl];
-    web_controller_view_.reset([[UIView alloc] init]);
+    web_controller_view_ = [[UIView alloc] init];
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
-        andReturn:web_controller_view_.get()] view];
+        andReturn:web_controller_view_] view];
     LegacyTabHelper::CreateForWebState(web_state_impl_.get());
-    tab_.reset(LegacyTabHelper::GetTabForWebState(web_state_impl_.get()));
+    tab_ = LegacyTabHelper::GetTabForWebState(web_state_impl_.get());
     web::NavigationManager::WebLoadParams load_params(
         GURL("chrome://version/"));
     [tab_ navigationManager]->LoadURLWithParams(load_params);
@@ -216,9 +216,9 @@ class TabTest : public BlockCleanupTest {
     history::QueryResults results;
     QueryAllHistory(&results);
     EXPECT_EQ(0UL, results.size());
-    mock_external_app_launcher_.reset([[ExternalAppLauncherMock alloc]
+    mock_external_app_launcher_ = [[ExternalAppLauncherMock alloc]
         initWithRepresentedObject:
-            [OCMockObject mockForClass:[ExternalAppLauncher class]]]);
+            [OCMockObject mockForClass:[ExternalAppLauncher class]]];
     [tab_ replaceExternalAppLauncher:mock_external_app_launcher_];
   }
 
@@ -229,7 +229,7 @@ class TabTest : public BlockCleanupTest {
   }
 
   void BrowseTo(const GURL& userUrl, const GURL& redirectUrl, NSString* title) {
-    DCHECK_EQ(tab_.get().webState, web_state_impl_.get());
+    DCHECK_EQ(tab_.webState, web_state_impl_.get());
 
     [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
     std::unique_ptr<web::NavigationContext> context1 =
@@ -265,7 +265,7 @@ class TabTest : public BlockCleanupTest {
   }
 
   void BrowseToNewTab() {
-    DCHECK_EQ(tab_.get().webState, web_state_impl_.get());
+    DCHECK_EQ(tab_.webState, web_state_impl_.get());
     const GURL url(kNewTabUrl);
     // TODO(crbug.com/661992): This will not work with a mock CRWWebController.
     // The only test that uses it is currently disabled.
@@ -285,7 +285,10 @@ class TabTest : public BlockCleanupTest {
     base::RunLoop run_loop;
     scoped_refptr<HistoryQueryResultsObserver> observer(
         new HistoryQueryResultsObserver(&run_loop));
-    history_service_->QueryHistory(
+    history::HistoryService* history_service =
+        ios::HistoryServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
+    history_service->QueryHistory(
         base::string16(), history::QueryOptions(),
         base::Bind(&HistoryQueryResultsObserver::ProcessResults, observer),
         &tracker);
@@ -331,12 +334,11 @@ class TabTest : public BlockCleanupTest {
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<web::WebStateImpl> web_state_impl_;
-  history::HistoryService* history_service_;  // weak
-  CRWWebController* mock_web_controller_;     // weak
-  base::scoped_nsobject<UIView> web_controller_view_;
-  base::scoped_nsobject<ArrayTabModel> tabModel_;
-  base::scoped_nsobject<id> mock_external_app_launcher_;
-  base::WeakNSObject<Tab> tab_;
+  __weak CRWWebController* mock_web_controller_;
+  UIView* web_controller_view_;
+  ArrayTabModel* tabModel_;
+  id mock_external_app_launcher_;
+  __weak Tab* tab_;
 };
 
 TEST_F(TabTest, AddToHistoryWithRedirect) {
@@ -501,8 +503,7 @@ TEST_F(TabOpenAppTest, testURL) {
 
   GURL testURL("http://www.youtube.com/");
   // Fake metadata object to enable and disable autoopenlinks for testURL.
-  base::scoped_nsobject<FakeNativeAppMetadata> metadata(
-      [[FakeNativeAppMetadata alloc] init]);
+  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
   IOSChromeScopedTestingChromeBrowserProvider provider(
       base::MakeUnique<FakeChromeBrowserProvider>(metadata));
   // Turn auto open on.
@@ -530,8 +531,7 @@ TEST_F(TabOpenAppTest, DISABLED_testResetShouldAutoOpenOnFailure) {
   // With a regular profile.
   GURL testURL("http://maps.google.com/");
   // Fake metadata object
-  base::scoped_nsobject<FakeNativeAppMetadata> metadata(
-      [[FakeNativeAppMetadata alloc] init]);
+  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
 
   // Turn auto open on.
   [metadata setShouldAutoOpenLinks:YES];
@@ -564,8 +564,7 @@ TEST_F(TabOpenAppOffTheRecordTest, testURL) {
   // With a regular chrome browser state.
   GURL testURL("http://www.youtube.com/");
   // Mock metadata object to enable and disable autoopenlinks for testURL.
-  base::scoped_nsobject<FakeNativeAppMetadata> metadata(
-      [[FakeNativeAppMetadata alloc] init]);
+  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
   IOSChromeScopedTestingChromeBrowserProvider provider(
       base::MakeUnique<FakeChromeBrowserProvider>(metadata));
 
@@ -591,8 +590,7 @@ TEST_F(TabOpenAppOffTheRecordTest, DISABLED_testResetShouldAutoOpenOnFailure) {
   // With a regular profile.
   GURL testURL("http://maps.google.com/");
   // Fake metadata object.
-  base::scoped_nsobject<FakeNativeAppMetadata> metadata(
-      [[FakeNativeAppMetadata alloc] init]);
+  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
 
   // Turn auto open on.
   [metadata setShouldAutoOpenLinks:YES];
