@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_state.h"
@@ -122,7 +123,9 @@ void ContentSubresourceFilterDriverFactory::OnSafeBrowsingMatchComputed(
   // TODO(csharrison): Set state.enable_logging based on metadata returns from
   // the safe browsing filter, when it is available. Add tests for this
   // behavior.
-  throttle_manager_->NotifyPageActivationComputed(navigation_handle, state);
+  SubresourceFilterObserverManager::FromWebContents(web_contents())
+      ->NotifyPageActivationComputed(navigation_handle, activation_decision_,
+                                     state);
 }
 
 // Be careful when modifying this method, as the order in which the
