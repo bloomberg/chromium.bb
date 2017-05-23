@@ -873,7 +873,6 @@ def ext_attributes_node_to_extended_attributes(node):
         possible signatures of the custom constructor.
       NamedConstructor: value is a Call node, corresponding to the single
         signature of the named constructor.
-      SetWrapperReferenceTo: value is an Arguments node.
     """
     # Primarily just make a dictionary from the children.
     # The only complexity is handling various types of constructors:
@@ -912,15 +911,6 @@ def ext_attributes_node_to_extended_attributes(node):
             if child_class and child_class != 'Call':
                 raise ValueError('[NamedConstructor] only supports Call as child, but has child of class: %s' % child_class)
             extended_attributes[name] = child
-        elif name == 'SetWrapperReferenceTo':
-            if not child:
-                raise ValueError('[SetWrapperReferenceTo] requires a child, but has none.')
-            children = child.GetChildren()
-            if len(children) != 1:
-                raise ValueError('[SetWrapperReferenceTo] supports only one child.')
-            if child_class != 'Arguments':
-                raise ValueError('[SetWrapperReferenceTo] only supports Arguments as child, but has child of class: %s' % child_class)
-            extended_attributes[name] = IdlArgument(children[0])
         elif name == 'Exposed':
             if child_class and child_class != 'Arguments':
                 raise ValueError('[Exposed] only supports Arguments as child, but has child of class: %s' % child_class)
