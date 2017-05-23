@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/libaddressinput/messages.h"
@@ -77,6 +78,11 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
 
   if (!profile_to_edit_)
     return base::string16();
+
+  if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
+    return data_util::GetFormattedPhoneNumberForDisplay(
+        *profile_to_edit_, state()->GetApplicationLocale());
+  }
 
   return profile_to_edit_->GetInfo(autofill::AutofillType(type),
                                    state()->GetApplicationLocale());

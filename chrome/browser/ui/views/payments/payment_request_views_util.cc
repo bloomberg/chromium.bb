@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/payment_options_provider.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -132,8 +133,8 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
 
   base::string16 address = GetAddressFromProfile(profile, locale);
 
-  base::string16 phone = profile.GetInfo(
-      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
+  base::string16 phone =
+      data_util::GetFormattedPhoneNumberForDisplay(profile, locale);
 
   return GetBaseProfileLabel(type, name, address, phone, disabled_state);
 }
@@ -200,16 +201,16 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the optional back arrow.
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   constexpr int kPaddingBetweenArrowAndTitle = 16;
   if (show_back_arrow)
     columns->AddPaddingColumn(0, kPaddingBetweenArrowAndTitle);
 
   // A column for the title.
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     1, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   if (!show_back_arrow) {
@@ -220,8 +221,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    back_arrow->set_tag(static_cast<int>(
-        PaymentRequestCommonTags::BACK_BUTTON_TAG));
+    back_arrow->set_tag(
+        static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG));
     back_arrow->set_id(static_cast<int>(DialogViewID::BACK_BUTTON));
     layout->AddView(back_arrow);
   }
@@ -320,9 +321,7 @@ std::unique_ptr<views::View> GetContactInfoLabel(
 
   base::string16 phone =
       options.request_payer_phone()
-          ? profile.GetInfo(
-                autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-                locale)
+          ? data_util::GetFormattedPhoneNumberForDisplay(profile, locale)
           : base::string16();
 
   base::string16 email =

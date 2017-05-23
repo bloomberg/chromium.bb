@@ -152,6 +152,15 @@ void ParseBasicCardSupportedNetworks(
   }
 }
 
+base::string16 GetFormattedPhoneNumberForDisplay(
+    const autofill::AutofillProfile& profile,
+    const std::string& locale) {
+  return base::UTF8ToUTF16(FormatPhoneForDisplay(
+      base::UTF16ToUTF8(profile.GetInfo(
+          autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale)),
+      GetCountryCodeWithFallback(&profile, locale)));
+}
+
 std::string FormatPhoneForDisplay(const std::string& phone_number,
                                   const std::string& country_code) {
   return FormatPhoneNumber(phone_number, country_code,

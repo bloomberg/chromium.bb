@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
   EXPECT_EQ(
       base::ASCIIToUTF16("ACME, 123 Main Street, Unit 1, Greensdale, MI 48838"),
       shipping_address_labels[1]);
-  EXPECT_EQ(base::ASCIIToUTF16("13105557889"), shipping_address_labels[2]);
+  EXPECT_EQ(base::ASCIIToUTF16("+1 310-555-7889"), shipping_address_labels[2]);
 
   // The shipping option section exists, and the shipping option is shown.
   std::vector<base::string16> shipping_option_labels =
