@@ -22,7 +22,7 @@ namespace {
 const CGFloat kDividerHeight = 16.0;
 const CGFloat kDividerPadding = 6.0;  // Between the divider and label.
 const CGFloat kDividerGray = 0xFFA6A6A6;
-const CGFloat kDividerGrayIncognito = 0xFFDFDFDF;
+const CGFloat kDividerGrayIncognito = 0xFFCCCCCC;
 
 // Color values for the hover and pressed background.
 const SkColor kHoverBackgroundColor = 0x14000000;
