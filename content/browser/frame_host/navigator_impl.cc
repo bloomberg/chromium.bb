@@ -538,8 +538,8 @@ void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     std::unique_ptr<NavigationHandleImpl> navigation_handle) {
-  FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
-  bool oopifs_possible = SiteIsolationPolicy::AreCrossProcessFramesPossible();
+  FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
+  FrameTree* frame_tree = frame_tree_node->frame_tree();
 
   bool is_navigation_within_page = controller_->IsURLInPageNavigation(
       params.url, params.origin, params.was_within_same_document,
@@ -549,9 +549,7 @@ void NavigatorImpl::DidNavigate(
   // not a pending one.
   if (is_navigation_within_page &&
       render_frame_host !=
-          render_frame_host->frame_tree_node()
-              ->render_manager()
-              ->current_frame_host()) {
+          frame_tree_node->render_manager()->current_frame_host()) {
     bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
                                     bad_message::NI_IN_PAGE_NAVIGATION);
     is_navigation_within_page = false;
@@ -577,10 +575,6 @@ void NavigatorImpl::DidNavigate(
       // Run tasks that must execute just before the commit.
       delegate_->DidNavigateMainFramePreCommit(is_navigation_within_page);
     }
-
-    if (!oopifs_possible)
-      frame_tree->root()->render_manager()->DidNavigateFrame(
-          render_frame_host, params.gesture == NavigationGestureUser);
   }
 
   // Save the origin of the new page.  Do this before calling
@@ -590,27 +584,21 @@ void NavigatorImpl::DidNavigate(
   // its security context. This origin will also be sent to RenderFrameProxies
   // created via mojom::Renderer::CreateView and
   // mojom::Renderer::CreateFrameProxy.
-  render_frame_host->frame_tree_node()->SetCurrentOrigin(
+  frame_tree_node->SetCurrentOrigin(
       params.origin, params.has_potentially_trustworthy_unique_origin);
 
-  render_frame_host->frame_tree_node()->SetInsecureRequestPolicy(
-      params.insecure_request_policy);
+  frame_tree_node->SetInsecureRequestPolicy(params.insecure_request_policy);
 
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP and Feature Policy.
   if (!is_navigation_within_page) {
     render_frame_host->ResetContentSecurityPolicies();
-    render_frame_host->frame_tree_node()->ResetCspHeaders();
-    render_frame_host->frame_tree_node()->ResetFeaturePolicyHeader();
+    frame_tree_node->ResetCspHeaders();
+    frame_tree_node->ResetFeaturePolicyHeader();
   }
 
-  // When using --site-per-process, we notify the RFHM for all navigations,
-  // not just main frame navigations.
-  if (oopifs_possible) {
-    FrameTreeNode* frame = render_frame_host->frame_tree_node();
-    frame->render_manager()->DidNavigateFrame(
-        render_frame_host, params.gesture == NavigationGestureUser);
-  }
+  frame_tree_node->render_manager()->DidNavigateFrame(
+      render_frame_host, params.gesture == NavigationGestureUser);
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
   // assigning a site is not necessary for this URL or the commit was for an
@@ -658,7 +646,7 @@ void NavigatorImpl::DidNavigate(
   // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
   // stay correct even if the render_frame_host later becomes pending deletion.
   // The URL is set regardless of whether it's for a net error or not.
-  render_frame_host->frame_tree_node()->SetCurrentURL(params.url);
+  frame_tree_node->SetCurrentURL(params.url);
   render_frame_host->SetLastCommittedOrigin(params.origin);
 
   // Separately, update the frame's last successful URL except for net error
