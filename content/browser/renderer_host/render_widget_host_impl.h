@@ -543,8 +543,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called from a RenderFrameHost when the text selection has changed.
   void SelectionChanged(const base::string16& text,
                         uint32_t offset,
-                        const gfx::Range& range,
-                        bool user_initiated);
+                        const gfx::Range& range);
 
   size_t in_flight_event_count() const { return in_flight_event_count_; }
   blink::WebInputEvent::Type hang_monitor_event_type() const {

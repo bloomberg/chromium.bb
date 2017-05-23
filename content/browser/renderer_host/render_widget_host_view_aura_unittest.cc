@@ -5795,7 +5795,7 @@ TEST_F(InputMethodStateAuraTest, GetSelectedText) {
   for (auto index : active_view_sequence_) {
     render_widget_host_delegate()->set_focused_widget(
         RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
-    views_[index]->SelectionChanged(text, offset, selection_range, true);
+    views_[index]->SelectionChanged(text, offset, selection_range);
     base::string16 expected_text = text.substr(
         selection_range.GetMin() - offset, selection_range.length());
 
@@ -5817,7 +5817,7 @@ TEST_F(InputMethodStateAuraTest, GetTextRange) {
     render_widget_host_delegate()->set_focused_widget(
         RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
     gfx::Range expected_range(offset, offset + text.length());
-    views_[index]->SelectionChanged(text, offset, selection_range, true);
+    views_[index]->SelectionChanged(text, offset, selection_range);
     gfx::Range range_from_client;
 
     // For aura this always returns true.
@@ -5838,7 +5838,7 @@ TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
   for (auto index : active_view_sequence_) {
     render_widget_host_delegate()->set_focused_widget(
         RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
-    views_[index]->SelectionChanged(text, 0U, expected_range, true);
+    views_[index]->SelectionChanged(text, 0U, expected_range);
     gfx::Range range_from_client;
 
     // This method always returns true.
@@ -5868,7 +5868,7 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
     // Change the selection of the currently focused widget. It suffices to just
     // call the method on the view.
     base::string16 expected_text = base::ASCIIToUTF16(texts[index]);
-    views_[index]->SelectionChanged(expected_text, 0U, gfx::Range(0, 5), true);
+    views_[index]->SelectionChanged(expected_text, 0U, gfx::Range(0, 5));
 
     // Retrieve the selected text from clipboard and verify it is as expected.
     base::string16 result_text;

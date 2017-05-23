@@ -89,8 +89,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void SetTooltipText(const base::string16& tooltip_text) override;
   void SelectionChanged(const base::string16& text,
                         size_t offset,
-                        const gfx::Range& range,
-                        bool user_initiated) override;
+                        const gfx::Range& range) override;
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,

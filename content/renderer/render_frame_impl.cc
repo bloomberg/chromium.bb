@@ -1377,9 +1377,7 @@ void RenderFrameImpl::PepperSelectionChanged(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  // Keep the original behavior for pepper plugins and handle all selection
-  // change as user initiated.
-  SyncSelectionIfRequired(true);
+  SyncSelectionIfRequired();
 }
 
 RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
@@ -1963,9 +1961,7 @@ void RenderFrameImpl::OnReplace(const base::string16& text) {
     frame_->SelectWordAroundCaret();
 
   frame_->ReplaceSelection(WebString::FromUTF16(text));
-  // Handle this selection change as user initiated since typically triggered
-  // from context menu.
-  SyncSelectionIfRequired(true);
+  SyncSelectionIfRequired();
 }
 
 void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
@@ -2644,11 +2640,9 @@ void RenderFrameImpl::DetachGuest(int element_instance_id) {
 
 void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                       size_t offset,
-                                      const gfx::Range& range,
-                                      bool user_initiated) {
+                                      const gfx::Range& range) {
   Send(new FrameHostMsg_SelectionChanged(routing_id_, selection_text,
-                                         static_cast<uint32_t>(offset), range,
-                                         user_initiated));
+                                         static_cast<uint32_t>(offset), range));
 }
 
 void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
@@ -4182,9 +4176,9 @@ void RenderFrameImpl::AbortClientNavigation() {
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
-  bool user_initiated =
-      GetRenderWidget()->input_handler().handling_input_event() ||
-      handling_select_range_;
+  if (!GetRenderWidget()->input_handler().handling_input_event() &&
+      !handling_select_range_)
+    return;
 
   if (is_empty_selection)
     selection_text_.clear();
@@ -4195,7 +4189,7 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   // to notify the selection was changed.  Focus change should be notified
   // before selection change.
   GetRenderWidget()->UpdateTextInputState();
-  SyncSelectionIfRequired(user_initiated);
+  SyncSelectionIfRequired();
 }
 
 bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
@@ -6286,10 +6280,10 @@ void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
     Send(new FrameHostMsg_UpdateEncoding(routing_id_, encoding_name));
 }
 
-void RenderFrameImpl::SyncSelectionIfRequired(bool user_initiated) {
+void RenderFrameImpl::SyncSelectionIfRequired() {
   base::string16 text;
-  size_t offset = 0;
-  gfx::Range range = gfx::Range::InvalidRange();
+  size_t offset;
+  gfx::Range range;
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->GetSurroundingText(&text, &range);
@@ -6300,37 +6294,32 @@ void RenderFrameImpl::SyncSelectionIfRequired(bool user_initiated) {
   {
     WebRange selection =
         GetRenderWidget()->GetWebWidget()->CaretOrSelectionRange();
-
-    // When clearing text selection from JavaScript the selection range
-    // might be null but the selected text still have to be updated.
-    // Do not cancel sync selection if the clear was not user initiated.
-    if (!selection.IsNull()) {
-      range = gfx::Range(selection.StartOffset(), selection.EndOffset());
-
-      if (frame_->GetInputMethodController()->TextInputType() !=
-          blink::kWebTextInputTypeNone) {
-        // If current focused element is editable, we will send 100 more chars
-        // before and after selection. It is for input method surrounding text
-        // feature.
-        if (selection.StartOffset() > kExtraCharsBeforeAndAfterSelection)
-          offset = selection.StartOffset() - kExtraCharsBeforeAndAfterSelection;
-        else
-          offset = 0;
-        size_t length =
-            selection.EndOffset() - offset + kExtraCharsBeforeAndAfterSelection;
-        text = frame_->RangeAsText(WebRange(offset, length)).Utf16();
-      } else {
-        offset = selection.StartOffset();
-        text = frame_->SelectionAsText().Utf16();
-        // http://crbug.com/101435
-        // In some case, frame->selectionAsText() returned text's length is not
-        // equal to the length returned from
-        // GetWebWidget()->caretOrSelectionRange().
-        // So we have to set the range according to text.length().
-        range.set_end(range.start() + text.length());
-      }
-    } else if (user_initiated) {
+    if (selection.IsNull())
       return;
+
+    range = gfx::Range(selection.StartOffset(), selection.EndOffset());
+
+    if (frame_->GetInputMethodController()->TextInputType() !=
+        blink::kWebTextInputTypeNone) {
+      // If current focused element is editable, we will send 100 more chars
+      // before and after selection. It is for input method surrounding text
+      // feature.
+      if (selection.StartOffset() > kExtraCharsBeforeAndAfterSelection)
+        offset = selection.StartOffset() - kExtraCharsBeforeAndAfterSelection;
+      else
+        offset = 0;
+      size_t length =
+          selection.EndOffset() - offset + kExtraCharsBeforeAndAfterSelection;
+      text = frame_->RangeAsText(WebRange(offset, length)).Utf16();
+    } else {
+      offset = selection.StartOffset();
+      text = frame_->SelectionAsText().Utf16();
+      // http://crbug.com/101435
+      // In some case, frame->selectionAsText() returned text's length is not
+      // equal to the length returned from
+      // GetWebWidget()->caretOrSelectionRange().
+      // So we have to set the range according to text.length().
+      range.set_end(range.start() + text.length());
     }
   }
 
@@ -6346,7 +6335,7 @@ void RenderFrameImpl::SyncSelectionIfRequired(bool user_initiated) {
     selection_text_ = text;
     selection_text_offset_ = offset;
     selection_range_ = range;
-    SetSelectedText(text, offset, range, user_initiated);
+    SetSelectedText(text, offset, range);
   }
   GetRenderWidget()->UpdateSelectionBounds();
 }
