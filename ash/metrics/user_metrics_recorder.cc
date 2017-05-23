@@ -333,7 +333,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_CHANGED_VOLUME_POPUP:
       RecordAction(UserMetricsAction("StatusArea_Volume_ChangedPopup"));
       break;
-    case UMA_STATUS_AREA_DETAILED_ACCESSABILITY:
+    case UMA_STATUS_AREA_DETAILED_ACCESSIBILITY:
       RecordAction(UserMetricsAction("StatusArea_Accessability_DetailedView"));
       break;
     case UMA_STATUS_AREA_DETAILED_AUDIO_VIEW:

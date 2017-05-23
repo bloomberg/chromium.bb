@@ -38,6 +38,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/label.h"
@@ -46,6 +47,7 @@
 using extensions::api::braille_display_private::BrailleObserver;
 using extensions::api::braille_display_private::DisplayState;
 using extensions::api::braille_display_private::MockBrailleController;
+using message_center::MessageCenter;
 using testing::Return;
 using testing::_;
 using testing::WithParamInterface;
@@ -338,18 +340,6 @@ class TrayAccessibilityTest
   bool IsSettingsAvailableOnDetailMenu() const {
     return tray()->detailed_menu_->settings_view_->state() ==
            views::Button::STATE_NORMAL;
-  }
-
-  bool IsNotificationShown() const {
-    return (tray()->detailed_popup_ &&
-            !tray()->detailed_popup_->GetWidget()->IsClosed());
-  }
-
-  base::string16 GetNotificationText() const {
-    if (IsNotificationShown())
-      return tray()->detailed_popup_->label_for_test()->text();
-    else
-      return base::string16();
   }
 
   void SetBrailleConnected(bool connected) {
@@ -940,38 +930,52 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
   const base::string16 BRAILLE_CONNECTED =
       base::ASCIIToUTF16("Braille display connected.");
-  const base::string16 CHROMEVOX_ENABLED = base::ASCIIToUTF16(
-      "ChromeVox (spoken feedback) is enabled.\nPress Ctrl+Alt+Z to disable.");
-  const base::string16 BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED(
-      BRAILLE_CONNECTED + base::ASCIIToUTF16(" ") + CHROMEVOX_ENABLED);
+  const base::string16 CHROMEVOX_ENABLED_TITLE =
+      base::ASCIIToUTF16("ChromeVox enabled");
+  const base::string16 CHROMEVOX_ENABLED =
+      base::ASCIIToUTF16("Press Ctrl + Alt + Z to disable spoken feedback.");
+  const base::string16 BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED_TITLE =
+      base::ASCIIToUTF16("Braille and ChromeVox are enabled");
 
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   // Enabling spoken feedback should show the notification.
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_SHOW);
-  EXPECT_EQ(CHROMEVOX_ENABLED, GetNotificationText());
+  message_center::NotificationList::Notifications notifications =
+      MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(1u, notifications.size());
+  EXPECT_EQ(CHROMEVOX_ENABLED_TITLE, (*notifications.begin())->title());
+  EXPECT_EQ(CHROMEVOX_ENABLED, (*notifications.begin())->message());
 
   // Connecting a braille display when spoken feedback is already enabled
   // should only show the message about the braille display.
   SetBrailleConnected(true);
-  EXPECT_EQ(BRAILLE_CONNECTED, GetNotificationText());
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(1u, notifications.size());
+  EXPECT_EQ(base::string16(), (*notifications.begin())->title());
+  EXPECT_EQ(BRAILLE_CONNECTED, (*notifications.begin())->message());
 
   // Neither disconnecting a braille display, nor disabling spoken feedback
   // should show any notification.
   SetBrailleConnected(false);
   EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  EXPECT_FALSE(IsNotificationShown());
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(0u, notifications.size());
   AccessibilityManager::Get()->EnableSpokenFeedback(
       false, ash::A11Y_NOTIFICATION_SHOW);
-  EXPECT_FALSE(IsNotificationShown());
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(0u, notifications.size());
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   // Connecting a braille display should enable spoken feedback and show
   // both messages.
   SetBrailleConnected(true);
   EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  EXPECT_EQ(BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED, GetNotificationText());
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED_TITLE,
+            (*notifications.begin())->title());
+  EXPECT_EQ(CHROMEVOX_ENABLED, (*notifications.begin())->message());
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
