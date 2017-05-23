@@ -967,6 +967,102 @@ int av1_find_best_sub_pixel_tree(
 #undef PRE
 #undef CHECK_BETTER
 
+#if CONFIG_WARPED_MOTION
+unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
+                                     BLOCK_SIZE bsize, int mi_row, int mi_col,
+                                     const MV *this_mv) {
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MODE_INFO *mi = xd->mi[0];
+  MB_MODE_INFO *mbmi = &mi->mbmi;
+  const uint8_t *const src = x->plane[0].src.buf;
+  const int src_stride = x->plane[0].src.stride;
+  uint8_t *const dst = xd->plane[0].dst.buf;
+  const int dst_stride = xd->plane[0].dst.stride;
+  const aom_variance_fn_ptr_t *vfp = &cpi->fn_ptr[bsize];
+  const MV ref_mv = x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv;
+  unsigned int mse;
+  unsigned int sse;
+
+  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
+  mse = vfp->vf(dst, dst_stride, src, src_stride, &sse);
+  mse +=
+      mv_err_cost(this_mv, &ref_mv, x->nmvjointcost, x->mvcost, x->errorperbit);
+  return mse;
+}
+
+// Refine MV in a small range
+unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
+                                  BLOCK_SIZE bsize, int mi_row, int mi_col,
+                                  int *pts, int *pts_inref) {
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MODE_INFO *mi = xd->mi[0];
+  MB_MODE_INFO *mbmi = &mi->mbmi;
+  const MV neighbors[8] = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 },
+                            { 0, -2 }, { 2, 0 }, { 0, 2 }, { -2, 0 } };
+  const MV ref_mv = x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv;
+  int16_t br = mbmi->mv[0].as_mv.row;
+  int16_t bc = mbmi->mv[0].as_mv.col;
+  int16_t *tr = &mbmi->mv[0].as_mv.row;
+  int16_t *tc = &mbmi->mv[0].as_mv.col;
+  WarpedMotionParams best_wm_params = mbmi->wm_params[0];
+  unsigned int bestmse;
+  int minc, maxc, minr, maxr;
+  const int start = cm->allow_high_precision_mv ? 0 : 4;
+  int ite;
+
+  av1_set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
+                                 &ref_mv);
+
+  // Calculate the center position's error
+  assert(bc >= minc && bc <= maxc && br >= minr && br <= maxr);
+  bestmse = av1_compute_motion_cost(cpi, x, bsize, mi_row, mi_col,
+                                    &mbmi->mv[0].as_mv);
+
+  // MV search
+  for (ite = 0; ite < 2; ++ite) {
+    int best_idx = -1;
+    int idx;
+
+    for (idx = start; idx < start + 4; ++idx) {
+      unsigned int thismse;
+
+      *tr = br + neighbors[idx].row;
+      *tc = bc + neighbors[idx].col;
+
+      if (*tc >= minc && *tc <= maxc && *tr >= minr && *tr <= maxr) {
+        MV this_mv = { *tr, *tc };
+        if (!find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize, *tr,
+                             *tc, &mbmi->wm_params[0], mi_row, mi_col)) {
+          thismse =
+              av1_compute_motion_cost(cpi, x, bsize, mi_row, mi_col, &this_mv);
+
+          if (thismse < bestmse) {
+            best_idx = idx;
+            best_wm_params = mbmi->wm_params[0];
+            bestmse = thismse;
+          }
+        }
+      }
+    }
+
+    if (best_idx == -1) break;
+
+    if (best_idx >= 0) {
+      br += neighbors[best_idx].row;
+      bc += neighbors[best_idx].col;
+    }
+  }
+
+  *tr = br;
+  *tc = bc;
+  mbmi->wm_params[0] = best_wm_params;
+
+  return bestmse;
+}
+#endif  // CONFIG_WARPED_MOTION
+
 static INLINE int check_bounds(const MvLimits *mv_limits, int row, int col,
                                int range) {
   return ((row - range) >= mv_limits->row_min) &
