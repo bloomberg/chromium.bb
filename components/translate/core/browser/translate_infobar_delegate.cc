@@ -101,10 +101,16 @@ void TranslateInfoBarDelegate::Create(
     old_infobar = infobar_manager->infobar_at(i);
     old_delegate = old_infobar->delegate()->AsTranslateInfoBarDelegate();
     if (old_delegate) {
-      if (!replace_existing_infobar || IsCompactUIEnabled())
+      if (!replace_existing_infobar)
         return;
       break;
     }
+  }
+
+  // Try to reuse existing translate infobar delegate.
+  if (old_delegate && old_delegate->observer_) {
+    old_delegate->observer_->OnTranslateStepChanged(step, error_type);
+    return;
   }
 
   // Add the new delegate.
@@ -122,6 +128,10 @@ void TranslateInfoBarDelegate::Create(
 // static
 bool TranslateInfoBarDelegate::IsCompactUIEnabled() {
   return base::FeatureList::IsEnabled(kTranslateCompactUI);
+}
+
+void TranslateInfoBarDelegate::SetObserver(Observer* observer) {
+  observer_ = observer;
 }
 
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(
@@ -361,7 +371,8 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       translate_manager_(translate_manager),
       error_type_(error_type),
       prefs_(translate_manager->translate_client()->GetTranslatePrefs()),
-      triggered_from_menu_(triggered_from_menu) {
+      triggered_from_menu_(triggered_from_menu),
+      observer_(nullptr) {
   DCHECK_NE((step_ == translate::TRANSLATE_STEP_TRANSLATE_ERROR),
             (error_type_ == TranslateErrors::NONE));
   DCHECK(translate_manager_);
@@ -377,13 +388,15 @@ int TranslateInfoBarDelegate::GetIconId() const {
 }
 
 void TranslateInfoBarDelegate::InfoBarDismissed() {
-  if (step_ != translate::TRANSLATE_STEP_BEFORE_TRANSLATE)
-    return;
-  if (IsCompactUIEnabled())
-    return;
-  // The user closed the infobar without clicking the translate button.
-  TranslationDeclined();
-  UMA_HISTOGRAM_BOOLEAN("Translate.DeclineTranslateCloseInfobar", true);
+  bool declined = observer_
+                      ? observer_->IsDeclinedByUser()
+                      : (step_ == translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
+
+  if (declined) {
+    // The user closed the infobar without clicking the translate button.
+    TranslationDeclined();
+    UMA_HISTOGRAM_BOOLEAN("Translate.DeclineTranslateCloseInfobar", true);
+  }
 }
 
 TranslateInfoBarDelegate*
