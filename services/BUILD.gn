@@ -80,6 +80,7 @@ if (is_android) {
   junit_binary("service_junit_tests") {
     java_files = [
       "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
+      "device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
       "shape_detection/android/junit/src/org/chromium/shape_detection/SharedBufferUtilsTest.java",
     ]
     deps = [
@@ -92,6 +93,9 @@ if (is_android) {
       "//device/generic_sensor/public/interfaces:interfaces_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
+      "//services/device/nfc/android:java",
+      "//services/device/public/interfaces:interfaces_java",
+      "//services/device/public/java:nfc_java",
       "//services/shape_detection:shape_detection_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]

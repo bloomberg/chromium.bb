@@ -5,7 +5,7 @@
 // TODO(blundell): This should be moved to device.mojom.
 module device.nfc.mojom;
 
-import "device/nfc/nfc.mojom";
+import "services/device/public/interfaces/nfc.mojom";
 
 interface NFCProvider {
   // Gets an NFC that is associated with |host_id|. |host_id|

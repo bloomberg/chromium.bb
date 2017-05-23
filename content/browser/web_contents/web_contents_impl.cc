@@ -125,7 +125,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/geolocation_service_context.h"
-#include "device/nfc/nfc.mojom.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -152,6 +151,7 @@
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
+#include "services/device/public/interfaces/nfc.mojom.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_MACOSX)

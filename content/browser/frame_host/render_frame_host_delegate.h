@@ -29,7 +29,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
-#include "device/nfc/nfc.mojom.h"
+#include "services/device/public/interfaces/nfc.mojom.h"
 #endif
 
 class GURL;
