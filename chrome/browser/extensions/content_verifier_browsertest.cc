@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -39,10 +40,6 @@
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension_urls.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace extensions {
 
@@ -492,13 +489,12 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     ASSERT_TRUE(extension);
     ASSERT_EQ(id, extension->id());
     page_url_ = extension->GetResourceURL("page.html");
-
-    // This call passes false for |check_navigation_success|, because checking
-    // for navigation success needs the WebContents to still exist after the
-    // navigation, whereas this navigation triggers an unload which destroys
-    // the WebContents.
-    AddTabAtIndexToBrowser(browser(), 1, page_url_, ui::PAGE_TRANSITION_LINK,
-                           false);
+    // Wait for 0 navigations to complete because with PlzNavigate it's racy
+    // when the didstop IPC arrives relative to the tab being closed. The
+    // wait call below is what the tests care about.
+    ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+        browser(), page_url_, 0, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
 
     EXPECT_TRUE(unload_observer.WaitForUnload(id));
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
@@ -560,13 +556,6 @@ class ContentVerifierTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnRead) {
-#if defined(OS_WIN)
-  if (content::IsBrowserSideNavigationEnabled() &&
-      base::win::GetVersion() >= base::win::VERSION_WIN10) {
-    // http://crbug.com/699437
-    return;
-  }
-#endif
   EXPECT_EQ(0, delegate_.bytes_read_failed());
   delegate_.fail_next_read();
   OpenPageAndWaitForUnload();
@@ -574,13 +563,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnRead) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnDone) {
-#if defined(OS_WIN)
-  if (content::IsBrowserSideNavigationEnabled() &&
-      base::win::GetVersion() >= base::win::VERSION_WIN10) {
-    // http://crbug.com/699437
-    return;
-  }
-#endif
   EXPECT_EQ(0, delegate_.done_reading_failed());
   delegate_.fail_next_done();
   OpenPageAndWaitForUnload();
