@@ -2664,7 +2664,7 @@ device::mojom::WakeLockService* WebContentsImpl::GetRendererWakeLock() {
 }
 
 #if defined(OS_ANDROID)
-void WebContentsImpl::GetNFC(device::nfc::mojom::NFCRequest request) {
+void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
   if (!nfc_host_)
     nfc_host_.reset(new NFCHost(this));
   nfc_host_->GetNFC(std::move(request));

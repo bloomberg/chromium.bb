@@ -930,7 +930,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if defined(OS_ANDROID)
   void BindNFCRequest(const service_manager::BindSourceInfo& source_info,
-                      device::nfc::mojom::NFCRequest request);
+                      device::mojom::NFCRequest request);
 #endif
 
   // service_manager::mojom::InterfaceProvider:

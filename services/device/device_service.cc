@@ -115,15 +115,14 @@ void DeviceService::OnStart() {
   registry_.AddInterface(GetJavaInterfaceProvider()
                              ->CreateInterfaceFactory<mojom::BatteryMonitor>());
   registry_.AddInterface(
-      GetJavaInterfaceProvider()
-          ->CreateInterfaceFactory<nfc::mojom::NFCProvider>());
+      GetJavaInterfaceProvider()->CreateInterfaceFactory<mojom::NFCProvider>());
   registry_.AddInterface(
       GetJavaInterfaceProvider()
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
   registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
       &DeviceService::BindBatteryMonitorRequest, base::Unretained(this)));
-  registry_.AddInterface<nfc::mojom::NFCProvider>(base::Bind(
+  registry_.AddInterface<mojom::NFCProvider>(base::Bind(
       &DeviceService::BindNFCProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
       &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
@@ -147,7 +146,7 @@ void DeviceService::BindBatteryMonitorRequest(
 
 void DeviceService::BindNFCProviderRequest(
     const service_manager::BindSourceInfo& source_info,
-    nfc::mojom::NFCProviderRequest request) {
+    mojom::NFCProviderRequest request) {
   LOG(ERROR) << "NFC is only supported on Android";
   NOTREACHED();
 }

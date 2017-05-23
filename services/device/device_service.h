@@ -93,7 +93,7 @@ class DeviceService : public service_manager::Service {
       mojom::BatteryMonitorRequest request);
   void BindNFCProviderRequest(
       const service_manager::BindSourceInfo& source_info,
-      nfc::mojom::NFCProviderRequest request);
+      mojom::NFCProviderRequest request);
   void BindVibrationManagerRequest(
       const service_manager::BindSourceInfo& source_info,
       mojom::VibrationManagerRequest request);

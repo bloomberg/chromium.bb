@@ -7,7 +7,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 
-using device::nfc::mojom::blink::NFCErrorType;
+using device::mojom::blink::NFCErrorType;
 
 namespace blink {
 
