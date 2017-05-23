@@ -810,13 +810,12 @@ static bool ExecuteDeleteToMark(LocalFrame& frame,
   const EphemeralRange mark =
       frame.GetEditor().Mark().ToNormalizedEphemeralRange();
   if (mark.IsNotNull()) {
-    bool selected = frame.Selection().SetSelectedRange(
-        UnionEphemeralRanges(mark, frame.GetEditor().SelectedRange()),
-        TextAffinity::kDownstream, SelectionDirectionalMode::kNonDirectional,
+    frame.Selection().SetSelection(
+        SelectionInDOMTree::Builder()
+            .SetBaseAndExtent(
+                UnionEphemeralRanges(mark, frame.GetEditor().SelectedRange()))
+            .Build(),
         FrameSelection::kCloseTyping);
-    DCHECK(selected);
-    if (!selected)
-      return false;
   }
   frame.GetEditor().PerformDelete();
   frame.GetEditor().SetMark(
