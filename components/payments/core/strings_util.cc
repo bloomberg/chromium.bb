@@ -4,11 +4,52 @@
 
 #include "components/payments/core/strings_util.h"
 
+#include <vector>
+
 #include "base/logging.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
+
+base::string16 GetShippingAddressLabelFormAutofillProfile(
+    const autofill::AutofillProfile& profile,
+    const std::string& locale) {
+  // Name, phone number, and country are not included in the shipping address
+  // label.
+  static const std::vector<autofill::ServerFieldType> label_fields{
+      autofill::COMPANY_NAME,
+      autofill::ADDRESS_HOME_STREET_ADDRESS,
+      autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
+      autofill::ADDRESS_HOME_CITY,
+      autofill::ADDRESS_HOME_STATE,
+      autofill::ADDRESS_HOME_ZIP,
+      autofill::ADDRESS_HOME_SORTING_CODE,
+  };
+
+  return profile.ConstructInferredLabel(label_fields, label_fields.size(),
+                                        locale);
+}
+
+base::string16 GetBillingAddressLabelFromAutofillProfile(
+    const autofill::AutofillProfile& profile,
+    const std::string& locale) {
+  // Name, company, phone number, and country are not included in the billing
+  // address label.
+  static const std::vector<autofill::ServerFieldType> label_fields{
+      autofill::ADDRESS_HOME_STREET_ADDRESS,
+      autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
+      autofill::ADDRESS_HOME_CITY,
+      autofill::ADDRESS_HOME_STATE,
+      autofill::ADDRESS_HOME_ZIP,
+      autofill::ADDRESS_HOME_SORTING_CODE,
+  };
+
+  return profile.ConstructInferredLabel(label_fields, label_fields.size(),
+                                        locale);
+}
 
 base::string16 GetShippingAddressSelectorInfoMessage(
     PaymentShippingType shipping_type) {

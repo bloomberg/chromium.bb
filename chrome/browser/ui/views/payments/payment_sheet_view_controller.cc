@@ -86,7 +86,7 @@ class PreviewEliderLabel : public views::Label {
   PreviewEliderLabel(const base::string16& preview_text,
                      const base::string16& format_string,
                      int n)
-      : views::Label(base::ASCIIToUTF16("")),
+      : views::Label(base::string16()),
         preview_text_(preview_text),
         format_string_(format_string),
         n_(n) {}
@@ -109,7 +109,7 @@ class PreviewEliderLabel : public views::Label {
 
     // TODO(crbug.com/714776): Display something meaningful if the preview can't
     // be elided enough for the string to fit.
-    return base::ASCIIToUTF16("");
+    return base::string16();
   }
 
   // views::View:
@@ -155,17 +155,17 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   columns->AddPaddingColumn(0, kPaddingAfterName);
 
   // A column for the content.
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
-                     1, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   // A column for the extra content.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   constexpr int kPaddingColumnsWidth = 25;
   columns->AddPaddingColumn(0, kPaddingColumnsWidth);
   // A column for the trailing_button.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   std::unique_ptr<views::Label> name_label = CreateMediumLabel(section_name);
@@ -442,8 +442,8 @@ PaymentSheetViewController::CreateExtraFooterView() {
   return CreateProductLogoFooterView();
 }
 
-void PaymentSheetViewController::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
+void PaymentSheetViewController::ButtonPressed(views::Button* sender,
+                                               const ui::Event& event) {
   switch (sender->tag()) {
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
@@ -656,18 +656,14 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
       // If the button is "Add", clicking it should navigate to the editor
       // instead of the list.
       builder.Tag(PaymentSheetViewControllerTags::ADD_SHIPPING_BUTTON);
-      return builder.CreateWithButton(base::ASCIIToUTF16(""),
+      return builder.CreateWithButton(base::string16(),
                                       l10n_util::GetStringUTF16(IDS_ADD),
                                       /*button_enabled=*/true);
     } else if (state()->shipping_profiles().size() == 1) {
       base::string16 truncated_content =
-          state()->shipping_profiles()[0]->ConstructInferredLabel(
-              {
-                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
-                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
-                  autofill::ADDRESS_HOME_COUNTRY,
-              },
-              6, state()->GetApplicationLocale());
+          GetShippingAddressLabelFormAutofillProfile(
+              *state()->shipping_profiles()[0],
+              state()->GetApplicationLocale());
       return builder.CreateWithButton(truncated_content,
                                       l10n_util::GetStringUTF16(IDS_CHOOSE),
                                       /*button_enabled=*/true);
@@ -675,14 +671,8 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
       base::string16 format = l10n_util::GetPluralStringFUTF16(
           IDS_PAYMENT_REQUEST_SHIPPING_ADDRESSES_PREVIEW,
           state()->shipping_profiles().size() - 1);
-      base::string16 label =
-          state()->shipping_profiles()[0]->ConstructInferredLabel(
-              {
-                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
-                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
-                  autofill::ADDRESS_HOME_COUNTRY,
-              },
-              6, state()->GetApplicationLocale());
+      base::string16 label = GetShippingAddressLabelFormAutofillProfile(
+          *state()->shipping_profiles()[0], state()->GetApplicationLocale());
       return builder.CreateWithButton(label, format,
                                       state()->shipping_profiles().size() - 1,
                                       l10n_util::GetStringUTF16(IDS_CHOOSE),
@@ -715,8 +705,8 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
     views::GridLayout* layout = new views::GridLayout(content_view.get());
     content_view->SetLayoutManager(layout);
     views::ColumnSet* columns = layout->AddColumnSet(0);
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                       1, views::GridLayout::USE_PREF, 0, 0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
+                       views::GridLayout::USE_PREF, 0, 0);
 
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> selected_instrument_label =
@@ -741,7 +731,7 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
     if (state()->available_instruments().empty()) {
       // If the button is "Add", navigate to the editor directly.
       builder.Tag(PaymentSheetViewControllerTags::ADD_PAYMENT_METHOD_BUTTON);
-      return builder.CreateWithButton(base::ASCIIToUTF16(""),
+      return builder.CreateWithButton(base::string16(),
                                       l10n_util::GetStringUTF16(IDS_ADD),
                                       /*button_enabled=*/true);
     } else if (state()->available_instruments().size() == 1) {
@@ -794,29 +784,23 @@ PaymentSheetViewController::CreateContactInfoRow() {
     if (state()->contact_profiles().empty()) {
       // If the button is "Add", navigate directly to the editor.
       builder.Tag(PaymentSheetViewControllerTags::ADD_CONTACT_INFO_BUTTON);
-      return builder.CreateWithButton(base::ASCIIToUTF16(""),
+      return builder.CreateWithButton(base::string16(),
                                       l10n_util::GetStringUTF16(IDS_ADD),
                                       /*button_enabled=*/true);
     } else if (state()->contact_profiles().size() == 1) {
       base::string16 truncated_content =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              {
-                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
-                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
-                  autofill::ADDRESS_HOME_COUNTRY,
-              },
-              6, state()->GetApplicationLocale());
+              {autofill::NAME_FULL, autofill::PHONE_HOME_WHOLE_NUMBER,
+               autofill::EMAIL_ADDRESS},
+              3, state()->GetApplicationLocale());
       return builder.CreateWithButton(truncated_content,
                                       l10n_util::GetStringUTF16(IDS_CHOOSE),
                                       /*button_enabled=*/true);
     } else {
       base::string16 preview =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              {
-                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
-                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
-                  autofill::ADDRESS_HOME_COUNTRY,
-              },
+              {autofill::NAME_FULL, autofill::PHONE_HOME_WHOLE_NUMBER,
+               autofill::EMAIL_ADDRESS},
               6, state()->GetApplicationLocale());
       base::string16 format = l10n_util::GetPluralStringFUTF16(
           IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW,

@@ -22,6 +22,7 @@
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "components/payments/core/strings_util.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -49,23 +50,6 @@
 namespace payments {
 
 namespace {
-
-// TODO(tmartino): Consider combining this with the Android equivalent in
-// PersonalDataManager.java
-base::string16 GetAddressFromProfile(const autofill::AutofillProfile& profile,
-                                     const std::string& locale) {
-  std::vector<autofill::ServerFieldType> fields;
-  fields.push_back(autofill::COMPANY_NAME);
-  fields.push_back(autofill::ADDRESS_HOME_LINE1);
-  fields.push_back(autofill::ADDRESS_HOME_LINE2);
-  fields.push_back(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY);
-  fields.push_back(autofill::ADDRESS_HOME_CITY);
-  fields.push_back(autofill::ADDRESS_HOME_STATE);
-  fields.push_back(autofill::ADDRESS_HOME_ZIP);
-  fields.push_back(autofill::ADDRESS_HOME_SORTING_CODE);
-
-  return profile.ConstructInferredLabel(fields, fields.size(), locale);
-}
 
 // |s1|, |s2|, and |s3| are lines identifying the profile. |s1| is the
 // "headline" which may be emphasized depending on |type|. If |disabled_state|
@@ -131,7 +115,8 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
   base::string16 name =
       profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
 
-  base::string16 address = GetAddressFromProfile(profile, locale);
+  base::string16 address =
+      GetShippingAddressLabelFormAutofillProfile(profile, locale);
 
   base::string16 phone =
       data_util::GetFormattedPhoneNumberForDisplay(profile, locale);
