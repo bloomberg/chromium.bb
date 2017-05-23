@@ -67,10 +67,8 @@ bool DOMTokenList::ValidateTokenValue(const AtomicString&,
   return false;
 }
 
-bool DOMTokenList::contains(const AtomicString& token,
-                            ExceptionState& exception_state) const {
-  if (!ValidateToken(token, exception_state))
-    return false;
+// https://dom.spec.whatwg.org/#dom-domtokenlist-contains
+bool DOMTokenList::contains(const AtomicString& token) const {
   return ContainsInternal(token);
 }
 

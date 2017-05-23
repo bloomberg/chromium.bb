@@ -60,7 +60,7 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   virtual unsigned length() const { return tokens_.size(); }
   virtual const AtomicString item(unsigned index) const;
 
-  bool contains(const AtomicString&, ExceptionState&) const;
+  bool contains(const AtomicString&) const;
   virtual void add(const Vector<String>&, ExceptionState&);
   void add(const AtomicString&, ExceptionState&);
   virtual void remove(const Vector<String>&, ExceptionState&);

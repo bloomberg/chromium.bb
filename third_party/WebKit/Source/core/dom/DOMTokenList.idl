@@ -30,7 +30,7 @@
 ] interface DOMTokenList {
     readonly attribute unsigned long length;
     getter DOMString? item(unsigned long index);
-    [RaisesException] boolean contains(DOMString token);
+    boolean contains(DOMString token);
     [RaisesException, CEReactions, CustomElementCallbacks] void add(DOMString... tokens);
     [RaisesException, CEReactions, CustomElementCallbacks] void remove(DOMString... tokens);
     [RaisesException, CEReactions, CustomElementCallbacks] boolean toggle(DOMString token, optional boolean force);

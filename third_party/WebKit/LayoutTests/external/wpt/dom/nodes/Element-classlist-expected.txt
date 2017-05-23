@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1135 tests; 685 PASS, 450 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1135 tests; 745 PASS, 390 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Assigning to classList (HTML node) 
 PASS .supports() must throw TypeError (HTML node) 
 PASS classList.length when removed (HTML node) 
@@ -25,8 +25,8 @@ PASS classList.item() when set to "a b" (HTML node)
 FAIL classList.item() when set to "   a  a b" (HTML node) assert_equals: classList.item(1) expected "b" but got "a"
 PASS classList.item() when set to "\t\n\f\r a\t\n\f\r b\t\n\f\r " (HTML node) 
 PASS classList.contains("a") when set to null (HTML node) 
-FAIL classList.contains("") when set to null (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
-FAIL classList.contains("  ") when set to null (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('  ') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("") when set to null (HTML node) 
+PASS classList.contains("  ") when set to null (HTML node) 
 PASS classList.contains("a") when set to "" (HTML node) 
 PASS classList.contains("a") when set to "a" (HTML node) 
 PASS classList.contains("aa") when set to "a" (HTML node) 
@@ -41,18 +41,16 @@ PASS classList.contains("a$") when set to "a" (HTML node)
 PASS classList.contains("a~") when set to "a" (HTML node) 
 PASS classList.contains("a?") when set to "a" (HTML node) 
 PASS classList.contains("a\\") when set to "a" (HTML node) 
-FAIL classList.contains("a\t") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a	') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ta") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('	a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\n") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a
-') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\na") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('
-a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\f") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\fa") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\r") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a\r') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ra") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('\ra') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a ") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a ') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains(" a") when set to "a" (HTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided (' a') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("a\t") when set to "a" (HTML node) 
+PASS classList.contains("\ta") when set to "a" (HTML node) 
+PASS classList.contains("a\n") when set to "a" (HTML node) 
+PASS classList.contains("\na") when set to "a" (HTML node) 
+PASS classList.contains("a\f") when set to "a" (HTML node) 
+PASS classList.contains("\fa") when set to "a" (HTML node) 
+PASS classList.contains("a\r") when set to "a" (HTML node) 
+PASS classList.contains("\ra") when set to "a" (HTML node) 
+PASS classList.contains("a ") when set to "a" (HTML node) 
+PASS classList.contains(" a") when set to "a" (HTML node) 
 PASS classList.contains("aa") when set to "aa AA" (HTML node) 
 PASS classList.contains("AA") when set to "aa AA" (HTML node) 
 PASS classList.contains("aA") when set to "aa AA" (HTML node) 
@@ -332,8 +330,8 @@ PASS classList.item() when set to "a b" (XHTML node)
 FAIL classList.item() when set to "   a  a b" (XHTML node) assert_equals: classList.item(1) expected "b" but got "a"
 PASS classList.item() when set to "\t\n\f\r a\t\n\f\r b\t\n\f\r " (XHTML node) 
 PASS classList.contains("a") when set to null (XHTML node) 
-FAIL classList.contains("") when set to null (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
-FAIL classList.contains("  ") when set to null (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('  ') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("") when set to null (XHTML node) 
+PASS classList.contains("  ") when set to null (XHTML node) 
 PASS classList.contains("a") when set to "" (XHTML node) 
 PASS classList.contains("a") when set to "a" (XHTML node) 
 PASS classList.contains("aa") when set to "a" (XHTML node) 
@@ -348,18 +346,16 @@ PASS classList.contains("a$") when set to "a" (XHTML node)
 PASS classList.contains("a~") when set to "a" (XHTML node) 
 PASS classList.contains("a?") when set to "a" (XHTML node) 
 PASS classList.contains("a\\") when set to "a" (XHTML node) 
-FAIL classList.contains("a\t") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a	') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ta") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('	a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\n") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a
-') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\na") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('
-a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\f") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\fa") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\r") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a\r') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ra") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('\ra') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a ") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a ') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains(" a") when set to "a" (XHTML node) Failed to execute 'contains' on 'DOMTokenList': The token provided (' a') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("a\t") when set to "a" (XHTML node) 
+PASS classList.contains("\ta") when set to "a" (XHTML node) 
+PASS classList.contains("a\n") when set to "a" (XHTML node) 
+PASS classList.contains("\na") when set to "a" (XHTML node) 
+PASS classList.contains("a\f") when set to "a" (XHTML node) 
+PASS classList.contains("\fa") when set to "a" (XHTML node) 
+PASS classList.contains("a\r") when set to "a" (XHTML node) 
+PASS classList.contains("\ra") when set to "a" (XHTML node) 
+PASS classList.contains("a ") when set to "a" (XHTML node) 
+PASS classList.contains(" a") when set to "a" (XHTML node) 
 PASS classList.contains("aa") when set to "aa AA" (XHTML node) 
 PASS classList.contains("AA") when set to "aa AA" (XHTML node) 
 PASS classList.contains("aA") when set to "aa AA" (XHTML node) 
@@ -639,8 +635,8 @@ PASS classList.item() when set to "a b" (MathML node)
 FAIL classList.item() when set to "   a  a b" (MathML node) assert_equals: classList.item(1) expected "b" but got "a"
 PASS classList.item() when set to "\t\n\f\r a\t\n\f\r b\t\n\f\r " (MathML node) 
 PASS classList.contains("a") when set to null (MathML node) 
-FAIL classList.contains("") when set to null (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
-FAIL classList.contains("  ") when set to null (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('  ') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("") when set to null (MathML node) 
+PASS classList.contains("  ") when set to null (MathML node) 
 PASS classList.contains("a") when set to "" (MathML node) 
 PASS classList.contains("a") when set to "a" (MathML node) 
 PASS classList.contains("aa") when set to "a" (MathML node) 
@@ -655,18 +651,16 @@ PASS classList.contains("a$") when set to "a" (MathML node)
 PASS classList.contains("a~") when set to "a" (MathML node) 
 PASS classList.contains("a?") when set to "a" (MathML node) 
 PASS classList.contains("a\\") when set to "a" (MathML node) 
-FAIL classList.contains("a\t") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a	') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ta") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('	a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\n") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a
-') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\na") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('
-a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\f") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\fa") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\r") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a\r') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ra") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('\ra') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a ") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a ') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains(" a") when set to "a" (MathML node) Failed to execute 'contains' on 'DOMTokenList': The token provided (' a') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("a\t") when set to "a" (MathML node) 
+PASS classList.contains("\ta") when set to "a" (MathML node) 
+PASS classList.contains("a\n") when set to "a" (MathML node) 
+PASS classList.contains("\na") when set to "a" (MathML node) 
+PASS classList.contains("a\f") when set to "a" (MathML node) 
+PASS classList.contains("\fa") when set to "a" (MathML node) 
+PASS classList.contains("a\r") when set to "a" (MathML node) 
+PASS classList.contains("\ra") when set to "a" (MathML node) 
+PASS classList.contains("a ") when set to "a" (MathML node) 
+PASS classList.contains(" a") when set to "a" (MathML node) 
 PASS classList.contains("aa") when set to "aa AA" (MathML node) 
 PASS classList.contains("AA") when set to "aa AA" (MathML node) 
 PASS classList.contains("aA") when set to "aa AA" (MathML node) 
@@ -946,8 +940,8 @@ PASS classList.item() when set to "a b" (XML node with null namespace)
 FAIL classList.item() when set to "   a  a b" (XML node with null namespace) assert_equals: classList.item(1) expected "b" but got "a"
 PASS classList.item() when set to "\t\n\f\r a\t\n\f\r b\t\n\f\r " (XML node with null namespace) 
 PASS classList.contains("a") when set to null (XML node with null namespace) 
-FAIL classList.contains("") when set to null (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
-FAIL classList.contains("  ") when set to null (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('  ') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("") when set to null (XML node with null namespace) 
+PASS classList.contains("  ") when set to null (XML node with null namespace) 
 PASS classList.contains("a") when set to "" (XML node with null namespace) 
 PASS classList.contains("a") when set to "a" (XML node with null namespace) 
 PASS classList.contains("aa") when set to "a" (XML node with null namespace) 
@@ -962,18 +956,16 @@ PASS classList.contains("a$") when set to "a" (XML node with null namespace)
 PASS classList.contains("a~") when set to "a" (XML node with null namespace) 
 PASS classList.contains("a?") when set to "a" (XML node with null namespace) 
 PASS classList.contains("a\\") when set to "a" (XML node with null namespace) 
-FAIL classList.contains("a\t") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a	') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ta") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('	a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\n") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a
-') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\na") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('
-a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\f") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\fa") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\r") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a\r') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ra") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('\ra') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a ") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a ') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains(" a") when set to "a" (XML node with null namespace) Failed to execute 'contains' on 'DOMTokenList': The token provided (' a') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("a\t") when set to "a" (XML node with null namespace) 
+PASS classList.contains("\ta") when set to "a" (XML node with null namespace) 
+PASS classList.contains("a\n") when set to "a" (XML node with null namespace) 
+PASS classList.contains("\na") when set to "a" (XML node with null namespace) 
+PASS classList.contains("a\f") when set to "a" (XML node with null namespace) 
+PASS classList.contains("\fa") when set to "a" (XML node with null namespace) 
+PASS classList.contains("a\r") when set to "a" (XML node with null namespace) 
+PASS classList.contains("\ra") when set to "a" (XML node with null namespace) 
+PASS classList.contains("a ") when set to "a" (XML node with null namespace) 
+PASS classList.contains(" a") when set to "a" (XML node with null namespace) 
 PASS classList.contains("aa") when set to "aa AA" (XML node with null namespace) 
 PASS classList.contains("AA") when set to "aa AA" (XML node with null namespace) 
 PASS classList.contains("aA") when set to "aa AA" (XML node with null namespace) 
@@ -1253,8 +1245,8 @@ PASS classList.item() when set to "a b" (foo node)
 FAIL classList.item() when set to "   a  a b" (foo node) assert_equals: classList.item(1) expected "b" but got "a"
 PASS classList.item() when set to "\t\n\f\r a\t\n\f\r b\t\n\f\r " (foo node) 
 PASS classList.contains("a") when set to null (foo node) 
-FAIL classList.contains("") when set to null (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
-FAIL classList.contains("  ") when set to null (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('  ') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("") when set to null (foo node) 
+PASS classList.contains("  ") when set to null (foo node) 
 PASS classList.contains("a") when set to "" (foo node) 
 PASS classList.contains("a") when set to "a" (foo node) 
 PASS classList.contains("aa") when set to "a" (foo node) 
@@ -1269,18 +1261,16 @@ PASS classList.contains("a$") when set to "a" (foo node)
 PASS classList.contains("a~") when set to "a" (foo node) 
 PASS classList.contains("a?") when set to "a" (foo node) 
 PASS classList.contains("a\\") when set to "a" (foo node) 
-FAIL classList.contains("a\t") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a	') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ta") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('	a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\n") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a
-') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\na") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('
-a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\f") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\fa") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a\r") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a\r') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("\ra") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('\ra') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains("a ") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided ('a ') contains HTML space characters, which are not valid in tokens.
-FAIL classList.contains(" a") when set to "a" (foo node) Failed to execute 'contains' on 'DOMTokenList': The token provided (' a') contains HTML space characters, which are not valid in tokens.
+PASS classList.contains("a\t") when set to "a" (foo node) 
+PASS classList.contains("\ta") when set to "a" (foo node) 
+PASS classList.contains("a\n") when set to "a" (foo node) 
+PASS classList.contains("\na") when set to "a" (foo node) 
+PASS classList.contains("a\f") when set to "a" (foo node) 
+PASS classList.contains("\fa") when set to "a" (foo node) 
+PASS classList.contains("a\r") when set to "a" (foo node) 
+PASS classList.contains("\ra") when set to "a" (foo node) 
+PASS classList.contains("a ") when set to "a" (foo node) 
+PASS classList.contains(" a") when set to "a" (foo node) 
 PASS classList.contains("aa") when set to "aa AA" (foo node) 
 PASS classList.contains("AA") when set to "aa AA" (foo node) 
 PASS classList.contains("aA") when set to "aa AA" (foo node) 
