@@ -155,6 +155,9 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
   window
       .webkitResolveLocalFileSystemURLEntries['filesystem:drive/team_drives'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives');
+  window.webkitResolveLocalFileSystemURLEntries
+      ['filesystem:drive/team_drives/a'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
 
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, null, fileOperationManager,
@@ -184,6 +187,67 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
         driveItem.items[4].label);
   }),
   callback);
+}
+
+/**
+ * Test case for creating tree with empty Team Drives.
+ * Team Drives subtree should be hidden when the user don't have access to any
+ * Team Drive.
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
+  mockCommandLinePrivate.addSwitch('team-drives');
+
+  // Create elements.
+  var parentElement = document.createElement('div');
+  var directoryTree = document.createElement('div');
+  directoryTree.metadataModel = {
+    notifyEntriesChanged: function() {},
+    get: function(entries, labels) {
+      // Mock a non-shared directory
+      return Promise.resolve([{shared: false}]);
+    }
+  };
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  var directoryModel = new MockDirectoryModel();
+  var volumeManager = new MockVolumeManagerWrapper();
+  var fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window
+      .webkitResolveLocalFileSystemURLEntries['filesystem:drive/team_drives'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives');
+  // No directories exist under Team Drives
+
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  var driveItem = directoryTree.items[0];
+
+  reportPromise(
+      waitUntil(function() {
+        // Root entries under Drive volume is generated except Team Drives.
+        // See testCreateDirectoryTreeWithTeamDrive for detail.
+        return driveItem.items.length == 4;
+      }).then(function() {
+        for (var i = 0; i < driveItem.items.length; i++) {
+          assertFalse(
+              driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL'),
+              'Team Drives node should not be shown');
+        }
+      }),
+      callback);
 }
 
 /**
