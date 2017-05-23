@@ -95,6 +95,8 @@ class BlacklistTest(image_test_lib.NonForgivingImageTestCase):
         r'.*/udev/rules.d/',
         r'.*/firmware/ar3k/.*pst$',
         r'.*/etc/services',
+        # Python reads this file at runtime to look up install features.
+        r'.*/usr/include/python[\d\.]*/pyconfig.h$',
         r'.*/usr/share/dev-install/portage',
     ]]
 
