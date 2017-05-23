@@ -421,6 +421,42 @@ bool AXObjectImpl::AOMPropertyOrARIAAttributeIsFalse(
   return false;
 }
 
+bool AXObjectImpl::HasAOMPropertyOrARIAAttribute(AOMUIntProperty property,
+                                                 uint32_t& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  bool is_null = true;
+  result =
+      AccessibleNode::GetPropertyOrARIAAttribute(element, property, is_null);
+  return !is_null;
+}
+
+bool AXObjectImpl::HasAOMPropertyOrARIAAttribute(AOMIntProperty property,
+                                                 int32_t& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  bool is_null = true;
+  result =
+      AccessibleNode::GetPropertyOrARIAAttribute(element, property, is_null);
+  return !is_null;
+}
+
+bool AXObjectImpl::HasAOMPropertyOrARIAAttribute(AOMFloatProperty property,
+                                                 float& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  bool is_null = true;
+  result =
+      AccessibleNode::GetPropertyOrARIAAttribute(element, property, is_null);
+  return !is_null;
+}
+
 bool AXObjectImpl::IsARIATextControl() const {
   return AriaRoleAttribute() == kTextFieldRole ||
          AriaRoleAttribute() == kSearchBoxRole ||

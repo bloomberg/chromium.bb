@@ -28,6 +28,7 @@
 
 #include "modules/accessibility/AXTableRow.h"
 
+#include "core/dom/AccessibleNode.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
@@ -114,17 +115,21 @@ AXObjectImpl* AXTableRow::HeaderObject() {
 }
 
 unsigned AXTableRow::AriaColumnIndex() const {
-  const AtomicString& col_index_value = GetAttribute(aria_colindexAttr);
-  if (col_index_value.ToInt() >= 1)
-    return col_index_value.ToInt();
+  uint32_t col_index;
+  if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kColIndex, col_index) &&
+      col_index >= 1) {
+    return col_index;
+  }
 
   return 0;
 }
 
 unsigned AXTableRow::AriaRowIndex() const {
-  const AtomicString& row_index_value = GetAttribute(aria_rowindexAttr);
-  if (row_index_value.ToInt() >= 1)
-    return row_index_value.ToInt();
+  uint32_t row_index;
+  if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kRowIndex, row_index) &&
+      row_index >= 1) {
+    return row_index;
+  }
 
   return 0;
 }

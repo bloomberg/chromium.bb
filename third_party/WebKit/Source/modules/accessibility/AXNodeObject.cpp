@@ -1334,9 +1334,8 @@ int AXNodeObject::HeadingLevel() const {
     return 0;
 
   if (RoleValue() == kHeadingRole) {
-    String level_str = GetAttribute(aria_levelAttr);
-    if (!level_str.IsEmpty()) {
-      int level = level_str.ToInt();
+    uint32_t level;
+    if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kLevel, level)) {
       if (level >= 1 && level <= 9)
         return level;
       return 1;
@@ -1369,15 +1368,13 @@ int AXNodeObject::HeadingLevel() const {
 }
 
 unsigned AXNodeObject::HierarchicalLevel() const {
-  Node* node = this->GetNode();
-  if (!node || !node->IsElementNode())
+  Element* element = GetElement();
+  if (!element)
     return 0;
 
-  Element* element = ToElement(node);
-  String level_str = element->getAttribute(aria_levelAttr);
-  if (!level_str.IsEmpty()) {
-    int level = level_str.ToInt();
-    if (level > 0)
+  uint32_t level;
+  if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kLevel, level)) {
+    if (level >= 1 && level <= 9)
       return level;
     return 1;
   }
@@ -1388,7 +1385,7 @@ unsigned AXNodeObject::HierarchicalLevel() const {
 
   // Hierarchy leveling starts at 1, to match the aria-level spec.
   // We measure tree hierarchy by the number of groups that the item is within.
-  unsigned level = 1;
+  level = 1;
   for (AXObjectImpl* parent = ParentObject(); parent;
        parent = parent->ParentObject()) {
     AccessibilityRole parent_role = parent->RoleValue();
@@ -1659,13 +1656,9 @@ InvalidState AXNodeObject::GetInvalidState() const {
 
 int AXNodeObject::PosInSet() const {
   if (SupportsSetSizeAndPosInSet()) {
-    String pos_in_set_str = GetAttribute(aria_posinsetAttr);
-    if (!pos_in_set_str.IsEmpty()) {
-      int pos_in_set = pos_in_set_str.ToInt();
-      if (pos_in_set > 0)
-        return pos_in_set;
-      return 1;
-    }
+    uint32_t pos_in_set;
+    if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kPosInSet, pos_in_set))
+      return pos_in_set;
 
     return AXObjectImpl::IndexInParent() + 1;
   }
@@ -1675,13 +1668,9 @@ int AXNodeObject::PosInSet() const {
 
 int AXNodeObject::SetSize() const {
   if (SupportsSetSizeAndPosInSet()) {
-    String set_size_str = GetAttribute(aria_setsizeAttr);
-    if (!set_size_str.IsEmpty()) {
-      int set_size = set_size_str.ToInt();
-      if (set_size > 0)
-        return set_size;
-      return 1;
-    }
+    int32_t set_size;
+    if (HasAOMPropertyOrARIAAttribute(AOMIntProperty::kSetSize, set_size))
+      return set_size;
 
     if (ParentObject()) {
       const auto& siblings = ParentObject()->Children();
@@ -1708,8 +1697,9 @@ String AXNodeObject::ValueDescription() const {
 }
 
 float AXNodeObject::ValueForRange() const {
-  if (HasAttribute(aria_valuenowAttr))
-    return GetAttribute(aria_valuenowAttr).ToFloat();
+  float value_now;
+  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueNow, value_now))
+    return value_now;
 
   if (IsNativeSlider())
     return toHTMLInputElement(*GetNode()).valueAsNumber();
@@ -1721,8 +1711,9 @@ float AXNodeObject::ValueForRange() const {
 }
 
 float AXNodeObject::MaxValueForRange() const {
-  if (HasAttribute(aria_valuemaxAttr))
-    return GetAttribute(aria_valuemaxAttr).ToFloat();
+  float value_max;
+  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueMax, value_max))
+    return value_max;
 
   if (IsNativeSlider())
     return toHTMLInputElement(*GetNode()).Maximum();
@@ -1734,8 +1725,9 @@ float AXNodeObject::MaxValueForRange() const {
 }
 
 float AXNodeObject::MinValueForRange() const {
-  if (HasAttribute(aria_valueminAttr))
-    return GetAttribute(aria_valueminAttr).ToFloat();
+  float value_min;
+  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueMin, value_min))
+    return value_min;
 
   if (IsNativeSlider())
     return toHTMLInputElement(*GetNode()).Minimum();

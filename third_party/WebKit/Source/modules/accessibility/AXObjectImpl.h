@@ -57,6 +57,9 @@ class ScrollableArea;
 
 enum class AOMBooleanProperty;
 enum class AOMStringProperty;
+enum class AOMUIntProperty;
+enum class AOMIntProperty;
+enum class AOMFloatProperty;
 
 typedef unsigned AXID;
 
@@ -353,6 +356,9 @@ class MODULES_EXPORT AXObjectImpl
   bool HasAOMPropertyOrARIAAttribute(AOMBooleanProperty, bool& result) const;
   bool AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty) const;
   bool AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty) const;
+  bool HasAOMPropertyOrARIAAttribute(AOMUIntProperty, uint32_t& result) const;
+  bool HasAOMPropertyOrARIAAttribute(AOMIntProperty, int32_t& result) const;
+  bool HasAOMPropertyOrARIAAttribute(AOMFloatProperty, float& result) const;
 
   virtual void GetSparseAXAttributes(AXSparseAttributeClient&) const {}
 

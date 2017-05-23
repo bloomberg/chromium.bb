@@ -28,6 +28,7 @@
 
 #include "modules/accessibility/AXTable.h"
 
+#include "core/dom/AccessibleNode.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLCollection.h"
@@ -496,40 +497,36 @@ void AXTable::RowHeaders(AXObjectVector& headers) {
 }
 
 int AXTable::AriaColumnCount() {
-  if (!HasAttribute(aria_colcountAttr))
+  int32_t col_count;
+  if (!HasAOMPropertyOrARIAAttribute(AOMIntProperty::kColCount, col_count))
     return 0;
 
-  const AtomicString& col_count_value = GetAttribute(aria_colcountAttr);
-  int col_count_int = col_count_value.ToInt();
-
-  if (col_count_int > (int)ColumnCount())
-    return col_count_int;
+  if (col_count > static_cast<int>(ColumnCount()))
+    return col_count;
 
   // Spec says that if all of the columns are present in the DOM, it
   // is not necessary to set this attribute as the user agent can
   // automatically calculate the total number of columns.
   // It returns 0 in order not to set this attribute.
-  if (col_count_int == (int)ColumnCount() || col_count_int != -1)
+  if (col_count == static_cast<int>(ColumnCount()) || col_count != -1)
     return 0;
 
   return -1;
 }
 
 int AXTable::AriaRowCount() {
-  if (!HasAttribute(aria_rowcountAttr))
+  int32_t row_count;
+  if (!HasAOMPropertyOrARIAAttribute(AOMIntProperty::kRowCount, row_count))
     return 0;
 
-  const AtomicString& row_count_value = GetAttribute(aria_rowcountAttr);
-  int row_count_int = row_count_value.ToInt();
-
-  if (row_count_int > (int)RowCount())
-    return row_count_int;
+  if (row_count > static_cast<int>(RowCount()))
+    return row_count;
 
   // Spec says that if all of the rows are present in the DOM, it is
   // not necessary to set this attribute as the user agent can
   // automatically calculate the total number of rows.
   // It returns 0 in order not to set this attribute.
-  if (row_count_int == (int)RowCount() || row_count_int != -1)
+  if (row_count == (int)RowCount() || row_count != -1)
     return 0;
 
   // In the spec, -1 explicitly means an unknown number of rows.
