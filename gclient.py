@@ -724,7 +724,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         hooks_to_run.append(hook)
 
     if self.recursion_limit:
-      self._pre_deps_hooks = [self.GetHookAction(hook, []) for hook in
+      self._pre_deps_hooks = [self.GetHookAction(hook) for hook in
                               local_scope.get('pre_deps_hooks', [])]
 
     self.add_dependencies_and_close(deps_to_add, hooks_to_run)
@@ -879,19 +879,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._processed = True
 
   @staticmethod
-  def GetHookAction(hook_dict, matching_file_list):
+  def GetHookAction(hook_dict):
     """Turns a parsed 'hook' dict into an executable command."""
     logging.debug(hook_dict)
-    logging.debug(matching_file_list)
     command = hook_dict['action'][:]
     if command[0] == 'python':
       # If the hook specified "python" as the first item, the action is a
       # Python script.  Run it by starting a new copy of the same
       # interpreter.
       command[0] = sys.executable
-    if '$matching_files' in command:
-      splice_index = command.index('$matching_files')
-      command[splice_index:splice_index + 1] = matching_file_list
     return command
 
   def GetHooks(self, options):
@@ -913,7 +909,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           gclient_scm.GetScmName(self.parsed_url) in ('git', None) or
           os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
         for hook_dict in self.deps_hooks:
-          result.append(self.GetHookAction(hook_dict, []))
+          result.append(self.GetHookAction(hook_dict))
       else:
         # Run hooks on the basis of whether the files from the gclient operation
         # match each hook's pattern.
@@ -923,7 +919,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               f for f in self.file_list_and_children if pattern.search(f)
           ]
           if matching_file_list:
-            result.append(self.GetHookAction(hook_dict, matching_file_list))
+            result.append(self.GetHookAction(hook_dict))
     for s in self.dependencies:
       result.extend(s.GetHooks(options))
     return result
