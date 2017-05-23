@@ -79,7 +79,10 @@ bool TreeScopeStyleSheetCollection::HasStyleSheets() const {
   return false;
 }
 
-void TreeScopeStyleSheetCollection::CollectStyleSheetsForList() {
+void TreeScopeStyleSheetCollection::UpdateStyleSheetList() {
+  if (!sheet_list_dirty_)
+    return;
+
   HeapVector<Member<StyleSheet>> new_list;
   for (Node* node : style_sheet_candidate_nodes_) {
     StyleSheetCandidate candidate(*node);

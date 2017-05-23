@@ -65,6 +65,7 @@ class CORE_EXPORT StyleSheetCollection
   void SwapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
   void AppendActiveStyleSheet(const ActiveStyleSheet&);
   void AppendSheetForList(StyleSheet*);
+  void MarkSheetListDirty() { sheet_list_dirty_ = true; }
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -76,6 +77,7 @@ class CORE_EXPORT StyleSheetCollection
 
   HeapVector<TraceWrapperMember<StyleSheet>> style_sheets_for_style_sheet_list_;
   ActiveStyleSheetVector active_author_style_sheets_;
+  bool sheet_list_dirty_ = true;
 };
 
 }  // namespace blink

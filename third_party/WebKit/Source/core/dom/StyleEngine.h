@@ -285,7 +285,7 @@ class CORE_EXPORT StyleEngine final
            document_scope_dirty_ || dirty_tree_scopes_.size();
   }
 
-  TreeScopeStyleSheetCollection* EnsureStyleSheetCollectionFor(TreeScope&);
+  TreeScopeStyleSheetCollection& EnsureStyleSheetCollectionFor(TreeScope&);
   TreeScopeStyleSheetCollection* StyleSheetCollectionFor(TreeScope&);
   bool ShouldUpdateDocumentStyleSheetCollection() const;
   bool ShouldUpdateShadowTreeStyleSheetCollection() const;

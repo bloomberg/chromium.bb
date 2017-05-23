@@ -574,4 +574,62 @@ TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
+TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_Document) {
+  GetDocument().body()->setInnerHTML("<style>span { color: green }</style>");
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  const auto& sheet_list =
+      GetStyleEngine().StyleSheetsForStyleSheetList(GetDocument());
+  EXPECT_EQ(1u, sheet_list.size());
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  GetDocument().body()->setInnerHTML(
+      "<style>span { color: green }</style><style>div { color: pink }</style>");
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  const auto& second_sheet_list =
+      GetStyleEngine().StyleSheetsForStyleSheetList(GetDocument());
+  EXPECT_EQ(2u, second_sheet_list.size());
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  GetStyleEngine().MarkAllTreeScopesDirty();
+  GetStyleEngine().StyleSheetsForStyleSheetList(GetDocument());
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
+  GetDocument().body()->setInnerHTML("<div id='host'></div>");
+  Element* host = GetDocument().getElementById("host");
+  ASSERT_TRUE(host);
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ShadowRootInit init;
+  init.setMode("open");
+  ShadowRoot* shadow_root =
+      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
+                         init, ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(shadow_root);
+
+  shadow_root->setInnerHTML("<style>span { color: green }</style>");
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  const auto& sheet_list =
+      GetStyleEngine().StyleSheetsForStyleSheetList(*shadow_root);
+  EXPECT_EQ(1u, sheet_list.size());
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  shadow_root->setInnerHTML(
+      "<style>span { color: green }</style><style>div { color: pink }</style>");
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  const auto& second_sheet_list =
+      GetStyleEngine().StyleSheetsForStyleSheetList(*shadow_root);
+  EXPECT_EQ(2u, second_sheet_list.size());
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  GetStyleEngine().MarkAllTreeScopesDirty();
+  GetStyleEngine().StyleSheetsForStyleSheetList(*shadow_root);
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
 }  // namespace blink
