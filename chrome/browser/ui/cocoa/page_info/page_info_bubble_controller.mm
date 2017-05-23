@@ -15,7 +15,7 @@
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -1273,9 +1273,14 @@ void PageInfoUIBridge::Show(gfx::NativeWindow parent,
                             const GURL& virtual_url,
                             const security_state::SecurityInfo& security_info) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    BrowserWindowController* controller =
+        [BrowserWindowController browserWindowControllerForWindow:parent];
+    LocationBarViewMac* location_bar = [controller locationBarBridge];
+    LocationBarDecoration* decoration =
+        location_bar ? location_bar->GetPageInfoDecoration() : nullptr;
     chrome::ShowPageInfoBubbleViewsAtPoint(
         gfx::ScreenPointFromNSPoint(AnchorPointForWindow(parent)), profile,
-        web_contents, virtual_url, security_info);
+        web_contents, virtual_url, security_info, decoration);
     return;
   }
 

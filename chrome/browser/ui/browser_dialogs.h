@@ -22,14 +22,9 @@
 #endif  // OS_CHROMEOS
 
 class Browser;
-class ContentSettingBubbleModel;
 class GURL;
 class LoginHandler;
 class Profile;
-
-namespace bookmarks {
-class BookmarkBubbleObserver;
-}
 
 namespace content {
 class BrowserContext;
@@ -58,10 +53,6 @@ class PaymentRequestDialog;
 namespace safe_browsing {
 class ChromeCleanerDialogController;
 }
-
-namespace security_state {
-struct SecurityInfo;
-}  // namespace security_state
 
 namespace task_manager {
 class TaskManagerTableModel;
@@ -117,24 +108,6 @@ content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
 
 #if defined(OS_MACOSX)
 
-// Shows a Views page info bubble at the given anchor point.
-void ShowPageInfoBubbleViewsAtPoint(
-    const gfx::Point& anchor_point,
-    Profile* profile,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info);
-
-// Show a Views bookmark bubble at the given point. This occurs when the
-// bookmark star is clicked or "Bookmark This Page..." is selected from a menu
-// or via a key equivalent.
-void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
-                                    gfx::NativeView parent,
-                                    bookmarks::BookmarkBubbleObserver* observer,
-                                    Browser* browser,
-                                    const GURL& url,
-                                    bool newly_bookmarked);
-
 // Shows a views zoom bubble at the |anchor_point|. This occurs when the zoom
 // icon is clicked or when a shortcut key is pressed or whenever |web_contents|
 // zoom factor changes. |user_action| is used to determine if the bubble will
@@ -189,22 +162,6 @@ void ShowWebShareTargetPickerDialog(
     gfx::NativeWindow parent_window,
     const std::vector<std::pair<base::string16, GURL>>& targets,
     WebShareTargetPickerCallback callback);
-
-#if defined(OS_MACOSX)
-
-// This is a class so that it can be friended from ContentSettingBubbleContents,
-// which allows it to call SetAnchorRect().
-class ContentSettingBubbleViewsBridge {
- public:
-  static void Show(gfx::NativeView parent_view,
-                   ContentSettingBubbleModel* model,
-                   content::WebContents* web_contents,
-                   const gfx::Point& anchor);
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleViewsBridge);
-};
-
-#endif  // OS_MACOSX
 
 #endif  // TOOLKIT_VIEWS
 

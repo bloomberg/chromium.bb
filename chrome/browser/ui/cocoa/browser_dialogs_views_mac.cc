@@ -7,7 +7,9 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
@@ -28,7 +30,8 @@ void ShowPageInfoBubbleViewsAtPoint(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info) {
+    const security_state::SecurityInfo& security_info,
+    LocationBarDecoration* decoration) {
   // Don't show the bubble again if it's already showing. A second click on the
   // location icon in the omnibox will dismiss an open bubble. This behaviour is
   // consistent with the non-Mac views implementation.
@@ -41,9 +44,10 @@ void ShowPageInfoBubbleViewsAtPoint(
     return;
   }
 
-  PageInfoBubbleView::ShowBubble(nullptr, nullptr,
-                                 gfx::Rect(anchor_point, gfx::Size()), profile,
-                                 web_contents, virtual_url, security_info);
+  views::BubbleDialogDelegateView* bubble = PageInfoBubbleView::ShowBubble(
+      nullptr, nullptr, gfx::Rect(anchor_point, gfx::Size()), profile,
+      web_contents, virtual_url, security_info);
+  KeepBubbleAnchored(bubble, decoration);
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
@@ -51,7 +55,8 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     bookmarks::BookmarkBubbleObserver* observer,
                                     Browser* browser,
                                     const GURL& virtual_url,
-                                    bool already_bookmarked) {
+                                    bool already_bookmarked,
+                                    LocationBarDecoration* decoration) {
   // The Views dialog may prompt for sign in.
   std::unique_ptr<BubbleSyncPromoDelegate> delegate(
       new BookmarkBubbleSignInDelegate(browser));
@@ -59,6 +64,10 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
   BookmarkBubbleView::ShowBubble(
       nullptr, gfx::Rect(anchor_point, gfx::Size()), parent, observer,
       std::move(delegate), browser->profile(), virtual_url, already_bookmarked);
+
+  views::BubbleDialogDelegateView* bubble =
+      BookmarkBubbleView::bookmark_bubble();
+  KeepBubbleAnchored(bubble, decoration);
 }
 
 void ShowZoomBubbleViewsAtPoint(content::WebContents* web_contents,
@@ -96,13 +105,14 @@ void HideTaskManagerViews() {
 void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,
                                            ContentSettingBubbleModel* model,
                                            content::WebContents* web_contents,
-                                           const gfx::Point& anchor) {
-  ContentSettingBubbleContents* contents =
-      new ContentSettingBubbleContents(model, web_contents, nullptr,
-          views::BubbleBorder::Arrow::TOP_RIGHT);
+                                           const gfx::Point& anchor,
+                                           LocationBarDecoration* decoration) {
+  ContentSettingBubbleContents* contents = new ContentSettingBubbleContents(
+      model, web_contents, nullptr, views::BubbleBorder::Arrow::TOP_RIGHT);
   contents->set_parent_window(parent_view);
   contents->SetAnchorRect(gfx::Rect(anchor, gfx::Size()));
   views::BubbleDialogDelegateView::CreateBubble(contents)->Show();
+  KeepBubbleAnchored(contents, decoration);
 }
 
 void ShowUpdateChromeDialogViews(gfx::NativeWindow parent) {

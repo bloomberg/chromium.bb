@@ -77,14 +77,14 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   };
 
   // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble.
-  static void ShowBubble(views::View* anchor_view,
-                         views::WidgetObserver* widget_observer,
-                         const gfx::Rect& anchor_rect,
-                         Profile* profile,
-                         content::WebContents* web_contents,
-                         const GURL& url,
-                         const security_state::SecurityInfo& security_info);
-
+  static views::BubbleDialogDelegateView* ShowBubble(
+      views::View* anchor_view,
+      views::WidgetObserver* widget_observer,
+      const gfx::Rect& anchor_rect,
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& url,
+      const security_state::SecurityInfo& security_info);
   // Returns the type of the bubble being shown.
   static BubbleType GetShownBubbleType();
 

@@ -386,7 +386,7 @@ int InternalPageInfoBubbleView::GetDialogButtons() const {
 PageInfoBubbleView::~PageInfoBubbleView() {}
 
 // static
-void PageInfoBubbleView::ShowBubble(
+views::BubbleDialogDelegateView* PageInfoBubbleView::ShowBubble(
     views::View* anchor_view,
     views::WidgetObserver* widget_observer,
     const gfx::Rect& anchor_rect,
@@ -408,7 +408,7 @@ void PageInfoBubbleView::ShowBubble(
     if (widget_observer)
       bubble->GetWidget()->AddObserver(widget_observer);
     bubble->GetWidget()->Show();
-    return;
+    return bubble;
   }
   PageInfoBubbleView* bubble = new PageInfoBubbleView(
       anchor_view, parent_window, profile, web_contents, url, security_info);
@@ -417,6 +417,7 @@ void PageInfoBubbleView::ShowBubble(
   if (widget_observer)
     bubble->GetWidget()->AddObserver(widget_observer);
   bubble->GetWidget()->Show();
+  return bubble;
 }
 
 // static
