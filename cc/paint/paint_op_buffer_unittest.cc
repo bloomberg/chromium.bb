@@ -9,6 +9,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 
+using testing::_;
+using testing::Property;
+using testing::Mock;
+
 namespace {
 
 template <typename T>
@@ -494,6 +498,404 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_EQ(buffer2->numSlowPaths(), 0);
   buffer2->push<DrawRecordOp>(buffer);
   EXPECT_EQ(buffer->numSlowPaths(), buffer2->numSlowPaths());
+}
+
+TEST(PaintOpBufferTest, ContiguousRanges) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // Ranges are {0, 1}, {2}, {3, 4}.
+  std::vector<size_t> ranges = {0, 2, 3};
+
+  // Plays all 3 ranges.
+  testing::Sequence s;
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+  buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+}
+
+TEST(PaintOpBufferTest, NonContiguousRanges) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // Ranges are {0, 1}, {2}, {3, 4}.
+  std::vector<size_t> ranges = {0, 2, 3};
+
+  // Plays first and third ranges.
+  testing::Sequence s;
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+  buffer.PlaybackRanges(ranges, {0, 2}, &canvas);
+}
+
+TEST(PaintOpBufferTest, FirstRange) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // Ranges are {0, 1}, {2}, {3, 4}.
+  std::vector<size_t> ranges = {0, 2, 3};
+
+  // Plays first range.
+  testing::Sequence s;
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+  buffer.PlaybackRanges(ranges, {0}, &canvas);
+}
+
+TEST(PaintOpBufferTest, MiddleRange) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // Ranges are {0, 1}, {2}, {3, 4}.
+  std::vector<size_t> ranges = {0, 2, 3};
+
+  // Plays second range.
+  testing::Sequence s;
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+  buffer.PlaybackRanges(ranges, {1}, &canvas);
+}
+
+TEST(PaintOpBufferTest, LastRange) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // Ranges are {0, 1}, {2}, {3, 4}.
+  std::vector<size_t> ranges = {0, 2, 3};
+
+  // Plays third range.
+  testing::Sequence s;
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+  buffer.PlaybackRanges(ranges, {2}, &canvas);
+}
+
+TEST(PaintOpBufferTest, ContiguousRangeWithSaveLayerAlphaRestore) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+  buffer.push<RestoreOp>();
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  {
+    // Ranges are {0, 1, save, restore}, {2}, {3, 4}.
+    std::vector<size_t> ranges = {0, 4, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped.
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  {
+    // Ranges are {0, 1}, {save, restore}, {2}, {3, 4}.
+    std::vector<size_t> ranges = {0, 2, 4, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped.
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2, 3}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  {
+    // Ranges are {0, 1}, {save, restore, 2}, {3, 4}.
+    std::vector<size_t> ranges = {0, 2, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped.
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  {
+    // Ranges are {0, 1, save}, {restore, 2}, {3, 4}.
+    std::vector<size_t> ranges = {0, 3, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped.
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+}
+
+TEST(PaintOpBufferTest, NonContiguousRangeWithSaveLayerAlphaRestore) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  buffer.push<DrawColorOp>(0u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(1u, SkBlendMode::kClear);
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+  buffer.push<DrawColorOp>(2u, SkBlendMode::kClear);
+  buffer.push<DrawColorOp>(3u, SkBlendMode::kClear);
+  buffer.push<RestoreOp>();
+  buffer.push<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // Ranges are {0, 1, save}, {2, 3}, {restore, 4}.
+  std::vector<size_t> ranges = {0, 3, 5};
+
+  // Plays back all ranges.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The SaveLayerAlpha/Restore is not dropped if we draw the middle
+    // range, as we need them to represent the two draws inside the layer
+    // correctly.
+    EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, willRestore()).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  // Skips the middle range.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The now-empty SaveLayerAlpha/Restore is dropped
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 2}, &canvas);
+  }
+
+  // Repeat with ranges that contain just the save and restore, as
+  // {0, 1}, {save}, {2, 3}, {restore}, {4}.
+  ranges = {0, 2, 3, 5, 6};
+
+  // Plays back all ranges.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The SaveLayerAlpha/Restore is not dropped if we draw the middle
+    // range, as we need them to represent the two draws inside the layer
+    // correctly.
+    EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, willRestore()).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2, 3, 4}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  // Skips the middle range.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(1u)).InSequence(s);
+    // The now-empty SaveLayerAlpha/Restore is dropped
+    EXPECT_CALL(canvas, OnDrawPaintWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 3, 4}, &canvas);
+  }
+}
+
+TEST(PaintOpBufferTest, ContiguousRangeWithSaveLayerAlphaDrawRestore) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  auto add_draw_rect = [](PaintOpBuffer* buffer, SkColor c) {
+    PaintFlags flags;
+    flags.setColor(c);
+    buffer->push<DrawRectOp>(SkRect::MakeWH(1, 1), flags);
+  };
+
+  add_draw_rect(&buffer, 0u);
+  add_draw_rect(&buffer, 1u);
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+  add_draw_rect(&buffer, 2u);
+  buffer.push<RestoreOp>();
+  add_draw_rect(&buffer, 3u);
+  add_draw_rect(&buffer, 4u);
+
+  {
+    // Ranges are {0, 1, save, 2, restore}, {3, 4}.
+    std::vector<size_t> ranges = {0, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is duropped, the containing
+    // operation can be drawn with alpha.
+    EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  {
+    // Ranges are {0, 1, save, 2}, {restore}, {3, 4}.
+    std::vector<size_t> ranges = {0, 4, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped, the containing
+    // operation can be drawn with alpha.
+    EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  {
+    // Ranges are {0, 1, save}, {2, restore}, {3, 4}.
+    std::vector<size_t> ranges = {0, 3, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped, the containing
+    // operation can be drawn with alpha.
+    EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  {
+    // Ranges are {0, 1, save}, {2}, {restore}, {3, 4}.
+    std::vector<size_t> ranges = {0, 3, 4, 5};
+
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    // The empty SaveLayerAlpha/Restore is dropped, the containing
+    // operation can be drawn with alpha.
+    EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2, 3}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+}
+
+TEST(PaintOpBufferTest, NonContiguousRangeWithSaveLayerAlphaDrawRestore) {
+  PaintOpBuffer buffer;
+  MockCanvas canvas;
+
+  auto add_draw_rect = [](PaintOpBuffer* buffer, SkColor c) {
+    PaintFlags flags;
+    flags.setColor(c);
+    buffer->push<DrawRectOp>(SkRect::MakeWH(1, 1), flags);
+  };
+
+  add_draw_rect(&buffer, 0u);
+  add_draw_rect(&buffer, 1u);
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+  add_draw_rect(&buffer, 2u);
+  add_draw_rect(&buffer, 3u);
+  add_draw_rect(&buffer, 4u);
+  buffer.push<RestoreOp>();
+
+  // Ranges are {0, 1, save}, {2, 3}, {4, restore}.
+  std::vector<size_t> ranges = {0, 3, 5};
+
+  // If the middle range is played, then the SaveLayerAlpha/Restore
+  // can't be dropped.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(3u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(4u)).InSequence(s);
+    EXPECT_CALL(canvas, willRestore()).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 1, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  // If the middle range is not played, then the SaveLayerAlpha/Restore
+  // can be dropped.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(4u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 2}, &canvas);
+  }
+  Mock::VerifyAndClearExpectations(&canvas);
+
+  // Ranges are {0, 1, save, 2}, {3, 4}, {restore}.
+  ranges = {0, 4, 6};
+
+  // If the middle range is not played, then the SaveLayerAlpha/Restore
+  // can be dropped.
+  {
+    testing::Sequence s;
+    EXPECT_CALL(canvas, OnDrawRectWithColor(0u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
+    EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
+    buffer.PlaybackRanges(ranges, {0, 2}, &canvas);
+  }
 }
 
 }  // namespace cc

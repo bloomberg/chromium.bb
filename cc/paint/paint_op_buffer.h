@@ -776,8 +776,32 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   void Reset();
 
-  void playback(SkCanvas* canvas) const;
-  void playback(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
+  void playback(SkCanvas* canvas,
+                SkPicture::AbortCallback* callback = nullptr) const;
+  // This can be used to play back a subset of the PaintOpBuffer.
+  // The |range_starts| array is an increasing set of positions in the
+  // PaintOpBuffer that break the buffer up into arbitrary consecutive chunks
+  // that together cover the entire buffer. The first value in |range_starts|
+  // must be 0. Each value after defines the end of the previous range
+  // (exclusive) and the beginning of the next range (inclusive). The last value
+  // in the array defines the last range which includes all ops to the end of
+  // the buffer. For example, given a PaintOpBuffer with the following ops:
+  // { A, B, C, D, E, F, G, H, I }
+  // And a |range_starts| with the following values:
+  // { 0, 4, 5 }
+  // This defines the following ranges in PaintOpBuffer:
+  // { A, B, C, D }, { E }, { F, G, H, I }.
+  // The |range_indices| is an increasing set of indices into the |range_starts|
+  // array. This defines the set of ranges that will be played back.
+  // Given the above example, if range_indices contains:
+  // { 1, 2 }
+  // Then the 1th and 2th (starting from base 0) ranges as defined in
+  // |range_starts| would be played back, which would be:
+  // { E, F, G, H, I }.
+  void PlaybackRanges(const std::vector<size_t>& range_starts,
+                      const std::vector<size_t>& range_indices,
+                      SkCanvas* canvas,
+                      SkPicture::AbortCallback* callback = nullptr) const;
 
   // Returns the size of the paint op buffer. That is, the number of ops
   // contained in it.
@@ -889,7 +913,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       return *this;
     }
     operator bool() const { return op_idx_ < buffer_->size(); }
-
     size_t op_idx() const { return op_idx_; }
 
    private:
