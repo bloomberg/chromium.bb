@@ -151,7 +151,7 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
 
 void UnlockManagerImpl::OnLifeCycleStateChanged() {
   RemoteDeviceLifeCycle::State state = life_cycle_->GetState();
-  PA_LOG(INFO) << "[Unlock] RemoteDeviceLifeCycle state changed: "
+  PA_LOG(INFO) << "RemoteDeviceLifeCycle state changed: "
                << static_cast<int>(state);
 
   remote_screenlock_state_.reset();
@@ -170,7 +170,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
 
 void UnlockManagerImpl::OnUnlockEventSent(bool success) {
   if (!is_attempting_auth_) {
-    PA_LOG(ERROR) << "[Unlock] Sent easy_unlock event, but no auth attempted.";
+    PA_LOG(ERROR) << "Sent easy_unlock event, but no auth attempted.";
     return;
   }
 
@@ -179,7 +179,7 @@ void UnlockManagerImpl::OnUnlockEventSent(bool success) {
 
 void UnlockManagerImpl::OnRemoteStatusUpdate(
     const RemoteStatusUpdate& status_update) {
-  PA_LOG(INFO) << "[Unlock] Status Update: ("
+  PA_LOG(INFO) << "Status Update: ("
                << "user_present=" << status_update.user_presence << ", "
                << "secure_screen_lock="
                << status_update.secure_screen_lock_state << ", "
@@ -196,13 +196,13 @@ void UnlockManagerImpl::OnRemoteStatusUpdate(
 
 void UnlockManagerImpl::OnDecryptResponse(const std::string& decrypted_bytes) {
   if (!is_attempting_auth_) {
-    PA_LOG(ERROR) << "[Unlock] Decrypt response received but not attempting "
+    PA_LOG(ERROR) << "Decrypt response received but not attempting "
                   << "auth.";
     return;
   }
 
   if (decrypted_bytes.empty()) {
-    PA_LOG(WARNING) << "[Unlock] Failed to decrypt sign-in challenge.";
+    PA_LOG(WARNING) << "Failed to decrypt sign-in challenge.";
     AcceptAuthAttempt(false);
   } else {
     sign_in_secret_.reset(new std::string(decrypted_bytes));
@@ -212,12 +212,12 @@ void UnlockManagerImpl::OnDecryptResponse(const std::string& decrypted_bytes) {
 
 void UnlockManagerImpl::OnUnlockResponse(bool success) {
   if (!is_attempting_auth_) {
-    PA_LOG(ERROR) << "[Unlock] Unlock response received but not attempting "
+    PA_LOG(ERROR) << "Unlock response received but not attempting "
                   << "auth.";
     return;
   }
 
-  PA_LOG(INFO) << "[Unlock] Unlock response from remote device: "
+  PA_LOG(INFO) << "Unlock response from remote device: "
                << (success ? "success" : "failure");
   if (success)
     GetMessenger()->DispatchUnlockEvent();
@@ -227,6 +227,11 @@ void UnlockManagerImpl::OnUnlockResponse(bool success) {
 
 void UnlockManagerImpl::OnDisconnected() {
   GetMessenger()->RemoveObserver(this);
+}
+
+void UnlockManagerImpl::OnProximityStateChanged() {
+  PA_LOG(INFO) << "Proximity state changed.";
+  UpdateLockScreen();
 }
 
 void UnlockManagerImpl::OnScreenDidLock(
@@ -281,7 +286,7 @@ void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
 void UnlockManagerImpl::OnAuthAttempted(
     ScreenlockBridge::LockHandler::AuthType auth_type) {
   if (is_attempting_auth_) {
-    PA_LOG(INFO) << "[Unlock] Already attempting auth.";
+    PA_LOG(INFO) << "Already attempting auth.";
     return;
   }
 
@@ -291,7 +296,7 @@ void UnlockManagerImpl::OnAuthAttempted(
   is_attempting_auth_ = true;
 
   if (!life_cycle_) {
-    PA_LOG(ERROR) << "[Unlock] No life_cycle active when auth is attempted";
+    PA_LOG(ERROR) << "No life_cycle active when auth is attempted";
     AcceptAuthAttempt(false);
     UpdateLockScreen();
     return;
@@ -315,8 +320,7 @@ void UnlockManagerImpl::OnAuthAttempted(
     if (GetMessenger()->SupportsSignIn()) {
       GetMessenger()->RequestUnlock();
     } else {
-      PA_LOG(INFO) << "[Unlock] Protocol v3.1 not supported, skipping "
-                   << "request_unlock.";
+      PA_LOG(INFO) << "Protocol v3.1 not supported, skipping request_unlock.";
       GetMessenger()->DispatchUnlockEvent();
     }
   }
@@ -376,8 +380,14 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
   // If the RSSI is too low, then the remote device is nowhere near the local
   // device. This message should take priority over messages about screen lock
   // states.
-  if (!proximity_monitor_->IsUnlockAllowed())
-    return ScreenlockState::RSSI_TOO_LOW;
+  if (!proximity_monitor_->IsUnlockAllowed()) {
+    if (remote_screenlock_state_ &&
+        *remote_screenlock_state_ == RemoteScreenlockState::UNLOCKED) {
+      return ScreenlockState::RSSI_TOO_LOW;
+    } else {
+      return ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW;
+    }
+  }
 
   if (remote_screenlock_state_) {
     switch (*remote_screenlock_state_) {
@@ -406,6 +416,9 @@ void UnlockManagerImpl::UpdateLockScreen() {
   if (screenlock_state_ == new_state)
     return;
 
+  PA_LOG(INFO) << "Updating screenlock state from "
+               << static_cast<int>(screenlock_state_) << " to "
+               << static_cast<int>(new_state);
   proximity_auth_client_->UpdateScreenlockState(new_state);
   screenlock_state_ = new_state;
 }
@@ -417,6 +430,7 @@ void UnlockManagerImpl::UpdateProximityMonitorState() {
   if (is_locked_ && life_cycle_ &&
       life_cycle_->GetState() ==
           RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
+    proximity_monitor_->AddObserver(this);
     proximity_monitor_->Start();
   } else {
     proximity_monitor_->Stop();

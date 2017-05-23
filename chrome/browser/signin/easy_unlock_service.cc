@@ -791,10 +791,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_PHONE_UNSUPPORTED;
       case ScreenlockState::RSSI_TOO_LOW:
         return PASSWORD_ENTRY_RSSI_TOO_LOW;
-      case ScreenlockState::TX_POWER_TOO_HIGH:
-        return PASSWORD_ENTRY_TX_POWER_TOO_HIGH;
-      case ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
-        return PASSWORD_ENTRY_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+      case ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW:
+        return PASSWORD_ENTRY_PHONE_LOCKED_AND_RSSI_TOO_LOW;
       case ScreenlockState::AUTHENTICATED:
         return PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE;
     }

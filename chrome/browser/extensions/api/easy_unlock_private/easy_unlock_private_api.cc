@@ -100,11 +100,11 @@ ScreenlockState ToScreenlockState(easy_unlock_private::State state) {
     case easy_unlock_private::STATE_PHONE_UNSUPPORTED:
       return ScreenlockState::PHONE_UNSUPPORTED;
     case easy_unlock_private::STATE_RSSI_TOO_LOW:
-      return ScreenlockState::RSSI_TOO_LOW;
     case easy_unlock_private::STATE_TX_POWER_TOO_HIGH:
-      return ScreenlockState::TX_POWER_TOO_HIGH;
+      // Note: TX Power is deprecated, so we merge it with the RSSI state.
+      return ScreenlockState::RSSI_TOO_LOW;
     case easy_unlock_private::STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
-      return ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+      return ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW;
     case easy_unlock_private::STATE_AUTHENTICATED:
       return ScreenlockState::AUTHENTICATED;
     default:

@@ -31,10 +31,9 @@ proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
     case ScreenlockState::PHONE_LOCKED:
     case ScreenlockState::PHONE_NOT_LOCKABLE:
     case ScreenlockState::PHONE_UNSUPPORTED:
-    case ScreenlockState::RSSI_TOO_LOW:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
-    case ScreenlockState::TX_POWER_TOO_HIGH:
-    case ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+    case ScreenlockState::RSSI_TOO_LOW:
+    case ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW:
       // TODO(isherman): This icon is currently identical to the regular locked
       // icon.  Once the reduced proximity range flag is removed, consider
       // deleting the redundant icon.
@@ -75,11 +74,8 @@ size_t GetTooltipResourceId(ScreenlockState state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION;
     case ScreenlockState::RSSI_TOO_LOW:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW;
-    case ScreenlockState::TX_POWER_TOO_HIGH:
-      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH;
-    case ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
-      return
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+    case ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW:
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_RSSI_TOO_LOW;
     case ScreenlockState::AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
   }
@@ -93,14 +89,14 @@ bool TooltipContainsDeviceType(ScreenlockState state) {
           state == ScreenlockState::PHONE_NOT_LOCKABLE ||
           state == ScreenlockState::NO_BLUETOOTH ||
           state == ScreenlockState::PHONE_UNSUPPORTED ||
-          state == ScreenlockState::TX_POWER_TOO_HIGH ||
-          state == ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH);
+          state == ScreenlockState::RSSI_TOO_LOW ||
+          state == ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW);
 }
 
 // Returns true iff the |state| corresponds to a locked remote device.
 bool IsLockedState(ScreenlockState state) {
   return (state == ScreenlockState::PHONE_LOCKED ||
-          state == ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH);
+          state == ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW);
 }
 
 }  // namespace
