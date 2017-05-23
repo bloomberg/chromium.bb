@@ -32448,6 +32448,7 @@ from previous Chrome versions.
   <int value="6" label="Key Mismatch"/>
   <int value="7" label="Hash Mismatch"/>
   <int value="8" label="Sparse Open Failed"/>
+  <int value="9" label="Invalid File Length"/>
 </enum>
 
 <enum name="SimpleCacheSyncSHA256Result" type="int">
