@@ -12,8 +12,8 @@ namespace blink {
 namespace {
 
 const char* kNGInlineItemTypeStrings[] = {
-    "Text",     "AtomicInline",        "OpenTag",    "CloseTag",
-    "Floating", "OutOfFlowPositioned", "BidiControl"};
+    "Text",     "Control",  "AtomicInline",        "OpenTag",
+    "CloseTag", "Floating", "OutOfFlowPositioned", "BidiControl"};
 
 }  // namespace
 
