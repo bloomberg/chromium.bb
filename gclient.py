@@ -158,6 +158,22 @@ def ast2str(node, indent=0):
 
 
 class GClientKeywords(object):
+  class FromImpl(object):
+    """Used to implement the From() syntax."""
+
+    def __init__(self, module_name, sub_target_name=None):
+      """module_name is the dep module we want to include from.  It can also be
+      the name of a subdirectory to include from.
+
+      sub_target_name is an optional parameter if the module name in the other
+      DEPS file is different. E.g., you might want to map src/net to net."""
+      self.module_name = module_name
+      self.sub_target_name = sub_target_name
+
+    def __str__(self):
+      return 'From(%s, %s)' % (repr(self.module_name),
+                               repr(self.sub_target_name))
+
   class VarImpl(object):
     def __init__(self, custom_vars, local_scope):
       self._custom_vars = custom_vars
@@ -210,10 +226,10 @@ class DependencySettings(GClientKeywords):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
       self._url = self._url.replace('/@', '@')
-    elif not isinstance(self._url, (None.__class__)):
+    elif not isinstance(self._url, (self.FromImpl, None.__class__)):
       raise gclient_utils.Error(
-          ('dependency url must be either string or None, '
-           'instead of %s') % self._url.__class__.__name__)
+          ('dependency url must be either a string, None, '
+           'or From() instead of %s') % self._url.__class__.__name__)
     # Make any deps_file path platform-appropriate.
     for sep in ['/', '\\']:
       self._deps_file = self._deps_file.replace(sep, os.sep)
@@ -361,6 +377,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if self.parent and self.parent.parent and not self.parent.parent.parent:
       requirements |= set(i.name for i in self.root.dependencies if i.name)
 
+    if isinstance(self.url, self.FromImpl):
+      requirements.add(self.url.module_name)
+
     if self.name:
       requirements |= set(
           obj.name for obj in self.root.subtree(False)
@@ -430,12 +449,41 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     return True
 
   def LateOverride(self, url):
-    """Resolves the parsed url from url."""
+    """Resolves the parsed url from url.
+
+    Manages From() keyword accordingly. Do not touch self.parsed_url nor
+    self.url because it may called with other urls due to From()."""
     assert self.parsed_url == None or not self.should_process, self.parsed_url
     parsed_url = self.get_custom_deps(self.name, url)
     if parsed_url != url:
       logging.info(
           'Dependency(%s).LateOverride(%s) -> %s' %
+          (self.name, url, parsed_url))
+      return parsed_url
+
+    if isinstance(url, self.FromImpl):
+      # Requires tree traversal.
+      ref = [
+          dep for dep in self.root.subtree(True) if url.module_name == dep.name
+      ]
+      if not ref:
+        raise gclient_utils.Error('Failed to find one reference to %s. %s' % (
+            url.module_name, ref))
+      # It may happen that len(ref) > 1 but it's no big deal.
+      ref = ref[0]
+      sub_target = url.sub_target_name or self.name
+      found_deps = [d for d in ref.dependencies if d.name == sub_target]
+      if len(found_deps) != 1:
+        raise gclient_utils.Error(
+            'Couldn\'t find %s in %s, referenced by %s (parent: %s)\n%s' % (
+                sub_target, ref.name, self.name, self.parent.name,
+                str(self.root)))
+
+      # Call LateOverride() again.
+      found_dep = found_deps[0]
+      parsed_url = found_dep.LateOverride(found_dep.url)
+      logging.info(
+          'Dependency(%s).LateOverride(%s) -> %s (From)' %
           (self.name, url, parsed_url))
       return parsed_url
 
@@ -550,6 +598,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         }
       else:
         global_scope = {
+          'From': self.FromImpl,
           'Var': var.Lookup,
           'deps_os': {},
         }

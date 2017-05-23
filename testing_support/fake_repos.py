@@ -134,7 +134,7 @@ def wait_for_port_to_free(host, port):
 class FakeReposBase(object):
   """Generate git repositories to test gclient functionality.
 
-  Many DEPS functionalities need to be tested: Var, deps_os, hooks,
+  Many DEPS functionalities need to be tested: Var, File, From, deps_os, hooks,
   use_relative_paths.
 
   And types of dependencies: Relative urls, Full urls, git.
@@ -309,7 +309,11 @@ class FakeRepos(FakeReposBase):
     # - deps_os
     # - var
     # - hooks
+    # - From
     # TODO(maruel):
+    # - File: File is hard to test here because it's SVN-only. It's
+    #         implementation should probably be replaced to use urllib instead.
+    # - $matching_files
     # - use_relative_paths
     self._commit_git('repo_3', {
       'origin': 'git/repo_3@1\n',
@@ -368,7 +372,8 @@ deps = {
       'DEPS': """
 deps = {
   'src/repo2': '%(git_base)srepo_2@%(hash)s',
-  'src/repo2/repo_renamed': '/repo_3',
+  #'src/repo2/repo_renamed': '/repo_3',
+  'src/repo2/repo_renamed': From('src/repo2', 'foo/bar'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
