@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
@@ -54,8 +55,11 @@ class CONTENT_EXPORT SyntheticGestureController {
   bool DispatchNextEvent(base::TimeTicks = base::TimeTicks::Now());
 
  private:
+  friend class SyntheticGestureControllerTestBase;
+
   void RequestBeginFrame();
   void OnBeginFrame();
+  void StartTimer();
 
   void StartGesture(const SyntheticGesture& gesture);
   void StopGesture(const SyntheticGesture& gesture,
@@ -111,6 +115,7 @@ class CONTENT_EXPORT SyntheticGestureController {
     DISALLOW_COPY_AND_ASSIGN(GestureAndCallbackQueue);
   } pending_gesture_queue_;
 
+  base::RepeatingTimer dispatch_timer_;
   base::WeakPtrFactory<SyntheticGestureController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);
