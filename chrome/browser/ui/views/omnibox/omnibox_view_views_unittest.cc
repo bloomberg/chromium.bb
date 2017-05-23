@@ -24,6 +24,9 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/render_text.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
 #if defined(OS_CHROMEOS)
@@ -52,6 +55,8 @@ class TestingOmniboxView : public OmniboxViewViews {
   static BaseTextEmphasis to_base_text_emphasis(bool emphasize) {
     return emphasize ? EMPHASIZED : DEEMPHASIZED;
   }
+
+  using views::Textfield::GetRenderText;
 
   void ResetEmphasisTestState();
 
@@ -293,6 +298,41 @@ TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
   omnibox_textfield()->OnKeyEvent(&up_pressed);
   EXPECT_EQ(ui::TextEditCommand::INVALID_COMMAND,
             scheduled_text_edit_command());
+}
+
+TEST_F(OmniboxViewViewsTest, OnBlur) {
+  // Make the Omnibox very narrow (so it couldn't fit the whole string).
+  int kOmniboxWidth = 60;
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  render_text->SetDisplayRect(gfx::Rect(0, 0, kOmniboxWidth, 10));
+  render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  // (In this example, uppercase Latin letters represent Hebrew letters.)
+  // The string |kContentsRtl| is equivalent to:
+  //     RA.QWM/0123/abcd
+  // This is displayed as:
+  //     0123/MWQ.AR/abcd
+  // Enter focused mode, where the text should *not* be elided, and we expect
+  // SetWindowTextAndCaretPos to scroll such that the start of the string is
+  // on-screen. Because the domain is RTL, this scrolls to an offset greater
+  // than 0.
+  omnibox_view()->OnFocus();
+  const base::string16 kContentsRtl =
+      base::WideToUTF16(L"\x05e8\x05e2.\x05e7\x05d5\x05dd/0123/abcd");
+  static_cast<OmniboxView*>(omnibox_view())
+      ->SetWindowTextAndCaretPos(kContentsRtl, 0, false, false);
+  EXPECT_EQ(gfx::NO_ELIDE, render_text->elide_behavior());
+  // NOTE: Technically (depending on the font), this expectation could fail if
+  // the entire domain fits in 60 pixels. However, 60px is so small it should
+  // never happen with any font.
+  EXPECT_GT(0, render_text->GetUpdatedDisplayOffset().x());
+
+  // Now enter blurred mode, where the text should be elided to 60px. This means
+  // the string itself is truncated. Scrolling would therefore mean the text is
+  // off-screen. Ensure that the horizontal scrolling has been reset to 0.
+  omnibox_view()->OnBlur();
+  EXPECT_EQ(gfx::ELIDE_TAIL, render_text->elide_behavior());
+  EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
 }
 
 TEST_F(OmniboxViewViewsTest, Emphasis) {
