@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/feedback/feedback_report.h"
 
 namespace feedback {
@@ -33,22 +33,18 @@ bool FeedbackUploader::ReportsUploadTimeComparator::operator()(
   return a->upload_at() > b->upload_at();
 }
 
-FeedbackUploader::FeedbackUploader(const base::FilePath& path,
-                                   base::SequencedWorkerPool* pool)
+FeedbackUploader::FeedbackUploader(const base::FilePath& path)
     : report_path_(path.Append(kFeedbackReportPath)),
       retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
-      url_(kFeedbackPostUrl),
-      pool_(pool) {
+      url_(kFeedbackPostUrl) {
   Init();
 }
 
 FeedbackUploader::FeedbackUploader(const base::FilePath& path,
-                                   base::SequencedWorkerPool* pool,
                                    const std::string& url)
     : report_path_(path.Append(kFeedbackReportPath)),
       retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
-      url_(url),
-      pool_(pool) {
+      url_(url) {
   Init();
 }
 
@@ -92,9 +88,9 @@ void FeedbackUploader::QueueReportWithDelay(const std::string& data,
   // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
   // lose reports.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      pool_->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool_->GetSequenceToken(),
-          base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   reports_queue_.push(new FeedbackReport(report_path_,
                                          base::Time::Now() + delay,

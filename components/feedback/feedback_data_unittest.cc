@@ -16,7 +16,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,13 +26,10 @@ const char kHistograms[] = "";
 const char kImageData[] = "";
 const char kFileData[] = "";
 
-using content::BrowserThread;
-
 class MockUploader : public feedback::FeedbackUploader, public KeyedService {
  public:
   MockUploader(content::BrowserContext* context)
-      : FeedbackUploader(context ? context->GetPath() : base::FilePath(),
-                         BrowserThread::GetBlockingPool()) {}
+      : FeedbackUploader(context ? context->GetPath() : base::FilePath()) {}
 
   MOCK_METHOD1(DispatchReport, void(const std::string&));
 };
