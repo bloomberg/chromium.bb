@@ -125,7 +125,11 @@ int RendererMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  SkGraphics::Init();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSkiaRuntimeOpts)) {
+    SkGraphics::Init();
+  }
+
 #if defined(OS_ANDROID)
   const int kMB = 1024 * 1024;
   size_t font_cache_limit =

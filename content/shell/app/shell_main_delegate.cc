@@ -225,6 +225,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
     }
 
+    // We want stable/baseline results when running layout tests.
+    command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);
+
     command_line.AppendSwitch(cc::switches::kDisallowNonExactResourceReuse);
 
     // Unless/until WebM files are added to the media layout tests, we need to

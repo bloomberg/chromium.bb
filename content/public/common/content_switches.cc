@@ -279,6 +279,10 @@ const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 // Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
+// Do not use runtime-detected high-end CPU optimizations in Skia.  This is
+// useful for forcing a baseline code path for e.g. layout tests.
+const char kDisableSkiaRuntimeOpts[]        = "disable-skia-runtime-opts";
+
 // Disable paint invalidation based on slimming paint.
 // See kEnableSlimmingPaintInvalidation.
 const char kDisableSlimmingPaintInvalidation[] =
