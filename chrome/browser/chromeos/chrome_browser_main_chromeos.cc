@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/linux_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -112,6 +113,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/services/console_service_provider.h"
@@ -409,6 +411,42 @@ class SystemTokenCertDBInitializer {
 
   // Entry point, called on UI thread.
   void Initialize() {
+    // Only start loading the system token once cryptohome is available and only
+    // if the TPM is ready (available && owned && not being owned).
+    DBusThreadManager::Get()
+        ->GetCryptohomeClient()
+        ->WaitForServiceToBeAvailable(
+            base::Bind(&SystemTokenCertDBInitializer::OnCryptohomeAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ private:
+  // Called once the cryptohome service is available.
+  void OnCryptohomeAvailable(bool available) {
+    if (!available) {
+      LOG(ERROR) << "SystemTokenCertDBInitializer: Failed to wait for "
+                    "cryptohome to become available.";
+      return;
+    }
+
+    VLOG(1) << "SystemTokenCertDBInitializer: Cryptohome available.";
+    DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(
+        base::Bind(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // This is a callback for the cryptohome TpmIsReady query. Note that this is
+  // not a listener which would be called once TPM becomes ready if it was not
+  // ready on startup (e.g. after device enrollment), see crbug.com/725500.
+  void OnGotTpmIsReady(DBusMethodCallStatus call_status, bool tpm_is_ready) {
+    if (!tpm_is_ready) {
+      VLOG(1) << "SystemTokenCertDBInitializer: TPM is not ready - not loading "
+                 "system token.";
+      return;
+    }
+    VLOG(1)
+        << "SystemTokenCertDBInitializer: TPM is ready, loading system token.";
+    TPMTokenLoader::Get()->EnsureStarted();
     base::Callback<void(crypto::ScopedPK11Slot)> callback =
         base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
                             weak_ptr_factory_.GetWeakPtr());
@@ -417,7 +455,6 @@ class SystemTokenCertDBInitializer {
         base::BindOnce(&GetSystemSlotOnIOThread, callback));
   }
 
- private:
   // Initializes the global system token NSSCertDatabase with |system_slot|.
   // Also starts CertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot) {
@@ -434,6 +471,8 @@ class SystemTokenCertDBInitializer {
     database->SetSystemSlot(std::move(system_slot_copy));
     system_token_cert_database_ = std::move(database);
 
+    VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
+               "database to CertLoader.";
     CertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
   }
 
@@ -541,7 +580,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           content::BrowserThread::IO));
 
   // Initialize NSS database for system token.
-  TPMTokenLoader::Get()->EnsureStarted();
   system_token_certdb_initializer_ =
       base::MakeUnique<internal::SystemTokenCertDBInitializer>();
   system_token_certdb_initializer_->Initialize();
