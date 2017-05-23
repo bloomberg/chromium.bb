@@ -214,9 +214,6 @@ Polymer({
       type: Array,
     },
 
-    /** @type {string} */
-    previousDialog: String,
-
     setupFailed: {
       type: Boolean,
       value: false,
@@ -280,16 +277,6 @@ Polymer({
   modelListChanged_: function(modelsInfo) {
     if (modelsInfo.success)
       this.modelList = modelsInfo.models;
-  },
-
-  /** @private */
-  switchToPreviousDialog_: function() {
-    this.$$('add-printer-dialog').close();
-    if (this.previousDialog == AddPrinterDialogs.DISCOVERY) {
-      this.fire('open-discovery-printers-dialog');
-    } else if (this.previousDialog == AddPrinterDialogs.MANUALLY) {
-      this.fire('open-manually-add-printer-dialog');
-    }
   },
 
   /** @private */
@@ -368,8 +355,8 @@ Polymer({
 
     configuringDialogTitle: String,
 
-    /** @type {string} */
-    previousDialog: String,
+    /** @private {string} */
+    previousDialog_: String,
 
     /** @private {string} */
     currentDialog_: String,
@@ -433,12 +420,12 @@ Polymer({
     this.switchDialog_(
         this.currentDialog_, AddPrinterDialogs.CONFIGURING,
         'showConfiguringDialog_');
-    if (this.previousDialog == AddPrinterDialogs.DISCOVERY) {
+    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersNearbyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
           this.newPrinter);
-    } else if (this.previousDialog == AddPrinterDialogs.MANUFACTURER) {
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersManuallyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
@@ -460,15 +447,15 @@ Polymer({
     // clean up the way we switch dialogs so we don't have to supply
     // redundant information and can just return to the previous
     // dialog.
-    if (this.previousDialog == AddPrinterDialogs.DISCOVERY) {
+    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.switchDialog_(
-          this.currentDialog_, this.previousDialog, 'showDiscoveryDialog_');
-    } else if (this.previousDialog == AddPrinterDialogs.MANUALLY) {
+          this.currentDialog_, this.previousDialog_, 'showDiscoveryDialog_');
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
       this.switchDialog_(
-          this.currentDialog_, this.previousDialog, 'showManuallyAddDialog_');
-    } else if (this.previousDialog == AddPrinterDialogs.MANUFACTURER) {
+          this.currentDialog_, this.previousDialog_, 'showManuallyAddDialog_');
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.switchDialog_(
-          this.currentDialog_, this.previousDialog, 'showManufacturerDialog_');
+          this.currentDialog_, this.previousDialog_, 'showManufacturerDialog_');
     }
   },
 
@@ -481,7 +468,7 @@ Polymer({
    * @private
    */
   switchDialog_: function(fromDialog, toDialog, domIfBooleanName) {
-    this.previousDialog = fromDialog;
+    this.previousDialog_ = fromDialog;
     this.currentDialog_ = toDialog;
 
     this.set(domIfBooleanName, true);
@@ -503,7 +490,7 @@ Polymer({
     if (success)
       return;
 
-    if (this.previousDialog == AddPrinterDialogs.MANUFACTURER) {
+    if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.setupFailed = true;
     }
   },
