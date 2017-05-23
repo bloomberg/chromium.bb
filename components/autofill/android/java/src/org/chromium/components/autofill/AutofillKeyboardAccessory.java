@@ -6,6 +6,7 @@ package org.chromium.components.autofill;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.graphics.PorterDuff;
@@ -27,6 +28,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.ArrayList;
+
 /**
  * The Autofill suggestion view that lists relevant suggestions. It sits above the keyboard and
  * below the content area.
@@ -36,6 +39,8 @@ public class AutofillKeyboardAccessory extends LinearLayout
         View.OnLongClickListener {
     // Time to pause before reversing animation when the first suggestion is a hint.
     private static final long PAUSE_ANIMATION_BEFORE_REVERSE_MILLIS = 1000;
+    // Time to fade in views that we temporarily hide when we change container layout.
+    private static final long ALPHA_ANIMATION_DURATION_MILLIS = 250;
 
     private final WindowAndroid mWindowAndroid;
     private final AutofillDelegate mAutofillDelegate;
@@ -47,7 +52,8 @@ public class AutofillKeyboardAccessory extends LinearLayout
     // We start animating by scrolling the suggestions from beyond the viewport.
     private final int mStartAnimationTranslationPx;
 
-    private ObjectAnimator mAnimator;
+    private int mSeparatorPosition;
+    private Animator mAnimator;
     private Runnable mReverseAnimationRunnable;
 
     /**
@@ -97,7 +103,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
         }
 
         removeAllViews();
-        int separatorPosition = -1;
+        mSeparatorPosition = -1;
         for (int i = 0; i < suggestions.length; i++) {
             AutofillSuggestion suggestion = suggestions[i];
             boolean isKeyboardAccessoryHint = i == 0 && isFirstSuggestionAHint;
@@ -110,7 +116,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 touchTarget = LayoutInflater.from(getContext()).inflate(
                         R.layout.autofill_keyboard_accessory_icon, this, false);
 
-                if (separatorPosition == -1 && !isKeyboardAccessoryHint) separatorPosition = i;
+                if (mSeparatorPosition == -1 && !isKeyboardAccessoryHint) mSeparatorPosition = i;
 
                 ImageView icon = (ImageView) touchTarget;
                 Drawable drawable =
@@ -166,8 +172,8 @@ public class AutofillKeyboardAccessory extends LinearLayout
             addView(touchTarget);
         }
 
-        if (separatorPosition != -1) {
-            addView(createSeparatorView(), separatorPosition);
+        if (mSeparatorPosition != -1) {
+            addView(createSeparatorView(), mSeparatorPosition);
         }
 
         // TODO(crbug/722897): Following does not reverse layout order for RTL.
@@ -194,6 +200,15 @@ public class AutofillKeyboardAccessory extends LinearLayout
             mAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationStart(Animator animator) {
+                    if (isFirstSuggestionAHint) {
+                        // We will make suggestions beyond the separator visible after we have
+                        // finished the reverse animation and removed the first suggestion. This
+                        // prevents a sudden movement of these suggestions when the container view
+                        // is redrawn. See |scheduleReverseAnimation|.
+                        for (int i = mSeparatorPosition + 1; i < getChildCount(); ++i) {
+                            getChildAt(i).setAlpha(0);
+                        }
+                    }
                     container.setVisibility(View.VISIBLE);
                 }
                 @Override
@@ -277,20 +292,47 @@ public class AutofillKeyboardAccessory extends LinearLayout
             return;
         }
 
-        int hintWidth = firstSuggestion.getWidth() - firstSuggestion.getPaddingRight();
-        mAnimator = ObjectAnimator.ofFloat(this, View.TRANSLATION_X, 0, -hintWidth);
-        mAnimator.setDuration(mAnimationDurationMillis);
-        mAnimator.addListener(new AnimatorListenerAdapter() {
+        // Play 2 animations sequentially.
+        // 1. Move the icon hint out of the viewport by reversing the forward animation.
+        //    At the end of this animation, we remove the icon hint, mark views beyond
+        //    |mSeparatorPosition| as |View.VISIBLE| but 100% transparent.
+        // 2. Fade-in the views beyond |mSeparatorPosition|.
+        // We use 2 animations to smoothen the relayout of the |HorizonatlScrollView| when we
+        // remove the icon hint.
+        assert getChildAt(0) instanceof ImageView;
+        for (int i = mSeparatorPosition + 1; i < getChildCount(); ++i) {
+            assert getChildAt(i) instanceof ImageView;
+        }
+
+        // |reverseAnimator| moves icon hint out of viewport, removes the icon hint and hides views
+        // beyond |mSeparatorPosition|.
+        int hintWidth = firstSuggestion.getWidth();
+        final ObjectAnimator reverseAnimator =
+                ObjectAnimator.ofFloat(this, View.TRANSLATION_X, -hintWidth);
+        reverseAnimator.setDuration(mAnimationDurationMillis);
+        reverseAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animator) {
-                mAnimator.removeListener(this);
-                if (view.getVisibility() == View.VISIBLE) {
-                    // Remove the keyboard accessory hint, reset 'X' and redraw the layout.
-                    removeView(firstSuggestion);
-                    setTranslationX(0);
-                }
+                reverseAnimator.removeListener(this);
+                if (view.getVisibility() != View.VISIBLE) return;
+                removeView(firstSuggestion);
+                mSeparatorPosition--;
+                // Reset 'X' and redraw the layout.
+                setTranslationX(0);
             }
         });
+
+        // |alphaAnimation| fades in views beyond |mSeparatorPosition|.
+        final AnimatorSet alphaAnimation = new AnimatorSet();
+        ArrayList<Animator> alphaAnimators = new ArrayList<Animator>();
+        for (int i = mSeparatorPosition + 1; i < getChildCount(); ++i) {
+            alphaAnimators.add(ObjectAnimator.ofFloat(getChildAt(i), View.ALPHA, 1f));
+        }
+        alphaAnimation.setDuration(ALPHA_ANIMATION_DURATION_MILLIS);
+        alphaAnimation.playTogether(alphaAnimators);
+
+        mAnimator = new AnimatorSet();
+        ((AnimatorSet) mAnimator).playSequentially(reverseAnimator, alphaAnimation);
         mReverseAnimationRunnable = new Runnable() {
             @Override
             public void run() {
