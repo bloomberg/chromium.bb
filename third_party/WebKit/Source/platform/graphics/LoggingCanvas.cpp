@@ -34,7 +34,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/skia/ImagePixelLocker.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-encoders/PNGImageEncoder.h"
+#include "platform/image-encoders/ImageEncoder.h"
 #include "platform/wtf/HexNumber.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -266,14 +266,16 @@ String ColorTypeName(SkColorType color_type) {
 std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
   Vector<unsigned char> output;
 
-  if (sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap)) {
-    ImagePixelLocker pixel_locker(image, kUnpremul_SkAlphaType,
-                                  kRGBA_8888_SkColorType);
-    ImageDataBuffer image_data(
-        IntSize(image->width(), image->height()),
-        static_cast<const unsigned char*>(pixel_locker.Pixels()));
+  SkPixmap src;
+  bool peekResult = bitmap.peekPixels(&src);
+  DCHECK(peekResult);
 
-    PNGImageEncoder::Encode(image_data, &output);
+  SkPngEncoder::Options options;
+  options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
+  options.fZLibLevel = 3;
+  options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
+  if (!ImageEncoder::Encode(&output, src, options)) {
+    return nullptr;
   }
 
   std::unique_ptr<JSONObject> data_item = JSONObject::Create();

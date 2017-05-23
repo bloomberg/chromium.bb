@@ -50,8 +50,6 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/ImageEncoder.h"
-#include "platform/image-encoders/PNGImageEncoder.h"
-#include "platform/image-encoders/WEBPImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/MathExtras.h"
@@ -546,14 +544,13 @@ void ImageBuffer::SetNeedsCompositingUpdate() {
 bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {
-  if (mime_type == "image/jpeg") {
-    SkImageInfo info =
-        SkImageInfo::Make(Width(), Height(), kRGBA_8888_SkColorType,
-                          kUnpremul_SkAlphaType, nullptr);
-    size_t rowBytes =
-        Width() * SkColorTypeBytesPerPixel(kRGBA_8888_SkColorType);
-    SkPixmap src(info, Pixels(), rowBytes);
+  SkImageInfo info =
+      SkImageInfo::Make(Width(), Height(), kRGBA_8888_SkColorType,
+                        kUnpremul_SkAlphaType, nullptr);
+  const size_t rowBytes = info.minRowBytes();
+  SkPixmap src(info, Pixels(), rowBytes);
 
+  if (mime_type == "image/jpeg") {
     SkJpegEncoder::Options options;
     options.fQuality = ImageEncoder::ComputeJpegQuality(quality);
     options.fAlphaOption = SkJpegEncoder::AlphaOption::kBlendOnBlack;
@@ -565,14 +562,17 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
   }
 
   if (mime_type == "image/webp") {
-    int compression_quality = WEBPImageEncoder::kDefaultCompressionQuality;
-    if (quality >= 0.0 && quality <= 1.0)
-      compression_quality = static_cast<int>(quality * 100 + 0.5);
-    return WEBPImageEncoder::Encode(*this, compression_quality, encoded_image);
+    SkWebpEncoder::Options options = ImageEncoder::ComputeWebpOptions(
+        quality, SkTransferFunctionBehavior::kIgnore);
+    return ImageEncoder::Encode(encoded_image, src, options);
   }
 
   DCHECK_EQ(mime_type, "image/png");
-  return PNGImageEncoder::Encode(*this, encoded_image);
+  SkPngEncoder::Options options;
+  options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
+  options.fZLibLevel = 3;
+  options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
+  return ImageEncoder::Encode(encoded_image, src, options);
 }
 
 String ImageDataBuffer::ToDataURL(const String& mime_type,

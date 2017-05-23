@@ -20,6 +20,13 @@ bool ImageEncoder::Encode(Vector<unsigned char>* dst,
   return SkPngEncoder::Encode(&dst_stream, src, options);
 }
 
+bool ImageEncoder::Encode(Vector<unsigned char>* dst,
+                          const SkPixmap& src,
+                          const SkWebpEncoder::Options& options) {
+  VectorWStream dst_stream(dst);
+  return SkWebpEncoder::Encode(&dst_stream, src, options);
+}
+
 std::unique_ptr<ImageEncoder> ImageEncoder::Create(
     Vector<unsigned char>* dst,
     const SkPixmap& src,
@@ -50,8 +57,28 @@ std::unique_ptr<ImageEncoder> ImageEncoder::Create(
 
 int ImageEncoder::ComputeJpegQuality(double quality) {
   int compression_quality = 92;  // Default value
-  if (quality >= 0.0 && quality <= 1.0)
+  if (0.0f <= quality && quality <= 1.0)
     compression_quality = static_cast<int>(quality * 100 + 0.5);
   return compression_quality;
+}
+
+SkWebpEncoder::Options ImageEncoder::ComputeWebpOptions(
+    double quality,
+    SkTransferFunctionBehavior unpremulBehavior) {
+  SkWebpEncoder::Options options;
+  options.fUnpremulBehavior = unpremulBehavior;
+
+  if (quality == 1.0) {
+    // Choose a lossless encode.  When performing a lossless encode, higher
+    // quality corresponds to slower encoding and smaller output size.
+    options.fCompression = SkWebpEncoder::Compression::kLossless;
+    options.fQuality = 75.0f;
+  } else {
+    options.fQuality = 80.0f;  // Default value
+    if (0.0f <= quality && quality <= 1.0)
+      options.fQuality = quality * 100.0f;
+  }
+
+  return options;
 }
 };

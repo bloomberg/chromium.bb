@@ -40,7 +40,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/image-decoders/SegmentReader.h"
-#include "platform/image-encoders/PNGImageEncoder.h"
+#include "platform/image-encoders/ImageEncoder.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/HexNumber.h"
 #include "platform/wtf/PtrUtil.h"
@@ -145,18 +145,19 @@ std::unique_ptr<Vector<char>> PictureSnapshot::Replay(unsigned from_step,
   std::unique_ptr<Vector<char>> base64_data = WTF::MakeUnique<Vector<char>>();
   Vector<char> encoded_image;
 
-  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-  if (!image)
-    return nullptr;
+  SkPixmap src;
+  bool peekResult = bitmap.peekPixels(&src);
+  DCHECK(peekResult);
 
-  ImagePixelLocker pixel_locker(image, kUnpremul_SkAlphaType,
-                                kRGBA_8888_SkColorType);
-  ImageDataBuffer image_data(
-      IntSize(image->width(), image->height()),
-      static_cast<const unsigned char*>(pixel_locker.Pixels()));
-  if (!PNGImageEncoder::Encode(
-          image_data, reinterpret_cast<Vector<unsigned char>*>(&encoded_image)))
+  SkPngEncoder::Options options;
+  options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
+  options.fZLibLevel = 3;
+  options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
+  if (!ImageEncoder::Encode(
+          reinterpret_cast<Vector<unsigned char>*>(&encoded_image), src,
+          options)) {
     return nullptr;
+  }
 
   Base64Encode(encoded_image, *base64_data);
   return base64_data;
