@@ -27,6 +27,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -268,7 +269,31 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GotAccessToken(
 
   bool use_oauth = !access_token.empty();
   GURL url = GetApiUrl(use_oauth);
-  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("one_google_bar_service", R"(
+        semantics {
+          sender: "One Google Bar Service"
+          description: "Downloads the 'One Google' bar."
+          trigger:
+            "Displaying the new tab page on Desktop, if Google is the "
+            "configured search provider."
+          data: "Credentials if user is signed in."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can control this feature via selecting a non-Google default "
+            "search engine in Chrome settings under 'Search Engine'."
+          chrome_policy {
+            DefaultSearchProviderEnabled {
+              policy_options {mode: MANDATORY}
+              DefaultSearchProviderEnabled: false
+            }
+          }
+        })");
+  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::POST, this,
+                                         traffic_annotation);
   url_fetcher_->SetRequestContext(request_context_);
 
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_AUTH_DATA |
