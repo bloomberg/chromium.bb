@@ -430,21 +430,7 @@ HRESULT BrowserAccessibilityComWin::accDoDefaultAction(VARIANT var_id) {
   if (!owner())
     return E_FAIL;
 
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  // Return an error if it hasn't got a custom action verb to describe what
-  // happens on click.
-  if (!target->owner()->HasIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB))
-    return DISP_E_MEMBERNOTFOUND;
-
-  manager->DoDefaultAction(*target->owner());
-  return S_OK;
+  return AXPlatformNodeWin::accDoDefaultAction(var_id);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::accHitTest(LONG x_left,
@@ -554,17 +540,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accChild(VARIANT var_child,
   if (!owner())
     return E_FAIL;
 
-  if (!disp_child)
-    return E_INVALIDARG;
-
-  *disp_child = NULL;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_child);
-  if (!target)
-    return E_INVALIDARG;
-
-  (*disp_child) = target->NewReference();
-  return S_OK;
+  return AXPlatformNodeWin::get_accChild(var_child, disp_child);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accChildCount(LONG* child_count) {
@@ -572,12 +548,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accChildCount(LONG* child_count) {
   if (!owner())
     return E_FAIL;
 
-  if (!child_count)
-    return E_INVALIDARG;
-
-  *child_count = owner()->PlatformChildCount();
-
-  return S_OK;
+  return AXPlatformNodeWin::get_accChildCount(child_count);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accDefaultAction(
@@ -587,14 +558,8 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accDefaultAction(
   if (!owner())
     return E_FAIL;
 
-  if (!def_action)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  return target->get_localizedName(0, def_action);
+  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+  return AXPlatformNodeWin::get_accDefaultAction(var_id, def_action);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accDescription(VARIANT var_id,
@@ -603,21 +568,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accDescription(VARIANT var_id,
   if (!owner())
     return E_FAIL;
 
-  if (!desc)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  base::string16 description_str = target->description();
-  if (description_str.empty())
-    return S_FALSE;
-
-  *desc = SysAllocString(description_str.c_str());
-
-  DCHECK(*desc);
-  return S_OK;
+  return AXPlatformNodeWin::get_accDescription(var_id, desc);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accFocus(VARIANT* focus_child) {
@@ -625,26 +576,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accFocus(VARIANT* focus_child) {
   if (!owner())
     return E_FAIL;
 
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  if (!focus_child)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityWin* focus =
-      static_cast<BrowserAccessibilityWin*>(manager->GetFocus());
-  if (focus == owner()) {
-    focus_child->vt = VT_I4;
-    focus_child->lVal = CHILDID_SELF;
-  } else if (focus == NULL) {
-    focus_child->vt = VT_EMPTY;
-  } else {
-    focus_child->vt = VT_DISPATCH;
-    focus_child->pdispVal = focus->GetCOM()->NewReference();
-  }
-
-  return S_OK;
+  return AXPlatformNodeWin::get_accFocus(focus_child);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accHelp(VARIANT var_id,
@@ -692,30 +624,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accParent(
   if (!owner())
     return E_FAIL;
 
-  if (!disp_parent)
-    return E_INVALIDARG;
-
-  IAccessible* parent_obj =
-      ToBrowserAccessibilityComWin(owner()->PlatformGetParent());
-  if (parent_obj == NULL) {
-    // This happens if we're the root of the tree;
-    // return the IAccessible for the window.
-    parent_obj =
-        Manager()->ToBrowserAccessibilityManagerWin()->GetParentIAccessible();
-    // |parent| can only be NULL if the manager was created before the parent
-    // IAccessible was known and it wasn't subsequently set before a client
-    // requested it. This has been fixed. |parent| may also be NULL during
-    // destruction. Possible cases where this could occur include tabs being
-    // dragged to a new window, etc.
-    if (!parent_obj) {
-      DVLOG(1) << "In Function: " << __func__
-               << ". Parent IAccessible interface is NULL. Returning failure";
-      return E_FAIL;
-    }
-  }
-  parent_obj->AddRef();
-  *disp_parent = parent_obj;
-  return S_OK;
+  return AXPlatformNodeWin::get_accParent(disp_parent);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accRole(VARIANT var_id,
