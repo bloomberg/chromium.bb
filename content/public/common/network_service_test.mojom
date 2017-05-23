@@ -13,5 +13,6 @@ struct Rule {
 interface NetworkServiceTest {
   // Adds the given host resolver rules in the process where the network
   // service is running.
-  AddRules(array<Rule> rules);
+  [Sync]
+  AddRules(array<Rule> rules) => ();
 };
