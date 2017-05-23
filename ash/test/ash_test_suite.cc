@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +29,8 @@ AshTestSuite::~AshTestSuite() {}
 
 void AshTestSuite::Initialize() {
   base::TestSuite::Initialize();
+  // Ensure histograms hit during tests are registered properly.
+  base::StatisticsRecorder::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
   gfx::RegisterPathProvider();
