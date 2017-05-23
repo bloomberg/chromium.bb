@@ -35,7 +35,6 @@ struct DataForRecursion {
   PropertyTrees* property_trees;
   LayerType* transform_tree_parent;
   LayerType* transform_fixed_parent;
-  int render_target;
   int clip_tree_parent;
   int effect_tree_parent;
   int scroll_tree_parent;
@@ -356,14 +355,6 @@ bool AddTransformNodeIfNeeded(
 
   const bool has_surface = created_render_surface;
 
-  // A transform node is needed to change the render target for subtree when
-  // a scroll child's render target is different from the scroll parent's render
-  // target.
-  const bool scroll_child_has_different_target =
-      ScrollParent(layer) &&
-      Parent(layer)->effect_tree_index() !=
-          ScrollParent(layer)->effect_tree_index();
-
   const bool is_at_boundary_of_3d_rendering_context =
       IsAtBoundaryOf3dRenderingContext(layer);
 
@@ -371,8 +362,7 @@ bool AddTransformNodeIfNeeded(
   bool requires_node = is_root || is_snapped || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
-                       has_proxied_transform_related_property ||
-                       scroll_child_has_different_target || is_sticky ||
+                       has_proxied_transform_related_property || is_sticky ||
                        is_at_boundary_of_3d_rendering_context;
 
   int parent_index = TransformTree::kRootNodeId;
@@ -1148,8 +1138,6 @@ void BuildPropertyTreesInternal(
   bool created_render_surface =
       AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
-  if (created_render_surface)
-    data_for_children.render_target = data_for_children.effect_tree_parent;
 
   bool created_transform_node = AddTransformNodeIfNeeded(
       data_from_parent, layer, created_render_surface, &data_for_children);
@@ -1178,8 +1166,6 @@ void BuildPropertyTreesInternal(
       DCHECK_EQ(ScrollParent(scroll_child), layer);
       DCHECK(Parent(scroll_child));
       data_for_children.effect_tree_parent =
-          Parent(scroll_child)->effect_tree_index();
-      data_for_children.render_target =
           Parent(scroll_child)->effect_tree_index();
       BuildPropertyTreesInternal(scroll_child, data_for_children);
     }
@@ -1248,7 +1234,6 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.property_trees = property_trees;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
-  data_for_recursion.render_target = EffectTree::kRootNodeId;
   data_for_recursion.clip_tree_parent = ClipTree::kRootNodeId;
   data_for_recursion.effect_tree_parent = EffectTree::kInvalidNodeId;
   data_for_recursion.scroll_tree_parent = ScrollTree::kRootNodeId;
