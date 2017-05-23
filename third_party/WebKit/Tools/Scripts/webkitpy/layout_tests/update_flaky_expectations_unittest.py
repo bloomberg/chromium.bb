@@ -12,8 +12,8 @@ from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port.test import LAYOUT_TEST_DIR
-from webkitpy.layout_tests.update_test_expectations import main
-from webkitpy.layout_tests.update_test_expectations import RemoveFlakesOMatic
+from webkitpy.layout_tests.update_flaky_expectations import main
+from webkitpy.layout_tests.update_flaky_expectations import RemoveFlakesOMatic
 from webkitpy.tool.commands.flaky_tests import FlakyTests
 
 
