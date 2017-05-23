@@ -55,6 +55,9 @@ class WebServiceWorkerNetworkProvider {
   // ServiceWorker.
   virtual bool IsControlledByServiceWorker() { return false; }
 
+  // Returns an identifier of this provider.
+  virtual int GetProviderID() const { return -1; }
+
   // Returns an identifier of the service worker controlling the document
   // associated with the WebDataSource.
   virtual int64_t ServiceWorkerID() { return -1; }

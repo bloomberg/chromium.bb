@@ -107,6 +107,8 @@ class WebServiceWorkerNetworkProviderImpl
     return provider_->IsControlledByServiceWorker();
   }
 
+  int GetProviderID() const override { return provider_->provider_id(); }
+
   int64_t ServiceWorkerID() override {
     if (provider_->context()->controller())
       return provider_->context()->controller()->version_id();
@@ -285,13 +287,10 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   if (web_network_provider) {
-    ServiceWorkerNetworkProvider* network_provider =
-        ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-            web_network_provider);
     worker_fetch_context->set_service_worker_provider_id(
-        network_provider->provider_id());
+        web_network_provider->GetProviderID());
     worker_fetch_context->set_is_controlled_by_service_worker(
-        network_provider->IsControlledByServiceWorker());
+        web_network_provider->IsControlledByServiceWorker());
   }
   return std::move(worker_fetch_context);
 }
