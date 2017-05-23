@@ -58,7 +58,7 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
 
 void getMatchingShorthandsForLonghand(
     CSSPropertyID propertyID, Vector<StylePropertyShorthand, 4>* result) {
-  ASSERT(!result->size());
+  DCHECK(!result->size());
   switch (propertyID) {
   {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {

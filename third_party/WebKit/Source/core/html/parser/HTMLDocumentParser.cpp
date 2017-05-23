@@ -989,7 +989,7 @@ void HTMLDocumentParser::EndIfDelayed() {
 }
 
 void HTMLDocumentParser::Finish() {
-  // FIXME: We should ASSERT(!m_parserStopped) here, since it does not makes
+  // FIXME: We should DCHECK(!m_parserStopped) here, since it does not makes
   // sense to call any methods on DocumentParser once it's been stopped.
   // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
 

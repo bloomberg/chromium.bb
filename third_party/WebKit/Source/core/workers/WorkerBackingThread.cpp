@@ -20,17 +20,16 @@
 
 namespace blink {
 
-#define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
-  ASSERT(IsolatesMutex().Locked());                          \
-  static type& name = *new type arguments
-
 static Mutex& IsolatesMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
   return mutex;
 }
 
 static HashSet<v8::Isolate*>& Isolates() {
-  DEFINE_STATIC_LOCAL_WITH_LOCK(HashSet<v8::Isolate*>, isolates, ());
+#if DCHECK_IS_ON()
+  DCHECK(IsolatesMutex().Locked());
+#endif
+  static HashSet<v8::Isolate*>& isolates = *new HashSet<v8::Isolate*>();
   return isolates;
 }
 

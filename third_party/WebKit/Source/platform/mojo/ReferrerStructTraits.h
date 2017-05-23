@@ -37,7 +37,7 @@ struct StructTraits<blink::mojom::ReferrerDataView, blink::Referrer> {
         static_cast<blink::ReferrerPolicy>(webReferrerPolicy);
     out->referrer = AtomicString(referrer.GetString());
 
-    // Mimics the ASSERT() done in the blink::Referrer constructor.
+    // Mimics the DCHECK() done in the blink::Referrer constructor.
     return referrer.IsValid() || out->referrer == blink::Referrer::NoReferrer();
   }
 };
