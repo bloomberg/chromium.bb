@@ -4105,6 +4105,12 @@ void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase::Init(delegate);
 }
 
+ui::AXPlatformNode* BrowserAccessibilityComWin::GetFromUniqueId(
+    int32_t unique_id) {
+  return ToBrowserAccessibilityComWin(
+      BrowserAccessibility::GetFromUniqueID(unique_id));
+}
+
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     const {
   std::vector<base::string16> attributes;
