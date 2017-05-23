@@ -11,14 +11,12 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/views_delegate.h"
 
 using chromeos::SelectToSpeakEventHandler;
 
@@ -52,28 +50,27 @@ class EventCapturer : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventCapturer);
 };
 
-class SelectToSpeakAccessibilityEventDelegate
-    : public ash::test::TestAccessibilityEventDelegate {
+class SelectToSpeakMouseEventDelegate
+    : public chromeos::SelectToSpeakForwardedEventDelegateForTesting {
  public:
-  SelectToSpeakAccessibilityEventDelegate() {}
-  ~SelectToSpeakAccessibilityEventDelegate() override {}
+  SelectToSpeakMouseEventDelegate() {}
 
   void Reset() { events_captured_.clear(); }
 
-  bool CapturedAXEvent(ui::AXEvent event_type) {
+  bool CapturedMouseEvent(ui::EventType event_type) {
     return events_captured_.find(event_type) != events_captured_.end();
   }
 
-  // Overriden from TestAccessibilityEventDelegate.
-  void NotifyAccessibilityEvent(views::View* view,
-                                ui::AXEvent event_type) override {
-    events_captured_.insert(event_type);
+  // Overriden from SelectToSpeakForwardedEventDelegateForTesting
+  void OnForwardEventToSelectToSpeakExtension(
+      const ui::MouseEvent& event) override {
+    events_captured_.insert(event.type());
   }
 
  private:
-  std::set<ui::AXEvent> events_captured_;
+  std::set<ui::EventType> events_captured_;
 
-  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakAccessibilityEventDelegate);
+  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakMouseEventDelegate);
 };
 
 class SelectToSpeakEventHandlerTest : public ash::test::AshTestBase {
@@ -84,10 +81,9 @@ class SelectToSpeakEventHandlerTest : public ash::test::AshTestBase {
 
   void SetUp() override {
     ash::test::AshTestBase::SetUp();
-    event_delegate_.reset(new SelectToSpeakAccessibilityEventDelegate());
-    ash_test_helper()
-        ->test_views_delegate()
-        ->set_test_accessibility_event_delegate(event_delegate_.get());
+    mouse_event_delegate_.reset(new SelectToSpeakMouseEventDelegate());
+    select_to_speak_event_handler_->CaptureForwardedEventsForTesting(
+        mouse_event_delegate_.get());
     generator_ = &AshTestBase::GetEventGenerator();
     CurrentContext()->AddPreTargetHandler(select_to_speak_event_handler_.get());
     CurrentContext()->AddPreTargetHandler(&event_capturer_);
@@ -106,7 +102,7 @@ class SelectToSpeakEventHandlerTest : public ash::test::AshTestBase {
   ui::test::EventGenerator* generator_;
   EventCapturer event_capturer_;
   TestingProfile profile_;
-  std::unique_ptr<SelectToSpeakAccessibilityEventDelegate> event_delegate_;
+  std::unique_ptr<SelectToSpeakMouseEventDelegate> mouse_event_delegate_;
 
  private:
   std::unique_ptr<SelectToSpeakEventHandler> select_to_speak_event_handler_;
@@ -135,10 +131,12 @@ TEST_F(SelectToSpeakEventHandlerTest, PressAndReleaseSearchNotHandled) {
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
 
+// Note: when running these tests locally on desktop Linux, you may need
+// to use xvfb-run, otherwise simulating the Search key press may not work.
 TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClick) {
   // If the user holds the Search key and then clicks the mouse button,
-  // the mouse events and the key release event get hancled by the
-  // SelectToSpeakEventHandler, and accessibility events are generated.
+  // the mouse events and the key release event get handled by the
+  // SelectToSpeakEventHandler, and mouse events are forwarded to the extension.
 
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   ASSERT_TRUE(event_capturer_.last_key_event());
@@ -148,12 +146,12 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClick) {
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
 
   generator_->ReleaseLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
 
   event_capturer_.Reset();
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -170,7 +168,7 @@ TEST_F(SelectToSpeakEventHandlerTest, RepeatSearchKey) {
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
 
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -178,7 +176,7 @@ TEST_F(SelectToSpeakEventHandlerTest, RepeatSearchKey) {
   generator_->ReleaseLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
 
   event_capturer_.Reset();
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -196,23 +194,24 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClickTwice) {
   generator_->set_current_location(gfx::Point(100, 12));
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
 
   generator_->ReleaseLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
 
-  event_delegate_->Reset();
-  EXPECT_FALSE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
-  EXPECT_FALSE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+  mouse_event_delegate_->Reset();
+  EXPECT_FALSE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
+  EXPECT_FALSE(
+      mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
 
   generator_->PressLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
 
   generator_->ReleaseLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
 
   event_capturer_.Reset();
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -237,13 +236,14 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusKeyIgnoresClicks) {
   ASSERT_TRUE(event_capturer_.last_mouse_event());
   EXPECT_FALSE(event_capturer_.last_mouse_event()->handled());
 
-  EXPECT_FALSE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
+  EXPECT_FALSE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
 
   generator_->ReleaseLeftButton();
   ASSERT_TRUE(event_capturer_.last_mouse_event());
   EXPECT_FALSE(event_capturer_.last_mouse_event()->handled());
 
-  EXPECT_FALSE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+  EXPECT_FALSE(
+      mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
 
   event_capturer_.Reset();
   generator_->ReleaseKey(ui::VKEY_I, ui::EF_COMMAND_DOWN);
@@ -254,38 +254,6 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusKeyIgnoresClicks) {
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
   ASSERT_TRUE(event_capturer_.last_key_event());
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
-}
-
-TEST_F(SelectToSpeakEventHandlerTest, TappingControlStopsSpeech) {
-  SpeechMonitor monitor;
-  EXPECT_FALSE(monitor.DidStop());
-  generator_->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-  generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(monitor.DidStop());
-}
-
-TEST_F(SelectToSpeakEventHandlerTest, TappingSearchStopsSpeech) {
-  SpeechMonitor monitor;
-  EXPECT_FALSE(monitor.DidStop());
-  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(monitor.DidStop());
-}
-
-TEST_F(SelectToSpeakEventHandlerTest, TappingShiftDoesNotStopSpeech) {
-  SpeechMonitor monitor;
-  generator_->PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
-  generator_->ReleaseKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
-  EXPECT_FALSE(monitor.DidStop());
-}
-
-TEST_F(SelectToSpeakEventHandlerTest, PressingControlZDoesNotStopSpeech) {
-  SpeechMonitor monitor;
-  generator_->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-  generator_->PressKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
-  generator_->ReleaseKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
-  generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-  EXPECT_FALSE(monitor.DidStop());
 }
 
 }  // namespace chromeos
