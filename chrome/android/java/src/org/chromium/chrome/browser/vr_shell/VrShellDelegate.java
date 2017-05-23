@@ -94,9 +94,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
 
-    // TODO(ymalik): This should be configurable via Finch.
-    private static final int FEEDBACK_FREQUENCY = 10;
-
     private static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -349,7 +346,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private static boolean activitySupportsExitFeedback(Activity activity) {
-        return activity instanceof ChromeTabbedActivity;
+        return activity instanceof ChromeTabbedActivity
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_FEEDBACK);
     }
 
     /**
@@ -426,7 +424,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         updateVrSupportLevel();
         mNativeVrShellDelegate = nativeInit();
-        mFeedbackFrequency = FEEDBACK_FREQUENCY;
+        mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         Choreographer choreographer = Choreographer.getInstance();
         choreographer.postFrameCallback(new FrameCallback() {
             @Override

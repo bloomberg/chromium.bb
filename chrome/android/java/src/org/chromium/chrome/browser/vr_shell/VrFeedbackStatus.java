@@ -5,13 +5,26 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * Gets and sets preferences related to the status of the Vr feedback infobar.
  */
 public class VrFeedbackStatus {
-    public static final String VR_FEEDBACK_OPT_OUT = "VR_FEEDBACK_OPT_OUT";
-    public static final String VR_EXIT_TO_2D_COUNT = "VR_EXIT_TO_2D_COUNT";
+    private static final String FEEDBACK_FREQUENCY_PARAM_NAME = "feedback_frequency";
+    private static final int DEFAULT_FEEDBACK_FREQUENCY = 10;
+
+    private static final String VR_FEEDBACK_OPT_OUT = "VR_FEEDBACK_OPT_OUT";
+    private static final String VR_EXIT_TO_2D_COUNT = "VR_EXIT_TO_2D_COUNT";
+
+    /**
+     * Returns how often we should show the feedback prompt.
+     */
+    public static int getFeedbackFrequency() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.VR_BROWSING_FEEDBACK, FEEDBACK_FREQUENCY_PARAM_NAME,
+                DEFAULT_FEEDBACK_FREQUENCY);
+    }
 
     /**
      * Sets the "opted out of entering VR feedback" preference.

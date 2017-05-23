@@ -49,6 +49,7 @@ extern const base::Feature kTabReparenting;
 extern const base::Feature kUseNewDoodleApi;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
+extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kVrCustomTabBrowsing;
 extern const base::Feature kWebPaymentsModifiers;
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
