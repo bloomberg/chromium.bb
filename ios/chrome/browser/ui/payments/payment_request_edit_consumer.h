@@ -15,6 +15,10 @@
 // Sets the list of field definitions for the editor.
 - (void)setEditorFields:(NSArray<EditorField*>*)fields;
 
+// Sets the options to choose from for |field|.
+- (void)setOptions:(NSArray<NSString*>*)options
+    forEditorField:(EditorField*)field;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDIT_CONSUMER_H_

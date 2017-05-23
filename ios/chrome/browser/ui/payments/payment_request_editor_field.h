@@ -34,6 +34,8 @@ typedef NS_ENUM(NSInteger, EditorFieldType) {
 @property(nonatomic, copy) NSString* displayValue;
 // Whether the field is required.
 @property(nonatomic, getter=isRequired) BOOL required;
+// Whether the field is enabled.
+@property(nonatomic, getter=isEnabled) BOOL enabled;
 // The associated CollectionViewItem instance. May be nil.
 @property(nonatomic, strong) CollectionViewItem* item;
 // The section identifier for the associated AutofillEditItem.

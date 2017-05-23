@@ -9,9 +9,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "ios/chrome/browser/payments/payment_request.h"
+#include "components/autofill/core/browser/test_region_data_loader.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
+#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/address_edit_view_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -24,14 +27,24 @@
 
 class PaymentRequestAddressEditCoordinatorTest : public PlatformTest {
  protected:
-  PaymentRequestAddressEditCoordinatorTest() {
-    payment_request_ = base::MakeUnique<PaymentRequest>(
+  PaymentRequestAddressEditCoordinatorTest()
+      : pref_service_(autofill::test::PrefServiceForTesting()) {
+    personal_data_manager_.SetTestingPrefService(pref_service_.get());
+    payment_request_ = base::MakeUnique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
+    test_region_data_loader_.set_synchronous_callback(true);
+    payment_request_->SetRegionDataLoader(&test_region_data_loader_);
+  }
+
+  void TearDown() override {
+    personal_data_manager_.SetTestingPrefService(nullptr);
   }
 
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<PaymentRequest> payment_request_;
+  std::unique_ptr<PrefService> pref_service_;
+  std::unique_ptr<TestPaymentRequest> payment_request_;
+  autofill::TestRegionDataLoader test_region_data_loader_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses

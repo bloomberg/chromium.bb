@@ -16,6 +16,7 @@
 @synthesize value = _value;
 @synthesize displayValue = _displayValue;
 @synthesize required = _required;
+@synthesize enabled = _enabled;
 @synthesize item = _item;
 @synthesize sectionIdentifier = _sectionIdentifier;
 
@@ -31,6 +32,7 @@
     _label = label;
     _value = value;
     _required = required;
+    _enabled = YES;
   }
   return self;
 }

@@ -24,6 +24,9 @@
 // An image corresponding to the type of the credit card, if any.
 @property(nonatomic, copy) UIImage* cardTypeIcon;
 
+// The inputView for the text field, if any.
+@property(nonatomic, strong) UIPickerView* inputView;
+
 // The field type this item is describing.
 @property(nonatomic, assign) AutofillUIType autofillUIType;
 

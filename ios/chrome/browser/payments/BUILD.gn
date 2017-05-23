@@ -50,10 +50,13 @@ source_set("test_support") {
   sources = [
     "payment_request_test_util.h",
     "payment_request_test_util.mm",
+    "test_payment_request.h",
+    "test_payment_request.mm",
   ]
   deps = [
     ":payments",
     "//base",
+    "//components/autofill/core/browser",
     "//components/payments/core",
     "//ios/web",
   ]

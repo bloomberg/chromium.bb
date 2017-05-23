@@ -82,6 +82,7 @@ source_set("payments") {
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//third_party/libaddressinput",
+    "//third_party/libaddressinput:strings_grit",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
@@ -163,6 +164,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
+    "//components/prefs:prefs",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
