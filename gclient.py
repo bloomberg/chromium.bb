@@ -2001,8 +2001,12 @@ def CMDsync(parser, args):
                     help='DEPRECATED: This is a no-op.')
   parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
                     help='DEPRECATED: This is a no-op.')
-  parser.add_option('--validate-syntax', action='store_true',
+  # TODO(phajdan.jr): Remove --validate-syntax option once confirmed it works.
+  parser.add_option('--validate-syntax', action='store_true', default=True,
                     help='Validate the .gclient and DEPS syntax')
+  parser.add_option('--disable-syntax-validation', action='store_false',
+                    dest='validate_syntax',
+                    help='Disable validation of .gclient and DEPS syntax.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 
