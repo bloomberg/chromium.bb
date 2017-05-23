@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "chrome/grit/chromium_strings.h"
@@ -82,11 +81,11 @@ std::unique_ptr<views::View> GetBaseProfileLabel(AddressStyleType type,
   container->SetLayoutManager(layout.release());
 
   if (!s1.empty()) {
-    const int text_style = type == AddressStyleType::DETAILED
-                               ? STYLE_EMPHASIZED
-                               : views::style::STYLE_PRIMARY;
-    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
-        s1, views::style::CONTEXT_LABEL, text_style);
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s1);
+    if (type == AddressStyleType::DETAILED) {
+      const gfx::FontList& font_list = label->font_list();
+      label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
+    }
     label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (disabled_state) {
@@ -141,8 +140,9 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
 std::unique_ptr<views::Label> GetLabelForMissingInformation(
     const base::string16& missing_info) {
   std::unique_ptr<views::Label> label =
-      base::MakeUnique<views::Label>(missing_info, CONTEXT_DEPRECATED_SMALL);
+      base::MakeUnique<views::Label>(missing_info);
   label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+  label->SetFontList(label->GetDefaultFontList().DeriveWithSizeDelta(-1));
   // Missing information typically has a nice shade of blue.
   label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LinkEnabled));
@@ -226,9 +226,11 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     layout->AddView(back_arrow);
   }
 
-  views::Label* title_label =
-      new views::Label(title, views::style::CONTEXT_DIALOG_TITLE);
+  views::Label* title_label = new views::Label(title);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetFontList(
+      title_label->GetDefaultFontList().DeriveWithSizeDelta(
+          ui::kTitleFontSizeDelta));
   layout->AddView(title_label);
 
   return container;
@@ -280,9 +282,9 @@ std::unique_ptr<views::View> GetShippingAddressLabelWithError(
       GetShippingAddressLabel(type, locale, profile, disabled_state);
 
   if (!error.empty()) {
-    std::unique_ptr<views::Label> label =
-        base::MakeUnique<views::Label>(error, CONTEXT_DEPRECATED_SMALL);
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(error);
     label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+    label->SetFontList(label->GetDefaultFontList().DeriveWithSizeDelta(-1));
     // Error information is typically in red.
     label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_AlertSeverityHigh));
@@ -349,17 +351,11 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(
 }
 
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
-  return base::MakeUnique<views::Label>(text, views::style::CONTEXT_LABEL,
-                                        STYLE_EMPHASIZED);
-}
-
-std::unique_ptr<views::Label> CreateMediumLabel(const base::string16& text) {
-  // TODO(tapted): This should refer to a style in the Chrome typography spec.
-  // Also, it needs to handle user setups where the default font is BOLD already
-  // since asking for a MEDIUM font will give a lighter font.
   std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(text);
-  label->SetFontList(ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      ui::kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+
+  label->SetFontList(
+      label->font_list().DeriveWithWeight(gfx::Font::Weight::BOLD));
+
   return label;
 }
 
@@ -376,13 +372,16 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   container->SetLayoutManager(layout.release());
 
   if (shipping_option) {
-    const base::string16& text = base::UTF8ToUTF16(shipping_option->label);
     std::unique_ptr<views::Label> shipping_label =
-        emphasize_label ? CreateMediumLabel(text)
-                        : base::MakeUnique<views::Label>(text);
+        base::MakeUnique<views::Label>(
+            base::UTF8ToUTF16(shipping_option->label));
     shipping_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     shipping_label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
+    if (emphasize_label) {
+      shipping_label->SetFontList(shipping_label->font_list().DeriveWithWeight(
+          gfx::Font::Weight::MEDIUM));
+    }
     container->AddChildView(shipping_label.release());
 
     std::unique_ptr<views::Label> amount_label =

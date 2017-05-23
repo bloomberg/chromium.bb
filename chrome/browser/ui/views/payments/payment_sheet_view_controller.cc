@@ -168,9 +168,11 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
                      0, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  std::unique_ptr<views::Label> name_label = CreateMediumLabel(section_name);
+  views::Label* name_label = new views::Label(section_name);
   name_label->SetMultiLine(true);
-  layout->AddView(name_label.release());
+  name_label->SetFontList(
+      name_label->font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  layout->AddView(name_label);
 
   if (content_view) {
     content_view->set_can_process_events_within_subtree(false);
