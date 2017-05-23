@@ -252,8 +252,8 @@ base::FilePath GetRlzDisabledFlagPath() {
 }
 #endif
 
-// Callback to GetNSSCertDatabaseForProfile. It starts CertLoader using the
-// provided NSS database. It must be called for primary user only.
+// Callback to GetNSSCertDatabaseForProfile. It passes the user-specific NSS
+// database to CertLoader. It must be called for primary user only.
 void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
   if (!CertLoader::IsInitialized())
     return;

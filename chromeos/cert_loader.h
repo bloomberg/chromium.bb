@@ -69,20 +69,20 @@ class CHROMEOS_EXPORT CertLoader {
   static std::string GetPkcs11IdAndSlotForCert(const net::X509Certificate& cert,
                                                int* slot_id);
 
-  // Starts the CertLoader with the passed system NSS cert database.
-  // The CertLoader will _not_ take ownership of the database - see comment on
-  // SetUserNSSDB.
-  // CertLoader supports working with only one database or with both (system and
-  // user) databases.
+  // Sets the NSS cert database which CertLoader should use to access system
+  // slot certificates. The CertLoader will _not_ take ownership of the database
+  // - see comment on SetUserNSSDB. CertLoader supports working with only one
+  // database or with both (system and user) databases.
   void SetSystemNSSDB(net::NSSCertDatabase* system_slot_database);
 
-  // Starts the CertLoader with the passed user NSS cert database.
+  // Sets the NSS cert database which CertLoader should use to access user slot
+  // certificates. CertLoader understands the edge case that this database could
+  // also give access to system slot certificates (e.g. for affiliated users).
   // The CertLoader will _not_ take the ownership of the database, but it
   // expects it to stay alive at least until the shutdown starts on the main
-  // thread. This assumes that SetUserNSSDB and other methods directly
-  // using |database_| are not called during shutdown.
-  // CertLoader supports working with only one database or with both (system and
-  // user) databases.
+  // thread. This assumes that SetUserNSSDB and other methods directly using
+  // |database_| are not called during shutdown. CertLoader supports working
+  // with only one database or with both (system and user) databases.
   void SetUserNSSDB(net::NSSCertDatabase* user_database);
 
   void AddObserver(CertLoader::Observer* observer);
