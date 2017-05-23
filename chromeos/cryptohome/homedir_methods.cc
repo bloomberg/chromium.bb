@@ -411,7 +411,9 @@ class HomedirMethodsImpl : public HomedirMethods {
     }
     if (reply.has_error()) {
       if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
-        LOGIN_LOG(ERROR) << "HomedirMethods MountEx error: " << reply.error();
+        LOGIN_LOG(ERROR)
+            << "HomedirMethods MountEx error (CryptohomeErrorCode): "
+            << reply.error();
         callback.Run(false, MapError(reply.error()), std::string());
         return;
       }

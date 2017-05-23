@@ -907,8 +907,9 @@ CryptohomeAuthenticator::AuthState CryptohomeAuthenticator::ResolveState() {
   } else {
     state = ResolveCryptohomeFailureState();
     LOGIN_LOG(ERROR) << "Cryptohome failure: "
-                     << "state=" << state
-                     << ", code=" << current_state_->cryptohome_code();
+                     << "state(AuthState)=" << state
+                     << ", code(cryptohome::MountError)="
+                     << current_state_->cryptohome_code();
   }
 
   DCHECK(current_state_->cryptohome_complete());  // Ensure invariant holds.
