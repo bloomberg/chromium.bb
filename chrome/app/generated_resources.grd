@@ -9131,10 +9131,13 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILE_ERROR_DIALOG_CHECKBOX" desc="The label of the checkbox on the profile error dialog asking the user whether to send a feedback report or not">
         Send feedback to help us fix this issue.
       </message>
-      <message name="IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION" desc="The prepopulated text filled in the feedback report reporting a profile error">
+      <message name="IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION" desc="The prepopulated text filled in the feedback report reporting a profile error. The triple single quotes are needed to preserve the line break.">
 Tell us what happened exactly before you got the profile error message:
-
-****DO NOT CHANGE BELOW THIS LINE****
+'''
+      </message>
+      <message name="IDS_PROFILE_ERROR_FEEDBACK_DIAGNOSTICS_LINE" desc="The prepopulated text filled in the feedback report reporting a profile error, above any diagnostics information. The triple single quotes are needed to preserve the line break.">
+****Please do not change below this line****
+'''
       </message>
       <message name="IDS_COULDNT_STARTUP_PROFILE_ERROR" desc="Error displayed when Chrome cannot start because profiles were not opened correctly.">
         Cannot start Chrome because something went wrong when opening your profile. Try to restart Chrome.
@@ -12206,7 +12209,7 @@ read aloud to screenreader users to announce that a completion is available.">
         Browse smart with Chrome
       </message>
       <message name="IDS_WIN10_TOAST_SWITCH_FAST" desc="Toast message variant: switch to a fast browser.">
-        Switch to a fast browser 
+        Switch to a fast browser
       </message>
       <message name="IDS_WIN10_TOAST_SWITCH_SMART" desc="Toast message variant: switch to a smart browser.">
         Switch to a smart browser
