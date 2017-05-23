@@ -6,7 +6,6 @@
 #define REMOTING_HOST_AUDIO_CAPTURER_WIN_H_
 
 #include <audioclient.h>
-#include <endpointvolume.h>
 #include <mmdeviceapi.h>
 
 #include <memory>
@@ -17,7 +16,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/audio_silence_detector.h"
+#include "remoting/host/win/audio_volume_filter_win.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {
@@ -56,16 +55,6 @@ class AudioCapturerWin : public AudioCapturer {
   // to the network.
   void DoCapture();
 
-  // Returns current volume setting of the host, in range [0.0, 1.0]. If the
-  // audio has been muted, this function returns 0. If Windows API returns error
-  // (such as audio device has been disabled or unpluged), this function ignores
-  // host volume setting, and returns 1.0.
-  float GetAudioLevel();
-
-  // Processes a series of samples, and executes callback if the packet is
-  // qualified to be sent to client.
-  void ProcessSamples(uint8_t* data, size_t frames);
-
   PacketCapturedCallback callback_;
 
   AudioPacket::SamplingRate sampling_rate_;
@@ -73,13 +62,12 @@ class AudioCapturerWin : public AudioCapturer {
   std::unique_ptr<base::RepeatingTimer> capture_timer_;
   base::TimeDelta audio_device_period_;
 
-  AudioSilenceDetector silence_detector_;
+  AudioVolumeFilterWin volume_filter_;
 
   base::win::ScopedCoMem<WAVEFORMATEX> wave_format_ex_;
   base::win::ScopedComPtr<IAudioCaptureClient> audio_capture_client_;
   base::win::ScopedComPtr<IAudioClient> audio_client_;
   base::win::ScopedComPtr<IMMDevice> mm_device_;
-  base::win::ScopedComPtr<IAudioEndpointVolume> audio_volume_;
 
   std::unique_ptr<DefaultAudioDeviceChangeDetector> default_device_detector_;
 

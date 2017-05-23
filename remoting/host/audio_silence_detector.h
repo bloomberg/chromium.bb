@@ -24,7 +24,10 @@ class AudioSilenceDetector {
 
   // Must be called for each new chunk of data. Return true the given packet
   // is silence should be dropped.
-  bool IsSilence(const int16_t* samples, size_t samples_count);
+  bool IsSilence(const int16_t* samples, size_t frames);
+
+  // The count of channels received from last Reset().
+  int channels() const;
 
  private:
   // Maximum absolute sample value that should still be considered as silence.
@@ -37,6 +40,9 @@ class AudioSilenceDetector {
 
   // Lengths of the current silence period in samples.
   int silence_length_;
+
+  // The count of channels.
+  int channels_;
 };
 
 }  // namespace remoting
