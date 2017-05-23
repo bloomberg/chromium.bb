@@ -262,12 +262,6 @@
         padding: 10px 20px;
       }
 
-      .dialog-buttons {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-      }
-
       #browseButton {
         -webkit-margin-start: 5px;
         color: black;
@@ -314,25 +308,17 @@
         </div>
       </div>
       <div class="dialog-buttons">
-        <div>  <!-- Left group -->
-          <paper-button id="manuallyAddPrinterButton" class="secondary-button"
-              on-tap="switchToPreviousDialog_">
-            $i18n{back}
-          </paper-button>
-        </div>
-        <div>  <!-- Right group -->
-          <paper-button class="cancel-button secondary-button"
-              on-tap="onCancelTap_">
-            $i18n{cancelButtonText}
-          </paper-button>
-          <paper-button class="action-button" id="addPrinterButton"
-              disabled="[[!canAddPrinter_(newPrinter.printerManufacturer,
-                                          newPrinter.printerModel,
-                                          newPrinter.printerPPDPath)]]"
-              on-tap="switchToConfiguringDialog_">
-            $i18n{addPrinterButtonText}
-          </paper-button>
-        </div>
+        <paper-button class="cancel-button secondary-button"
+            on-tap="onCancelTap_">
+          $i18n{cancelButtonText}
+        </paper-button>
+        <paper-button class="action-button" id="addPrinterButton"
+            disabled="[[!canAddPrinter_(newPrinter.printerManufacturer,
+                                        newPrinter.printerModel,
+                                        newPrinter.printerPPDPath)]]"
+            on-tap="switchToConfiguringDialog_">
+          $i18n{addPrinterButtonText}
+        </paper-button>
       </div>
     </add-printer-dialog>
   </template>
@@ -389,7 +375,7 @@
     <!-- Manufacturer and Model Dialog -->
     <template is="dom-if" if="[[showManufacturerDialog_]]" restamp>
       <add-printer-manufacturer-model-dialog new-printer="{{newPrinter}}"
-          previous-dialog="[[previousDialog]]" setup-failed="[[setupFailed]]">
+          setup-failed="[[setupFailed]]">
       </add-printer-manufacturer-model-dialog>
     </template>
 
