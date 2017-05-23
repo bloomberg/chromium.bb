@@ -351,13 +351,11 @@ void PaymentAppDatabase::DidFindRegistrationToHasPaymentInstrument(
   service_worker_context_->GetRegistrationUserData(
       registration->id(), {CreatePaymentInstrumentKey(instrument_key)},
       base::Bind(&PaymentAppDatabase::DidHasPaymentInstrument,
-                 weak_ptr_factory_.GetWeakPtr(), registration->id(),
-                 instrument_key, base::Passed(std::move(callback))));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
 }
 
 void PaymentAppDatabase::DidHasPaymentInstrument(
-    int64_t registration_id,
-    const std::string& instrument_key,
     DeletePaymentInstrumentCallback callback,
     const std::vector<std::string>& data,
     ServiceWorkerStatusCode status) {
