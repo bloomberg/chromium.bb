@@ -23,4 +23,8 @@ void SaveCountingCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {
   paint_ = paint;
 }
 
+MockCanvas::MockCanvas() : SkNoDrawCanvas(100, 100) {}
+
+MockCanvas::~MockCanvas() = default;
+
 }  // namespace cc
