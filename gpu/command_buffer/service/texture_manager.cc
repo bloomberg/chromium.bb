@@ -519,8 +519,8 @@ Texture::Texture(GLuint service_id)
       swizzle_a_(GL_ALPHA),
       max_level_set_(-1),
       texture_complete_(false),
-      texture_mips_dirty_(false),
       cube_complete_(false),
+      completeness_dirty_(false),
       npot_(false),
       has_been_bound_(false),
       framebuffer_attachment_count_(0),
@@ -835,7 +835,7 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
       return false;
     }
   }
-  if (face_infos_.size() == 6 && !cube_complete_) {
+  if (face_infos_.size() == 6 && !cube_complete()) {
     return false;
   }
   return true;
@@ -1071,19 +1071,31 @@ void Texture::UpdateNumMipLevels() {
   if (face_infos_.empty())
     return;
 
+  GLint base_level = base_level_;
+  GLint max_level = max_level_;
+  if (immutable_) {
+    GLint levels = GetImmutableLevels();
+    DCHECK_LE(1, levels);
+    DCHECK_LE(0, base_level_);
+    base_level = std::min(base_level_, levels - 1);
+    max_level = std::max(base_level, max_level_);
+    max_level = std::min(max_level, levels - 1);
+  }
+  GLint max_num_mip_levels = std::max(0, max_level - base_level + 1);
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     Texture::FaceInfo& face_info = face_infos_[ii];
-    if (static_cast<size_t>(base_level_) >= face_info.level_infos.size())
+    if (static_cast<size_t>(base_level) >= face_info.level_infos.size())
       continue;
-    const Texture::LevelInfo& info = face_info.level_infos[base_level_];
+    const Texture::LevelInfo& info = face_info.level_infos[base_level];
     face_info.num_mip_levels = std::min(
-        std::max(0, max_level_ - base_level_ + 1),
-        TextureManager::ComputeMipMapCount(
-            target_, info.width, info.height, info.depth));
+        max_num_mip_levels, TextureManager::ComputeMipMapCount(
+                                target_, info.width, info.height, info.depth));
   }
 
   // mipmap-completeness needs to be re-evaluated.
-  texture_mips_dirty_ = true;
+  completeness_dirty_ = true;
+  Update();
+  UpdateCanRenderCondition();
 }
 
 void Texture::SetLevelInfo(GLenum target,
@@ -1111,13 +1123,9 @@ void Texture::SetLevelInfo(GLenum target,
   // Update counters only if any attributes have changed. Counters are
   // comparisons between the old and new values so it must be done before any
   // assignment has been done to the LevelInfo.
-  if (info.target != target ||
-      info.internal_format != internal_format ||
-      info.width != width ||
-      info.height != height ||
-      info.depth != depth ||
-      info.format != format ||
-      info.type != type) {
+  if (info.target != target || info.internal_format != internal_format ||
+      info.width != width || info.height != height || info.depth != depth ||
+      info.format != format || info.type != type || info.internal_workaround) {
     if (level == base_level_) {
       // Calculate the mip level count.
       face_infos_[face_index].num_mip_levels = std::min(
@@ -1132,7 +1140,7 @@ void Texture::SetLevelInfo(GLenum target,
     }
 
     // Signify that at least one of the mips has changed.
-    texture_mips_dirty_ = true;
+    completeness_dirty_ = true;
   }
 
   info.target = target;
@@ -1197,6 +1205,9 @@ void Texture::MarkLevelAsInternalWorkaround(GLenum target, GLint level) {
   Texture::LevelInfo& info =
       face_infos_[face_index].level_infos[level];
   info.internal_workaround = true;
+  completeness_dirty_ = true;
+  Update();
+  UpdateCanRenderCondition();
 }
 
 bool Texture::ValidForTexture(
@@ -1442,6 +1453,9 @@ void Texture::Update() {
   // Assume GL_TEXTURE_EXTERNAL_OES textures are npot, all others
   npot_ = (target_ == GL_TEXTURE_EXTERNAL_OES) || (num_npot_faces_ > 0);
 
+  if (!completeness_dirty_)
+    return;
+
   if (face_infos_.empty() ||
       static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
     texture_complete_ = false;
@@ -1487,7 +1501,7 @@ void Texture::Update() {
   cube_complete_ &= texture_level0_complete;
 
   bool texture_mips_complete = true;
-  if (texture_complete_ && texture_mips_dirty_) {
+  if (texture_complete_) {
     for (size_t ii = 0; ii < face_infos_.size() && texture_mips_complete;
          ++ii) {
       const Texture::FaceInfo& face_info = face_infos_[ii];
@@ -1510,9 +1524,9 @@ void Texture::Update() {
         }
       }
     }
-    texture_mips_dirty_ = false;
   }
   texture_complete_ &= texture_mips_complete;
+  completeness_dirty_ = false;
 }
 
 bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
@@ -1537,17 +1551,23 @@ bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
   return true;
 }
 
+void Texture::SetImmutable(bool immutable) {
+  if (immutable_ == immutable)
+    return;
+  immutable_ = immutable;
+
+  UpdateNumMipLevels();
+}
+
 GLint Texture::GetImmutableLevels() const {
   if (!immutable_)
     return 0;
   GLint levels = 0;
-  if (immutable_) {
-    DCHECK(face_infos_.size() > 0);
-    for (size_t ii = 0; ii < face_infos_[0].level_infos.size(); ++ii) {
-      const Texture::LevelInfo& info = face_infos_[0].level_infos[ii];
-      if (info.target != 0)
-        levels++;
-    }
+  DCHECK(face_infos_.size() > 0);
+  for (size_t ii = 0; ii < face_infos_[0].level_infos.size(); ++ii) {
+    const Texture::LevelInfo& info = face_infos_[0].level_infos[ii];
+    if (info.target != 0)
+      levels++;
   }
   return levels;
 }
@@ -1809,10 +1829,13 @@ bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
   // recent OpenGL core versions or OpenGL ES 3.0+. Therefore, for consistency,
   // it is better to deviate from ES2 spec and require cube completeness all
   // the time.
-  if (face_infos_.size() == 6 && !cube_complete_)
+  if (face_infos_.size() == 6 && !cube_complete())
     return false;
   DCHECK(level >= 0 &&
          level < static_cast<GLint>(face_infos_[0].level_infos.size()));
+  if (level > base_level_ && !texture_complete()) {
+    return false;
+  }
   GLenum internal_format = face_infos_[0].level_infos[level].internal_format;
   bool color_renderable = ColorRenderable(feature_info, internal_format,
                                           immutable_);

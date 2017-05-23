@@ -243,6 +243,9 @@ class TextureAttachment
   }
 
   bool IsLayerValid() const override {
+    if (!Is3D()) {
+      return true;
+    }
     Texture* texture = texture_ref_->texture();
     DCHECK(texture);
     GLsizei width, height, depth;

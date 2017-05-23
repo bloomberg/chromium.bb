@@ -96,4 +96,3 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_SYNC_H_
-
