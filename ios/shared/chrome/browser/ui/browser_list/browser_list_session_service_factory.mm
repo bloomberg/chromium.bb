@@ -37,6 +37,9 @@ std::unique_ptr<web::WebState> CreateWebState(
           web::WebState::CreateParams(browser_state), session_storage);
   web_state->GetSessionCertificatePolicyCache()->UpdateCertificatePolicyCache(
       web::BrowserState::GetCertificatePolicyCache(browser_state));
+  // TODO(crbug.com/724282): Track whether web usage should be enabled for
+  // the deserialized WebStates.
+  web_state->SetWebUsageEnabled(true);
   return web_state;
 }
 }

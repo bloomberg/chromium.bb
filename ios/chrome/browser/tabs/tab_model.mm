@@ -121,6 +121,19 @@ void CleanCertificatePolicyCache(
                  base::Unretained(web_state_list)));
 }
 
+// Factory of WebState for DeserializeWebStateList that wraps the method
+// web::WebState::CreateWithStorageSession and sets the WebState usage
+// enabled flag from |web_usage_enabled|.
+std::unique_ptr<web::WebState> CreateWebState(
+    BOOL web_usage_enabled,
+    web::WebState::CreateParams create_params,
+    CRWSessionStorage* session_storage) {
+  std::unique_ptr<web::WebState> web_state =
+      web::WebState::CreateWithStorageSession(create_params, session_storage);
+  web_state->SetWebUsageEnabled(web_usage_enabled);
+  return web_state;
+}
+
 }  // anonymous namespace
 
 @interface TabModelWebStateProxyFactory : NSObject<WebStateProxyFactory>
@@ -186,7 +199,7 @@ void CleanCertificatePolicyCache(
 
 @synthesize browserState = _browserState;
 @synthesize sessionID = _sessionID;
-@synthesize webUsageEnabled = webUsageEnabled_;
+@synthesize webUsageEnabled = _webUsageEnabled;
 
 #pragma mark - Overriden
 
@@ -496,7 +509,7 @@ void CleanCertificatePolicyCache(
   Tab* tab = LegacyTabHelper::GetTabForWebState(webStatePtr);
   DCHECK(tab);
 
-  webStatePtr->SetWebUsageEnabled(webUsageEnabled_ ? true : false);
+  webStatePtr->SetWebUsageEnabled(_webUsageEnabled ? true : false);
 
   if (!inBackground && _tabUsageRecorder)
     _tabUsageRecorder->TabCreatedForSelection(tab);
@@ -505,7 +518,7 @@ void CleanCertificatePolicyCache(
 
   // Force the page to start loading even if it's in the background.
   // TODO(crbug.com/705819): Remove this call.
-  if (webUsageEnabled_)
+  if (_webUsageEnabled)
     webStatePtr->GetView();
 
   NSDictionary* userInfo = @{
@@ -585,12 +598,12 @@ void CleanCertificatePolicyCache(
 }
 
 - (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
-  if (webUsageEnabled_ == webUsageEnabled)
+  if (_webUsageEnabled == webUsageEnabled)
     return;
-  webUsageEnabled_ = webUsageEnabled;
+  _webUsageEnabled = webUsageEnabled;
   for (int index = 0; index < _webStateList->count(); ++index) {
     web::WebState* webState = _webStateList->GetWebStateAt(index);
-    webState->SetWebUsageEnabled(webUsageEnabled_ ? true : false);
+    webState->SetWebUsageEnabled(_webUsageEnabled ? true : false);
   }
 }
 
@@ -708,9 +721,8 @@ void CleanCertificatePolicyCache(
 
   web::WebState::CreateParams createParams(_browserState);
   DeserializeWebStateList(
-      _webStateList.get(), window, webUsageEnabled_,
-      base::BindRepeating(&web::WebState::CreateWithStorageSession,
-                          createParams));
+      _webStateList.get(), window,
+      base::BindRepeating(&CreateWebState, _webUsageEnabled, createParams));
 
   DCHECK_GT(_webStateList->count(), oldCount);
   int restoredCount = _webStateList->count() - oldCount;
@@ -726,7 +738,7 @@ void CleanCertificatePolicyCache(
     web::WebState* webState = _webStateList->GetWebStateAt(index);
     Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
 
-    webState->SetWebUsageEnabled(webUsageEnabled_ ? true : false);
+    webState->SetWebUsageEnabled(_webUsageEnabled ? true : false);
     tab.webController.usePlaceholderOverlay = YES;
 
     // Restore the CertificatePolicyCache (note that webState is invalid after
@@ -754,7 +766,7 @@ void CleanCertificatePolicyCache(
 
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)willResignActive:(NSNotification*)notify {
-  if (webUsageEnabled_ && self.currentTab) {
+  if (_webUsageEnabled && self.currentTab) {
     [[SnapshotCache sharedInstance]
         willBeSavedGreyWhenBackgrounding:self.currentTab.tabId];
   }
@@ -781,7 +793,7 @@ void CleanCertificatePolicyCache(
   [self saveSessionImmediately:YES];
 
   // Write out a grey version of the current website to disk.
-  if (webUsageEnabled_ && self.currentTab) {
+  if (_webUsageEnabled && self.currentTab) {
     [[SnapshotCache sharedInstance]
         saveGreyInBackgroundForSessionID:self.currentTab.tabId];
   }
