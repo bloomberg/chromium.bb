@@ -37,6 +37,9 @@ class MODULES_EXPORT PresentationConnectionList final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
 
   void AddConnection(PresentationConnection*);
+  // Remove connection from connection list. Returns true if connection is
+  // successfully removed; Returns false if connection does not exist.
+  bool RemoveConnection(WebPresentationConnection*);
   void DispatchConnectionAvailableEvent(PresentationConnection*);
   bool IsEmpty();
 

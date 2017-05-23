@@ -101,6 +101,12 @@ void PresentationReceiver::TerminateConnection() {
   window->close(GetFrame()->GetDocument());
 }
 
+void PresentationReceiver::RemoveConnection(
+    WebPresentationConnection* connection) {
+  DCHECK(connection_list_);
+  connection_list_->RemoveConnection(connection);
+}
+
 void PresentationReceiver::RegisterConnection(
     PresentationConnection* connection) {
   DCHECK(connection_list_);

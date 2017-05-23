@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/mock_callback.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/presentation/presentation_connection_proxy.h"
 #include "content/renderer/presentation/test_presentation_connection.h"
@@ -13,10 +14,23 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnection.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationInfo.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationReceiver.h"
 
 using ::testing::_;
 
 namespace content {
+
+class MockWebPresentationReceiver : public blink::WebPresentationReceiver {
+ public:
+  MOCK_METHOD1(
+      OnReceiverConnectionAvailable,
+      blink::WebPresentationConnection*(const blink::WebPresentationInfo&));
+  MOCK_METHOD1(DidChangeConnectionState,
+               void(blink::WebPresentationConnectionState));
+  MOCK_METHOD0(TerminateConnection, void());
+  MOCK_METHOD1(RemoveConnection, void(blink::WebPresentationConnection*));
+};
 
 class PresentationConnectionProxyTest : public ::testing::Test {
  public:
@@ -32,8 +46,8 @@ class PresentationConnectionProxyTest : public ::testing::Test {
         new ControllerConnectionProxy(controller_connection_.get());
     controller_connection_->BindProxy(
         base::WrapUnique(controller_connection_proxy_));
-    receiver_connection_proxy_ =
-        new ReceiverConnectionProxy(receiver_connection_.get());
+    receiver_connection_proxy_ = new ReceiverConnectionProxy(
+        receiver_connection_.get(), &mock_receiver_);
     receiver_connection_->BindProxy(
         base::WrapUnique(receiver_connection_proxy_));
 
@@ -64,6 +78,7 @@ class PresentationConnectionProxyTest : public ::testing::Test {
   std::unique_ptr<TestPresentationConnection> receiver_connection_;
   ControllerConnectionProxy* controller_connection_proxy_;
   ReceiverConnectionProxy* receiver_connection_proxy_;
+  MockWebPresentationReceiver mock_receiver_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -106,6 +121,7 @@ TEST_F(PresentationConnectionProxyTest, TestControllerConnectionCallsClose) {
   base::RunLoop run_loop;
   EXPECT_CALL(*controller_connection_, DidClose());
   EXPECT_CALL(*receiver_connection_, DidClose());
+  EXPECT_CALL(mock_receiver_, RemoveConnection(receiver_connection_.get()));
   controller_connection_proxy_->Close();
   run_loop.RunUntilIdle();
 }
@@ -114,6 +130,7 @@ TEST_F(PresentationConnectionProxyTest, TestReceiverConnectionCallsClose) {
   base::RunLoop run_loop;
   EXPECT_CALL(*controller_connection_, DidClose());
   EXPECT_CALL(*receiver_connection_, DidClose());
+  EXPECT_CALL(mock_receiver_, RemoveConnection(receiver_connection_.get()));
   receiver_connection_proxy_->Close();
   run_loop.RunUntilIdle();
 }

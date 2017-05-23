@@ -577,7 +577,8 @@ void PresentationDispatcher::OnReceiverConnectionAvailable(
       receiver_->OnReceiverConnectionAvailable(blink::WebPresentationInfo(
           presentation_info.presentation_url,
           blink::WebString::FromUTF8(presentation_info.presentation_id)));
-  auto* receiver_connection_proxy = new ReceiverConnectionProxy(connection);
+  auto* receiver_connection_proxy =
+      new ReceiverConnectionProxy(connection, receiver_);
   connection->BindProxy(base::WrapUnique(receiver_connection_proxy));
 
   receiver_connection_proxy->Bind(std::move(receiver_connection_request));

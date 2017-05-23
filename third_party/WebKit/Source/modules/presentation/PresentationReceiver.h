@@ -52,6 +52,7 @@ class MODULES_EXPORT PresentationReceiver final
       const WebPresentationInfo&) override;
   void DidChangeConnectionState(WebPresentationConnectionState) override;
   void TerminateConnection() override;
+  void RemoveConnection(WebPresentationConnection*) override;
 
   void RegisterConnection(PresentationConnection*);
 

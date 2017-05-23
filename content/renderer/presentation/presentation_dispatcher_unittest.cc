@@ -120,6 +120,7 @@ class TestPresentationReceiver : public blink::WebPresentationReceiver {
   MOCK_METHOD1(DidChangeConnectionState,
                void(blink::WebPresentationConnectionState));
   MOCK_METHOD0(TerminateConnection, void());
+  MOCK_METHOD1(RemoveConnection, void(blink::WebPresentationConnection*));
 
   TestPresentationConnection connection_;
 };

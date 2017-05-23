@@ -228,4 +228,29 @@ TEST_F(PresentationReceiverTest, CreateReceiver) {
   new PresentationReceiver(&scope.GetFrame(), &client);
 }
 
+TEST_F(PresentationReceiverTest, TestRemoveConnection) {
+  V8TestingScope scope;
+  auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
+
+  // Receive first connection.
+  WebPresentationInfo presentation_info1(KURL(KURL(), "http://example1.com"),
+                                         "id1");
+  auto* connection1 =
+      receiver->OnReceiverConnectionAvailable(presentation_info1);
+  EXPECT_TRUE(connection1);
+
+  // Receive second connection.
+  WebPresentationInfo presentation_info2(KURL(KURL(), "http://example2.com"),
+                                         "id2");
+  auto* connection2 =
+      receiver->OnReceiverConnectionAvailable(presentation_info2);
+  EXPECT_TRUE(connection2);
+
+  receiver->connectionList(scope.GetScriptState());
+  VerifyConnectionListSize(2, receiver);
+
+  receiver->RemoveConnection(connection1);
+  VerifyConnectionListSize(1, receiver);
+}
+
 }  // namespace blink
