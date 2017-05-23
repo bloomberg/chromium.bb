@@ -67,6 +67,8 @@ class ContentSubresourceFilterDriverFactory
 
   // Returns the |ActivationDecision| for the current main frame
   // document.
+  // TODO(csharrison): Remove this and |activation_decision_| once consumers
+  // move to become SubresourceFilterObservers.
   ActivationDecision GetActivationDecisionForLastCommittedPageLoad() const {
     return activation_decision_;
   }

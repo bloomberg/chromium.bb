@@ -4,7 +4,9 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 
+#include <map>
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/logging.h"
@@ -14,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
@@ -36,6 +39,8 @@ const char kTestURLWithActivation[] = "https://www.page-with-activation.com/";
 const char kTestURLWithActivation2[] =
     "https://www.page-with-activation-2.com/";
 const char kTestURLWithDryRun[] = "https://www.page-with-dryrun.com/";
+const char kTestURLWithNoActivation[] =
+    "https://www.page-without-activation.com/";
 
 // Enum determining when the mock page state throttle notifies the throttle
 // manager of page level activation state.
@@ -50,11 +55,9 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
  public:
   MockPageStateActivationThrottle(
       content::NavigationHandle* navigation_handle,
-      PageActivationNotificationTiming activation_throttle_state,
-      ContentSubresourceFilterThrottleManager* throttle_manager)
+      PageActivationNotificationTiming activation_throttle_state)
       : content::NavigationThrottle(navigation_handle),
-        activation_throttle_state_(activation_throttle_state),
-        throttle_manager_(throttle_manager) {
+        activation_throttle_state_(activation_throttle_state) {
     // Add some default activations.
     mock_page_activations_[GURL(kTestURLWithActivation)] =
         ActivationState(ActivationLevel::ENABLED);
@@ -62,6 +65,8 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
         ActivationState(ActivationLevel::ENABLED);
     mock_page_activations_[GURL(kTestURLWithDryRun)] =
         ActivationState(ActivationLevel::DRYRUN);
+    mock_page_activations_[GURL(kTestURLWithNoActivation)] =
+        ActivationState(ActivationLevel::DISABLED);
   }
   ~MockPageStateActivationThrottle() override {}
 
@@ -84,8 +89,11 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
     if (throttle_state == activation_throttle_state_) {
       auto it = mock_page_activations_.find(navigation_handle()->GetURL());
       if (it != mock_page_activations_.end()) {
-        throttle_manager_->NotifyPageActivationComputed(navigation_handle(),
-                                                        it->second);
+        // The throttle manager does not use the activation decision.
+        SubresourceFilterObserverManager::FromWebContents(
+            navigation_handle()->GetWebContents())
+            ->NotifyPageActivationComputed(
+                navigation_handle(), ActivationDecision::UNKNOWN, it->second);
       }
     }
     return content::NavigationThrottle::PROCEED;
@@ -93,7 +101,6 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
 
   std::map<GURL, ActivationState> mock_page_activations_;
   PageActivationNotificationTiming activation_throttle_state_;
-  ContentSubresourceFilterThrottleManager* throttle_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPageStateActivationThrottle);
 };
@@ -256,7 +263,7 @@ class ContentSubresourceFilterThrottleManagerTest
             ? GetParam()
             : WILL_PROCESS_RESPONSE;
     throttles.push_back(base::MakeUnique<MockPageStateActivationThrottle>(
-        navigation_handle, state, throttle_manager_.get()));
+        navigation_handle, state));
     throttle_manager_->MaybeAppendNavigationThrottles(navigation_handle,
                                                       &throttles);
     for (auto& it : throttles) {
@@ -302,6 +309,20 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
+}
+
+TEST_P(ContentSubresourceFilterThrottleManagerTest, NoPageActivation) {
+  // Commit a navigation that triggers page level activation.
+  NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
+  ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
+  EXPECT_FALSE(ManagerHasRulesetHandle());
+
+  // A disallowed subframe navigation should not be filtered.
+  CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/disallowed.html"), main_rfh());
+  SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+
+  EXPECT_EQ(0, disallowed_notification_count());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
