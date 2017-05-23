@@ -157,7 +157,7 @@ TEST_F(BudgetPoolTest, WakeUpBudgetPool) {
   // GetNextAllowedRunTime should return the desired time when in the
   // wakeup window and return the next wakeup otherwise.
   EXPECT_EQ(start_time_, pool->GetNextAllowedRunTime(start_time_));
-  EXPECT_EQ(SecondsAfterStart(10) - base::TimeDelta::FromMicroseconds(1),
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSeconds(10),
             pool->GetNextAllowedRunTime(MillisecondsAfterStart(15)));
 
   pool->RecordTaskRunTime(queue.get(), MillisecondsAfterStart(5),
@@ -170,7 +170,7 @@ TEST_F(BudgetPoolTest, WakeUpBudgetPool) {
   EXPECT_FALSE(pool->CanRunTasksAt(MillisecondsAfterStart(10), false));
   EXPECT_FALSE(pool->CanRunTasksAt(MillisecondsAfterStart(11), false));
   EXPECT_EQ(start_time_, pool->GetNextAllowedRunTime(start_time_));
-  EXPECT_EQ(SecondsAfterStart(10) - base::TimeDelta::FromMicroseconds(1),
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSeconds(10),
             pool->GetNextAllowedRunTime(MillisecondsAfterStart(15)));
 
   pool->OnWakeUp(MillisecondsAfterStart(12005));
@@ -182,9 +182,8 @@ TEST_F(BudgetPoolTest, WakeUpBudgetPool) {
   EXPECT_TRUE(pool->CanRunTasksAt(MillisecondsAfterStart(12014), false));
   EXPECT_FALSE(pool->CanRunTasksAt(MillisecondsAfterStart(12015), false));
   EXPECT_FALSE(pool->CanRunTasksAt(MillisecondsAfterStart(12016), false));
-  EXPECT_EQ(
-      MillisecondsAfterStart(22005) - base::TimeDelta::FromMicroseconds(1),
-      pool->GetNextAllowedRunTime(SecondsAfterStart(13)));
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSeconds(20),
+            pool->GetNextAllowedRunTime(SecondsAfterStart(13)));
 }
 
 }  // namespace scheduler
