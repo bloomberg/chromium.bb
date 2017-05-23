@@ -23,18 +23,18 @@ AdvancedFirewallManager::~AdvancedFirewallManager() {}
 
 bool AdvancedFirewallManager::Init(const base::string16& app_name,
                                    const base::FilePath& app_path) {
-  firewall_rules_ = NULL;
+  firewall_rules_ = nullptr;
   HRESULT hr = ::CoCreateInstance(CLSID_NetFwPolicy2, nullptr, CLSCTX_ALL,
                                   IID_PPV_ARGS(&firewall_policy_));
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
-    firewall_policy_ = NULL;
+    firewall_policy_ = nullptr;
     return false;
   }
   hr = firewall_policy_->get_Rules(firewall_rules_.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
-    firewall_rules_ = NULL;
+    firewall_rules_ = nullptr;
     return false;
   }
   app_name_ = app_name;
