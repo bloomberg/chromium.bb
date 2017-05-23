@@ -142,6 +142,9 @@ class BluetoothTestBase : public testing::Test {
   // devices.  Returns false if the current platform always has permission.
   virtual bool DenyPermission();
 
+  // Simulates the Adapter being switched off.
+  virtual void SimulateAdapterPoweredOff() {}
+
   // Create a fake Low Energy device and discover it.
   // |device_ordinal| with the same device address stands for the same fake
   // device with different properties.

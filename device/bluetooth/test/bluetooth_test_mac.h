@@ -42,6 +42,7 @@ class BluetoothTestMac : public BluetoothTestBase {
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
   void ResetEventCounts() override;
+  void SimulateAdapterPoweredOff() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
   void SimulateConnectedLowEnergyDevice(
       ConnectedDeviceType device_ordinal) override;

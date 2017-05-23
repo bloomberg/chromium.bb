@@ -140,6 +140,20 @@ void BluetoothTestMac::ResetEventCounts() {
   last_notify_value_ = false;
 }
 
+void BluetoothTestMac::SimulateAdapterPoweredOff() {
+  [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOff];
+
+  for (BluetoothDevice* device : adapter_->GetDevices()) {
+    MockCBPeripheral* peripheral_mock = GetMockCBPeripheral(device);
+    [peripheral_mock setState:CBPeripheralStateDisconnected];
+  }
+
+  BluetoothLowEnergyCentralManagerDelegate* central_manager_delegate =
+      adapter_mac_->low_energy_central_manager_delegate_;
+  CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
+  [central_manager_delegate centralManagerDidUpdateState:central_manager];
+}
+
 BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
   TestBluetoothAdapterObserver observer(adapter_);
   CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
