@@ -408,10 +408,9 @@ static bool ExpandSelectionToGranularity(LocalFrame& frame,
     return false;
   if (new_range.IsCollapsed())
     return false;
-  TextAffinity affinity = frame.Selection().GetSelectionInDOMTree().Affinity();
-  frame.Selection().SetSelectedRange(new_range, affinity,
-                                     SelectionDirectionalMode::kNonDirectional,
-                                     FrameSelection::kCloseTyping);
+  frame.Selection().SetSelection(
+      SelectionInDOMTree::Builder().SetBaseAndExtent(new_range).Build(),
+      FrameSelection::kCloseTyping);
   return true;
 }
 
