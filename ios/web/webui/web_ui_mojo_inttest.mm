@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#import "base/test/ios/wait_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
@@ -30,6 +30,10 @@ namespace {
 
 // Hostname for test WebUI page.
 const char kTestWebUIURLHost[] = "testwebui";
+
+// Timeout in seconds to wait for a sucessful message exchange between native
+// code and a web page using Mojo.
+const NSTimeInterval kMessageTimeout = 5.0;
 
 // UI handler class which communicates with test WebUI page as follows:
 // - page sends "syn" message to |TestUIHandler|
@@ -132,7 +136,9 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
 // A test fixture for verifying mojo comminication for WebUI.
 class WebUIMojoTest : public WebIntTest {
  protected:
-  WebUIMojoTest() : ui_handler_(new TestUIHandler()) {
+  void SetUp() override {
+    WebIntTest::SetUp();
+    ui_handler_ = base::MakeUnique<TestUIHandler>();
     web::WebState::CreateParams params(GetBrowserState());
     web_state_ = base::MakeUnique<web::WebStateImpl>(params);
     web_state_->GetNavigationManagerImpl().InitializeSession();
@@ -156,18 +162,19 @@ class WebUIMojoTest : public WebIntTest {
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_MessageExchange MessageExchange
 #else
-#define MAYBE_MessageExchange DISABLED_MessageExchange
+#define MAYBE_MessageExchange FLAKY_MessageExchange
 #endif
 // TODO(crbug.com/720098): Enable this test on device.
 TEST_F(WebUIMojoTest, MAYBE_MessageExchange) {
   web_state()->SetWebUsageEnabled(true);
   web_state()->GetView();  // WebState won't load URL without view.
-  NavigationManager::WebLoadParams load_params(GURL(
-      url::SchemeHostPort(kTestWebUIScheme, kTestWebUIURLHost, 0).Serialize()));
+  GURL url(
+      url::SchemeHostPort(kTestWebUIScheme, kTestWebUIURLHost, 0).Serialize());
+  NavigationManager::WebLoadParams load_params(url);
   web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
 
-  // Wait until |TestUIHandler| receives "ack" message from WebUI page.
-  base::test::ios::WaitUntilCondition(^{
+  // Wait until |TestUIHandler| receives "fin" message from WebUI page.
+  bool fin_received = testing::WaitUntilConditionOrTimeout(kMessageTimeout, ^{
     // Flush any pending tasks. Don't RunUntilIdle() because
     // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
     // automatic arming behavior, which Mojo JS still depends upon.
@@ -180,6 +187,10 @@ TEST_F(WebUIMojoTest, MAYBE_MessageExchange) {
     loop.Run();
     return test_ui_handler()->IsFinReceived();
   });
+
+  ASSERT_TRUE(fin_received);
+  EXPECT_FALSE(web_state()->IsLoading());
+  EXPECT_EQ(url, web_state()->GetLastCommittedURL());
 }
 
 }  // namespace web
