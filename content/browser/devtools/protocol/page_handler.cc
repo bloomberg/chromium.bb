@@ -227,6 +227,7 @@ Response PageHandler::Reload(Maybe<bool> bypassCache,
 
 Response PageHandler::Navigate(const std::string& url,
                                Maybe<std::string> referrer,
+                               Maybe<std::string> maybe_transition_type,
                                Page::FrameId* frame_id) {
   GURL gurl(url);
   if (!gurl.is_valid())
@@ -236,11 +237,69 @@ Response PageHandler::Navigate(const std::string& url,
   if (!web_contents)
     return Response::InternalError();
 
+  ui::PageTransition type;
+  std::string transition_type =
+      maybe_transition_type.fromMaybe(Page::TransitionTypeEnum::Typed);
+  if (transition_type == Page::TransitionTypeEnum::Link)
+    type = ui::PAGE_TRANSITION_LINK;
+  else if (transition_type == Page::TransitionTypeEnum::Typed)
+    type = ui::PAGE_TRANSITION_TYPED;
+  else if (transition_type == Page::TransitionTypeEnum::Auto_bookmark)
+    type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  else if (transition_type == Page::TransitionTypeEnum::Auto_subframe)
+    type = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  else if (transition_type == Page::TransitionTypeEnum::Manual_subframe)
+    type = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+  else if (transition_type == Page::TransitionTypeEnum::Generated)
+    type = ui::PAGE_TRANSITION_GENERATED;
+  else if (transition_type == Page::TransitionTypeEnum::Auto_toplevel)
+    type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
+  else if (transition_type == Page::TransitionTypeEnum::Form_submit)
+    type = ui::PAGE_TRANSITION_FORM_SUBMIT;
+  else if (transition_type == Page::TransitionTypeEnum::Reload)
+    type = ui::PAGE_TRANSITION_RELOAD;
+  else if (transition_type == Page::TransitionTypeEnum::Keyword)
+    type = ui::PAGE_TRANSITION_KEYWORD;
+  else if (transition_type == Page::TransitionTypeEnum::Keyword_generated)
+    type = ui::PAGE_TRANSITION_KEYWORD_GENERATED;
+  else
+    type = ui::PAGE_TRANSITION_TYPED;
+
   web_contents->GetController().LoadURL(
       gurl,
       Referrer(GURL(referrer.fromMaybe("")), blink::kWebReferrerPolicyDefault),
-      ui::PAGE_TRANSITION_TYPED, std::string());
+      type, std::string());
   return Response::FallThrough();
+}
+
+static const char* TransitionTypeName(ui::PageTransition type) {
+  int32_t t = type & ~ui::PAGE_TRANSITION_QUALIFIER_MASK;
+  switch (t) {
+    case ui::PAGE_TRANSITION_LINK:
+      return Page::TransitionTypeEnum::Link;
+    case ui::PAGE_TRANSITION_TYPED:
+      return Page::TransitionTypeEnum::Typed;
+    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
+      return Page::TransitionTypeEnum::Auto_bookmark;
+    case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
+      return Page::TransitionTypeEnum::Auto_subframe;
+    case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
+      return Page::TransitionTypeEnum::Manual_subframe;
+    case ui::PAGE_TRANSITION_GENERATED:
+      return Page::TransitionTypeEnum::Generated;
+    case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
+      return Page::TransitionTypeEnum::Auto_toplevel;
+    case ui::PAGE_TRANSITION_FORM_SUBMIT:
+      return Page::TransitionTypeEnum::Form_submit;
+    case ui::PAGE_TRANSITION_RELOAD:
+      return Page::TransitionTypeEnum::Reload;
+    case ui::PAGE_TRANSITION_KEYWORD:
+      return Page::TransitionTypeEnum::Keyword;
+    case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
+      return Page::TransitionTypeEnum::Keyword_generated;
+    default:
+      return Page::TransitionTypeEnum::Other;
+  }
 }
 
 Response PageHandler::GetNavigationHistory(
@@ -254,11 +313,15 @@ Response PageHandler::GetNavigationHistory(
   *current_index = controller.GetCurrentEntryIndex();
   *entries = NavigationEntries::create();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
-    (*entries)->addItem(Page::NavigationEntry::Create()
-        .SetId(controller.GetEntryAtIndex(i)->GetUniqueID())
-        .SetUrl(controller.GetEntryAtIndex(i)->GetURL().spec())
-        .SetTitle(base::UTF16ToUTF8(controller.GetEntryAtIndex(i)->GetTitle()))
-        .Build());
+    auto* entry = controller.GetEntryAtIndex(i);
+    (*entries)->addItem(
+        Page::NavigationEntry::Create()
+            .SetId(entry->GetUniqueID())
+            .SetUrl(entry->GetURL().spec())
+            .SetUserTypedURL(entry->GetUserTypedURL().spec())
+            .SetTitle(base::UTF16ToUTF8(entry->GetTitle()))
+            .SetTransitionType(TransitionTypeName(entry->GetTransitionType()))
+            .Build());
   }
   return Response::OK();
 }

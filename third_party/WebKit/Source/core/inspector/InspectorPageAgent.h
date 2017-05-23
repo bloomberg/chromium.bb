@@ -117,6 +117,7 @@ class CORE_EXPORT InspectorPageAgent final
                             Maybe<String> script_to_evaluate_on_load) override;
   protocol::Response navigate(const String& url,
                               Maybe<String> referrer,
+                              Maybe<String> transitionType,
                               String* frame_id) override;
   protocol::Response stopLoading() override;
   protocol::Response getResourceTree(

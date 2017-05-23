@@ -63,6 +63,7 @@ class PageHandler : public DevToolsDomainHandler,
                   Maybe<std::string> script_to_evaluate_on_load) override;
   Response Navigate(const std::string& url,
                     Maybe<std::string> referrer,
+                    Maybe<std::string> transition_type,
                     Page::FrameId* frame_id) override;
   Response StopLoading() override;
 
