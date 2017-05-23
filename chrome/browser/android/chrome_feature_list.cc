@@ -80,6 +80,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleWrapper,
     &kTabReparenting,
     &kVideoPersistence,
+    &kVrBrowsingFeedback,
     &kVrCustomTabBrowsing,
     &kWebPaymentsModifiers,
     &kWebPaymentsSingleAppUiSkip,
@@ -219,6 +220,9 @@ const base::Feature kUserMediaScreenCapturing{
 
 const base::Feature kVideoPersistence{"VideoPersistence",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kVrCustomTabBrowsing{"VrCustomTabBrowsing",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
