@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "components/gcm_driver/crypto/message_payload_parser.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "crypto/random.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +24,6 @@ namespace {
 const char kExamplePlaintext[] = "Example plaintext";
 
 // Expected sizes of the different input given to the cryptographer.
-constexpr size_t kUncompressedPointSize = 65;
 constexpr size_t kEcdhSharedSecretSize = 32;
 constexpr size_t kAuthSecretSize = 16;
 constexpr size_t kSaltSize = 16;
@@ -866,45 +866,13 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
                                     base::Base64UrlDecodePolicy::IGNORE_PADDING,
                                     &message));
 
-  // TODO(peter): Break out the following in a separate message parser class so
-  // that it can be reused by the GCMEncryptionProvider (on the receiving path)
-  // and the gcm_crypto_test_helpers.cc file (on the sending path) too.
-  //
-  // The message contains a binary header in the following format:
-  //     [ salt(16) | record_size(4) | sender_public_key_len(1) |
-  //       sender_public_key(sender_public_key_len) ]
-  //
-  // For Web Push Encryption, which uses a P-256 sender key as uncompressed
-  // P-256 EC points, the length of the sender key is 65 bytes, making the
-  // total, fixed length of the header 86 bytes.
-  //
-  // The regular AEAD_AES_128_GCM ciphertext follows immediately after this. The
-  // minimum overhead for a single record is 18 bytes. This means that an
-  // incoming message must be at least 104 bytes in size.
-  ASSERT_GE(message.size(), 104u);
+  MessagePayloadParser message_parser(message);
+  ASSERT_TRUE(message_parser.IsValid());
 
-  const char* current = &message.front();
-
-  uint32_t record_size;
-  uint8_t sender_public_key_length;
-
-  base::StringPiece salt(current, kSaltSize);
-  current += kSaltSize;
-
-  base::ReadBigEndian(current, &record_size);
-  current += sizeof(record_size);
-
-  base::ReadBigEndian(current, &sender_public_key_length);
-  current += sizeof(sender_public_key_length);
-
-  ASSERT_EQ(sender_public_key_length, kUncompressedPointSize);
-
-  base::StringPiece sender_public_key(current, sender_public_key_length);
-  current += sender_public_key_length;
-
-  base::StringPiece ciphertext(
-      current, message.size() - kSaltSize - sizeof(record_size) -
-                   sizeof(sender_public_key_length) - sender_public_key_length);
+  base::StringPiece salt = message_parser.salt();
+  uint32_t record_size = message_parser.record_size();
+  base::StringPiece sender_public_key = message_parser.public_key();
+  base::StringPiece ciphertext = message_parser.ciphertext();
 
   std::string sender_shared_secret, receiver_shared_secret;
 
