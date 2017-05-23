@@ -1310,8 +1310,6 @@ class CORE_EXPORT UseCounter {
 
     kCSSFlexibleBox = 1692,
     kCSSGridLayout = 1693,
-    kV8BarcodeDetector_Detect_Method = 1694,
-    kV8FaceDetector_Detect_Method = 1695,
     kFullscreenAllowedByOrientationChange = 1696,
     kServiceWorkerRespondToNavigationRequestWithRedirectedResponse = 1697,
     kV8AudioContext_Constructor = 1698,
@@ -1413,7 +1411,6 @@ class CORE_EXPORT UseCounter {
     kCSSValueUserModifyReadOnly = 1798,
     kCSSValueUserModifyReadWrite = 1799,
     kCSSValueUserModifyReadWritePlaintextOnly = 1800,
-    kV8TextDetector_Detect_Method = 1801,
     kCSSValueOnDemand = 1802,
     kServiceWorkerNavigationPreload = 1803,
     kFullscreenRequestWithPendingElement = 1804,
@@ -1602,6 +1599,9 @@ class CORE_EXPORT UseCounter {
     kCredentialManagerCustomFetch = 1988,
     kNetInfoRtt = 1989,
     kNetInfoDownlink = 1990,
+    kShapeDetection_BarcodeDetectorConstructor = 1991,
+    kShapeDetection_FaceDetectorConstructor = 1992,
+    kShapeDetection_TextDetectorConstructor = 1993,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
