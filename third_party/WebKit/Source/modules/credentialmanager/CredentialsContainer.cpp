@@ -181,6 +181,9 @@ ScriptPromise CredentialsContainer::get(
   String mediation = "optional";
   if (options.hasUnmediated() && !options.hasMediation()) {
     mediation = options.unmediated() ? "silent" : "optional";
+    UseCounter::Count(
+        context,
+        UseCounter::kCredentialManagerCredentialRequestOptionsOnlyUnmediated);
   } else if (options.hasMediation()) {
     mediation = options.mediation();
     if (options.hasUnmediated() &&

@@ -1602,6 +1602,7 @@ class CORE_EXPORT UseCounter {
     kShapeDetection_BarcodeDetectorConstructor = 1991,
     kShapeDetection_FaceDetectorConstructor = 1992,
     kShapeDetection_TextDetectorConstructor = 1993,
+    kCredentialManagerCredentialRequestOptionsOnlyUnmediated = 1994,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
