@@ -50,7 +50,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #endif
 
 namespace content {
@@ -603,12 +603,14 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
     return;
 
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
-  CreatePowerSaveBlocker();
+#if defined(OS_ANDROID)
+  GetWakeLockService()->RequestWakeLock();
+#endif
 }
 
 void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
-  power_save_blocker_.reset();
+  GetWakeLockService()->CancelWakeLock();
 #endif
   frame_trace_recorder_.reset();
   in_navigation_protocol_message_buffer_.clear();
@@ -823,19 +825,25 @@ bool RenderFrameDevToolsAgentHost::CheckConsistency() {
       handlers_frame_host_ == manager->pending_frame_host();
 }
 
-void RenderFrameDevToolsAgentHost::CreatePowerSaveBlocker() {
 #if defined(OS_ANDROID)
-  power_save_blocker_.reset(new device::PowerSaveBlocker(
-      device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-      device::PowerSaveBlocker::kReasonOther, "DevTools",
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
-  if (web_contents()->GetNativeView()) {
-    power_save_blocker_->InitDisplaySleepBlocker(
-        web_contents()->GetNativeView());
+device::mojom::WakeLockService*
+RenderFrameDevToolsAgentHost::GetWakeLockService() {
+  // Here is a lazy binding, and will not reconnect after connection error.
+  if (!wake_lock_) {
+    device::mojom::WakeLockServiceRequest request =
+        mojo::MakeRequest(&wake_lock_);
+    device::mojom::WakeLockContext* wake_lock_context =
+        web_contents()->GetWakeLockContext();
+    if (wake_lock_context) {
+      wake_lock_context->GetWakeLock(
+          device::mojom::WakeLockType::PreventAppSuspension,
+          device::mojom::WakeLockReason::ReasonOther, "DevTools",
+          std::move(request));
+    }
   }
-#endif
+  return wake_lock_.get();
 }
+#endif
 
 void RenderFrameDevToolsAgentHost::RenderProcessGone(
     base::TerminationStatus status) {
@@ -905,12 +913,14 @@ void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
 }
 
 void RenderFrameDevToolsAgentHost::WasShown() {
-  CreatePowerSaveBlocker();
+#if defined(OS_ANDROID)
+  GetWakeLockService()->RequestWakeLock();
+#endif
 }
 
 void RenderFrameDevToolsAgentHost::WasHidden() {
 #if defined(OS_ANDROID)
-  power_save_blocker_.reset();
+  GetWakeLockService()->CancelWakeLock();
 #endif
 }
 
