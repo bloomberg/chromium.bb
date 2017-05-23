@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace net {
@@ -24,24 +26,26 @@ class InputStream;
 // particular URLRequest.
 class AwWebResourceResponse {
  public:
-  virtual ~AwWebResourceResponse() {}
+  // It is expected that |obj| is an instance of the Java-side
+  // org.chromium.android_webview.AwWebResourceResponse class.
+  AwWebResourceResponse(const base::android::JavaRef<jobject>& obj);
+  ~AwWebResourceResponse();
 
-  virtual std::unique_ptr<InputStream> GetInputStream(JNIEnv* env) const = 0;
-  virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const = 0;
-  virtual bool GetCharset(JNIEnv* env, std::string* charset) const = 0;
-  virtual bool GetStatusInfo(JNIEnv* env,
-                             int* status_code,
-                             std::string* reason_phrase) const = 0;
+  std::unique_ptr<InputStream> GetInputStream(JNIEnv* env) const;
+  bool GetMimeType(JNIEnv* env, std::string* mime_type) const;
+  bool GetCharset(JNIEnv* env, std::string* charset) const;
+  bool GetStatusInfo(JNIEnv* env,
+                     int* status_code,
+                     std::string* reason_phrase) const;
   // If true is returned then |headers| contain the headers, if false is
   // returned |headers| were not updated.
-  virtual bool GetResponseHeaders(
-      JNIEnv* env,
-      net::HttpResponseHeaders* headers) const = 0;
-
- protected:
-  AwWebResourceResponse() {}
+  bool GetResponseHeaders(JNIEnv* env, net::HttpResponseHeaders* headers) const;
 
  private:
+  AwWebResourceResponse();
+
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
+
   DISALLOW_COPY_AND_ASSIGN(AwWebResourceResponse);
 };
 

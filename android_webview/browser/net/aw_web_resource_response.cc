@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_web_resource_response_impl.h"
+#include "android_webview/browser/net/aw_web_resource_response.h"
 
-#include "android_webview/browser/input_stream_impl.h"
+#include "android_webview/browser/input_stream.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -19,23 +19,23 @@ using base::android::AppendJavaStringArrayToStringVector;
 
 namespace android_webview {
 
-AwWebResourceResponseImpl::AwWebResourceResponseImpl(
+AwWebResourceResponse::AwWebResourceResponse(
     const base::android::JavaRef<jobject>& obj)
     : java_object_(obj) {}
 
-AwWebResourceResponseImpl::~AwWebResourceResponseImpl() {}
+AwWebResourceResponse::~AwWebResourceResponse() {}
 
-std::unique_ptr<InputStream> AwWebResourceResponseImpl::GetInputStream(
+std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
     JNIEnv* env) const {
   ScopedJavaLocalRef<jobject> jstream =
       Java_AwWebResourceResponse_getData(env, java_object_);
   if (jstream.is_null())
     return std::unique_ptr<InputStream>();
-  return base::MakeUnique<InputStreamImpl>(jstream);
+  return base::MakeUnique<InputStream>(jstream);
 }
 
-bool AwWebResourceResponseImpl::GetMimeType(JNIEnv* env,
-                                            std::string* mime_type) const {
+bool AwWebResourceResponse::GetMimeType(JNIEnv* env,
+                                        std::string* mime_type) const {
   ScopedJavaLocalRef<jstring> jstring_mime_type =
       Java_AwWebResourceResponse_getMimeType(env, java_object_);
   if (jstring_mime_type.is_null())
@@ -44,8 +44,8 @@ bool AwWebResourceResponseImpl::GetMimeType(JNIEnv* env,
   return true;
 }
 
-bool AwWebResourceResponseImpl::GetCharset(JNIEnv* env,
-                                           std::string* charset) const {
+bool AwWebResourceResponse::GetCharset(JNIEnv* env,
+                                       std::string* charset) const {
   ScopedJavaLocalRef<jstring> jstring_charset =
       Java_AwWebResourceResponse_getCharset(env, java_object_);
   if (jstring_charset.is_null())
@@ -54,10 +54,9 @@ bool AwWebResourceResponseImpl::GetCharset(JNIEnv* env,
   return true;
 }
 
-bool AwWebResourceResponseImpl::GetStatusInfo(
-    JNIEnv* env,
-    int* status_code,
-    std::string* reason_phrase) const {
+bool AwWebResourceResponse::GetStatusInfo(JNIEnv* env,
+                                          int* status_code,
+                                          std::string* reason_phrase) const {
   int status = Java_AwWebResourceResponse_getStatusCode(env, java_object_);
   ScopedJavaLocalRef<jstring> jstring_reason_phrase =
       Java_AwWebResourceResponse_getReasonPhrase(env, java_object_);
@@ -68,7 +67,7 @@ bool AwWebResourceResponseImpl::GetStatusInfo(
   return true;
 }
 
-bool AwWebResourceResponseImpl::GetResponseHeaders(
+bool AwWebResourceResponse::GetResponseHeaders(
     JNIEnv* env,
     net::HttpResponseHeaders* headers) const {
   ScopedJavaLocalRef<jobjectArray> jstringArray_headerNames =

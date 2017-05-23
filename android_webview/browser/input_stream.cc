@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/input_stream_impl.h"
+#include "android_webview/browser/input_stream.h"
 
 #include "base/android/jni_android.h"
 // Disable "Warnings treated as errors" for input_stream_jni as it's a Java
@@ -27,30 +27,24 @@ const int kExceptionThrownStatusCode = -2;
 }
 
 // Maximum number of bytes to be read in a single read.
-const int InputStreamImpl::kBufferSize = 4096;
-
-// static
-const InputStreamImpl* InputStreamImpl::FromInputStream(
-    const InputStream* input_stream) {
-  return static_cast<const InputStreamImpl*>(input_stream);
-}
+const int InputStream::kBufferSize = 4096;
 
 // TODO: Use unsafe version for all Java_InputStream methods in this file
 // once BUG 157880 is fixed and implement graceful exception handling.
 
-InputStreamImpl::InputStreamImpl() {}
+InputStream::InputStream() {}
 
-InputStreamImpl::InputStreamImpl(const JavaRef<jobject>& stream)
-    : jobject_(stream) {
+InputStream::InputStream(const JavaRef<jobject>& stream) : jobject_(stream) {
   DCHECK(!stream.is_null());
 }
 
-InputStreamImpl::~InputStreamImpl() {
+InputStream::~InputStream() {
   JNIEnv* env = AttachCurrentThread();
-  Java_InputStreamUtil_close(env, jobject_);
+  if (jobject_.obj())
+    Java_InputStreamUtil_close(env, jobject_);
 }
 
-bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
+bool InputStream::BytesAvailable(int* bytes_available) const {
   JNIEnv* env = AttachCurrentThread();
   int bytes = Java_InputStreamUtil_available(env, jobject_);
   if (bytes == kExceptionThrownStatusCode)
@@ -59,7 +53,7 @@ bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
   return true;
 }
 
-bool InputStreamImpl::Skip(int64_t n, int64_t* bytes_skipped) {
+bool InputStream::Skip(int64_t n, int64_t* bytes_skipped) {
   JNIEnv* env = AttachCurrentThread();
   int bytes = Java_InputStreamUtil_skip(env, jobject_, n);
   if (bytes < 0)
@@ -70,7 +64,7 @@ bool InputStreamImpl::Skip(int64_t n, int64_t* bytes_skipped) {
   return true;
 }
 
-bool InputStreamImpl::Read(net::IOBuffer* dest, int length, int* bytes_read) {
+bool InputStream::Read(net::IOBuffer* dest, int length, int* bytes_read) {
   JNIEnv* env = AttachCurrentThread();
   if (!buffer_.obj()) {
     // Allocate transfer buffer.

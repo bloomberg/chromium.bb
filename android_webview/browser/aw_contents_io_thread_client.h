@@ -10,7 +10,14 @@
 #include <memory>
 #include <string>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace net {
 class URLRequest;
@@ -46,15 +53,36 @@ class AwContentsIoThreadClient {
     LOAD_CACHE_ONLY = 3,
   };
 
-  virtual ~AwContentsIoThreadClient() {}
+  // Called when AwContents is created before there is a Java client.
+  static void RegisterPendingContents(content::WebContents* web_contents);
+
+  // Associates the |jclient| instance (which must implement the
+  // AwContentsIoThreadClient Java interface) with the |web_contents|.
+  // This should be called at most once per |web_contents|.
+  static void Associate(content::WebContents* web_contents,
+                        const base::android::JavaRef<jobject>& jclient);
+
+  // Sets the |jclient| java instance to which service worker related
+  // callbacks should be delegated.
+  static void SetServiceWorkerIoThreadClient(
+      const base::android::JavaRef<jobject>& jclient,
+      const base::android::JavaRef<jobject>& browser_context);
+
+  // Either |pending_associate| is true or |jclient| holds a non-null
+  // Java object.
+  AwContentsIoThreadClient(bool pending_associate,
+                           const base::android::JavaRef<jobject>& jclient);
+  ~AwContentsIoThreadClient();
+
+  // Implementation of AwContentsIoThreadClient.
 
   // Returns whether this is a new pop up that is still waiting for association
   // with the java counter part.
-  virtual bool PendingAssociation() const = 0;
+  bool PendingAssociation() const;
 
   // Retrieve CacheMode setting value of this AwContents.
   // This method is called on the IO thread only.
-  virtual CacheMode GetCacheMode() const = 0;
+  CacheMode GetCacheMode() const;
 
   // This will attempt to fetch the AwContentsIoThreadClient for the given
   // |render_process_id|, |render_frame_id| pair.
@@ -81,29 +109,36 @@ class AwContentsIoThreadClient {
   // This method is called on the IO thread only.
   typedef base::Callback<void(std::unique_ptr<AwWebResourceResponse>)>
       ShouldInterceptRequestResultCallback;
-  virtual void ShouldInterceptRequestAsync(
+  void ShouldInterceptRequestAsync(
       const net::URLRequest* request,
-      const ShouldInterceptRequestResultCallback callback) = 0;
+      const ShouldInterceptRequestResultCallback callback);
 
   // Retrieve the AllowContentAccess setting value of this AwContents.
   // This method is called on the IO thread only.
-  virtual bool ShouldBlockContentUrls() const = 0;
+  bool ShouldBlockContentUrls() const;
 
   // Retrieve the AllowFileAccess setting value of this AwContents.
   // This method is called on the IO thread only.
-  virtual bool ShouldBlockFileUrls() const = 0;
+  bool ShouldBlockFileUrls() const;
 
   // Retrieve the BlockNetworkLoads setting value of this AwContents.
   // This method is called on the IO thread only.
-  virtual bool ShouldBlockNetworkLoads() const = 0;
+  bool ShouldBlockNetworkLoads() const;
 
   // Retrieve the AcceptThirdPartyCookies setting value of this AwContents.
-  virtual bool ShouldAcceptThirdPartyCookies() const = 0;
+  bool ShouldAcceptThirdPartyCookies() const;
 
   // Retrieve the SafeBrowsingEnabled setting value of this AwContents.
-  virtual bool GetSafeBrowsingEnabled() const = 0;
+  bool GetSafeBrowsingEnabled() const;
+
+ private:
+  bool pending_association_;
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  base::android::ScopedJavaGlobalRef<jobject> bg_thread_client_object_;
+
+  DISALLOW_COPY_AND_ASSIGN(AwContentsIoThreadClient);
 };
 
-} // namespace android_webview
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_

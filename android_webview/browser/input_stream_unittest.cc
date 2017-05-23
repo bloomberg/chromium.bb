@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "android_webview/browser/input_stream_impl.h"
+#include "android_webview/browser/input_stream.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/InputStreamUnittest_jni.h"
@@ -15,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using android_webview::InputStream;
-using android_webview::InputStreamImpl;
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 using net::IOBuffer;
@@ -48,7 +47,7 @@ class InputStreamTest : public Test {
     EXPECT_FALSE(counting_jstream.is_null());
 
     std::unique_ptr<InputStream> input_stream(
-        new InputStreamImpl(counting_jstream));
+        new InputStream(counting_jstream));
     scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
 
     EXPECT_TRUE(input_stream->Read(buffer.get(), bytes_requested, bytes_read));
@@ -63,7 +62,7 @@ TEST_F(InputStreamTest, ReadEmptyStream) {
       Java_InputStreamUnittest_getEmptyStream(env_);
   EXPECT_FALSE(empty_jstream.is_null());
 
-  std::unique_ptr<InputStream> input_stream(new InputStreamImpl(empty_jstream));
+  std::unique_ptr<InputStream> input_stream(new InputStream(empty_jstream));
   const int bytes_requested = 10;
   int bytes_read = 0;
   scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
@@ -87,7 +86,7 @@ TEST_F(InputStreamTest, ReadStreamCompletely) {
 }
 
 TEST_F(InputStreamTest, TryReadMoreThanBuffer) {
-  const int buffer_size = 3 * InputStreamImpl::kBufferSize;
+  const int buffer_size = 3 * InputStream::kBufferSize;
   int bytes_read = 0;
   DoReadCountedStreamTest(buffer_size, buffer_size * 2, &bytes_read);
   EXPECT_EQ(buffer_size, bytes_read);
@@ -105,14 +104,14 @@ TEST_F(InputStreamTest, CheckContentsReadCorrectly) {
 }
 
 TEST_F(InputStreamTest, ReadLargeStreamPartial) {
-  const int bytes_requested = 3 * InputStreamImpl::kBufferSize;
+  const int bytes_requested = 3 * InputStream::kBufferSize;
   int bytes_read = 0;
   DoReadCountedStreamTest(bytes_requested + 32, bytes_requested, &bytes_read);
   EXPECT_EQ(bytes_requested, bytes_read);
 }
 
 TEST_F(InputStreamTest, ReadLargeStreamCompletely) {
-  const int bytes_requested = 3 * InputStreamImpl::kBufferSize;
+  const int bytes_requested = 3 * InputStream::kBufferSize;
   int bytes_read = 0;
   DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
   EXPECT_EQ(bytes_requested, bytes_read);
@@ -123,7 +122,7 @@ TEST_F(InputStreamTest, DoesNotCrashWhenExceptionThrown) {
       Java_InputStreamUnittest_getThrowingStream(env_);
   EXPECT_FALSE(throw_jstream.is_null());
 
-  std::unique_ptr<InputStream> input_stream(new InputStreamImpl(throw_jstream));
+  std::unique_ptr<InputStream> input_stream(new InputStream(throw_jstream));
 
   int64_t bytes_skipped;
   EXPECT_FALSE(input_stream->Skip(10, &bytes_skipped));

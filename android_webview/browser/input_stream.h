@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include "base/android/scoped_java_ref.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+
 namespace net {
 class IOBuffer;
 }
@@ -19,20 +23,29 @@ namespace android_webview {
 // methods concurrently might have undefined results.
 class InputStream {
  public:
-  virtual ~InputStream() {}
+  // Maximum size of |buffer_|.
+  static const int kBufferSize;
+
+  // |stream| should be an instance of the InputStream Java class.
+  // |stream| can't be null.
+  InputStream(const base::android::JavaRef<jobject>& stream);
+  virtual ~InputStream();
+
+  // Gets the underlying Java object. Guaranteed non-NULL.
+  const base::android::JavaRef<jobject>& jobj() const { return jobject_; }
 
   // Sets |bytes_available| to the number of bytes that can be read (or skipped
   // over) from this input stream without blocking by the next caller of a
   // method for this input stream.
   // Returns true if completed successfully or false if an exception was
   // thrown.
-  virtual bool BytesAvailable(int* bytes_available) const = 0;
+  virtual bool BytesAvailable(int* bytes_available) const;
 
   // Skips over and discards |n| bytes of data from this input stream. Sets
   // |bytes_skipped| to the number of of bytes skipped.
   // Returns true if completed successfully or false if an exception was
   // thrown.
-  virtual bool Skip(int64_t n, int64_t* bytes_skipped) = 0;
+  virtual bool Skip(int64_t n, int64_t* bytes_skipped);
 
   // Reads at most |length| bytes into |dest|. Sets |bytes_read| to the total
   // number of bytes read into |dest| or 0 if there is no more data because the
@@ -40,10 +53,17 @@ class InputStream {
   // |dest| must be at least |length| in size.
   // Returns true if completed successfully or false if an exception was
   // thrown.
-  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read) = 0;
+  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read);
 
  protected:
-  InputStream() {}
+  // Parameterless constructor exposed for testing.
+  InputStream();
+
+ private:
+  base::android::ScopedJavaGlobalRef<jobject> jobject_;
+  base::android::ScopedJavaGlobalRef<jbyteArray> buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputStream);
 };
 
 } // namespace android_webview

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_contents_io_thread_client_impl.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 
 #include <map>
 #include <memory>
 #include <utility>
 
 #include "android_webview/browser/aw_contents_background_thread_client.h"
-#include "android_webview/browser/aw_web_resource_response_impl.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
+#include "android_webview/browser/net/aw_web_resource_response.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -191,7 +191,7 @@ void ClientMapEntryUpdater::WebContentsDestroyed() {
 
 }  // namespace
 
-// AwContentsIoThreadClientImpl -----------------------------------------------
+// AwContentsIoThreadClient -----------------------------------------------
 
 // static
 std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
@@ -206,9 +206,8 @@ std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
   ScopedJavaLocalRef<jobject> java_delegate =
       client_data.io_thread_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return std::unique_ptr<AwContentsIoThreadClient>(
-      new AwContentsIoThreadClientImpl(client_data.pending_association,
-                                       java_delegate));
+  return std::unique_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClient(
+      client_data.pending_association, java_delegate));
 }
 
 std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
@@ -222,9 +221,8 @@ std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
   ScopedJavaLocalRef<jobject> java_delegate =
       client_data.io_thread_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return std::unique_ptr<AwContentsIoThreadClient>(
-      new AwContentsIoThreadClientImpl(client_data.pending_association,
-                                       java_delegate));
+  return std::unique_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClient(
+      client_data.pending_association, java_delegate));
 }
 
 // static
@@ -244,7 +242,7 @@ void AwContentsIoThreadClient::SubFrameCreated(int render_process_id,
 }
 
 // static
-void AwContentsIoThreadClientImpl::RegisterPendingContents(
+void AwContentsIoThreadClient::RegisterPendingContents(
     WebContents* web_contents) {
   IoThreadClientData client_data;
   client_data.pending_association = true;
@@ -253,15 +251,15 @@ void AwContentsIoThreadClientImpl::RegisterPendingContents(
 }
 
 // static
-void AwContentsIoThreadClientImpl::Associate(WebContents* web_contents,
-                                             const JavaRef<jobject>& jclient) {
+void AwContentsIoThreadClient::Associate(WebContents* web_contents,
+                                         const JavaRef<jobject>& jclient) {
   JNIEnv* env = AttachCurrentThread();
   // The ClientMapEntryUpdater lifespan is tied to the WebContents.
   new ClientMapEntryUpdater(env, web_contents, jclient.obj());
 }
 
 // static
-void AwContentsIoThreadClientImpl::SetServiceWorkerIoThreadClient(
+void AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(
     const base::android::JavaRef<jobject>& jclient,
     const base::android::JavaRef<jobject>& browser_context) {
   // TODO: currently there is only one browser context so it is ok to
@@ -281,23 +279,22 @@ AwContentsIoThreadClient::GetServiceWorkerIoThreadClient() {
     return std::unique_ptr<AwContentsIoThreadClient>();
 
   return std::unique_ptr<AwContentsIoThreadClient>(
-      new AwContentsIoThreadClientImpl(false, java_delegate));
+      new AwContentsIoThreadClient(false, java_delegate));
 }
 
-AwContentsIoThreadClientImpl::AwContentsIoThreadClientImpl(
-    bool pending_association,
-    const JavaRef<jobject>& obj)
+AwContentsIoThreadClient::AwContentsIoThreadClient(bool pending_association,
+                                                   const JavaRef<jobject>& obj)
     : pending_association_(pending_association), java_object_(obj) {}
 
-AwContentsIoThreadClientImpl::~AwContentsIoThreadClientImpl() {
+AwContentsIoThreadClient::~AwContentsIoThreadClient() {
   // explict, out-of-line destructor.
 }
 
-bool AwContentsIoThreadClientImpl::PendingAssociation() const {
+bool AwContentsIoThreadClient::PendingAssociation() const {
   return pending_association_;
 }
 
-AwContentsIoThreadClient::CacheMode AwContentsIoThreadClientImpl::GetCacheMode()
+AwContentsIoThreadClient::CacheMode AwContentsIoThreadClient::GetCacheMode()
     const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
@@ -331,7 +328,7 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
           java_web_resource_request.jheader_names,
           java_web_resource_request.jheader_values);
   return std::unique_ptr<AwWebResourceResponse>(
-      ret.is_null() ? nullptr : new AwWebResourceResponseImpl(ret));
+      ret.is_null() ? nullptr : new AwWebResourceResponse(ret));
 }
 
 std::unique_ptr<AwWebResourceResponse> ReturnNull() {
@@ -340,7 +337,7 @@ std::unique_ptr<AwWebResourceResponse> ReturnNull() {
 
 }  // namespace
 
-void AwContentsIoThreadClientImpl::ShouldInterceptRequestAsync(
+void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
     const net::URLRequest* request,
     const ShouldInterceptRequestResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -361,7 +358,7 @@ void AwContentsIoThreadClientImpl::ShouldInterceptRequestAsync(
                                             get_response, callback);
 }
 
-bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
+bool AwContentsIoThreadClient::ShouldBlockContentUrls() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
@@ -371,7 +368,7 @@ bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
                                                               java_object_);
 }
 
-bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
+bool AwContentsIoThreadClient::ShouldBlockFileUrls() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
@@ -380,7 +377,7 @@ bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
   return Java_AwContentsIoThreadClient_shouldBlockFileUrls(env, java_object_);
 }
 
-bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
+bool AwContentsIoThreadClient::ShouldAcceptThirdPartyCookies() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
@@ -390,7 +387,7 @@ bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
       env, java_object_);
 }
 
-bool AwContentsIoThreadClientImpl::GetSafeBrowsingEnabled() const {
+bool AwContentsIoThreadClient::GetSafeBrowsingEnabled() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
@@ -400,7 +397,7 @@ bool AwContentsIoThreadClientImpl::GetSafeBrowsingEnabled() const {
                                                               java_object_);
 }
 
-bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
+bool AwContentsIoThreadClient::ShouldBlockNetworkLoads() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
