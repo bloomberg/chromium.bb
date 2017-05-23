@@ -53,7 +53,6 @@ int32_t WebrtcDummyVideoEncoder::InitEncode(
 
 int32_t WebrtcDummyVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
-  DCHECK(callback);
   base::AutoLock lock(lock_);
   encoded_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
@@ -163,6 +162,7 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   header.fragmentationPlType[0] = 0;
   header.fragmentationTimeDiff[0] = 0;
 
+  DCHECK(encoded_callback_);
   return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info,
                                            &header);
 }
