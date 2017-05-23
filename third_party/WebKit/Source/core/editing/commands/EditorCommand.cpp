@@ -1787,9 +1787,11 @@ static bool ExecuteSelectToMark(LocalFrame& frame,
   EphemeralRange selection = frame.GetEditor().SelectedRange();
   if (mark.IsNull() || selection.IsNull())
     return false;
-  frame.Selection().SetSelectedRange(
-      UnionEphemeralRanges(mark, selection), TextAffinity::kDownstream,
-      SelectionDirectionalMode::kNonDirectional, FrameSelection::kCloseTyping);
+  frame.Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(UnionEphemeralRanges(mark, selection))
+          .Build(),
+      FrameSelection::kCloseTyping);
   return true;
 }
 
