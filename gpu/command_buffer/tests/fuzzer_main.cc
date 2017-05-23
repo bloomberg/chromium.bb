@@ -158,7 +158,7 @@ class CommandBufferSetup {
     decoder_.reset(gles2::GLES2Decoder::Create(context_group.get()));
     executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
                                         decoder_.get()));
-    decoder_->set_engine(executor_.get());
+    decoder_->set_command_buffer_service(command_buffer_.get());
     decoder_->SetFenceSyncReleaseCallback(base::Bind(
         &CommandBufferSetup::OnFenceSyncRelease, base::Unretained(this)));
     decoder_->SetWaitSyncTokenCallback(base::Bind(

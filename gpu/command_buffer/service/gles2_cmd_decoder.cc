@@ -4312,7 +4312,7 @@ bool GLES2DecoderImpl::MakeCurrent() {
 
 void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   ProcessPendingReadPixels(false);
-  if (engine() && query_manager_.get())
+  if (command_buffer_service() && query_manager_.get())
     query_manager_->ProcessPendingTransferQueries();
 }
 

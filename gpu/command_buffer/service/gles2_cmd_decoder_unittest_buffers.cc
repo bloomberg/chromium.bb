@@ -108,9 +108,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeUnmapBufferReadSucceeds) {
   const GLsizeiptr kSize = 64;
   const GLbitfield kAccess = GL_MAP_READ_BIT;
 
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
@@ -162,9 +162,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
   const GLbitfield kAccess = GL_MAP_WRITE_BIT;
   const GLbitfield kMappedAccess = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
 
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
@@ -247,9 +247,9 @@ TEST_P(GLES3DecoderTest, FlushMappedBufferRangeSucceeds) {
   const GLbitfield kAccess = GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
   const GLbitfield kMappedAccess = kAccess | GL_MAP_READ_BIT;
 
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
@@ -357,9 +357,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeNotInitFails) {
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = 1;  // Any value other than 0.
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(*result);
 
   MapBufferRange cmd;
@@ -390,9 +390,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeWriteInvalidateRangeSucceeds) {
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = 0;
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(*result);
 
   int8_t* mem = reinterpret_cast<int8_t*>(&result[1]);
@@ -429,9 +429,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeWriteInvalidateBufferSucceeds) {
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = 0;
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(*result);
 
   int8_t* mem = reinterpret_cast<int8_t*>(&result[1]);
@@ -466,9 +466,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeWriteUnsynchronizedBit) {
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = 0;
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(*result);
 
   int8_t* mem = reinterpret_cast<int8_t*>(&result[1]);
@@ -494,9 +494,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeWithError) {
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = 0;
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(*result);
 
   int8_t* mem = reinterpret_cast<int8_t*>(&result[1]);
@@ -529,9 +529,9 @@ TEST_P(GLES3DecoderTest, MapBufferRangeBadSharedMemoryFails) {
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = 0;
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(*result);
 
   MapBufferRange cmd;
@@ -580,9 +580,9 @@ TEST_P(GLES3DecoderTest, BufferDataDestroysDataStore) {
   const GLbitfield kAccess = GL_MAP_WRITE_BIT;
   const GLbitfield kFilteredAccess = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
 
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
@@ -628,9 +628,9 @@ TEST_P(GLES3DecoderTest, DeleteBuffersDestroysDataStore) {
   const GLbitfield kAccess = GL_MAP_WRITE_BIT;
   const GLbitfield kFilteredAccess = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
 
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
@@ -675,9 +675,9 @@ TEST_P(GLES3DecoderTest, MapUnmapBufferInvalidTarget) {
   const GLsizeiptr kSize = 64;
   const GLbitfield kAccess = GL_MAP_WRITE_BIT;
 
-  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_id = shared_memory_id_;
   uint32_t result_shm_offset = kSharedMemoryOffset;
-  uint32_t data_shm_id = kSharedMemoryId;
+  uint32_t data_shm_id = shared_memory_id_;
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 

@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/service/async_api_interface.h"
-#include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
@@ -25,8 +24,7 @@ namespace gpu {
 // a command buffer and forwarded to a command handler. TODO(apatrick): This
 // class should not know about the decoder. Do not add additional dependencies
 // on it.
-class GPU_EXPORT CommandExecutor
-    : NON_EXPORTED_BASE(public CommandBufferEngine) {
+class GPU_EXPORT CommandExecutor {
  public:
   static const int kParseCommandsSlice = 20;
 
@@ -34,7 +32,7 @@ class GPU_EXPORT CommandExecutor
                   AsyncAPIInterface* handler,
                   gles2::GLES2Decoder* decoder);
 
-  ~CommandExecutor() override;
+  ~CommandExecutor();
 
   bool SetGetBuffer(int32_t transfer_buffer_id);
   void PutChanged();
@@ -52,10 +50,6 @@ class GPU_EXPORT CommandExecutor
   // Process pending queries and return. HasPendingQueries() can be used to
   // determine if there's more pending queries after this has been called.
   void ProcessPendingQueries();
-
-  // Implementation of CommandBufferEngine.
-  scoped_refptr<Buffer> GetSharedMemoryBuffer(int32_t shm_id) override;
-  void set_token(int32_t token) override;
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 
