@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/css/StyleAutoColor.h"
 #include "core/css/StyleColor.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/AppliedTextDecorationList.h"
 #include "core/style/CursorData.h"
@@ -49,11 +50,6 @@
 
 namespace blink {
 
-class QuotesData;
-class ShadowList;
-class StyleImage;
-class StyleInheritedVariables;
-
 // This struct is for rarely used inherited CSS3, CSS2, and WebKit-specific
 // properties.  By grouping them together, we save space, and only allocate this
 // object when someone actually uses one of these properties.
@@ -70,7 +66,85 @@ class CORE_EXPORT StyleRareInheritedData
     return AdoptRef(new StyleRareInheritedData(*this));
   }
 
-  bool operator==(const StyleRareInheritedData&) const;
+  bool operator==(const StyleRareInheritedData& other) const {
+    return text_stroke_color_ == other.text_stroke_color_ &&
+           text_stroke_width_ == other.text_stroke_width_ &&
+           text_fill_color_ == other.text_fill_color_ &&
+           text_emphasis_color_ == other.text_emphasis_color_ &&
+           caret_color_ == other.caret_color_ &&
+           visited_link_text_stroke_color_ ==
+               other.visited_link_text_stroke_color_ &&
+           visited_link_text_fill_color_ ==
+               other.visited_link_text_fill_color_ &&
+           visited_link_text_emphasis_color_ ==
+               other.visited_link_text_emphasis_color_ &&
+           visited_link_caret_color_ == other.visited_link_caret_color_ &&
+           tap_highlight_color_ == other.tap_highlight_color_ &&
+           DataEquivalent(text_shadow_, other.text_shadow_) &&
+           highlight_ == other.highlight_ &&
+           DataEquivalent(cursor_data_, other.cursor_data_) &&
+           text_indent_ == other.text_indent_ &&
+           effective_zoom_ == other.effective_zoom_ &&
+           widows_ == other.widows_ && orphans_ == other.orphans_ &&
+           text_stroke_color_is_current_color_ ==
+               other.text_stroke_color_is_current_color_ &&
+           text_fill_color_is_current_color_ ==
+               other.text_fill_color_is_current_color_ &&
+           text_emphasis_color_is_current_color_ ==
+               other.text_emphasis_color_is_current_color_ &&
+           caret_color_is_current_color_ ==
+               other.caret_color_is_current_color_ &&
+           caret_color_is_auto_ == other.caret_color_is_auto_ &&
+           visited_link_text_stroke_color_is_current_color_ ==
+               other.visited_link_text_stroke_color_is_current_color_ &&
+           visited_link_text_fill_color_is_current_color_ ==
+               other.visited_link_text_fill_color_is_current_color_ &&
+           visited_link_text_emphasis_color_is_current_color_ ==
+               other.visited_link_text_emphasis_color_is_current_color_ &&
+           visited_link_caret_color_is_current_color_ ==
+               other.visited_link_caret_color_is_current_color_ &&
+           visited_link_caret_color_is_auto_ ==
+               other.visited_link_caret_color_is_auto_ &&
+           text_security_ == other.text_security_ &&
+           user_modify_ == other.user_modify_ &&
+           word_break_ == other.word_break_ &&
+           overflow_wrap_ == other.overflow_wrap_ &&
+           line_break_ == other.line_break_ &&
+           user_select_ == other.user_select_ && speak_ == other.speak_ &&
+           hyphens_ == other.hyphens_ &&
+           hyphenation_limit_before_ == other.hyphenation_limit_before_ &&
+           hyphenation_limit_after_ == other.hyphenation_limit_after_ &&
+           hyphenation_limit_lines_ == other.hyphenation_limit_lines_ &&
+           text_emphasis_fill_ == other.text_emphasis_fill_ &&
+           text_emphasis_mark_ == other.text_emphasis_mark_ &&
+           text_emphasis_position_ == other.text_emphasis_position_ &&
+           text_align_last_ == other.text_align_last_ &&
+           text_justify_ == other.text_justify_ &&
+           text_orientation_ == other.text_orientation_ &&
+           text_combine_ == other.text_combine_ &&
+           text_indent_line_ == other.text_indent_line_ &&
+           text_indent_type_ == other.text_indent_type_ &&
+           subtree_will_change_contents_ ==
+               other.subtree_will_change_contents_ &&
+           self_or_ancestor_has_dir_auto_attribute_ ==
+               other.self_or_ancestor_has_dir_auto_attribute_ &&
+           respect_image_orientation_ == other.respect_image_orientation_ &&
+           subtree_is_sticky_ == other.subtree_is_sticky_ &&
+           hyphenation_string_ == other.hyphenation_string_ &&
+           line_height_step_ == other.line_height_step_ &&
+           text_emphasis_custom_mark_ == other.text_emphasis_custom_mark_ &&
+           DataEquivalent(quotes_, other.quotes_) &&
+           tab_size_ == other.tab_size_ &&
+           image_rendering_ == other.image_rendering_ &&
+           text_underline_position_ == other.text_underline_position_ &&
+           text_decoration_skip_ == other.text_decoration_skip_ &&
+           ruby_position_ == other.ruby_position_ &&
+           DataEquivalent(list_style_image_, other.list_style_image_) &&
+           DataEquivalent(applied_text_decorations_,
+                          other.applied_text_decorations_) &&
+           DataEquivalent(variables_, other.variables_) &&
+           text_size_adjust_ == other.text_size_adjust_;
+  }
   bool operator!=(const StyleRareInheritedData& o) const {
     return !(*this == o);
   }
@@ -167,7 +241,56 @@ class CORE_EXPORT StyleRareInheritedData
   TextSizeAdjust text_size_adjust_;
 
  private:
-  StyleRareInheritedData();
+  StyleRareInheritedData()
+      : list_style_image_(nullptr),
+        text_stroke_width_(0),
+        text_indent_(Length(kFixed)),
+        effective_zoom_(1.0),
+        widows_(2),
+        orphans_(2),
+        text_stroke_color_is_current_color_(true),
+        text_fill_color_is_current_color_(true),
+        text_emphasis_color_is_current_color_(true),
+        caret_color_is_current_color_(false),
+        caret_color_is_auto_(true),
+        visited_link_text_stroke_color_is_current_color_(true),
+        visited_link_text_fill_color_is_current_color_(true),
+        visited_link_text_emphasis_color_is_current_color_(true),
+        visited_link_caret_color_is_current_color_(false),
+        visited_link_caret_color_is_auto_(true),
+        text_security_(static_cast<unsigned>(ETextSecurity::kNone)),
+        user_modify_(static_cast<unsigned>(EUserModify::kReadOnly)),
+        word_break_(static_cast<unsigned>(EWordBreak::kNormal)),
+        overflow_wrap_(static_cast<unsigned>(EOverflowWrap::kNormal)),
+        line_break_(static_cast<unsigned>(LineBreak::kAuto)),
+        user_select_(static_cast<unsigned>(EUserSelect::kText)),
+        speak_(static_cast<unsigned>(ESpeak::kNormal)),
+        hyphens_(static_cast<unsigned>(Hyphens::kManual)),
+        text_emphasis_fill_(kTextEmphasisFillFilled),
+        text_emphasis_mark_(kTextEmphasisMarkNone),
+        text_emphasis_position_(kTextEmphasisPositionOver),
+        text_align_last_(kTextAlignLastAuto),
+        text_justify_(kTextJustifyAuto),
+        text_orientation_(kTextOrientationMixed),
+        text_combine_(kTextCombineNone),
+        text_indent_line_(kTextIndentFirstLine),
+        text_indent_type_(kTextIndentNormal),
+        image_rendering_(kImageRenderingAuto),
+        text_underline_position_(kTextUnderlinePositionAuto),
+        text_decoration_skip_(kTextDecorationSkipObjects),
+        ruby_position_(kRubyPositionBefore),
+        subtree_will_change_contents_(false),
+        self_or_ancestor_has_dir_auto_attribute_(false),
+        respect_image_orientation_(false),
+        subtree_is_sticky_(false),
+        hyphenation_limit_before_(-1),
+        hyphenation_limit_after_(-1),
+        hyphenation_limit_lines_(-1),
+        line_height_step_(0),
+        tap_highlight_color_(LayoutTheme::TapHighlightColor()),
+        tab_size_(TabSize(8)),
+        text_size_adjust_(TextSizeAdjust::AdjustAuto()) {}
+
   StyleRareInheritedData(const StyleRareInheritedData&) = default;
 };
 
