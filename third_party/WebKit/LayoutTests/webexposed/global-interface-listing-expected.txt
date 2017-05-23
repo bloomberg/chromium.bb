@@ -20,6 +20,9 @@ interface AccessibleNode
     getter autocomplete
     getter busy
     getter checked
+    getter colCount
+    getter colIndex
+    getter colSpan
     getter current
     getter disabled
     getter expanded
@@ -27,25 +30,37 @@ interface AccessibleNode
     getter invalid
     getter keyShortcuts
     getter label
+    getter level
     getter live
     getter modal
     getter multiline
     getter multiselectable
     getter orientation
     getter placeholder
+    getter posInSet
     getter readOnly
     getter relevant
     getter required
     getter role
     getter roleDescription
+    getter rowCount
+    getter rowIndex
+    getter rowSpan
     getter selected
+    getter setSize
     getter sort
+    getter valueMax
+    getter valueMin
+    getter valueNow
     getter valueText
     method constructor
     setter atomic
     setter autocomplete
     setter busy
     setter checked
+    setter colCount
+    setter colIndex
+    setter colSpan
     setter current
     setter disabled
     setter expanded
@@ -53,19 +68,28 @@ interface AccessibleNode
     setter invalid
     setter keyShortcuts
     setter label
+    setter level
     setter live
     setter modal
     setter multiline
     setter multiselectable
     setter orientation
     setter placeholder
+    setter posInSet
     setter readOnly
     setter relevant
     setter required
     setter role
     setter roleDescription
+    setter rowCount
+    setter rowIndex
+    setter rowSpan
     setter selected
+    setter setSize
     setter sort
+    setter valueMax
+    setter valueMin
+    setter valueNow
     setter valueText
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
