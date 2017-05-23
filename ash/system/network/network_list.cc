@@ -14,12 +14,10 @@
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/networking_config_delegate.h"
-
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/throbber_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -105,9 +103,6 @@ void SetupConnectingItem(HoverHighlightView* container,
   container->AddIconAndLabels(
       image, text,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
-  ThrobberView* throbber = new ThrobberView;
-  throbber->Start();
-  container->AddRightView(throbber);
 }
 
 }  // namespace

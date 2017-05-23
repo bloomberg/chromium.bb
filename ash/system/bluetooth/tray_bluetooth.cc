@@ -15,7 +15,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/throbber_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -350,9 +349,6 @@ class BluetoothDetailedView : public TrayDetailsView {
   void SetupConnectingItem(HoverHighlightView* container) {
     container->SetSubText(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
-    ThrobberView* throbber = new ThrobberView;
-    throbber->Start();
-    container->AddRightView(throbber);
   }
 
   // Returns true if the device with |device_id| is found in |device_list|.
