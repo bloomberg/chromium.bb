@@ -499,13 +499,9 @@ void SessionsSyncManager::TrackTasks(
       tab_specifics->current_navigation_index();
   int64_t current_navigation_global_id =
       tab_specifics->navigation(current_index_in_tab_specifics).global_id();
-  SessionID::id_type source_tab_id = tab_delegate->GetSourceTabID();
 
   TabTasks* tab_tasks =
-      source_tab_id == kInvalidTabID
-          ? task_tracker_->GetTabTasks(tab_delegate->GetSessionId())
-          : task_tracker_->GetTabTasks(tab_delegate->GetSessionId(),
-                                       source_tab_id);
+      task_tracker_->GetTabTasks(tab_delegate->GetSessionId());
   tab_tasks->UpdateWithNavigation(
       current_navigation_index,
       tab_delegate->GetTransitionAtIndex(current_navigation_index),
