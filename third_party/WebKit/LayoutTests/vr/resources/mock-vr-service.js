@@ -24,8 +24,24 @@ let mockVRService = loadMojoModules(
       }
     }
 
-    requestPresent(secureOrigin) {
+    requestPresent(secureOrigin, submitFrameClient) {
+      this.submitFrameClient_ = submitFrameClient;
       return Promise.resolve({success: true});
+    }
+
+    submitFrame(frameId, mailboxHolder) {
+      // Trigger the submit completion callbacks here. WARNING: The
+      // Javascript-based mojo mocks are *not* re-entrant.  In the current
+      // default implementation, Javascript calls display.submitFrame, and the
+      // corresponding C++ code uses a reentrant mojo call that waits for
+      // onSubmitFrameTransferred to indicate completion. This never finishes
+      // when using the mocks since the incoming calls are queued until the
+      // current execution context finishes. As a workaround, use the alternate
+      // "WebVRExperimentalRendering" mode which works without reentrant calls,
+      // the code only checks for completion on the *next* frame, see the
+      // corresponding option setting in RuntimeEnabledFeatures.json5.
+      this.submitFrameClient_.onSubmitFrameTransferred();
+      this.submitFrameClient_.onSubmitFrameRendered();
     }
 
     setPose(pose) {
@@ -37,7 +53,9 @@ let mockVRService = loadMojoModules(
       }
     }
 
-    getVRVSyncProvider(request) { this.vsync_provider_.bind(request); }
+    getVRVSyncProvider(request) {
+      this.vsync_provider_.bind(request);
+    }
 
     forceActivate(reason) {
       this.displayClient_.onActivate(reason);
