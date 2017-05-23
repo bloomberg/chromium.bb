@@ -306,11 +306,11 @@ fi
 # libnss3: Pull a more recent version of NSS than required by runtime linking,
 #          for security and stability updates in NSS.
 # libstdc++6: For C++11 support.
-# lsb-base: Implies many other dependencies.
+# lsb-release: For lsb_release.
 # xdg-utils: For OS integration.
 # wget: For uploading crash reports with Breakpad.
 ADDITION_DEPS="ca-certificates, fonts-liberation, libappindicator1, \
-  libnss3 (>= 3.17.2), libstdc++6 (>=4.8.0), lsb-base (>=4.1), \
+  libnss3 (>= 3.17.2), libstdc++6 (>=4.8.0), lsb-release, \
   xdg-utils (>= 1.0.2), wget"
 
 # Fix-up libnspr dependency due to renaming in Ubuntu (the old package still
