@@ -8,7 +8,7 @@
 namespace subresource_filter {
 
 // NOTE: ActivationDecision backs a UMA histogram, so it is append-only.
-enum class ActivationDecision {
+enum class ActivationDecision : int {
   // The activation decision is unknown, or not known yet.
   UNKNOWN,
 
