@@ -122,6 +122,12 @@ void VrGLThread::ExitCct() {
       FROM_HERE, base::Bind(&VrShell::ExitCct, weak_vr_shell_));
 }
 
+void VrGLThread::ToggleCardboardGamepad(bool enabled) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VrShell::ToggleCardboardGamepad, weak_vr_shell_, enabled));
+}
+
 void VrGLThread::SetFullscreen(bool enabled) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetFullscreen,
