@@ -27,6 +27,7 @@ import argparse
 import logging
 import webbrowser
 
+from webkitpy.layout_tests.models.test_expectations import CHROMIUM_BUG_PREFIX
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.tool.commands.flaky_tests import FlakyTests
 
@@ -51,18 +52,16 @@ def main(host, bot_test_expectations_factory, argv):
         _log.warning("Didn't find generic expectations file at: " + expectations_file)
         return 1
 
-    remove_flakes_o_matic = RemoveFlakesOMatic(host,
-                                               port,
-                                               bot_test_expectations_factory,
-                                               webbrowser)
+    remove_flakes_o_matic = RemoveFlakesOMatic(
+        host, port, bot_test_expectations_factory, webbrowser)
 
     test_expectations = remove_flakes_o_matic.get_updated_test_expectations()
 
     if args.show_results:
         remove_flakes_o_matic.show_removed_results()
 
-    remove_flakes_o_matic.write_test_expectations(test_expectations,
-                                                  expectations_file)
+    remove_flakes_o_matic.write_test_expectations(test_expectations, expectations_file)
+    remove_flakes_o_matic.print_suggested_commit_description()
     return 0
 
 
@@ -319,15 +318,13 @@ class RemoveFlakesOMatic(object):
         return test_expectations
 
     def show_removed_results(self):
-        """Opens removed lines in the results dashboard.
+        """Opens a browser showing the removed lines in the results dashboard.
 
-        Opens the results dashboard in the browser, showing all the tests for lines that the script
-        removed from the TestExpectations file and allowing the user to manually confirm the
-        results.
+        Opens the results dashboard in the browser, showing all the tests for
+        lines removed from the TestExpectations file, allowing the user to
+        manually confirm the results.
         """
-        removed_test_names = ','.join(x.name for x in self._expectations_to_remove())
-        url = FlakyTests.FLAKINESS_DASHBOARD_URL % removed_test_names
-
+        url = self._flakiness_dashboard_url()
         _log.info('Opening results dashboard: ' + url)
         self._browser.open(url)
 
@@ -342,3 +339,26 @@ class RemoveFlakesOMatic(object):
         self._host.filesystem.write_text_file(
             test_expectations_file,
             TestExpectations.list_to_string(test_expectations, reconstitute_only_these=[]))
+
+    def print_suggested_commit_description(self):
+        """Prints the body of a suggested CL description after removing some lines."""
+        dashboard_url = self._flakiness_dashboard_url()
+        bugs = ','.join(self._bug_numbers())
+        message = ('Remove flaky TestExpectations for tests which appear non-flaky recently.\n\n'
+                   'This change was made by the update-test-expectations script.\n\n'
+                   'Recent test results history:\n%s\n\n'
+                   'BUG=%s') % (dashboard_url, bugs)
+        _log.info('Suggested commit description:\n' + message)
+
+    def _flakiness_dashboard_url(self):
+        removed_test_names = ','.join(x.name for x in self._expectations_to_remove())
+        return FlakyTests.FLAKINESS_DASHBOARD_URL % removed_test_names
+
+    def _bug_numbers(self):
+        """Returns the list of all bug numbers affected by this change."""
+        numbers = []
+        for line in self._expectations_to_remove():
+            for bug in line.bugs:
+                if bug.startswith(CHROMIUM_BUG_PREFIX):
+                    numbers.append(bug[len(CHROMIUM_BUG_PREFIX):])
+        return sorted(numbers)

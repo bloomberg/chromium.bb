@@ -1061,3 +1061,44 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self.assertEqual(
             FlakyTests.FLAKINESS_DASHBOARD_URL % 'test/a.html,test/b.html',
             self._mock_web_browser.opened_url)
+
+    def test_suggested_commit_description(self):
+        """Tests display of the suggested commit message.
+        """
+        test_expectations_before = (
+            """# Remove this since it's passing all runs.
+            crbug.com/2222 test/a.html [ Failure Pass ]
+            # Remove this since, although there's a failure, it's not a timeout.
+            crbug.com/1111 test/b.html [ Pass Timeout ]
+            # Keep since we have both crashes and passes.
+            crbug.com/3333 test/c.html [ Crash Pass ]""")
+
+        self._define_builders({
+            'WebKit Linux': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+        })
+        self._port.all_build_types = ('release',)
+        self._port.all_systems = (('trusty', 'x86_64'),)
+
+        self._parse_expectations(test_expectations_before)
+        self._expectation_factory.all_results_by_builder = {
+            'WebKit Linux': {
+                'test/a.html': ['PASS', 'PASS', 'PASS'],
+                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/c.html': ['PASS', 'CRASH', 'PASS'],
+            }
+        }
+        self._flake_remover.print_suggested_commit_description()
+        self.assertLog([
+            'INFO: Deleting line "crbug.com/2222 test/a.html [ Failure Pass ]"\n',
+            'INFO: Deleting line "crbug.com/1111 test/b.html [ Pass Timeout ]"\n',
+            'INFO: Suggested commit description:\n'
+            'Remove flaky TestExpectations for tests which appear non-flaky recently.\n\n'
+            'This change was made by the update-test-expectations script.\n\n'
+            'Recent test results history:\n'
+            'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
+            '#testType=webkit_layout_tests&tests=test/a.html,test/b.html\n\n'
+            'BUG=1111,2222\n'
+        ])
