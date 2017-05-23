@@ -17,6 +17,7 @@
 #include "net/base/backoff_entry.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
 #include "net/reporting/reporting_endpoint_manager.h"
 #include "net/reporting/reporting_garbage_collector.h"
@@ -76,6 +77,7 @@ ReportingContext::ReportingContext(const ReportingPolicy& policy,
       clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       uploader_(std::move(uploader)),
+      delegate_(ReportingDelegate::Create()),
       cache_(base::MakeUnique<ReportingCache>(this)),
       endpoint_manager_(base::MakeUnique<ReportingEndpointManager>(this)),
       delivery_agent_(ReportingDeliveryAgent::Create(this)),
