@@ -147,6 +147,13 @@ class VRDisplay final : public EventTargetWithInlineData,
   void ProcessScheduledAnimations(double timestamp);
   void ProcessScheduledWindowAnimations(double timestamp);
 
+  // In order to help the VR device with scheduling, never request a new VSync
+  // until the current frame is either submitted or abandoned. If vrDisplay.rAF
+  // is called earlier, defer the GetVSync until vrDisplay.submitFrame is
+  // called. If the rAF callback exits without submitting a frame, call it at
+  // that time.
+  void RequestVSync();
+
   Member<NavigatorVR> navigator_vr_;
   unsigned display_id_ = 0;
   String display_name_;
@@ -185,6 +192,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool pending_vrdisplay_raf_ = false;
   bool pending_vsync_ = false;
   bool in_animation_frame_ = false;
+  bool did_submit_this_frame_ = false;
   bool in_display_activate_ = false;
   bool display_blurred_ = false;
   double timebase_ = -1;

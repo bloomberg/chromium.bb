@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    let display = displays[0];
+
+    let prePresentFrameCount = 0;
+
+    function onFrameStartup() {
+      // Wait until presentation starts, then proceed
+      // with the remaining tests.
+      if (display.isPresenting) {
+        t.step( () => {
+          assert_unreached(err);
+        }, "unexpectedly presenting");
+      } else {
+        // Run a few frames in "magic mirror" mode, then start presentation.
+        if (++prePresentFrameCount == 3) {
+          runWithUserGesture(startPresentation);
+        } else {
+          display.requestAnimationFrame(onFrameStartup);
+        }
+      }
+    }
+
+    function onFrame1() {
+      // case (b): submit frame first, then rAF
+      display.submitFrame();
+      display.requestAnimationFrame(onFrame2);
+    }
+
+    function onFrame2() {
+      // case (c): rAF first, then submit frame
+      display.requestAnimationFrame(onFrame3);
+      display.submitFrame();
+    }
+
+    function onFrame3(time) {
+      // case (d): don't submit a frame.
+      display.requestAnimationFrame(onFrame4);
+    }
+
+    function onFrame4(time) {
+      // If we get here, we're done.
+      t.done();
+    }
+
+    function startPresentation() {
+      display.requestPresent([{ source : webglCanvas }]).then( () => {
+        t.step( () => {
+          // case (a): in requestPresent promise, outside animating context.
+          assert_true(display.isPresenting);
+          display.requestAnimationFrame(onFrame1);
+        }, "Display should be presenting");
+      }, (err) => {
+        t.step( () => {
+          assert_unreached(err);
+        }, "requestPresent rejected");
+      });
+    }
+
+    // Start: case (a) outside animating context.
+    display.requestAnimationFrame(onFrameStartup);
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getVRDisplays rejected");
+    });
+    t.done();
+  });
+}, [fakeDisplays["Pixel"]],
+"multiple requestAnimationFrame requests call the correct callbacks");
+
+</script>

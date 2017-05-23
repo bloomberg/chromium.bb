@@ -1071,7 +1071,9 @@
       name: "WebVRExperimentalRendering",
       // Don't mark this as depends_on: ["WebVR"], we want to be able to turn
       // it on for just origin trial sites where the dependency is unset.
-      status: "experimental",
+      // We also need it for tests since the default mode requires re-entrant
+      // mojo event handling, and the Javascript mocks don't support that.
+      status: "test",
     },
     {
       name: "WebVTTRegions",
