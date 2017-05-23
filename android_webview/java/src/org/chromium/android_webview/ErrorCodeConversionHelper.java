@@ -45,6 +45,9 @@ public abstract class ErrorCodeConversionHelper {
     public static final int ERROR_FILE_NOT_FOUND = WebViewClient.ERROR_FILE_NOT_FOUND;
     // Too many requests during this load
     public static final int ERROR_TOO_MANY_REQUESTS = WebViewClient.ERROR_TOO_MANY_REQUESTS;
+    // Request was identified as a bad url by safebrowsing.
+    // TODO(sgurun) use WebViewClient.ERROR_UNSAFE_RESOURCE once O SDK is released.
+    public static final int ERROR_UNSAFE_RESOURCE = -16;
 
     static int convertErrorCode(int netError) {
         // Note: many NetError.Error constants don't have an obvious mapping.

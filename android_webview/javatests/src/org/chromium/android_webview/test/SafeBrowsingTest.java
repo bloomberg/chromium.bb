@@ -343,7 +343,8 @@ public class SafeBrowsingTest extends AwTestBase {
         int errorCount = errorHelper.getCallCount();
         dontProceedThroughInterstitial();
         errorHelper.waitForCallback(errorCount);
-        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals(
+                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
         assertEquals("Network error is for the malicious page", responseUrl,
                 errorHelper.getRequest().url);
     }
@@ -361,7 +362,8 @@ public class SafeBrowsingTest extends AwTestBase {
         int errorCount = errorHelper.getCallCount();
         dontProceedThroughInterstitial();
         errorHelper.waitForCallback(errorCount);
-        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals(
+                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
         final String subresourceUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         assertEquals(subresourceUrl, errorHelper.getRequest().url);
         assertFalse(errorHelper.getRequest().isMainFrame);
@@ -416,7 +418,8 @@ public class SafeBrowsingTest extends AwTestBase {
         int errorCount = errorHelper.getCallCount();
         loadUrlAsync(mAwContents, responseUrl);
         errorHelper.waitForCallback(errorCount);
-        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals(
+                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
         assertEquals("Network error is for the malicious page", responseUrl,
                 errorHelper.getRequest().url);
     }
@@ -431,7 +434,8 @@ public class SafeBrowsingTest extends AwTestBase {
         int errorCount = errorHelper.getCallCount();
         loadUrlAsync(mAwContents, responseUrl);
         errorHelper.waitForCallback(errorCount);
-        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals(
+                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
         assertEquals("Network error is for the malicious page", responseUrl,
                 errorHelper.getRequest().url);
     }

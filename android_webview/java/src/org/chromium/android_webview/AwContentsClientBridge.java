@@ -319,7 +319,7 @@ public class AwContentsClientBridge {
             String url, boolean isMainFrame, boolean hasUserGesture, String method,
             String[] requestHeaderNames, String[] requestHeaderValues,
             // WebResourceError
-            int errorCode, String description) {
+            int errorCode, String description, boolean safebrowsingHit) {
         AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
         request.url = url;
         request.isMainFrame = isMainFrame;
@@ -337,7 +337,7 @@ public class AwContentsClientBridge {
         boolean isErrorUrl =
                 unreachableWebDataUrl != null && unreachableWebDataUrl.equals(request.url);
 
-        if (!isErrorUrl && error.errorCode != NetError.ERR_ABORTED) {
+        if ((!isErrorUrl && error.errorCode != NetError.ERR_ABORTED) || safebrowsingHit) {
             // NetError.ERR_ABORTED error code is generated for the following reasons:
             // - WebView.stopLoading is called;
             // - the navigation is intercepted by the embedder via shouldOverrideUrlLoading;
@@ -345,7 +345,11 @@ public class AwContentsClientBridge {
             //
             // Android WebView does not notify the embedder of these situations using
             // this error code with the WebViewClient.onReceivedError callback.
-            error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);
+            if (safebrowsingHit) {
+                error.errorCode = ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE;
+            } else {
+                error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);
+            }
             mClient.getCallbackHelper().postOnReceivedError(request, error);
             if (request.isMainFrame) {
                 // Need to call onPageFinished after onReceivedError for backwards compatibility

@@ -95,7 +95,9 @@ class AwContentsClientBridge {
 
   // Called when a resource loading error has occured (e.g. an I/O error,
   // host name lookup failure etc.)
-  void OnReceivedError(const AwWebResourceRequest& request, int error_code);
+  void OnReceivedError(const AwWebResourceRequest& request,
+                       int error_code,
+                       bool safebrowsing_hit);
 
   // Called when a response from the server is received with status code >= 400.
   void OnReceivedHttpError(

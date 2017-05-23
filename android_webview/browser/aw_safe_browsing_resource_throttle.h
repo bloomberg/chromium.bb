@@ -30,6 +30,8 @@ class AwSafeBrowsingResourceThrottle
           database_manager,
       scoped_refptr<AwSafeBrowsingUIManager> ui_manager);
 
+  static const void* kUserDataKey;
+
  private:
   AwSafeBrowsingResourceThrottle(
       net::URLRequest* request,
@@ -41,6 +43,8 @@ class AwSafeBrowsingResourceThrottle
   ~AwSafeBrowsingResourceThrottle() override;
 
   void CancelResourceLoad() override;
+
+  net::URLRequest* request_;
 
   DISALLOW_COPY_AND_ASSIGN(AwSafeBrowsingResourceThrottle);
 };
