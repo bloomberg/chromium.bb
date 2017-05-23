@@ -20,13 +20,11 @@ import android.widget.FrameLayout.LayoutParams;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -230,9 +228,12 @@ public class VrShellImpl
             @Override
             @SuppressLint("ClickableViewAccessibility")
             public boolean onTouch(View v, MotionEvent event) {
-                if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
-                        && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    nativeOnTriggerEvent(mNativeVrShell);
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    nativeOnTriggerEvent(mNativeVrShell, true);
+                    return true;
+                } else if (event.getActionMasked() == MotionEvent.ACTION_UP
+                        || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                    nativeOnTriggerEvent(mNativeVrShell, false);
                     return true;
                 }
                 return false;
@@ -411,25 +412,6 @@ public class VrShellImpl
         mSurface = nativeTakeContentSurface(mNativeVrShell);
         mNativePage.getView().invalidate();
         mRenderToSurfaceLayout.invalidate();
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        // Normally, touch event is dispatched to presentation view only if the phone is paired with
-        // a Cardboard viewer. This is annoying when we just want to quickly verify a Cardboard
-        // behavior. This allows us to trigger cardboard trigger event without pair to a Cardboard.
-        boolean cardboardTriggered = false;
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
-                && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            nativeOnTriggerEvent(mNativeVrShell);
-            cardboardTriggered = true;
-        }
-        boolean parentConsumed = super.dispatchTouchEvent(event);
-        if (mOnDispatchTouchEventForTesting != null) {
-            mOnDispatchTouchEventForTesting.onDispatchTouchEvent(
-                    parentConsumed, cardboardTriggered);
-        }
-        return parentConsumed;
     }
 
     @Override
@@ -627,7 +609,7 @@ public class VrShellImpl
     private native void nativeSwapContents(
             long nativeVrShell, WebContents webContents, MotionEventSynthesizer eventSynthesizer);
     private native void nativeDestroy(long nativeVrShell);
-    private native void nativeOnTriggerEvent(long nativeVrShell);
+    private native void nativeOnTriggerEvent(long nativeVrShell, boolean touched);
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
     private native void nativeOnLoadProgressChanged(long nativeVrShell, double progress);

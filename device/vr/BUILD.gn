@@ -45,6 +45,9 @@ if (enable_vr) {
 
     if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
       sources += [
+        "android/gvr/cardboard_gamepad_data_fetcher.cc",
+        "android/gvr/cardboard_gamepad_data_fetcher.h",
+        "android/gvr/cardboard_gamepad_data_provider.h",
         "android/gvr/gvr_delegate.cc",
         "android/gvr/gvr_delegate.h",
         "android/gvr/gvr_delegate_provider.cc",

@@ -217,6 +217,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
 
+  bool cardboard_ = false;
   bool touch_pending_ = false;
   vr::Quatf controller_quat_;
 

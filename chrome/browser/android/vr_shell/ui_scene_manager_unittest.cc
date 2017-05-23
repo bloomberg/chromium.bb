@@ -43,6 +43,7 @@ class MockBrowserInterface : public VrBrowserInterface {
   MOCK_METHOD1(SetScreenCapturingIndicator, void(bool));
   MOCK_METHOD1(SetAudioCapturingIndicator, void(bool));
   MOCK_METHOD0(ExitCct, void());
+  MOCK_METHOD1(ToggleCardboardGamepad, void(bool));
 
   // Stub this as scoped pointers don't work as mock method parameters.
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent>) {}

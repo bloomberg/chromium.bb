@@ -59,6 +59,7 @@ class VrGLThread : public base::Thread,
   void OnContentPaused(bool enabled) override;
   void NavigateBack() override;
   void ExitCct() override;
+  void ToggleCardboardGamepad(bool enabled) override;
 
   // UiInterface implementation (VrShell calling to the UI).
   void SetFullscreen(bool enabled) override;

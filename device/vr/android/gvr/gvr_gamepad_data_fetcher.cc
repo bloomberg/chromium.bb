@@ -50,7 +50,7 @@ GvrGamepadDataFetcher::GvrGamepadDataFetcher(
     : display_id_(display_id) {
   // Called on UI thread.
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  data_provider->RegisterGamepadDataFetcher(this);
+  data_provider->RegisterGvrGamepadDataFetcher(this);
 }
 
 GvrGamepadDataFetcher::~GvrGamepadDataFetcher() {

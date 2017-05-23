@@ -454,6 +454,11 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
   }
   UMA_HISTOGRAM_ENUMERATION("VRViewerType", static_cast<int>(viewerType),
                             static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
+
+  cardboard_ = (viewerType == ViewerType::CARDBOARD);
+  if (cardboard_ && web_vr_mode_) {
+    browser_->ToggleCardboardGamepad(true);
+  }
 }
 
 void VrShellGl::InitializeRenderer() {
@@ -538,7 +543,8 @@ void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
   controller_->UpdateState(head_direction);
   pointer_start_ = controller_->GetPointerStart();
 
-  browser_->UpdateGamepadData(controller_->GetGamepadData());
+  device::GvrGamepadData controller_data = controller_->GetGamepadData();
+  browser_->UpdateGamepadData(controller_data);
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
@@ -1402,6 +1408,11 @@ void VrShellGl::OnResume() {
 
 void VrShellGl::SetWebVrMode(bool enabled) {
   web_vr_mode_ = enabled;
+
+  if (cardboard_) {
+    browser_->ToggleCardboardGamepad(enabled);
+  }
+
   if (!enabled) {
     submit_client_.reset();
   }

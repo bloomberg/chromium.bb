@@ -43,6 +43,7 @@ class VrBrowserInterface {
   virtual void OnContentPaused(bool enabled) = 0;
   virtual void NavigateBack() = 0;
   virtual void ExitCct() = 0;
+  virtual void ToggleCardboardGamepad(bool enabled) = 0;
 };
 
 }  // namespace vr_shell

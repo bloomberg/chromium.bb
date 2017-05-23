@@ -60,7 +60,7 @@ class GvrGamepadDataProvider {
   // Called by the gamepad data fetcher constructor to register itself
   // for receiving data via SetGamepadData. The fetcher must remain
   // alive while the provider is calling SetGamepadData on it.
-  virtual void RegisterGamepadDataFetcher(GvrGamepadDataFetcher*) = 0;
+  virtual void RegisterGvrGamepadDataFetcher(GvrGamepadDataFetcher*) = 0;
 };
 
 }  // namespace device
