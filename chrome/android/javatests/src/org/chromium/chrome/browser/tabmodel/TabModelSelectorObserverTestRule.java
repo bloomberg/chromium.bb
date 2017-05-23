@@ -4,13 +4,18 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.support.test.InstrumentationRegistry;
+
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -20,17 +25,41 @@ import java.util.Set;
 /**
  * Basis for testing tab model selector observers.
  */
-public class TabModelSelectorObserverTestBase extends NativeLibraryTestBase {
-    protected TabModelSelectorBase mSelector;
-    protected TabModelSelectorTestTabModel mNormalTabModel;
-    protected TabModelSelectorTestTabModel mIncognitoTabModel;
+public class TabModelSelectorObserverTestRule extends NativeLibraryTestRule {
+    private TabModelSelectorBase mSelector;
+    private TabModelSelectorTestTabModel mNormalTabModel;
+    private TabModelSelectorTestTabModel mIncognitoTabModel;
 
-    protected WindowAndroid mWindowAndroid;
+    private WindowAndroid mWindowAndroid;
+
+    public TabModelSelectorBase getSelector() {
+        return mSelector;
+    }
+
+    public TabModelSelectorTestTabModel getNormalTabModel() {
+        return mNormalTabModel;
+    }
+
+    public TabModelSelectorTestTabModel getIncognitoTabModel() {
+        return mIncognitoTabModel;
+    }
+
+    public WindowAndroid getWindowAndroid() {
+        return mWindowAndroid;
+    }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                setUp();
+                base.evaluate();
+            }
+        }, description);
+    }
 
+    private void setUp() throws Exception {
         CommandLine.init(null);
         loadNativeLibraryAndInitBrowserProcess();
 
@@ -43,8 +72,9 @@ public class TabModelSelectorObserverTestBase extends NativeLibraryTestBase {
     }
 
     private void initialize() {
-        mWindowAndroid = new WindowAndroid(
-                getInstrumentation().getTargetContext().getApplicationContext());
+        mWindowAndroid = new WindowAndroid(InstrumentationRegistry.getInstrumentation()
+                                                   .getTargetContext()
+                                                   .getApplicationContext());
 
         mSelector = new TabModelSelectorBase() {
             @Override
@@ -55,11 +85,11 @@ public class TabModelSelectorObserverTestBase extends NativeLibraryTestBase {
         };
 
         TabModelOrderController orderController = new TabModelOrderController(mSelector);
-        TabContentManager tabContentManager =
-                new TabContentManager(getInstrumentation().getTargetContext(), null, false);
+        TabContentManager tabContentManager = new TabContentManager(
+                InstrumentationRegistry.getInstrumentation().getTargetContext(), null, false);
         TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(0, false);
-        TabPersistentStore tabPersistentStore = new TabPersistentStore(persistencePolicy, mSelector,
-                null, null);
+        TabPersistentStore tabPersistentStore =
+                new TabPersistentStore(persistencePolicy, mSelector, null, null);
 
         TabModelDelegate delegate = new TabModelDelegate() {
             @Override
@@ -68,8 +98,7 @@ public class TabModelSelectorObserverTestBase extends NativeLibraryTestBase {
             }
 
             @Override
-            public void requestToShowTab(Tab tab, TabSelectionType type) {
-            }
+            public void requestToShowTab(Tab tab, TabSelectionType type) {}
 
             @Override
             public boolean isSessionRestoreInProgress() {
@@ -111,10 +140,9 @@ public class TabModelSelectorObserverTestBase extends NativeLibraryTestBase {
     public static class TabModelSelectorTestTabModel extends TabModelImpl {
         private Set<TabModelObserver> mObserverSet = new HashSet<>();
 
-        public TabModelSelectorTestTabModel(
-                boolean incognito, TabModelOrderController orderController,
-                TabContentManager tabContentManager, TabPersistentStore tabPersistentStore,
-                TabModelDelegate modelDelegate) {
+        public TabModelSelectorTestTabModel(boolean incognito,
+                TabModelOrderController orderController, TabContentManager tabContentManager,
+                TabPersistentStore tabPersistentStore, TabModelDelegate modelDelegate) {
             super(incognito, false, null, null, null, orderController, tabContentManager,
                     tabPersistentStore, modelDelegate, false);
         }
