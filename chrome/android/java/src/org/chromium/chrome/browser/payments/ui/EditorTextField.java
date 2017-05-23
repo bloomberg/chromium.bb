@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -91,7 +92,6 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
 
         if (fieldModel.getValueIconGenerator() != null) {
             mValueIcon = (ImageView) mIconsLayer.findViewById(R.id.value_icon);
-            mValueIcon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
             mValueIcon.setVisibility(VISIBLE);
         }
 
@@ -270,7 +270,7 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         if (mValueIconId == 0) {
             mValueIcon.setVisibility(GONE);
         } else {
-            mValueIcon.setImageResource(mValueIconId);
+            mValueIcon.setImageDrawable(AppCompatResources.getDrawable(getContext(), mValueIconId));
             mValueIcon.setVisibility(VISIBLE);
         }
     }

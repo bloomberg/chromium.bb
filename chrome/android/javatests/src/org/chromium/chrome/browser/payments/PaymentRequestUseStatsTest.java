@@ -53,7 +53,7 @@ public class PaymentRequestUseStatsTest implements MainActivityStartCallback {
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                 "US", "555-555-5555", "", "en-US"));
         mCreditCardId = mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true,
-                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                 mBillingAddressId, "" /* serverId */));
         // Set specific use stats for the profile and credit card.
         mHelper.setProfileUseStatsForTesting(mBillingAddressId, 20, 5000);

@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.JsonWriter;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -66,8 +66,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         if (context == null) return;
 
         if (card.getIssuerIconDrawableId() != 0) {
-            updateDrawableIcon(ApiCompatibilityUtils.getDrawable(
-                    context.getResources(), card.getIssuerIconDrawableId()));
+            updateDrawableIcon(
+                    AppCompatResources.getDrawable(context, card.getIssuerIconDrawableId()));
         }
 
         checkAndUpateCardCompleteness(context);
@@ -261,8 +261,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         if (context == null) return;
 
         updateIdentifierLabelsAndIcon(card.getGUID(), card.getObfuscatedNumber(), card.getName(),
-                null, ApiCompatibilityUtils.getDrawable(
-                        context.getResources(), card.getIssuerIconDrawableId()));
+                null, AppCompatResources.getDrawable(context, card.getIssuerIconDrawableId()));
         checkAndUpateCardCompleteness(context);
         assert mIsComplete;
         assert mHasValidNumberAndName;

@@ -49,7 +49,7 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
         // canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
                 "" /* nameOnCard */, "4111111111111111", "1111", "12", "2050", "visa",
-                R.drawable.pr_visa, "" /* billingAddressId */, "" /* serverId */));
+                R.drawable.visa_card, "" /* billingAddressId */, "" /* serverId */));
     }
 
     @Test

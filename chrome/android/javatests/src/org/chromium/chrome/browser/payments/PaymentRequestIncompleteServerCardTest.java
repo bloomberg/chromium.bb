@@ -49,7 +49,7 @@ public class PaymentRequestIncompleteServerCardTest implements MainActivityStart
                 "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
         helper.addServerCreditCard(new CreditCard("", "https://example.com", false /* isLocal */,
                 true /* isCached */, "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa",
-                R.drawable.pr_visa, "" /* billing address */, "" /* serverId */));
+                R.drawable.visa_card, "" /* billing address */, "" /* serverId */));
     }
 
     /** Click [PAY] and dismiss the card unmask dialog. */
