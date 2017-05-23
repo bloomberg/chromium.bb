@@ -54,7 +54,7 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
 
   // Only quits when Quit() is called.
   void Run() {
-    DCHECK(RunsTasksOnCurrentThread());
+    DCHECK(RunsTasksInCurrentSequence());
     quit_called_ = false;
 
     while (true) {
@@ -77,13 +77,13 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
   }
 
   void Quit() {
-    DCHECK(RunsTasksOnCurrentThread());
+    DCHECK(RunsTasksInCurrentSequence());
     quit_called_ = true;
   }
 
   // Waits until one task is ready and runs it.
   void RunOneTask() {
-    DCHECK(RunsTasksOnCurrentThread());
+    DCHECK(RunsTasksInCurrentSequence());
 
     while (true) {
       {

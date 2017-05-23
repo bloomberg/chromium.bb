@@ -52,7 +52,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
       // We raise an error to signal the calling application that an error
       // condition occurred. Without this the calling application would have no
       // way of knowing it should stop waiting for a response.
-      if (task_runner_->RunsTasksOnCurrentThread()) {
+      if (task_runner_->RunsTasksInCurrentSequence()) {
         // Please note that even if this code is run from a different task
         // runner on the same thread as |task_runner_|, it is okay to directly
         // call InterfaceEndpointClient::RaiseError(), because it will raise
@@ -70,7 +70,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
 
   // MessageReceiver implementation:
   bool Accept(Message* message) override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     accept_was_invoked_ = true;
     DCHECK(message->has_flag(Message::kFlagIsResponse));
 
@@ -84,12 +84,12 @@ class ResponderThunk : public MessageReceiverWithStatus {
 
   // MessageReceiverWithStatus implementation:
   bool IsValid() override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     return endpoint_client_ && !endpoint_client_->encountered_error();
   }
 
   void DCheckInvalid(const std::string& message) override {
-    if (task_runner_->RunsTasksOnCurrentThread()) {
+    if (task_runner_->RunsTasksInCurrentSequence()) {
       DCheckIfInvalid(endpoint_client_, message);
     } else {
       task_runner_->PostTask(

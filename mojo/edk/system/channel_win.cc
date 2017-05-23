@@ -118,7 +118,7 @@ class ChannelWin : public Channel,
   }
 
   void LeakHandle() override {
-    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     leak_handle_ = true;
   }
 
@@ -207,7 +207,7 @@ class ChannelWin : public Channel,
 
   // base::MessageLoop::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
-    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)
       ShutDownOnIOThread();
   }

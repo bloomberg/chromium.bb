@@ -150,7 +150,7 @@ NetworkingPrivateLinux::~NetworkingPrivateLinux() {
 }
 
 void NetworkingPrivateLinux::AssertOnDBusThread() {
-  DCHECK(dbus_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(dbus_task_runner_->RunsTasksInCurrentSequence());
 }
 
 void NetworkingPrivateLinux::Initialize() {

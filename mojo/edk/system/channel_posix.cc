@@ -103,7 +103,7 @@ class ChannelPosix : public Channel,
   }
 
   void Start() override {
-    if (io_task_runner_->RunsTasksOnCurrentThread()) {
+    if (io_task_runner_->RunsTasksInCurrentSequence()) {
       StartOnIOThread();
     } else {
       io_task_runner_->PostTask(
@@ -139,7 +139,7 @@ class ChannelPosix : public Channel,
   }
 
   void LeakHandle() override {
-    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     leak_handle_ = true;
   }
 
@@ -239,7 +239,7 @@ class ChannelPosix : public Channel,
       return;
     if (!write_watcher_)
       return;
-    if (io_task_runner_->RunsTasksOnCurrentThread()) {
+    if (io_task_runner_->RunsTasksInCurrentSequence()) {
       pending_write_ = true;
       base::MessageLoopForIO::current()->WatchFileDescriptor(
           handle_.get().handle, false /* persistent */,
@@ -268,7 +268,7 @@ class ChannelPosix : public Channel,
 
   // base::MessageLoop::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
-    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)
       ShutDownOnIOThread();
   }

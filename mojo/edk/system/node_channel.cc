@@ -222,7 +222,7 @@ void NodeChannel::NotifyBadMessage(const std::string& error) {
 }
 
 void NodeChannel::SetRemoteProcessHandle(base::ProcessHandle process_handle) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::AutoLock lock(remote_process_handle_lock_);
   DCHECK_EQ(base::kNullProcessHandle, remote_process_handle_);
   CHECK_NE(remote_process_handle_, base::GetCurrentProcessHandle());
@@ -259,7 +259,7 @@ base::ProcessHandle NodeChannel::CopyRemoteProcessHandle() {
 }
 
 void NodeChannel::SetRemoteNodeName(const ports::NodeName& name) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   remote_node_name_ = name;
 }
 
@@ -469,7 +469,7 @@ NodeChannel::~NodeChannel() {
 void NodeChannel::OnChannelMessage(const void* payload,
                                    size_t payload_size,
                                    ScopedPlatformHandleVectorPtr handles) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
 
@@ -761,7 +761,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
 }
 
 void NodeChannel::OnChannelError() {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
 
