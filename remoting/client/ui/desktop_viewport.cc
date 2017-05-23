@@ -69,6 +69,16 @@ ViewMatrix::Point DesktopViewport::GetViewportCenter() const {
       {surface_size_.x / 2.f, surface_size_.y / 2.f});
 }
 
+bool DesktopViewport::IsPointWithinDesktopBounds(
+    const ViewMatrix::Point& point) const {
+  if (!IsViewportReady()) {
+    LOG(WARNING) << "Viewport is not ready";
+    return false;
+  }
+  return point.x >= 0 && point.y >= 0 && point.x < desktop_size_.x &&
+         point.y < desktop_size_.y;
+}
+
 ViewMatrix::Point DesktopViewport::ConstrainPointToDesktop(
     const ViewMatrix::Point& point) const {
   if (!IsViewportReady()) {

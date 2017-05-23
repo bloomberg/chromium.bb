@@ -47,7 +47,11 @@ class InputStrategy {
   // Called when a touch input (which will end up injecting a mouse event at
   // certain position in the host) is done at |touch_point|.
   // The implementation should move the cursor to proper position.
-  virtual void TrackTouchInput(const ViewMatrix::Point& touch_point,
+  //
+  // Returns true if |touch_point| is a valid input, false otherwise. If the
+  // input is not valid, the implementation should not change its cursor
+  // position.
+  virtual bool TrackTouchInput(const ViewMatrix::Point& touch_point,
                                const DesktopViewport& viewport) = 0;
 
   // Returns the current cursor position.

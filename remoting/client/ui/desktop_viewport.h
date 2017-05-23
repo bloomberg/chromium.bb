@@ -57,6 +57,9 @@ class DesktopViewport {
   // Returns the current center of the viewport on the desktop's coordinate.
   ViewMatrix::Point GetViewportCenter() const;
 
+  // Returns true if |point| is within the bounds of the desktop.
+  bool IsPointWithinDesktopBounds(const ViewMatrix::Point& point) const;
+
   // Constrains |point| within the bounds of the desktop. Do nothing if the
   // desktop size is not set.
   ViewMatrix::Point ConstrainPointToDesktop(

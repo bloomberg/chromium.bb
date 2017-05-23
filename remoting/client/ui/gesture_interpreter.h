@@ -91,10 +91,6 @@ class GestureInterpreter {
   void SetGestureInProgress(InputStrategy::Gesture gesture,
                             bool is_in_progress);
 
-  // Tracks the touch point and gets back the cursor position from the input
-  // strategy.
-  ViewMatrix::Point TrackAndGetPosition(float touch_x, float touch_y);
-
   // Starts the given feedback at (cursor_x, cursor_y) if the feedback radius
   // is non-zero.
   void StartInputFeedback(float cursor_x,

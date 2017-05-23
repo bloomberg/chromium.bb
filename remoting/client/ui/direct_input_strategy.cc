@@ -41,10 +41,15 @@ bool DirectInputStrategy::HandlePan(const ViewMatrix::Vector2D& translation,
   return false;
 }
 
-void DirectInputStrategy::TrackTouchInput(const ViewMatrix::Point& touch_point,
+bool DirectInputStrategy::TrackTouchInput(const ViewMatrix::Point& touch_point,
                                           const DesktopViewport& viewport) {
-  cursor_position_ =
+  ViewMatrix::Point new_position =
       viewport.GetTransformation().Invert().MapPoint(touch_point);
+  if (!viewport.IsPointWithinDesktopBounds(new_position)) {
+    return false;
+  }
+  cursor_position_ = new_position;
+  return true;
 }
 
 ViewMatrix::Point DirectInputStrategy::GetCursorPosition() const {

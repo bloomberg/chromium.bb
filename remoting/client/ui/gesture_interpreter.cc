@@ -76,7 +76,10 @@ void GestureInterpreter::Pan(float translation_x, float translation_y) {
 void GestureInterpreter::Tap(float x, float y) {
   AbortAnimations();
 
-  ViewMatrix::Point cursor_position = TrackAndGetPosition(x, y);
+  if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
+    return;
+  }
+  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
   StartInputFeedback(cursor_position.x, cursor_position.y,
                      InputStrategy::TAP_FEEDBACK);
   InjectMouseClick(cursor_position.x, cursor_position.y,
@@ -86,7 +89,10 @@ void GestureInterpreter::Tap(float x, float y) {
 void GestureInterpreter::TwoFingerTap(float x, float y) {
   AbortAnimations();
 
-  ViewMatrix::Point cursor_position = TrackAndGetPosition(x, y);
+  if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
+    return;
+  }
+  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
   InjectMouseClick(cursor_position.x, cursor_position.y,
                    protocol::MouseEvent_MouseButton_BUTTON_RIGHT);
 }
@@ -94,7 +100,10 @@ void GestureInterpreter::TwoFingerTap(float x, float y) {
 void GestureInterpreter::Drag(float x, float y, GestureState state) {
   AbortAnimations();
 
-  ViewMatrix::Point cursor_position = TrackAndGetPosition(x, y);
+  if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
+    return;
+  }
+  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
 
   if (state == GESTURE_BEGAN) {
     StartInputFeedback(cursor_position.x, cursor_position.y,
@@ -117,7 +126,10 @@ void GestureInterpreter::OneFingerFling(float velocity_x, float velocity_y) {
 void GestureInterpreter::Scroll(float x, float y, float dx, float dy) {
   AbortAnimations();
 
-  ViewMatrix::Point cursor_position = TrackAndGetPosition(x, y);
+  if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
+    return;
+  }
+  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
 
   // Inject the cursor position to the host so that scrolling can happen on the
   // right place.
@@ -195,12 +207,6 @@ void GestureInterpreter::SetGestureInProgress(InputStrategy::Gesture gesture,
     return;
   }
   gesture_in_progress_ = gesture;
-}
-
-ViewMatrix::Point GestureInterpreter::TrackAndGetPosition(float touch_x,
-                                                          float touch_y) {
-  input_strategy_->TrackTouchInput({touch_x, touch_y}, viewport_);
-  return input_strategy_->GetCursorPosition();
 }
 
 void GestureInterpreter::StartInputFeedback(
