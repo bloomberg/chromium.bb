@@ -119,9 +119,12 @@ float RenderWidgetHostViewBase::GetBottomControlsHeight() const {
 
 void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
                                                 size_t offset,
-                                                const gfx::Range& range) {
-  if (GetTextInputManager())
-    GetTextInputManager()->SelectionChanged(this, text, offset, range);
+                                                const gfx::Range& range,
+                                                bool user_initiated) {
+  if (GetTextInputManager()) {
+    GetTextInputManager()->SelectionChanged(this, text, offset, range,
+                                            user_initiated);
+  }
 }
 
 gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {

@@ -24,6 +24,7 @@
 #include "content/public/test/text_input_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/composition_underline.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
@@ -140,24 +141,6 @@ class TextInputManagerTypeObserver : public TextInputManagerObserverBase {
   const ui::TextInputType expected_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputManagerTypeObserver);
-};
-
-// This class observes TextInputManager for the first change in TextInputState.
-class TextInputManagerChangeObserver : public TextInputManagerObserverBase {
- public:
-  explicit TextInputManagerChangeObserver(content::WebContents* web_contents)
-      : TextInputManagerObserverBase(web_contents) {
-    tester()->SetUpdateTextInputStateCalledCallback(base::Bind(
-        &TextInputManagerChangeObserver::VerifyChange, base::Unretained(this)));
-  }
-
- private:
-  void VerifyChange() {
-    if (tester()->IsTextInputStateChanged())
-      OnSuccess();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TextInputManagerChangeObserver);
 };
 
 // This class observes |TextInputState.type| for a specific RWHV.
@@ -279,20 +262,43 @@ class TextSelectionObserver : public TextInputManagerObserverBase {
         &TextSelectionObserver::VerifyChange, base::Unretained(this)));
   }
 
-  void WaitForSelectedText(const std::string& text) {
-    selected_text_ = text;
-    Wait();
+  void WaitForSelectedText(const std::string& text,
+                           bool user_initiated = true) {
+    expected_text_ = text;
+    expected_user_initiated_ = user_initiated;
+    if (last_selected_text_.has_value() &&
+        last_selected_text_ == expected_text_ &&
+        last_user_initiated_ == expected_user_initiated_) {
+      OnSuccess();
+    } else {
+      Wait();
+    }
   }
 
  private:
   void VerifyChange() {
-    if (base::UTF16ToUTF8(tester()->GetUpdatedView()->GetSelectedText()) ==
-        selected_text_) {
+    last_selected_text_ =
+        base::UTF16ToUTF8(tester()->GetUpdatedView()->GetSelectedText());
+    EXPECT_TRUE(tester()->GetTextSelectionUserInitiatedForView(
+        tester()->GetUpdatedView(), &last_user_initiated_));
+
+    // Check whether the expected values are already set.
+    if (!expected_text_.has_value())
+      return;
+
+    if (last_selected_text_ == expected_text_ &&
+        last_user_initiated_ == expected_user_initiated_) {
       OnSuccess();
     }
   }
 
-  std::string selected_text_;
+  // These optional properties are also used to verify that the last and
+  // expected properties are set.
+  base::Optional<std::string> last_selected_text_;
+  base::Optional<std::string> expected_text_;
+
+  bool last_user_initiated_;
+  bool expected_user_initiated_;
 
   DISALLOW_COPY_AND_ASSIGN(TextSelectionObserver);
 };
@@ -977,6 +983,124 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     EXPECT_TRUE(active_contents()->IsFocusedElementEditable());
     active_contents()->ClearFocusedElement();
     EXPECT_FALSE(active_contents()->IsFocusedElementEditable());
+  }
+}
+
+// The following tests verify that the TextInputManager notifies about a
+// text selection change event, the corresponding |user_initiated| property
+// of TextSelection is valid, and the selection clipboard is updated
+// according to the source of the event.
+// See: https://crbug.com/671986
+
+// Test text selection change event for non-user initiated cases
+// (eg. JavaScript). Non-user initiated events should not update the selection
+// clipboard.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       NonUserInitiatedTextSelection) {
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ASSERT_TRUE(clipboard);
+  clipboard->Clear(ui::CLIPBOARD_TYPE_SELECTION);
+#endif
+
+  CreateIframePage("a(b, c)");
+  std::vector<std::string> values{"node_a", "node_b", "node_c"};
+  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
+                                                GetFrame(IndexVector{0}),
+                                                GetFrame(IndexVector{1})};
+
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", values[i], true);
+
+  // Test text selection from JavaScript across frames (non-user initiated).
+  for (size_t i = 0; i < frames.size(); ++i) {
+    // Trigger text selection.
+    TextSelectionObserver trigger_observer(active_contents());
+    EXPECT_TRUE(
+        ExecuteScript(frames[i], "document.querySelector('input').select();"));
+    trigger_observer.WaitForSelectedText(values[i], false);
+
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // Non-user initiated text selection should not update the selection
+    // clipboard. See: https://crbug.com/12392
+    base::string16 result_text;
+    clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &result_text);
+    EXPECT_TRUE(result_text.empty());
+#endif
+
+    // Clear text selection.
+    TextSelectionObserver clear_observer(active_contents());
+    EXPECT_TRUE(ExecuteScript(frames[i], "document.getSelection().empty();"));
+    clear_observer.WaitForSelectedText("", false);
+  }
+}
+
+// Test text selection change event for user initiated cases (eg. key press)
+// User initiated events should update the selection clipboard where it is
+// supported.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       UserInitiatedTextSelection) {
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ASSERT_TRUE(clipboard);
+  clipboard->Clear(ui::CLIPBOARD_TYPE_SELECTION);
+#endif
+
+  CreateIframePage("a(b, c)");
+  std::vector<std::string> values{"node_a", "node_b", "node_c"};
+  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
+                                                GetFrame(IndexVector{0}),
+                                                GetFrame(IndexVector{1})};
+
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", values[i], true);
+
+  // Test text selection by user input across frames (user initiated).
+  for (size_t i = 0; i < frames.size(); ++i) {
+    // Focus on input element.
+    std::string result;
+    std::string script =
+        "function getInputField() {"
+        "  return document.querySelector('input');"
+        "}"
+        "function onInputFocus(e) {"
+        "  domAutomationController.setAutomationId(0);"
+        "  domAutomationController.send(getInputField().value);"
+        "}"
+        "getInputField().addEventListener('focus', onInputFocus);";
+    EXPECT_TRUE(ExecuteScript(frames[i], script));
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        frames[i], "window.focus(); document.querySelector('input').focus();",
+        &result));
+    EXPECT_EQ(values[i], result);
+    EXPECT_EQ(frames[i], active_contents()->GetFocusedFrame());
+
+    // Press ctrl+a to select text in the input field.
+    TextSelectionObserver trigger_observer(active_contents());
+#if !defined(OS_MACOSX)
+    SimulateKeyPress(active_contents(), ui::DomKey::FromCharacter('A'),
+                     ui::DomCode::US_A, ui::VKEY_A, true, false, false, false);
+#else
+    // On macOS the select all shortcut (Cmd+A) is handled by the browser via
+    // keyboard accelerator. Thus we can't simulate key press on WebContents.
+    // As a workaround, call the SelectAll directly as the shortcut would do.
+    active_contents()->SelectAll();
+#endif
+    trigger_observer.WaitForSelectedText(values[i], true);
+
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // User initiated text selection should update the selection clipboard.
+    base::string16 result_text;
+    clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &result_text);
+    EXPECT_EQ(base::ASCIIToUTF16(values[i]), result_text);
+#endif
+
+    // Press down key to clear text selection.
+    TextSelectionObserver clear_observer(active_contents());
+    SimulateKeyPress(active_contents(), ui::DomKey::ARROW_DOWN,
+                     ui::DomCode::ARROW_DOWN, ui::VKEY_DOWN, false, false,
+                     false, false);
+    clear_observer.WaitForSelectedText("", true);
   }
 }
 
