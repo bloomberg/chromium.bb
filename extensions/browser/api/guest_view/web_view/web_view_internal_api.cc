@@ -442,7 +442,7 @@ const GURL& WebViewInternalExecuteCodeFunction::GetWebViewSrc() const {
 
 bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
     const std::string& file_src,
-    const WebUIURLFetcher::WebUILoadFileCallback& callback) {
+    WebUIURLFetcher::WebUILoadFileCallback callback) {
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return false;
   WebViewGuest* guest = WebViewGuest::From(
@@ -453,9 +453,9 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
   GURL owner_base_url(guest->GetOwnerSiteURL().GetWithEmptyPath());
   GURL file_url(owner_base_url.Resolve(file_src));
 
-  url_fetcher_.reset(new WebUIURLFetcher(
+  url_fetcher_ = base::MakeUnique<WebUIURLFetcher>(
       this->browser_context(), render_frame_host()->GetProcess()->GetID(),
-      render_frame_host()->GetRoutingID(), file_url, callback));
+      render_frame_host()->GetRoutingID(), file_url, std::move(callback));
   url_fetcher_->Start();
   return true;
 }
