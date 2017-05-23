@@ -26,9 +26,9 @@ struct UpdateActiveSetupVersionWorkItemTestCase {
   // UpdateActiveSetupVersionWorkItem. No value will be set if this null.
   const wchar_t* initial_value;
 
-  // Whether to ask the UpdateActiveSetupVersionWorkItem to bump the OS_UPGRADES
-  // component of the Active Setup version.
-  bool bump_os_upgrades_component;
+  // Whether to ask the UpdateActiveSetupVersionWorkItem to bump the
+  // SELECTIVE_TRIGGER component of the Active Setup version.
+  bool bump_selective_trigger;
 
   // The expected value after executing the UpdateActiveSetupVersionWorkItem.
   const wchar_t* expected_result;
@@ -36,28 +36,29 @@ struct UpdateActiveSetupVersionWorkItemTestCase {
     // Initial install.
     {nullptr, false, L"43,0,0,0"},
     // No-op update.
-    {L"43.0.0.0", false, L"43,0,0,0"},
+    {L"43,0,0,0", false, L"43,0,0,0"},
     // Update only major component.
-    {L"24,1,2,3", false, L"43,1,2,3"},
+    {L"24,1,2,3", false, L"43,0,0,0"},
     // Reset from bogus value.
     {L"zzz", false, L"43,0,0,0"},
     // Reset from invalid version (too few components).
     {L"1,2", false, L"43,0,0,0"},
     // Reset from invalid version (too many components).
-    {L"43,1,2,3,10", false, L"43,0,0,0"},
+    {L"43,1,2,3,10", false, L"43,1,2,3"},
     // Reset from empty string.
     {L"", false, L"43,0,0,0"},
 
-    // Same tests with an OS_UPGRADES component bump.
-    {nullptr, true, L"43,0,1,0"},
-    {L"43.0.0.0", true, L"43,0,1,0"},
-    {L"24,1,2,3", true, L"43,1,3,3"},
-    {L"zzz", true, L"43,0,1,0"},
-    {L"1,2", true, L"43,0,1,0"},
-    {L"43,1,2,3,10", true, L"43,0,1,0"},
-    {L"", true, L"43,0,1,0"},
-    // Bumping a negative OS upgrade component should result in it being
-    // reset and subsequently bumped to 1 as usual.
+    // Same tests with a SELECTIVE_TRIGGER component bump.
+    {nullptr, true, L"43,0,0,0"},
+    {L"43,0,0,0", true, L"43,0,1,0"},
+    {L"43,0,46,0", true, L"43,0,47,0"},
+    {L"24,1,2,3", true, L"43,0,0,0"},
+    {L"zzz", true, L"43,0,0,0"},
+    {L"1,2", true, L"43,0,0,0"},
+    {L"43,1,2,3,10", true, L"43,1,3,3"},
+    {L"", true, L"43,0,0,0"},
+    // Bumping a negative selective trigger component should result in it being
+    // reset and subsequently bumped to 1.
     {L"43,11,-123,33", true, L"43,11,1,33"},
 };
 
@@ -67,8 +68,7 @@ void PrintTo(const UpdateActiveSetupVersionWorkItemTestCase& test_case,
              ::std::ostream* os) {
   *os << "Initial value: "
       << (test_case.initial_value ? test_case.initial_value : L"(empty)")
-      << ", bump_os_upgrades_component: "
-      << test_case.bump_os_upgrades_component
+      << ", bump_selective_trigger: " << test_case.bump_selective_trigger
       << ", expected result: " << test_case.expected_result;
 }
 
@@ -95,7 +95,7 @@ TEST_P(UpdateActiveSetupVersionWorkItemTest, Execute) {
   //   1) Maybe set an initial Active Setup version in the registry according to
   //      |test_case.initial_value|.
   //   2) Declare the work to be done by the UpdateActiveSetupVersionWorkItem
-  //      based on |test_case.bump_os_upgrades_component|.
+  //      based on |test_case.bump_selective_trigger|.
   //   3) Unconditionally execute the Active Setup work items.
   //   4) Verify that the updated Active Setup version is as expected by
   //      |test_case.expected_result|.
@@ -108,10 +108,10 @@ TEST_P(UpdateActiveSetupVersionWorkItemTest, Execute) {
             test_key.Open(kActiveSetupRoot, kActiveSetupPath, KEY_READ));
 
   UpdateActiveSetupVersionWorkItem active_setup_work_item(
-      kActiveSetupPath, test_case.bump_os_upgrades_component
-                            ? UpdateActiveSetupVersionWorkItem::
-                                  UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT
-                            : UpdateActiveSetupVersionWorkItem::UPDATE);
+      kActiveSetupPath,
+      test_case.bump_selective_trigger
+          ? UpdateActiveSetupVersionWorkItem::UPDATE_AND_BUMP_SELECTIVE_TRIGGER
+          : UpdateActiveSetupVersionWorkItem::UPDATE);
 
   // Create the key and set the |initial_value| *after* the WorkItem to confirm
   // that all of the work is done when executing the item, not when creating it.

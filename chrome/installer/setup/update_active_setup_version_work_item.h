@@ -11,8 +11,8 @@
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem that updates (or installs if not present) the Active Setup
-// "Version" field in the registry. Optionally bumping the OS_UPGRADES component
-// on demand. This WorkItem is only viable on machine-wide installs.
+// "Version" field in the registry. Optionally bumping the SELECTIVE_TRIGGER
+// component on demand. This WorkItem is only viable on machine-wide installs.
 class UpdateActiveSetupVersionWorkItem : public WorkItem {
  public:
   // The components of the Active Setup Version entry, in order.
@@ -21,8 +21,9 @@ class UpdateActiveSetupVersionWorkItem : public WorkItem {
     MAJOR,
     // Unused component, always 0 for now.
     UNUSED1,
-    // Number of OS upgrades handled since original install.
-    OS_UPGRADES,
+    // A component used to selectively trigger Active Setup based on local
+    // factors such as an OS upgrade.
+    SELECTIVE_TRIGGER,
     // Unused component, always 0 for now.
     UNUSED2,
   };
@@ -32,9 +33,9 @@ class UpdateActiveSetupVersionWorkItem : public WorkItem {
     // Update (or install if not present) the Active Setup "Version" in the
     // registry.
     UPDATE,
-    // Also bump the OS_UPGRADES component on top of updating the version
+    // Also bump the SELECTIVE_TRIGGER component on top of updating the version
     // (will default to 1 if the version was absent or invalid).
-    UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT,
+    UPDATE_AND_BUMP_SELECTIVE_TRIGGER,
   };
 
   // Constructs an UpdateActiveSetupVersionWorkItem that will perform

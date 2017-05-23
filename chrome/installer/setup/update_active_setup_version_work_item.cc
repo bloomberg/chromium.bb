@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -20,7 +21,16 @@ namespace {
 // done by setup.exe --configure-user-settings on user login by way of Active
 // Setup.  Increase this value if the work done when handling Active Setup
 // should be executed again for all existing users.
-const base::char16 kActiveSetupMajorVersion[] = L"43";
+#define ACTIVE_SETUP_MAJOR_VERSION 43
+
+#define AsChar16String2(m) L#m
+#define AsChar16String(m) AsChar16String2(m)
+
+constexpr base::char16 kActiveSetupMajorVersion[] =
+    AsChar16String(ACTIVE_SETUP_MAJOR_VERSION);
+
+#undef AsString
+#undef AsString2
 
 }  // namespace
 
@@ -54,21 +64,34 @@ base::string16 UpdateActiveSetupVersionWorkItem::GetUpdatedActiveSetupVersion(
       existing_version, L",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // If |existing_version| was empty or otherwise corrupted, turn it into a
-  // valid one.
+  // valid one by extending with up to four zeros or truncating to only four
+  // components.
   if (version_components.size() != 4U)
-    version_components.assign(4U, L"0");
+    version_components.resize(4U, L"0");
+
+  uint32_t previous_major;
+  if (!base::StringToUint(version_components[MAJOR], &previous_major))
+    previous_major = 0;
 
   // Unconditionally update the major version.
   version_components[MAJOR] = kActiveSetupMajorVersion;
 
-  if (operation_ == UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT) {
+  // Clear the other components if the major version increased. No extra work is
+  // needed for UPDATE_AND_BUMP_SELECTIVE_TRIGGER in this case since all
+  // users will re-run active setup.
+  if (ACTIVE_SETUP_MAJOR_VERSION > previous_major) {
+    std::fill_n(++version_components.begin(), 3, base::string16(L"0"));
+  } else if (operation_ == UPDATE_AND_BUMP_SELECTIVE_TRIGGER) {
     uint32_t previous_value;
-    if (!base::StringToUint(version_components[OS_UPGRADES], &previous_value)) {
-      LOG(WARNING) << "Couldn't process previous OS_UPGRADES Active Setup "
-                      "version component: " << version_components[OS_UPGRADES];
+    if (!base::StringToUint(version_components[SELECTIVE_TRIGGER],
+                            &previous_value)) {
+      LOG(WARNING) << "Couldn't process previous SELECTIVE_TRIGGER Active "
+                      "Setup version component: "
+                   << version_components[SELECTIVE_TRIGGER];
       previous_value = 0;
     }
-    version_components[OS_UPGRADES] = base::UintToString16(previous_value + 1);
+    version_components[SELECTIVE_TRIGGER] =
+        base::UintToString16(previous_value + 1);
   }
 
   return base::JoinString(version_components, L",");

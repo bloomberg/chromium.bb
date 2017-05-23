@@ -651,8 +651,7 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
   } else {
     UpdateActiveSetupVersionWorkItem active_setup_work_item(
         install_static::GetActiveSetupPath(),
-        UpdateActiveSetupVersionWorkItem::
-            UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT);
+        UpdateActiveSetupVersionWorkItem::UPDATE_AND_BUMP_SELECTIVE_TRIGGER);
     if (active_setup_work_item.Do())
       VLOG(1) << "Bumped Active Setup Version on-os-upgrade.";
     else
