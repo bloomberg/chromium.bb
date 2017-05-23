@@ -2981,7 +2981,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     refspec_opts.append('notify=NONE')
 
     if options.private:
-      refspec_opts.append('draft')
+      refspec_opts.append('private')
 
     if options.topic:
       # Documentation on Gerrit topics is here:
