@@ -74,7 +74,7 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
 
 static void build_nmv_component_cost_table(int *mvcost,
                                            const nmv_component *const mvcomp,
-                                           int usehp) {
+                                           MvSubpelPrecision precision) {
   int i, v;
   int sign_cost[2], class_cost[MV_CLASSES], class0_cost[CLASS0_SIZE];
   int bits_cost[MV_OFFSET_BITS][2];
@@ -94,7 +94,7 @@ static void build_nmv_component_cost_table(int *mvcost,
     av1_cost_tokens(class0_fp_cost[i], mvcomp->class0_fp[i], av1_mv_fp_tree);
   av1_cost_tokens(fp_cost, mvcomp->fp, av1_mv_fp_tree);
 
-  if (usehp) {
+  if (precision > MV_SUBPEL_LOW_PRECISION) {
     class0_hp_cost[0] = av1_cost_zero(mvcomp->class0_hp);
     class0_hp_cost[1] = av1_cost_one(mvcomp->class0_hp);
     hp_cost[0] = av1_cost_zero(mvcomp->hp);
@@ -115,16 +115,21 @@ static void build_nmv_component_cost_table(int *mvcost,
       const int b = c + CLASS0_BITS - 1; /* number of bits */
       for (i = 0; i < b; ++i) cost += bits_cost[i][((d >> i) & 1)];
     }
-    if (c == MV_CLASS_0) {
-      cost += class0_fp_cost[d][f];
-    } else {
-      cost += fp_cost[f];
-    }
-    if (usehp) {
+#if CONFIG_INTRABC
+    if (precision > MV_SUBPEL_NONE)
+#endif  // CONFIG_INTRABC
+    {
       if (c == MV_CLASS_0) {
-        cost += class0_hp_cost[e];
+        cost += class0_fp_cost[d][f];
       } else {
-        cost += hp_cost[e];
+        cost += fp_cost[f];
+      }
+      if (precision > MV_SUBPEL_LOW_PRECISION) {
+        if (c == MV_CLASS_0) {
+          cost += class0_hp_cost[e];
+        } else {
+          cost += hp_cost[e];
+        }
       }
     }
     mvcost[v] = cost + sign_cost[0];
@@ -243,10 +248,11 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
 #endif  // CONFIG_INTRABC
 
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
-                              const nmv_context *ctx, int usehp) {
+                              const nmv_context *ctx,
+                              MvSubpelPrecision precision) {
   av1_cost_tokens(mvjoint, ctx->joints, av1_mv_joint_tree);
-  build_nmv_component_cost_table(mvcost[0], &ctx->comps[0], usehp);
-  build_nmv_component_cost_table(mvcost[1], &ctx->comps[1], usehp);
+  build_nmv_component_cost_table(mvcost[0], &ctx->comps[0], precision);
+  build_nmv_component_cost_table(mvcost[1], &ctx->comps[1], precision);
 }
 
 #if CONFIG_EXT_INTER

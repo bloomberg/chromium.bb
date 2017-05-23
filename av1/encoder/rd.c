@@ -367,6 +367,16 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   x->mvcost = x->mv_cost_stack[0];
   x->nmvjointcost = x->nmv_vec_cost[0];
 
+#if CONFIG_INTRABC
+  if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
+      cpi->oxcf.pass != 1) {
+    av1_build_nmv_cost_table(
+        x->nmv_vec_cost[0],
+        cm->allow_high_precision_mv ? x->nmvcost_hp[0] : x->nmvcost[0],
+        &cm->fc->ndvc, MV_SUBPEL_NONE);
+  }
+#endif
+
   if (cpi->oxcf.pass != 1) {
     av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
 
