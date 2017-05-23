@@ -106,8 +106,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
 
-  // Most visited data from the MostVisitedSites service (copied upon receiving
-  // the callback).
+  // Most visited data from the MostVisitedSites service currently in use.
   ntp_tiles::NTPTilesVector _mostVisitedData;
 
   // Observes the WebStateList so that this mediator can update the UI when the
@@ -127,8 +126,16 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 // The dispatcher for this mediator.
 @property(nonatomic, assign) id<ChromeExecuteCommand, UrlLoader> dispatcher;
 
+// Most visited data from the MostVisitedSites service (copied upon receiving
+// the callback), not yet used.
+@property(nonatomic, assign) ntp_tiles::NTPTilesVector freshMostVisitedData;
+
 // Perform initial setup.
 - (void)setUp;
+
+// If there is some fresh most visited tiles, they become the current tiles and
+// the consumer gets notified.
+- (void)useFreshData;
 
 @end
 
@@ -137,6 +144,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 @synthesize consumer = _consumer;
 @synthesize dispatcher = _dispatcher;
 @synthesize webStateList = _webStateList;
+@synthesize freshMostVisitedData = _freshMostVisitedData;
 
 - (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
                     browserState:(ios::ChromeBrowserState*)browserState
@@ -240,6 +248,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 #pragma mark - MostVisitedSitesObserving
 
 - (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data {
+  if (_mostVisitedData.size() > 0) {
+    // If some content is already displayed to the user, do not update it to
+    // prevent updating the all the tiles without any action from the user.
+    self.freshMostVisitedData = data;
+    return;
+  }
+
   _mostVisitedData = data;
   [self.consumer mostVisitedDataUpdated];
 
@@ -299,10 +314,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (void)addBlacklistedURL:(const GURL&)url {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(url, true);
+  [self useFreshData];
 }
 
 - (void)removeBlacklistedURL:(const GURL&)url {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(url, false);
+  [self useFreshData];
 }
 
 - (ntp_tiles::NTPTile)mostVisitedAtIndex:(NSUInteger)index {
@@ -361,6 +378,17 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     return;
   }
   NOTREACHED();
+}
+
+#pragma mark - Private
+
+- (void)useFreshData {
+  if (self.freshMostVisitedData.size() == 0) {
+    return;
+  }
+  _mostVisitedData = self.freshMostVisitedData;
+  self.freshMostVisitedData.clear();
+  [self.consumer mostVisitedDataUpdated];
 }
 
 @end
