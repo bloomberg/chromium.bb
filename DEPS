@@ -1175,6 +1175,4 @@ recursedeps = [
   'src/third_party/android_tools',
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
   ("src/third_party/angle", "DEPS.chromium"),
-  # SwiftShader manages DEPS that it also owns the build files for, such as Subzero.
-  ("src/third_party/swiftshader", "DEPS"),
 ]
