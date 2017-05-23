@@ -100,31 +100,6 @@ static LayoutObject* LayoutObjectAfterPosition(LayoutObject* object,
   return child ? child : object->NextInPreOrderAfterChildren();
 }
 
-// When exploring the LayoutTree looking for the nodes involved in the
-// Selection, sometimes it's required to change the traversing direction because
-// the "start" position is below the "end" one.
-static inline LayoutObject* GetNextOrPrevLayoutObjectBasedOnDirection(
-    const LayoutObject* o,
-    const LayoutObject* stop,
-    bool& continue_exploring,
-    bool& exploring_backwards) {
-  LayoutObject* next;
-  if (exploring_backwards) {
-    next = o->PreviousInPreOrder();
-    continue_exploring = next && !(next)->IsLayoutView();
-  } else {
-    next = o->NextInPreOrder();
-    continue_exploring = next && next != stop;
-    exploring_backwards = !next && (next != stop);
-    if (exploring_backwards) {
-      next = stop->PreviousInPreOrder();
-      continue_exploring = next && !next->IsLayoutView();
-    }
-  }
-
-  return next;
-}
-
 // Objects each have a single selection rect to examine.
 using SelectedObjectMap = HashMap<LayoutObject*, SelectionState>;
 // Blocks contain selected objects and fill gaps between them, either on the
@@ -155,33 +130,31 @@ static SelectedMap CollectSelectedMap(
     LayoutSelection::SelectionPaintInvalidationMode
         block_paint_invalidation_mode) {
   SelectedMap selected_map;
-  LayoutObject* runner = selection_start;
+
   LayoutObject* const stop =
       LayoutObjectAfterPosition(selection_end, selection_end_pos);
-  bool exploring_backwards = false;
-  bool continue_exploring = runner && (runner != stop);
-  while (continue_exploring) {
-    if ((runner->CanBeSelectionLeaf() || runner == selection_start ||
-         runner == selection_end) &&
-        runner->GetSelectionState() != SelectionNone) {
-      // Blocks are responsible for painting line gaps and margin gaps.  They
-      // must be examined as well.
-      selected_map.object_map.Set(runner, runner->GetSelectionState());
-      if (block_paint_invalidation_mode ==
-          LayoutSelection::kPaintInvalidationNewXOROld) {
-        LayoutBlock* containing_block = runner->ContainingBlock();
-        while (containing_block && !containing_block->IsLayoutView()) {
-          SelectedBlockMap::AddResult result = selected_map.block_map.insert(
-              containing_block, containing_block->GetSelectionState());
-          if (!result.is_new_entry)
-            break;
-          containing_block = containing_block->ContainingBlock();
-        }
+  for (LayoutObject* runner = selection_start; runner && (runner != stop);
+       runner = runner->NextInPreOrder()) {
+    if (!runner->CanBeSelectionLeaf() && runner != selection_start &&
+        runner != selection_end)
+      continue;
+    if (runner->GetSelectionState() == SelectionNone)
+      continue;
+
+    // Blocks are responsible for painting line gaps and margin gaps.  They
+    // must be examined as well.
+    selected_map.object_map.Set(runner, runner->GetSelectionState());
+    if (block_paint_invalidation_mode ==
+        LayoutSelection::kPaintInvalidationNewXOROld) {
+      LayoutBlock* containing_block = runner->ContainingBlock();
+      while (containing_block && !containing_block->IsLayoutView()) {
+        SelectedBlockMap::AddResult result = selected_map.block_map.insert(
+            containing_block, containing_block->GetSelectionState());
+        if (!result.is_new_entry)
+          break;
+        containing_block = containing_block->ContainingBlock();
       }
     }
-
-    runner = GetNextOrPrevLayoutObjectBasedOnDirection(
-        runner, stop, continue_exploring, exploring_backwards);
   }
   return selected_map;
 }
@@ -363,6 +336,7 @@ void LayoutSelection::Commit() {
       selection.VisibleStart().DeepEquivalent() ==
           selection.VisibleEnd().DeepEquivalent())
     return;
+  DCHECK_LE(start_pos, end_pos);
   LayoutObject* start_layout_object = start_pos.AnchorNode()->GetLayoutObject();
   LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
   if (!start_layout_object || !end_layout_object)
