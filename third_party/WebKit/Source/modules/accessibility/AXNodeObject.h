@@ -124,6 +124,7 @@ class MODULES_EXPORT AXNodeObject : public AXObjectImpl {
   bool IsRichlyEditable() const override;
   bool IsSlider() const override;
   bool IsNativeSlider() const override;
+  bool IsMoveableSplitter() const override;
 
   // Check object state.
   bool IsClickable() const final;

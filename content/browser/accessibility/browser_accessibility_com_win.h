@@ -858,9 +858,13 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end) const;
 
-  // Get the value text, which might come from the floating-point
-  // value for some roles.
-  base::string16 GetValueText();
+  // Get the range value text, which might come from aria-valuetext or
+  // a floating-point value. This is different from the value string
+  // attribute used in input controls such as text boxes and combo boxes.
+  base::string16 GetRangeValueText();
+
+  // Return true for roles that support the value interface
+  bool IsRangeValueSupported();
 
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(int* start,

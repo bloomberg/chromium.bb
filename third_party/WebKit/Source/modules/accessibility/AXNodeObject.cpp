@@ -1156,6 +1156,10 @@ bool AXNodeObject::IsNativeSlider() const {
   return toHTMLInputElement(node)->type() == InputTypeNames::range;
 }
 
+bool AXNodeObject::IsMoveableSplitter() const {
+  return RoleValue() == kSplitterRole && CanSetFocusAttribute();
+}
+
 bool AXNodeObject::IsClickable() const {
   if (GetNode()) {
     if (GetNode()->IsElementNode() &&

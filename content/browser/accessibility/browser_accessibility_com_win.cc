@@ -675,6 +675,20 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
   return S_OK;
 }
 
+bool BrowserAccessibilityComWin::IsRangeValueSupported() {
+  switch (ia_role()) {
+    case ROLE_SYSTEM_PROGRESSBAR:
+    case ROLE_SYSTEM_SLIDER:
+    case ROLE_SYSTEM_SPINBUTTON:
+    case ROLE_SYSTEM_SCROLLBAR:
+      return true;
+    case ROLE_SYSTEM_SEPARATOR:
+      return owner()->HasState(ui::AX_STATE_FOCUSABLE);
+    default:
+      return false;
+  }
+}
+
 STDMETHODIMP BrowserAccessibilityComWin::get_accValue(VARIANT var_id,
                                                       BSTR* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
@@ -688,10 +702,8 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accValue(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  if (target->ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
-      target->ia_role() == ROLE_SYSTEM_SCROLLBAR ||
-      target->ia_role() == ROLE_SYSTEM_SLIDER) {
-    base::string16 value_text = target->GetValueText();
+  if (target->IsRangeValueSupported()) {
+    base::string16 value_text = target->GetRangeValueText();
     *value = SysAllocString(value_text.c_str());
     DCHECK(*value);
     return S_OK;
@@ -3480,7 +3492,7 @@ STDMETHODIMP BrowserAccessibilityComWin::GetPatternProvider(
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
     if (owner()->HasState(ui::AX_STATE_EDITABLE)) {
       DVLOG(1) << "Returning UIA text provider";
-      base::win::UIATextProvider::CreateTextProvider(GetValueText(), true,
+      base::win::UIATextProvider::CreateTextProvider(GetRangeValueText(), true,
                                                      provider);
       return S_OK;
     }
@@ -3549,8 +3561,7 @@ HRESULT WINAPI BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleValue) {
-    if (ia_role != ROLE_SYSTEM_PROGRESSBAR &&
-        ia_role != ROLE_SYSTEM_SCROLLBAR && ia_role != ROLE_SYSTEM_SLIDER) {
+    if (!accessibility->IsRangeValueSupported()) {
       *object = NULL;
       return E_NOINTERFACE;
     }
@@ -3824,15 +3835,25 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   StringAttributeToIA2(ui::AX_ATTR_PLACEHOLDER, "placeholder");
 
   base::string16 value = owner()->GetValue();
-  // On Windows, the value of a document should be its url.
-  if (owner()->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
-      owner()->GetRole() == ui::AX_ROLE_WEB_AREA) {
-    value = base::UTF8ToUTF16(Manager()->GetTreeData().url);
+
+  // Expose slider value.
+  if (IsRangeValueSupported()) {
+    value = GetRangeValueText();
+    SanitizeStringAttributeForIA2(value, &value);
+    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value);
+  } else {
+    // On Windows, the value of a document should be its url.
+    if (owner()->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
+        owner()->GetRole() == ui::AX_ROLE_WEB_AREA) {
+      value = base::UTF8ToUTF16(Manager()->GetTreeData().url);
+    }
+    // If this doesn't have a value and is linked then set its value to the url
+    // attribute. This allows screen readers to read an empty link's
+    // destination.
+    if (value.empty() && (ia_state() & STATE_SYSTEM_LINKED))
+      value = owner()->GetString16Attribute(ui::AX_ATTR_URL);
   }
-  // If this doesn't have a value and is linked then set its value to the url
-  // attribute. This allows screen readers to read an empty link's destination.
-  if (value.empty() && (ia_state() & STATE_SYSTEM_LINKED))
-    value = owner()->GetString16Attribute(ui::AX_ATTR_URL);
+
   win_attributes_->value = value;
 
   ClearOwnRelations();
@@ -3856,14 +3877,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   int error_message_id;
   if (owner()->GetIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, &error_message_id))
     AddRelation(IA2_RELATION_ERROR_MESSAGE, error_message_id);
-
-  // Expose slider value.
-  if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
-      ia_role() == ROLE_SYSTEM_SCROLLBAR || ia_role() == ROLE_SYSTEM_SLIDER) {
-    base::string16 value_text = GetValueText();
-    SanitizeStringAttributeForIA2(value_text, &value_text);
-    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value_text);
-  }
 
   UpdateRequiredAttributes();
   // If this is a web area for a presentational iframe, give it a role of
@@ -4598,9 +4611,9 @@ void BrowserAccessibilityComWin::GetSelectionOffsets(int* selection_start,
     ++(*largest_offset);
 }
 
-base::string16 BrowserAccessibilityComWin::GetValueText() {
+base::string16 BrowserAccessibilityComWin::GetRangeValueText() {
   float fval;
-  base::string16 result = value();
+  base::string16 result = owner()->GetValue();
 
   if (result.empty() && GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, &fval)) {
     result = base::UTF8ToUTF16(base::DoubleToString(fval));

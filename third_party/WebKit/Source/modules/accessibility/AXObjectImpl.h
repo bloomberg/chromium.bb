@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2008, 2009, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nuanti Ltd.
@@ -675,11 +676,12 @@ class MODULES_EXPORT AXObjectImpl
   bool IsRange() const {
     return RoleValue() == kProgressIndicatorRole ||
            RoleValue() == kScrollBarRole || RoleValue() == kSliderRole ||
-           RoleValue() == kSpinButtonRole;
+           RoleValue() == kSpinButtonRole || IsMoveableSplitter();
   }
   bool IsScrollbar() const { return RoleValue() == kScrollBarRole; }
   virtual bool IsSlider() const { return false; }
   virtual bool IsNativeSlider() const { return false; }
+  virtual bool IsMoveableSplitter() const { return false; }
   virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
   virtual bool IsSpinButtonPart() const { return false; }
   bool IsTabItem() const { return RoleValue() == kTabRole; }

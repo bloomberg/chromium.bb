@@ -195,6 +195,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSliderValueChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-slider-value-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSliderValueTextChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-slider-valuetext-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAddAlert) {
   RunEventTest(FILE_PATH_LITERAL("add-alert.html"));
 }

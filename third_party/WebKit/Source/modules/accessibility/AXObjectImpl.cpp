@@ -1131,7 +1131,7 @@ bool AXObjectImpl::SupportsARIAAttributes() const {
 
 bool AXObjectImpl::SupportsRangeValue() const {
   return IsProgressIndicator() || IsMeter() || IsSlider() || IsScrollbar() ||
-         IsSpinButton();
+         IsSpinButton() || IsMoveableSplitter();
 }
 
 bool AXObjectImpl::SupportsSetSizeAndPosInSet() const {
