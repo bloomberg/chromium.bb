@@ -553,7 +553,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
       app_bundle->put_parentHWND(
           reinterpret_cast<ULONG_PTR>(elevation_window_));
     }
-    app_bundle_.swap(app_bundle);
+    app_bundle_.Swap(app_bundle);
   }
 
   // Get a reference to the Chrome app in the bundle.
@@ -571,7 +571,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     // Move the IAppBundleWeb reference into a local now so that failures from
     // this point onward result in it being released.
     base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
-    app_bundle.swap(app_bundle_);
+    app_bundle.Swap(app_bundle_);
     hresult = app_bundle->get_appWeb(0, dispatch.GetAddressOf());
     if (FAILED(hresult))
       return hresult;
@@ -583,8 +583,8 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     hresult = app_bundle->checkForUpdate();
     if (FAILED(hresult))
       return hresult;
-    app_bundle_.swap(app_bundle);
-    app_.swap(app);
+    app_bundle_.Swap(app_bundle);
+    app_.Swap(app);
   }
 
   return hresult;
