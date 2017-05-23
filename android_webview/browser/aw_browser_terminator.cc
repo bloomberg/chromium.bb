@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
@@ -85,6 +86,13 @@ void OnRenderProcessGoneDetail(int child_process_id,
       }
     }
   }
+
+  // By this point we have moved the minidump to the crash directory, so it can
+  // now be copied and uploaded. This is guaranteed by the order in which we
+  // register breakpad::CrashDumpManager and AwBrowserTerminator as
+  // breakpad::CrashDumpObserver clients over in AwBrowserMainParts
+  // (CrashDumpManager is registered first).
+  TriggerMinidumpUploading();
 }
 
 }  // namespace

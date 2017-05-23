@@ -40,6 +40,7 @@ generate_jni("native_jni") {
   sources = [
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
     "java/src/org/chromium/android_webview/AwAutofillClient.java",
+    "java/src/org/chromium/android_webview/AwBrowserProcess.java",
     "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
@@ -436,6 +437,8 @@ source_set("common") {
     "browser/aw_browser_permission_request_delegate.h",
     "browser/aw_browser_policy_connector.cc",
     "browser/aw_browser_policy_connector.h",
+    "browser/aw_browser_process.cc",
+    "browser/aw_browser_process.h",
     "browser/aw_browser_terminator.cc",
     "browser/aw_browser_terminator.h",
     "browser/aw_content_browser_client.cc",
@@ -815,6 +818,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
   ]
   deps = [
+    ":android_webview_commandline_java",
     ":android_webview_crash_services_java",
     ":android_webview_platform_services_java",
     ":resources",
