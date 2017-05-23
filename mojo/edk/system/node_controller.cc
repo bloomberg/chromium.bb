@@ -106,7 +106,7 @@ class ThreadDestructionObserver :
  public:
   static void Create(scoped_refptr<base::TaskRunner> task_runner,
                      const base::Closure& callback) {
-    if (task_runner->RunsTasksOnCurrentThread()) {
+    if (task_runner->RunsTasksInCurrentSequence()) {
       // Owns itself.
       new ThreadDestructionObserver(callback);
     } else {
@@ -344,7 +344,7 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
     ConnectionParams connection_params,
     ports::NodeName temporary_node_name,
     const ProcessErrorCallback& process_error_callback) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL)
   PlatformChannelPair node_channel;
@@ -394,7 +394,7 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
 
 void NodeController::AcceptBrokerClientInvitationOnIOThread(
     ConnectionParams connection_params) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   {
     base::AutoLock lock(parent_lock_);
@@ -419,7 +419,7 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
 void NodeController::ConnectToPeerOnIOThread(uint64_t peer_connection_id,
                                              ConnectionParams connection_params,
                                              ports::PortRef port) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   scoped_refptr<NodeChannel> channel = NodeChannel::Create(
       this, std::move(connection_params), io_task_runner_, {});
@@ -482,7 +482,7 @@ scoped_refptr<NodeChannel> NodeController::GetBrokerChannel() {
 void NodeController::AddPeer(const ports::NodeName& name,
                              scoped_refptr<NodeChannel> channel,
                              bool start_channel) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(name != ports::kInvalidNodeName);
   DCHECK(channel);
@@ -526,7 +526,7 @@ void NodeController::AddPeer(const ports::NodeName& name,
 
 void NodeController::DropPeer(const ports::NodeName& name,
                               NodeChannel* channel) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   {
     base::AutoLock lock(peers_lock_);
@@ -723,7 +723,7 @@ void NodeController::ProcessIncomingMessages() {
 }
 
 void NodeController::DropAllPeers() {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   std::vector<scoped_refptr<NodeChannel>> all_peers;
   {
@@ -836,7 +836,7 @@ void NodeController::PortStatusChanged(const ports::PortRef& port) {
 void NodeController::OnAcceptChild(const ports::NodeName& from_node,
                                    const ports::NodeName& parent_name,
                                    const ports::NodeName& token) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   scoped_refptr<NodeChannel> parent;
   {
@@ -866,7 +866,7 @@ void NodeController::OnAcceptChild(const ports::NodeName& from_node,
 void NodeController::OnAcceptParent(const ports::NodeName& from_node,
                                     const ports::NodeName& token,
                                     const ports::NodeName& child_name) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   auto it = pending_invitations_.find(from_node);
   if (it == pending_invitations_.end() || token != from_node) {
@@ -1071,7 +1071,7 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
 
 void NodeController::OnPortsMessage(const ports::NodeName& from_node,
                                     Channel::MessagePtr channel_message) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   void* data;
   size_t num_data_bytes, num_header_bytes, num_payload_bytes, num_ports_bytes;
@@ -1097,7 +1097,7 @@ void NodeController::OnRequestPortMerge(
     const ports::NodeName& from_node,
     const ports::PortName& connector_port_name,
     const std::string& name) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   DVLOG(2) << "Node " << name_ << " received RequestPortMerge for name " << name
            << " and port " << connector_port_name << "@" << from_node;
@@ -1134,7 +1134,7 @@ void NodeController::OnRequestPortMerge(
 
 void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
                                            const ports::NodeName& name) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   scoped_refptr<NodeChannel> requestor = GetPeerChannel(from_node);
   if (from_node == name || name == ports::kInvalidNodeName || !requestor) {
@@ -1158,7 +1158,7 @@ void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
 void NodeController::OnIntroduce(const ports::NodeName& from_node,
                                  const ports::NodeName& name,
                                  ScopedPlatformHandle channel_handle) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!channel_handle.is_valid()) {
     node_->LostConnectionToNode(name);
@@ -1213,7 +1213,7 @@ void NodeController::OnRelayPortsMessage(const ports::NodeName& from_node,
                                          base::ProcessHandle from_process,
                                          const ports::NodeName& destination,
                                          Channel::MessagePtr message) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (GetBrokerChannel()) {
     // Only the broker should be asked to relay a message.
@@ -1291,7 +1291,7 @@ void NodeController::OnAcceptPeer(const ports::NodeName& from_node,
                                   const ports::NodeName& token,
                                   const ports::NodeName& peer_name,
                                   const ports::PortName& port_name) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   auto it = peer_connections_.find(from_node);
   if (it == peer_connections_.end()) {
@@ -1328,7 +1328,7 @@ void NodeController::OnAcceptPeer(const ports::NodeName& from_node,
 
 void NodeController::OnChannelError(const ports::NodeName& from_node,
                                     NodeChannel* channel) {
-  if (io_task_runner_->RunsTasksOnCurrentThread()) {
+  if (io_task_runner_->RunsTasksInCurrentSequence()) {
     DropPeer(from_node, channel);
     // DropPeer may have caused local port closures, so be sure to process any
     // pending local messages.

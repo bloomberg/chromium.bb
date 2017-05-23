@@ -235,7 +235,7 @@ SandboxedUnpacker::SandboxedUnpacker(
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {
-  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   base::FilePath temp_dir;
   if (!FindWritableTempLocation(extensions_dir_, &temp_dir)) {
@@ -260,7 +260,7 @@ bool SandboxedUnpacker::CreateTempDirectory() {
 void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   // We assume that we are started on the thread that the client wants us
   // to do file IO on.
-  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   crx_unpack_start_time_ = base::TimeTicks::Now();
   std::string expected_hash;
@@ -447,7 +447,7 @@ void SandboxedUnpacker::UnpackDone(
 
 void SandboxedUnpacker::UnpackExtensionSucceeded(
     std::unique_ptr<base::DictionaryValue> manifest) {
-  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   std::unique_ptr<base::DictionaryValue> final_manifest(
       RewriteManifestFile(*manifest));
@@ -494,7 +494,7 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
 }
 
 void SandboxedUnpacker::UnpackExtensionFailed(const base::string16& error) {
-  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   ReportFailure(
       UNPACKER_CLIENT_FAILED,
@@ -905,7 +905,7 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
 }
 
 void SandboxedUnpacker::Cleanup() {
-  DCHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (!temp_dir_.Delete()) {
     LOG(WARNING) << "Can not delete temp directory at "
                  << temp_dir_.GetPath().value();

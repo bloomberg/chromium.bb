@@ -48,12 +48,12 @@ GenericURLRequestJob::GenericURLRequestJob(
       weak_factory_(this) {}
 
 GenericURLRequestJob::~GenericURLRequestJob() {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 }
 
 void GenericURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   extra_request_headers_ = headers;
 }
 
@@ -68,7 +68,7 @@ void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
                                           const std::string& method,
                                           const url::Origin& site_for_cookies,
                                           const base::Closure& done_callback) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   net::CookieStore* cookie_store = request_->context()->cookie_store();
   net::CookieOptions options;
   options.set_include_httponly();
@@ -101,7 +101,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
     const std::string& method,
     const base::Closure& done_callback,
     const net::CookieList& cookie_list) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   // TODO(alexclarke): Set user agent.
   // Pass cookies, the referrer and any extra headers into the fetch request.
   std::string cookie = net::CookieStore::BuildCookieLine(cookie_list);
@@ -117,7 +117,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
 }
 
 void GenericURLRequestJob::OnFetchStartError(net::Error error) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   DispatchStartError(error);
   delegate_->OnResourceLoadFailed(this, error);
 }
@@ -127,7 +127,7 @@ void GenericURLRequestJob::OnFetchComplete(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
     size_t body_size) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   response_time_ = base::TimeTicks::Now();
   response_headers_ = response_headers;
   body_ = body;
@@ -140,7 +140,7 @@ void GenericURLRequestJob::OnFetchComplete(
 }
 
 int GenericURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   // TODO(skyostil): Implement ranged fetches.
   // TODO(alexclarke): Add coverage for all the cases below.
   size_t bytes_available = body_size_ - read_offset_;
@@ -282,7 +282,7 @@ const Request* GenericURLRequestJob::GetRequest() const {
 }
 
 void GenericURLRequestJob::AllowRequest() {
-  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
     origin_task_runner_->PostTask(
         FROM_HERE, base::Bind(&GenericURLRequestJob::AllowRequest,
                               weak_factory_.GetWeakPtr()));
@@ -294,7 +294,7 @@ void GenericURLRequestJob::AllowRequest() {
 }
 
 void GenericURLRequestJob::BlockRequest(net::Error error) {
-  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
     origin_task_runner_->PostTask(
         FROM_HERE, base::Bind(&GenericURLRequestJob::BlockRequest,
                               weak_factory_.GetWeakPtr(), error));
@@ -309,7 +309,7 @@ void GenericURLRequestJob::ModifyRequest(
     const std::string& method,
     const std::string& post_data,
     const net::HttpRequestHeaders& request_headers) {
-  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
     origin_task_runner_->PostTask(
         FROM_HERE, base::Bind(&GenericURLRequestJob::ModifyRequest,
                               weak_factory_.GetWeakPtr(), url, method,
@@ -327,7 +327,7 @@ void GenericURLRequestJob::ModifyRequest(
 
 void GenericURLRequestJob::MockResponse(
     std::unique_ptr<MockResponseData> mock_response) {
-  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
     origin_task_runner_->PostTask(
         FROM_HERE, base::Bind(&GenericURLRequestJob::MockResponse,
                               weak_factory_.GetWeakPtr(),

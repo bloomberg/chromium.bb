@@ -117,7 +117,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     SyncCallRestrictions::AssertSyncCallAllowed();
 
     // If the InterfacePtr is bound to this thread, dispatch it directly.
-    if (task_runner_->RunsTasksOnCurrentThread()) {
+    if (task_runner_->RunsTasksInCurrentSequence()) {
       forward_with_responder_.Run(std::move(*message), std::move(responder));
       return true;
     }
@@ -335,7 +335,7 @@ class ThreadSafeInterfacePtrBase
     ~PtrWrapper() {}
 
     void Bind(PtrInfoType ptr_info) {
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
       ptr_.Bind(std::move(ptr_info));
     }
 
@@ -350,7 +350,7 @@ class ThreadSafeInterfacePtrBase
     }
 
     void DeleteOnCorrectThread() const {
-      if (!task_runner_->RunsTasksOnCurrentThread()) {
+      if (!task_runner_->RunsTasksInCurrentSequence()) {
         // NOTE: This is only called when there are no more references to
         // |this|, so binding it unretained is both safe and necessary.
         task_runner_->PostTask(FROM_HERE,
