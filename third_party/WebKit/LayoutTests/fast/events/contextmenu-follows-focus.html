@@ -6,8 +6,19 @@ var contextForMenu;
 function catchContextMenu(event) {
   contextForMenu = event.currentTarget.tagName;
 }
+
+function focusLinkAndAssertLinkIsTargetOfContextMenu() {
+  eventSender.keyDown('Escape'); // Hide menu.
+  document.querySelector('A').focus();
+  contextForMenu = undefined;
+  eventSender.keyDown('ContextMenu');
+  assert_equals(contextForMenu, 'A',
+      'ContextMenu should use the focused link as target.');
+}
 </script>
 
+<div contenteditable oncontextmenu="catchContextMenu(event);">Some editable text.</div>
+<span oncontextmenu="catchContextMenu(event);">Some text to select.</span>
 <input oncontextmenu="catchContextMenu(event);">
 <a href="www" oncontextmenu="catchContextMenu(event);">A link</a>
 
@@ -18,15 +29,37 @@ test(function() {
   document.querySelector('INPUT').focus();
   eventSender.keyDown('ContextMenu');
   assert_equals(contextForMenu, 'INPUT',
-      'ContextMenu should use the focused input field as context.');
+      'ContextMenu should use the focused input field as target.');
+  focusLinkAndAssertLinkIsTargetOfContextMenu();
+}, 'ContextMenu should target the focused link (not the unfocused field).');
 
-  // Hide INPUT's context menu before we display A's context menu.
-  eventSender.keyDown('Escape');
+test(function() {
+  assert_exists(window, 'eventSender', 'This test requires eventSender.');
 
-  document.querySelector('A').focus();
+  document.querySelector('div').focus();
   eventSender.keyDown('ContextMenu');
-  assert_equals(contextForMenu, 'A',
-      'ContextMenu should use the focused link as context.');
+  assert_equals(contextForMenu, 'DIV',
+      'ContextMenu should use the editable div\'s caret as target.');
+  focusLinkAndAssertLinkIsTargetOfContextMenu();
+}, 'ContextMenu should target the focused link (not the div\'s caret).');
 
-}, 'ContextMenu should always follow focused element.');
+test(function() {
+  assert_exists(window, 'eventSender', 'This test requires eventSender.');
+
+  const div = document.querySelector('div');
+  div.focus();
+  window.getSelection().selectAllChildren(div);
+  eventSender.keyDown('ContextMenu');
+  assert_equals(contextForMenu, 'DIV',
+      'ContextMenu should use the editable div\'s range selection as target.');
+  focusLinkAndAssertLinkIsTargetOfContextMenu();
+}, 'ContextMenu should target the focused link (not the div\'s selection).');
+
+test(function() {
+  assert_exists(window, 'eventSender', 'This test requires eventSender.');
+
+  const span = document.querySelector('span');
+  window.getSelection().selectAllChildren(span);
+  focusLinkAndAssertLinkIsTargetOfContextMenu();
+}, 'ContextMenu should target the focused link (not the unfocused selection).');
 </script>

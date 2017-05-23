@@ -1802,6 +1802,14 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
       event, mev.GetHitTestResult().CanvasRegionId(), 0);
 }
 
+static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
+  const VisibleSelection& visible_selection =
+      selection.ComputeVisibleSelectionInDOMTreeDeprecated();
+  if (!visible_selection.IsRange() && !visible_selection.RootEditableElement())
+    return false;
+  return selection.SelectionHasFocus();
+}
+
 WebInputEventResult EventHandler::SendContextMenuEventForKey(
     Element* override_target_element) {
   FrameView* view = frame_->View();
@@ -1824,14 +1832,9 @@ WebInputEventResult EventHandler::SendContextMenuEventForKey(
   Element* focused_element =
       override_target_element ? override_target_element : doc->FocusedElement();
   FrameSelection& selection = frame_->Selection();
-  Position start =
-      selection.ComputeVisibleSelectionInDOMTreeDeprecated().Start();
   VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
 
-  if (!override_target_element && start.AnchorNode() && !selection.IsHidden() &&
-      (selection.ComputeVisibleSelectionInDOMTreeDeprecated()
-           .RootEditableElement() ||
-       selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())) {
+  if (!override_target_element && ShouldShowContextMenuAtSelection(selection)) {
     // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     doc->UpdateStyleAndLayoutIgnorePendingStylesheets();
