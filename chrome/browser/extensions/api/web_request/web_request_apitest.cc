@@ -805,9 +805,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                                       "hello my friend", net::HTTP_OK,
                                       net::URLRequestStatus::SUCCESS);
   std::unique_ptr<net::URLFetcher> fetcher =
-      url_fetcher_factory.CreateURLFetcher(1,
-                                           GURL("https://client1.google.com"),
-                                           net::URLFetcher::GET, &delegate);
+      url_fetcher_factory.CreateURLFetcher(
+          1, GURL("https://client1.google.com"), net::URLFetcher::GET,
+          &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   fetcher->Start();
   run_loop.Run();
 

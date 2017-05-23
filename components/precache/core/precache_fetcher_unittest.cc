@@ -148,7 +148,8 @@ class MockURLFetcherFactory : public net::URLFetcherFactory {
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* delegate) override {
+      net::URLFetcherDelegate* delegate,
+      net::NetworkTrafficAnnotationTag traffic_annotation) override {
     return base::WrapUnique(
         DoCreateURLFetcher(id, url, request_type, delegate));
   }
