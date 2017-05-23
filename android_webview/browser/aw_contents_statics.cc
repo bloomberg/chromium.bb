@@ -6,7 +6,7 @@
 
 #include "android_webview/browser/address_parser.h"
 #include "android_webview/browser/aw_browser_context.h"
-#include "android_webview/browser/aw_contents_io_thread_client_impl.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_version_info_values.h"
@@ -95,8 +95,8 @@ void SetServiceWorkerIoThreadClient(
     const JavaParamRef<jclass>&,
     const base::android::JavaParamRef<jobject>& io_thread_client,
     const base::android::JavaParamRef<jobject>& browser_context) {
-  AwContentsIoThreadClientImpl::SetServiceWorkerIoThreadClient(io_thread_client,
-                                                               browser_context);
+  AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(io_thread_client,
+                                                           browser_context);
 }
 
 // static

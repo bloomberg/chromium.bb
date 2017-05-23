@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "android_webview/browser/input_stream_impl.h"
+#include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/common/url_constants.h"
@@ -27,7 +27,7 @@
 
 using android_webview::AndroidStreamReaderURLRequestJob;
 using android_webview::InputStream;
-using android_webview::InputStreamImpl;
+using android_webview::InputStream;
 using base::android::AttachCurrentThread;
 using base::android::ClearException;
 using base::android::ConvertUTF8ToJavaString;
@@ -120,7 +120,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(JNIEnv* env,
     DLOG(ERROR) << "Unable to open input stream for Android URL";
     return std::unique_ptr<InputStream>();
   }
-  return base::MakeUnique<InputStreamImpl>(stream);
+  return base::MakeUnique<InputStream>(stream);
 }
 
 void AndroidStreamReaderURLRequestJobDelegateImpl::OnInputStreamOpenFailed(
@@ -144,10 +144,9 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
   // fail, as the mime type cannot be determined for all supported schemes.
   ScopedJavaLocalRef<jstring> url =
       ConvertUTF8ToJavaString(env, request->url().spec());
-  const InputStreamImpl* stream_impl = InputStreamImpl::FromInputStream(stream);
   ScopedJavaLocalRef<jstring> returned_type =
       android_webview::Java_AndroidProtocolHandler_getMimeType(
-          env, stream_impl->jobj(), url);
+          env, stream->jobj(), url);
   if (returned_type.is_null())
     return false;
 

@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_web_contents_delegate.h"
 
 #include "android_webview/browser/aw_contents.h"
-#include "android_webview/browser/aw_contents_io_thread_client_impl.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_javascript_dialog_manager.h"
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/permission/media_access_permission_request.h"
@@ -183,7 +183,7 @@ void AwWebContentsDelegate::WebContentsCreated(
     const std::string& frame_name,
     const GURL& target_url,
     content::WebContents* new_contents) {
-  AwContentsIoThreadClientImpl::RegisterPendingContents(new_contents);
+  AwContentsIoThreadClient::RegisterPendingContents(new_contents);
 }
 
 void AwWebContentsDelegate::CloseContents(WebContents* source) {

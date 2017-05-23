@@ -11,7 +11,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
-#include "android_webview/browser/aw_contents_io_thread_client_impl.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/aw_gl_functor.h"
 #include "android_webview/browser/aw_pdf_exporter.h"
@@ -263,8 +263,7 @@ void AwContents::SetJavaPeers(
   AwContentsClientBridge::Associate(web_contents_.get(),
                                     contents_client_bridge_.get());
 
-  AwContentsIoThreadClientImpl::Associate(web_contents_.get(),
-                                          io_thread_client);
+  AwContentsIoThreadClient::Associate(web_contents_.get(), io_thread_client);
 
   InterceptNavigationDelegate::Associate(
       web_contents_.get(), base::MakeUnique<InterceptNavigationDelegate>(
