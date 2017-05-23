@@ -6,10 +6,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,11 +22,11 @@ void VerifyRunUntilIdleDidNotReturnAndSetFlag(
   task_ran->Set();
 }
 
-void RunUntilIdleTest(
-    ScopedTaskEnvironment::ExecutionControlMode execution_control_mode) {
+}  // namespace
+
+TEST(ScopedTaskEnvironmentTest, RunUntilIdle) {
   AtomicFlag run_until_idle_returned;
-  ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::DEFAULT, execution_control_mode);
+  ScopedTaskEnvironment scoped_task_environment;
 
   AtomicFlag first_main_thread_task_ran;
   ThreadTaskRunnerHandle::Get()->PostTask(
@@ -59,77 +56,6 @@ void RunUntilIdleTest(
   EXPECT_TRUE(first_task_scheduler_task_ran.IsSet());
   EXPECT_TRUE(second_task_scheduler_task_ran.IsSet());
   EXPECT_TRUE(second_main_thread_task_ran.IsSet());
-}
-
-}  // namespace
-
-TEST(ScopedTaskEnvironmentTest, QueuedRunUntilIdle) {
-  RunUntilIdleTest(ScopedTaskEnvironment::ExecutionControlMode::QUEUED);
-}
-
-TEST(ScopedTaskEnvironmentTest, AsyncRunUntilIdle) {
-  RunUntilIdleTest(ScopedTaskEnvironment::ExecutionControlMode::ASYNC);
-}
-
-// Verify that tasks posted to an ExecutionControlMode::QUEUED
-// ScopedTaskEnvironment do not run outside of RunUntilIdle().
-TEST(ScopedTaskEnvironmentTest, QueuedTasksDoNotRunOutsideOfRunUntilIdle) {
-  ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      ScopedTaskEnvironment::ExecutionControlMode::QUEUED);
-
-  AtomicFlag run_until_idle_called;
-  PostTask(FROM_HERE, BindOnce(
-                          [](AtomicFlag* run_until_idle_called) {
-                            EXPECT_TRUE(run_until_idle_called->IsSet());
-                          },
-                          Unretained(&run_until_idle_called)));
-  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  run_until_idle_called.Set();
-  scoped_task_environment.RunUntilIdle();
-
-  AtomicFlag other_run_until_idle_called;
-  PostTask(FROM_HERE, BindOnce(
-                          [](AtomicFlag* other_run_until_idle_called) {
-                            EXPECT_TRUE(other_run_until_idle_called->IsSet());
-                          },
-                          Unretained(&other_run_until_idle_called)));
-  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  other_run_until_idle_called.Set();
-  scoped_task_environment.RunUntilIdle();
-}
-
-// Verify that a task posted to an ExecutionControlMode::QUEUED
-// ScopedTaskEnvironment can run without a call to RunUntilIdle().
-TEST(ScopedTaskEnvironmentTest, AsyncTasksRunAsTheyArePosted) {
-  ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      ScopedTaskEnvironment::ExecutionControlMode::ASYNC);
-
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  PostTask(FROM_HERE,
-           BindOnce([](WaitableEvent* task_ran) { task_ran->Signal(); },
-                    Unretained(&task_ran)));
-  task_ran.Wait();
-}
-
-// Verify that a task posted to an ExecutionControlMode::QUEUED
-// ScopedTaskEnvironment after a call to RunUntilIdle() can run without another
-// call to RunUntilIdle().
-TEST(ScopedTaskEnvironmentTest, AsyncTasksRunAsTheyArePostedAfterRunUntilIdle) {
-  ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      ScopedTaskEnvironment::ExecutionControlMode::ASYNC);
-
-  scoped_task_environment.RunUntilIdle();
-
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  PostTask(FROM_HERE,
-           BindOnce([](WaitableEvent* task_ran) { task_ran->Signal(); },
-                    Unretained(&task_ran)));
-  task_ran.Wait();
 }
 
 }  // namespace test
