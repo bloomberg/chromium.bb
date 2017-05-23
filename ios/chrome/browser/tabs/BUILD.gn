@@ -31,6 +31,7 @@ source_set("tabs") {
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("tabs_internal") {
