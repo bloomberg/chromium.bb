@@ -1012,7 +1012,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_openInController detachFromWebController];
   _openInController = nil;
   [_autofillController detachFromWebState];
+  _autofillController = nil;
   [_suggestionController detachFromWebState];
+  _suggestionController = nil;
   if (_fullScreenController)
     [self.webController removeObserver:_fullScreenController];
   [_fullScreenController invalidate];
