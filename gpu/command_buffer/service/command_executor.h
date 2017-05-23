@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
-#include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/async_api_interface.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -27,8 +26,7 @@ namespace gpu {
 // class should not know about the decoder. Do not add additional dependencies
 // on it.
 class GPU_EXPORT CommandExecutor
-    : NON_EXPORTED_BASE(public CommandBufferEngine),
-      public base::SupportsWeakPtr<CommandExecutor> {
+    : NON_EXPORTED_BASE(public CommandBufferEngine) {
  public:
   static const int kParseCommandsSlice = 20;
 

@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
@@ -54,8 +53,7 @@ struct TraceMarker {
 };
 
 // Traces GPU Commands.
-class GPU_EXPORT GPUTracer
-    : public base::SupportsWeakPtr<GPUTracer> {
+class GPU_EXPORT GPUTracer {
  public:
   explicit GPUTracer(gles2::GLES2Decoder* decoder);
   virtual ~GPUTracer();
