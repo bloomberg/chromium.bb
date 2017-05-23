@@ -20,8 +20,6 @@ class TranslateEventProto;
 
 namespace translate {
 
-class TranslatePrefs;
-
 // If enabled, downloads a translate ranker model and uses it to determine
 // whether the user should be given a translation prompt or not.
 class TranslateRanker : public KeyedService {
@@ -32,14 +30,10 @@ class TranslateRanker : public KeyedService {
   virtual uint32_t GetModelVersion() const = 0;
 
   // Returns true if executing the ranker model in the translation prompt
-  // context described by |translate_prefs|, |src_lang|, |dst_lang| and possibly
+  // context described by |translate_event| and possibly
   // other global browser context attributes suggests that the user should be
   // prompted as to whether translation should be performed.
-  // TODO(hamelphi): Take only the proto as input and extract features from it.
   virtual bool ShouldOfferTranslation(
-      const TranslatePrefs& translate_prefs,
-      const std::string& src_lang,
-      const std::string& dst_lang,
       metrics::TranslateEventProto* translate_event) = 0;
 
   // Transfers cached translate events to the given vector pointer and clears

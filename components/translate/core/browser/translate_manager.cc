@@ -220,8 +220,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 
   // Querying the ranker now, but not exiting immediately so that we may log
   // other potential suppression reasons.
-  bool should_offer_translation = translate_ranker_->ShouldOfferTranslation(
-      *translate_prefs, language_code, target_lang, translate_event_.get());
+  bool should_offer_translation =
+      translate_ranker_->ShouldOfferTranslation(translate_event_.get());
 
   // Nothing to do if either the language Chrome is in or the language of
   // the page is not supported by the translation server.
