@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
@@ -121,16 +123,31 @@ public class BackgroundTaskGcmTaskServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
-    public void testOnInitializeTasks() {
+    public void testOnInitializeTasksOnPreM() {
+        ReflectionHelpers.setStaticField(
+                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.LOLLIPOP);
         TaskInfo task = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
                                         TimeUnit.DAYS.toMillis(1))
                                 .build();
         BackgroundTaskSchedulerPrefs.addScheduledTask(task);
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
 
-        BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
-        taskService.onInitializeTasks();
+        new BackgroundTaskGcmTaskService().onInitializeTasks();
         assertEquals(1, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testOnInitializeTasksOnMPlus() {
+        ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
+        TaskInfo task = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
+                                        TimeUnit.DAYS.toMillis(1))
+                                .build();
+        BackgroundTaskSchedulerPrefs.addScheduledTask(task);
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+
+        new BackgroundTaskGcmTaskService().onInitializeTasks();
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
     }
 
     private TaskParams buildTaskParams(Class clazz, Bundle taskExtras) {

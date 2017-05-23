@@ -8,16 +8,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.os.Build;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -75,6 +79,11 @@ public class BackgroundTaskSchedulerPrefsTest {
                 scheduledTasks.contains(TASK_2.getBackgroundTaskClass().getName()));
         assertTrue("task3 class name in scheduled tasks.",
                 scheduledTasks.contains(task3.getBackgroundTaskClass().getName()));
+
+        Set<Integer> taskIds = BackgroundTaskSchedulerPrefs.getScheduledTaskIds();
+        assertTrue(taskIds.contains(TASK_1.getTaskId()));
+        assertTrue(taskIds.contains(TASK_2.getTaskId()));
+        assertTrue(taskIds.contains(task3.getTaskId()));
     }
 
     @Test
@@ -91,10 +100,33 @@ public class BackgroundTaskSchedulerPrefsTest {
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
 
         Set<String> scheduledTasks = BackgroundTaskSchedulerPrefs.getScheduledTasks();
-        assertFalse("TASK_1 class name in scheduled tasks.",
+        assertFalse("TASK_1 class name is not in scheduled tasks.",
                 scheduledTasks.contains(TASK_1.getBackgroundTaskClass().getName()));
         assertTrue("TASK_2 class name in scheduled tasks.",
                 scheduledTasks.contains(TASK_2.getBackgroundTaskClass().getName()));
+
+        Set<Integer> taskIds = BackgroundTaskSchedulerPrefs.getScheduledTaskIds();
+        assertFalse(taskIds.contains(TASK_1.getTaskId()));
+        assertTrue(taskIds.contains(TASK_2.getTaskId()));
+    }
+
+    @Test
+    @Feature("BackgroundTaskScheduler")
+    public void testUnparseableEntries() {
+        HashSet<String> badEntries = new HashSet<>();
+        badEntries.add(":123");
+        badEntries.add("Class:");
+        badEntries.add("Class:NotAnInt");
+        badEntries.add("Int field missing");
+        badEntries.add("Class:123:Too many fields");
+        badEntries.add("");
+        badEntries.add(null);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putStringSet("bts_scheduled_tasks", badEntries)
+                .apply();
+        assertTrue(BackgroundTaskSchedulerPrefs.getScheduledTaskIds().isEmpty());
+        assertTrue(BackgroundTaskSchedulerPrefs.getScheduledTasks().isEmpty());
     }
 
     @Test
@@ -105,5 +137,19 @@ public class BackgroundTaskSchedulerPrefsTest {
         BackgroundTaskSchedulerPrefs.removeAllTasks();
         assertTrue("We are expecting a all tasks to be gone.",
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().isEmpty());
+        assertTrue("We are expecting a all tasks to be gone.",
+                BackgroundTaskSchedulerPrefs.getScheduledTaskIds().isEmpty());
+    }
+
+    @Test
+    @Feature("BackgroundTaskScheduler")
+    public void testLastSdkVersion() {
+        ReflectionHelpers.setStaticField(
+                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.KITKAT);
+        assertEquals("Current SDK version should be default.", Build.VERSION_CODES.KITKAT,
+                BackgroundTaskSchedulerPrefs.getLastSdkVersion());
+        BackgroundTaskSchedulerPrefs.setLastSdkVersion(Build.VERSION_CODES.LOLLIPOP);
+        assertEquals(
+                Build.VERSION_CODES.LOLLIPOP, BackgroundTaskSchedulerPrefs.getLastSdkVersion());
     }
 }
