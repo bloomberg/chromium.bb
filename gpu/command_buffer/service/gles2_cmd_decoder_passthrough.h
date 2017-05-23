@@ -79,6 +79,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   const char* GetCommandName(unsigned int command_id) const override;
 
+  base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
+
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
                   const scoped_refptr<gl::GLContext>& context,
                   bool offscreen,
@@ -397,6 +399,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;
+
+  base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_;
 
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.

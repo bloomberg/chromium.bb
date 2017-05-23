@@ -78,7 +78,8 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(ContextGroup* group)
       context_(),
       offscreen_(false),
       group_(group),
-      feature_info_(new FeatureInfo) {
+      feature_info_(new FeatureInfo),
+      weak_ptr_factory_(this) {
   DCHECK(group);
 }
 
@@ -151,6 +152,10 @@ const char* GLES2DecoderPassthroughImpl::GetCommandName(
     return gles2::GetCommandName(static_cast<CommandId>(command_id));
   }
   return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
+}
+
+base::WeakPtr<GLES2Decoder> GLES2DecoderPassthroughImpl::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 bool GLES2DecoderPassthroughImpl::Initialize(

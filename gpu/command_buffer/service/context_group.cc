@@ -139,7 +139,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
       return false;
     }
     // If we've already initialized the group just add the context.
-    decoders_.push_back(base::AsWeakPtr<GLES2Decoder>(decoder));
+    decoders_.push_back(decoder->AsWeakPtr());
     return true;
   }
 
@@ -454,7 +454,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     return false;
   }
 
-  decoders_.push_back(base::AsWeakPtr<GLES2Decoder>(decoder));
+  decoders_.push_back(decoder->AsWeakPtr());
   return true;
 }
 

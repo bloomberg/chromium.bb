@@ -519,6 +519,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   const char* GetCommandName(unsigned int command_id) const override;
 
   // Overridden from GLES2Decoder.
+  base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
                   const scoped_refptr<gl::GLContext>& context,
                   bool offscreen,
@@ -2498,6 +2499,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
 
+  base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -3117,11 +3120,16 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       validation_fbo_multisample_(0),
       validation_fbo_(0),
       texture_manager_service_id_generation_(0),
-      force_shader_name_hashing_for_test(false) {
+      force_shader_name_hashing_for_test(false),
+      weak_ptr_factory_(this) {
   DCHECK(group);
 }
 
 GLES2DecoderImpl::~GLES2DecoderImpl() {
+}
+
+base::WeakPtr<GLES2Decoder> GLES2DecoderImpl::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 bool GLES2DecoderImpl::Initialize(
@@ -11720,8 +11728,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         glReadPixels(x, y, width, height, format, type, 0);
         pending_readpixel_fences_.push(FenceCallback());
         WaitForReadPixels(base::Bind(
-            &GLES2DecoderImpl::FinishReadPixels, base::AsWeakPtr(this), width,
-            height, format, type, pixels_shm_id, pixels_shm_offset,
+            &GLES2DecoderImpl::FinishReadPixels, weak_ptr_factory_.GetWeakPtr(),
+            width, height, format, type, pixels_shm_id, pixels_shm_offset,
             result_shm_id, result_shm_offset, state_.pack_alignment,
             read_format, buffer));
         glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
@@ -11933,7 +11941,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     surface_->PostSubBufferAsync(
         c.x, c.y, c.width, c.height,
         base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
-                   base::AsWeakPtr(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   } else {
     FinishSwapBuffers(surface_->PostSubBuffer(c.x, c.y, c.width, c.height));
   }
@@ -15602,8 +15610,9 @@ void GLES2DecoderImpl::DoSwapBuffers() {
     ++pending_swaps_;
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", async_swap_id);
 
-    surface_->SwapBuffersAsync(base::Bind(
-        &GLES2DecoderImpl::FinishAsyncSwapBuffers, base::AsWeakPtr(this)));
+    surface_->SwapBuffersAsync(
+        base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
+                   weak_ptr_factory_.GetWeakPtr()));
   } else {
     FinishSwapBuffers(surface_->SwapBuffers());
   }
@@ -15649,7 +15658,7 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes() {
   ClearScheduleDCLayerState();
   if (supports_async_swap_) {
     surface_->CommitOverlayPlanesAsync(base::Bind(
-        &GLES2DecoderImpl::FinishSwapBuffers, base::AsWeakPtr(this)));
+        &GLES2DecoderImpl::FinishSwapBuffers, weak_ptr_factory_.GetWeakPtr()));
   } else {
     FinishSwapBuffers(surface_->CommitOverlayPlanes());
   }

@@ -44,6 +44,8 @@ class MockGLES2Decoder : public GLES2Decoder {
                               int num_entries,
                               int* entries_processed);
 
+  base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
+
   MOCK_METHOD5(Initialize,
                bool(const scoped_refptr<gl::GLSurface>& surface,
                     const scoped_refptr<gl::GLContext>& context,
@@ -163,6 +165,9 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_CONST_METHOD0(WasContextLost, bool());
   MOCK_CONST_METHOD0(WasContextLostByRobustnessExtension, bool());
   MOCK_METHOD1(MarkContextLost, void(gpu::error::ContextLostReason reason));
+
+ private:
+  base::WeakPtrFactory<MockGLES2Decoder> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);
 };

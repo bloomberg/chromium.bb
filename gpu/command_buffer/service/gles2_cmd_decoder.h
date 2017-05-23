@@ -82,8 +82,7 @@ typedef base::Callback<void(const std::string& key,
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
-class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
-                                public CommonDecoder {
+class GPU_EXPORT GLES2Decoder : public CommonDecoder {
  public:
   typedef error::Error Error;
   typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
@@ -125,6 +124,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   void set_log_commands(bool log_commands) {
     log_commands_ = log_commands;
   }
+
+  virtual base::WeakPtr<GLES2Decoder> AsWeakPtr() = 0;
 
   // Initializes the graphics context. Can create an offscreen
   // decoder with a frame buffer that can be referenced from the parent.
