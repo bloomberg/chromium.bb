@@ -6,8 +6,8 @@ package org.chromium.device.nfc;
 
 import android.content.Context;
 
-import org.chromium.device.nfc.mojom.Nfc;
-import org.chromium.device.nfc.mojom.NfcProvider;
+import org.chromium.device.mojom.Nfc;
+import org.chromium.device.mojom.NfcProvider;
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.services.service_manager.InterfaceFactory;

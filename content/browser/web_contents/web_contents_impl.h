@@ -521,7 +521,7 @@ class CONTENT_EXPORT WebContentsImpl
   device::mojom::WakeLockContext* GetWakeLockContext() override;
   device::mojom::WakeLockService* GetRendererWakeLock() override;
 #if defined(OS_ANDROID)
-  void GetNFC(device::nfc::mojom::NFCRequest request) override;
+  void GetNFC(device::mojom::NFCRequest request) override;
 #endif
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;

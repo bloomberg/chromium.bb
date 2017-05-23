@@ -19,7 +19,7 @@ class NFCHost {
   explicit NFCHost(WebContents* web_contents);
   ~NFCHost();
 
-  void GetNFC(device::nfc::mojom::NFCRequest request);
+  void GetNFC(device::mojom::NFCRequest request);
 
  private:
   // This instance's ID (passed to the NFC implementation via |nfc_provider_|
@@ -29,7 +29,7 @@ class NFCHost {
   // The WebContents that owns this instance.
   WebContents* web_contents_;
 
-  device::nfc::mojom::NFCProviderPtr nfc_provider_;
+  device::mojom::NFCProviderPtr nfc_provider_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_host_;
 

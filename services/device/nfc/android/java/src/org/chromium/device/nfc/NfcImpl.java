@@ -23,15 +23,15 @@ import android.util.SparseArray;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.device.nfc.mojom.Nfc;
-import org.chromium.device.nfc.mojom.NfcClient;
-import org.chromium.device.nfc.mojom.NfcError;
-import org.chromium.device.nfc.mojom.NfcErrorType;
-import org.chromium.device.nfc.mojom.NfcMessage;
-import org.chromium.device.nfc.mojom.NfcPushOptions;
-import org.chromium.device.nfc.mojom.NfcPushTarget;
-import org.chromium.device.nfc.mojom.NfcWatchMode;
-import org.chromium.device.nfc.mojom.NfcWatchOptions;
+import org.chromium.device.mojom.Nfc;
+import org.chromium.device.mojom.NfcClient;
+import org.chromium.device.mojom.NfcError;
+import org.chromium.device.mojom.NfcErrorType;
+import org.chromium.device.mojom.NfcMessage;
+import org.chromium.device.mojom.NfcPushOptions;
+import org.chromium.device.mojom.NfcPushTarget;
+import org.chromium.device.mojom.NfcWatchMode;
+import org.chromium.device.mojom.NfcWatchOptions;
 import org.chromium.mojo.bindings.Callbacks;
 import org.chromium.mojo.system.MojoException;
 

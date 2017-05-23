@@ -39,7 +39,7 @@ NFCHost::NFCHost(WebContents* web_contents)
   }
 }
 
-void NFCHost::GetNFC(device::nfc::mojom::NFCRequest request) {
+void NFCHost::GetNFC(device::mojom::NFCRequest request) {
   // Connect to an NFC object, associating it with |id_|.
   nfc_provider_->GetNFCForHost(id_, std::move(request));
 }
