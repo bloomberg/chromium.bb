@@ -19,8 +19,8 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventQueue.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameOwner.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
@@ -439,7 +439,7 @@ void StringifyAndParseMethodSpecificData(
 
   for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
     if (supported_methods.Contains(kBasicCardNetworks[i].name)) {
-      UseCounter::Count(
+      Deprecation::CountDeprecation(
           &execution_context,
           UseCounter::kPaymentRequestNetworkNameInSupportedMethods);
       break;

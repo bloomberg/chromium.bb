@@ -19,6 +19,8 @@ enum Milestone {
   M60,
   M61,
   M62,
+  M63,
+  M64,
 };
 
 const char* milestoneString(Milestone milestone) {
@@ -34,6 +36,10 @@ const char* milestoneString(Milestone milestone) {
       return "M61, around September 2017";
     case M62:
       return "M62, around October 2017";
+    case M63:
+      return "M63, around December 2017";
+    case M64:
+      return "M64, around January 2018";
   }
 
   NOTREACHED();
@@ -424,6 +430,14 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "details and https://www.chromium.org/developers/"
           "recent-changes-credential-management-api for migration suggestions.",
           milestoneString(M62));
+
+    case UseCounter::kPaymentRequestNetworkNameInSupportedMethods:
+      return replacedWillBeRemoved(
+          "Card issuer network (\"amex\", \"diners\", \"discover\", \"jcb\", "
+          "\"mastercard\", \"mir\", \"unionpay\", \"visa\") as payment method",
+          "payment method name \"basic-card\" with issuer network in the "
+          "\"supportedNetworks\" field",
+          M64, "5725727580225536");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
