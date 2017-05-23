@@ -156,14 +156,21 @@ public abstract class ContextualSearchContext {
      *        the selection (typically a positive value when the selection expands).
      */
     void onSelectionAdjusted(int startAdjust, int endAdjust) {
-        nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
         // Fully track the selection as it changes.
         mSelectionStartOffset += startAdjust;
         mSelectionEndOffset += endAdjust;
         if (TextUtils.isEmpty(mInitialSelectedWord) && !TextUtils.isEmpty(mSurroundingText)) {
+            // TODO(donnd): investigate the root cause of crbug.com/725027 that requires this
+            // additional validation to prevent this substring call from crashing!
+            if (mSelectionEndOffset < mSelectionStartOffset
+                    || mSelectionEndOffset > mSurroundingText.length()) {
+                return;
+            }
+
             mInitialSelectedWord =
                     mSurroundingText.substring(mSelectionStartOffset, mSelectionEndOffset);
         }
+        nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
         // Notify of changes.
         onSelectionChanged();
     }
