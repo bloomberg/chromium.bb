@@ -460,11 +460,16 @@ class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelected
     private void handleTranslateOptionPostSnackbar(int actionId) {
         switch (actionId) {
             case ACTION_OVERFLOW_ALWAYS_TRANSLATE:
+                toggleAlwaysTranslate();
+                // Start translating if always translate is selected and if page is not already
+                // translated to the target language.
+                if (mOptions.alwaysTranslateLanguageState()
+                        && mTabLayout.getSelectedTabPosition() == SOURCE_TAB_INDEX) {
+                    startTranslating(mTabLayout.getSelectedTabPosition());
+                }
+                return;
             case ACTION_AUTO_ALWAYS_TRANSLATE:
-                mOptions.toggleAlwaysTranslateLanguageState(
-                        !mOptions.alwaysTranslateLanguageState());
-                nativeApplyBoolTranslateOption(mNativeTranslateInfoBarPtr,
-                        TranslateOption.ALWAYS_TRANSLATE, mOptions.alwaysTranslateLanguageState());
+                toggleAlwaysTranslate();
                 return;
             case ACTION_OVERFLOW_NEVER_LANGUAGE:
             case ACTION_AUTO_NEVER_LANGUAGE:
@@ -480,6 +485,12 @@ class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelected
             default:
                 assert false : "Unsupported Menu Item Id, in handle post snackbar";
         }
+    }
+
+    private void toggleAlwaysTranslate() {
+        mOptions.toggleAlwaysTranslateLanguageState(!mOptions.alwaysTranslateLanguageState());
+        nativeApplyBoolTranslateOption(mNativeTranslateInfoBarPtr, TranslateOption.ALWAYS_TRANSLATE,
+                mOptions.alwaysTranslateLanguageState());
     }
 
     private static void recordInfobarAction(int action) {
