@@ -157,7 +157,7 @@ class EdgeImporterBrowserTest : public InProcessBrowserTest {
   ImporterTestRegistryOverrider test_registry_overrider_;
 };
 
-IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, DISABLED_EdgeImporter) {
+IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporter) {
   // Only verified to work with ESE library on Windows 8.1 and above.
   if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
     return;
