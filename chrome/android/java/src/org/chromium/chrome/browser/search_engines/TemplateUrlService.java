@@ -266,6 +266,17 @@ public class TemplateUrlService {
     }
 
     /**
+     * Checks whether a search result page is from a default search provider.
+     * @param url The url for the search result page.
+     * @return Whether the search result page with the given url from the default search provider.
+     */
+    public boolean isSearchResultsPageFromDefaultSearchProvider(String url) {
+        ThreadUtils.assertOnUiThread();
+        return nativeIsSearchResultsPageFromDefaultSearchProvider(
+                mNativeTemplateUrlServiceAndroid, url);
+    }
+
+    /**
      * Registers a listener for the callback that indicates that the
      * TemplateURLService has loaded.
      */
@@ -396,6 +407,8 @@ public class TemplateUrlService {
             long nativeTemplateUrlServiceAndroid, String selectedKeyword);
     private native int nativeGetDefaultSearchProviderIndex(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchProviderManaged(long nativeTemplateUrlServiceAndroid);
+    private native boolean nativeIsSearchResultsPageFromDefaultSearchProvider(
+            long nativeTemplateUrlServiceAndroid, String url);
     private native boolean nativeIsSearchByImageAvailable(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsDefaultSearchEngineGoogle(long nativeTemplateUrlServiceAndroid);
     private native String nativeGetUrlForSearchQuery(long nativeTemplateUrlServiceAndroid,

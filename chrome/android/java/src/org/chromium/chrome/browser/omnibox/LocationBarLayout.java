@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
@@ -2230,6 +2231,8 @@ public class LocationBarLayout extends FrameLayout
         } else {
             setUrlToPageUrl();
         }
+
+        LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
 
         if (currentTab != null) currentTab.requestFocus();
 

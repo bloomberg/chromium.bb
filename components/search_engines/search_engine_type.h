@@ -8,6 +8,9 @@
 // Enum to record the user's default search engine choice in UMA.  Add new
 // search engines at the bottom and do not delete from this list, so as not
 // to disrupt UMA data already recorded.
+
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.search_engines
 enum SearchEngineType {
   // Prepopulated engines.
   SEARCH_ENGINE_UNKNOWN = -1,
