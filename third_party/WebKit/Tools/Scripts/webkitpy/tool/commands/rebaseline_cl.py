@@ -54,9 +54,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         self._log_scheduled_jobs(jobs)
         builders_with_no_jobs = self.builders_with_no_jobs(jobs)
 
-        if options.trigger_jobs:
-            if self.trigger_try_jobs(builders_with_no_jobs):
-                return 1
+        if options.trigger_jobs and builders_with_no_jobs:
+            self.trigger_try_jobs(builders_with_no_jobs)
+            return 1
 
         if not options.fill_missing and builders_with_no_jobs:
             _log.error('The following builders have no jobs:')
@@ -121,16 +121,13 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         return self.git_cl().latest_try_jobs(self._try_bots())
 
     def trigger_try_jobs(self, builders):
-        """Triggers try jobs if necessary; returns whether builds were triggered."""
-        if builders is None:
-            return False
+        """Triggers try jobs for the given builders."""
         _log.info('Triggering try jobs for:')
         for builder in sorted(builders):
             _log.info('  %s', builder)
         self.git_cl().trigger_try_jobs(builders)
         _log.info('Once all pending try jobs have finished, please re-run\n'
                   'webkit-patch rebaseline-cl to fetch new baselines.')
-        return True
 
     def builders_with_no_jobs(self, builds):
         """Returns the set of builders that don't have triggered builds."""
