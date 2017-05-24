@@ -1341,6 +1341,37 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForNonAxisAlignedClipping) {
   EXPECT_TRUE(node->has_render_surface);
 }
 
+TEST_F(LayerTreeHostCommonTest, EffectNodesForNonAxisAlignedClips) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* rotate_and_clip = AddChildToRoot<LayerImpl>();
+  LayerImpl* only_clip = AddChild<LayerImpl>(rotate_and_clip);
+  LayerImpl* rotate_and_clip2 = AddChild<LayerImpl>(only_clip);
+
+  gfx::Transform rotate;
+  rotate.Rotate(2);
+  root->SetBounds(gfx::Size(10, 10));
+  rotate_and_clip->SetBounds(gfx::Size(10, 10));
+  rotate_and_clip->test_properties()->transform = rotate;
+  rotate_and_clip->SetMasksToBounds(true);
+  only_clip->SetBounds(gfx::Size(10, 10));
+  only_clip->SetMasksToBounds(true);
+  rotate_and_clip2->SetBounds(gfx::Size(10, 10));
+  rotate_and_clip2->test_properties()->transform = rotate;
+  rotate_and_clip2->SetMasksToBounds(true);
+
+  ExecuteCalculateDrawProperties(root);
+  // non-axis aligned clip should create an effect node
+  EXPECT_NE(root->effect_tree_index(), rotate_and_clip->effect_tree_index());
+  // Since only_clip's clip is in the same non-axis aligned space as
+  // rotate_and_clip's clip, no new effect node should be created.
+  EXPECT_EQ(rotate_and_clip->effect_tree_index(),
+            only_clip->effect_tree_index());
+  // rotate_and_clip2's clip and only_clip's clip are in different non-axis
+  // aligned spaces. So, new effect node should be created.
+  EXPECT_NE(rotate_and_clip2->effect_tree_index(),
+            only_clip->effect_tree_index());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceListForRenderSurfaceWithClippedLayer) {
   LayerImpl* root = root_layer_for_testing();
