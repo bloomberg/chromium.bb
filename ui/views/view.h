@@ -378,6 +378,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // implementation.
   int GetMirroredXForRect(const gfx::Rect& rect) const;
 
+  // Given a rectangle specified in this View's coordinate system, the function
+  // computes the mirrored rectangle.
+  gfx::Rect GetMirroredRect(const gfx::Rect& rect) const;
+
   // Given the X coordinate of a point inside the View, this function returns
   // the mirrored X coordinate of the point if the View's UI layout is
   // right-to-left. If the layout is left-to-right, the same X coordinate is

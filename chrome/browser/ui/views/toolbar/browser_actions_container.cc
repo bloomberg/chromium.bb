@@ -630,11 +630,8 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
         ((space_before_drop_icon + kDropIndicatorWidth) / 2);
     const int row_height = ToolbarActionsBar::IconHeight();
     const int drop_indicator_y = row_height * drop_position_->row;
-    gfx::Rect indicator_bounds(drop_indicator_x,
-                               drop_indicator_y,
-                               kDropIndicatorWidth,
-                               row_height);
-    indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
+    gfx::Rect indicator_bounds = GetMirroredRect(gfx::Rect(
+        drop_indicator_x, drop_indicator_y, kDropIndicatorWidth, row_height));
 
     // Color of the drop indicator.
     static const SkColor kDropIndicatorColor = SK_ColorBLACK;

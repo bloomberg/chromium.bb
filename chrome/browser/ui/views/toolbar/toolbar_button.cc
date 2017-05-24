@@ -137,17 +137,6 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
-std::unique_ptr<views::InkDropRipple> ToolbarButton::CreateInkDropRipple()
-    const {
-  return CreateDefaultInkDropRipple(GetContentsBounds().CenterPoint());
-}
-
-std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
-    const {
-  return CreateDefaultInkDropHighlight(
-      gfx::RectF(GetContentsBounds()).CenterPoint());
-}
-
 void ToolbarButton::ShowContextMenuForView(View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {

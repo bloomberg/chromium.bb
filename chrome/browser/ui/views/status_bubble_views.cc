@@ -484,7 +484,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
                       popup_size_.height());
   text_rect.Inset(kShadowThickness, kShadowThickness);
   // Make sure the text is aligned to the right on RTL UIs.
-  text_rect.set_x(GetMirroredXForRect(text_rect));
+  text_rect = GetMirroredRect(text_rect);
 
   // Text color is the foreground tab text color at 60% alpha.
   SkColor blended_text_color = color_utils::AlphaBlend(

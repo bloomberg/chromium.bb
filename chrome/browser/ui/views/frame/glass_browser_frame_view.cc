@@ -682,8 +682,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
   // Top stroke.
   gfx::Rect separator_rect(x, y, w, 0);
   gfx::ScopedCanvas scoped_canvas(canvas);
-  gfx::Rect tabstrip_bounds(GetBoundsForTabStrip(browser_view()->tabstrip()));
-  tabstrip_bounds.set_x(GetMirroredXForRect(tabstrip_bounds));
+  gfx::Rect tabstrip_bounds =
+      GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
   canvas->sk_canvas()->clipRect(gfx::RectToSkRect(tabstrip_bounds),
                                 SkClipOp::kDifference);
   separator_rect.set_y(tabstrip_bounds.bottom());
