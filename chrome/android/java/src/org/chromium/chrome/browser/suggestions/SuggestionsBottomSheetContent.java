@@ -100,7 +100,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 mRecyclerView.getScrollEventReporter().reset();
 
                 if (ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)) {
+                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)
+                        && sheet.getActiveTab() != null) {
                     updateContextualSuggestions(sheet.getActiveTab().getUrl());
                 }
 
