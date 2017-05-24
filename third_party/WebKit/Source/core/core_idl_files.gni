@@ -462,6 +462,7 @@ core_dependency_idl_files =
                     "animation/ElementAnimation.idl",
                     "css/FontFaceSource.idl",
                     "css/PropertyRegistration.idl",
+                    "css/cssom/CSSUnitValues.idl",
                     "css/cssom/WindowGetComputedStyle.idl",
                     "dom/ChildNode.idl",
                     "dom/DocumentFullscreen.idl",
