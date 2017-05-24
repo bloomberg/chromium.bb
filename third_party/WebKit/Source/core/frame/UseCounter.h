@@ -437,8 +437,6 @@ class CORE_EXPORT UseCounter {
     // The above items are available in M40 branch.
 
     kSetReferrerPolicy = 593,
-    kMouseEventWhich = 595,
-    kUIEventWhich = 598,
     kTextWholeText = 599,
     kNotificationCloseEvent = 603,
     kStyleMedia = 606,

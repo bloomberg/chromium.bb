@@ -73,7 +73,6 @@
     // Non-standard
     [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
     [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
-    [MeasureAs=MouseEventWhich] readonly attribute long which;
     [Measure] readonly attribute long layerX;
     [Measure] readonly attribute long layerY;
 };

@@ -3910,7 +3910,6 @@ interface KeyboardEvent : UIEvent
     getter metaKey
     getter repeat
     getter shiftKey
-    getter which
     method constructor
     method getModifierState
     method initKeyboardEvent
@@ -4337,7 +4336,6 @@ interface MouseEvent : UIEvent
     getter screenY
     getter shiftKey
     getter toElement
-    getter which
     getter x
     getter y
     method constructor

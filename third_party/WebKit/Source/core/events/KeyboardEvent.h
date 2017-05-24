@@ -84,7 +84,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
 
   const AtomicString& InterfaceName() const override;
   bool IsKeyboardEvent() const override;
-  int which() const override;
+  unsigned which() const override;
   bool isComposing() const { return is_composing_; }
 
   DECLARE_VIRTUAL_TRACE();
