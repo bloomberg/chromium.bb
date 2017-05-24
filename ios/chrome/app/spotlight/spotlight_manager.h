@@ -31,6 +31,10 @@ class ChromeBrowserState;
 // Resyncs the index if necessary
 - (void)resyncIndex;
 
+// Called before the instance is deallocated. This method should be overridden
+// by the subclasses and de-activate the instance.
+- (void)shutdown;
+
 @end
 
 #endif  // IOS_CHROME_APP_SPOTLIGHT_SPOTLIGHT_MANAGER_H_

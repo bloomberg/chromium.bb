@@ -171,10 +171,6 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
   return self;
 }
 
-- (void)dealloc {
-  [self detachBookmarkModel];
-}
-
 - (void)detachBookmarkModel {
   [self cancelAllLargeIconPendingTasks];
   if (_bookmarkModelBridge.get()) {
@@ -281,6 +277,11 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
   for (int child = 0; child < childCount; child++) {
     [self refreshNodeInIndex:node->GetChild(child) initial:initial];
   }
+}
+
+- (void)shutdown {
+  [self detachBookmarkModel];
+  [super shutdown];
 }
 
 - (NSArray*)spotlightItemsWithURL:(const GURL&)URL

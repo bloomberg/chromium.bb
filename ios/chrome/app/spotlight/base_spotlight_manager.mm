@@ -52,6 +52,10 @@ const CGFloat kFallbackRoundedCorner = 8;
 
   // Dictionary to track the tasks querying the large icons.
   NSMutableDictionary* _pendingTasks;
+
+  // Records whether -shutdown has been invoked and the method forwarded to
+  // the base class.
+  BOOL _shutdownCalled;
 }
 
 // Compute a hash consisting of the first 8 bytes of the MD5 hash of a string
@@ -86,6 +90,10 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
 - (instancetype)init {
   NOTREACHED();
   return nil;
+}
+
+- (void)dealloc {
+  DCHECK(_shutdownCalled);
 }
 
 - (int64_t)getHashForURL:(const GURL&)URL title:(NSString*)title {
@@ -244,6 +252,12 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
 
 - (NSUInteger)pendingLargeIconTasksCount {
   return [_pendingTasks count];
+}
+
+- (void)shutdown {
+  [self cancelAllLargeIconPendingTasks];
+  _largeIconService = nullptr;
+  _shutdownCalled = YES;
 }
 
 #pragma mark private methods

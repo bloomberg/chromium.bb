@@ -52,6 +52,10 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 // Adds keywords to |item|.
 - (void)addKeywords:(NSArray*)keywords toSearchableItem:(CSSearchableItem*)item;
 
+// Called before the instance is deallocated. This method should be overridden
+// by the subclasses and de-activate the instance.
+- (void)shutdown;
+
 @end
 
 #endif  // IOS_CHROME_APP_SPOTLIGHT_BOOKMARKS_SPOTLIGHT_MANAGER_H_
