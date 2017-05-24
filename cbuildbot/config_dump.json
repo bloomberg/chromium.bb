@@ -5746,6 +5746,25 @@
             "chrome_internal"
         ]
     },
+    "chell-nowithdebug-paladin": {
+        "_template": "paladin",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "chell"
+        ],
+        "description": "Commit Queue (internal, nowithdebug)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": false,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "chell-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
@@ -14899,6 +14918,7 @@
             "butterfly-paladin",
             "caroline-paladin",
             "cave-paladin",
+            "chell-nowithdebug-paladin",
             "chell-paladin",
             "cobblepot-paladin",
             "cyan-paladin",
@@ -28928,6 +28948,7 @@
             "x86-mario"
         ],
         "description": "Commit Queue (internal, nowithdebug)",
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
