@@ -94,6 +94,11 @@ class BubbleObserver {
   // PasswordManagerBrowserTestBase.
   void WaitForManagementState() const;
 
+  // Returns once the save prompt pops up or it's already shown.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  void WaitForSavePrompt() const;
+
  private:
   ManagePasswordsUIController* const passwords_ui_controller_;
 

@@ -336,4 +336,23 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   EXPECT_EQ(signin_form, stored[signin_form.signon_realm][0]);
 }
 
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {
+  NavigateToFile("/password/password_form.html");
+
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderFrameHost(),
+      "var c = new PasswordCredential({ id: 'user', password: '12345' });"
+      "navigator.credentials.store(c);"));
+  BubbleObserver bubble_observer(WebContents());
+  bubble_observer.WaitForSavePrompt();
+  bubble_observer.AcceptSavePrompt();
+
+  // Reload the page and make sure it's autofilled.
+  NavigateToFile("/password/password_form.html");
+  WaitForElementValue("username_field", "user");
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
+  WaitForElementValue("password_field", "12345");
+}
+
 }  // namespace
