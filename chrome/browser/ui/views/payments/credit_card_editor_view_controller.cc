@@ -187,7 +187,10 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
 // Formats card number. For example, "4111111111111111" is formatted into
 // "4111 1111 1111 1111".
 base::string16 FormatCardNumber(const base::string16& text) {
+  // Do not format masked card numbers, which start with a letter.
   base::string16 number = autofill::CreditCard::StripSeparators(text);
+  if (number.empty() || !base::IsAsciiDigit(number[0]))
+    return text;
 
   std::vector<size_t> positions = {4U, 9U, 14U};
   if (autofill::CreditCard::GetCardNetwork(number) ==
@@ -366,14 +369,20 @@ CreditCardEditorViewController::CreateExtraViewForField(
 }
 
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
+  bool is_server_card =
+      credit_card_to_edit_ &&
+      credit_card_to_edit_->record_type() != autofill::CreditCard::LOCAL_CARD;
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NUMBER,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER),
        EditorField::LengthHint::HINT_SHORT, /*required=*/true,
-       EditorField::ControlType::TEXTFIELD_NUMBER},
+       is_server_card ? EditorField::ControlType::READONLY_LABEL
+                      : EditorField::ControlType::TEXTFIELD_NUMBER},
       {autofill::CREDIT_CARD_NAME_FULL,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD),
-       EditorField::LengthHint::HINT_SHORT, /*required=*/true},
+       EditorField::LengthHint::HINT_SHORT, /*required=*/true,
+       is_server_card ? EditorField::ControlType::READONLY_LABEL
+                      : EditorField::ControlType::TEXTFIELD},
       {autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE),
        EditorField::LengthHint::HINT_SHORT, /*required=*/true,
