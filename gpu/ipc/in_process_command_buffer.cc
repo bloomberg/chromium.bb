@@ -326,8 +326,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
   decoder_->set_command_buffer_service(command_buffer.get());
 
-  executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get(),
-                                      decoder_.get()));
+  executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get()));
   command_buffer->SetGetBufferChangeCallback(base::Bind(
       &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_ = std::move(command_buffer);
@@ -589,7 +588,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(
   // If we've processed all pending commands but still have pending queries,
   // pump idle work until the query is passed.
   if (put_offset == command_buffer_->GetLastState().get_offset &&
-      (executor_->HasMoreIdleWork() || executor_->HasPendingQueries())) {
+      (decoder_->HasMoreIdleWork() || decoder_->HasPendingQueries())) {
     ScheduleDelayedWorkOnGpuThread();
   }
 }
@@ -599,9 +598,9 @@ void InProcessCommandBuffer::PerformDelayedWorkOnGpuThread() {
   delayed_work_pending_ = false;
   base::AutoLock lock(command_buffer_lock_);
   if (MakeCurrent()) {
-    executor_->PerformIdleWork();
-    executor_->ProcessPendingQueries();
-    if (executor_->HasMoreIdleWork() || executor_->HasPendingQueries()) {
+    decoder_->PerformIdleWork();
+    decoder_->ProcessPendingQueries(false);
+    if (decoder_->HasMoreIdleWork() || decoder_->HasPendingQueries()) {
       ScheduleDelayedWorkOnGpuThread();
     }
   }
@@ -919,7 +918,7 @@ void InProcessCommandBuffer::OnWaitSyncTokenCompleted(
 void InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread() {
   if (!service_->BlockThreadOnWaitSyncToken()) {
     DCHECK(executor_->scheduled());
-    DCHECK(executor_->HasPollingWork());
+    DCHECK(decoder_->HasPollingWork());
 
     executor_->SetScheduled(false);
   }

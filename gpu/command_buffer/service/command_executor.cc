@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_switches.h"
@@ -22,15 +22,14 @@ using ::base::SharedMemory;
 namespace gpu {
 
 CommandExecutor::CommandExecutor(CommandBufferServiceBase* command_buffer,
-                                 AsyncAPIInterface* handler,
-                                 gles2::GLES2Decoder* decoder)
-    : command_buffer_(command_buffer), handler_(handler), decoder_(decoder) {}
+                                 AsyncAPIInterface* handler)
+    : command_buffer_(command_buffer), handler_(handler) {}
 
 CommandExecutor::~CommandExecutor() {}
 
 void CommandExecutor::PutChanged() {
-  TRACE_EVENT1("gpu", "CommandExecutor:PutChanged", "decoder",
-               decoder_ ? decoder_->GetLogger()->GetLogPrefix() : "None");
+  TRACE_EVENT1("gpu", "CommandExecutor:PutChanged", "handler",
+               handler_->GetLogPrefix().as_string());
 
   CommandBuffer::State state = command_buffer_->GetState();
 
@@ -46,8 +45,7 @@ void CommandExecutor::PutChanged() {
     return;
 
   error::Error error = error::kNoError;
-  if (decoder_)
-    decoder_->BeginDecoding();
+  handler_->BeginDecoding();
   while (put_ != get_) {
     if (PauseExecution())
       break;
@@ -78,28 +76,13 @@ void CommandExecutor::PutChanged() {
       break;
   }
 
-  if (decoder_) {
-    if (!error::IsError(error) && decoder_->WasContextLost()) {
-      command_buffer_->SetParseError(error::kLostContext);
-    }
-    decoder_->EndDecoding();
-  }
+  handler_->EndDecoding();
 }
 
 void CommandExecutor::SetScheduled(bool scheduled) {
   TRACE_EVENT2("gpu", "CommandExecutor:SetScheduled", "this", this, "scheduled",
                scheduled);
   scheduled_ = scheduled;
-}
-
-bool CommandExecutor::HasPendingQueries() const {
-  return (decoder_ && decoder_->HasPendingQueries());
-}
-
-void CommandExecutor::ProcessPendingQueries() {
-  if (!decoder_)
-    return;
-  decoder_->ProcessPendingQueries(false);
 }
 
 bool CommandExecutor::SetGetBuffer(int32_t transfer_buffer_id) {
@@ -142,26 +125,6 @@ bool CommandExecutor::PauseExecution() {
     paused_ = pause;
   }
   return pause;
-}
-
-bool CommandExecutor::HasMoreIdleWork() const {
-  return (decoder_ && decoder_->HasMoreIdleWork());
-}
-
-void CommandExecutor::PerformIdleWork() {
-  if (!decoder_)
-    return;
-  decoder_->PerformIdleWork();
-}
-
-bool CommandExecutor::HasPollingWork() const {
-  return (decoder_ && decoder_->HasPollingWork());
-}
-
-void CommandExecutor::PerformPollingWork() {
-  if (!decoder_)
-    return;
-  decoder_->PerformPollingWork();
 }
 
 error::Error CommandExecutor::ProcessCommands(int num_commands) {

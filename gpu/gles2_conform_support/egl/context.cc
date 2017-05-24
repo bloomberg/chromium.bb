@@ -275,8 +275,7 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
     return false;
 
   std::unique_ptr<gpu::CommandExecutor> command_executor(
-      new gpu::CommandExecutor(command_buffer.get(), decoder.get(),
-                               decoder.get()));
+      new gpu::CommandExecutor(command_buffer.get(), decoder.get()));
 
   decoder->set_command_buffer_service(command_buffer.get());
 

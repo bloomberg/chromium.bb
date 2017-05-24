@@ -313,8 +313,7 @@ void GLManager::InitializeWithCommandLine(
   command_buffer_.reset(new CommandBufferService(
       decoder_->GetContextGroup()->transfer_buffer_manager()));
 
-  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
-                                      decoder_.get()));
+  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get()));
 
   decoder_->set_command_buffer_service(command_buffer_.get());
 
@@ -433,7 +432,7 @@ void GLManager::SetSurface(gl::GLSurface* surface) {
 }
 
 void GLManager::PerformIdleWork() {
-  executor_->PerformIdleWork();
+  decoder_->PerformIdleWork();
 }
 
 void GLManager::Destroy() {

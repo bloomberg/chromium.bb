@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/strings/string_piece.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
@@ -21,6 +22,9 @@ class GPU_EXPORT AsyncAPIInterface {
  public:
   AsyncAPIInterface() {}
   virtual ~AsyncAPIInterface() {}
+
+  virtual void BeginDecoding() = 0;
+  virtual void EndDecoding() = 0;
 
   // Executes a single command.
   // Parameters:
@@ -47,6 +51,8 @@ class GPU_EXPORT AsyncAPIInterface {
 
   // Returns a name for a command. Useful for logging / debuging.
   virtual const char* GetCommandName(unsigned int command_id) const = 0;
+
+  virtual base::StringPiece GetLogPrefix() = 0;
 };
 
 }  // namespace gpu

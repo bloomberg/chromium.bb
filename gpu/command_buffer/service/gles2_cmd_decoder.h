@@ -311,8 +311,8 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
 
   virtual Logger* GetLogger() = 0;
 
-  virtual void BeginDecoding();
-  virtual void EndDecoding();
+  void BeginDecoding() override;
+  void EndDecoding() override;
 
   virtual const ContextState* GetContextState() = 0;
   virtual scoped_refptr<ShaderTranslatorInterface> GetTranslator(
@@ -328,6 +328,8 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   error::Error DoCommand(unsigned int command,
                          unsigned int arg_count,
                          const volatile void* cmd_data) override;
+
+  base::StringPiece GetLogPrefix() override;
 
  private:
   bool initialized_;

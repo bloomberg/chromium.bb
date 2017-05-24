@@ -60,6 +60,9 @@ class AsyncAPIMock : public AsyncAPIInterface {
     volatile CommandBufferEntry* args_;
   };
 
+  void BeginDecoding() override {}
+  void EndDecoding() override {}
+
   MOCK_METHOD3(DoCommand,
                error::Error(unsigned int command,
                             unsigned int arg_count,
@@ -74,6 +77,8 @@ class AsyncAPIMock : public AsyncAPIInterface {
   const char* GetCommandName(unsigned int command_id) const {
     return "";
   };
+
+  base::StringPiece GetLogPrefix() override { return "None"; }
 
   // Sets the engine, to forward SetToken commands to it.
   void set_command_buffer_service(

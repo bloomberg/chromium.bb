@@ -109,7 +109,7 @@ class CommandBufferHelperTest : public testing::Test {
         new CommandBufferServiceLocked(transfer_buffer_manager_.get()));
 
     executor_.reset(
-        new CommandExecutor(command_buffer_.get(), api_mock_.get(), NULL));
+        new CommandExecutor(command_buffer_.get(), api_mock_.get()));
     command_buffer_->SetPutOffsetChangeCallback(base::Bind(
         &CommandExecutor::PutChanged, base::Unretained(executor_.get())));
     command_buffer_->SetGetBufferChangeCallback(base::Bind(
