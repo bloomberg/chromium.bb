@@ -21,6 +21,7 @@ class UI_BASE_IME_EXPORT MockInputMethodManager : public InputMethodManager {
    public:
     State();
 
+    scoped_refptr<InputMethodManager::State> Clone() const override;
     void AddInputMethodExtension(
         const std::string& extension_id,
         const InputMethodDescriptors& descriptors,

@@ -33,7 +33,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
-#include "chrome/browser/chromeos/input_method/input_method_switch_recorder.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -254,18 +253,6 @@ base::string16 SystemTrayDelegateChromeOS::GetIMEManagedMessage() {
   return ime_state->GetAllowedInputMethods().empty()
              ? base::string16()
              : l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY);
-}
-
-void SystemTrayDelegateChromeOS::SwitchIME(const std::string& ime_id) {
-  input_method::InputMethodManager::Get()
-      ->GetActiveIMEState()
-      ->ChangeInputMethod(ime_id, false /* show_message */);
-  input_method::InputMethodSwitchRecorder::Get()->RecordSwitch(
-      true /* by_tray_menu */);
-}
-
-void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
-  input_method::InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
 }
 
 ash::NetworkingConfigDelegate*

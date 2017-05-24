@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/chromeos_switches.h"
@@ -136,8 +135,6 @@ AshInit::AshInit() {
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  shell->accelerator_controller()->SetImeControlDelegate(
-      std::unique_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 

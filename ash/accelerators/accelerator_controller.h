@@ -33,7 +33,6 @@ namespace ash {
 struct AcceleratorData;
 class AcceleratorControllerDelegate;
 class ExitWarningHandler;
-class ImeControlDelegate;
 
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
@@ -107,9 +106,6 @@ class ASH_EXPORT AcceleratorController
 
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
-
-  void SetImeControlDelegate(
-      std::unique_ptr<ImeControlDelegate> ime_control_delegate);
 
   // Provides access to the ExitWarningHandler for testing.
   ExitWarningHandler* GetExitWarningHandlerForTest() {
@@ -186,8 +182,6 @@ class ASH_EXPORT AcceleratorController
 
   // A tracker for the current and previous accelerators.
   std::unique_ptr<ui::AcceleratorHistory> accelerator_history_;
-
-  std::unique_ptr<ImeControlDelegate> ime_control_delegate_;
 
   // Handles the exit accelerator which requires a double press to exit and
   // shows a popup with an explanation.

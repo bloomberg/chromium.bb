@@ -691,8 +691,6 @@ source_set("chromeos") {
     "input_method/input_method_manager_impl.h",
     "input_method/input_method_persistence.cc",
     "input_method/input_method_persistence.h",
-    "input_method/input_method_switch_recorder.cc",
-    "input_method/input_method_switch_recorder.h",
     "input_method/input_method_syncer.cc",
     "input_method/input_method_syncer.h",
     "input_method/input_method_util.cc",

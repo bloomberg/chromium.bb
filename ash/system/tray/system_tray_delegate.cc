@@ -26,10 +26,6 @@ base::string16 SystemTrayDelegate::GetIMEManagedMessage() {
   return base::string16();
 }
 
-void SystemTrayDelegate::SwitchIME(const std::string& ime_id) {}
-
-void SystemTrayDelegate::ActivateIMEProperty(const std::string& key) {}
-
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {
   return nullptr;

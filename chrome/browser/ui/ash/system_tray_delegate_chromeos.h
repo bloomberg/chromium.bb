@@ -52,8 +52,6 @@ class SystemTrayDelegateChromeOS
   void GetAvailableIMEList(ash::IMEInfoList* list) override;
   void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) override;
   base::string16 GetIMEManagedMessage() override;
-  void SwitchIME(const std::string& ime_id) override;
-  void ActivateIMEProperty(const std::string& key) override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;

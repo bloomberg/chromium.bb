@@ -8,7 +8,13 @@
 
 namespace chromeos {
 namespace input_method {
+
 MockInputMethodManager::State::State() {}
+
+scoped_refptr<InputMethodManager::State> MockInputMethodManager::State::Clone()
+    const {
+  return nullptr;
+}
 
 void MockInputMethodManager::State::AddInputMethodExtension(
     const std::string& extension_id,
