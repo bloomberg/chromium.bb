@@ -127,6 +127,11 @@
     <color name="snippets_list_header_text_color">#646464</color>
     <color name="snippets_headline_text_color">#333333</color>
 
+    <!-- Incognito NTP Colors. -->
+    <color name="incognito_text">#b3ffffff</color>
+    <color name="incognito_emphasis">@android:color/white</color>
+    <color name="incognito_header">#ccffffff</color>
+
     <!-- Site suggestion tile colors. -->
     <color name="tile_view_text">#6f6f6f</color>
     <color name="tile_view_offline_badge_tint">#4285f4</color>
