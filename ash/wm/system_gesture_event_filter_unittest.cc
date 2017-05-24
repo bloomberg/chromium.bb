@@ -461,7 +461,7 @@ TEST_F(SystemGestureEventFilterTest,
   aura::test::EventCountDelegate delegate;
   delegate.set_window_component(HTCLIENT);
   std::unique_ptr<aura::Window> child(new aura::Window(&delegate));
-  child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  child->SetType(aura::client::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   parent->AddChild(child.get());
   child->SetBounds(gfx::Rect(100, 100));

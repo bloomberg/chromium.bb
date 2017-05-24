@@ -25,6 +25,7 @@
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -33,7 +34,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/public/window_types.h"
 
 namespace ash {
 
@@ -86,7 +86,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   }
   window_resizer = ShellPort::Get()->CreateDragWindowResizer(
       std::move(window_resizer), window_state);
-  if (window->type() == ui::wm::WINDOW_TYPE_PANEL) {
+  if (window->type() == aura::client::WINDOW_TYPE_PANEL) {
     window_resizer.reset(
         PanelWindowResizer::Create(window_resizer.release(), window_state));
   }

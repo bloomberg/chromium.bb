@@ -431,7 +431,7 @@ void ScreenshotController::UpdateSelectedWindow(ui::LocatedEvent* event) {
   aura::Window* selected = ScreenshotWindowTargeter().FindWindowForEvent(event);
 
   // Find a window that is backed with a widget.
-  while (selected && (selected->type() == ui::wm::WINDOW_TYPE_CONTROL ||
+  while (selected && (selected->type() == aura::client::WINDOW_TYPE_CONTROL ||
                       !selected->delegate())) {
     selected = selected->parent();
   }

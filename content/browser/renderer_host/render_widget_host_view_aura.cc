@@ -435,7 +435,7 @@ void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
   CreateDelegatedFrameHostClient();
 
-  CreateAuraWindow(ui::wm::WINDOW_TYPE_CONTROL);
+  CreateAuraWindow(aura::client::WINDOW_TYPE_CONTROL);
 
   if (parent_view)
     parent_view->AddChild(GetNativeView());
@@ -468,7 +468,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
     old_child->popup_parent_host_view_ = NULL;
   }
   popup_parent_host_view_->SetPopupChild(this);
-  CreateAuraWindow(ui::wm::WINDOW_TYPE_MENU);
+  CreateAuraWindow(aura::client::WINDOW_TYPE_MENU);
 
   // Setting the transient child allows for the popup to get mouse events when
   // in a system modal dialog. Do this before calling ParentWindowWithContext
@@ -496,7 +496,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   is_fullscreen_ = true;
   CreateDelegatedFrameHostClient();
-  CreateAuraWindow(ui::wm::WINDOW_TYPE_NORMAL);
+  CreateAuraWindow(aura::client::WINDOW_TYPE_NORMAL);
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
 
   aura::Window* parent = NULL;
@@ -1899,7 +1899,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     text_input_manager_->RemoveObserver(this);
 }
 
-void RenderWidgetHostViewAura::CreateAuraWindow(ui::wm::WindowType type) {
+void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   DCHECK(!window_);
   window_ = new aura::Window(this);
   window_->SetName("RenderWidgetHostViewAura");

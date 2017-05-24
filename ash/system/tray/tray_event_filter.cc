@@ -55,7 +55,7 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
     // Don't process events that occurred inside a popup notification
     // from message center.
     if (container_id == kShellWindowId_StatusContainer &&
-        window->type() == ui::wm::WINDOW_TYPE_POPUP &&
+        window->type() == aura::client::WINDOW_TYPE_POPUP &&
         target->IsAlwaysOnTop()) {
       return;
     }

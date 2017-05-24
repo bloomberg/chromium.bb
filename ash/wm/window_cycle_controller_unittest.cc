@@ -99,7 +99,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
   aura::Window* CreatePanelWindow() {
     gfx::Rect rect(100, 100);
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, ui::wm::WINDOW_TYPE_PANEL, 0, rect);
+        NULL, aura::client::WINDOW_TYPE_PANEL, 0, rect);
     shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }

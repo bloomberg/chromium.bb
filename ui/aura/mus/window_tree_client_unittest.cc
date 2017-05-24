@@ -367,7 +367,7 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   Window* child = root_window()->children()[0];
   EXPECT_FALSE(child->TargetVisibility());
   EXPECT_EQ(server_test_property1_value, child->GetProperty(kTestPropertyKey1));
-  EXPECT_EQ(child->type(), ui::wm::WINDOW_TYPE_POPUP);
+  EXPECT_EQ(child->type(), client::WINDOW_TYPE_POPUP);
   EXPECT_EQ(ui::mojom::WindowType::BUBBLE,
             child->GetProperty(client::kWindowTypeKey));
 }
@@ -1222,7 +1222,7 @@ class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {
 // window tree.
 TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
   std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  top_level->SetType(client::WINDOW_TYPE_NORMAL);
   top_level->Init(ui::LAYER_NOT_DRAWN);
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
   top_level->Show();
@@ -2303,7 +2303,7 @@ TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
   ASSERT_EQ(2.0f, primary_display.device_scale_factor());
 
   std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  top_level->SetType(client::WINDOW_TYPE_NORMAL);
   top_level->Init(ui::LAYER_NOT_DRAWN);
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
   top_level->Show();

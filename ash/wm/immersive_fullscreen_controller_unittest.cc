@@ -732,7 +732,8 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealViaGestureChildConsumesEvents) {
   aura::test::TestWindowDelegate child_delegate;
   std::unique_ptr<aura::Window> child(
       CreateTestWindowInShellWithDelegateAndType(
-          &child_delegate, ui::wm::WINDOW_TYPE_CONTROL, 1234, gfx::Rect()));
+          &child_delegate, aura::client::WINDOW_TYPE_CONTROL, 1234,
+          gfx::Rect()));
   content_view()->Attach(child.get());
   child->Show();
 

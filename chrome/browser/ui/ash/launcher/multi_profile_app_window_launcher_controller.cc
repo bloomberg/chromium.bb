@@ -102,7 +102,8 @@ void MultiProfileAppWindowLauncherController::OnAppWindowShown(
   // Since this window did never had an anchor, it would stay hidden. We
   // therefore make it visible now.
   if (UserHasAppOnActiveDesktop(app_window) &&
-      app_window->GetNativeWindow()->type() == ui::wm::WINDOW_TYPE_PANEL &&
+      app_window->GetNativeWindow()->type() ==
+          aura::client::WINDOW_TYPE_PANEL &&
       !app_window->GetNativeWindow()->layer()->GetTargetOpacity()) {
     app_window->GetNativeWindow()->layer()->SetOpacity(1.0f);
   }

@@ -35,7 +35,7 @@ using WindowUserDataTest = test::AshTestBase;
 // Verifies clear() deletes the data associated with a window.
 TEST_F(WindowUserDataTest, ClearDestroys) {
   WindowUserData<Data> user_data;
-  aura::Window window(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN);
+  aura::Window window(nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   window.Init(ui::LAYER_NOT_DRAWN);
   bool data_deleted = false;
   user_data.Set(&window, base::MakeUnique<Data>(&data_deleted));
@@ -47,8 +47,8 @@ TEST_F(WindowUserDataTest, ClearDestroys) {
 // Verifies Set() called with an existing window replaces the existing data.
 TEST_F(WindowUserDataTest, ReplaceDestroys) {
   WindowUserData<Data> user_data;
-  std::unique_ptr<aura::Window> window(
-      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
+  std::unique_ptr<aura::Window> window(base::MakeUnique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_UNKNOWN));
   window->Init(ui::LAYER_NOT_DRAWN);
   bool data1_deleted = false;
   user_data.Set(window.get(), base::MakeUnique<Data>(&data1_deleted));
@@ -67,7 +67,7 @@ TEST_F(WindowUserDataTest, ReplaceDestroys) {
 // Verifies Set() with null deletes existing data.
 TEST_F(WindowUserDataTest, NullClears) {
   WindowUserData<Data> user_data;
-  aura::Window window(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN);
+  aura::Window window(nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   window.Init(ui::LAYER_NOT_DRAWN);
   bool data1_deleted = false;
   user_data.Set(&window, base::MakeUnique<Data>(&data1_deleted));

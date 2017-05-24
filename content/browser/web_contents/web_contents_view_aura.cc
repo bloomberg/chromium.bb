@@ -811,7 +811,7 @@ void WebContentsViewAura::CreateView(
   DCHECK(aura::Env::GetInstanceDontCreate());
   window_ = base::MakeUnique<aura::Window>(this);
   window_->set_owned_by_parent(false);
-  window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetName("WebContentsViewAura");
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->AddObserver(this);

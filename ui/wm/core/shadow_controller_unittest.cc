@@ -59,7 +59,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 // Tests that various methods in Window update the Shadow object as expected.
 TEST_F(ShadowControllerTest, Shadow) {
   std::unique_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
 
@@ -89,7 +89,7 @@ TEST_F(ShadowControllerTest, Shadow) {
 // Tests that the window's shadow's bounds are updated correctly.
 TEST_F(ShadowControllerTest, ShadowBounds) {
   std::unique_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
   window->Show();
@@ -115,7 +115,7 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 // Tests that activating a window changes the shadow style.
 TEST_F(ShadowControllerTest, ShadowStyle) {
   std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
-  window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
   ParentWindow(window1.get());
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
@@ -129,7 +129,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
 
   // Create another window and activate it.
   std::unique_ptr<aura::Window> window2(new aura::Window(NULL));
-  window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window2->Init(ui::LAYER_TEXTURED);
   ParentWindow(window2.get());
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
@@ -146,7 +146,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
 // Tests that shadow gets updated when the window show state changes.
 TEST_F(ShadowControllerTest, ShowState) {
   std::unique_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
   window->Show();
@@ -168,7 +168,7 @@ TEST_F(ShadowControllerTest, ShowState) {
 // Tests that we use smaller shadows for tooltips and menus.
 TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   std::unique_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
-  tooltip_window->SetType(ui::wm::WINDOW_TYPE_TOOLTIP);
+  tooltip_window->SetType(aura::client::WINDOW_TYPE_TOOLTIP);
   tooltip_window->Init(ui::LAYER_TEXTURED);
   ParentWindow(tooltip_window.get());
   tooltip_window->SetBounds(gfx::Rect(10, 20, 300, 400));
@@ -180,7 +180,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   EXPECT_EQ(ShadowElevation::SMALL, tooltip_shadow->desired_elevation());
 
   std::unique_ptr<aura::Window> menu_window(new aura::Window(NULL));
-  menu_window->SetType(ui::wm::WINDOW_TYPE_MENU);
+  menu_window->SetType(aura::client::WINDOW_TYPE_MENU);
   menu_window->Init(ui::LAYER_TEXTURED);
   ParentWindow(menu_window.get());
   menu_window->SetBounds(gfx::Rect(10, 20, 300, 400));
@@ -196,7 +196,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
 // should not lose their shadow when they lose activation to the transient.
 TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
-  window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
   ParentWindow(window1.get());
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
@@ -212,7 +212,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   // deactivate' property set. Upon activation, window1 should still have an
   // active shadow.
   std::unique_ptr<aura::Window> window2(new aura::Window(NULL));
-  window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window2->Init(ui::LAYER_TEXTURED);
   ParentWindow(window2.get());
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));

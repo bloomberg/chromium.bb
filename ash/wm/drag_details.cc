@@ -64,7 +64,8 @@ DragDetails::DragDetails(aura::Window* window,
           GetSizeChangeDirectionForWindowComponent(window_component)),
       is_resizable(bounds_change != WindowResizer::kBoundsChangeDirection_None),
       source(source),
-      should_attach_to_shelf(window->type() == ui::wm::WINDOW_TYPE_PANEL &&
+      should_attach_to_shelf(window->type() ==
+                                 aura::client::WINDOW_TYPE_PANEL &&
                              window->GetProperty(kPanelAttachedKey)) {
   wm::WindowState* window_state = wm::GetWindowState(window);
   if (window_state->IsNormalOrSnapped() && window_state->HasRestoreBounds() &&

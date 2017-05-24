@@ -153,10 +153,10 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
   window()->SetProperty(kDesktopWindowTreeHostKey, this);
 
   should_animate_window_close_ =
-      content_window_->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+      content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
       !wm::WindowAnimationsDisabled(content_window_);
 
-// TODO this is not invoked *after* Init(), but should be ok.
+  // TODO this is not invoked *after* Init(), but should be ok.
   SetWindowTransparency();
 }
 

@@ -843,7 +843,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     // Create a window, show it and then activate it.
     std::unique_ptr<aura::Window> window1 =
         base::MakeUnique<aura::Window>(nullptr);
-    window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window1->Init(ui::LAYER_TEXTURED);
     root_window()->AddChild(window1.get());
     window1->Show();
@@ -855,7 +855,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     // the active window but is placed on top of window stack.
     std::unique_ptr<aura::Window> window2 =
         base::MakeUnique<aura::Window>(nullptr);
-    window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window2->Init(ui::LAYER_TEXTURED);
     root_window()->AddChild(window2.get());
     window2->Show();

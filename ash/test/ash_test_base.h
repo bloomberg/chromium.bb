@@ -16,8 +16,8 @@
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/display/display.h"
-#include "ui/wm/public/window_types.h"
 
 namespace aura {
 class Window;
@@ -99,7 +99,7 @@ class AshTestBase : public testing::Test {
   // TODO(sky): convert existing CreateTestWindow() functions into this one.
   std::unique_ptr<aura::Window> CreateTestWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
-      ui::wm::WindowType type = ui::wm::WINDOW_TYPE_NORMAL,
+      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL,
       int shell_window_id = kShellWindowId_Invalid);
 
   // Creates a visible top-level window. For Config::CLASSIC and Config::MUS
@@ -130,7 +130,7 @@ class AshTestBase : public testing::Test {
       const gfx::Rect& bounds);
   aura::Window* CreateTestWindowInShellWithDelegateAndType(
       aura::WindowDelegate* delegate,
-      ui::wm::WindowType type,
+      aura::client::WindowType type,
       int id,
       const gfx::Rect& bounds);
 

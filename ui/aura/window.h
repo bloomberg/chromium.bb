@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
 #include "ui/compositor/layer_animator.h"
@@ -29,7 +30,6 @@
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/wm/public/window_types.h"
 
 namespace cc {
 class CompositorFrameSink;
@@ -85,10 +85,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   typedef std::vector<Window*> Windows;
 
   explicit Window(WindowDelegate* delegate,
-                  ui::wm::WindowType type = ui::wm::WINDOW_TYPE_UNKNOWN);
+                  client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
   Window(WindowDelegate* delegate,
          std::unique_ptr<WindowPort> port,
-         ui::wm::WindowType type = ui::wm::WINDOW_TYPE_UNKNOWN);
+         client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.
@@ -102,8 +102,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // A type is used to identify a class of Windows and customize behavior such
   // as event handling and parenting.  This field should only be consumed by the
   // shell -- Aura itself shouldn't contain type-specific logic.
-  ui::wm::WindowType type() const { return type_; }
-  void SetType(ui::wm::WindowType type);
+  client::WindowType type() const { return type_; }
+  void SetType(client::WindowType type);
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
@@ -456,7 +456,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   WindowTreeHost* host_;
 
-  ui::wm::WindowType type_;
+  client::WindowType type_;
 
   // True if the Window is owned by its parent - i.e. it will be deleted by its
   // parent during its parents destruction. True is the default.

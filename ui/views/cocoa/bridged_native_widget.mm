@@ -119,7 +119,8 @@ float GetDeviceScaleFactorFromView(NSView* view) {
 bool PositionWindowInScreenCoordinates(views::Widget* widget,
                                        views::Widget::InitParams::Type type) {
   // Replicate the logic in desktop_aura/desktop_screen_position_client.cc.
-  if (views::GetAuraWindowTypeForWidgetType(type) == ui::wm::WINDOW_TYPE_POPUP)
+  if (views::GetAuraWindowTypeForWidgetType(type) ==
+      aura::client::WINDOW_TYPE_POPUP)
     return true;
 
   return widget && widget->is_top_level();

@@ -63,7 +63,7 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
   aura::Window* CreateWindow(int hittest_code) {
     TestWindowDelegate* d1 = new TestWindowDelegate(hittest_code);
     aura::Window* w1 = new aura::Window(d1);
-    w1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    w1->SetType(aura::client::WINDOW_TYPE_NORMAL);
     w1->set_id(1);
     w1->Init(ui::LAYER_TEXTURED);
     aura::Window* parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -798,7 +798,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
 
   const gfx::Size initial_window_size(330, 230);
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegateAndType(
-      new TestWindowDelegate(HTCAPTION), ui::wm::WINDOW_TYPE_NORMAL, 0,
+      new TestWindowDelegate(HTCAPTION), aura::client::WINDOW_TYPE_NORMAL, 0,
       gfx::Rect(initial_window_size)));
 
   // Snap the window to the right.

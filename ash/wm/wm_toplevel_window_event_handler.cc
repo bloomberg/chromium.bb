@@ -36,7 +36,7 @@ bool CanStartTwoFingerMove(WmWindow* window,
   // the window type and the state type so that we do not steal touches from the
   // web contents.
   if (!window->GetWindowState()->IsNormalOrSnapped() ||
-      window->GetType() != ui::wm::WINDOW_TYPE_NORMAL) {
+      window->GetType() != aura::client::WINDOW_TYPE_NORMAL) {
     return false;
   }
   int component1_behavior =

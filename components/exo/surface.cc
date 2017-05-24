@@ -167,7 +167,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 // BeginFrame hierarchy should be an internal implementation detail of aura or
 // mus in aura-mus.
 Surface::Surface() : window_(new aura::Window(new CustomWindowDelegate(this))) {
-  window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);
   window_->Init(ui::LAYER_SOLID_COLOR);

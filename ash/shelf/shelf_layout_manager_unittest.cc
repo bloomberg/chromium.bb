@@ -257,7 +257,7 @@ class ShelfLayoutManagerTest : public test::AshTestBase {
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(nullptr);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     ParentWindowInPrimaryRootWindow(window);
     return window;
@@ -266,7 +266,7 @@ class ShelfLayoutManagerTest : public test::AshTestBase {
   aura::Window* CreateTestWindowInParent(aura::Window* root_window) {
     aura::Window* window = new aura::Window(nullptr);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     aura::client::ParentWindowWithContext(window, root_window, gfx::Rect());
     return window;

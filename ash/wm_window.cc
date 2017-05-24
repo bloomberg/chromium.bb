@@ -122,7 +122,7 @@ RootWindowController* WmWindow::GetRootWindowController() {
   return root ? RootWindowController::ForWindow(root) : nullptr;
 }
 
-ui::wm::WindowType WmWindow::GetType() const {
+aura::client::WindowType WmWindow::GetType() const {
   return window_->type();
 }
 

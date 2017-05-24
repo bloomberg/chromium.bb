@@ -294,7 +294,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   // appropriate method to replace this setup. (crbug.com/483503)
   std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   window->Show();
   ParentWindowInPrimaryRootWindow(window.get());
