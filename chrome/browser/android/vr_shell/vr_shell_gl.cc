@@ -1491,7 +1491,10 @@ void VrShellGl::OnRequest(device::mojom::VRVSyncProviderRequest request) {
 }
 
 void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
-  if (!pending_vsync_) {
+  // In surfaceless (reprojecting) rendering, stay locked
+  // to vsync intervals. Otherwise, for legacy Cardboard mode,
+  // run requested animation frames now if it missed a vsync.
+  if (surfaceless_rendering_ || !pending_vsync_) {
     if (!callback_.is_null()) {
       mojo::ReportBadMessage(
           "Requested VSync before waiting for response to previous request.");
