@@ -116,6 +116,10 @@ bool AXListBoxOption::ComputeAccessibilityIsIgnored(
   return false;
 }
 
+bool AXListBoxOption::CanSetFocusAttribute() const {
+  return CanSetSelectedAttribute();
+}
+
 bool AXListBoxOption::CanSetSelectedAttribute() const {
   if (!isHTMLOptionElement(GetNode()))
     return false;
@@ -124,10 +128,10 @@ bool AXListBoxOption::CanSetSelectedAttribute() const {
     return false;
 
   HTMLSelectElement* select_element = ListBoxOptionParentNode();
-  if (select_element && select_element->IsDisabledFormControl())
+  if (!select_element || select_element->IsDisabledFormControl())
     return false;
 
-  return true;
+  return IsEnabled();
 }
 
 String AXListBoxOption::TextAlternative(bool recursive,

@@ -540,6 +540,13 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
     return select_element.IsMultiple() ? kListBoxRole : kPopUpButtonRole;
   }
 
+  if (isHTMLOptionElement(*GetNode())) {
+    HTMLSelectElement* select_element =
+        toHTMLOptionElement(GetNode())->OwnerSelectElement();
+    return select_element->IsMultiple() ? kListBoxOptionRole
+                                        : kMenuListOptionRole;
+  }
+
   if (isHTMLTextAreaElement(*GetNode()))
     return kTextFieldRole;
 
@@ -1289,6 +1296,15 @@ bool AXNodeObject::CanSetFocusAttribute() const {
   if (IsDisabledFormControl(node))
     return false;
 
+  // Check for options here because AXListBoxOption and AXMenuListOption
+  // don't help when the <option> is canvas fallback, and because
+  // a common case for aria-owns from a textbox that points to a list
+  // does not change the hierarchy (textboxes don't suport children)
+  if ((RoleValue() == kListBoxOptionRole ||
+       RoleValue() == kMenuListOptionRole) &&
+      IsEnabled())
+    return true;
+
   return node->IsElementNode() && ToElement(node)->SupportsFocus();
 }
 
@@ -1308,11 +1324,13 @@ bool AXNodeObject::CanSetValueAttribute() const {
 }
 
 bool AXNodeObject::CanSetSelectedAttribute() const {
-  // ARIA list box options can be selected if they are children of an element
-  // with an aria-activedescendant attribute.
-  if (AriaRoleAttribute() == kListBoxOptionRole &&
-      AncestorExposesActiveDescendant())
+  const AccessibilityRole role = AriaRoleAttribute();
+  // These elements can be selected if not disabled (native or ARIA)
+  if ((role == kListBoxOptionRole || role == kMenuListOptionRole ||
+       role == kTreeItemRole || role == kCellRole || role == kTabRole) &&
+      IsEnabled() && CanSetFocusAttribute()) {
     return true;
+  }
   return AXObjectImpl::CanSetSelectedAttribute();
 }
 
@@ -2231,15 +2249,18 @@ bool AXNodeObject::CanHaveChildren() const {
   switch (role) {
     case kImageRole:
     case kButtonRole:
-    case kPopUpButtonRole:
     case kCheckBoxRole:
     case kRadioButtonRole:
     case kSwitchRole:
     case kTabRole:
     case kToggleButtonRole:
     case kListBoxOptionRole:
+    case kMenuButtonRole:
+    case kMenuListOptionRole:
     case kScrollBarRole:
       return false;
+    case kPopUpButtonRole:
+      return isHTMLSelectElement(GetNode());
     case kStaticTextRole:
       if (!AxObjectCache().InlineTextBoxAccessibilityEnabled())
         return false;

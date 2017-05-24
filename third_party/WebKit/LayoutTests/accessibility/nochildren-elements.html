@@ -11,6 +11,7 @@
 
     <input id="file" type="file">
     <div id="button" role="button"><b><i>inside</i></b></div>
+    <div id="button-w-popup" role="button" aria-haspopup="true"><b><i>inside</i></b></div>
 
     <div id="result"></div>
 
@@ -20,14 +21,15 @@
             var result = document.getElementById("result");
 
             var element1 = accessibilityController.accessibleElementById("file");
-
             var element2 = accessibilityController.accessibleElementById("button");
+            var element3 = accessibilityController.accessibleElementById("button-w-popup");
 
             var element1Children = element1.attributesOfChildren();
             var element2Children = element2.attributesOfChildren();
+            var element3Children = element3.attributesOfChildren();
 
-            if (element1Children != "" || element2Children != "") {
-               result.innerText += "FAIL\n" + element1Children + "\n" + element2Children;
+            if (element1Children != "" || element2Children != "" || element3Children != "") {
+               result.innerText += "FAIL\n" + element1Children + "\n" + element2Children + "\n" + element3Children;
             }
             else {
                result.innerText += "PASS";

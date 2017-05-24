@@ -55,6 +55,8 @@ class AXListBoxOption final : public AXLayoutObject {
   bool IsSelectedOptionActive() const override;
   void SetSelected(bool) override;
   bool CanSetSelectedAttribute() const override;
+  bool CanSetFocusAttribute() const override;
+
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,

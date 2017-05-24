@@ -810,7 +810,7 @@ bool AXObjectImpl::ComputeAncestorExposesActiveDescendant() const {
     return false;
 
   if (parent->SupportsActiveDescendant() &&
-      !parent->GetAttribute(aria_activedescendantAttr).IsEmpty()) {
+      parent->HasAttribute(aria_activedescendantAttr)) {
     return true;
   }
 
@@ -1289,6 +1289,35 @@ AXObjectImpl* AXObjectImpl::ParentObjectUnignored() const {
   }
 
   return parent;
+}
+
+// Container widgets are those that a user tabs into and arrows around
+// sub-widgets
+bool AXObjectImpl::IsContainerWidget() const {
+  switch (RoleValue()) {
+    case kComboBoxRole:
+    case kGridRole:
+    case kListBoxRole:
+    case kMenuBarRole:
+    case kMenuRole:
+    case kRadioGroupRole:
+    case kSpinButtonRole:
+    case kTabListRole:
+    case kToolbarRole:
+    case kTreeGridRole:
+    case kTreeRole:
+      return true;
+    default:
+      return false;
+  }
+}
+
+AXObjectImpl* AXObjectImpl::ContainerWidget() const {
+  AXObjectImpl* ancestor = ParentObjectUnignored();
+  while (ancestor && !ancestor->IsContainerWidget())
+    ancestor = ancestor->ParentObjectUnignored();
+
+  return ancestor;
 }
 
 void AXObjectImpl::UpdateChildrenIfNecessary() {
