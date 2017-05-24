@@ -46,18 +46,20 @@ bool IsTokenCharacter(Mode mode, UChar c) {
 }  // namespace
 
 HeaderFieldTokenizer::HeaderFieldTokenizer(const String& header_field)
-    : index_(0u), input_(header_field) {}
+    : index_(0u), input_(header_field) {
+  SkipSpaces();
+}
 
 HeaderFieldTokenizer::HeaderFieldTokenizer(HeaderFieldTokenizer&&) = default;
 
 bool HeaderFieldTokenizer::Consume(char c) {
   DCHECK_NE(c, ' ');
 
-  SkipSpaces();
   if (IsConsumed() || input_[index_] != c)
     return false;
 
   ++index_;
+  SkipSpaces();
   return true;
 }
 
@@ -71,6 +73,7 @@ bool HeaderFieldTokenizer::ConsumeQuotedString(String& output) {
     if (input_[index_] == '"') {
       output = builder.ToString();
       ++index_;
+      SkipSpaces();
       return true;
     }
     if (input_[index_] == '\\') {
@@ -87,8 +90,6 @@ bool HeaderFieldTokenizer::ConsumeQuotedString(String& output) {
 bool HeaderFieldTokenizer::ConsumeToken(Mode mode, StringView& output) {
   DCHECK(output.IsNull());
 
-  SkipSpaces();
-
   auto start = index_;
   while (!IsConsumed() && IsTokenCharacter(mode, input_[index_]))
     ++index_;
@@ -97,12 +98,12 @@ bool HeaderFieldTokenizer::ConsumeToken(Mode mode, StringView& output) {
     return false;
 
   output = StringView(input_, start, index_ - start);
+  SkipSpaces();
   return true;
 }
 
 bool HeaderFieldTokenizer::ConsumeTokenOrQuotedString(Mode mode,
                                                       String& output) {
-  SkipSpaces();
   if (IsConsumed())
     return false;
 

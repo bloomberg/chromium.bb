@@ -60,11 +60,7 @@ void ParsedContentHeaderFieldParameters::ParseParameters(
   DCHECK(parameters_.IsEmpty());
 
   KeyValuePairs map;
-  for (;;) {
-    tokenizer.SkipSpaces();
-    if (tokenizer.IsConsumed())
-      break;
-
+  while (!tokenizer.IsConsumed()) {
     if (!tokenizer.Consume(';')) {
       DVLOG(1) << "Failed to find ';'";
       return;
