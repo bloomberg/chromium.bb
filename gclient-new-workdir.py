@@ -60,18 +60,30 @@ def support_cow(src, dest):
   return True
 
 
+def try_vol_snapshot(src, dest):
+  try:
+    subprocess.check_call(['btrfs', 'subvol', 'snapshot', src, dest],
+                            stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError:
+    return False
+  return True
+
+
 def main():
   args = parse_options()
 
   gclient = os.path.join(args.repository, '.gclient')
   new_gclient = os.path.join(args.new_workdir, '.gclient')
 
-  os.makedirs(args.new_workdir)
-  if args.reflink is None:
-    args.reflink = support_cow(gclient, new_gclient)
-    if args.reflink:
-      print('Copy-on-write support is detected.')
-  os.symlink(gclient, new_gclient)
+  if try_vol_snapshot(args.repository, args.new_workdir):
+    args.reflink = True
+  else:
+    os.makedirs(args.new_workdir)
+    if args.reflink is None:
+      args.reflink = support_cow(gclient, new_gclient)
+      if args.reflink:
+        print('Copy-on-write support is detected.')
+    os.symlink(gclient, new_gclient)
 
   for root, dirs, _ in os.walk(args.repository):
     if '.git' in dirs:
