@@ -43,6 +43,23 @@ using base::ASCIIToUTF16;
 
 @end
 
+@interface WatchedLifetimeMenuController : MenuController
+@property(assign, nonatomic) BOOL* deallocCalled;
+@end
+
+@implementation WatchedLifetimeMenuController {
+  BOOL* deallocCalled_;
+}
+
+@synthesize deallocCalled = deallocCalled_;
+
+- (void)dealloc {
+  *deallocCalled_ = YES;
+  [super dealloc];
+}
+
+@end
+
 @interface NSMenuItem (Private)
 // Exposed to simulate in testing.
 - (void)_sendItemSelectedNote;
@@ -129,6 +146,47 @@ class DynamicDelegate : public Delegate {
  private:
   base::string16 label_;
   gfx::Image icon_;
+};
+
+// A SimpleMenuModel::Delegate that owns the MenuController and deletes itself
+// when the command is executed.
+class OwningDelegate : public Delegate {
+ public:
+  OwningDelegate(bool* did_delete, BOOL* did_dealloc)
+      : did_delete_(did_delete), model_(this) {
+    model_.AddItem(1, ASCIIToUTF16("foo"));
+    controller_.reset([[WatchedLifetimeMenuController alloc]
+                 initWithModel:&model_
+        useWithPopUpButtonCell:NO]);
+    [controller_ setDeallocCalled:did_dealloc];
+  }
+
+  MenuController* controller() { return controller_; }
+
+  // Delegate:
+  void ExecuteCommand(int command_id, int event_flags) override {
+    // Although -[MenuController menuDidClose:] has been invoked,
+    // SimpleMenuModel always posts a task to call Delegate::MenuClosed(), to
+    // ensure it happens after the command. It uses a weak pointer to |model_|,
+    // so the task will expire before being run.
+    EXPECT_FALSE(did_close_);
+
+    EXPECT_EQ(0, execute_count_);
+    Delegate::ExecuteCommand(command_id, event_flags);
+    delete this;
+  }
+
+ private:
+  ~OwningDelegate() override {
+    EXPECT_FALSE(*did_delete_);
+    *did_delete_ = true;
+  }
+
+  bool* did_delete_;
+  SimpleMenuModel model_;
+  base::scoped_nsobject<WatchedLifetimeMenuController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(OwningDelegate);
 };
 
 // Menu model that returns a gfx::FontList object for one of the items in the
@@ -542,6 +600,41 @@ TEST_F(MenuControllerTest, EmulateItemSelectedEarly) {
   // Perform the action normally. Now executes.
   [[item target] performSelector:[item action] withObject:item];
   EXPECT_EQ(1, delegate.execute_count_);
+}
+
+// Tests invoking a menu action on a delegate that immediately releases the
+// MenuController and destroys itself. Note this usually needs asan to actually
+// crash (before it was fixed).
+TEST_F(MenuControllerTest, OwningDelegate) {
+  base::MessageLoopForUI message_loop;
+  bool did_delete = false;
+  BOOL did_dealloc = NO;
+  OwningDelegate* delegate;
+  NSMenuItem* item;
+
+  // The final action is a task posted to the runloop, which drains the
+  // autorelease pool, so ensure that happens in the test.
+  @autoreleasepool {
+    delegate = new OwningDelegate(&did_delete, &did_dealloc);  // Self deleting.
+    delegate->auto_close_ = false;
+
+    // Unretained reference to the controller.
+    MenuController* controller = delegate->controller();
+
+    item = [[controller menu] itemAtIndex:0];
+    EXPECT_TRUE(item);
+
+    // Simulate opening the menu and selecting an item. Without setting
+    // -setPostItemSelectedAsTask:YES, methods are always invoked by AppKit in
+    // the following order.
+    [controller menuWillOpen:[controller menu]];
+    [controller menuDidClose:[controller menu]];
+  }
+  EXPECT_FALSE(did_dealloc);
+  EXPECT_FALSE(did_delete);
+  [[item target] performSelector:[item action] withObject:item];
+  EXPECT_TRUE(did_dealloc);
+  EXPECT_TRUE(did_delete);
 }
 
 }  // namespace
