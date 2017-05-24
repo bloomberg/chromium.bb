@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/spdy/chromium/spdy_flags.h"
@@ -436,6 +435,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
             << ")   data:\n"
             << base::HexEncode(data, len);
     EXPECT_EQ(header_stream_id_, stream_id);
+
     data_bytes_ += len;
   }
 
@@ -474,7 +474,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnSetting(SpdySettingsIds id, uint32_t value) override {
-    VLOG(1) << "OnSetting(" << id << ", " << std::hex << ", " << value << ")";
+    VLOG(1) << "OnSetting(" << id << ", " << std::hex << value << ")";
     ++setting_count_;
   }
 
@@ -853,7 +853,7 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
                            frame.size() - 2);
 
   EXPECT_EQ(0, visitor.zero_length_control_frame_header_data_count_);
-  EXPECT_EQ(0u, visitor.headers_.size());
+  EXPECT_THAT(visitor.headers_, testing::IsEmpty());
 }
 
 // Test that we can encode and decode stream dependency values in a header
@@ -1057,6 +1057,7 @@ TEST_P(SpdyFramerTest, CorrectlySizedHeadersPaddingNoError) {
 
   EXPECT_CALL(visitor, OnHeaders(1, false, 0, 0, false, false, false));
   EXPECT_CALL(visitor, OnHeaderFrameStart(1)).Times(1);
+
   EXPECT_EQ(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_FALSE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.spdy_framer_error())
@@ -1134,7 +1135,7 @@ TEST_P(SpdyFramerTest, RstStreamWithStreamIdZero) {
   SpdyRstStreamIR rst_stream_ir(0, ERROR_CODE_PROTOCOL_ERROR);
   SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream_ir));
   if (use_output_) {
-    ASSERT_TRUE(framer.SerializeRstStream(rst_stream_ir, &output_));
+    EXPECT_TRUE(framer.SerializeRstStream(rst_stream_ir, &output_));
     frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
   }
 
@@ -1201,7 +1202,7 @@ TEST_P(SpdyFramerTest, GoawayWithStreamIdNotZero) {
       << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());
 }
 
-// Test that if we receive a CONTINUATION with stream ID zero, we signal an
+// Test that if we receive a CONTINUATION with stream ID zero, we signal
 // SPDY_INVALID_STREAM_ID.
 TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
@@ -1227,7 +1228,7 @@ TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
       << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());
 }
 
-// Test that if we receive a PUSH_PROMISE with stream ID zero, we signal an
+// Test that if we receive a PUSH_PROMISE with stream ID zero, we signal
 // SPDY_INVALID_STREAM_ID.
 TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
@@ -1248,7 +1249,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
 }
 
 // Test that if we receive a PUSH_PROMISE with promised stream ID zero, we
-// signal SPDY_INVALID_STREAM_ID.
+// signal SPDY_INVALID_CONTROL_FRAME.
 TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
@@ -1297,7 +1298,7 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
 }
 
 TEST_P(SpdyFramerTest, CompressEmptyHeaders) {
-  // See crbug.com/172383
+  // See https://crbug.com/172383/
   SpdyHeadersIR headers(1);
   headers.SetHeader("server", "SpdyServer 1.0");
   headers.SetHeader("date", "Mon 12 Jan 2009 12:12:12 PST");
@@ -1757,6 +1758,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
 
   {
     const char kDescription[] = "RST_STREAM frame with max stream ID";
+    // clang-format off
     const unsigned char kH2FrameData[] = {
         0x00, 0x00, 0x04,        // Length: 4
         0x03,                    //   Type: RST_STREAM
@@ -1799,7 +1801,6 @@ TEST_P(SpdyFramerTest, CreateSettings) {
 
   {
     const char kDescription[] = "Network byte order SETTINGS frame";
-
     const unsigned char kH2FrameData[] = {
         0x00, 0x00, 0x06,        // Length: 6
         0x04,                    //   Type: SETTINGS
@@ -1860,7 +1861,6 @@ TEST_P(SpdyFramerTest, CreateSettings) {
 
   {
     const char kDescription[] = "Empty SETTINGS frame";
-
     const unsigned char kH2FrameData[] = {
         0x00, 0x00, 0x00,        // Length: 0
         0x04,                    //   Type: SETTINGS
@@ -1900,12 +1900,11 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
         0x12, 0x34, 0x56, 0x78,  // Opaque
         0x9a, 0xbc, 0xde, 0xff,  //     Data
     };
-    SpdySerializedFrame frame;
     const SpdyPingId kPingId = 0x123456789abcdeffULL;
     SpdyPingIR ping_ir(kPingId);
     // Tests SpdyPingIR when the ping is not an ack.
     ASSERT_FALSE(ping_ir.is_ack());
-    frame = framer.SerializePing(ping_ir);
+    SpdySerializedFrame frame(framer.SerializePing(ping_ir));
     if (use_output_) {
       ASSERT_TRUE(framer.SerializePing(ping_ir, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
@@ -2881,12 +2880,12 @@ class SpdyControlFrameIteratorTest : public ::testing::Test {
 };
 
 TEST_F(SpdyControlFrameIteratorTest, RstStreamFrameWithIterator) {
-  auto ir = base::MakeUnique<SpdyRstStreamIR>(0, ERROR_CODE_PROTOCOL_ERROR);
+  auto ir = SpdyMakeUnique<SpdyRstStreamIR>(0, ERROR_CODE_PROTOCOL_ERROR);
   RunTest(std::move(ir));
 }
 
 TEST_F(SpdyControlFrameIteratorTest, SettingsFrameWithIterator) {
-  auto ir = base::MakeUnique<SpdySettingsIR>();
+  auto ir = SpdyMakeUnique<SpdySettingsIR>();
   uint32_t kValue = 0x0a0b0c0d;
   SpdySettingsIds kId = SETTINGS_INITIAL_WINDOW_SIZE;
   ir->AddSetting(kId, kValue);
@@ -2895,22 +2894,22 @@ TEST_F(SpdyControlFrameIteratorTest, SettingsFrameWithIterator) {
 
 TEST_F(SpdyControlFrameIteratorTest, PingFrameWithIterator) {
   const SpdyPingId kPingId = 0x123456789abcdeffULL;
-  auto ir = base::MakeUnique<SpdyPingIR>(kPingId);
+  auto ir = SpdyMakeUnique<SpdyPingIR>(kPingId);
   RunTest(std::move(ir));
 }
 
 TEST_F(SpdyControlFrameIteratorTest, GoAwayFrameWithIterator) {
-  auto ir = base::MakeUnique<SpdyGoAwayIR>(0, ERROR_CODE_NO_ERROR, "GA");
+  auto ir = SpdyMakeUnique<SpdyGoAwayIR>(0, ERROR_CODE_NO_ERROR, "GA");
   RunTest(std::move(ir));
 }
 
 TEST_F(SpdyControlFrameIteratorTest, WindowUpdateFrameWithIterator) {
-  auto ir = base::MakeUnique<SpdyWindowUpdateIR>(1, 1);
+  auto ir = SpdyMakeUnique<SpdyWindowUpdateIR>(1, 1);
   RunTest(std::move(ir));
 }
 
 TEST_F(SpdyControlFrameIteratorTest, AtlSvcFrameWithIterator) {
-  auto ir = base::MakeUnique<SpdyAltSvcIR>(3);
+  auto ir = SpdyMakeUnique<SpdyAltSvcIR>(3);
   ir->set_origin("origin");
   ir->add_altsvc(SpdyAltSvcWireFormat::AlternativeService(
       "pid1", "host", 443, 5, SpdyAltSvcWireFormat::VersionVector()));
@@ -3038,9 +3037,9 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   SpdySettingsIR settings_ir;
 
   // Add settings to more than fill the frame so that we don't get a buffer
-  // overflow when calling SimulateInFramer() below.  These settings must be
-  // distinct parameters because SpdySettingsIR has a map for settings, and will
-  // collapse multiple copies of the same parameter.
+  // overflow when calling SimulateInFramer() below. These settings must be
+  // distinct parameters because SpdySettingsIR has a map for settings, and
+  // will collapse multiple copies of the same parameter.
   settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 0x00000002);
   settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, 0x00000002);
   SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
@@ -3428,31 +3427,43 @@ TEST_P(SpdyFramerTest, ReadHeadersWithContinuationAndFin) {
 TEST_P(SpdyFramerTest, ReadPushPromiseWithContinuation) {
   // frame-format off
   const unsigned char kInput[] = {
-    0x00, 0x00, 0x17, 0x05,  // PUSH_PROMISE
-    0x08, 0x00, 0x00, 0x00,  // PADDED
-    0x01, 0x02, 0x00, 0x00,  // Stream 1, Pad length field
-    0x00, 0x2A, 0x00, 0x06,  // Promised stream 42
-    'c',  'o',  'o',  'k',
-    'i',  'e',  0x07, 'f',
-    'o',  'o',  '=',  'b',
-    'a',  'r',  0x00, 0x00,
+      0x00, 0x00, 0x17,                       // Length: 23
+      0x05,                                   //   Type: PUSH_PROMISE
+      0x08,                                   //  Flags: PADDED
+      0x00, 0x00, 0x00, 0x01,                 // Stream: 1
+      0x02,                                   // PadLen: 2 trailing bytes
+      0x00, 0x00, 0x00, 0x2a,                 // Promise: 42
+      0x00,                                   // Unindexed Entry
+      0x06,                                   // Name Len: 6
+      'c',  'o',  'o',  'k',  'i', 'e',       // Name
+      0x07,                                   // Value Len: 7
+      'f',  'o',  'o',  '=',  'b', 'a', 'r',  // Value
+      0x00, 0x00,                             // Padding
 
-    0x00, 0x00, 0x14, 0x09,  // CONTINUATION
-    0x00, 0x00, 0x00, 0x00,
-    0x01, 0x00, 0x06, 'c',   // Stream 1
-    'o',  'o',  'k',  'i',
-    'e',  0x08, 'b',  'a',
-    'z',  '=',  'b',  'i',
-    'n',  'g',  0x00, 0x06,
-    'c',
+      0x00, 0x00, 0x14,                            // Length: 20
+      0x09,                                        //   Type: CONTINUATION
+      0x00,                                        //  Flags: none
+      0x00, 0x00, 0x00, 0x01,                      // Stream: 1
+      0x00,                                        // Unindexed Entry
+      0x06,                                        // Name Len: 6
+      'c',  'o',  'o',  'k',  'i', 'e',            // Name
+      0x08,                                        // Value Len: 7
+      'b',  'a',  'z',  '=',  'b', 'i', 'n', 'g',  // Value
+      0x00,                                        // Unindexed Entry
+      0x06,                                        // Name Len: 6
+      'c',                                         // Name (split)
 
-    0x00, 0x00, 0x12, 0x09,  // CONTINUATION
-    0x04, 0x00, 0x00, 0x00,  // END_HEADERS
-    0x01, 'o',  'o',  'k',   // Stream 1
-    'i',  'e',  0x00, 0x00,
-    0x04, 'n',  'a',  'm',
-    'e',  0x05, 'v',  'a',
-    'l',  'u',  'e',
+      0x00, 0x00, 0x12,             // Length: 18
+      0x09,                         //   Type: CONTINUATION
+      0x04,                         //  Flags: END_HEADERS
+      0x00, 0x00, 0x00, 0x01,       // Stream: 1
+      'o',  'o',  'k',  'i',  'e',  // Name (continued)
+      0x00,                         // Value Len: 0
+      0x00,                         // Unindexed Entry
+      0x04,                         // Name Len: 4
+      'n',  'a',  'm',  'e',        // Name
+      0x05,                         // Value Len: 5
+      'v',  'a',  'l',  'u',  'e',  // Value
   };
   // frame-format on
 
@@ -3731,8 +3742,8 @@ TEST_P(SpdyFramerTest, ReadUnknownExtensionFrame) {
       reinterpret_cast<unsigned char*>(control_frame.data()),
       control_frame.size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1u, static_cast<unsigned>(visitor.setting_count_));
-  EXPECT_EQ(1u, static_cast<unsigned>(visitor.settings_ack_sent_));
+  EXPECT_EQ(1, visitor.setting_count_);
+  EXPECT_EQ(1, visitor.settings_ack_sent_);
 }
 
 TEST_P(SpdyFramerTest, ReadUnknownExtensionFrameWithExtension) {
@@ -3770,8 +3781,8 @@ TEST_P(SpdyFramerTest, ReadUnknownExtensionFrameWithExtension) {
       reinterpret_cast<unsigned char*>(control_frame.data()),
       control_frame.size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1u, static_cast<unsigned>(visitor.setting_count_));
-  EXPECT_EQ(1u, static_cast<unsigned>(visitor.settings_ack_sent_));
+  EXPECT_EQ(1, visitor.setting_count_);
+  EXPECT_EQ(1, visitor.settings_ack_sent_);
 }
 
 TEST_P(SpdyFramerTest, ReadGarbageWithValidLength) {
@@ -4088,18 +4099,18 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     // Expected callback values
     SpdyStreamId stream_id = 57;
     bool has_priority = false;
-    SpdyPriority priority = 0;
+    int weight = 0;
     SpdyStreamId parent_stream_id = 0;
     bool exclusive = false;
     bool fin = flags & CONTROL_FLAG_FIN;
     bool end = flags & HEADERS_FLAG_END_HEADERS;
     if (flags & HEADERS_FLAG_PRIORITY) {
       has_priority = true;
-      priority = 3;
+      weight = 3;
       parent_stream_id = 5;
       exclusive = true;
     }
-    EXPECT_CALL(visitor, OnHeaders(stream_id, has_priority, priority,
+    EXPECT_CALL(visitor, OnHeaders(stream_id, has_priority, weight,
                                    parent_stream_id, exclusive, fin, end));
     EXPECT_CALL(visitor, OnHeaderFrameStart(57)).Times(1);
     if (end) {
@@ -4267,7 +4278,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
   } while (++flags != 0);
 }
 
-// TODO(mlavan): Add TEST_F(SpdyFramerTest, AltSvcFrameFlags)
+// TODO(mlavan): Add TEST_P(SpdyFramerTest, AltSvcFrameFlags)
 
 // Test handling of a RST_STREAM with out-of-bounds status codes.
 TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
@@ -4571,8 +4582,6 @@ TEST_P(SpdyFramerTest, ReadPriority) {
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
   EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.spdy_framer_error())
       << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());
-  // TODO(mlavan): once we actually maintain a priority tree,
-  // check that state is adjusted correctly.
 }
 
 // Tests handling of PRIORITY frame with incorrect size.
