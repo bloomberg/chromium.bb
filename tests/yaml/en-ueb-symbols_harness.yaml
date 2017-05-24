@@ -281,4 +281,8 @@ tests:
   - [⅜, ⠼⠉⠌⠓] # vulgar fraction three eighths (3/8) [\x215c]
   - [⅝, ⠼⠑⠌⠓] # vulgar fraction five eighths (5/8) [\x215d]
   - [⅞, ⠼⠛⠌⠓] # vulgar fraction seven eighths (7/8) [\x215e]
-  - [≠, ⠐⠶⠈⠱] # not equal [\2260]
+  - [≠, ⠐⠶⠈⠱] # not equal [\x2260]
+  - [¡, ⠘⠰⠖] # inverted exclamation mark [\x00a1]
+  - [¿, ⠘⠰⠦] # inverted question mark [\x00bf]
+  - [—, ⠠⠤] # dash [\x2014]
+

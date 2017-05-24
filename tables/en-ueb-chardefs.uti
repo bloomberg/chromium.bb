@@ -291,7 +291,8 @@ punctuation \x0093 236
 punctuation \x0094 356
 punctuation \x0096 36
 punctuation \x0097 36-36
-punctuation \x00a1 45-56-235 ¡
+sign \x00a1 45-56-235 ¡
+punctuation \x00a1 235 ¡
 sign \x00a2 4-14 ¢ cent
 sign \x00a3 4-123 £ pound
 #sign \x00a3 3456 £
@@ -341,7 +342,7 @@ punctuation \x2013 6-36 –
 punctuation \x2014 6-36 —
 punctuation \x2015 5-6-36 ―
 noback punctuation \x2018 6-236 ‘
-noback punctuation \x2019 356-3 ’
+noback punctuation \x2019 6-356 ’
 punctuation \x201c 236 “
 punctuation \x201d 356 ”
 sign \x2020 4-6-1456 † dagger
