@@ -2039,7 +2039,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'android_pfq',
       site_config.templates.generic_android_pfq,
       android_package='android-container',
-      android_import_branch='git_mnc-dr-arc-dev',
+      android_import_branch=constants.ANDROID_MNC_BUILD_BRANCH,
   )
 
   # Template for Android NYC.
@@ -2047,7 +2047,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'nyc_android_pfq',
       site_config.templates.generic_android_pfq,
       android_package='android-container-nyc',
-      android_import_branch='git_nyc-mr1-arc',
+      android_import_branch=constants.ANDROID_NYC_BUILD_BRANCH,
       android_gts_build_branch='git_nyc-mr2-dev',
   )
 
@@ -3591,7 +3591,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       boards=['cyan'],
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container',
-      android_import_branch='git_mnc-dr-arc-dev',
+      android_import_branch=constants.ANDROID_MNC_BUILD_BRANCH,
   )
 
   site_config.Add(
@@ -3600,7 +3600,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       boards=['reef'],
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container-nyc',
-      android_import_branch='git_nyc-mr1-arc',
+      android_import_branch=constants.ANDROID_NYC_BUILD_BRANCH,
   )
 
   # This is an example factory branch configuration.
