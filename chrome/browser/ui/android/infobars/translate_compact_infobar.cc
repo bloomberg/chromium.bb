@@ -71,7 +71,7 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
     }
   } else if (action == InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
     action_flags_ |= FLAG_REVERT;
-    delegate->RevertTranslation();
+    delegate->RevertWithoutClosingInfobar();
   } else if (action == InfoBarAndroid::ACTION_CANCEL) {
     delegate->TranslationDeclined();
   } else {
