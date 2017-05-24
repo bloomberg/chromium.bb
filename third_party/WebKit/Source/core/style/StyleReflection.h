@@ -53,9 +53,10 @@ class StyleReflection : public RefCounted<StyleReflection> {
   void SetMask(const NinePieceImage& image) { mask_ = image; }
 
  private:
-  StyleReflection() : direction_(kReflectionBelow), offset_(0, kFixed) {
-    mask_.SetMaskDefaults();
-  }
+  StyleReflection()
+      : direction_(kReflectionBelow),
+        offset_(0, kFixed),
+        mask_(NinePieceImage::MaskDefaults()) {}
 
   CSSReflectionDirection direction_;
   Length offset_;

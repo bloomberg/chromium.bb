@@ -82,6 +82,14 @@ class CORE_EXPORT NinePieceImage {
                  ENinePieceImageRule horizontal_rule,
                  ENinePieceImageRule vertical_rule);
 
+  static NinePieceImage MaskDefaults() {
+    NinePieceImage image;
+    image.data_.Access()->image_slices = LengthBox(0);
+    image.data_.Access()->fill = true;
+    image.data_.Access()->border_slices = BorderImageLengthBox(Length(kAuto));
+    return image;
+  }
+
   bool operator==(const NinePieceImage& other) const {
     return data_ == other.data_;
   }
@@ -143,12 +151,6 @@ class CORE_EXPORT NinePieceImage {
   void CopyRepeatFrom(const NinePieceImage& other) {
     data_.Access()->horizontal_rule = other.data_->horizontal_rule;
     data_.Access()->vertical_rule = other.data_->vertical_rule;
-  }
-
-  void SetMaskDefaults() {
-    data_.Access()->image_slices = LengthBox(0);
-    data_.Access()->fill = true;
-    data_.Access()->border_slices = BorderImageLengthBox(Length(kAuto));
   }
 
   static LayoutUnit ComputeOutset(const BorderImageLength& outset_side,
