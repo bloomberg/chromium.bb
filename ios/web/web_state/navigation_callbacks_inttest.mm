@@ -150,6 +150,45 @@ ACTION_P3(VerifyNewNativePageFinishedContext, web_state, url, context) {
   EXPECT_EQ(url, item->GetURL());
 }
 
+// Verifies correctness of |NavigationContext| (|arg0|) for reload navigation
+// passed to |DidStartNavigation|. Stores |NavigationContext| in |context|
+// pointer.
+ACTION_P3(VerifyReloadStartedContext, web_state, url, context) {
+  *context = arg0;
+  ASSERT_TRUE(*context);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_RELOAD,
+                               (*context)->GetPageTransition()));
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->GetResponseHeaders());
+  // TODO(crbug.com/676129): Reload does not create a pending item. Check
+  // pending item once the bug is fixed.
+  EXPECT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
+}
+
+// Verifies correctness of |NavigationContext| (|arg0|) for reload navigation
+// passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
+// |context|.
+ACTION_P3(VerifyReloadFinishedContext, web_state, url, context) {
+  ASSERT_EQ(*context, arg0);
+  ASSERT_TRUE(*context);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_RELOAD,
+                               (*context)->GetPageTransition()));
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->GetResponseHeaders());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_EQ(url, item->GetURL());
+}
+
 // Mocks DidFinishNavigation navigation callback.
 class WebStateObserverMock : public WebStateObserver {
  public:
@@ -309,6 +348,22 @@ TEST_F(StartAndFinishNavigationTest, NativeContentNavigation) {
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewNativePageFinishedContext(web_state(), url, &context));
   LoadUrl(url);
+}
+
+// Tests native content reload navigation.
+TEST_F(StartAndFinishNavigationTest, NativeContentReload) {
+  GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  LoadUrl(url);
+
+  // Reload native content.
+  EXPECT_CALL(*observer_, DidStartNavigation(_))
+      .WillOnce(VerifyReloadStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_))
+      .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context));
+  navigation_manager()->Reload(ReloadType::NORMAL, false /*check_for_repost*/);
 }
 
 }  // namespace web

@@ -2031,8 +2031,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // cancelled.
   _lastUserInteraction.reset();
   base::RecordAction(UserMetricsAction("Reload"));
-  if ([self shouldLoadURLInNativeView:self.currentNavItem->GetURL()]) {
+  GURL url = self.currentNavItem->GetURL();
+  if ([self shouldLoadURLInNativeView:url]) {
+    std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
+        registerLoadRequestForURL:url
+                         referrer:self.currentNavItemReferrer
+                       transition:ui::PageTransition::PAGE_TRANSITION_RELOAD];
     [self.nativeController reload];
+    _webStateImpl->OnNavigationFinished(navigationContext.get());
+    [self loadCompleteWithSuccess:YES forNavigation:nil];
   } else {
     web::NavigationItem* transientItem =
         self.navigationManagerImpl->GetTransientItem();
