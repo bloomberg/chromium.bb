@@ -125,7 +125,8 @@ class WebrtcPageSet(story.StorySet):
         cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddStory(GetUserMedia(self, tags=['getusermedia']))
-    self.AddStory(MultiplePeerConnections(self, tags=['stress']))
+    # TODO(ehmaldonado): Re-enable once http://crbug.com/725502 is fixed.
+    # self.AddStory(MultiplePeerConnections(self, tags=['stress']))
     self.AddStory(VideoCall(self, tags=['peerconnection', 'smoothness']))
     self.AddStory(DataChannel(self, tags=['datachannel']))
     self.AddStory(CanvasCapturePeerConnection(self, tags=['smoothness']))
@@ -136,9 +137,3 @@ class WebrtcPageSet(story.StorySet):
     # self.AddStory(AudioCall(self, 'G772'))
     # self.AddStory(AudioCall(self, 'PCMU'))
     # self.AddStory(AudioCall(self, 'ISAC/1600'))
-
-
-class WebrtcExpectations(story.expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableStory('multiple_peerconnections', [story.expectations.ALL],
-                      'crbug.com/725502')
