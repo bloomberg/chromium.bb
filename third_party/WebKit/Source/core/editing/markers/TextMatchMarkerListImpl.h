@@ -39,6 +39,12 @@ class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
   DISALLOW_COPY_AND_ASSIGN(TextMatchMarkerListImpl);
 };
 
+DEFINE_TYPE_CASTS(TextMatchMarkerListImpl,
+                  DocumentMarkerList,
+                  list,
+                  list->MarkerType() == DocumentMarker::kTextMatch,
+                  list.MarkerType() == DocumentMarker::kTextMatch);
+
 }  // namespace blink
 
 #endif  // TextMatchMarkerListImpl_h
