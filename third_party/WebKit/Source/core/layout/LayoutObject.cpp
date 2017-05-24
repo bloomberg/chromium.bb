@@ -1000,14 +1000,7 @@ FloatRect LayoutObject::AbsoluteBoundingBoxRectForRange(const Range* range) {
 
   range->OwnerDocument().UpdateStyleAndLayout();
 
-  Vector<FloatQuad> quads;
-  quads.AppendVector(ComputeTextQuads(EphemeralRange(range)));
-
-  FloatRect result;
-  for (size_t i = 0; i < quads.size(); ++i)
-    result.Unite(quads[i].BoundingBox());
-
-  return result;
+  return ComputeTextFloatRect(EphemeralRange(range));
 }
 
 void LayoutObject::AddAbsoluteRectForLayer(IntRect& result) {
