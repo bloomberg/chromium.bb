@@ -598,7 +598,26 @@ bool AXObjectImpl::IsClickable() const {
   }
 }
 
-bool AXObjectImpl::AccessibilityIsIgnored() const {
+bool AXObjectImpl::AccessibilityIsIgnored() {
+  Node* node = GetNode();
+  if (!node) {
+    AXObjectImpl* parent = this->ParentObject();
+    while (!node && parent) {
+      node = parent->GetNode();
+      parent = parent->ParentObject();
+    }
+  }
+
+  if (node)
+    node->UpdateDistribution();
+
+  // TODO(aboxhall): Instead of this, propagate inert down through frames
+  Document* document = GetDocument();
+  while (document && document->LocalOwner()) {
+    document->LocalOwner()->UpdateDistribution();
+    document = document->LocalOwner()->ownerDocument();
+  }
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_ignored_;
 }
@@ -680,11 +699,16 @@ bool AXObjectImpl::ComputeIsInertOrAriaHidden(
             ignored_reasons->push_back(
                 IgnoredReason(kAXActiveModalDialog, dialog_object));
           } else {
-            ignored_reasons->push_back(IgnoredReason(kAXInert));
+            ignored_reasons->push_back(IgnoredReason(kAXInertElement));
           }
         } else {
-          // TODO(aboxhall): handle inert attribute if it eventuates
-          ignored_reasons->push_back(IgnoredReason(kAXInert));
+          const AXObjectImpl* inert_root_el = InertRoot();
+          if (inert_root_el == this) {
+            ignored_reasons->push_back(IgnoredReason(kAXInertElement));
+          } else {
+            ignored_reasons->push_back(
+                IgnoredReason(kAXInertSubtree, inert_root_el));
+          }
         }
       }
       return true;
@@ -702,10 +726,10 @@ bool AXObjectImpl::ComputeIsInertOrAriaHidden(
   if (hidden_root) {
     if (ignored_reasons) {
       if (hidden_root == this) {
-        ignored_reasons->push_back(IgnoredReason(kAXAriaHidden));
+        ignored_reasons->push_back(IgnoredReason(kAXAriaHiddenElement));
       } else {
         ignored_reasons->push_back(
-            IgnoredReason(kAXAriaHiddenRoot, hidden_root));
+            IgnoredReason(kAXAriaHiddenSubtree, hidden_root));
       }
     }
     return true;
@@ -735,6 +759,26 @@ const AXObjectImpl* AXObjectImpl::AriaHiddenRoot() const {
        object = object->ParentObject()) {
     if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       return object;
+  }
+
+  return 0;
+}
+
+const AXObjectImpl* AXObjectImpl::InertRoot() const {
+  const AXObjectImpl* object = this;
+  if (!RuntimeEnabledFeatures::inertAttributeEnabled())
+    return 0;
+
+  while (object && !object->IsAXNodeObject())
+    object = object->ParentObject();
+  Node* node = object->GetNode();
+  Element* element = node->IsElementNode()
+                         ? ToElement(node)
+                         : FlatTreeTraversal::ParentElement(*node);
+  while (element) {
+    if (element->hasAttribute(inertAttr))
+      return AxObjectCache().GetOrCreate(element);
+    element = FlatTreeTraversal::ParentElement(*element);
   }
 
   return 0;

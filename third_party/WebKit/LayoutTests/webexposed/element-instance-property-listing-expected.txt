@@ -82,6 +82,7 @@ namespace http://www.w3.org/1999/xhtml
     property hasPointerCapture
     property hidden
     property id
+    property inert
     property innerHTML
     property innerText
     property inputMode
@@ -1187,6 +1188,7 @@ namespace http://www.w3.org/2000/svg
     property hasPointerCapture
     property hidden
     property id
+    property inert
     property innerHTML
     property innerText
     property inputMode

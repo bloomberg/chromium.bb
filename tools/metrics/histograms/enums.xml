@@ -15011,6 +15011,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1993" label="ShapeDetection_TextDetectorConstructor"/>
   <int value="1994"
       label="CredentialManagerCredentialRequestOptionsOnlyUnmediated"/>
+  <int value="1995" label="InertAttribute"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
