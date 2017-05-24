@@ -281,7 +281,7 @@ punctuation \x0093 236
 punctuation \x0094 356
 punctuation \x0096 36
 punctuation \x0097 36-36
-punctuation \x00a1 235 ¡
+punctuation \x00a1 45-56-235 ¡
 sign \x00a2 4-14 ¢ cent
 sign \x00a3 4-123 £ pound
 #sign \x00a3 3456 £
@@ -302,7 +302,7 @@ sign \x00b4 45-56-12 ´ acute accent
 sign \x00b6 45-1234 ¶ pilcrow 
 sign \x00b8 45-12346 ¸ cedilla 
 punctuation \x00bb 456-356 »
-punctuation \x00bf 236 ¿
+punctuation \x00bf 45-56-236 ¿
 uppercase \x00c6 1-6-45-235-15 Æ
 lowercase \x00e6 1-45-235-15 æ
 
@@ -328,7 +328,7 @@ space \x200b 0
 punctuation \x2010 36 ‐
 punctuation \x2011 36 ‑
 punctuation \x2013 6-36 –
-punctuation \x2014 5-6-36 —
+punctuation \x2014 6-36 —
 punctuation \x2015 5-6-36 ―
 noback punctuation \x2018 6-236 ‘
 noback punctuation \x2019 356-3 ’
