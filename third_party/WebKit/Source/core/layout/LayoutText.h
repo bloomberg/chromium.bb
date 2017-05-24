@@ -99,9 +99,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const final;
-  void AbsoluteRectsForRange(Vector<IntRect>&,
-                             unsigned start_offset = 0,
-                             unsigned end_offset = INT_MAX) const;
 
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final;
