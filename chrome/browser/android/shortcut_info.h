@@ -48,7 +48,11 @@ struct ShortcutInfo {
 
     // Used for WebAPK PWAs added via the banner.
     SOURCE_APP_BANNER_WEBAPK = 10,
-    SOURCE_COUNT = 11
+
+    // Used for WebAPK PWAs whose install source info was lost.
+    SOURCE_WEBAPK_UNKNOWN = 11,
+
+    SOURCE_COUNT = 12
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);

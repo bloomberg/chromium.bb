@@ -287,7 +287,7 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
   if (task_type_ == WebApkInstaller::INSTALL) {
     Java_WebApkInstaller_installWebApkAsync(env, java_ref_, java_webapk_package,
                                             version, java_title, java_token,
-                                            java_url);
+                                            java_url, shortcut_info_.source);
   } else {
     Java_WebApkInstaller_updateAsync(env, java_ref_, java_webapk_package,
                                      version, java_title, java_token, java_url);
