@@ -5259,8 +5259,6 @@ crbug.com/591099 external/wpt/content-security-policy/svg/object-in-svg-foreigno
 crbug.com/591099 external/wpt/content-security-policy/svg/svg-from-guid.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/svg/svg-policy-resource-doc-includes.html [ Crash ]
 crbug.com/591099 external/wpt/content-security-policy/svg/svg-policy-with-resource.html [ Crash ]
-crbug.com/591099 external/wpt/content-security-policy/_unapproved/svgscript-nonces-hidden.html [ Crash ]
-crbug.com/591099 external/wpt/content-security-policy/_unapproved/svgscript-nonces-hidden-meta.html [ Crash ]
 crbug.com/591099 external/wpt/cors/remote-origin.htm [ Crash ]
 crbug.com/591099 external/wpt/css/CSS2/abspos/abspos-containing-block-initial-001.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/abspos/abspos-containing-block-initial-007.xht [ Failure ]
