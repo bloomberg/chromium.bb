@@ -72,6 +72,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsCreateContextBindGeneratesResourceSupported();
   static bool IsCreateContextWebGLCompatabilitySupported();
   static bool IsEGLSurfacelessContextSupported();
+  static bool IsEGLContextPrioritySupported();
   static bool IsDirectCompositionSupported();
 
  protected:

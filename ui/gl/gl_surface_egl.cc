@@ -128,6 +128,7 @@ bool g_egl_sync_control_supported = false;
 bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
+bool g_egl_context_priority_supported = false;
 bool g_use_direct_composition = false;
 
 class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
@@ -525,6 +526,17 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
       HasEGLExtension("EGL_ANGLE_window_fixed_size");
   g_egl_surface_orientation_supported =
       HasEGLExtension("EGL_ANGLE_surface_orientation");
+  // According to https://source.android.com/compatibility/android-cdd.html the
+  // EGL_IMG_context_priority extension is mandatory for Virtual Reality High
+  // Performance support, but due to a bug in Android Nougat the extension
+  // isn't being reported even when it's present. As a fallback, check if other
+  // related extensions that were added for VR support are present, and assume
+  // that this implies context priority is also supported. See also:
+  // https://github.com/googlevr/gvr-android-sdk/issues/330
+  g_egl_context_priority_supported =
+      HasEGLExtension("EGL_IMG_context_priority") ||
+      (HasEGLExtension("EGL_ANDROID_front_buffer_auto_refresh") &&
+       HasEGLExtension("EGL_ANDROID_create_native_client_buffer"));
 
   // Need EGL_ANGLE_flexible_surface_compatibility to allow surfaces with and
   // without alpha to be bound to the same context.
@@ -624,6 +636,11 @@ bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() {
 // static
 bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
   return g_egl_surfaceless_context_supported;
+}
+
+// static
+bool GLSurfaceEGL::IsEGLContextPrioritySupported() {
+  return g_egl_context_priority_supported;
 }
 
 // static
