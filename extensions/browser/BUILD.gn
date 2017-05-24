@@ -369,9 +369,15 @@ source_set("browser_tests") {
     deps += [ "//extensions/shell:app_shell" ]
   }
   if (is_chromeos) {
-    sources += [ "api/virtual_keyboard/virtual_keyboard_apitest.cc" ]
+    sources += [
+      "api/media_perception_private/media_perception_private_apitest.cc",
+      "api/virtual_keyboard/virtual_keyboard_apitest.cc",
+    ]
 
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//chromeos:media_perception_proto",
+    ]
   }
 }
 
@@ -511,9 +517,14 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
+      "api/media_perception_private/conversion_utils_unittest.cc",
+      "api/media_perception_private/media_perception_api_manager_unittest.cc",
       "api/webcam_private/visca_webcam_unittest.cc",
     ]
 
-    deps += [ "//chromeos:test_support" ]
+    deps += [
+      "//chromeos:media_perception_proto",
+      "//chromeos:test_support",
+    ]
   }
 }

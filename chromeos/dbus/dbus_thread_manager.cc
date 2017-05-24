@@ -41,6 +41,7 @@
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/upstart_client.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 
@@ -413,6 +414,12 @@ void DBusThreadManagerSetter::SetSessionManagerClient(
 void DBusThreadManagerSetter::SetUpdateEngineClient(
     std::unique_ptr<UpdateEngineClient> client) {
   DBusThreadManager::Get()->clients_common_->update_engine_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetUpstartClient(
+    std::unique_ptr<UpstartClient> client) {
+  DBusThreadManager::Get()->clients_browser_->upstart_client_ =
       std::move(client);
 }
 
