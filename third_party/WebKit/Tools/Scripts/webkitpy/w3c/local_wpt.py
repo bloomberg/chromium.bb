@@ -90,11 +90,17 @@ class LocalWPT(object):
         # Remove Chromium WPT directory prefix.
         patch = patch.replace(CHROMIUM_WPT_DIR, '')
 
+        _log.info('Author: %s', author)
+        if '<' in author:
+            author_str = author
+        else:
+            author_str = '%s <%s>' % (author, author)
+
         # TODO(jeffcarp): Use git am -p<n> where n is len(CHROMIUM_WPT_DIR.split(/'))
         # or something not off-by-one.
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'add', '.'])
-        self.run(['git', 'commit', '--author', author, '-am', message])
+        self.run(['git', 'commit', '--author', author_str, '-am', message])
 
         # Force push is necessary when updating a PR with a new patch
         # from Gerrit.
