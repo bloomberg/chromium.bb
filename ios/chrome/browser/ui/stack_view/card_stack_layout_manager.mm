@@ -647,7 +647,7 @@ const CGFloat kScrollAwayFromNeighborAmount = 200;
       // Calculate how much of the move (if any) should be eliminated in order
       // to restore fan out between this card and the preceding card.
       CGFloat amountToRestoreFanOut =
-          std::max((CGFloat)0, maxStagger_ - distance);
+          std::max<CGFloat>(0, maxStagger_ - distance);
       if (amountToRestoreFanOut > std::abs(currentAmount))
         currentAmount = 0;
       else if (currentAmount > 0)
