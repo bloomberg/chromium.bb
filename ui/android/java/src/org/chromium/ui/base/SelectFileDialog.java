@@ -302,13 +302,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                 intent.setType("image/*");
                 if (mAllowMultiple) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                Activity activity = mWindowAndroid.getActivity().get();
-                if (activity != null) {
-                    String label =
-                            activity.getResources().getString(R.string.photo_picker_select_images);
-                    activity.startActivityForResult(
-                            Intent.createChooser(intent, label), PhotoPickerListener.SHOW_GALLERY);
-                }
+                mWindowAndroid.showCancelableIntent(intent, this, R.string.low_memory_error);
                 break;
 
             case LAUNCH_CAMERA:
