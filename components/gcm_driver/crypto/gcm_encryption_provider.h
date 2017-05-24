@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
 
 namespace base {
 class FilePath;
@@ -37,8 +38,9 @@ class GCMEncryptionProvider {
     DECRYPTION_RESULT_UNENCRYPTED = 0,
 
     // The message had been encrypted by the sender, and could successfully be
-    // decrypted for the registration it has been received for.
-    DECRYPTION_RESULT_DECRYPTED = 1,
+    // decrypted for the registration it has been received for. The encryption
+    // scheme used for the message was draft-ietf-webpush-encryption-03.
+    DECRYPTION_RESULT_DECRYPTED_DRAFT_03 = 1,
 
     // The contents of the Encryption HTTP header could not be parsed.
     DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER = 2,
@@ -55,7 +57,16 @@ class GCMEncryptionProvider {
     // The payload could not be decrypted as AES-128-GCM.
     DECRYPTION_RESULT_INVALID_PAYLOAD = 6,
 
-    DECRYPTION_RESULT_LAST = DECRYPTION_RESULT_INVALID_PAYLOAD
+    // The binary header leading the ciphertext could not be parsed. Only
+    // applicable to messages encrypted per draft-ietf-webpush-encryption-08.
+    DECRYPTION_RESULT_INVALID_BINARY_HEADER = 7,
+
+    // The message had been encrypted by the sender, and could successfully be
+    // decrypted for the registration it has been received for. The encryption
+    // scheme used for the message was draft-ietf-webpush-encryption-08.
+    DECRYPTION_RESULT_DECRYPTED_DRAFT_08 = 8,
+
+    DECRYPTION_RESULT_LAST = DECRYPTION_RESULT_DECRYPTED_DRAFT_08
   };
 
   // Callback to be invoked when the public key and auth secret are available.
@@ -126,11 +137,14 @@ class GCMEncryptionProvider {
                                const KeyPair& pair,
                                const std::string& auth_secret);
 
-  void DecryptMessageWithKey(const IncomingMessage& message,
-                             const MessageCallback& callback,
+  void DecryptMessageWithKey(const std::string& collapse_key,
+                             const std::string& sender_id,
                              const std::string& salt,
-                             const std::string& dh,
-                             uint64_t rs,
+                             const std::string& public_key,
+                             uint32_t record_size,
+                             const std::string& ciphertext,
+                             GCMMessageCryptographer::Version version,
+                             const MessageCallback& callback,
                              const KeyPair& pair,
                              const std::string& auth_secret);
 

@@ -16937,12 +16937,14 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="GCMDecryptionResult" type="int">
   <int value="0" label="Success (message unencrypted)"/>
-  <int value="1" label="Success (message decrypted)"/>
+  <int value="1" label="Success (message decrypted per draft 03)"/>
   <int value="2" label="Failure (invalid Encryption HTTP header)"/>
   <int value="3" label="Failure (invalid Crypto-Key HTTP header)"/>
   <int value="4" label="Failure (no keying material available)"/>
   <int value="5" label="Failure (unable to compute the shared secret)"/>
   <int value="6" label="Failure (unable to decrypt using AES-GCM)"/>
+  <int value="7" label="Failure (invalid binary header)"/>
+  <int value="8" label="Success (message decrypted per draft 08)"/>
 </enum>
 
 <enum name="GCMEndpoints" type="int">
