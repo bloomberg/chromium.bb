@@ -36,6 +36,14 @@ const bool kUsePropCodecs = false;
 // all cases except for when paired with the Opus codec.
 const char kTestMimeType[] = "foo/foo";
 
+#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
+// HLS is supported on Android API level 14 and higher and Chrome supports
+// API levels 15 and higher, so HLS is always supported on Android.
+const bool kHlsSupported = true;
+#else
+const bool kHlsSupported = false;
+#endif
+
 // Helper method for creating a multi-value vector of |kTestStates| if
 // |test_all_values| is true or if false, a single value vector containing
 // |single_value|.
@@ -157,14 +165,6 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
 #else
   EXPECT_TRUE(IsSupportedMediaMimeType("video/ogg"));
 #endif  // OS_ANDROID
-
-#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
-  // HLS is supported on Android API level 14 and higher and Chrome supports
-  // API levels 15 and higher, so these are expected to be supported.
-  bool kHlsSupported = true;
-#else
-  bool kHlsSupported = false;
-#endif
 
   EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("application/x-mpegurl"));
   EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("Application/X-MPEGURL"));
@@ -413,7 +413,6 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
         switch (codec) {
           // These codecs are never supported by the Android platform.
           case MimeUtil::INVALID_CODEC:
-          case MimeUtil::MPEG2_AAC:
           case MimeUtil::THEORA:
             EXPECT_FALSE(result);
             break;
@@ -421,6 +420,7 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
           // These codecs are always available with platform decoder support.
           case MimeUtil::PCM:
           case MimeUtil::MP3:
+          case MimeUtil::MPEG2_AAC:
           case MimeUtil::MPEG4_AAC:
           case MimeUtil::VORBIS:
           case MimeUtil::FLAC:
@@ -479,8 +479,8 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
           case MimeUtil::FLAC:
           case MimeUtil::H264:
           case MimeUtil::PCM:
-          case MimeUtil::MPEG2_AAC:
           case MimeUtil::MP3:
+          case MimeUtil::MPEG2_AAC:
           case MimeUtil::MPEG4_AAC:
           case MimeUtil::OPUS:
           case MimeUtil::VORBIS:
@@ -519,23 +519,40 @@ TEST(IsCodecSupportedOnAndroidTest, OpusOggSupport) {
       });
 }
 
-TEST(IsCodecSupportedOnAndroidTest, HLSDoesNotSupportMPEG2AAC) {
-  // Vary all parameters; thus use default initial state.
-  MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
-  MimeUtil::PlatformInfo test_states;
+TEST(IsCodecSupportedOnAndroidTest, AndroidHLSAAC) {
+  const std::string hls_mime_types[] = {"application/x-mpegurl",
+                                        "application/vnd.apple.mpegurl",
+                                        "audio/mpegurl", "audio/x-mpegurl"};
 
-  RunCodecSupportTest(
-      states_to_vary, test_states,
-      [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
-            MimeUtil::MPEG2_AAC, "application/x-mpegurl", false, info));
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
-            MimeUtil::MPEG2_AAC, "application/vnd.apple.mpegurl", false, info));
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
-            MimeUtil::MPEG2_AAC, "audio/mpegurl", false, info));
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
-            MimeUtil::MPEG2_AAC, "audio/x-mpegurl", false, info));
-      });
+  const std::string mpeg2_aac_codec_strings[] = {"mp4a.66", "mp4a.67",
+                                                 "mp4a.68"};
+
+  const std::string mpeg4_aac_codec_strings[] = {
+      "mp4a.40.2", "mp4a.40.02", "mp4a.40.5", "mp4a.40.05", "mp4a.40.29"};
+
+  bool out_is_ambiguous;
+  AudioCodec out_codec;
+  for (const auto& hls_mime_type : hls_mime_types) {
+    // MPEG2_AAC is never supported with HLS. Even when HLS on android is
+    // supported, MediaPlayer lacks the needed MPEG2_AAC demuxers.
+    // See https://crbug.com/544268.
+    for (const auto& mpeg2_aac_string : mpeg2_aac_codec_strings) {
+      EXPECT_FALSE(ParseAudioCodecString(hls_mime_type, mpeg2_aac_string,
+                                         &out_is_ambiguous, &out_codec));
+    }
+
+    // MPEG4_AAC is supported with HLS whenever HLS is supported.
+    for (const auto& mpeg4_aac_string : mpeg4_aac_codec_strings) {
+      EXPECT_EQ(kHlsSupported,
+                ParseAudioCodecString(hls_mime_type, mpeg4_aac_string,
+                                      &out_is_ambiguous, &out_codec));
+    }
+  }
+
+  // NOTE
+  // We do not call IsCodecSupportedOnAndroid because the following checks
+  // are made at a higher level in mime code (parsing rather than checks for
+  // platform support).
 }
 
 }  // namespace internal
