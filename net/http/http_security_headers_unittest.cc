@@ -57,7 +57,7 @@ std::string GetTestPinUnquoted(uint8_t label, HashValueTag tag) {
   return GetTestPinImpl(label, tag, false);
 }
 
-};
+}  // anonymous namespace
 
 // Parses the given header |value| as both a Public-Key-Pins-Report-Only
 // and Public-Key-Pins header. Returns true if the value parses
@@ -1199,4 +1199,4 @@ TEST_F(HttpSecurityHeadersTest, ValidExpectCTHeaders) {
   EXPECT_TRUE(report_uri.is_empty());
 }
 
-};    // namespace net
+}  // namespace net
