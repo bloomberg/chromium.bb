@@ -1440,6 +1440,8 @@ split_static_library("browser") {
     "win/jumplist_updater.h",
     "win/settings_app_monitor.cc",
     "win/settings_app_monitor.h",
+    "win/taskbar_icon_finder.cc",
+    "win/taskbar_icon_finder.h",
     "win/titlebar_config.cc",
     "win/titlebar_config.h",
   ]
