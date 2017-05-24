@@ -6,7 +6,6 @@
 
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 
 namespace content {
@@ -106,7 +105,6 @@ void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
 }
 
 void LocalMediaStreamAudioSource::OnCaptureError(const std::string& why) {
-  WebRtcLogMessage("LocalMediaStreamAudioSource::OnCaptureError: " + why);
   StopSourceOnError(why);
 }
 
