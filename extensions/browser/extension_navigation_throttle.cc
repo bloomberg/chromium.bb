@@ -112,7 +112,8 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
   }
 
   // This is a subframe navigation to a |target_extension| resource.
-  // Enforce the web_accessible_resources restriction.
+  // Enforce the web_accessible_resources restriction, and same-origin
+  // restrictions for platform apps.
   content::RenderFrameHost* parent = navigation_handle()->GetParentFrame();
 
   // Look to see if all ancestors belong to |target_extension|. If not,
@@ -147,6 +148,22 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     // |url| must be in the manifest's "web_accessible_resources" section.
     if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(target_extension,
                                                              url.path()))
+      return content::NavigationThrottle::BLOCK_REQUEST;
+
+    // A platform app may not be loaded in an <iframe> by another origin.
+    //
+    // In fact, platform apps may not have any cross-origin iframes at all; for
+    // non-extension origins of |url| this is enforced by means of a Content
+    // Security Policy. But CSP is incapable of blocking the chrome-extension
+    // scheme. Thus, this case must be handled specially here.
+    if (target_extension->is_platform_app())
+      return content::NavigationThrottle::CANCEL;
+
+    // A platform app may not load another extension in an <iframe>.
+    const Extension* parent_extension =
+        registry->enabled_extensions().GetExtensionOrAppByURL(
+            parent->GetSiteInstance()->GetSiteURL());
+    if (parent_extension && parent_extension->is_platform_app())
       return content::NavigationThrottle::BLOCK_REQUEST;
   }
 
