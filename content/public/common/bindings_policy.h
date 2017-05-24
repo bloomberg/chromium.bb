@@ -32,11 +32,13 @@ enum BindingsPolicy {
   // normal web contents and are intended only for use with WebUI and layout
   // tests.
   BINDINGS_POLICY_MOJO = 1 << 3,
-  // Similar to BINDINGS_POLICY_MOJO except it's intended for use by
-  // HeadlessWebContents.
-  BINDINGS_POLICY_HEADLESS = 1 << 4,
+  // Bindings that allows main world JS content within a HeadlessWebContents to
+  // access the headless::TabSocket API.
+  BINDINGS_POLICY_HEADLESS_MAIN_WORLD = 1 << 4,
+  // Similar to BINDINGS_POLICY_HEADLESS_MAIN_WORLD except it's intended allow
+  // access only from within DevTools created isolated worlds.
+  BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD = 1 << 5,
 };
-
 }
 
 #endif  // CONTENT_PUBLIC_COMMON_BINDINGS_POLICY_H_

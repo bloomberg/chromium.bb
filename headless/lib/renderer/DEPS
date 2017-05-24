@@ -1,6 +1,7 @@
 include_rules = [
   "+components/printing/renderer",
   "+content/public/renderer",
+  "+gin",
   "+printing",
   "+third_party/WebKit/public",
 ]

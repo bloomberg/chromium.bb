@@ -16,7 +16,7 @@ namespace content {
 
 class MojoContextState;
 
-enum class MojoBindingsType { FOR_WEB_UI, FOR_LAYOUT_TESTS, FOR_HEADLESS };
+enum class MojoBindingsType { FOR_WEB_UI, FOR_LAYOUT_TESTS };
 
 // MojoBindingsController is responsible for enabling the renderer side of mojo
 // bindings. It creates (and destroys) a MojoContextState at the appropriate
