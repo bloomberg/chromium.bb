@@ -188,16 +188,6 @@ ParseServerTimingHeader(const String&);
 
 PLATFORM_EXPORT String CheckDoubleQuotedString(const String&);
 
-using Mode = blink::ParsedContentType::Mode;
-PLATFORM_EXPORT bool Consume(char, const String&, unsigned&);
-PLATFORM_EXPORT bool ConsumeToken(Mode, const String&, unsigned&, StringView&);
-PLATFORM_EXPORT bool ConsumeQuotedString(const String&, unsigned&, String&);
-PLATFORM_EXPORT bool ConsumeTokenOrQuotedString(Mode,
-                                                const String&,
-                                                unsigned&,
-                                                String&);
-PLATFORM_EXPORT bool IsEnd(const String&, unsigned);
-
 }  // namespace blink
 
 #endif
