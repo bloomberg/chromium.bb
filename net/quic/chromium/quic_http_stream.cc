@@ -791,6 +791,12 @@ void QuicHttpStream::ResetStream() {
     push_handle_->Cancel();
     push_handle_ = nullptr;
   }
+
+  // If |request_body_stream_| is non-NULL, Reset it, to abort any in progress
+  // read.
+  if (request_body_stream_)
+    request_body_stream_->Reset();
+
   if (!stream_)
     return;
   DCHECK_LE(stream_->NumBytesConsumed(), stream_->stream_bytes_read());
@@ -800,11 +806,6 @@ void QuicHttpStream::ResetStream() {
   closed_is_first_stream_ = stream_->IsFirstStream();
   stream_->ClearDelegate();
   stream_ = nullptr;
-
-  // If |request_body_stream_| is non-NULL, Reset it, to abort any in progress
-  // read.
-  if (request_body_stream_)
-    request_body_stream_->Reset();
 }
 
 int QuicHttpStream::GetResponseStatus() {
