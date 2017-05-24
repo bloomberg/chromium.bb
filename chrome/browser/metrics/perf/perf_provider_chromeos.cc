@@ -158,6 +158,9 @@ const char kPerfRecordInstructionTLBMissesCmd[] =
 const char kPerfRecordDataTLBMissesCmd[] =
   "perf record -a -e dTLB-misses -c 2003";
 
+const char kPerfRecordCacheMissesCmd[] =
+  "perf record -a -e cache-misses -c 4001";
+
 const char kPerfStatMemoryBandwidthCmd[] =
   "perf stat -a -e cycles -e instructions "
   "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
@@ -184,35 +187,39 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   if (intel_uarch == "IvyBridge" ||
       intel_uarch == "Haswell" ||
       intel_uarch == "Broadwell") {
-    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(45.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfStatMemoryBandwidthCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
   if (intel_uarch == "SandyBridge" || intel_uarch == "Skylake") {
-    cmds.push_back(WeightAndValue(55.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
   if (intel_uarch == "Silvermont" || intel_uarch == "Airmont") {
-    cmds.push_back(WeightAndValue(55.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
   // Other 64-bit x86
-  cmds.push_back(WeightAndValue(70.0, kPerfRecordCyclesCmd));
+  cmds.push_back(WeightAndValue(65.0, kPerfRecordCyclesCmd));
   cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
   cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
   cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+  cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
   return cmds;
 }
 
