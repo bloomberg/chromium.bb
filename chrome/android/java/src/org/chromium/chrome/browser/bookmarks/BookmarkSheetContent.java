@@ -56,6 +56,11 @@ public class BookmarkSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean isIncognitoThemedContent() {
+        return false;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return mBookmarkManager.getVerticalScrollOffset();
     }

@@ -55,6 +55,11 @@ public class HistorySheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean isIncognitoThemedContent() {
+        return false;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return mHistoryManager.getVerticalScrollOffset();
     }

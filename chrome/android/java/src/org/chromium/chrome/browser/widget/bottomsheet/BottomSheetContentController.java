@@ -134,9 +134,12 @@ public class BottomSheetContentController extends BottomNavigationView
     private boolean mDefaultContentInitialized;
     private ChromeActivity mActivity;
     private boolean mShouldOpenSheetOnNextContentChange;
+    private PlaceholderSheetContent mPlaceholderContent;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
+
+        mPlaceholderContent = new PlaceholderSheetContent(context);
     }
 
     /**
@@ -157,6 +160,7 @@ public class BottomSheetContentController extends BottomNavigationView
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 updateVisuals(newModel.isIncognito());
                 showBottomSheetContent(R.id.action_home);
+                mPlaceholderContent.setIsIncognito(newModel.isIncognito());
 
                 // Release incognito bottom sheet content so that it can be garbage collected.
                 if (!newModel.isIncognito()
@@ -214,16 +218,14 @@ public class BottomSheetContentController extends BottomNavigationView
      * @param hasFocus Whether or not the omnibox has focus.
      */
     public void onOmniboxFocusChange(boolean hasFocus) {
-        BottomSheetContent placeHolder = getSheetContentForId(PLACEHOLDER_ID);
-
         // If the omnibox is being focused, show the placeholder.
         if (hasFocus && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_HALF
                 && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_FULL) {
-            mBottomSheet.showContent(placeHolder);
+            mBottomSheet.showContent(mPlaceholderContent);
             mBottomSheet.endTransitionAnimations();
         }
 
-        if (!hasFocus && mBottomSheet.getCurrentSheetContent() == placeHolder) {
+        if (!hasFocus && mBottomSheet.getCurrentSheetContent() == mPlaceholderContent) {
             showBottomSheetContent(R.id.action_home);
         }
     }
@@ -278,8 +280,6 @@ public class BottomSheetContentController extends BottomNavigationView
             content = new HistorySheetContent(mActivity, mSnackbarManager);
         } else if (navItemId == INCOGNITO_HOME_ID) {
             content = new IncognitoBottomSheetContent(mActivity);
-        } else if (navItemId == PLACEHOLDER_ID) {
-            content = new PlaceholderSheetContent(getContext());
         }
 
         mBottomSheetContents.put(navItemId, content);

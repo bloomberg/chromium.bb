@@ -19,13 +19,29 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     /** The view that represents this placeholder. */
     private View mView;
 
+    /** Whether or not the content is using incognito colors. */
+    private boolean mIsIncongitoThemed;
+
     public PlaceholderSheetContent(Context context) {
         mView = new View(context);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
         mView.setLayoutParams(params);
-        mView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.default_primary_color));
+        setIsIncognito(false);
+    }
+
+    /**
+     * Set whether or not the placeholder content is being used in an incognito sheet. This affects
+     * the color used in the background.
+     * @param isIncognito Whether or not the sheet is incognito.
+     */
+    public void setIsIncognito(boolean isIncognito) {
+        mIsIncongitoThemed = isIncognito;
+
+        int colorId = isIncognito ? R.color.incognito_primary_color : R.color.default_primary_color;
+
+        mView.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(mView.getContext().getResources(), colorId));
     }
 
     @Override
@@ -40,7 +56,13 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
 
     @Override
     public boolean isUsingLightToolbarTheme() {
+        // This value doesn't matter since this content does not provide a toolbar.
         return false;
+    }
+
+    @Override
+    public boolean isIncognitoThemedContent() {
+        return mIsIncongitoThemed;
     }
 
     @Override
