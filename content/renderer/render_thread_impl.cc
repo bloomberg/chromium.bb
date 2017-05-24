@@ -1904,24 +1904,15 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
   }
 #endif
 
-  cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info;
-  cc::mojom::MojoCompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&sink_info);
-  cc::mojom::MojoCompositorFrameSinkClientPtr client;
-  cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&client);
-
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
         cc::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
-      frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
-                                            std::move(client));
       callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
           routing_id, std::move(synthetic_begin_frame_source),
-          std::move(vulkan_context_provider), std::move(sink_info),
-          std::move(client_request), std::move(frame_swap_message_queue)));
+          std::move(vulkan_context_provider),
+          std::move(frame_swap_message_queue)));
       return;
     }
   }
@@ -1944,12 +1935,9 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
 
   if (use_software) {
     DCHECK(!layout_test_mode());
-    frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
-                                          std::move(client));
     callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
         routing_id, std::move(synthetic_begin_frame_source), nullptr, nullptr,
-        nullptr, shared_bitmap_manager(), std::move(sink_info),
-        std::move(client_request), std::move(frame_swap_message_queue)));
+        nullptr, shared_bitmap_manager(), std::move(frame_swap_message_queue)));
     return;
   }
 
@@ -2016,13 +2004,11 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     return;
   }
 #endif
-  frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
-                                        std::move(client));
   callback.Run(base::WrapUnique(new RendererCompositorFrameSink(
       routing_id, std::move(synthetic_begin_frame_source),
       std::move(context_provider), std::move(worker_context_provider),
-      GetGpuMemoryBufferManager(), nullptr, std::move(sink_info),
-      std::move(client_request), std::move(frame_swap_message_queue))));
+      GetGpuMemoryBufferManager(), nullptr,
+      std::move(frame_swap_message_queue))));
 }
 
 AssociatedInterfaceRegistry*
