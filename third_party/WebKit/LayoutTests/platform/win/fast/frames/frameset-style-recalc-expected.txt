@@ -1,4 +1,3 @@
-CONSOLE WARNING: Resource requests whose URLs contain raw newline characters are deprecated, and may be blocked in M60, around August 2017. Please remove newlines from places like element attribute values in order to continue loading those resources. See https://www.chromestatus.com/features/5735596811091968 for more details.
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600

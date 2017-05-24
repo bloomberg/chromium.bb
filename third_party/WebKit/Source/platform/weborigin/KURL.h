@@ -192,7 +192,9 @@ class PLATFORM_EXPORT KURL {
 
   bool IsSafeToSendToAnotherThread() const;
 
-  bool WhitespaceRemoved() const { return parsed_.whitespace_removed; }
+  bool PotentiallyDanglingMarkup() const {
+    return parsed_.potentially_dangling_markup;
+  }
 
  private:
   void Init(const KURL& base,

@@ -17773,7 +17773,6 @@ crbug.com/591099 http/tests/security/cross-origin-window-event-exception.html [ 
 crbug.com/591099 http/tests/security/cross-origin-window-open-exception.html [ Failure ]
 crbug.com/591099 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Failure ]
 crbug.com/591099 http/tests/security/dangling-markup/option.html [ Crash ]
-crbug.com/591099 http/tests/security/dangling-markup/src-attribute.html [ Crash ]
 crbug.com/591099 http/tests/security/dangling-markup/textarea.html [ Crash ]
 crbug.com/591099 http/tests/security/dataTransfer-set-data-file-url.html [ Timeout ]
 crbug.com/591099 http/tests/security/data-url-inline.css.html [ Failure ]

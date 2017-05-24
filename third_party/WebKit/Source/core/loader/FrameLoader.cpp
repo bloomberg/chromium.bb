@@ -1300,16 +1300,12 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     return kNavigationPolicyCurrentTab;
 
   // Check for non-escaped new lines in the url.
-  if (request.Url().WhitespaceRemoved()) {
+  if (request.Url().PotentiallyDanglingMarkup() &&
+      request.Url().ProtocolIsInHTTPFamily()) {
     Deprecation::CountDeprecation(
         frame_, UseCounter::kCanRequestURLHTTPContainingNewline);
-    if (request.Url().ProtocolIsInHTTPFamily()) {
-      if (RuntimeEnabledFeatures::restrictCanRequestURLCharacterSetEnabled())
-        return kNavigationPolicyIgnore;
-    } else {
-      UseCounter::Count(frame_,
-                        UseCounter::kCanRequestURLNonHTTPContainingNewline);
-    }
+    if (RuntimeEnabledFeatures::restrictCanRequestURLCharacterSetEnabled())
+      return kNavigationPolicyIgnore;
   }
 
   Settings* settings = frame_->GetSettings();

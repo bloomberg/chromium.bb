@@ -328,8 +328,6 @@ TEST(KURLTest, AbsoluteRemoveWhitespace) {
     const KURL input(kParsedURLString, test.input);
     const KURL expected(kParsedURLString, test.expected);
     EXPECT_EQ(input, expected);
-    EXPECT_TRUE(input.WhitespaceRemoved());
-    EXPECT_FALSE(expected.WhitespaceRemoved());
   }
 }
 
@@ -337,18 +335,12 @@ TEST(KURLTest, RelativeRemoveWhitespace) {
   struct {
     const char* base;
     const char* relative;
-    bool whitespace_removed;
   } cases[] = {
-      {"http://example.com/", "/path", false},
-      {"http://example.com/", "\n/path", true},
-      {"http://example.com/", "\r/path", true},
-      {"http://example.com/", "\t/path", true},
-      {"http://example.com/", "/pa\nth", true},
-      {"http://example.com/", "/pa\rth", true},
-      {"http://example.com/", "/pa\tth", true},
-      {"http://example.com/", "/path\n", true},
-      {"http://example.com/", "/path\r", true},
-      {"http://example.com/", "/path\t", true},
+      {"http://example.com/", "/path"},   {"http://example.com/", "\n/path"},
+      {"http://example.com/", "\r/path"}, {"http://example.com/", "\t/path"},
+      {"http://example.com/", "/pa\nth"}, {"http://example.com/", "/pa\rth"},
+      {"http://example.com/", "/pa\tth"}, {"http://example.com/", "/path\n"},
+      {"http://example.com/", "/path\r"}, {"http://example.com/", "/path\t"},
   };
 
   for (const auto& test : cases) {
@@ -357,7 +349,96 @@ TEST(KURLTest, RelativeRemoveWhitespace) {
     const KURL expected(kParsedURLString, "http://example.com/path");
     const KURL actual(base, test.relative);
     EXPECT_EQ(actual, expected);
-    EXPECT_EQ(test.whitespace_removed, actual.WhitespaceRemoved());
+  }
+}
+
+TEST(KURLTest, AbsolutePotentiallyDanglingMarkup) {
+  struct {
+    const char* input;
+    const char* expected;
+    const bool potentially_dangling_markup;
+  } cases[] = {
+      // Just removable whitespace isn't enough:
+      {"ht\ntps://example.com/yay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"ht\ttps://example.com/yay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"ht\rtps://example.com/yay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://exa\nmple.com/yay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://exa\tmple.com/yay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://exa\rmple.com/yay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/y\nay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/y\tay?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/y\ray?boo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/yay?b\noo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/yay?b\too#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/yay?b\roo#foo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/yay?boo#f\noo", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/yay?boo#f\too", "https://example.com/yay?boo#foo",
+       false},
+      {"https://example.com/yay?boo#f\roo", "https://example.com/yay?boo#foo",
+       false},
+
+      // Likewise, just a brace won't cut it:
+      {"https://example.com/y<ay?boo#foo", "https://example.com/y%3Cay?boo#foo",
+       false},
+      {"https://example.com/yay?b<oo#foo", "https://example.com/yay?b%3Coo#foo",
+       false},
+      {"https://example.com/yay?boo#f<oo", "https://example.com/yay?boo#f<oo",
+       false},
+
+      // Both, however:
+      {"ht\ntps://example.com/y<ay?boo#foo",
+       "https://example.com/y%3Cay?boo#foo", true},
+      {"https://e\nxample.com/y<ay?boo#foo",
+       "https://example.com/y%3Cay?boo#foo", true},
+      {"https://example.com/y<\nay?boo#foo",
+       "https://example.com/y%3Cay?boo#foo", true},
+      {"https://example.com/y<ay?b\noo#foo",
+       "https://example.com/y%3Cay?boo#foo", true},
+      {"https://example.com/y<ay?boo#f\noo",
+       "https://example.com/y%3Cay?boo#foo", true},
+      {"ht\ntps://example.com/yay?b<oo#foo",
+       "https://example.com/yay?b%3Coo#foo", true},
+      {"https://e\nxample.com/yay?b<oo#foo",
+       "https://example.com/yay?b%3Coo#foo", true},
+      {"https://example.com/y\nay?b<oo#foo",
+       "https://example.com/yay?b%3Coo#foo", true},
+      {"https://example.com/yay?b<\noo#foo",
+       "https://example.com/yay?b%3Coo#foo", true},
+      {"https://example.com/yay?b<oo#f\noo",
+       "https://example.com/yay?b%3Coo#foo", true},
+      {"ht\ntps://example.com/yay?boo#f<oo", "https://example.com/yay?boo#f<oo",
+       true},
+      {"https://e\nxample.com/yay?boo#f<oo", "https://example.com/yay?boo#f<oo",
+       true},
+      {"https://example.com/y\nay?boo#f<oo", "https://example.com/yay?boo#f<oo",
+       true},
+      {"https://example.com/yay?b\noo#f<oo", "https://example.com/yay?boo#f<oo",
+       true},
+      {"https://example.com/yay?boo#f<\noo", "https://example.com/yay?boo#f<oo",
+       true},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(::testing::Message() << test.input << ", " << test.expected);
+    const KURL input(KURL(), test.input);
+    const KURL expected(KURL(), test.expected);
+    EXPECT_EQ(input, expected) << input.GetString() << expected.GetString();
+    EXPECT_EQ(test.potentially_dangling_markup,
+              input.PotentiallyDanglingMarkup());
+    EXPECT_FALSE(expected.PotentiallyDanglingMarkup());
   }
 }
 
