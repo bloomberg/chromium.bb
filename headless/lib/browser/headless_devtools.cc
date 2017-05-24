@@ -25,38 +25,20 @@ namespace {
 
 const int kBackLog = 10;
 
-class TCPServerSocketFactory : public content::DevToolsSocketFactory {
+class TCPEndpointServerSocketFactory : public content::DevToolsSocketFactory {
  public:
-  explicit TCPServerSocketFactory(const net::IPEndPoint& endpoint)
-      : endpoint_(endpoint), socket_fd_(0) {
+  explicit TCPEndpointServerSocketFactory(const net::IPEndPoint& endpoint)
+      : endpoint_(endpoint) {
     DCHECK(endpoint_.address().IsValid());
   }
 
-  explicit TCPServerSocketFactory(const size_t socket_fd)
-      : socket_fd_(socket_fd) {}
-
  private:
-  // content::DevToolsSocketFactory implementation:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
-    if (!socket_fd_) {
-      std::unique_ptr<net::ServerSocket> socket(
-          new net::TCPServerSocket(nullptr, net::NetLogSource()));
-      if (socket->Listen(endpoint_, kBackLog) != net::OK)
-        return std::unique_ptr<net::ServerSocket>();
-      return socket;
-    }
-#if defined(OS_POSIX)
-    std::unique_ptr<net::TCPServerSocket> tsock(
+    std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLogSource()));
-    if (tsock->AdoptSocket(socket_fd_) != net::OK) {
-      LOG(ERROR) << "Failed to adopt open socket";
+    if (socket->Listen(endpoint_, kBackLog) != net::OK)
       return std::unique_ptr<net::ServerSocket>();
-    }
-    return std::unique_ptr<net::ServerSocket>(tsock.release());
-#else
-    LOG(ERROR) << "Can't inherit an open socket on non-Posix systems";
-    return std::unique_ptr<net::ServerSocket>();
-#endif
+    return socket;
   }
 
   std::unique_ptr<net::ServerSocket> CreateForTethering(
@@ -65,21 +47,74 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
   }
 
   net::IPEndPoint endpoint_;
-  size_t socket_fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
+  DISALLOW_COPY_AND_ASSIGN(TCPEndpointServerSocketFactory);
 };
 
+#if defined(OS_POSIX)
+class TCPAdoptServerSocketFactory : public content::DevToolsSocketFactory {
+ public:
+  // Construct a factory to use an already-open, already-listening socket.
+  explicit TCPAdoptServerSocketFactory(const size_t socket_fd)
+      : socket_fd_(socket_fd) {}
+
+ private:
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::TCPServerSocket> tsock(
+        new net::TCPServerSocket(nullptr, net::NetLogSource()));
+    if (tsock->AdoptSocket(socket_fd_) != net::OK) {
+      LOG(ERROR) << "Failed to adopt open socket";
+      return std::unique_ptr<net::ServerSocket>();
+    }
+    // Note that we assume that the socket is already listening, so unlike
+    // TCPEndpointServerSocketFactory, we don't call Listen.
+    return std::unique_ptr<net::ServerSocket>(std::move(tsock));
+  }
+
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
+  }
+
+  size_t socket_fd_;
+
+  DISALLOW_COPY_AND_ASSIGN(TCPAdoptServerSocketFactory);
+};
+#else   // defined(OS_POSIX)
+
+// Placeholder class to use when a socket_fd is passed in on non-Posix.
+class DummyTCPServerSocketFactory : public content::DevToolsSocketFactory {
+ public:
+  explicit DummyTCPServerSocketFactory() {}
+
+ private:
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    return nullptr;
+  }
+
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DummyTCPServerSocketFactory);
+};
+#endif  // defined(OS_POSIX)
 }  // namespace
 
 void StartLocalDevToolsHttpHandler(HeadlessBrowser::Options* options) {
   std::unique_ptr<content::DevToolsSocketFactory> socket_factory;
   if (options->devtools_socket_fd == 0) {
     const net::IPEndPoint& endpoint = options->devtools_endpoint;
-    socket_factory.reset(new TCPServerSocketFactory(endpoint));
+    socket_factory.reset(new TCPEndpointServerSocketFactory(endpoint));
   } else {
+#if defined(OS_POSIX)
     const uint16_t socket_fd = options->devtools_socket_fd;
-    socket_factory.reset(new TCPServerSocketFactory(socket_fd));
+    socket_factory.reset(new TCPAdoptServerSocketFactory(socket_fd));
+#else
+    LOG(ERROR) << "Can't inherit an open socket on non-Posix systems";
+    socket_factory.reset(new DummyTCPServerSocketFactory());
+#endif
   }
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(socket_factory), std::string(),
