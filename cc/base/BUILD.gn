@@ -33,7 +33,6 @@ component("base") {
     "list_container_helper.h",
     "math_util.cc",
     "math_util.h",
-    "random_access_list_container.h",
     "region.cc",
     "region.h",
     "render_surface_filters.cc",

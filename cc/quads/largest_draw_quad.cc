@@ -19,28 +19,53 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 
 namespace {
+
 template <typename...>
 struct MaxSize {};
 template <class T, class... Args>
 struct MaxSize<T, Args...> {
-  static const size_t value = sizeof(T) > MaxSize<Args...>::value
-                                  ? sizeof(T)
-                                  : MaxSize<Args...>::value;
+  static constexpr size_t value = sizeof(T) > MaxSize<Args...>::value
+                                      ? sizeof(T)
+                                      : MaxSize<Args...>::value;
 };
 template <>
 struct MaxSize<> {
-  static const size_t value = 0;
+  static constexpr size_t value = 0;
 };
 
-const size_t kLargestDrawQuadSize = MaxSize<cc::DebugBorderDrawQuad,
-                                            cc::PictureDrawQuad,
-                                            cc::RenderPassDrawQuad,
-                                            cc::SolidColorDrawQuad,
-                                            cc::StreamVideoDrawQuad,
-                                            cc::SurfaceDrawQuad,
-                                            cc::TextureDrawQuad,
-                                            cc::TileDrawQuad,
-                                            cc::YUVVideoDrawQuad>::value;
+constexpr size_t kLargestDrawQuadSize = MaxSize<cc::DebugBorderDrawQuad,
+                                                cc::PictureDrawQuad,
+                                                cc::RenderPassDrawQuad,
+                                                cc::SolidColorDrawQuad,
+                                                cc::StreamVideoDrawQuad,
+                                                cc::SurfaceDrawQuad,
+                                                cc::TextureDrawQuad,
+                                                cc::TileDrawQuad,
+                                                cc::YUVVideoDrawQuad>::value;
+
+template <typename...>
+struct MaxAlign {};
+template <class T, class... Args>
+struct MaxAlign<T, Args...> {
+  static constexpr size_t value = ALIGNOF(T) > MaxAlign<Args...>::value
+                                      ? ALIGNOF(T)
+                                      : MaxAlign<Args...>::value;
+};
+template <>
+struct MaxAlign<> {
+  static constexpr size_t value = 0;
+};
+
+constexpr size_t kLargestDrawQuadAlignment =
+    MaxAlign<cc::DebugBorderDrawQuad,
+             cc::PictureDrawQuad,
+             cc::RenderPassDrawQuad,
+             cc::SolidColorDrawQuad,
+             cc::StreamVideoDrawQuad,
+             cc::SurfaceDrawQuad,
+             cc::TextureDrawQuad,
+             cc::TileDrawQuad,
+             cc::YUVVideoDrawQuad>::value;
 
 }  // namespace
 
@@ -48,6 +73,10 @@ namespace cc {
 
 size_t LargestDrawQuadSize() {
   return kLargestDrawQuadSize;
+}
+
+size_t LargestDrawQuadAlignment() {
+  return kLargestDrawQuadAlignment;
 }
 
 }  // namespace cc
