@@ -46,8 +46,6 @@ Polymer({
       this.words_ = words;
     }.bind(this));
 
-    // Updates are applied locally so they appear immediately, but we should
-    // listen for changes in case they come from elsewhere.
     this.languageSettingsPrivate.onCustomDictionaryChanged.addListener(
         this.onCustomDictionaryChanged_.bind(this));
 
@@ -66,19 +64,30 @@ Polymer({
   },
 
   /**
-   * Handles updates to the word list. Additions triggered by this element are
-   * de-duped so the word list remains a set. Words are appended to the end
-   * instead of re-sorting the list so it's clear what words were added.
+   * Handles updates to the word list. Additions are unshifted to the top
+   * of the list so that users can see them easily.
    * @param {!Array<string>} added
    * @param {!Array<string>} removed
    */
   onCustomDictionaryChanged_: function(added, removed) {
+    var wasEmpty = this.words_.length == 0;
+
     for (var i = 0; i < removed.length; i++)
       this.arrayDelete('words_', removed[i]);
 
     for (var i = 0; i < added.length; i++) {
       if (this.words_.indexOf(added[i]) == -1)
-        this.push('words_', added[i]);
+        this.unshift('words_', added[i]);
+    }
+
+    // When adding a word to an _empty_ list, the template is expanded. This
+    // is a workaround to resize the iron-list as well.
+    // TODO(dschuyler): Remove this hack after iron-list no longer needs
+    // this workaround to update the list at the same time the template
+    // wrapping the list is expanded.
+    if (wasEmpty && this.words_.length > 0) {
+      Polymer.dom.flush();
+      this.$$('#list').notifyResize();
     }
   },
 
@@ -107,12 +116,10 @@ Polymer({
    */
   onRemoveWordTap_: function(e) {
     this.languageSettingsPrivate.removeSpellcheckWord(e.model.item);
-    this.arrayDelete('words_', e.model.item);
   },
 
   /**
-   * Adds the word in the paper-input to the dictionary, also appending it
-   * to the end of the list of words shown to the user.
+   * Adds the word in the paper-input to the dictionary.
    */
   addWordFromInput_: function() {
     // Spaces are allowed, but removing leading and trailing whitespace.
@@ -124,16 +131,6 @@ Polymer({
     var index = this.words_.indexOf(word);
     if (index == -1) {
       this.languageSettingsPrivate.addSpellcheckWord(word);
-      this.unshift('words_', word);
-      if (this.words_.length == 1) {
-        // When adding a word to an _empty_ list, the template is expanded. This
-        // is a workaround to resize the iron-list as well.
-        // TODO(dschuyler): Remove this hack after iron-list no longer needs
-        // this workaround to update the list at the same time the template
-        // wrapping the list is expanded.
-        Polymer.dom.flush();
-        this.$$('#list').notifyResize();
-      }
     }
   },
 
