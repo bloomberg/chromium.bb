@@ -68,8 +68,8 @@ public class PersonalDataManager {
      */
     public interface GetSubKeysRequestDelegate {
         /**
-         * Called when the sub-keys are received sucessfully.
-         * Here the sub-keys are admin areas.
+         * Called when the subkeys are received sucessfully.
+         * Here the subkeys are admin areas.
          *
          * @param subKeys The subKeys.
          */
@@ -538,7 +538,7 @@ public class PersonalDataManager {
         return sManager;
     }
 
-    private static int sNormalizationTimeoutSeconds = 5;
+    private static int sRequestTimeoutSeconds = 5;
 
     private final long mPersonalDataManagerAndroid;
     private final List<PersonalDataManagerObserver> mDataObservers =
@@ -839,16 +839,22 @@ public class PersonalDataManager {
     }
 
     /**
-     * Starts loading the sub keys for the specified {@code regionCode}.
+     * Starts requesting the subkeys for the specified {@code regionCode}, if the rules
+     * associated with the {@code regionCode} are done loading. Otherwise sets up the callback to
+     * start loading the subkeys when the rules are loaded. The received subkeys will be sent
+     * to the {@code delegate}. If the subkeys are not received in the specified
+     * {@code sRequestTimeoutSeconds}, the {@code delegate} will be notified.
      *
-     * @param regionCode The code of the region for which to load the sub keys.
+     * @param regionCode The code of the region for which to load the subkeys.
+     * @param delegate The object requesting the subkeys.
      */
     public void getRegionSubKeys(String regionCode, GetSubKeysRequestDelegate delegate) {
         ThreadUtils.assertOnUiThread();
-        nativeStartRegionSubKeysRequest(mPersonalDataManagerAndroid, regionCode, delegate);
+        nativeStartRegionSubKeysRequest(
+                mPersonalDataManagerAndroid, regionCode, sRequestTimeoutSeconds, delegate);
     }
 
-    /** Cancels the pending sub keys request. */
+    /** Cancels the pending subkeys request. */
     public void cancelPendingGetSubKeys() {
         ThreadUtils.assertOnUiThread();
         nativeCancelPendingGetSubKeys(mPersonalDataManagerAndroid);
@@ -859,7 +865,7 @@ public class PersonalDataManager {
      * associated with the {@code regionCode} are done loading. Otherwise sets up the callback to
      * start normalizing the address when the rules are loaded. The normalized profile will be sent
      * to the {@code delegate}. If the profile is not normalized in the specified
-     * {@code sNormalizationTimeoutSeconds}, the {@code delegate} will be notified.
+     * {@code sRequestTimeoutSeconds}, the {@code delegate} will be notified.
      *
      * @param profile The profile to normalize.
      * @param regionCode The region code indicating which rules to use for normalization.
@@ -868,8 +874,8 @@ public class PersonalDataManager {
     public void normalizeAddress(
             AutofillProfile profile, String regionCode, NormalizedAddressRequestDelegate delegate) {
         ThreadUtils.assertOnUiThread();
-        nativeStartAddressNormalization(mPersonalDataManagerAndroid, profile, regionCode,
-                sNormalizationTimeoutSeconds, delegate);
+        nativeStartAddressNormalization(
+                mPersonalDataManagerAndroid, profile, regionCode, sRequestTimeoutSeconds, delegate);
     }
 
     /**
@@ -928,15 +934,15 @@ public class PersonalDataManager {
     }
 
     @VisibleForTesting
-    public static void setNormalizationTimeoutForTesting(int timeout) {
-        sNormalizationTimeoutSeconds = timeout;
+    public static void setRequestTimeoutForTesting(int timeout) {
+        sRequestTimeoutSeconds = timeout;
     }
 
     /**
      * @return The sub-key request timeout in milliseconds.
      */
     public static long getRequestTimeoutMS() {
-        return TimeUnit.SECONDS.toMillis(sNormalizationTimeoutSeconds);
+        return TimeUnit.SECONDS.toMillis(sRequestTimeoutSeconds);
     }
 
     private native long nativeInit();
@@ -1006,7 +1012,7 @@ public class PersonalDataManager {
             AutofillProfile profile, String regionCode, int timeoutSeconds,
             NormalizedAddressRequestDelegate delegate);
     private native void nativeStartRegionSubKeysRequest(long nativePersonalDataManagerAndroid,
-            String regionCode, GetSubKeysRequestDelegate delegate);
+            String regionCode, int timeoutSeconds, GetSubKeysRequestDelegate delegate);
     private static native boolean nativeHasProfiles(long nativePersonalDataManagerAndroid);
     private static native boolean nativeHasCreditCards(long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();

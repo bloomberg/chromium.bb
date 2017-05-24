@@ -335,40 +335,20 @@ public class AddressEditor
 
     /** Requests the list of admin areas. */
     private void loadAdminAreasForCountry(String countryCode) {
-        // Used to check if the callback is called (for time-out).
+        // Used to check if the callback is called (for the cancellation).
         mAdminAreasLoaded = false;
 
-        onAdminAreasLoading();
+        // For tests, the time-out is set to 0. In this case, we should not
+        // fetch the admin-areas, and show a text-field instead.
+        // This is to have the tests independent of the network status.
+        if (PersonalDataManager.getInstance().getRequestTimeoutMS() == 0) {
+            onSubKeysReceived(null);
+            return;
+        }
+
         // In each rule, admin area keys are saved under sub-keys of country.
         PersonalDataManager.getInstance().loadRulesForSubKeys(countryCode);
         PersonalDataManager.getInstance().getRegionSubKeys(countryCode, this);
-    }
-
-    /** Cancels the request for the list of admin areas. */
-    private void cancelAdminAreasRequest() {
-        if (mAdminAreasLoaded) return;
-        onSubKeysReceived(null);
-        PersonalDataManager.getInstance().cancelPendingGetSubKeys();
-    }
-
-    /**
-     * In case the the admin areas are not loaded yet, or the time out is set to 0 for testing,
-     * starts a timer to cancel the request.
-     */
-    public void onAdminAreasLoading() {
-        if (mAdminAreasLoaded) return;
-        // Handler().postDelayed sometimes adds an additional delay to the time-out,
-        // therefore the case for time-out == 0 is checked initially.
-        if (PersonalDataManager.getInstance().getRequestTimeoutMS() == 0) {
-            cancelAdminAreasRequest();
-            return;
-        }
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                cancelAdminAreasRequest();
-            }
-        }, PersonalDataManager.getInstance().getRequestTimeoutMS());
     }
 
     /**
