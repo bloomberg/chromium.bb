@@ -13,7 +13,19 @@ enum UiElementDebugId {
   kNone = 0,
   kWebVrPermanentHttpSecurityWarning,
   kWebVrTransientHttpSecurityWarning,
+  kContentQuad,
+  kBackplane,
+  kCeiling,
+  kFloor,
+  kFloorGrid,
+  kUrlBar,
+  kLoadingIndicator,
+  kAudioCaptureIndicator,
+  kVideoCaptureIndicator,
+  kScreenCaptureIndicator,
   kCloseButton,
+  kScreenDimmer,
+  kExitWarning,
 };
 
 }  // namespace vr_shell

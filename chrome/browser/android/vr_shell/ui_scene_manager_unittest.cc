@@ -84,6 +84,11 @@ class UiSceneManagerTest : public testing::Test {
   std::unique_ptr<MockBrowserInterface> browser_;
   std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiSceneManager> manager_;
+
+  bool ColorEquals(vr::Colorf expected, vr::Colorf actual) {
+    return (expected.r == actual.r) && (expected.g == actual.g) &&
+           (expected.b == actual.b) && (expected.a == actual.a);
+  }
 };
 
 TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
@@ -137,6 +142,62 @@ TEST_F(UiSceneManagerTest, CctButtonVisibleInCct) {
   EXPECT_FALSE(IsVisible(kCloseButton));
   manager_->SetWebVrMode(false);
   EXPECT_TRUE(IsVisible(kCloseButton));
+}
+
+TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
+  std::set<UiElementDebugId> visible_in_browsing = {
+      UiElementDebugId::kContentQuad,     UiElementDebugId::kBackplane,
+      UiElementDebugId::kCeiling,         UiElementDebugId::kFloor,
+      UiElementDebugId::kFloorGrid,       UiElementDebugId::kUrlBar,
+      UiElementDebugId::kLoadingIndicator};
+  std::set<UiElementDebugId> visible_in_fullscreen = {
+      UiElementDebugId::kContentQuad, UiElementDebugId::kBackplane,
+      UiElementDebugId::kCeiling, UiElementDebugId::kFloor,
+      UiElementDebugId::kFloorGrid};
+
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  // Hold onto the background color to make sure it changes.
+  vr::Colorf initial_background = scene_->GetBackgroundColor();
+
+  for (const auto& element : scene_->GetUiElements()) {
+    SCOPED_TRACE(element->debug_id());
+    bool should_be_visible = visible_in_browsing.find(element->debug_id()) !=
+                             visible_in_browsing.end();
+    EXPECT_EQ(should_be_visible, element->visible());
+  }
+
+  // Transistion to fullscreen.
+  manager_->SetFullscreen(true);
+
+  // Content elements should be visible, control elements should be hidden.
+  for (const auto& element : scene_->GetUiElements()) {
+    SCOPED_TRACE(element->debug_id());
+    bool should_be_visible = visible_in_fullscreen.find(element->debug_id()) !=
+                             visible_in_fullscreen.end();
+    EXPECT_EQ(should_be_visible, element->visible());
+  }
+
+  {
+    SCOPED_TRACE("Entered Fullsceen");
+    // Make sure background has changed for fullscreen.
+    EXPECT_FALSE(ColorEquals(initial_background, scene_->GetBackgroundColor()));
+  }
+
+  // Exit fullscreen.
+  manager_->SetFullscreen(false);
+
+  // Everything should return to original state after leaving fullscreen.
+  for (const auto& element : scene_->GetUiElements()) {
+    SCOPED_TRACE(element->debug_id());
+    bool should_be_visible = visible_in_browsing.find(element->debug_id()) !=
+                             visible_in_browsing.end();
+    EXPECT_EQ(should_be_visible, element->visible());
+  }
+  {
+    SCOPED_TRACE("Exited Fullsceen");
+    EXPECT_TRUE(ColorEquals(initial_background, scene_->GetBackgroundColor()));
+  }
 }
 
 }  // namespace vr_shell
