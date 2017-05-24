@@ -56,7 +56,7 @@ class DisplayManager : public UserIdTrackerObserver,
   std::set<const Display*> displays() const;
 
   // Notifies when something about the Display changes.
-  void OnDisplayUpdate(const display::Display& display);
+  void OnDisplayUpdated(const display::Display& display);
 
   // Returns the Display that contains |window|, or null if |window| is not
   // attached to a display.

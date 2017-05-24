@@ -36,10 +36,10 @@ class UserDisplayManager : public mojom::DisplayManager {
       mojo::InterfaceRequest<mojom::DisplayManager> request);
 
   // Called when something about the display (e.g. pixel-ratio, size) changes.
-  void OnDisplayUpdate(const display::Display& display);
+  void OnDisplayUpdated(const display::Display& display);
 
-  // Called when |display_id| is being removed.
-  void OnWillDestroyDisplay(int64_t display_id);
+  // Called when the display with |display_id| was removed.
+  void OnDisplayDestroyed(int64_t display_id);
 
   // Called when the primary display changes.
   void OnPrimaryDisplayChanged(int64_t primary_display_id);
@@ -57,8 +57,13 @@ class UserDisplayManager : public mojom::DisplayManager {
 
   std::vector<mojom::WsDisplayPtr> GetAllDisplays();
 
-  // Calls OnDisplays() on |observer|.
-  void CallOnDisplays(mojom::DisplayManagerObserver* observer);
+  bool ShouldCallOnDisplaysChanged() const;
+
+  // Calls OnDisplaysChanged() on all observers.
+  void CallOnDisplaysChangedIfNecessary();
+
+  // Calls OnDisplaysChanged() on |observer|.
+  void CallOnDisplaysChanged(mojom::DisplayManagerObserver* observer);
 
   UserDisplayManagerDelegate* delegate_;
 

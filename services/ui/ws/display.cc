@@ -224,7 +224,7 @@ void Display::InitWindowManagerDisplayRoots() {
   } else {
     CreateWindowManagerDisplayRootsFromFactories();
   }
-  display_manager()->OnDisplayUpdate(display_);
+  display_manager()->OnDisplayUpdated(display_);
 }
 
 void Display::CreateWindowManagerDisplayRootsFromFactories() {
