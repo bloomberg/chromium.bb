@@ -187,8 +187,8 @@ void AVDAPictureBufferManager::AssignOnePictureBuffer(
     bool have_context) {
   // Attach a GLImage to each texture that will use the surface texture.
   scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image =
-      codec_images_[picture_buffer.id()] = new AVDACodecImage(
-          shared_state_, media_codec_, state_provider_->GetGlDecoder());
+      codec_images_[picture_buffer.id()] =
+          new AVDACodecImage(shared_state_, media_codec_);
   SetImageForPicture(picture_buffer, gl_image.get());
 }
 
