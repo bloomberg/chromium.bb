@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -186,6 +187,7 @@ public class SearchActivity extends AsyncInitializationActivity
         AutocompleteController.nativePrefetchZeroSuggestResults();
         CustomTabsConnection.getInstance(getApplication()).warmup(0);
         mSearchBox.onDeferredStartup(isVoiceSearchIntent());
+        RecordUserAction.record("SearchWidget.WidgetSelected");
 
         getActivityDelegate().onFinishDeferredInitialization();
     }
@@ -249,6 +251,7 @@ public class SearchActivity extends AsyncInitializationActivity
                 ActivityOptionsCompat
                         .makeCustomAnimation(this, android.R.anim.fade_in, android.R.anim.fade_out)
                         .toBundle());
+        RecordUserAction.record("SearchWidget.SearchMade");
         finish();
     }
 
