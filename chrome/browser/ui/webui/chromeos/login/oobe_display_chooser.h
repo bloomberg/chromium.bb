@@ -6,19 +6,23 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_DISPLAY_CHOOSER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace chromeos {
 
-// Tries to put the OOBE UI on a connected touch display (if available).
 class OobeDisplayChooser {
  public:
   OobeDisplayChooser();
   ~OobeDisplayChooser();
 
+  // Tries to put the OOBE UI on a connected touch display (if available).
+  // Must be called on the BrowserThread::UI thread.
   void TryToPlaceUiOnTouchDisplay();
 
  private:
   void MoveToTouchDisplay();
+
+  base::WeakPtrFactory<OobeDisplayChooser> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeDisplayChooser);
 };

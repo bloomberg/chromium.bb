@@ -980,16 +980,10 @@ void LoginDisplayHostImpl::OnDisplayAdded(const display::Display& new_display) {
     GetOobeUI()->OnDisplayConfigurationChanged();
 }
 
-void LoginDisplayHostImpl::OnDisplayRemoved(
-    const display::Display& old_display) {
-  if (GetOobeUI())
-    GetOobeUI()->OnDisplayConfigurationChanged();
-}
-
 void LoginDisplayHostImpl::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  display::Display primary_display =
+  const display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.id() != primary_display.id() ||
       !(changed_metrics & DISPLAY_METRIC_BOUNDS)) {
@@ -1000,6 +994,9 @@ void LoginDisplayHostImpl::OnDisplayMetricsChanged(
     const gfx::Size& size = primary_display.size();
     GetOobeUI()->GetCoreOobeView()->SetClientAreaSize(size.width(),
                                                       size.height());
+
+    if (changed_metrics & DISPLAY_METRIC_PRIMARY)
+      GetOobeUI()->OnDisplayConfigurationChanged();
   }
 }
 

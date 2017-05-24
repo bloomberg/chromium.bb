@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
 
-#include "ash/display/display_configuration_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+
+using content::BrowserThread;
 
 namespace chromeos {
 
@@ -22,19 +25,31 @@ bool TouchSupportAvailable(const display::Display& display) {
 
 }  // namespace
 
-OobeDisplayChooser::OobeDisplayChooser() {}
+OobeDisplayChooser::OobeDisplayChooser() : weak_ptr_factory_(this) {}
 
 OobeDisplayChooser::~OobeDisplayChooser() {}
 
 void OobeDisplayChooser::TryToPlaceUiOnTouchDisplay() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Don't (potentially) queue a second task to run MoveToTouchDisplay if one
+  // already is queued.
+  if (weak_ptr_factory_.HasWeakPtrs())
+    return;
+
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
-  if (primary_display.is_valid() && !TouchSupportAvailable(primary_display))
-    MoveToTouchDisplay();
+  if (primary_display.is_valid() && !TouchSupportAvailable(primary_display)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&OobeDisplayChooser::MoveToTouchDisplay,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void OobeDisplayChooser::MoveToTouchDisplay() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   const display::Displays& displays =
       ash::Shell::Get()->display_manager()->active_only_display_list();
 
@@ -43,9 +58,8 @@ void OobeDisplayChooser::MoveToTouchDisplay() {
 
   for (const display::Display& display : displays) {
     if (TouchSupportAvailable(display)) {
-      ash::Shell::Get()
-          ->display_configuration_controller()
-          ->SetPrimaryDisplayId(display.id());
+      ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+          display.id());
       break;
     }
   }
