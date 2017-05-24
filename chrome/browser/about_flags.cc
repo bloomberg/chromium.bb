@@ -1328,6 +1328,9 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableNetworkPortalNotification,
          chromeos::switches::kDisableNetworkPortalNotification)},
+    {"network-settings-config", flag_descriptions::kNetworkSettingsConfigName,
+     flag_descriptions::kNetworkSettingsConfigDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kNetworkSettingsConfig)},
 #endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"enable-media-document-download-button",

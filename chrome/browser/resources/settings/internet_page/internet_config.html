@@ -1,0 +1,100 @@
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="internet_shared_css.html">
+<link rel="import" href="network_config_input.html">
+<link rel="import" href="network_config_select.html">
+
+<dom-module id="settings-internet-config">
+  <template>
+    <style include="internet-shared iron-flex">
+    </style>
+
+    <!-- Title section: Icon + name. -->
+    <div class="settings-box first">
+      <div class="start layout horizontal center">
+        <cr-network-icon network-state="[[networkProperties_]]" is-list-item>
+        </cr-network-icon>
+        <div class="title">[[title_]]</div>
+      </div>
+      <div id="buttonDiv">
+        <paper-button class="secondary-button" on-tap="onCancelTap_">
+          $i18n{cancel}
+        </paper-button>
+        <template is="dom-if" if="[[guid_]]">
+          <paper-button class="primary-button" on-tap="onSaveTap_"
+              disabled="[[!saveIsEnabled_(configProperties_.*)]]">
+            $i18n{save}
+          </paper-button>
+        </template>
+        <template is="dom-if" if="[[!guid_]]">
+          <paper-button class="primary-button" on-tap="onConnectTap_"
+              disabled="[[!connectIsEnabled_(configProperties_.*)]]">
+            $i18n{networkButtonConnect}
+          </paper-button>
+        </template>
+      </div>
+    </div>
+
+    <!-- WiFi -->
+    <template is="dom-if"
+        if="[[isType_(NetworkType_.WI_FI, networkProperties_.Type)]]">
+      <div class="settings-box">
+        <div id="shareLabel" class="start">$i18n{networkConfigShare}</div>
+        <paper-toggle-button id="share" checked="{{shareNetwork_}}"
+            disabled="[[!shareIsEnabled_(guid_, configProperties_.*)]]"
+            aria-labelledby="shareLabel">
+        </paper-toggle-button>
+      </div>
+      <network-config-input id="ssid" label="$i18n{OncWiFi-SSID}"
+          value="{{configProperties_.WiFi.SSID}}" disabled="[[guid_]]">
+      </network-config-input>
+      <network-config-select id="security" label="$i18n{OncWiFi-Security}"
+          value="{{configProperties_.WiFi.Security}}" disabled="[[guid_]]"
+          items="[[securityItems_]]" onc-prefix="WiFi.Security">
+      </network-config-select>
+      <network-config-input label="$i18n{OncWiFi-Passphrase}"
+          value="{{configProperties_.WiFi.Passphrase}}"
+          hidden="[[!configRequiresPassphrase_(configProperties_.*)]]">
+      </network-config-input>
+    </template>
+
+    <!-- EAP (WiFi, WiMAX, Ethernet) -->
+    <template is="dom-if" if="[[showEap_]]">
+      <network-config-select id="outer" label="$i18n{OncEAP-Outer}"
+          value="{{configProperties_.WiFi.EAP.Outer}}"
+          items="[[eapOuterItems_]]" onc-prefix="EAP.Outer">
+      </network-config-select>
+      <network-config-select id="inner" label="$i18n{OncEAP-Inner}"
+          value="{{configProperties_.WiFi.EAP.Inner}}"
+          items="[[getEapInnerItems_(configProperties_.WiFi.EAP.Outer)]]"
+          onc-prefix="EAP.Inner" hidden="[[!showEap_.Inner]]">
+      </network-config-select>
+      <network-config-input label="$i18n{OncEAP-SubjectMatch}"
+          value="{{configProperties_.WiFi.EAP.SubjectMatch}}"
+          hidden="[[!showEap.SubjectMatch]]">
+      </network-config-input>
+      <network-config-input label="$i18n{OncEAP-Identity}"
+          value="{{configProperties_.WiFi.EAP.Identity}}"
+          hidden="[[!showEap.Identity]]">
+      </network-config-input>
+      <network-config-input label="$i18n{OncEAP-Password}"
+          value="{{configProperties_.WiFi.EAP.Password}}"
+          hidden="[[!showEap.Password]]">
+      </network-config-input>
+      <network-config-input label="$i18n{OncEAP-AnonymousIdentity}"
+          value="{{configProperties_.WiFi.EAP.AnonymousIdentity}}"
+          hidden="[[!showEap.AnonymousIdentity]]">
+      </network-config-input>
+
+    </template>
+
+    <!-- TODO(stevenjb): Error message for config or cert failure -->
+
+  </template>
+  <script src="internet_config.js"></script>
+</dom-module>

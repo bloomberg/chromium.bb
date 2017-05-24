@@ -105,6 +105,7 @@ Polymer({
   listeners: {
     'device-enabled-toggled': 'onDeviceEnabledToggled_',
     'network-connect': 'onNetworkConnect_',
+    'show-config': 'onShowConfig_',
     'show-detail': 'onShowDetail_',
     'show-known-networks': 'onShowKnownNetworks_',
     'show-networks': 'onShowNetworks_',
@@ -215,6 +216,32 @@ Polymer({
   },
 
   /**
+   * @param {!{detail: !CrOnc.NetworkProperties}} event
+   * @private
+   */
+  onShowConfig_: function(event) {
+    var properties = event.detail;
+    this.showConfig_(
+        properties.Type, properties.GUID, CrOnc.getNetworkName(properties));
+  },
+
+  /**
+   * @param {string} type
+   * @param {string=} guid
+   * @param {string=} name
+   * @private
+   */
+  showConfig_: function(type, guid, name) {
+    var params = new URLSearchParams;
+    params.append('type', type);
+    if (guid)
+      params.append('guid', guid);
+    if (name)
+      params.append('name', name);
+    settings.navigateTo(settings.Route.NETWORK_CONFIG, params);
+  },
+
+  /**
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
@@ -273,7 +300,10 @@ Polymer({
 
   /** @private */
   onAddWiFiTap_: function() {
-    chrome.send('addNetwork', [CrOnc.Type.WI_FI]);
+    if (loadTimeData.getBoolean('networkSettingsConfig'))
+      this.showConfig_(CrOnc.Type.WI_FI);
+    else
+      chrome.send('addNetwork', [CrOnc.Type.WI_FI]);
   },
 
   /** @private */
