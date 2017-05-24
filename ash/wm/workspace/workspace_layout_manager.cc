@@ -215,9 +215,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   if (key == aura::client::kAlwaysOnTopKey) {
     if (window->GetProperty(aura::client::kAlwaysOnTopKey)) {
       aura::Window* container =
-          root_window_controller_->always_on_top_controller()
-              ->GetContainer(WmWindow::Get(window))
-              ->aura_window();
+          root_window_controller_->always_on_top_controller()->GetContainer(
+              window);
       if (window->parent() != container)
         container->AddChild(window);
     }
