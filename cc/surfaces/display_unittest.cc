@@ -207,6 +207,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_EQ(gfx::Size(100, 100),
             software_output_device_->viewport_pixel_size());
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), software_output_device_->damage_rect());
+
   {
     // Only damaged portion should be swapped.
     pass = RenderPass::Create();
@@ -260,9 +261,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
     pass->id = 1;
 
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.f);
-
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
     SubmitCompositorFrame(&pass_list, local_surface_id);
@@ -282,9 +280,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1;
-
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -353,8 +348,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   // Resize should cause a swap if no frame was swapped at the previous size.
   {
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.f);
     scheduler_->swapped = false;
     display_->Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler_->swapped);
@@ -386,8 +379,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
   }
 
   {
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.0f);
     // Surface that's damaged completely should be resized and swapped.
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
@@ -419,8 +410,7 @@ class MockedContext : public TestWebGraphicsContext3D {
 };
 
 TEST_F(DisplayTest, Finish) {
-  LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
-  LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
+  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
@@ -435,7 +425,7 @@ TEST_F(DisplayTest, Finish) {
   StubDisplayClient client;
   display_->Initialize(&client, &manager_);
 
-  display_->SetLocalSurfaceId(local_surface_id1, 1.f);
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   display_->Resize(gfx::Size(100, 100));
 
@@ -447,7 +437,7 @@ TEST_F(DisplayTest, Finish) {
     pass->id = 1;
     pass_list.push_back(std::move(pass));
 
-    SubmitCompositorFrame(&pass_list, local_surface_id1);
+    SubmitCompositorFrame(&pass_list, local_surface_id);
   }
 
   display_->DrawAndSwap();
@@ -461,7 +451,6 @@ TEST_F(DisplayTest, Finish) {
 
   // Another resize without a swap doesn't need to finish.
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
-  display_->SetLocalSurfaceId(local_surface_id2, 1.f);
   display_->Resize(gfx::Size(200, 200));
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
@@ -474,7 +463,7 @@ TEST_F(DisplayTest, Finish) {
     pass->id = 1;
     pass_list.push_back(std::move(pass));
 
-    SubmitCompositorFrame(&pass_list, local_surface_id2);
+    SubmitCompositorFrame(&pass_list, local_surface_id);
   }
 
   display_->DrawAndSwap();

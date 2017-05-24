@@ -86,10 +86,7 @@ void GpuRootCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
 void GpuRootCompositorFrameSink::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
-    compositor_frame_sink_binding_.Close();
-    OnClientConnectionLost();
-  }
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
 void GpuRootCompositorFrameSink::DidNotProduceFrame(

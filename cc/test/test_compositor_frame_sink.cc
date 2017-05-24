@@ -132,20 +132,17 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
             frame.metadata.begin_frame_ack.sequence_number);
   test_client_->DisplayReceivedCompositorFrame(frame);
 
-  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
-  float device_scale_factor = frame.metadata.device_scale_factor;
-  if (!local_surface_id_.is_valid() || frame_size != display_size_ ||
-      device_scale_factor != device_scale_factor_) {
-    local_surface_id_ = local_surface_id_allocator_->GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id_, device_scale_factor);
-    display_->Resize(frame_size);
-    display_size_ = frame_size;
-    device_scale_factor_ = device_scale_factor;
+  if (!delegated_local_surface_id_.is_valid()) {
+    delegated_local_surface_id_ = local_surface_id_allocator_->GenerateId();
   }
+  display_->SetLocalSurfaceId(delegated_local_surface_id_,
+                              frame.metadata.device_scale_factor);
 
-  bool result =
-      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
-  DCHECK(result);
+  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
+  display_->Resize(frame_size);
+
+  support_->SubmitCompositorFrame(delegated_local_surface_id_,
+                                  std::move(frame));
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_) {
     support_->RequestCopyOfSurface(std::move(copy_request));

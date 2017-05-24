@@ -27,7 +27,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -130,6 +129,10 @@ namespace {
 const cc::LocalSurfaceId kArbitraryLocalSurfaceId(
     1,
     base::UnguessableToken::Deserialize(2, 3));
+
+cc::LocalSurfaceId CreateLocalSurfaceId() {
+  return cc::LocalSurfaceId(1, base::UnguessableToken::Create());
+}
 
 class TestOverscrollDelegate : public OverscrollControllerDelegate {
  public:
@@ -833,8 +836,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   IPC::TestSink* sink_;
   base::test::ScopedFeatureList feature_list_;
-
-  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
@@ -2343,7 +2344,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
 
   // Submit another frame. The resources for the previous frame belong to the
   // old RendererCompositorFrameSink and should not be returned.
-  view_->SubmitCompositorFrame(local_surface_id_allocator_.GenerateId(),
+  view_->SubmitCompositorFrame(CreateLocalSurfaceId(),
                                MakeDelegatedFrame(1.f, view_size, view_rect));
   EXPECT_EQ(0u, sink_->message_count());
 
@@ -2489,8 +2490,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   gfx::Size large_size(100, 100);
   gfx::Size small_size(40, 45);
   gfx::Size medium_size(40, 95);
-  cc::LocalSurfaceId small_id = local_surface_id_allocator_.GenerateId();
-  cc::LocalSurfaceId medium_id = local_surface_id_allocator_.GenerateId();
 
   // Prevent the DelegatedFrameHost from skipping frames.
   // XXX
@@ -2505,7 +2504,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   cc::CompositorFrame frame =
       MakeDelegatedFrame(1.f, small_size, gfx::Rect(small_size));
   frame.metadata.root_background_color = SK_ColorRED;
-  view_->SubmitCompositorFrame(small_id, std::move(frame));
+  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
 
   ui::Layer* parent_layer = view_->GetNativeView()->layer();
 
@@ -2526,7 +2525,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   EXPECT_EQ(SK_ColorBLACK, parent_layer->children()[0]->background_color());
 
   frame = MakeDelegatedFrame(1.f, medium_size, gfx::Rect(medium_size));
-  view_->SubmitCompositorFrame(medium_id, std::move(frame));
+  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
   EXPECT_EQ(0u, parent_layer->children().size());
 
   view_->SetSize(large_size);
@@ -2542,9 +2541,6 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   gfx::Size size1(100, 100);
   gfx::Size size2(200, 200);
   gfx::Size size3(300, 300);
-  cc::LocalSurfaceId id1 = local_surface_id_allocator_.GenerateId();
-  cc::LocalSurfaceId id2 = local_surface_id_allocator_.GenerateId();
-  cc::LocalSurfaceId id3 = local_surface_id_allocator_.GenerateId();
 
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
   view_->InitAsChild(nullptr);
@@ -2553,7 +2549,8 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   view_->Show();
   view_->SetSize(size1);
   view_->SubmitCompositorFrame(
-      id1, MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)));
   ui::DrawWaiterForTest::WaitForCommit(
       root_window->GetHost()->compositor());
   ViewHostMsg_UpdateRect_Params update_params;
@@ -2592,7 +2589,8 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   // message.
   view_->renderer_compositor_frame_sink_->Reset();
   view_->SubmitCompositorFrame(
-      id3, MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)));
   view_->renderer_compositor_frame_sink_->Flush();
   // Expect the frame ack;
   EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
@@ -2602,7 +2600,8 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   // produce a Resize message after the commit.
   view_->renderer_compositor_frame_sink_->Reset();
   view_->SubmitCompositorFrame(
-      id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
   view_->renderer_compositor_frame_sink_->Flush();
   cc::SurfaceId surface_id = view_->surface_id();
   if (!surface_id.is_valid()) {
@@ -2659,7 +2658,6 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
 TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -2673,7 +2671,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
   // A full frame of damage.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
-  view_->SubmitCompositorFrame(local_surface_id,
+  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
                                MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -2683,7 +2681,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   EXPECT_CALL(observer,
               OnDelegatedFrameDamage(view_->window_, partial_view_rect));
   view_->SubmitCompositorFrame(
-      local_surface_id, MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
@@ -2700,7 +2699,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Rect dropped_damage_rect_1(10, 20, 30, 40);
   EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect_1));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -2708,7 +2707,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Rect dropped_damage_rect_2(40, 50, 10, 20);
   EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect_2));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -2718,13 +2717,13 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
   // Unlock the compositor. This frame should damage everything.
   frame_size = view_rect.size();
-  local_surface_id = local_surface_id_allocator_.GenerateId();
 
   gfx::Rect new_damage_rect(5, 6, 10, 10);
   EXPECT_CALL(observer,
               OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->SubmitCompositorFrame(
-      local_surface_id, MakeDelegatedFrame(1.f, frame_size, new_damage_rect));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, new_damage_rect));
   // The swap unlocks the compositor.
   EXPECT_TRUE(view_->resize_locked());
   EXPECT_FALSE(view_->compositor_locked());
@@ -2738,7 +2737,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   EXPECT_CALL(observer,
               OnDelegatedFrameDamage(view_->window_, partial_view_rect));
   view_->SubmitCompositorFrame(
-      local_surface_id, MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
   EXPECT_FALSE(view_->resize_locked());
@@ -2753,16 +2753,15 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
   // We're never expecting empty frames, resize to something non-empty.
   view_rect = gfx::Rect(100, 100);
-  frame_size = view_rect.size();
-  local_surface_id = local_surface_id_allocator_.GenerateId();
   view_->SetSize(view_rect.size());
   EXPECT_TRUE(view_->resize_locked());
   EXPECT_TRUE(view_->compositor_locked());
 
   // This frame should not be dropped.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
-  view_->SubmitCompositorFrame(local_surface_id,
-                               MakeDelegatedFrame(1.f, frame_size, view_rect));
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, view_rect.size(), view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   EXPECT_TRUE(view_->resize_locked());
   EXPECT_FALSE(view_->compositor_locked());
@@ -2777,7 +2776,6 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -2791,7 +2789,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
   // A frame of initial size.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -2799,7 +2797,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
   // A frame of initial size arrives, but we don't commit in the UI yet.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, _));
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -2814,7 +2812,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
 
   EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -2829,16 +2827,15 @@ TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
 
   EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   // A frame arrives of the new size, which will be accepted.
   frame_size = view_rect.size();
-  local_surface_id = local_surface_id_allocator_.GenerateId();
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, _));
   view_->SubmitCompositorFrame(
-      local_surface_id,
+      kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
   // Receiving the frame unlocks the compositor so it can commit.
   EXPECT_TRUE(view_->resize_locked());
@@ -2929,7 +2926,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 
   // Submit a frame from the new RendererCompositorFrameSink.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
-  view_->SubmitCompositorFrame(local_surface_id_allocator_.GenerateId(),
+  view_->SubmitCompositorFrame(CreateLocalSurfaceId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -2939,7 +2936,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 
   // Submit a frame from the new RendererCompositorFrameSink.
   view_->SubmitCompositorFrame(
-      local_surface_id_allocator_.GenerateId(),
+      CreateLocalSurfaceId(),
       MakeDelegatedFrame(1.f, gfx::Size(), gfx::Rect()));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -2949,7 +2946,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 
   // Swap another frame, with a different surface id.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
-  view_->SubmitCompositorFrame(local_surface_id_allocator_.GenerateId(),
+  view_->SubmitCompositorFrame(CreateLocalSurfaceId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
@@ -3088,14 +3085,14 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   views[1]->Hide();
   EXPECT_TRUE(views[1]->HasFrameData());
   gfx::Size size2(200, 200);
-  cc::LocalSurfaceId id2 = local_surface_id_allocator_.GenerateId();
   views[1]->SetSize(size2);
   EXPECT_FALSE(views[1]->HasFrameData());
   // Show it, it should block until we give it a frame.
   views[1]->Show();
   EXPECT_TRUE(views[1]->released_front_lock_active());
   views[1]->SubmitCompositorFrame(
-      id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
   EXPECT_FALSE(views[1]->released_front_lock_active());
 
   for (size_t i = 0; i < renderer_count - 1; ++i)
@@ -3170,7 +3167,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
     views[i]->SubmitCompositorFrame(
-        i ? local_surface_id_allocator_.GenerateId() : kArbitraryLocalSurfaceId,
+        i ? CreateLocalSurfaceId() : kArbitraryLocalSurfaceId,
         MakeDelegatedFrame(1.f, frame_size, view_rect));
     EXPECT_TRUE(views[i]->HasFrameData());
   }
@@ -3316,7 +3313,6 @@ class LastObserverTracker : public cc::FakeExternalBeginFrameSource::Client {
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3350,7 +3346,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     cc::BeginFrameAck ack(source_id, 5, 4, true);
     cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
     view_->RunOnCompositingDidCommit();
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
   }
@@ -3383,7 +3379,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     cc::CompositorFrame frame =
         MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
     frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
     view_->RunOnCompositingDidCommit();
     ack.latest_confirmed_sequence_number = 4;
     ack.has_damage = false;
@@ -3406,7 +3402,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     cc::CompositorFrame frame =
         MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
     frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
     view_->RunOnCompositingDidCommit();
     ack.latest_confirmed_sequence_number =
         cc::BeginFrameArgs::kInvalidFrameNumber;
@@ -3430,7 +3426,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   // Unlock the compositor again with a new CompositorFrame of correct size.
   frame_size = view_rect.size();
-  local_surface_id = local_surface_id_allocator_.GenerateId();
 
   {
     cc::BeginFrameArgs args = cc::CreateBeginFrameArgsForTesting(
@@ -3441,7 +3436,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     cc::BeginFrameAck ack(source_id, 12, 12, true);
     cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
     view_->RunOnCompositingDidCommit();
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
   }

@@ -69,7 +69,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   std::unique_ptr<Surface> CreateSurface(
       base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
-      const SurfaceInfo& surface_info);
+      const LocalSurfaceId& local_surface_id);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
   void DestroySurface(std::unique_ptr<Surface> surface);

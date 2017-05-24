@@ -73,8 +73,7 @@ class HardwareRenderer : public cc::CompositorFrameSinkSupportClient {
   EGLContext last_egl_context_;
 
   // Information about last delegated frame.
-  gfx::Size surface_size_;
-  float device_scale_factor_ = 0;
+  gfx::Size frame_size_;
 
   // Infromation from UI on last commit.
   gfx::Vector2d scroll_offset_;
