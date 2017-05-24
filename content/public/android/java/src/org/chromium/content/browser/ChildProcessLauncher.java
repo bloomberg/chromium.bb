@@ -121,8 +121,6 @@ public class ChildProcessLauncher {
             sSandboxedChildConnectionAllocatorMap.put(packageName, connectionAllocator);
         }
         return sSandboxedChildConnectionAllocatorMap.get(packageName);
-        // TODO(pkotwicz|hanxi): Figure out when old allocators should be removed from
-        // {@code sSandboxedChildConnectionAllocatorMap}.
     }
 
     @VisibleForTesting
@@ -151,7 +149,7 @@ public class ChildProcessLauncher {
         ChildConnectionAllocator allocator =
                 getConnectionAllocator(context, packageName, inSandbox);
         ChildProcessConnection connection = allocator.allocate(
-                spawnData, packageName, bindAsExternalService, deathCallback, queueIfNoneAvailable);
+                spawnData, bindAsExternalService, deathCallback, queueIfNoneAvailable);
         sConnectionsToAllocatorMap.put(connection, allocator);
         return connection;
     }
@@ -206,7 +204,14 @@ public class ChildProcessLauncher {
                 ChildConnectionAllocator allocator = sConnectionsToAllocatorMap.remove(conn);
                 assert allocator != null;
                 final ChildSpawnData pendingSpawn = allocator.free(conn);
-                if (pendingSpawn != null) {
+                if (pendingSpawn == null) {
+                    String packageName = allocator.getPackageName();
+                    if (!allocator.anyConnectionAllocated()
+                            && sSandboxedChildConnectionAllocatorMap.get(packageName)
+                                    == allocator) {
+                        sSandboxedChildConnectionAllocatorMap.remove(packageName);
+                    }
+                } else {
                     LauncherThread.post(new Runnable() {
                         @Override
                         public void run() {
@@ -493,5 +498,10 @@ public class ChildProcessLauncher {
         }
 
         return true;
+    }
+
+    @VisibleForTesting
+    public static Map<String, ChildConnectionAllocator> getSandboxedAllocatorMapForTesting() {
+        return sSandboxedChildConnectionAllocatorMap;
     }
 }
