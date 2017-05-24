@@ -388,16 +388,6 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         mSigninAccountEmail.setText(selectedAccountEmail);
     }
 
-    /**
-     * Updates the view to show that sign in has completed.
-     * This should only be used if the user is not currently signed in (eg on the First
-     * Run Experience).
-     */
-    public void switchToSignedMode() {
-        // TODO(peconn): Add a warning here
-        showConfirmSigninPage();
-    }
-
     private void showSigninPage() {
         mSignedIn = false;
 
