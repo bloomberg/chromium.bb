@@ -223,6 +223,16 @@ NSString* const kMenuControllerMenuDidCloseNotification =
       [[sender target]
           respondsToSelector:@selector(itemSelected:uiEventFlags:)]) {
     const int uiEventFlags = ui::EventFlagsFromNative([NSApp currentEvent]);
+
+    // Take care here to retain |menu_| in the block, but not |self|. Since the
+    // block may run before -menuDidClose:, a release of the MenuController
+    // will think the menu is open, and invoke -cancel. So if the delegate is
+    // bad (see below), and decides to release the MenuController in its menu
+    // action, ensure the -dealloc happens there. To do otherwise risks |model_|
+    // being deleted when it is used in -cancel, whereas that is less likely if
+    // the -cancel happens in the delegate method.
+    NSMenu* menu = menu_;
+
     postedItemSelectedTask_ =
         base::MakeUnique<base::CancelableClosure>(base::BindBlock(^{
           id target = [sender target];
@@ -230,6 +240,13 @@ NSString* const kMenuControllerMenuDidCloseNotification =
             [target itemSelected:sender uiEventFlags:uiEventFlags];
           else
             NOTREACHED();
+
+          // Ensure consumers that use -postItemSelectedAsTask:YES have not
+          // destroyed the MenuController in the menu action. AppKit will still
+          // send messages to [item target] (the MenuController), and the target
+          // can not be set to nil here since that prevents re-use of the menu
+          // for well-behaved consumers.
+          CHECK([menu delegate]);  // Note: set to nil in -dealloc.
         }));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, postedItemSelectedTask_->callback());
@@ -237,10 +254,11 @@ NSString* const kMenuControllerMenuDidCloseNotification =
 }
 
 - (void)itemSelected:(id)sender {
-  if (postedItemSelectedTask_) {
-    if (!postedItemSelectedTask_->IsCancelled())
-      postedItemSelectedTask_->callback().Run();
-    postedItemSelectedTask_.reset();
+  // A task created in -itemWillBeSelected: may or may not have run. If not, put
+  // it on the stack before running it, in case it destroys |self|.
+  if (auto pendingTask = std::move(postedItemSelectedTask_)) {
+    if (!pendingTask->IsCancelled())
+      pendingTask->callback().Run();
   } else {
     [self itemSelected:sender
           uiEventFlags:ui::EventFlagsFromNative([NSApp currentEvent])];
@@ -248,6 +266,11 @@ NSString* const kMenuControllerMenuDidCloseNotification =
 }
 
 - (void)itemSelected:(id)sender uiEventFlags:(int)uiEventFlags {
+  // Cancel any posted task, but don't reset it, so that the correct path is
+  // taken in -itemSelected:.
+  if (postedItemSelectedTask_)
+    postedItemSelectedTask_->Cancel();
+
   NSInteger modelIndex = [sender tag];
   ui::MenuModel* model =
       static_cast<ui::MenuModel*>(
@@ -255,11 +278,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
   DCHECK(model);
   if (model)
     model->ActivatedAt(modelIndex, uiEventFlags);
-
-  // Cancel any posted task, but don't reset it, so that the correct path is
-  // taken in -itemSelected:.
-  if (postedItemSelectedTask_)
-    postedItemSelectedTask_->Cancel();
+  // Note: |self| may be destroyed by the call to ActivatedAt().
 }
 
 - (NSMenu*)menu {
