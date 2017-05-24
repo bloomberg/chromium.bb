@@ -461,8 +461,8 @@ class AppMenuAdapter extends BaseAdapter {
         }
 
         if (mHighlightDrawableSource == null) {
-            mHighlightDrawableSource =
-                    isIcon ? PulseDrawable.createCircle() : PulseDrawable.createHighlight();
+            mHighlightDrawableSource = isIcon ? PulseDrawable.createCircle(view.getContext())
+                                              : PulseDrawable.createHighlight();
         }
 
         Resources resources = ContextUtils.getApplicationContext().getResources();

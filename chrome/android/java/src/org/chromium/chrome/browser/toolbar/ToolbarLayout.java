@@ -799,7 +799,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void setMenuButtonHighlightDrawable(boolean highlighting) {
         if (highlighting) {
             if (mHighlightDrawable == null) {
-                mHighlightDrawable = PulseDrawable.createCircle();
+                mHighlightDrawable = PulseDrawable.createCircle(getContext());
                 mHighlightDrawable.setInset(ApiCompatibilityUtils.getPaddingStart(mMenuButton),
                         mMenuButton.getPaddingTop(),
                         ApiCompatibilityUtils.getPaddingEnd(mMenuButton),
