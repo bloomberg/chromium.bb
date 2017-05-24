@@ -2002,6 +2002,7 @@
             'zea+watch@chromium.org'],
     'generic_sensor': ['alexander.shalamov@intel.com',
                        'mikhail.pozdnyakov@intel.com',
+                       'timvolodine@chromium.org',
                        'wanming.lin@intel.com'],
     'geolocation': ['mcasas+geolocation@chromium.org',
                     'mlamouri+watch-geolocation@chromium.org'],
