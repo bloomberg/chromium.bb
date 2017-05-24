@@ -60,8 +60,7 @@ class CompositorFrameSinkLocal : public cc::CompositorFrameSink,
   const cc::FrameSinkId frame_sink_id_;
   cc::SurfaceManager* const surface_manager_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
-  gfx::Size surface_size_;
-  float device_scale_factor_ = 0;
+  gfx::Size last_submitted_frame_size_;
   cc::LocalSurfaceIdAllocator id_allocator_;
   cc::LocalSurfaceId local_surface_id_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;

@@ -118,22 +118,18 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
         std::move(child_frame_->frame);
 
-    float device_scale_factor =
-        child_compositor_frame->metadata.device_scale_factor;
     gfx::Size frame_size =
         child_compositor_frame->render_pass_list.back()->output_rect.size();
-    if (!child_id_.is_valid() || surface_size_ != frame_size ||
-        device_scale_factor_ != device_scale_factor) {
+    bool size_changed = frame_size != frame_size_;
+    frame_size_ = frame_size;
+    if (!child_id_.is_valid() || size_changed) {
       if (child_id_.is_valid())
         DestroySurface();
       AllocateSurface();
-      surface_size_ = frame_size;
-      device_scale_factor_ = device_scale_factor;
     }
 
-    bool result = support_->SubmitCompositorFrame(
-        child_id_, std::move(*child_compositor_frame));
-    DCHECK(result);
+    support_->SubmitCompositorFrame(child_id_,
+                                    std::move(*child_compositor_frame));
   }
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
@@ -157,7 +153,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   gfx::Rect clip(draw_info->clip_left, draw_info->clip_top,
                  draw_info->clip_right - draw_info->clip_left,
                  draw_info->clip_bottom - draw_info->clip_top);
-  surfaces_->DrawAndSwap(viewport, clip, transform, surface_size_,
+  surfaces_->DrawAndSwap(viewport, clip, transform, frame_size_,
                          cc::SurfaceId(frame_sink_id_, child_id_));
 }
 
@@ -171,7 +167,7 @@ void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
   // Submit an empty frame to force any existing resources to be returned.
-  gfx::Rect rect(surface_size_);
+  gfx::Rect rect(frame_size_);
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, rect, rect, gfx::Transform());
   cc::CompositorFrame frame;
@@ -179,9 +175,7 @@ void HardwareRenderer::DestroySurface() {
   // We submit without a prior BeginFrame, so acknowledge a manual BeginFrame.
   frame.metadata.begin_frame_ack =
       cc::BeginFrameAck::CreateManualAckWithDamage();
-  frame.metadata.device_scale_factor = device_scale_factor_;
-  bool result = support_->SubmitCompositorFrame(child_id_, std::move(frame));
-  DCHECK(result);
+  support_->SubmitCompositorFrame(child_id_, std::move(frame));
 
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
   support_->EvictCurrentSurface();
