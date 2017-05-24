@@ -568,7 +568,7 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
   if (compositor())
     compositor()->SetVisible(true);
-  if (!IsVisible())
+  if (!IsVisible() || !window_mapped_in_server_)
     MapWindow(show_state);
 
   switch (show_state) {
