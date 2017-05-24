@@ -82,7 +82,7 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
                          device::mojom::blink::NFCErrorPtr);
 
   // device::mojom::blink::NFCClient implementation.
-  void OnWatch(const WTF::Vector<uint32_t>& ids,
+  void OnWatch(const Vector<uint32_t>& ids,
                device::mojom::blink::NFCMessagePtr) override;
 
  private:
