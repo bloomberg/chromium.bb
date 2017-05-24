@@ -56,5 +56,4 @@
     // https://w3c.github.io/uievents/#KeyboardEvent-supplemental-interface
     readonly attribute long charCode;
     readonly attribute long keyCode;
-    readonly attribute long which;
 };

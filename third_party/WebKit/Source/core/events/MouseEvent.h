@@ -113,7 +113,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   const AtomicString& InterfaceName() const override;
 
   bool IsMouseEvent() const override;
-  int which() const final;
+  unsigned which() const override;
 
   EventDispatchMediator* CreateMediator() override;
 

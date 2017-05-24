@@ -90,7 +90,7 @@ const AtomicString& UIEvent::InterfaceName() const {
   return EventNames::UIEvent;
 }
 
-int UIEvent::which() const {
+unsigned UIEvent::which() const {
   return 0;
 }
 

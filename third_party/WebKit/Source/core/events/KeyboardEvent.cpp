@@ -187,11 +187,11 @@ bool KeyboardEvent::IsKeyboardEvent() const {
   return true;
 }
 
-int KeyboardEvent::which() const {
+unsigned KeyboardEvent::which() const {
   // Netscape's "which" returns a virtual key code for keydown and keyup, and a
   // character code for keypress.  That's exactly what IE's "keyCode" returns.
   // So they are the same for keyboard events.
-  return keyCode();
+  return (unsigned)keyCode();
 }
 
 void KeyboardEvent::InitLocationModifiers(unsigned location) {

@@ -396,13 +396,13 @@ short MouseEvent::button() const {
   return button_;
 }
 
-int MouseEvent::which() const {
+unsigned MouseEvent::which() const {
   // For the DOM, the return values for left, middle and right mouse buttons are
   // 0, 1, 2, respectively.
   // For the Netscape "which" property, the return values for left, middle and
   // right mouse buttons are 1, 2, 3, respectively.
   // So we must add 1.
-  return button_ + 1;
+  return (unsigned)(button_ + 1);
 }
 
 Node* MouseEvent::toElement() const {
