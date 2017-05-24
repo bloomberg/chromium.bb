@@ -5,6 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 * Testing testCases[0]
+PASS Array.isArray(droppedEntries) is true
+PASS Object.isFrozen(droppedEntries) is true
 PASS droppedEntries.length is 1
 Verifying entry (0/1):/UTF8.txt
 PASS verifyingEntry.fullPath is "/UTF8.txt"
@@ -12,6 +14,8 @@ PASS typeof verifyingEntry.isDirectory is 'boolean'
 PASS verifyingEntry.isDirectory is false
 PASS returnedMetadata.size is 5
 * Testing testCases[1]
+PASS Array.isArray(droppedEntries) is true
+PASS Object.isFrozen(droppedEntries) is true
 PASS droppedEntries.length is 1
 Verifying entry (0/1):/dir1
 PASS verifyingEntry.fullPath is "/dir1"
@@ -21,6 +25,8 @@ PASS returnedEntries.length is 2
 /dir1/UTF8-2.txt
 /dir1/UTF8.txt
 * Testing testCases[2]
+PASS Array.isArray(droppedEntries) is true
+PASS Object.isFrozen(droppedEntries) is true
 PASS droppedEntries.length is 3
 Verifying entry (0/3):/apple.gif
 PASS verifyingEntry.fullPath is "/apple.gif"
@@ -38,6 +44,8 @@ PASS typeof verifyingEntry.isDirectory is 'boolean'
 PASS verifyingEntry.isDirectory is false
 PASS returnedMetadata.size is 764
 * Testing testCases[3]
+PASS Array.isArray(droppedEntries) is true
+PASS Object.isFrozen(droppedEntries) is true
 PASS droppedEntries.length is 2
 Verifying entry (0/2):/dir1
 PASS verifyingEntry.fullPath is "/dir1"
@@ -53,6 +61,8 @@ PASS verifyingEntry.isDirectory is true
 PASS returnedEntries.length is 1
 /dir2/green.jpg
 * Testing testCases[4]
+PASS Array.isArray(droppedEntries) is true
+PASS Object.isFrozen(droppedEntries) is true
 PASS droppedEntries.length is 4
 Verifying entry (0/4):/dir1
 PASS verifyingEntry.fullPath is "/dir1"
