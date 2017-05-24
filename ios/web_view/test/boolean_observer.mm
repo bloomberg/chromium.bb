@@ -1,0 +1,46 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/web_view/test/boolean_observer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@implementation BooleanObserver
+
+@synthesize keyPath = _keyPath;
+@synthesize lastValue = _lastValue;
+@synthesize object = _object;
+
+- (void)setObservedObject:(NSObject*)object keyPath:(NSString*)keyPath {
+  [_object removeObserver:self forKeyPath:_keyPath];
+
+  _lastValue = nil;
+  _keyPath = [keyPath copy];
+  _object = object;
+  if (keyPath) {
+    [_object addObserver:self
+              forKeyPath:_keyPath
+                 options:NSKeyValueObservingOptionNew
+                 context:nil];
+  }
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id>*)change
+                       context:(void*)context {
+  if (![object isEqual:_object] || ![keyPath isEqualToString:_keyPath]) {
+    // Ignore extraneous call from previous |_object| or |_keyPath|.
+    return;
+  }
+  _lastValue = change[NSKeyValueChangeNewKey];
+}
+
+- (void)dealloc {
+  [_object removeObserver:self forKeyPath:_keyPath];
+}
+
+@end
