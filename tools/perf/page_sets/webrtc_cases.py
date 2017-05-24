@@ -136,3 +136,9 @@ class WebrtcPageSet(story.StorySet):
     # self.AddStory(AudioCall(self, 'G772'))
     # self.AddStory(AudioCall(self, 'PCMU'))
     # self.AddStory(AudioCall(self, 'ISAC/1600'))
+
+
+class WebrtcExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    self.DisableStory('multiple_peerconnections', [story.expectations.ALL],
+                      'crbug.com/725502')

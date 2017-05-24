@@ -21,6 +21,9 @@ class WebrtcPerfBenchmark(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'webrtc'
 
+  def GetExpectations(self):
+    return page_sets.WebrtcExpectations()
+
   def CreateTimelineBasedMeasurementOptions(self):
     categories = [
         # Disable all categories by default.
