@@ -12,8 +12,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/test/test_render_frame.h"
 #include "gin/v8_initializer.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 namespace content {
 

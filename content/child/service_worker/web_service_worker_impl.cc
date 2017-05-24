@@ -14,10 +14,10 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 using blink::WebMessagePortChannel;
 using blink::WebMessagePortChannelArray;

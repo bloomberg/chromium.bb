@@ -173,7 +173,6 @@ component("web") {
     "WebPluginScriptForbiddenScope.cpp",
     "WebRemoteFrameImpl.cpp",
     "WebRemoteFrameImpl.h",
-    "WebRuntimeFeatures.cpp",
     "WebScopedUserGesture.cpp",
     "WebScopedWindowFocusAllowedIndicator.cpp",
     "WebSearchableFormData.cpp",

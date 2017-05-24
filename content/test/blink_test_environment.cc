@@ -18,8 +18,8 @@
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "url/url_util.h"
 
 #if defined(OS_WIN)

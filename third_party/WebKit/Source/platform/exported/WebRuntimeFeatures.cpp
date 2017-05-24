@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebRuntimeFeatures.h"
+#include "public/platform/WebRuntimeFeatures.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Assertions.h"
