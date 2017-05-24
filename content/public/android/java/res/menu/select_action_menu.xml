@@ -8,10 +8,12 @@
 
 <!--suppress AlwaysShowAction -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The orderInCategory starts with 2 to give a room for
-         assist menu item. Remove the ordering when Android
-         can reorder the assist menu item itself.
-         -->
+    <!-- Remove the ordering when Android can reorder the assist menu item
+         itself. -->
+    <group
+        android:id="@+id/select_action_menu_assist_items"
+        android:orderInCategory="1">
+    </group>
     <group
         android:id="@+id/select_action_menu_default_items">
         <item

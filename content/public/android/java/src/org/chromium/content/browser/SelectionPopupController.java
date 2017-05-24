@@ -448,6 +448,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         menu.removeGroup(R.id.select_action_menu_default_items);
+        menu.removeGroup(R.id.select_action_menu_assist_items);
         menu.removeGroup(R.id.select_action_menu_text_processing_menus);
         createActionMenu(mode, menu);
         return true;
@@ -585,7 +586,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         // Android O SDK and remove |mAssistMenuItemId|.
 
         if (mClassificationResult != null && mClassificationResult.hasNamedAction()) {
-            descriptor.addItem(R.id.select_action_menu_default_items, mAssistMenuItemId, 1,
+            descriptor.addItem(R.id.select_action_menu_assist_items, mAssistMenuItemId, 1,
                     mClassificationResult.label, mClassificationResult.icon);
         }
     }
