@@ -21,7 +21,7 @@ namespace test {
 
 template <typename T>
 class FakeDB : public ProtoDatabase<T> {
-  using Callback = base::Callback<void(bool)>;
+  using Callback = base::OnceCallback<void(bool)>;
 
  public:
   using EntryMap = std::map<std::string, T>;
@@ -33,21 +33,17 @@ class FakeDB : public ProtoDatabase<T> {
   void InitWithOptions(
       const char* client_name,
       const Options& options,
-      const typename ProtoDatabase<T>::InitCallback& callback) override;
+      typename ProtoDatabase<T>::InitCallback callback) override;
   void UpdateEntries(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
       std::unique_ptr<std::vector<std::string>> keys_to_remove,
-      const typename ProtoDatabase<T>::UpdateCallback& callback) override;
-  void LoadEntries(
-      const typename ProtoDatabase<T>::LoadCallback& callback) override;
-   void LoadKeys(
-      const typename ProtoDatabase<T>::LoadKeysCallback& callback) override;
-  void GetEntry(
-      const std::string& key,
-      const typename ProtoDatabase<T>::GetCallback& callback) override;
-  void Destroy(
-      const typename ProtoDatabase<T>::DestroyCallback& callback) override;
+      typename ProtoDatabase<T>::UpdateCallback callback) override;
+  void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) override;
+  void LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) override;
+  void GetEntry(const std::string& key,
+                typename ProtoDatabase<T>::GetCallback callback) override;
+  void Destroy(typename ProtoDatabase<T>::DestroyCallback callback) override;
 
   base::FilePath& GetDirectory();
 
@@ -64,20 +60,18 @@ class FakeDB : public ProtoDatabase<T> {
   static base::FilePath DirectoryForTestDB();
 
  private:
-  static void RunLoadCallback(
-      const typename ProtoDatabase<T>::LoadCallback& callback,
-      std::unique_ptr<typename std::vector<T>> entries,
-      bool success);
+  static void RunLoadCallback(typename ProtoDatabase<T>::LoadCallback callback,
+                              std::unique_ptr<typename std::vector<T>> entries,
+                              bool success);
 
   static void RunLoadKeysCallback(
-      const typename ProtoDatabase<T>::LoadKeysCallback& callback,
+      typename ProtoDatabase<T>::LoadKeysCallback callback,
       std::unique_ptr<std::vector<std::string>> keys,
       bool success);
 
-  static void RunGetCallback(
-      const typename ProtoDatabase<T>::GetCallback& callback,
-      std::unique_ptr<T> entry,
-      bool success);
+  static void RunGetCallback(typename ProtoDatabase<T>::GetCallback callback,
+                             std::unique_ptr<T> entry,
+                             bool success);
 
   base::FilePath dir_;
   EntryMap* db_;
@@ -100,64 +94,60 @@ template <typename T>
 void FakeDB<T>::InitWithOptions(
     const char* client_name,
     const Options& options,
-    const typename ProtoDatabase<T>::InitCallback& callback) {
+    typename ProtoDatabase<T>::InitCallback callback) {
   dir_ = options.database_dir;
-  init_callback_ = callback;
+  init_callback_ = std::move(callback);
 }
 
 template <typename T>
 void FakeDB<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
-    const typename ProtoDatabase<T>::UpdateCallback& callback) {
+    typename ProtoDatabase<T>::UpdateCallback callback) {
   for (const auto& pair : *entries_to_save)
     (*db_)[pair.first] = pair.second;
 
   for (const auto& key : *keys_to_remove)
     db_->erase(key);
 
-  update_callback_ = callback;
+  update_callback_ = std::move(callback);
 }
 
 template <typename T>
-void FakeDB<T>::LoadEntries(
-    const typename ProtoDatabase<T>::LoadCallback& callback) {
+void FakeDB<T>::LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) {
   std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
   for (const auto& pair : *db_)
     entries->push_back(pair.second);
 
-  load_callback_ =
-      base::Bind(RunLoadCallback, callback, base::Passed(&entries));
+  load_callback_ = base::BindOnce(RunLoadCallback, std::move(callback),
+                                  base::Passed(&entries));
 }
 
 template <typename T>
-void FakeDB<T>::LoadKeys(
-    const typename ProtoDatabase<T>::LoadKeysCallback& callback) {
+void FakeDB<T>::LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) {
   std::unique_ptr<std::vector<std::string>> keys(
       new std::vector<std::string>());
   for (const auto& pair : *db_)
     keys->push_back(pair.first);
 
-  load_keys_callback_ =
-      base::Bind(RunLoadKeysCallback, callback, base::Passed(&keys));
+  load_keys_callback_ = base::BindOnce(RunLoadKeysCallback, std::move(callback),
+                                       base::Passed(&keys));
 }
 
 template <typename T>
-void FakeDB<T>::GetEntry(
-    const std::string& key,
-    const typename ProtoDatabase<T>::GetCallback& callback) {
+void FakeDB<T>::GetEntry(const std::string& key,
+                         typename ProtoDatabase<T>::GetCallback callback) {
   std::unique_ptr<T> entry;
   auto it = db_->find(key);
   if (it != db_->end())
     entry.reset(new T(it->second));
 
-  get_callback_ = base::Bind(RunGetCallback, callback, base::Passed(&entry));
+  get_callback_ =
+      base::BindOnce(RunGetCallback, std::move(callback), base::Passed(&entry));
 }
 
 template <typename T>
-void FakeDB<T>::Destroy(
-    const typename ProtoDatabase<T>::DestroyCallback& callback) {
-}
+void FakeDB<T>::Destroy(typename ProtoDatabase<T>::DestroyCallback callback) {}
 
 template <typename T>
 base::FilePath& FakeDB<T>::GetDirectory() {
@@ -166,59 +156,53 @@ base::FilePath& FakeDB<T>::GetDirectory() {
 
 template <typename T>
 void FakeDB<T>::InitCallback(bool success) {
-  init_callback_.Run(success);
-  init_callback_.Reset();
+  std::move(init_callback_).Run(success);
 }
 
 template <typename T>
 void FakeDB<T>::LoadCallback(bool success) {
-  load_callback_.Run(success);
-  load_callback_.Reset();
+  std::move(load_callback_).Run(success);
 }
 
 template <typename T>
 void FakeDB<T>::LoadKeysCallback(bool success) {
-  load_keys_callback_.Run(success);
-  load_keys_callback_.Reset();
+  std::move(load_keys_callback_).Run(success);
 }
 
 template <typename T>
 void FakeDB<T>::GetCallback(bool success) {
-  get_callback_.Run(success);
-  get_callback_.Reset();
+  std::move(get_callback_).Run(success);
 }
 
 template <typename T>
 void FakeDB<T>::UpdateCallback(bool success) {
-  update_callback_.Run(success);
-  update_callback_.Reset();
+  std::move(update_callback_).Run(success);
 }
 
 // static
 template <typename T>
 void FakeDB<T>::RunLoadCallback(
-    const typename ProtoDatabase<T>::LoadCallback& callback,
+    typename ProtoDatabase<T>::LoadCallback callback,
     std::unique_ptr<typename std::vector<T>> entries,
     bool success) {
-  callback.Run(success, std::move(entries));
+  std::move(callback).Run(success, std::move(entries));
 }
 
 // static
 template <typename T>
 void FakeDB<T>::RunLoadKeysCallback(
-    const typename ProtoDatabase<T>::LoadKeysCallback& callback,
+    typename ProtoDatabase<T>::LoadKeysCallback callback,
     std::unique_ptr<std::vector<std::string>> keys,
     bool success) {
-  callback.Run(success, std::move(keys));
+  std::move(callback).Run(success, std::move(keys));
 }
 
 // static
 template <typename T>
-void FakeDB<T>::RunGetCallback(
-    const typename ProtoDatabase<T>::GetCallback& callback,
-    std::unique_ptr<T> entry,
-    bool success) {
-  callback.Run(success, std::move(entry));
+void FakeDB<T>::RunGetCallback(typename ProtoDatabase<T>::GetCallback callback,
+                               std::unique_ptr<T> entry,
+                               bool success) {
+  std::move(callback).Run(success, std::move(entry));
 }
 
 // static
