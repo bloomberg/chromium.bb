@@ -1299,6 +1299,19 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
   if (request.Url().IsEmpty() || substitute_data.IsValid())
     return kNavigationPolicyCurrentTab;
 
+  // Check for non-escaped new lines in the url.
+  if (request.Url().WhitespaceRemoved()) {
+    Deprecation::CountDeprecation(
+        frame_, UseCounter::kCanRequestURLHTTPContainingNewline);
+    if (request.Url().ProtocolIsInHTTPFamily()) {
+      if (RuntimeEnabledFeatures::restrictCanRequestURLCharacterSetEnabled())
+        return kNavigationPolicyIgnore;
+    } else {
+      UseCounter::Count(frame_,
+                        UseCounter::kCanRequestURLNonHTTPContainingNewline);
+    }
+  }
+
   Settings* settings = frame_->GetSettings();
   if (MaybeCheckCSP(request, type, frame_, policy,
                     should_check_main_world_content_security_policy ==
