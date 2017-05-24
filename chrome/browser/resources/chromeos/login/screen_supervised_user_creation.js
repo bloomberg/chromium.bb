@@ -403,7 +403,7 @@ login.createScreen('SupervisedUserCreationScreen',
       function scrollToAdjustTop() {
         self.scrollTop = top;
         return true;
-      };
+      }
       // Function to adjust the bottoms of viewport and row.
       function scrollToAdjustBottom() {
         var cs = getComputedStyle(self);
@@ -415,7 +415,7 @@ login.createScreen('SupervisedUserCreationScreen',
           return true;
         }
         return false;
-      };
+      }
 
       // Check if the entire of given indexed row can be shown in the viewport.
       if (itemHeight <= clientHeight) {

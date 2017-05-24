@@ -2488,7 +2488,7 @@ cvox.DomUtil.isMathJax = function(node) {
     return (n.tagName == 'SPAN' &&
             n.className.split(' ').some(function(x) {
                                           return x.toLowerCase() == cl;}));
-  };
+  }
   if (isSpanWithClass(node, 'math')) {
     var ancestors = cvox.DomUtil.getAncestors(node);
     return ancestors.some(function(x) {return isSpanWithClass(x, 'mathjax');});

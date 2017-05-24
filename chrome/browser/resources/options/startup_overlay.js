@@ -18,7 +18,7 @@ cr.define('options', function() {
         'startup-overlay',
         assertInstanceof($('startup-overlay-confirm'), HTMLButtonElement),
         assertInstanceof($('startup-overlay-cancel'), HTMLButtonElement));
-  };
+  }
 
   cr.addSingletonGetter(StartupOverlay);
 

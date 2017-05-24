@@ -126,7 +126,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
        callback = properties['endCallback'];
      }
      callAsync_(message, callback);
-   };
+   }
 
    /**
     * Gets an object given a dotted namespace object path.

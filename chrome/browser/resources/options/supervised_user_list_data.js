@@ -14,7 +14,7 @@ cr.define('options', function() {
    */
   function SupervisedUserListData() {
     this.observers_ = [];
-  };
+  }
 
   cr.addSingletonGetter(SupervisedUserListData);
 

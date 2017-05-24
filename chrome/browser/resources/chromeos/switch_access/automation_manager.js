@@ -48,7 +48,7 @@ function AutomationManager(desktop) {
   this.treeWalker_ = this.createTreeWalker_(desktop);
 
   this.init_();
-};
+}
 
 /**
  * Highlight colors for the focus ring to distinguish between different types

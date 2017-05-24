@@ -74,7 +74,7 @@ cr.define('settings', function() {
      * @private {!Array<!settings.CookieTreeNode>}
      */
     this.children_ = [];
-  };
+  }
 
   CookieTreeNode.prototype = {
     /**

@@ -31,7 +31,7 @@ function SwitchAccessOptions() {
   document.addEventListener('change', this.handleInputChange_.bind(this));
   background.document.addEventListener(
       'prefsUpdate', this.handlePrefsUpdate_.bind(this));
-};
+}
 
 SwitchAccessOptions.prototype = {
   /**

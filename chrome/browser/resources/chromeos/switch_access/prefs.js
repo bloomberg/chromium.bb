@@ -17,7 +17,7 @@ function SwitchAccessPrefs() {
 
   this.loadPrefs_();
   chrome.storage.onChanged.addListener(this.handleStorageChange_.bind(this));
-};
+}
 
 SwitchAccessPrefs.prototype = {
   /**

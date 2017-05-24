@@ -198,7 +198,7 @@ function assertDeepEquals(expected, observed, opt_message) {
       domAutomationController.setAutomationId(1);
       domAutomationController.send('PENDING');
     }
-  };
+  }
 
   exports.runTests = runTests;
 })(this);

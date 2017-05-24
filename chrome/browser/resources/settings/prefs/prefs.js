@@ -88,7 +88,7 @@
       return val;
     return Array.isArray(val) ? deepCopyArray(/** @type {!Array} */(val)) :
         deepCopyObject(val);
-  };
+  }
 
   /**
    * @param {!Array} arr
