@@ -13,11 +13,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Close button size.
-const CGFloat kCloseButtonSize = 24;
-}
-
 @implementation BookmarkSigninPromoCell {
   SigninPromoView* _signinPromoView;
   UIButton* _closeButton;
@@ -43,19 +38,10 @@ const CGFloat kCloseButtonSize = 24;
     [contentView addSubview:_signinPromoView];
     AddSameConstraints(_signinPromoView, contentView);
 
-    _closeButton = [[UIButton alloc]
-        initWithFrame:CGRectMake(0, 0, kCloseButtonSize, kCloseButtonSize)];
-    [_closeButton addTarget:self
-                     action:@selector(closeButtonAction:)
-           forControlEvents:UIControlEventTouchUpInside];
-    _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [contentView addSubview:_closeButton];
-    [_closeButton setImage:[UIImage imageNamed:@"signin_promo_close_gray"]
-                  forState:UIControlStateNormal];
-    NSArray* buttonVisualConstraints =
-        @[ @"H:[closeButton]-|", @"V:|-[closeButton]" ];
-    NSDictionary* views = @{ @"closeButton" : _closeButton };
-    ApplyVisualConstraints(buttonVisualConstraints, views);
+    _signinPromoView.closeButton.hidden = NO;
+    [_signinPromoView.closeButton addTarget:self
+                                     action:@selector(closeButtonAction:)
+                           forControlEvents:UIControlEventTouchUpInside];
 
     _signinPromoView.backgroundColor = [UIColor whiteColor];
     _signinPromoView.textLabel.text =
@@ -82,9 +68,8 @@ const CGFloat kCloseButtonSize = 24;
 }
 
 - (void)closeButtonAction:(id)sender {
-  if (_closeButtonAction) {
-    _closeButtonAction();
-  }
+  DCHECK(_closeButtonAction);
+  _closeButtonAction();
 }
 
 @end
