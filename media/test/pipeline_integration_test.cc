@@ -1988,12 +1988,6 @@ TEST_F(PipelineIntegrationTest,
        MAYBE_EME(EncryptedPlayback_MP4_VP9_CENC_VideoOnly)) {
   MockMediaSource source("bear-320x240-v_frag-vp9-cenc.mp4", kMP4VideoVP9,
                          kAppendWholeFile);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVp9InMp4)) {
-    ASSERT_EQ(ChunkDemuxer::kNotSupported, source.AddId());
-    return;
-  }
-
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2028,12 +2022,6 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_AVC3) {
 TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_VP9) {
   MockMediaSource source("bear-320x240-v_frag-vp9.mp4", kMP4VideoVP9,
                          kAppendWholeFile);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVp9InMp4)) {
-    ASSERT_EQ(ChunkDemuxer::kNotSupported, source.AddId());
-    return;
-  }
-
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
   ASSERT_EQ(PIPELINE_OK, pipeline_status_);

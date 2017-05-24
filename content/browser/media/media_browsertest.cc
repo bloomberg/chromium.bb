@@ -36,7 +36,6 @@ const char MediaBrowserTest::kError[] = "error";
 
 void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
-  command_line->AppendSwitch(switches::kEnableVp9InMp4);
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,

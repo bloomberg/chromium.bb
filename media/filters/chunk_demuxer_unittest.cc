@@ -4770,42 +4770,18 @@ TEST_F(ChunkDemuxerTest, RemovingIdMustRemoveStreams) {
   EXPECT_EQ(nullptr, GetStream(DemuxerStream::VIDEO));
 }
 
-// TODO(servolk): Add a unit test with multiple audio/video tracks using the
-// same codec type in a single SourceBufferState, when WebM parser supports
-// multiple tracks. crbug.com/646900
-
-class ChunkDemuxerMp4Vp9Test : public ChunkDemuxerTest,
-                               public WithParamInterface<bool> {
- public:
-  void SetUp() override {
-    ChunkDemuxerTest::SetUp();
-    const bool enable_mp4_vp9_demuxing = GetParam();
-    if (enable_mp4_vp9_demuxing) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableVp9InMp4);
-    }
-  }
-};
-
-TEST_P(ChunkDemuxerMp4Vp9Test, CodecSupport) {
+TEST_F(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
-
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  const bool enable_mp4_vp9_demuxing = GetParam();
-  if (enable_mp4_vp9_demuxing) {
-    expected = ChunkDemuxer::kOk;
-  } else {
-    EXPECT_MEDIA_LOG(
-        HasSubstr("Codec 'vp09.00.10.08' is not supported for 'video/mp4'"));
-  }
+  expected = ChunkDemuxer::kOk;
 #endif
 
   EXPECT_EQ(demuxer_->AddId("source_id", "video/mp4", "vp09.00.10.08"),
             expected);
 }
 
-INSTANTIATE_TEST_CASE_P(EnableDisableMp4Vp9Demuxing,
-                        ChunkDemuxerMp4Vp9Test,
-                        ::testing::Bool());
+// TODO(servolk): Add a unit test with multiple audio/video tracks using the
+// same codec type in a single SourceBufferState, when WebM parser supports
+// multiple tracks. crbug.com/646900
 
 }  // namespace media

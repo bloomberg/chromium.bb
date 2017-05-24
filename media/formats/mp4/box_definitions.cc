@@ -804,21 +804,16 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     }
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-    case FOURCC_VP09:
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableVp9InMp4)) {
-        DVLOG(2) << __func__ << " parsing VPCodecConfigurationRecord (vpcC)";
-        std::unique_ptr<VPCodecConfigurationRecord> vp_config(
-            new VPCodecConfigurationRecord());
-        RCHECK(reader->ReadChild(vp_config.get()));
-        frame_bitstream_converter = nullptr;
-        video_codec = kCodecVP9;
-        video_codec_profile = vp_config->profile;
-      } else {
-        MEDIA_LOG(ERROR, reader->media_log()) << "VP9 in MP4 is not enabled.";
-        return false;
-      }
+    case FOURCC_VP09: {
+      DVLOG(2) << __func__ << " parsing VPCodecConfigurationRecord (vpcC)";
+      std::unique_ptr<VPCodecConfigurationRecord> vp_config(
+          new VPCodecConfigurationRecord());
+      RCHECK(reader->ReadChild(vp_config.get()));
+      frame_bitstream_converter = nullptr;
+      video_codec = kCodecVP9;
+      video_codec_profile = vp_config->profile;
       break;
+    }
     default:
       // Unknown/unsupported format
       MEDIA_LOG(ERROR, reader->media_log()) << __func__
@@ -848,10 +843,8 @@ bool VideoSampleEntry::IsFormatValid() const {
     case FOURCC_DVA1:
     case FOURCC_DVAV:
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-      return true;
     case FOURCC_VP09:
-      return base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVp9InMp4);
+      return true;
     default:
       return false;
   }
