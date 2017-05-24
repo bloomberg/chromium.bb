@@ -128,8 +128,8 @@ void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
   if (event_name.empty()) {
     event = event_handler_->CreateAnonymousEventInstance(context);
   } else {
-    event = event_handler_->CreateEventInstance(event_name, supports_filters,
-                                                context);
+    event = event_handler_->CreateEventInstance(
+        event_name, supports_filters, binding::kNoListenerMax, context);
   }
 
   arguments->Return(event);

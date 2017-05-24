@@ -23,6 +23,8 @@ namespace {
 // constant. We should rethink that.
 const int kIgnoreRoutingId = 0;
 
+const char kErrorTooManyListeners[] = "Too many listeners.";
+
 // Pseudo-validates the given |filter| and converts it into a
 // base::DictionaryValue. Returns true on success.
 // TODO(devlin): This "validation" is pretty terrible. It matches the JS
@@ -77,8 +79,11 @@ bool ValidateFilter(v8::Local<v8::Context> context,
 }  // namespace
 
 UnfilteredEventListeners::UnfilteredEventListeners(
-    const ListenersUpdated& listeners_updated)
-    : listeners_updated_(listeners_updated) {}
+    const ListenersUpdated& listeners_updated,
+    int max_listeners)
+    : listeners_updated_(listeners_updated), max_listeners_(max_listeners) {
+  DCHECK(max_listeners_ == binding::kNoListenerMax || max_listeners_ > 0);
+}
 UnfilteredEventListeners::~UnfilteredEventListeners() = default;
 
 bool UnfilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
@@ -91,6 +96,12 @@ bool UnfilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
 
   if (HasListener(listener))
     return false;
+
+  if (max_listeners_ != binding::kNoListenerMax &&
+      listeners_.size() >= static_cast<size_t>(max_listeners_)) {
+    *error = kErrorTooManyListeners;
+    return false;
+  }
 
   listeners_.push_back(
       v8::Global<v8::Function>(context->GetIsolate(), listener));
@@ -158,9 +169,11 @@ struct FilteredEventListeners::ListenerData {
 FilteredEventListeners::FilteredEventListeners(
     const ListenersUpdated& listeners_updated,
     const std::string& event_name,
+    int max_listeners,
     EventFilter* event_filter)
     : listeners_updated_(listeners_updated),
       event_name_(event_name),
+      max_listeners_(max_listeners),
       event_filter_(event_filter) {}
 FilteredEventListeners::~FilteredEventListeners() = default;
 
@@ -170,6 +183,12 @@ bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
                                          std::string* error) {
   if (HasListener(listener))
     return false;
+
+  if (max_listeners_ != binding::kNoListenerMax &&
+      listeners_.size() >= static_cast<size_t>(max_listeners_)) {
+    *error = kErrorTooManyListeners;
+    return false;
+  }
 
   std::unique_ptr<base::DictionaryValue> filter_dict;
   if (!ValidateFilter(context, filter, &filter_dict, error))

@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/api_request_handler.h"
@@ -103,6 +104,7 @@ struct APIBinding::EventData {
             std::string full_name,
             bool supports_filters,
             bool supports_rules,
+            int max_listeners,
             std::vector<std::string> actions,
             std::vector<std::string> conditions,
             APIBinding* binding)
@@ -110,6 +112,7 @@ struct APIBinding::EventData {
         full_name(std::move(full_name)),
         supports_filters(supports_filters),
         supports_rules(supports_rules),
+        max_listeners(max_listeners),
         actions(std::move(actions)),
         conditions(std::move(conditions)),
         binding(binding) {}
@@ -125,6 +128,9 @@ struct APIBinding::EventData {
 
   // Whether the event supports rules.
   bool supports_rules;
+
+  // The maximum number of listeners this event supports.
+  int max_listeners;
 
   // The associated actions and conditions for declarative events.
   std::vector<std::string> actions;
@@ -258,6 +264,7 @@ APIBinding::APIBinding(const std::string& api_name,
       std::vector<std::string> rule_conditions;
       const base::DictionaryValue* options = nullptr;
       bool supports_rules = false;
+      int max_listeners = binding::kNoListenerMax;
       if (event_dict->GetDictionary("options", &options)) {
         bool temp_supports_filters = false;
         // TODO(devlin): For some reason, schemas indicate supporting filters
@@ -284,12 +291,14 @@ APIBinding::APIBinding(const std::string& api_name,
           get_values("actions", &rule_actions);
           get_values("conditions", &rule_conditions);
         }
+
+        options->GetInteger("maxListeners", &max_listeners);
       }
 
       events_.push_back(base::MakeUnique<EventData>(
           std::move(name), std::move(full_name), supports_filters,
-          supports_rules, std::move(rule_actions), std::move(rule_conditions),
-          this));
+          supports_rules, max_listeners, std::move(rule_actions),
+          std::move(rule_conditions), this));
     }
   }
 }
@@ -473,7 +482,8 @@ void APIBinding::GetEventObject(
     retval = event.ToV8();
   } else {
     retval = event_data->binding->event_handler_->CreateEventInstance(
-        event_data->full_name, event_data->supports_filters, context);
+        event_data->full_name, event_data->supports_filters,
+        event_data->max_listeners, context);
   }
   info.GetReturnValue().Set(retval);
 }
