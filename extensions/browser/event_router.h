@@ -366,10 +366,10 @@ struct Event {
   // Arguments to send to the event listener.
   std::unique_ptr<base::ListValue> event_args;
 
-  // If non-NULL, then the event will not be sent to other BrowserContexts
+  // If non-null, then the event will not be sent to other BrowserContexts
   // unless the extension has permission (e.g. incognito tab update -> normal
   // tab only works if extension is allowed incognito access).
-  content::BrowserContext* restrict_to_browser_context;
+  content::BrowserContext* const restrict_to_browser_context;
 
   // If not empty, the event is only sent to extensions with host permissions
   // for this url.
@@ -391,6 +391,11 @@ struct Event {
   // this event to be dispatched to non-extension processes, like WebUI.
   WillDispatchCallback will_dispatch_callback;
 
+  // TODO(lazyboy): This sets |restrict_to_browser_context| to nullptr, this
+  // will dispatch the event to unrelated profiles, not just incognito. Audit
+  // and limit usages of this constructor and introduce "include incognito"
+  // option to a constructor version for clients that need to disptach events to
+  // related browser_contexts. See https://crbug.com/726022.
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
         std::unique_ptr<base::ListValue> event_args);

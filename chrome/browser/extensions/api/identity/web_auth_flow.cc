@@ -95,10 +95,10 @@ void WebAuthFlow::Start() {
   else
     args->AppendString("silent");
 
-  std::unique_ptr<Event> event(new Event(
-      events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
-      identity_private::OnWebFlowRequest::kEventName, std::move(args)));
-  event->restrict_to_browser_context = profile_;
+  auto event =
+      base::MakeUnique<Event>(events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
+                              identity_private::OnWebFlowRequest::kEventName,
+                              std::move(args), profile_);
   ExtensionSystem* system = ExtensionSystem::Get(profile_);
 
   extensions::ComponentLoader* component_loader =

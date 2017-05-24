@@ -147,10 +147,10 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     std::unique_ptr<base::ListValue> args =
         feedback_private::OnFeedbackRequested::Create(info);
 
-    std::unique_ptr<Event> event(new Event(
+    auto event = base::MakeUnique<Event>(
         events::FEEDBACK_PRIVATE_ON_FEEDBACK_REQUESTED,
-        feedback_private::OnFeedbackRequested::kEventName, std::move(args)));
-    event->restrict_to_browser_context = browser_context_;
+        feedback_private::OnFeedbackRequested::kEventName, std::move(args),
+        browser_context_);
 
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_misc::kFeedbackExtensionId,

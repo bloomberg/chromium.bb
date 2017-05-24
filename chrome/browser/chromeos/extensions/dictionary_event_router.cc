@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -49,12 +50,11 @@ void ExtensionDictionaryEventRouter::DispatchLoadedEventIfLoaded() {
     return;
   }
 
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   // The router will only send the event to extensions that are listening.
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
+  auto event = base::MakeUnique<extensions::Event>(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_LOADED,
-      OnDictionaryLoaded::kEventName, std::move(args)));
-  event->restrict_to_browser_context = context_;
+      OnDictionaryLoaded::kEventName, base::MakeUnique<base::ListValue>(),
+      context_);
   router->BroadcastEvent(std::move(event));
 }
 
@@ -84,10 +84,9 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
   args->Append(std::move(removed_words));
 
   // The router will only send the event to extensions that are listening.
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
+  auto event = base::MakeUnique<extensions::Event>(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_CHANGED,
-      OnDictionaryChanged::kEventName, std::move(args)));
-  event->restrict_to_browser_context = context_;
+      OnDictionaryChanged::kEventName, std::move(args), context_);
   router->BroadcastEvent(std::move(event));
 }
 

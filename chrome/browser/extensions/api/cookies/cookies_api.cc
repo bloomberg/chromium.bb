@@ -193,9 +193,8 @@ void CookiesEventRouter::DispatchEvent(
   EventRouter* router = context ? EventRouter::Get(context) : NULL;
   if (!router)
     return;
-  std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, std::move(event_args)));
-  event->restrict_to_browser_context = context;
+  auto event = base::MakeUnique<Event>(histogram_value, event_name,
+                                       std::move(event_args), context);
   event->event_url = cookie_domain;
   router->BroadcastEvent(std::move(event));
 }

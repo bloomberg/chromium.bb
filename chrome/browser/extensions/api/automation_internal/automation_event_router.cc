@@ -116,11 +116,10 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
   browser_context = browser_context ? browser_context : active_profile_;
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
-  std::unique_ptr<Event> event(new Event(
+  auto event = base::MakeUnique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
-      std::move(args)));
-  event->restrict_to_browser_context = browser_context;
+      std::move(args), browser_context);
   EventRouter::Get(browser_context)->BroadcastEvent(std::move(event));
 }
 

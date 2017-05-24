@@ -278,9 +278,8 @@ void PermissionsUpdater::DispatchEvent(
   std::unique_ptr<api::permissions::Permissions> permissions =
       PackPermissionSet(changed_permissions);
   value->Append(permissions->ToValue());
-  std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, std::move(value)));
-  event->restrict_to_browser_context = browser_context_;
+  auto event = base::MakeUnique<Event>(histogram_value, event_name,
+                                       std::move(value), browser_context_);
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 

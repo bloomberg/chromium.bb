@@ -140,10 +140,9 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
   std::unique_ptr<base::ListValue> arguments(new base::ListValue());
   arguments->Append(std::move(details));
 
-  std::unique_ptr<extensions::Event> event(
-      new extensions::Event(::extensions::events::TTS_ON_EVENT,
-                            ::events::kOnEvent, std::move(arguments)));
-  event->restrict_to_browser_context = utterance->browser_context();
+  auto event = base::MakeUnique<extensions::Event>(
+      ::extensions::events::TTS_ON_EVENT, ::events::kOnEvent,
+      std::move(arguments), utterance->browser_context());
   event->event_url = utterance->src_url();
   extensions::EventRouter::Get(utterance->browser_context())
       ->DispatchEventToExtension(src_extension_id_, std::move(event));

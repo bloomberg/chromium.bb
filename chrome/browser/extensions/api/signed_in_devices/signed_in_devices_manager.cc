@@ -75,12 +75,10 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
 
   std::unique_ptr<base::ListValue> result =
       api::signed_in_devices::OnDeviceInfoChange::Create(args);
-  std::unique_ptr<Event> event(
-      new Event(events::SIGNED_IN_DEVICES_ON_DEVICE_INFO_CHANGE,
-                api::signed_in_devices::OnDeviceInfoChange::kEventName,
-                std::move(result)));
-
-  event->restrict_to_browser_context = profile_;
+  auto event = base::MakeUnique<Event>(
+      events::SIGNED_IN_DEVICES_ON_DEVICE_INFO_CHANGE,
+      api::signed_in_devices::OnDeviceInfoChange::kEventName, std::move(result),
+      profile_);
 
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(extension_id_, std::move(event));

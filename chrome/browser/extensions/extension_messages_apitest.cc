@@ -86,9 +86,9 @@ class MessageSender : public content::NotificationObserver {
       std::unique_ptr<base::ListValue> event_args,
       Profile* profile,
       GURL event_url) {
-    std::unique_ptr<Event> event(new Event(
-        events::TEST_ON_MESSAGE, "test.onMessage", std::move(event_args)));
-    event->restrict_to_browser_context = profile;
+    auto event =
+        base::MakeUnique<Event>(events::TEST_ON_MESSAGE, "test.onMessage",
+                                std::move(event_args), profile);
     event->event_url = event_url;
     return event;
   }

@@ -98,11 +98,10 @@ class AshKeyboardControllerObserver
     new_bounds->SetInteger("height", bounds.height());
     event_args->Append(std::move(new_bounds));
 
-    std::unique_ptr<extensions::Event> event(new extensions::Event(
+    auto event = base::MakeUnique<extensions::Event>(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
         virtual_keyboard_private::OnBoundsChanged::kEventName,
-        std::move(event_args)));
-    event->restrict_to_browser_context = context_;
+        std::move(event_args), context_);
     router->BroadcastEvent(std::move(event));
   }
 
@@ -114,11 +113,10 @@ class AshKeyboardControllerObserver
       return;
     }
 
-    std::unique_ptr<extensions::Event> event(new extensions::Event(
+    auto event = base::MakeUnique<extensions::Event>(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CLOSED,
         virtual_keyboard_private::OnKeyboardClosed::kEventName,
-        base::WrapUnique(new base::ListValue())));
-    event->restrict_to_browser_context = context_;
+        base::MakeUnique<base::ListValue>(), context_);
     router->BroadcastEvent(std::move(event));
   }
 
@@ -231,11 +229,10 @@ void ChromeKeyboardUI::SetUpdateInputType(ui::TextInputType type) {
                                TextInputTypeToGeneratedInputTypeEnum(type)));
   event_args->Append(std::move(input_context));
 
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
+  auto event = base::MakeUnique<extensions::Event>(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_TEXT_INPUT_BOX_FOCUSED,
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
-      std::move(event_args)));
-  event->restrict_to_browser_context = browser_context();
+      std::move(event_args), browser_context());
   router->DispatchEventToExtension(kVirtualKeyboardExtensionID,
                                    std::move(event));
 }

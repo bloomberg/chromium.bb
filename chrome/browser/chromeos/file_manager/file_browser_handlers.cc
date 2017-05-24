@@ -408,10 +408,9 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
 
   details->Set("entries", std::move(file_entries));
   event_args->Append(std::move(details));
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
+  auto event = base::MakeUnique<extensions::Event>(
       extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
-      "fileBrowserHandler.onExecute", std::move(event_args)));
-  event->restrict_to_browser_context = profile_;
+      "fileBrowserHandler.onExecute", std::move(event_args), profile_);
   router->DispatchEventToExtension(extension_->id(), std::move(event));
 
   ExecuteDoneOnUIThread(true);

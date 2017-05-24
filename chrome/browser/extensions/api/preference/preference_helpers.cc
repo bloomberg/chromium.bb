@@ -128,9 +128,9 @@ void DispatchEventToExtensions(Profile* profile,
       }
 
       std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
-      std::unique_ptr<Event> event(
-          new Event(histogram_value, event_name, std::move(args_copy)));
-      event->restrict_to_browser_context = restrict_to_profile;
+      auto event =
+          base::MakeUnique<Event>(histogram_value, event_name,
+                                  std::move(args_copy), restrict_to_profile);
       router->DispatchEventToExtension(extension->id(), std::move(event));
     }
   }
