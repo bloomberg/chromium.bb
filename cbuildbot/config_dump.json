@@ -14816,18 +14816,6 @@
             "chrome_internal"
         ]
     },
-    "mario-incremental": {
-        "_template": "incremental",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "x86-mario"
-        ],
-        "buildslave_type": "baremetal",
-        "description": "Incremental Builds (internal)",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both"
-    },
     "master-android-pfq": {
         "_template": "android_pfq",
         "active_waterfall": "chromeos",
