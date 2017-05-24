@@ -1833,7 +1833,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mJourneyLogger.recordJourneyStatsHistograms(
                     JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
         } else {
-            mJourneyLogger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
+            mJourneyLogger.recordJourneyStatsHistograms(
+                    JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
         }
     }
 
