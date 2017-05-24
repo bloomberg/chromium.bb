@@ -1735,9 +1735,9 @@
             ],
             "experiments": [
                 {
-                    "name": "NetworkTimeQueriesEnabledBackgroundAndOnDemand",
+                    "name": "NetworkTimeQueriesEnabledOnDemand",
                     "params": {
-                        "FetchBehavior": "background-and-on-demand"
+                        "FetchBehavior": "on-demand-only"
                     },
                     "enable_features": [
                         "NetworkTimeServiceQuerying"
