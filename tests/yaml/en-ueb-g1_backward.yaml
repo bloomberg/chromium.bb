@@ -16,3 +16,9 @@ tests:
   - [⠠⠁, A]
   - [⠠⠠, ""]
   - [⠠⠠⠁⠁, AA]
+  # Backtranslations followed by punctuation
+  - [⠁⠂, "a,"]
+  - [⠃⠂, "b,"]
+  - [⠉⠂, "c,"]
+  - [⠙⠂, "d,"]
+
