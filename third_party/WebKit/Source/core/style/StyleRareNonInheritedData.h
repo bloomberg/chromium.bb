@@ -104,9 +104,6 @@ class CORE_EXPORT StyleRareNonInheritedData
   bool TransitionDataEquivalent(const StyleRareNonInheritedData&) const;
   bool ShapeOutsideDataEquivalent(const StyleRareNonInheritedData&) const;
   bool ClipPathDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool HasFilters() const;
-  bool HasBackdropFilters() const;
-  bool HasOpacity() const { return opacity < 1; }
 
   float opacity;  // Whether or not we're transparent.
 

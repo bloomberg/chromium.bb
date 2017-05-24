@@ -600,8 +600,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
             other.rare_non_inherited_data_->shape_margin_ ||
         rare_non_inherited_data_->order_ !=
             other.rare_non_inherited_data_->order_ ||
-        rare_non_inherited_data_->HasFilters() !=
-            other.rare_non_inherited_data_->HasFilters())
+        HasFilters() != other.HasFilters())
       return true;
 
     if (rare_non_inherited_data_->grid_.Get() !=
@@ -647,8 +646,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
     // could trigger a change
     // in us being a stacking context.
     if (IsStackingContext() != other.IsStackingContext() &&
-        rare_non_inherited_data_->HasOpacity() !=
-            other.rare_non_inherited_data_->HasOpacity()) {
+        HasOpacity() != other.HasOpacity()) {
       // FIXME: We would like to use SimplifiedLayout here, but we can't quite
       // do that yet.  We need to make sure SimplifiedLayout can operate
       // correctly on LayoutInlines (we will need to add a
@@ -1298,6 +1296,11 @@ void ComputedStyle::ApplyTransform(
   if (apply_transform_origin) {
     result.Translate3d(-origin_x, -origin_y, -origin_z);
   }
+}
+
+bool ComputedStyle::HasFilters() const {
+  return rare_non_inherited_data_->filter_.Get() &&
+         !rare_non_inherited_data_->filter_->operations_.IsEmpty();
 }
 
 void ComputedStyle::ApplyMotionPathTransform(

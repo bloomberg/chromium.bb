@@ -335,14 +335,6 @@ bool StyleRareNonInheritedData::TransitionDataEquivalent(
   return transitions_->TransitionsMatchForStyleRecalc(*o.transitions_);
 }
 
-bool StyleRareNonInheritedData::HasFilters() const {
-  return filter_.Get() && !filter_->operations_.IsEmpty();
-}
-
-bool StyleRareNonInheritedData::HasBackdropFilters() const {
-  return backdrop_filter_.Get() && !backdrop_filter_->operations_.IsEmpty();
-}
-
 bool StyleRareNonInheritedData::ShapeOutsideDataEquivalent(
     const StyleRareNonInheritedData& o) const {
   return DataEquivalent(shape_outside_, o.shape_outside_);
