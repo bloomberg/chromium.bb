@@ -25,9 +25,9 @@ from itertools import chain
 # TODO(shend): Put alignment sizes into code form, rather than linking to a CL which may disappear.
 ALIGNMENT_ORDER = [
     'double',
-    'Font', 'FillLayer', 'NinePieceImage', 'LayoutUnit',  # Aligns like a void * (can be 32 or 64 bits)
+    'Font', 'FillLayer', 'NinePieceImage',  # Aligns like a void * (can be 32 or 64 bits)
     'LengthBox', 'LengthSize', 'Length', 'float',
-    'StyleColor', 'Color', 'unsigned', 'int',
+    'StyleColor', 'Color', 'LayoutUnit', 'unsigned', 'int',
     'short',
     'char',
     'bool'
