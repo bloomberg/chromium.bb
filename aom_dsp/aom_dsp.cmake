@@ -444,8 +444,6 @@ function (setup_aom_dsp_targets)
              ${AOM_DSP_ENCODER_ASM_SSSE3_X86_64})
       endif ()
       add_asm_library("aom_dsp_encoder_ssse3" "AOM_DSP_ENCODER_ASM_SSSE3" "aom")
-      add_intrinsics_object_library("-mssse3" "ssse3" "aom_dsp_encoder"
-                                    "AOM_DSP_ENCODER_INTRIN_SSSE3")
     endif ()
   endif ()
 
