@@ -647,7 +647,7 @@ back_selectRule ()
 			break;
 		    case CTO_Contraction:
 		      if ((beforeAttributes & (CTC_Space | CTC_Punctuation))
-			  && ((afterAttributes & CTC_Space) || isEndWord ()))
+			  && ((afterAttributes & (CTC_Space | CTC_Punctuation)) || isEndWord ()))
 			return;
 		      break;
 		    case CTO_LowWord:
