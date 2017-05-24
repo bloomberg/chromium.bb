@@ -1365,7 +1365,8 @@ typedef struct {
 static void get_filter_level_and_masks_non420(
     AV1_COMMON *const cm, const struct macroblockd_plane *const plane,
     MODE_INFO **mib, int mi_row, int mi_col, int idx_r, uint8_t *const lfl_r,
-    unsigned int *const mask_4x4_int_r, FilterMasks *const row_masks_ptr,
+    unsigned int *const mask_4x4_int_r_ptr,
+    unsigned int *const mask_4x4_int_c_ptr, FilterMasks *const row_masks_ptr,
     FilterMasks *const col_masks_ptr) {
   const int ss_x = plane->subsampling_x;
   const int ss_y = plane->subsampling_y;
@@ -1373,7 +1374,7 @@ static void get_filter_level_and_masks_non420(
   FilterMasks row_masks, col_masks;
   memset(&row_masks, 0, sizeof(row_masks));
   memset(&col_masks, 0, sizeof(col_masks));
-  *mask_4x4_int_r = 0;
+  unsigned int mask_4x4_int_r = 0, mask_4x4_int_c = 0;
   const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
 
   // Determine the vertical edges that need filtering
@@ -1478,7 +1479,7 @@ static void get_filter_level_and_masks_non420(
 
       if (!skip_this && tx_size_c < TX_8X8 && !skip_border_4x4_c &&
           (c_step & tx_size_mask) == 0)
-        *mask_4x4_int_r |= col_mask;
+        mask_4x4_int_c |= col_mask;
     }
 
     if (tx_size_r == TX_32X32)
@@ -1512,14 +1513,16 @@ static void get_filter_level_and_masks_non420(
           row_masks.m4x4 |= col_mask;
       }
 
-      if (!skip_this && tx_size_r < TX_8X8 && !skip_border_4x4_c &&
+      if (!skip_this && tx_size_r < TX_8X8 && !skip_border_4x4_r &&
           ((r >> ss_y) & tx_size_mask) == 0)
-        *mask_4x4_int_r |= col_mask;
+        mask_4x4_int_r |= col_mask;
     }
   }
 
   if (row_masks_ptr) *row_masks_ptr = row_masks;
   if (col_masks_ptr) *col_masks_ptr = col_masks;
+  if (mask_4x4_int_c_ptr) *mask_4x4_int_c_ptr = mask_4x4_int_c;
+  if (mask_4x4_int_r_ptr) *mask_4x4_int_r_ptr = mask_4x4_int_r;
 }
 
 void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
@@ -1539,7 +1542,7 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
     FilterMasks col_masks;
     const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
     get_filter_level_and_masks_non420(cm, plane, mib, mi_row, mi_col, idx_r,
-                                      &lfl[r][0], &mask_4x4_int, NULL,
+                                      &lfl[r][0], NULL, &mask_4x4_int, NULL,
                                       &col_masks);
 
     // Disable filtering on the leftmost column or tile boundary
@@ -1587,15 +1590,12 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
        idx_r += row_step) {
     const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
     get_filter_level_and_masks_non420(cm, plane, mib, mi_row, mi_col, idx_r,
-                                      &lfl[r][0], mask_4x4_int + r,
+                                      &lfl[r][0], mask_4x4_int + r, NULL,
                                       row_masks_array + r, NULL);
   }
   for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
        idx_r += row_step) {
-    const int skip_border_4x4_r =
-        ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_wide[BLOCK_8X8];
     const int r = idx_r >> mi_width_log2_lookup[BLOCK_8X8];
-    const unsigned int mask_4x4_int_r = skip_border_4x4_r ? 0 : mask_4x4_int[r];
     FilterMasks row_masks;
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -1616,12 +1616,12 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
     if (cm->use_highbitdepth)
       highbd_filter_selectively_horiz(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride, row_masks.m16x16,
-          row_masks.m8x8, row_masks.m4x4, mask_4x4_int_r, &cm->lf_info,
+          row_masks.m8x8, row_masks.m4x4, mask_4x4_int[r], &cm->lf_info,
           &lfl[r][0], (int)cm->bit_depth);
     else
 #endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_horiz(dst->buf, dst->stride, row_masks.m16x16,
-                               row_masks.m8x8, row_masks.m4x4, mask_4x4_int_r,
+                               row_masks.m8x8, row_masks.m4x4, mask_4x4_int[r],
                                &cm->lf_info, &lfl[r][0]);
     dst->buf += 8 * dst->stride;
   }
