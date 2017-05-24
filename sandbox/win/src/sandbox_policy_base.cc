@@ -196,9 +196,6 @@ JobLevel PolicyBase::GetJobLevel() const {
 }
 
 ResultCode PolicyBase::SetJobMemoryLimit(size_t memory_limit) {
-  if (memory_limit && job_level_ == JOB_NONE) {
-    return SBOX_ERROR_BAD_PARAMS;
-  }
   memory_limit_ = memory_limit;
   return SBOX_ALL_OK;
 }
