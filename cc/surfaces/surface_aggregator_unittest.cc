@@ -1107,8 +1107,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   SurfaceId grandchild_surface_id(grandchild_support->frame_sink_id(),
                                   grandchild_local_surface_id);
 
-  grandchild_support->SubmitCompositorFrame(grandchild_local_surface_id,
-                                            test::MakeCompositorFrame());
   std::unique_ptr<RenderPass> grandchild_pass = RenderPass::Create();
   gfx::Rect output_rect(SurfaceSize());
   gfx::Rect damage_rect(SurfaceSize());
@@ -1123,8 +1121,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   LocalSurfaceId child_one_local_surface_id = allocator_.GenerateId();
   SurfaceId child_one_surface_id(child_one_support->frame_sink_id(),
                                  child_one_local_surface_id);
-  child_one_support->SubmitCompositorFrame(child_one_local_surface_id,
-                                           test::MakeCompositorFrame());
 
   std::unique_ptr<RenderPass> child_one_pass = RenderPass::Create();
   child_one_pass->SetNew(pass_id, output_rect, damage_rect,
@@ -1145,8 +1141,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   LocalSurfaceId child_two_local_surface_id = allocator_.GenerateId();
   SurfaceId child_two_surface_id(child_two_support->frame_sink_id(),
                                  child_two_local_surface_id);
-  child_two_support->SubmitCompositorFrame(child_two_local_surface_id,
-                                           test::MakeCompositorFrame());
 
   std::unique_ptr<RenderPass> child_two_pass = RenderPass::Create();
   child_two_pass->SetNew(pass_id, output_rect, damage_rect,
@@ -1959,7 +1953,7 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
                                         SurfaceId surface_id) {
   CompositorFrame frame = test::MakeEmptyCompositorFrame();
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
-  pass->id = 1;
+  pass->SetNew(1, gfx::Rect(0, 0, 20, 20), gfx::Rect(), gfx::Transform());
   SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->opacity = 1.f;
   if (child_id.is_valid()) {
@@ -2041,16 +2035,13 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   LocalSurfaceId local_surface_id(7u, base::UnguessableToken::Create());
   SurfaceId surface_id(support->frame_sink_id(), local_surface_id);
 
-  CompositorFrame frame = test::MakeEmptyCompositorFrame();
-  std::unique_ptr<RenderPass> pass = RenderPass::Create();
-  pass->id = 1;
+  CompositorFrame frame = test::MakeCompositorFrame();
   TransferableResource resource;
   resource.id = 11;
   // ResourceProvider is software but resource is not, so it should be
   // ignored.
   resource.is_software = false;
   frame.resource_list.push_back(resource);
-  frame.render_pass_list.push_back(std::move(pass));
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
   CompositorFrame returned_frame = aggregator_->Aggregate(surface_id);
@@ -2202,7 +2193,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
 
   {
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
-    pass->id = 1;
+    pass->SetNew(1, gfx::Rect(0, 0, 20, 20), gfx::Rect(), gfx::Transform());
     SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
     sqs->opacity = 1.f;
     SurfaceDrawQuad* surface_quad =
