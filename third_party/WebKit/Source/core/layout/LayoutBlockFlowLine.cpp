@@ -2526,8 +2526,11 @@ void LayoutBlockFlow::TryPlacingEllipsisOnAtomicInlines(
   for (InlineBox* box = ltr ? root->FirstChild() : root->LastChild(); box;
        box = ltr ? box->NextOnLine() : box->PrevOnLine()) {
     if (!box->GetLineLayoutItem().IsAtomicInlineLevel() ||
-        !box->GetLineLayoutItem().IsLayoutBlockFlow())
+        !box->GetLineLayoutItem().IsLayoutBlockFlow()) {
+      if (box->GetLineLayoutItem().IsText())
+        logical_left_offset += box->LogicalWidth();
       continue;
+    }
 
     RootInlineBox* first_root_box =
         LineLayoutBlockFlow(box->GetLineLayoutItem()).FirstRootBox();

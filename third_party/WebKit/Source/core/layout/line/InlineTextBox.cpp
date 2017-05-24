@@ -402,27 +402,14 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
   if (ltr_ellipsis_within_box || rtl_ellipsis_within_box) {
     found_box = true;
 
-    // The inline box may have different directionality than it's parent. Since
-    // truncation behavior depends both on both the parent and the inline
-    // block's directionality, we must keep track of these separately.
-    bool ltr = IsLeftToRightDirection();
-    if (ltr != flow_is_ltr) {
-      // Width in pixels of the visible portion of the box, excluding the
-      // ellipsis.
-      LayoutUnit visible_box_width =
-          visible_right_edge - visible_left_edge - ellipsis_width;
-      ellipsis_x = flow_is_ltr ? adjusted_logical_left + visible_box_width
-                               : LogicalRight() - visible_box_width;
-    }
-
     // OffsetForPosition() expects the position relative to the root box.
-    if (ltr == flow_is_ltr && !flow_is_ltr && logical_left_offset < 0)
-      ellipsis_x -= logical_left_offset;
+    ellipsis_x -= logical_left_offset;
 
     // We measure the text using the second half of the previous character and
     // the first half of the current one when the text is rtl. This gives a
     // more accurate position in rtl text.
     // TODO(crbug.com/722043: This doesn't always give the best results.
+    bool ltr = IsLeftToRightDirection();
     int offset = OffsetForPosition(ellipsis_x, !ltr);
     // Full truncation is only necessary when we're flowing left-to-right.
     if (flow_is_ltr && offset == 0 && ltr == flow_is_ltr) {
