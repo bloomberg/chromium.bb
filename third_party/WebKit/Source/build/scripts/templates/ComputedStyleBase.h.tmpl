@@ -166,6 +166,7 @@ class CORE_EXPORT ComputedStyleBase {
       {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
   {% endfor %}
   {
+    static_assert(std::is_same<ComputedStyle, ComputedStyleFinal>::value, "ComputedStyleBase can only be templated with ComputedStyle");
     {% for subgroup in computed_style.subgroups %}
     {{subgroup.member_name}}.Init();
     {% endfor %}
