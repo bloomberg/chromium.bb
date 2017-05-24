@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
+#include "device/vr/vr_types.h"
 
 class GURL;
 
@@ -59,6 +60,8 @@ class UiSceneManager {
   void CreateExitWarning();
 
   void ConfigureScene();
+  void ConfigureBackgroundColor(vr::Colorf center_color,
+                                vr::Colorf horizon_color);
   void ConfigureSecurityWarnings();
   void OnSecurityWarningTimer();
   void OnBackButtonClicked();
@@ -77,6 +80,9 @@ class UiSceneManager {
   UiElement* video_capture_indicator_ = nullptr;
   UiElement* screen_capture_indicator_ = nullptr;
   UiElement* screen_dimmer_ = nullptr;
+  UiElement* ceiling_ = nullptr;
+  UiElement* floor_ = nullptr;
+  UiElement* floor_grid_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
 

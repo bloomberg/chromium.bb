@@ -68,9 +68,10 @@ public class VrShellImpl
     // text too small to read.
     private static final float DEFAULT_CONTENT_WIDTH = 960f;
     private static final float DEFAULT_CONTENT_HEIGHT = 640f;
-    // Make full screen 16:9 while maintaining same width as default.
-    private static final float FULLSCREEN_CONTENT_WIDTH = 960f;
-    private static final float FULLSCREEN_CONTENT_HEIGHT = 540f;
+
+    // Make full screen 16:9 until we get exact dimensions from playing video.
+    private static final float FULLSCREEN_CONTENT_WIDTH = 1024f;
+    private static final float FULLSCREEN_CONTENT_HEIGHT = 576f;
 
     private final ChromeActivity mActivity;
     private final VrShellDelegate mDelegate;
