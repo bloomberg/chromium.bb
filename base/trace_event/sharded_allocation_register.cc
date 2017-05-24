@@ -14,6 +14,10 @@ namespace trace_event {
 // "base/trace_event/heap_profiler_allocation_register.h".
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const size_t ShardCount = 1;
+#elif defined(OS_WIN)
+// Using ShardCount = 64 adds about 1.6GB of committed memory, which triggers
+// the sandbox's committed memory limit.
+const size_t ShardCount = 16;
 #else
 const size_t ShardCount = 64;
 #endif
