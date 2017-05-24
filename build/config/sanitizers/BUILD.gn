@@ -13,10 +13,11 @@ if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
 }
 
-# Contains the dependencies needed for sanitizers to link into executables and
-# shared_libraries. Unconditionally depend upon this target as it is empty if
-# |is_asan|, |is_lsan|, |is_tsan|, |is_msan| and |use_custom_libcxx| are false.
+# Contains the dependencies needed for sanitizers to link into
+# executables and shared_libraries. Unconditionally depend upon
+# "//build/config:exe_and_shlib_deps" to pull in this target.
 group("deps") {
+  visibility = [ "//build/config:exe_and_shlib_deps" ]
   public_deps = [
     ":deps_no_options",
   ]
