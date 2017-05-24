@@ -4,7 +4,6 @@
 package org.chromium.chrome.browser.omnibox;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
@@ -14,6 +13,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.junit.Before;
@@ -87,8 +87,8 @@ public class AutocompleteEditTextTest {
         // AutocompleteEditText#onAutocompleteTextStateChanged(boolean, boolean)}, which is caused
         // by View constructor's call to setText().
         mInOrder = inOrder(mEmbedder);
-        mDummyTargetInputConnection = new BaseInputConnection(mAutocomplete, true);
-        mInputConnection = mAutocomplete.createInputConnection(mDummyTargetInputConnection);
+        mAutocomplete.onCreateInputConnection(new EditorInfo());
+        mInputConnection = mAutocomplete.getInputConnection();
         assertNotNull(mInputConnection);
         mInOrder.verifyNoMoreInteractions();
         if (DEBUG) Log.i(TAG, "setUp finished.");
@@ -113,11 +113,12 @@ public class AutocompleteEditTextTest {
         // The controller kicks in.
         mAutocomplete.setAutocompleteText("hello", " world");
         assertTexts("hello", " world");
-        assertFalse(mInputConnection.beginBatchEdit());
+        assertTrue(mInputConnection.beginBatchEdit());
         assertTrue(mInputConnection.commitText(" ", 1));
-        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, false);
         assertTexts("hello ", "world");
-        assertFalse(mInputConnection.endBatchEdit());
+        mInOrder.verifyNoMoreInteractions();
+        assertTrue(mInputConnection.endBatchEdit());
+        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, true);
         mAutocomplete.setAutocompleteText("hello ", "world");
         assertTexts("hello ", "world");
         mInOrder.verifyNoMoreInteractions();
