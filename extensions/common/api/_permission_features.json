@@ -249,8 +249,8 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
-  "mediaPerceptionPrivate": {
-    "channel": "trunk",
+  "mediaPerceptionPrivate": [{
+    "channel": "dev",
     "extension_types": ["platform_app"],
     "session_types": ["kiosk"],
     "platforms": ["chromeos"],
@@ -265,6 +265,14 @@
       "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/720495
     ]
   },
+  {
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "3970B660353CA07962DAD1A5C1B75A7B87835943"  // http://crbug.com/724206
+    ]
+  }],
   "metricsPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
