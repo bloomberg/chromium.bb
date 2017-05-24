@@ -6247,6 +6247,79 @@
         "important": true,
         "vm_tests": []
     },
+    "coral-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "coral"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "coral-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "coral"
+        ]
+    },
+    "coral-full": {
+        "_template": "full",
+        "boards": [
+            "coral"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "coral-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "coral"
+        ]
+    },
+    "coral-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "coral"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "coral-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "coral"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "coral-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "coral"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "coral-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "coral"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "coral-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "coral"
+        ]
+    },
     "cyan-android-mnc-pre-flight-branch": {
         "_template": "pre_flight_branch",
         "android_import_branch": "git_mnc-dr-arc-dev",
@@ -14925,6 +14998,7 @@
             "celes-release",
             "chell-release",
             "clapper-release",
+            "coral-release",
             "cyan-release",
             "daisy-release",
             "daisy_skate-release",

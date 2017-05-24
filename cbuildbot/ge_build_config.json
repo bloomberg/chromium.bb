@@ -254,6 +254,18 @@
       ]
     },
     {
+      "name": "coral",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "coral",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "cyan",
       "configs": [
         {
