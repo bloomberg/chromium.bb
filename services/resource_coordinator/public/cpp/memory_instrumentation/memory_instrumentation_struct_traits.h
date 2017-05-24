@@ -83,6 +83,11 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT StructTraits<
           args) {
     return args.vm_swap_bytes;
   }
+  static uint64_t private_bytes(
+      const base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint&
+          args) {
+    return args.private_bytes;
+  }
   static bool Read(
       memory_instrumentation::mojom::PlatformPrivateFootprintDataView input,
       base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint* out);
