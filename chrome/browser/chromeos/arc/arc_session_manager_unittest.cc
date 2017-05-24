@@ -130,6 +130,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
     ArcSessionManager::DisableUIForTesting();
+    SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
@@ -245,6 +246,38 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
 
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
+
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, IncompatibleFileSystemBlocksTermsOfService) {
+  SetArcBlockedDueToIncompatibleFileSystemForTesting(true);
+
+  arc_session_manager()->SetProfile(profile());
+
+  // Enables ARC first time. ToS negotiation should NOT happen.
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, IncompatibleFileSystemBlocksArcStart) {
+  SetArcBlockedDueToIncompatibleFileSystemForTesting(true);
+
+  // Set up the situation that provisioning is successfully done in the
+  // previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+
+  // Enables ARC second time. ARC should NOT start.
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
 }
