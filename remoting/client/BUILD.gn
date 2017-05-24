@@ -31,8 +31,6 @@ static_library("client") {
     "host_experiment_sender.h",
     "key_event_mapper.cc",
     "key_event_mapper.h",
-    "native_device_keymap.cc",
-    "native_device_keymap.h",
     "normalizing_input_filter_cros.cc",
     "normalizing_input_filter_cros.h",
     "normalizing_input_filter_mac.cc",
@@ -45,8 +43,6 @@ static_library("client") {
     "server_log_entry_client.h",
     "software_video_renderer.cc",
     "software_video_renderer.h",
-    "touch_input_scaler.cc",
-    "touch_input_scaler.h",
   ]
   set_sources_assignment_filter(sources_assignment_filter)
 
@@ -77,23 +73,23 @@ static_library("client") {
     sources += [
       "chromoting_client_runtime.cc",
       "chromoting_client_runtime.h",
+      "gesture_interpreter.cc",
+      "gesture_interpreter.h",
+    ]
+    deps += [
+      "//remoting/client/display",
+      "//remoting/client/ui",
     ]
   }
   if (is_android) {
     sources += [
       "audio_player_android.cc",
       "audio_player_android.h",
-      "native_device_keymap_android.cc",
     ]
-    sources -= [ "native_device_keymap.cc" ]
     libs += [
       "android",
       "OpenSLES",
     ]
-  }
-  if (is_ios) {
-    sources += [ "native_device_keymap_ios.cc" ]
-    sources -= [ "native_device_keymap.cc" ]
   }
 }
 
@@ -116,7 +112,6 @@ source_set("unit_tests") {
     "queued_task_poster_unittest.cc",
     "server_log_entry_client_unittest.cc",
     "software_video_renderer_unittest.cc",
-    "touch_input_scaler_unittest.cc",
   ]
   set_sources_assignment_filter(sources_assignment_filter)
 

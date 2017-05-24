@@ -1,4 +1,0 @@
-include_rules = [
-  "-remoting/client",
-  "+remoting/client/display",
-]

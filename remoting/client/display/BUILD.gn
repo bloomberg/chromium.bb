@@ -24,6 +24,8 @@ source_set("display") {
     "gl_render_layer.h",
     "gl_renderer.cc",
     "gl_renderer.h",
+    "renderer_proxy.cc",
+    "renderer_proxy.h",
     "sys_opengl.h",
   ]
 
@@ -32,6 +34,7 @@ source_set("display") {
   ]
   deps = [
     "//third_party/libyuv",
+    "//third_party/protobuf:protobuf_lite",
     "//third_party/webrtc/base:rtc_base_approved",
   ]
 
