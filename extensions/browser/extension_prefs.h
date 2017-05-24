@@ -23,12 +23,18 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
+#include "services/preferences/public/cpp/dictionary_value_update.h"
+#include "services/preferences/public/cpp/scoped_pref_update.h"
 
 class ExtensionPrefValueMap;
 class PrefService;
 
 namespace content {
 class BrowserContext;
+}
+
+namespace prefs {
+class DictionaryValueUpdate;
 }
 
 namespace user_prefs {
@@ -89,38 +95,54 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(TimeProvider);
   };
 
-  // A wrapper around a ScopedUserPrefUpdate, which allows us to access the
-  // entry of a particular key for an extension. Use this if you need a mutable
-  // record of a dictionary or list in the current settings. Otherwise, prefer
-  // ReadPrefAsT() and UpdateExtensionPref() methods.
-  template <typename T, base::Value::Type type_enum_value>
-  class ScopedUpdate {
+  // Wrappers around a prefs::ScopedDictionaryPrefUpdate, which allow us to
+  // access the entry of a particular key for an extension. Use these if you
+  // need a mutable record of a dictionary or list in the current settings.
+  // Otherwise, prefer ReadPrefAsT() and UpdateExtensionPref() methods.
+  class ScopedDictionaryUpdate {
    public:
-    ScopedUpdate(ExtensionPrefs* prefs,
-                 const std::string& extension_id,
-                 const std::string& key);
-    virtual ~ScopedUpdate();
+    ScopedDictionaryUpdate(ExtensionPrefs* prefs,
+                           const std::string& extension_id,
+                           const std::string& key);
+    ~ScopedDictionaryUpdate();
+
+    // Returns a mutable value for the key, if one exists. Otherwise, returns
+    // NULL.
+    std::unique_ptr<prefs::DictionaryValueUpdate> Get();
+
+    // Creates and returns a mutable value for the key, if one does not already
+    // exist. Otherwise, returns the current value.
+    std::unique_ptr<prefs::DictionaryValueUpdate> Create();
+
+   private:
+    std::unique_ptr<prefs::ScopedDictionaryPrefUpdate> update_;
+    const std::string key_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedDictionaryUpdate);
+  };
+
+  class ScopedListUpdate {
+   public:
+    ScopedListUpdate(ExtensionPrefs* prefs,
+                     const std::string& extension_id,
+                     const std::string& key);
+    ~ScopedListUpdate();
 
     // Returns a mutable value for the key (ownership remains with the prefs),
     // if one exists. Otherwise, returns NULL.
-    virtual T* Get();
+    base::ListValue* Get();
 
     // Creates and returns a mutable value for the key (the prefs own the new
     // value), if one does not already exist. Otherwise, returns the current
     // value.
-    virtual T* Create();
+    base::ListValue* Create();
 
    private:
-    DictionaryPrefUpdate update_;
-    const std::string extension_id_;
+    std::unique_ptr<prefs::ScopedDictionaryPrefUpdate> update_;
     const std::string key_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedUpdate);
+    DISALLOW_COPY_AND_ASSIGN(ScopedListUpdate);
   };
-  typedef ScopedUpdate<base::DictionaryValue, base::Value::Type::DICTIONARY>
-      ScopedDictionaryUpdate;
-  typedef ScopedUpdate<base::ListValue, base::Value::Type::LIST>
-      ScopedListUpdate;
 
   // Creates an ExtensionPrefs object.
   // Does not take ownership of |prefs| or |extension_pref_value_map|.
@@ -652,12 +674,13 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // installations.
   //
   // |install_flags| are a bitmask of extension::InstallFlags.
-  void PopulateExtensionInfoPrefs(const Extension* extension,
-                                  const base::Time install_time,
-                                  Extension::State initial_state,
-                                  int install_flags,
-                                  const std::string& install_parameter,
-                                  base::DictionaryValue* extension_dict) const;
+  void PopulateExtensionInfoPrefs(
+      const Extension* extension,
+      const base::Time install_time,
+      Extension::State initial_state,
+      int install_flags,
+      const std::string& install_parameter,
+      prefs::DictionaryValueUpdate* extension_dict) const;
 
   void InitExtensionControlledPrefs(ExtensionPrefValueMap* value_map);
 
@@ -669,7 +692,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
       const base::Time install_time,
       bool needs_sort_ordinal,
       const syncer::StringOrdinal& suggested_page_ordinal,
-      base::DictionaryValue* extension_dict);
+      prefs::DictionaryValueUpdate* extension_dict);
 
   content::BrowserContext* browser_context_;
 

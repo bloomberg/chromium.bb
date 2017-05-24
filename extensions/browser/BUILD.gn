@@ -304,6 +304,7 @@ source_set("browser_sources") {
       "//crypto:platform",
       "//extensions:extensions_browser_resources",
       "//extensions/common",
+      "//services/preferences/public/cpp",
       "//services/service_manager/public/cpp",
     ]
   }

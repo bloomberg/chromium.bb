@@ -344,7 +344,7 @@ void EventRouter::RemoveFilterFromEvent(const std::string& event_name,
                                         const DictionaryValue* filter) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       extension_prefs_, extension_id, kFilteredEvents);
-  DictionaryValue* filtered_events = update.Get();
+  auto filtered_events = update.Create();
   ListValue* filter_list = NULL;
   if (!filtered_events ||
       !filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
@@ -735,9 +735,7 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
                                    const DictionaryValue* filter) {
   ExtensionPrefs::ScopedDictionaryUpdate update(extension_prefs_, extension_id,
                                                 kFilteredEvents);
-  DictionaryValue* filtered_events = update.Get();
-  if (!filtered_events)
-    filtered_events = update.Create();
+  auto filtered_events = update.Create();
 
   ListValue* filter_list = nullptr;
   if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
