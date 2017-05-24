@@ -510,6 +510,10 @@ class CONTENT_EXPORT RenderThreadImpl
     return needs_to_record_first_active_paint_;
   }
 
+  mojom::FrameSinkProvider* GetFrameSinkProvider() {
+    return frame_sink_provider_.get();
+  }
+
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,

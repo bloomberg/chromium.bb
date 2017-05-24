@@ -58,16 +58,12 @@ class RendererCompositorFrameSink
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       cc::SharedBitmapManager* shared_bitmap_manager,
-      cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
   RendererCompositorFrameSink(
       int32_t routing_id,
       std::unique_ptr<cc::SyntheticBeginFrameSource>
           synthetic_begin_frame_source,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-      cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
   ~RendererCompositorFrameSink() override;
 
@@ -110,6 +106,8 @@ class RendererCompositorFrameSink
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool need_begin_frames) override;
 
+  void EstablishMojoConnection();
+
   scoped_refptr<CompositorForwardingMessageFilter>
       compositor_frame_sink_filter_;
   CompositorForwardingMessageFilter::Handler
@@ -128,7 +126,7 @@ class RendererCompositorFrameSink
   base::ThreadChecker thread_checker_;
 
   cc::mojom::MojoCompositorFrameSinkPtr sink_;
-  cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info_;
+  cc::mojom::MojoCompositorFrameSinkPtrInfo sink_ptr_info_;
   cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> sink_client_binding_;
 };

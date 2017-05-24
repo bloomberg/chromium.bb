@@ -33,8 +33,6 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     cc::SharedBitmapManager* shared_bitmap_manager,
-    cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorFrameSink(std::move(context_provider),
                           std::move(worker_context_provider),
@@ -50,21 +48,18 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
               ? nullptr
               : base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
       routing_id_(routing_id),
-      sink_info_(std::move(sink_info)),
-      sink_client_request_(std::move(sink_client_request)),
       sink_client_binding_(this) {
   DCHECK(compositor_frame_sink_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   thread_checker_.DetachFromThread();
+  EstablishMojoConnection();
 }
 
 RendererCompositorFrameSink::RendererCompositorFrameSink(
     int32_t routing_id,
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-    cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorFrameSink(std::move(vulkan_context_provider)),
       compositor_frame_sink_filter_(
@@ -77,13 +72,12 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
               ? nullptr
               : base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
       routing_id_(routing_id),
-      sink_info_(std::move(sink_info)),
-      sink_client_request_(std::move(sink_client_request)),
       sink_client_binding_(this) {
   DCHECK(compositor_frame_sink_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   thread_checker_.DetachFromThread();
+  EstablishMojoConnection();
 }
 
 RendererCompositorFrameSink::~RendererCompositorFrameSink() = default;
@@ -94,7 +88,7 @@ bool RendererCompositorFrameSink::BindToClient(
   if (!cc::CompositorFrameSink::BindToClient(client))
     return false;
 
-  sink_.Bind(std::move(sink_info_));
+  sink_.Bind(std::move(sink_ptr_info_));
   sink_client_binding_.Bind(std::move(sink_client_request_));
 
   if (synthetic_begin_frame_source_)
@@ -200,6 +194,17 @@ void RendererCompositorFrameSink::ReclaimResources(
 
 void RendererCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   sink_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+void RendererCompositorFrameSink::EstablishMojoConnection() {
+  cc::mojom::MojoCompositorFrameSinkPtr sink;
+  cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+      mojo::MakeRequest(&sink);
+  cc::mojom::MojoCompositorFrameSinkClientPtr sink_client;
+  sink_client_request_ = mojo::MakeRequest(&sink_client);
+  RenderThreadImpl::current()->GetFrameSinkProvider()->CreateForWidget(
+      routing_id_, std::move(sink_request), std::move(sink_client));
+  sink_ptr_info_ = sink.PassInterface();
 }
 
 }  // namespace content
