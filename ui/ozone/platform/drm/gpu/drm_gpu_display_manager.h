@@ -15,6 +15,7 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
 namespace display {
+class DisplayMode;
 struct GammaRampRGBEntry;
 }
 
@@ -44,7 +45,7 @@ class DrmGpuDisplayManager {
   void RelinquishDisplayControl();
 
   bool ConfigureDisplay(int64_t id,
-                        const DisplayMode_Params& mode,
+                        const display::DisplayMode& display_mode,
                         const gfx::Point& origin);
   bool DisableDisplay(int64_t id);
   bool GetHDCPState(int64_t display_id, display::HDCPState* state);

@@ -12,10 +12,15 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "ui/display/types/display_mode.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
+
+namespace display {
+class DisplayMode;
+}  // namespace display
 
 namespace gfx {
 class Point;
@@ -69,6 +74,20 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format);
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 
 gfx::Size GetMaximumCursorSize(int fd);
+
+DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode);
+
+std::unique_ptr<const display::DisplayMode> CreateDisplayModeFromParams(
+    const DisplayMode_Params& pmode);
+
+bool MatchMode(const display::DisplayMode& display_mode,
+               const drmModeModeInfo& m);
+
+const gfx::Size ModeSize(const drmModeModeInfo& mode);
+
+float ModeRefreshRate(const drmModeModeInfo& mode);
+
+bool ModeIsInterlaced(const drmModeModeInfo& mode);
 
 }  // namespace ui
 

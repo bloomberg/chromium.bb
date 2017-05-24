@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
+#include "ui/display/types/display_mode.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -41,19 +42,22 @@ class DisplayComparator {
   uint32_t connector_;
 };
 
+bool MatchMode(const display::DisplayMode& display_mode,
+               const drmModeModeInfo& m) {
+  return display_mode.size() == ModeSize(m) &&
+         display_mode.refresh_rate() == ModeRefreshRate(m) &&
+         display_mode.is_interlaced() == ModeIsInterlaced(m);
+}
+
 bool FindMatchingMode(const std::vector<drmModeModeInfo> modes,
-                      const DisplayMode_Params& mode_params,
+                      const display::DisplayMode& display_mode,
                       drmModeModeInfo* mode) {
   for (const drmModeModeInfo& m : modes) {
-    DisplayMode_Params params = CreateDisplayModeParams(m);
-    if (mode_params.size == params.size &&
-        mode_params.refresh_rate == params.refresh_rate &&
-        mode_params.is_interlaced == params.is_interlaced) {
+    if (MatchMode(display_mode, m)) {
       *mode = m;
       return true;
     }
   }
-
   return false;
 }
 
@@ -131,7 +135,7 @@ void DrmGpuDisplayManager::RelinquishDisplayControl() {
 
 bool DrmGpuDisplayManager::ConfigureDisplay(
     int64_t display_id,
-    const DisplayMode_Params& mode_param,
+    const display::DisplayMode& display_mode,
     const gfx::Point& origin) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
@@ -140,23 +144,24 @@ bool DrmGpuDisplayManager::ConfigureDisplay(
   }
 
   drmModeModeInfo mode;
-  bool mode_found = FindMatchingMode(display->modes(), mode_param, &mode);
+  bool mode_found = FindMatchingMode(display->modes(), display_mode, &mode);
   if (!mode_found) {
     // If the display doesn't have the mode natively, then lookup the mode from
     // other displays and try using it on the current display (some displays
     // support panel fitting and they can use different modes even if the mode
     // isn't explicitly declared).
     for (const auto& other_display : displays_) {
-      mode_found = FindMatchingMode(other_display->modes(), mode_param, &mode);
+      mode_found =
+          FindMatchingMode(other_display->modes(), display_mode, &mode);
       if (mode_found)
         break;
     }
   }
 
   if (!mode_found) {
-    LOG(ERROR) << "Failed to find mode: size=" << mode_param.size.ToString()
-               << " is_interlaced=" << mode_param.is_interlaced
-               << " refresh_rate=" << mode_param.refresh_rate;
+    LOG(ERROR) << "Failed to find mode: size=" << display_mode.size().ToString()
+               << " is_interlaced=" << display_mode.is_interlaced()
+               << " refresh_rate=" << display_mode.refresh_rate();
     return false;
   }
 
