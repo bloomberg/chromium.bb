@@ -5765,7 +5765,6 @@
             "chell"
         ],
         "description": "Commit Queue (internal, nowithdebug)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

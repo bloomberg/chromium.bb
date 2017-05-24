@@ -2493,7 +2493,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.paladin,
           site_config.templates.internal_nowithdebug_paladin,
           boards=['chell'],
-          important=False,
           active_waterfall=constants.WATERFALL_INTERNAL,
       ),
 
