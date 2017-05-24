@@ -35,7 +35,8 @@
 #include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
-#include "platform/bindings/SharedPersistent.h"
+#include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -51,15 +52,23 @@ void GetScriptableObjectProperty(
   if (instance.IsEmpty())
     return;
 
+  ScriptState* state = ScriptState::Current(info.GetIsolate());
+
   v8::Local<v8::String> v8_name = V8String(info.GetIsolate(), name);
-  if (!V8CallBoolean(instance->HasOwnProperty(
-          info.GetIsolate()->GetCurrentContext(), v8_name)))
+  if (!V8CallBoolean(instance->HasOwnProperty(state->GetContext(), v8_name)))
     return;
 
   v8::Local<v8::Value> value;
-  if (!instance->Get(info.GetIsolate()->GetCurrentContext(), v8_name)
-           .ToLocal(&value))
+  if (!instance->Get(state->GetContext(), v8_name).ToLocal(&value))
     return;
+
+  if (state->World().IsIsolatedWorld()) {
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      UseCounter::kPluginInstanceAccessFromIsolatedWorld);
+  } else if (state->World().IsMainWorld()) {
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      UseCounter::kPluginInstanceAccessFromMainWorld);
+  }
 
   V8SetReturnValue(info, value);
 }
