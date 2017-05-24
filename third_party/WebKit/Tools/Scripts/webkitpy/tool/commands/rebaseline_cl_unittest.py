@@ -109,7 +109,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'optimize': True,
             'results_directory': None,
             'verbose': False,
-            'trigger_jobs': False,
+            'trigger_jobs': True,
             'fill_missing': False,
         }
         options.update(kwargs)
@@ -191,9 +191,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         git_cl.get_issue_number = lambda: '11112222'
         git_cl.latest_try_jobs = lambda _: builds
         self.command.git_cl = lambda: git_cl
-
         return_code = self.command.execute(self.command_options(trigger_jobs=True), [], self.tool)
-
         self.assertEqual(return_code, 1)
         self.assertLog([
             'INFO: Triggering try jobs for:\n',
@@ -201,18 +199,24 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO: Once all pending try jobs have finished, please re-run\n'
             'webkit-patch rebaseline-cl to fetch new baselines.\n',
         ])
-        self.assertEqual(
-            self.tool.executive.calls,
-            [
-                [
-                    'python',
-                    '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
-                    '--work',
-                    '--tests-root',
-                    '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
-                ],
-                ['git', 'cl', 'try', '-m', 'tryserver.blink', '-b', 'MOCK Try Linux']
-            ])
+
+    def test_execute_with_no_trigger_jobs_option(self):
+        builds = [
+            Build('MOCK Try Win', 5000),
+            Build('MOCK Try Mac', 4000),
+        ]
+        git_cl = GitCL(self.tool)
+        git_cl.get_issue_number = lambda: '11112222'
+        git_cl.latest_try_jobs = lambda _: builds
+        self.command.git_cl = lambda: git_cl
+        return_code = self.command.execute(self.command_options(trigger_jobs=False), [], self.tool)
+        self.assertEqual(return_code, 1)
+        self.assertLog([
+            'ERROR: The following builders have no jobs:\n',
+            'ERROR:   MOCK Try Linux\n',
+            'ERROR: Add --fill-missing to continue rebaselining anyway, '
+            'filling in results for missing platforms.\n',
+        ])
 
     def test_rebaseline_calls(self):
         """Tests the list of commands that are invoked when rebaseline is called."""
@@ -251,8 +255,9 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 ]]
             ])
 
-    def test_trigger_builds(self):
-        # The trigger_builds method just uses git cl to trigger jobs for the given builders.
+    def test_trigger_try_jobs(self):
+        # The trigger_try_jobs method just uses git cl to trigger jobs for
+        # the given builders.
         self.command.trigger_try_jobs(['MOCK Try Linux', 'MOCK Try Win'])
         self.assertEqual(
             self.tool.executive.calls,
