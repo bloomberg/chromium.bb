@@ -1962,7 +1962,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #if CONFIG_SUPERTX
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
-        is_interintra_allowed(mbmi)) {
+        cpi->common.allow_interintra_compound && is_interintra_allowed(mbmi)) {
       const int interintra = mbmi->ref_frame[1] == INTRA_FRAME;
       const int bsize_group = size_group_lookup[bsize];
       aom_write(w, interintra, cm->fc->interintra_prob[bsize_group]);
@@ -2000,21 +2000,23 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_MOTION_VAR
         && is_any_masked_compound_used(bsize)) {
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
-      av1_write_token(w, av1_compound_type_tree,
-                      cm->fc->compound_type_prob[bsize],
-                      &compound_type_encodings[mbmi->interinter_compound_type]);
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+      if (cm->allow_masked_compound) {
+        av1_write_token(
+            w, av1_compound_type_tree, cm->fc->compound_type_prob[bsize],
+            &compound_type_encodings[mbmi->interinter_compound_type]);
 #if CONFIG_WEDGE
-      if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
-        aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
-        aom_write_bit(w, mbmi->wedge_sign);
-      }
+        if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+          aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
+          aom_write_bit(w, mbmi->wedge_sign);
+        }
 #endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
-      if (mbmi->interinter_compound_type == COMPOUND_SEG) {
-        aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
-      }
+        if (mbmi->interinter_compound_type == COMPOUND_SEG) {
+          aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
+        }
 #endif  // CONFIG_COMPOUND_SEGMENT
+      }
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     }
 #endif  // CONFIG_EXT_INTER
 
@@ -4204,6 +4206,28 @@ void write_sequence_header(SequenceHeader *seq_params) {
 }
 #endif
 
+#if CONFIG_EXT_INTER
+static void write_compound_tools(const AV1_COMMON *cm,
+                                 struct aom_write_bit_buffer *wb) {
+  (void)cm;
+  (void)wb;
+#if CONFIG_INTERINTRA
+  if (!frame_is_intra_only(cm) && cm->reference_mode != COMPOUND_REFERENCE) {
+    aom_wb_write_bit(wb, cm->allow_interintra_compound);
+  } else {
+    assert(cm->allow_interintra_compound == 0);
+  }
+#endif  // CONFIG_INTERINTRA
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+  if (!frame_is_intra_only(cm) && cm->reference_mode != SINGLE_REFERENCE) {
+    aom_wb_write_bit(wb, cm->allow_masked_compound);
+  } else {
+    assert(cm->allow_masked_compound == 0);
+  }
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+}
+#endif  // CONFIG_EXT_INTER
+
 static void write_uncompressed_header(AV1_COMP *cpi,
                                       struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4461,6 +4485,9 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     if (!use_hybrid_pred) aom_wb_write_bit(wb, use_compound_pred);
 #endif  // !CONFIG_REF_ADAPT
   }
+#if CONFIG_EXT_INTER
+  write_compound_tools(cm, wb);
+#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_EXT_TX
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
@@ -4682,8 +4709,8 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_EXT_INTER
     update_inter_compound_mode_probs(cm, probwt, header_bc);
 #if CONFIG_INTERINTRA
-    if (cm->reference_mode != COMPOUND_REFERENCE) {
-#if CONFIG_INTERINTRA
+    if (cm->reference_mode != COMPOUND_REFERENCE &&
+        cm->allow_interintra_compound) {
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_cond_prob_diff_update(header_bc, &fc->interintra_prob[i],
@@ -4702,11 +4729,10 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                                     cm->counts.wedge_interintra[i], probwt);
       }
 #endif  // CONFIG_WEDGE
-#endif  // CONFIG_INTERINTRA
     }
 #endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
-    if (cm->reference_mode != SINGLE_REFERENCE) {
+    if (cm->reference_mode != SINGLE_REFERENCE && cm->allow_masked_compound) {
       for (i = 0; i < BLOCK_SIZES; i++)
         prob_diff_update(av1_compound_type_tree, fc->compound_type_prob[i],
                          cm->counts.compound_interinter[i], COMPOUND_TYPES,

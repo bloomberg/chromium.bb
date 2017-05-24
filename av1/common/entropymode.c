@@ -4738,30 +4738,34 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
                          fc->inter_singleref_comp_mode_probs[i]);
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_INTERINTRA
-  for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
-    if (is_interintra_allowed_bsize_group(i))
-      fc->interintra_prob[i] = av1_mode_mv_merge_probs(
-          pre_fc->interintra_prob[i], counts->interintra[i]);
-  }
-  for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
-    aom_tree_merge_probs(
-        av1_interintra_mode_tree, pre_fc->interintra_mode_prob[i],
-        counts->interintra_mode[i], fc->interintra_mode_prob[i]);
-  }
+  if (cm->allow_interintra_compound) {
+    for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
+      if (is_interintra_allowed_bsize_group(i))
+        fc->interintra_prob[i] = av1_mode_mv_merge_probs(
+            pre_fc->interintra_prob[i], counts->interintra[i]);
+    }
+    for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
+      aom_tree_merge_probs(
+          av1_interintra_mode_tree, pre_fc->interintra_mode_prob[i],
+          counts->interintra_mode[i], fc->interintra_mode_prob[i]);
+    }
 #if CONFIG_WEDGE
-  for (i = 0; i < BLOCK_SIZES; ++i) {
-    if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
-      fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(
-          pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
-  }
+    for (i = 0; i < BLOCK_SIZES; ++i) {
+      if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
+        fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(
+            pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
+    }
 #endif  // CONFIG_WEDGE
+  }
 #endif  // CONFIG_INTERINTRA
 
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
-  for (i = 0; i < BLOCK_SIZES; ++i) {
-    aom_tree_merge_probs(av1_compound_type_tree, pre_fc->compound_type_prob[i],
-                         counts->compound_interinter[i],
-                         fc->compound_type_prob[i]);
+  if (cm->allow_masked_compound) {
+    for (i = 0; i < BLOCK_SIZES; ++i) {
+      aom_tree_merge_probs(
+          av1_compound_type_tree, pre_fc->compound_type_prob[i],
+          counts->compound_interinter[i], fc->compound_type_prob[i]);
+    }
   }
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER

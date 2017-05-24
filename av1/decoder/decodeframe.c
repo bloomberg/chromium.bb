@@ -4057,6 +4057,28 @@ void read_sequence_header(SequenceHeader *seq_params) {
 }
 #endif
 
+#if CONFIG_EXT_INTER
+static void read_compound_tools(AV1_COMMON *cm,
+                                struct aom_read_bit_buffer *rb) {
+  (void)cm;
+  (void)rb;
+#if CONFIG_INTERINTRA
+  if (!frame_is_intra_only(cm) && cm->reference_mode != COMPOUND_REFERENCE) {
+    cm->allow_interintra_compound = aom_rb_read_bit(rb);
+  } else {
+    cm->allow_interintra_compound = 0;
+  }
+#endif  // CONFIG_INTERINTRA
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+  if (!frame_is_intra_only(cm) && cm->reference_mode != SINGLE_REFERENCE) {
+    cm->allow_masked_compound = aom_rb_read_bit(rb);
+  } else {
+    cm->allow_masked_compound = 0;
+  }
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+}
+#endif  // CONFIG_EXT_INTER
+
 static size_t read_uncompressed_header(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
@@ -4467,6 +4489,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_segmentation_dequant(cm);
   cm->tx_mode = read_tx_mode(cm, xd, rb);
   cm->reference_mode = read_frame_reference_mode(cm, rb);
+#if CONFIG_EXT_INTER
+  read_compound_tools(cm, rb);
+#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_EXT_TX
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
@@ -4762,8 +4787,8 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_INTER
     read_inter_compound_mode_probs(fc, &r);
 #if CONFIG_INTERINTRA
-    if (cm->reference_mode != COMPOUND_REFERENCE) {
-#if CONFIG_INTERINTRA
+    if (cm->reference_mode != COMPOUND_REFERENCE &&
+        cm->allow_interintra_compound) {
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_diff_update_prob(&r, &fc->interintra_prob[i], ACCT_STR);
@@ -4780,11 +4805,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         }
       }
 #endif  // CONFIG_WEDGE
-#endif  // CONFIG_INTERINTRA
     }
 #endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
-    if (cm->reference_mode != SINGLE_REFERENCE) {
+    if (cm->reference_mode != SINGLE_REFERENCE && cm->allow_masked_compound) {
       for (i = 0; i < BLOCK_SIZES; i++) {
         for (j = 0; j < COMPOUND_TYPES - 1; j++) {
           av1_diff_update_prob(&r, &fc->compound_type_prob[i][j], ACCT_STR);

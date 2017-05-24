@@ -2029,7 +2029,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_SUPERTX
       !supertx_enabled &&
 #endif
-      is_interintra_allowed(mbmi)) {
+      cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
     const int bsize_group = size_group_lookup[bsize];
     const int interintra =
         aom_read(r, cm->fc->interintra_prob[bsize_group], ACCT_STR);
@@ -2108,22 +2108,24 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       ) {
     if (is_any_masked_compound_used(bsize)) {
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
-      mbmi->interinter_compound_type =
-          aom_read_tree(r, av1_compound_type_tree,
-                        cm->fc->compound_type_prob[bsize], ACCT_STR);
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+      if (cm->allow_masked_compound) {
+        mbmi->interinter_compound_type =
+            aom_read_tree(r, av1_compound_type_tree,
+                          cm->fc->compound_type_prob[bsize], ACCT_STR);
 #if CONFIG_WEDGE
-      if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
-        mbmi->wedge_index =
-            aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
-        mbmi->wedge_sign = aom_read_bit(r, ACCT_STR);
-      }
+        if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+          mbmi->wedge_index =
+              aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
+          mbmi->wedge_sign = aom_read_bit(r, ACCT_STR);
+        }
 #endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
-      if (mbmi->interinter_compound_type == COMPOUND_SEG) {
-        mbmi->mask_type = aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
-      }
+        if (mbmi->interinter_compound_type == COMPOUND_SEG) {
+          mbmi->mask_type = aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
+        }
 #endif  // CONFIG_COMPOUND_SEGMENT
+      }
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     } else {
       mbmi->interinter_compound_type = COMPOUND_AVERAGE;
     }

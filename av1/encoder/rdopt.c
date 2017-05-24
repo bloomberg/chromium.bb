@@ -7776,6 +7776,7 @@ static int64_t pick_interinter_wedge(const AV1_COMP *const cpi,
   int wedge_sign = 0;
 
   assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
+  assert(cpi->common.allow_masked_compound);
 
   if (cpi->sf.fast_wedge_sign_estimate) {
     wedge_sign = estimate_wedge_sign(cpi, x, bsize, p0, bw, p1, bw);
@@ -7889,6 +7890,7 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   int wedge_index = -1;
 
   assert(is_interintra_wedge_used(bsize));
+  assert(cpi->common.allow_interintra_compound);
 
   rd = pick_wedge_fixed_sign(cpi, x, bsize, p0, p1, 0, &wedge_index);
 
@@ -8690,6 +8692,11 @@ static int64_t handle_inter_mode(
   *args->compmode_interinter_cost = 0;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
 
+#if CONFIG_INTERINTRA
+  if (!cm->allow_interintra_compound && is_comp_interintra_pred)
+    return INT64_MAX;
+#endif  // CONFIG_INTERINTRA
+
   // is_comp_interintra_pred implies !is_comp_pred
   assert(!is_comp_interintra_pred || (!is_comp_pred));
   // is_comp_interintra_pred implies is_interintra_allowed(mbmi->sb_type)
@@ -8898,6 +8905,9 @@ static int64_t handle_inter_mode(
     int strides[1] = { bw };
     int tmp_rate_mv;
     int masked_compound_used = is_any_masked_compound_used(bsize);
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+    masked_compound_used = masked_compound_used && cm->allow_masked_compound;
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     COMPOUND_TYPE cur_type;
 
     best_mv[0].as_int = cur_mv[0].as_int;
@@ -8919,6 +8929,7 @@ static int64_t handle_inter_mode(
     }
 
     for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {
+      if (cur_type != COMPOUND_AVERAGE && !masked_compound_used) break;
       if (!is_interinter_compound_used(cur_type, bsize)) break;
       tmp_rate_mv = rate_mv;
       best_rd_cur = INT64_MAX;

@@ -211,6 +211,14 @@ typedef struct AV1Common {
 #if CONFIG_PALETTE || CONFIG_INTRABC
   int allow_screen_content_tools;
 #endif  // CONFIG_PALETTE || CONFIG_INTRABC
+#if CONFIG_EXT_INTER
+#if CONFIG_INTERINTRA
+  int allow_interintra_compound;
+#endif  // CONFIG_INTERINTRA
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+  int allow_masked_compound;
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+#endif  // CONFIG_EXT_INTER
 
   // Flag signaling which frame contexts should be reset to default values.
   RESET_FRAME_CONTEXT_MODE reset_frame_context;

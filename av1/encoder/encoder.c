@@ -1913,6 +1913,18 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
                   aom_calloc(cm->mi_rows * cm->mi_cols, 1));
 }
 
+#if CONFIG_EXT_INTER
+void set_compound_tools(AV1_COMMON *cm) {
+  (void)cm;
+#if CONFIG_INTERINTRA
+  cm->allow_interintra_compound = 1;
+#endif  // CONFIG_INTERINTRA
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+  cm->allow_masked_compound = 1;
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+}
+#endif  // CONFIG_EXT_INTER
+
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -1965,7 +1977,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     av1_setup_pc_tree(&cpi->common, &cpi->td);
   }
 #endif  // CONFIG_PALETTE
-
+#if CONFIG_EXT_INTER
+  set_compound_tools(cm);
+#endif  // CONFIG_EXT_INTER
   av1_reset_segment_features(cm);
   av1_set_high_precision_mv(cpi, 0);
 
@@ -3694,6 +3708,9 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
   cpi->common.interp_filter = cpi->sf.default_interp_filter;
+#if CONFIG_EXT_INTER
+  if (!frame_is_intra_only(&cpi->common)) set_compound_tools(&cpi->common);
+#endif  // CONFIG_EXT_INTER
 }
 
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
