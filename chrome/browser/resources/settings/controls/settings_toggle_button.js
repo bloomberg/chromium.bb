@@ -9,6 +9,8 @@
 Polymer({
   is: 'settings-toggle-button',
 
+  behaviors: [SettingsBooleanControlBehavior],
+
   properties: {
     elideLabel: {
       type: Boolean,
@@ -16,7 +18,10 @@ Polymer({
     },
   },
 
-  behaviors: [SettingsBooleanControlBehavior],
+  /** @override */
+  focus: function() {
+    this.$.control.focus();
+  },
 
   /** @private */
   onLabelWrapperTap_: function() {
