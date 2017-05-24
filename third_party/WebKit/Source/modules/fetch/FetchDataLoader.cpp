@@ -12,7 +12,7 @@
 #include "modules/fetch/MultipartParser.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "platform/HTTPNames.h"
-#include "platform/network/ParsedContentType.h"
+#include "platform/network/ParsedContentDisposition.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -328,17 +328,10 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
   class Entry {
    public:
     bool Initialize(const HTTPHeaderMap& header_fields) {
-      // TODO(e_hakkinen): Use a proper Content-Disposition parser instead of
-      // converting content disposition to a faked content type and parsing
-      // that.
-      const String fakePrefix = "x-fake/";
-      const ParsedContentType disposition(
-          fakePrefix + header_fields.Get(HTTPNames::Content_Disposition));
-      // The faked MIME type without the faked prefix is a proper disposition
-      // type.
-      const String disposition_type =
-          disposition.MimeType().Substring(fakePrefix.length());
-      filename_ = disposition.ParameterValueForName("filename");
+      const ParsedContentDisposition disposition(
+          header_fields.Get(HTTPNames::Content_Disposition));
+      const String disposition_type = disposition.Type();
+      filename_ = disposition.Filename();
       name_ = disposition.ParameterValueForName("name");
       blob_data_.reset();
       string_builder_.reset();
