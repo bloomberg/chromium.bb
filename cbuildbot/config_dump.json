@@ -14973,11 +14973,8 @@
             "wolf-paladin",
             "wolf-tot-paladin",
             "wooten-paladin",
-            "x86-alex-paladin",
             "x86-generic-paladin",
-            "x86-mario-nowithdebug-paladin",
-            "x86-mario-paladin",
-            "x86-zgb-paladin"
+            "x86-mario-nowithdebug-paladin"
         ],
         "trybot_list": false,
         "useflags": [
@@ -28432,7 +28429,6 @@
     },
     "x86-alex-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-alex"
         ],
@@ -28943,7 +28939,6 @@
     },
     "x86-mario-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-mario"
         ],
@@ -29118,7 +29113,6 @@
     },
     "x86-zgb-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-zgb"
         ],
