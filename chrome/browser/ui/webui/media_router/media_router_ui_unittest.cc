@@ -57,10 +57,7 @@ class MockMediaRouterWebUIMessageHandler
 
 class PresentationRequestCallbacks {
  public:
-  PresentationRequestCallbacks()
-      : expected_error_(content::PresentationError(
-            content::PresentationErrorType::PRESENTATION_ERROR_UNKNOWN,
-            "")) {}
+  PresentationRequestCallbacks() {}
 
   explicit PresentationRequestCallbacks(
       const content::PresentationError& expected_error)
