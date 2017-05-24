@@ -2417,16 +2417,6 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor, WebRect& focus) const {
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
-WebPlugin* WebViewImpl::FocusedPluginIfInputMethodSupported(LocalFrame* frame) {
-  WebPluginContainerBase* container =
-      WebLocalFrameImpl::CurrentPluginContainer(frame);
-  if (container && container->SupportsInputMethod())
-    return container->Plugin();
-  return nullptr;
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
 bool WebViewImpl::SelectionTextDirection(WebTextDirection& start,
                                          WebTextDirection& end) const {
   const LocalFrame* frame = FocusedLocalFrameInWidget();
@@ -2908,7 +2898,7 @@ void WebViewImpl::PropagateZoomFactorToLocalFrameRoots(Frame* frame,
                                                        float zoom_factor) {
   if (frame->IsLocalRoot()) {
     LocalFrame* local_frame = ToLocalFrame(frame);
-    if (!WebLocalFrameImpl::PluginContainerFromFrame(local_frame))
+    if (!local_frame->GetWebPluginContainerBase())
       local_frame->SetPageZoomFactor(zoom_factor);
   }
 
@@ -2960,7 +2950,7 @@ float WebViewImpl::TextZoomFactor() {
 
 float WebViewImpl::SetTextZoomFactor(float text_zoom_factor) {
   LocalFrame* frame = MainFrameImpl()->GetFrame();
-  if (WebLocalFrameImpl::PluginContainerFromFrame(frame))
+  if (frame->GetWebPluginContainerBase())
     return 1;
 
   frame->SetTextZoomFactor(text_zoom_factor);

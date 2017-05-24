@@ -246,30 +246,6 @@ static HeapVector<ScriptSourceCode> CreateSourcesVector(
   return sources;
 }
 
-WebPluginContainerBase* WebLocalFrameImpl::PluginContainerFromFrame(
-    LocalFrame* frame) {
-  if (!frame)
-    return 0;
-  if (!frame->GetDocument() || !frame->GetDocument()->IsPluginDocument())
-    return 0;
-  PluginDocument* plugin_document = ToPluginDocument(frame->GetDocument());
-  return ToWebPluginContainerBase(plugin_document->GetPluginView());
-}
-
-WebPluginContainerBase* WebLocalFrameImpl::CurrentPluginContainer(
-    LocalFrame* frame,
-    Node* node) {
-  WebPluginContainerBase* plugin_container = PluginContainerFromFrame(frame);
-  if (plugin_container)
-    return plugin_container;
-
-  if (!node) {
-    DCHECK(frame->GetDocument());
-    node = frame->GetDocument()->FocusedElement();
-  }
-  return ToWebPluginContainerBase(WebNode::PluginContainerFromNode(node));
-}
-
 // Simple class to override some of PrintContext behavior. Some of the methods
 // made virtual so that they can be overridden by ChromePluginPrintContext.
 class ChromePrintContext : public PrintContext {
@@ -1064,7 +1040,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
   Node* plugin_lookup_context_node =
       context_menu_node_ && name == "Copy" ? context_menu_node_ : nullptr;
   WebPluginContainerBase* plugin_container =
-      CurrentPluginContainer(GetFrame(), plugin_lookup_context_node);
+      GetFrame()->GetWebPluginContainerBase(plugin_lookup_context_node);
   if (plugin_container && plugin_container->ExecuteEditCommand(name))
     return true;
 
@@ -1075,7 +1051,8 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
                                        const WebString& value) {
   DCHECK(GetFrame());
 
-  WebPluginContainerBase* plugin_container = CurrentPluginContainer(GetFrame());
+  WebPluginContainerBase* plugin_container =
+      GetFrame()->GetWebPluginContainerBase();
   if (plugin_container && plugin_container->ExecuteEditCommand(name, value))
     return true;
 
@@ -1101,7 +1078,7 @@ void WebLocalFrameImpl::ReplaceMisspelledRange(const WebString& text) {
   // If this caret selection has two or more markers, this function replace the
   // range covered by the first marker with the specified word as Microsoft Word
   // does.
-  if (PluginContainerFromFrame(GetFrame()))
+  if (GetFrame()->GetWebPluginContainerBase())
     return;
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -1123,8 +1100,9 @@ void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
 }
 
 bool WebLocalFrameImpl::HasSelection() const {
+  DCHECK(GetFrame());
   WebPluginContainerBase* plugin_container =
-      PluginContainerFromFrame(GetFrame());
+      GetFrame()->GetWebPluginContainerBase();
   if (plugin_container)
     return plugin_container->Plugin()->HasSelection();
 
@@ -1150,8 +1128,9 @@ WebRange WebLocalFrameImpl::SelectionRange() const {
 }
 
 WebString WebLocalFrameImpl::SelectionAsText() const {
+  DCHECK(GetFrame());
   WebPluginContainerBase* plugin_container =
-      PluginContainerFromFrame(GetFrame());
+      GetFrame()->GetWebPluginContainerBase();
   if (plugin_container)
     return plugin_container->Plugin()->SelectionAsText();
 
@@ -1170,7 +1149,7 @@ WebString WebLocalFrameImpl::SelectionAsText() const {
 
 WebString WebLocalFrameImpl::SelectionAsMarkup() const {
   WebPluginContainerBase* plugin_container =
-      PluginContainerFromFrame(GetFrame());
+      GetFrame()->GetWebPluginContainerBase();
   if (plugin_container)
     return plugin_container->Plugin()->SelectionAsMarkup();
 
@@ -1382,8 +1361,7 @@ VisiblePosition WebLocalFrameImpl::VisiblePositionForViewportPoint(
 }
 
 WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
-  WebPluginContainerBase* container =
-      WebLocalFrameImpl::CurrentPluginContainer(GetFrame());
+  WebPluginContainerBase* container = GetFrame()->GetWebPluginContainerBase();
   if (container && container->SupportsInputMethod())
     return container->Plugin();
   return 0;
@@ -1396,7 +1374,7 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
   if (constrain_to_node.IsNull()) {
     // If this is a plugin document, check if the plugin supports its own
     // printing. If it does, we will delegate all printing to that.
-    plugin_container = PluginContainerFromFrame(GetFrame());
+    plugin_container = GetFrame()->GetWebPluginContainerBase();
   } else {
     // We only support printing plugin nodes for now.
     plugin_container =
@@ -1440,8 +1418,9 @@ void WebLocalFrameImpl::PrintEnd() {
 }
 
 bool WebLocalFrameImpl::IsPrintScalingDisabledForPlugin(const WebNode& node) {
+  DCHECK(GetFrame());
   WebPluginContainerBase* plugin_container =
-      node.IsNull() ? PluginContainerFromFrame(GetFrame())
+      node.IsNull() ? GetFrame()->GetWebPluginContainerBase()
                     : ToWebPluginContainerBase(node.PluginContainer());
 
   if (!plugin_container || !plugin_container->SupportsPaginatedPrint())
@@ -1454,7 +1433,7 @@ bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
     const WebNode& node,
     WebPrintPresetOptions* preset_options) {
   WebPluginContainerBase* plugin_container =
-      node.IsNull() ? PluginContainerFromFrame(GetFrame())
+      node.IsNull() ? GetFrame()->GetWebPluginContainerBase()
                     : ToWebPluginContainerBase(node.PluginContainer());
 
   if (!plugin_container || !plugin_container->SupportsPaginatedPrint())
@@ -1916,7 +1895,7 @@ void WebLocalFrameImpl::DidFail(const ResourceError& error,
   WebHistoryCommitType web_commit_type =
       static_cast<WebHistoryCommitType>(commit_type);
 
-  if (WebPluginContainerBase* plugin = PluginContainerFromFrame(GetFrame()))
+  if (WebPluginContainerBase* plugin = GetFrame()->GetWebPluginContainerBase())
     plugin->DidFailLoading(error);
 
   if (was_provisional)
@@ -1929,7 +1908,7 @@ void WebLocalFrameImpl::DidFinish() {
   if (!Client())
     return;
 
-  if (WebPluginContainerBase* plugin = PluginContainerFromFrame(GetFrame()))
+  if (WebPluginContainerBase* plugin = GetFrame()->GetWebPluginContainerBase())
     plugin->DidFinishLoading();
 
   Client()->DidFinishLoad();

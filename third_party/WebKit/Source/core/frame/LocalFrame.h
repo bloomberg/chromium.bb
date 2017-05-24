@@ -81,6 +81,7 @@ class PluginData;
 class ScriptController;
 class SpellChecker;
 class WebFrameScheduler;
+class WebPluginContainerBase;
 class WebURLLoader;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -243,6 +244,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // were added using registerInitializationCallback, and there are no checks
   // for adding a callback multiple times.
   static void RegisterInitializationCallback(FrameInitCallback);
+
+  // If the frame hosts a PluginDocument, this method returns the
+  // WebPluginContainerBase that hosts the plugin. If the provided node is a
+  // plugin, then it returns its WebPluginContainerBase. Otherwise, uses the
+  // currently focused element (if any).
+  // TODO(slangley): Refactor this method to extract the logic of looking up
+  // focused element or passed node into explicit methods.
+  WebPluginContainerBase* GetWebPluginContainerBase(Node* = nullptr) const;
 
  private:
   friend class FrameNavigationDisabler;

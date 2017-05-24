@@ -55,7 +55,6 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
-#include "public/web/WebPluginContainer.h"
 
 namespace blink {
 
@@ -174,25 +173,8 @@ bool WebNode::Focused() const {
   return private_->IsFocused();
 }
 
-WebPluginContainer* WebNode::PluginContainerFromNode(const Node* node) {
-  if (!node)
-    return nullptr;
-
-  if (!isHTMLObjectElement(node) && !isHTMLEmbedElement(node))
-    return nullptr;
-
-  LayoutObject* object = node->GetLayoutObject();
-  if (object && object->IsLayoutPart()) {
-    PluginView* plugin = ToLayoutPart(object)->Plugin();
-    if (plugin && plugin->IsPluginContainer())
-      return ToWebPluginContainerBase(plugin);
-  }
-
-  return nullptr;
-}
-
 WebPluginContainer* WebNode::PluginContainer() const {
-  return PluginContainerFromNode(ConstUnwrap<Node>());
+  return private_->GetWebPluginContainerBase();
 }
 
 WebAXObject WebNode::AccessibilityObject() {

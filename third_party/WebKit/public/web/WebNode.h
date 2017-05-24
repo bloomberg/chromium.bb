@@ -111,8 +111,6 @@ class WebNode {
   const T ToConst() const;
 
 #if BLINK_IMPLEMENTATION
-  BLINK_EXPORT static WebPluginContainer* PluginContainerFromNode(const Node*);
-
   BLINK_EXPORT WebNode(Node*);
   BLINK_EXPORT WebNode& operator=(Node*);
   BLINK_EXPORT operator Node*() const;

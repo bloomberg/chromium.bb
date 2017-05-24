@@ -90,7 +90,6 @@ class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
 class CompositorMutatorImpl;
-class WebPlugin;
 class WebRemoteFrame;
 class WebSettingsImpl;
 class WebViewScheduler;
@@ -579,8 +578,6 @@ class WEB_EXPORT WebViewImpl final
 
   WebInputEventResult HandleSyntheticWheelFromTouchpadPinchEvent(
       const WebGestureEvent&);
-
-  WebPlugin* FocusedPluginIfInputMethodSupported(LocalFrame*);
 
   WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
                                                     WebGestureDevice) const;
