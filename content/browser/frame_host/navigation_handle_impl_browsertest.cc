@@ -8,6 +8,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/request_context_type.h"
@@ -1229,6 +1230,42 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
   }
+}
+
+// Tests the case where a browser-initiated navigation to a normal webpage is
+// blocked (net::ERR_BLOCKED_BY_CLIENT) while departing from a privileged WebUI
+// page (chrome://gpu). It is a security risk for the error page to commit in
+// the privileged process.
+IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
+                       BlockedRequestAfterWebUI) {
+  GURL web_ui_url("chrome://gpu");
+  WebContents* web_contents = shell()->web_contents();
+
+  // Navigate to the initial page.
+  EXPECT_FALSE(web_contents->GetMainFrame()->GetEnabledBindings() &
+               BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(NavigateToURL(shell(), web_ui_url));
+  EXPECT_TRUE(web_contents->GetMainFrame()->GetEnabledBindings() &
+              BINDINGS_POLICY_WEB_UI);
+  scoped_refptr<SiteInstance> web_ui_process = web_contents->GetSiteInstance();
+
+  // Start a new, non-webUI navigation that will be blocked by a
+  // NavigationThrottle.
+  GURL blocked_url("http://blocked-by-throttle.example.cc");
+  TestNavigationThrottleInstaller installer(
+      web_contents, NavigationThrottle::BLOCK_REQUEST,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+  NavigationHandleObserver commit_observer(web_contents, blocked_url);
+  EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+  NavigationEntry* last_committed =
+      web_contents->GetController().GetLastCommittedEntry();
+  EXPECT_TRUE(last_committed);
+  EXPECT_EQ(blocked_url, last_committed->GetVirtualURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, last_committed->GetPageType());
+  EXPECT_NE(web_ui_process.get(), web_contents->GetSiteInstance());
+  EXPECT_TRUE(commit_observer.has_committed());
+  EXPECT_TRUE(commit_observer.is_error());
+  EXPECT_FALSE(commit_observer.is_renderer_initiated());
 }
 
 }  // namespace content
