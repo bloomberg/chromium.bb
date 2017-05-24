@@ -2517,6 +2517,26 @@
             ]
         }
     ],
+    "ReportingAPI": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "ReportingEnabled",
+                    "enable_features": [
+                        "Reporting"
+                    ]
+                }
+            ]
+        }
+    ],
     "SRTPromptFieldTrial": [
         {
             "platforms": [
