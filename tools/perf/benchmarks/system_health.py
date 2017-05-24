@@ -4,7 +4,7 @@
 
 import re
 
-from benchmarks import page_cycler_v2
+from benchmarks import loading_metrics_category
 
 from core import perf_benchmark
 
@@ -45,8 +45,7 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
         'powerMetric',
         'tracingMetric'
     ])
-    # TODO(ulan): Remove dependency on page_cycler_v2.
-    page_cycler_v2.AugmentOptionsForLoadingMetrics(options)
+    loading_metrics_category.AugmentOptionsForLoadingMetrics(options)
     # The EQT metric depends on the same categories as the loading metric.
     options.AddTimelineBasedMetric('expectedQueueingTimeMetric')
     return options
