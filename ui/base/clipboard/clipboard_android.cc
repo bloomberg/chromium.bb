@@ -184,16 +184,21 @@ void ClipboardMap::SetLastModifiedTimeWithoutRunningCallback(base::Time time) {
   last_modified_time_ = time;
 }
 
-// Add a key:jstr pair to map, but only if jstr is not null, and also
-// not empty.
+// Add a key:jstr pair to map, if jstr is null or is empty, then remove that
+// entry.
 void AddMapEntry(JNIEnv* env,
                  std::map<std::string, std::string>* map,
                  const char* key,
                  const ScopedJavaLocalRef<jstring>& jstr) {
-  if (!jstr.is_null()) {
-    std::string str = ConvertJavaStringToUTF8(env, jstr.obj());
-    if (!str.empty())
-      (*map)[key] = str;
+  if (jstr.is_null()) {
+    map->erase(key);
+    return;
+  }
+  std::string str = ConvertJavaStringToUTF8(env, jstr.obj());
+  if (!str.empty()) {
+    (*map)[key] = str;
+  } else {
+    map->erase(key);
   }
 }
 
