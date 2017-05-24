@@ -14,13 +14,38 @@
 
 #include <memory>
 
-namespace blink {
-class IntWrapper;
-}
+namespace {
 
-using IntVector = blink::HeapVector<blink::Member<blink::IntWrapper>>;
-using IntDeque = blink::HeapDeque<blink::Member<blink::IntWrapper>>;
-using IntMap = blink::HeapHashMap<blink::Member<blink::IntWrapper>, int>;
+class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
+ public:
+  static IntWrapper* Create(int x) { return new IntWrapper(x); }
+
+  virtual ~IntWrapper() {}
+
+  DEFINE_INLINE_TRACE() {}
+
+  int Value() const { return x_; }
+
+  bool operator==(const IntWrapper& other) const {
+    return other.Value() == Value();
+  }
+
+  unsigned GetHash() { return IntHash<int>::GetHash(x_); }
+
+  IntWrapper(int x) : x_(x) {}
+
+ private:
+  IntWrapper();
+  int x_;
+};
+static_assert(WTF::IsTraceable<IntWrapper>::value,
+              "IsTraceable<> template failed to recognize trace method.");
+
+}  // namespace
+
+using IntVector = blink::HeapVector<blink::Member<IntWrapper>>;
+using IntDeque = blink::HeapDeque<blink::Member<IntWrapper>>;
+using IntMap = blink::HeapHashMap<blink::Member<IntWrapper>, int>;
 // TODO(sof): decide if this ought to be a global trait specialization.
 // (i.e., for HeapHash*<T>.)
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap);
@@ -188,32 +213,6 @@ static void ClearOutOldGarbage() {
       break;
   }
 }
-
-class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
- public:
-  static IntWrapper* Create(int x) { return new IntWrapper(x); }
-
-  virtual ~IntWrapper() { ++destructor_calls_; }
-
-  static int destructor_calls_;
-  DEFINE_INLINE_TRACE() {}
-
-  int Value() const { return x_; }
-
-  bool operator==(const IntWrapper& other) const {
-    return other.Value() == Value();
-  }
-
-  unsigned GetHash() { return IntHash<int>::GetHash(x_); }
-
-  IntWrapper(int x) : x_(x) {}
-
- private:
-  IntWrapper();
-  int x_;
-};
-static_assert(WTF::IsTraceable<IntWrapper>::value,
-              "IsTraceable<> template failed to recognize trace method.");
 
 TEST(HeapCompactTest, CompactVector) {
   ClearOutOldGarbage();
