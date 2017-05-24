@@ -2652,6 +2652,14 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'chell-incremental',
+      site_config.templates.incremental,
+      site_config.templates.internal_incremental,
+      boards=['chell'],
+      active_waterfall=constants.WATERFALL_INTERNAL,
+  )
+
+  site_config.Add(
       'mario-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,

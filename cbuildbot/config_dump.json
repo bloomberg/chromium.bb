@@ -5721,6 +5721,18 @@
             "chell"
         ]
     },
+    "chell-incremental": {
+        "_template": "incremental",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "chell"
+        ],
+        "buildslave_type": "baremetal",
+        "description": "Incremental Builds (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both"
+    },
     "chell-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
