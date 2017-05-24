@@ -31,6 +31,7 @@
 #include "public/web/WebFrameSerializer.h"
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
@@ -42,7 +43,6 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebFrameSerializerClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
@@ -124,7 +124,7 @@ class WebFrameSerializerTest : public ::testing::Test {
     return serializer_client.ToString();
   }
 
-  WebLocalFrameImpl* MainFrameImpl() {
+  WebLocalFrameBase* MainFrameImpl() {
     return helper_.WebView()->MainFrameImpl();
   }
 

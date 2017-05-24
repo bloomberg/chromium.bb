@@ -31,6 +31,7 @@
 #include "public/web/WebFrameSerializer.h"
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/testing/HistogramTester.h"
@@ -43,7 +44,6 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
@@ -162,7 +162,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
 
   WebViewBase* WebView() { return helper_.WebView(); }
 
-  WebLocalFrameImpl* MainFrameImpl() {
+  WebLocalFrameBase* MainFrameImpl() {
     return helper_.WebView()->MainFrameImpl();
   }
 

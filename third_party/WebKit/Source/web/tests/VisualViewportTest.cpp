@@ -1800,7 +1800,7 @@ TEST_P(VisualViewportTest, TestMainFrameInitializationSizing) {
   RegisterMockedHttpURLLoad("content-width-1000-min-scale.html");
   NavigateTo(base_url_ + "content-width-1000-min-scale.html");
 
-  WebLocalFrameImpl* local_frame = WebViewImpl()->MainFrameImpl();
+  WebLocalFrameBase* local_frame = WebViewImpl()->MainFrameImpl();
   // The shutdown() calls are a hack to prevent this test from violating
   // invariants about frame state during navigation/detach.
   local_frame->GetFrame()->GetDocument()->Shutdown();

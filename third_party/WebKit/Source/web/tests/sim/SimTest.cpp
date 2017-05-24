@@ -7,11 +7,11 @@
 #include "core/dom/Document.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebCache.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ WebViewBase& SimTest::WebView() {
   return *web_view_helper_.WebView();
 }
 
-WebLocalFrameImpl& SimTest::MainFrame() {
+WebLocalFrameBase& SimTest::MainFrame() {
   return *WebView().MainFrameImpl();
 }
 

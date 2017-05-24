@@ -39,7 +39,7 @@
 namespace blink {
 
 class GraphicsContext;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 
 // Manages a layer that is overlaid on a WebLocalFrame's content.
 class WEB_EXPORT PageOverlay : public GraphicsLayerClient,
@@ -56,7 +56,7 @@ class WEB_EXPORT PageOverlay : public GraphicsLayerClient,
   };
 
   static std::unique_ptr<PageOverlay> Create(
-      WebLocalFrameImpl*,
+      WebLocalFrameBase*,
       std::unique_ptr<PageOverlay::Delegate>);
 
   ~PageOverlay();
@@ -80,9 +80,9 @@ class WEB_EXPORT PageOverlay : public GraphicsLayerClient,
   String DebugName(const GraphicsLayer*) const override;
 
  private:
-  PageOverlay(WebLocalFrameImpl*, std::unique_ptr<PageOverlay::Delegate>);
+  PageOverlay(WebLocalFrameBase*, std::unique_ptr<PageOverlay::Delegate>);
 
-  Persistent<WebLocalFrameImpl> frame_impl_;
+  Persistent<WebLocalFrameBase> frame_impl_;
   std::unique_ptr<PageOverlay::Delegate> delegate_;
   std::unique_ptr<GraphicsLayer> layer_;
 };

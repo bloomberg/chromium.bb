@@ -45,6 +45,7 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -65,7 +66,6 @@
 #include "public/platform/WebData.h"
 #include "v8/include/v8.h"
 #include "web/PageOverlay.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -211,7 +211,7 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
 };
 
 InspectorOverlayAgent::InspectorOverlayAgent(
-    WebLocalFrameImpl* frame_impl,
+    WebLocalFrameBase* frame_impl,
     InspectedFrames* inspected_frames,
     v8_inspector::V8InspectorSession* v8_session,
     InspectorDOMAgent* dom_agent)
