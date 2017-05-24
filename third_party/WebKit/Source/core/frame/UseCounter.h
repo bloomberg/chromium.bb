@@ -1604,6 +1604,11 @@ class CORE_EXPORT UseCounter {
     kRequestFullscreenForDialogElement = 1998,
     kRequestFullscreenForDialogElementInTopLayer = 1999,
     kShowModalForElementInFullscreenStack = 2000,
+    kThreeValuedPositionBackground = 2001,
+    kThreeValuedPositionBasicShape = 2002,
+    kThreeValuedPositionGradient = 2003,
+    kThreeValuedPositionObjectPosition = 2004,
+    kThreeValuedPositionPerspectiveOrigin = 2005,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

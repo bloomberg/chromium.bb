@@ -15016,6 +15016,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1998" label="RequestFullscreenForDialogElement"/>
   <int value="1999" label="RequestFullscreenForDialogElementInTopLayer"/>
   <int value="2000" label="ShowModalForElementInFullscreenStack"/>
+  <int value="2001" label="ThreeValuedPositionBackground"/>
+  <int value="2002" label="ThreeValuedPositionBasicShape"/>
+  <int value="2003" label="ThreeValuedPositionGradient"/>
+  <int value="2004" label="ThreeValuedPositionObjectPosition"/>
+  <int value="2005" label="ThreeValuedPositionPerspectiveOrigin"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">

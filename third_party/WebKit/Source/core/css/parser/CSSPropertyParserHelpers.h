@@ -11,8 +11,10 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "core/frame/UseCounter.h"
 #include "platform/Length.h"  // For ValueRange
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -77,12 +79,15 @@ CSSValue* ConsumeColor(CSSParserTokenRange&,
 
 CSSValue* ConsumeLineWidth(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
 
-CSSValuePair* ConsumePosition(CSSParserTokenRange&,
-                              CSSParserMode,
-                              UnitlessQuirk);
+CSSValuePair* ConsumePosition(
+    CSSParserTokenRange&,
+    const CSSParserContext&,
+    UnitlessQuirk,
+    WTF::Optional<UseCounter::Feature> threeValuePosition);
 bool ConsumePosition(CSSParserTokenRange&,
-                     CSSParserMode,
+                     const CSSParserContext&,
                      UnitlessQuirk,
+                     WTF::Optional<UseCounter::Feature> threeValuePosition,
                      CSSValue*& result_x,
                      CSSValue*& result_y);
 bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange&,

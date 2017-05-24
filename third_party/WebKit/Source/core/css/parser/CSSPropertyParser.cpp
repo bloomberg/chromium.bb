@@ -1651,9 +1651,15 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitLogicalHeight:
       return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, *context_);
     case CSSPropertyScrollSnapDestination:
+      // TODO(crbug.com/724912): Retire scroll-snap-destination
+      return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
+                             Optional<UseCounter::Feature>());
     case CSSPropertyObjectPosition:
+      return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
+                             UseCounter::kThreeValuedPositionObjectPosition);
     case CSSPropertyPerspectiveOrigin:
-      return ConsumePosition(range_, context_->Mode(), UnitlessQuirk::kForbid);
+      return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
+                             UseCounter::kThreeValuedPositionPerspectiveOrigin);
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
       return ConsumeLocale(range_);
@@ -2614,7 +2620,8 @@ static bool ConsumeBackgroundPosition(CSSParserTokenRange& range,
   do {
     CSSValue* position_x = nullptr;
     CSSValue* position_y = nullptr;
-    if (!ConsumePosition(range, context->Mode(), unitless, position_x,
+    if (!ConsumePosition(range, *context, unitless,
+                         UseCounter::kThreeValuedPositionBackground, position_x,
                          position_y))
       return false;
     AddBackgroundValue(result_x, position_x);
@@ -2695,7 +2702,8 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
           ConsumeRepeatStyleComponent(range_, value, value_y, implicit);
         } else if (property == CSSPropertyBackgroundPositionX ||
                    property == CSSPropertyWebkitMaskPositionX) {
-          if (!ConsumePosition(range_, context_->Mode(), UnitlessQuirk::kForbid,
+          if (!ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
+                               UseCounter::kThreeValuedPositionBackground,
                                value, value_y))
             continue;
         } else if (property == CSSPropertyBackgroundSize ||
