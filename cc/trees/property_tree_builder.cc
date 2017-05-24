@@ -55,6 +55,7 @@ struct DataForRecursion {
   const gfx::Transform* device_transform;
   gfx::Transform compound_transform_since_render_target;
   bool animation_axis_aligned_since_render_target;
+  bool not_axis_aligned_since_last_clip;
   SkColor safe_opaque_background_color;
 };
 
@@ -882,8 +883,19 @@ bool AddEffectNodeIfNeeded(
       layer, data_for_children->compound_transform_since_render_target,
       data_for_children->animation_axis_aligned_since_render_target);
 
+  bool not_axis_aligned_since_last_clip =
+      data_from_ancestor.not_axis_aligned_since_last_clip
+          ? true
+          : !AnimationsPreserveAxisAlignment(layer) ||
+                !Transform(layer).Preserves2dAxisAlignment();
+  // A non-axis aligned clip may need a render surface. So, we create an effect
+  // node.
+  bool has_non_axis_aligned_clip =
+      not_axis_aligned_since_last_clip && LayerClipsSubtree(layer);
+
   bool requires_node = is_root || has_transparency ||
                        has_potential_opacity_animation || has_proxied_opacity ||
+                       has_non_axis_aligned_clip ||
                        should_create_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
@@ -1149,6 +1161,16 @@ void BuildPropertyTreesInternal(
   SetBackfaceVisibilityTransform(layer, created_transform_node);
   SetSafeOpaqueBackgroundColor(data_from_parent, layer, &data_for_children);
 
+  bool not_axis_aligned_since_last_clip =
+      data_from_parent.not_axis_aligned_since_last_clip
+          ? true
+          : !AnimationsPreserveAxisAlignment(layer) ||
+                !Transform(layer).Preserves2dAxisAlignment();
+  bool has_non_axis_aligned_clip =
+      not_axis_aligned_since_last_clip && LayerClipsSubtree(layer);
+  data_for_children.not_axis_aligned_since_last_clip =
+      !has_non_axis_aligned_clip;
+
   for (size_t i = 0; i < Children(layer).size(); ++i) {
     LayerType* current_child = ChildAt(layer, i);
     SetLayerPropertyChangedForChild(layer, current_child);
@@ -1259,6 +1281,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.property_trees->clear();
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
   data_for_recursion.animation_axis_aligned_since_render_target = true;
+  data_for_recursion.not_axis_aligned_since_last_clip = false;
   data_for_recursion.property_trees->transform_tree.set_device_scale_factor(
       device_scale_factor);
   data_for_recursion.safe_opaque_background_color = color;
