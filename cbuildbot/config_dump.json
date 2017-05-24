@@ -14866,7 +14866,6 @@
             "veyron_jerry-chromium-pfq",
             "veyron_minnie-chrome-pfq",
             "veyron_rialto-chrome-pfq",
-            "x86-alex-chrome-pfq",
             "x86-generic-chromium-pfq"
         ]
     },
@@ -28371,7 +28370,6 @@
     },
     "x86-alex-chrome-pfq": {
         "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-alex"
         ],

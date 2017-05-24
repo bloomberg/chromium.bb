@@ -2947,7 +2947,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   _chrome_pfq_experimental_boards = frozenset([
       'caroline',
       'scarlet',
-      'x86-alex',
   ])
 
   _chromte_pfq_tryjob_boards = (
