@@ -351,47 +351,62 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
 
   views::View* focusable_field = nullptr;
   constexpr int kInputFieldHeight = 28;
-  if (field.control_type == EditorField::ControlType::TEXTFIELD ||
-      field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER) {
-    ValidatingTextfield* text_field =
-        new ValidatingTextfield(CreateValidationDelegate(field));
-    // Set the initial value and validity state.
-    base::string16 initial_value = GetInitialValueForType(field.type);
-    text_field->SetText(initial_value);
-    *valid = text_field->IsValid();
-    if (!initial_value.empty())
-      text_field->SetInvalid(!(*valid));
 
-    if (field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER)
-      text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
-    text_field->set_controller(this);
-    // Using autofill field type as a view ID (for testing).
-    text_field->set_id(GetInputFieldViewId(field.type));
-    text_fields_.insert(std::make_pair(text_field, field));
-    focusable_field = text_field;
+  switch (field.control_type) {
+    case EditorField::ControlType::TEXTFIELD:
+    case EditorField::ControlType::TEXTFIELD_NUMBER: {
+      ValidatingTextfield* text_field =
+          new ValidatingTextfield(CreateValidationDelegate(field));
+      // Set the initial value and validity state.
+      base::string16 initial_value = GetInitialValueForType(field.type);
+      text_field->SetText(initial_value);
+      *valid = text_field->IsValid();
+      if (!initial_value.empty())
+        text_field->SetInvalid(!(*valid));
 
-    // |text_field| will now be owned by |row|.
-    layout->AddView(text_field, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0, kInputFieldHeight);
-  } else if (field.control_type == EditorField::ControlType::COMBOBOX) {
-    std::unique_ptr<ValidatingCombobox> combobox =
-        CreateComboboxForField(field);
+      if (field.control_type == EditorField::ControlType::TEXTFIELD_NUMBER)
+        text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
+      text_field->set_controller(this);
+      // Using autofill field type as a view ID (for testing).
+      text_field->set_id(GetInputFieldViewId(field.type));
+      text_fields_.insert(std::make_pair(text_field, field));
+      focusable_field = text_field;
 
-    focusable_field = combobox.get();
-    *valid = combobox->IsValid();
+      // |text_field| will now be owned by |row|.
+      layout->AddView(text_field, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0, kInputFieldHeight);
+      break;
+    }
+    case EditorField::ControlType::COMBOBOX: {
+      std::unique_ptr<ValidatingCombobox> combobox =
+          CreateComboboxForField(field);
 
-    // |combobox| will now be owned by |row|.
-    layout->AddView(combobox.release(), 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0, kInputFieldHeight);
-  } else {
-    // Custom field view will now be owned by |row|. And it must be valid since
-    // the derived class specified a custom view for this field.
-    std::unique_ptr<views::View> field_view =
-        CreateCustomFieldView(field.type, &focusable_field, valid);
-    DCHECK(field_view);
+      focusable_field = combobox.get();
+      *valid = combobox->IsValid();
 
-    layout->AddView(field_view.release(), 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0, kInputFieldHeight);
+      // |combobox| will now be owned by |row|.
+      layout->AddView(combobox.release(), 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0, kInputFieldHeight);
+      break;
+    }
+    case EditorField::ControlType::CUSTOMFIELD: {
+      // Custom field view will now be owned by |row|. And it must be valid
+      // since the derived class specified a custom view for this field.
+      std::unique_ptr<views::View> field_view =
+          CreateCustomFieldView(field.type, &focusable_field, valid);
+      DCHECK(field_view);
+
+      layout->AddView(field_view.release(), 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0, kInputFieldHeight);
+      break;
+    }
+    case EditorField::ControlType::READONLY_LABEL: {
+      std::unique_ptr<views::Label> label =
+          base::MakeUnique<views::Label>(GetInitialValueForType(field.type));
+      label->set_id(GetInputFieldViewId(field.type));
+      layout->AddView(label.release());
+      break;
+    }
   }
 
   // If an extra view needs to go alongside the input field view, add it to the

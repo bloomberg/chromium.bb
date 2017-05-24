@@ -201,6 +201,49 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(billing_profile);
+  autofill::CreditCard card = autofill::test::GetMaskedServerCard();
+  card.set_billing_address_id(billing_profile.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+
+  OpenPaymentMethodScreen();
+
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
+  EXPECT_TRUE(list_view);
+  EXPECT_EQ(1, list_view->child_count());
+
+  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+
+  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  ClickOnDialogViewAndWait(edit_button);
+
+  // Billing address combobox must be enabled.
+  views::View* billing_address_combobox =
+      dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
+          autofill::ADDRESS_BILLING_LINE1));
+  ASSERT_NE(nullptr, billing_address_combobox);
+  EXPECT_TRUE(billing_address_combobox->enabled());
+
+  // Name and number are readonly labels.
+  EXPECT_EQ(card.NetworkAndLastFourDigits(),
+            GetLabelText(static_cast<payments::DialogViewID>(
+                EditorViewController::GetInputFieldViewId(
+                    autofill::CREDIT_CARD_NUMBER))));
+  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"),
+            GetLabelText(static_cast<payments::DialogViewID>(
+                EditorViewController::GetInputFieldViewId(
+                    autofill::CREDIT_CARD_NAME_FULL))));
+}
+
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringNothingInARequiredField) {
   autofill::TestAutofillClock test_clock;

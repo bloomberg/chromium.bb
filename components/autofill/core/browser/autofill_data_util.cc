@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,20 +27,23 @@ namespace {
 // spec networks and icons. Note that "generic" is not in the spec.
 // https://w3c.github.io/webpayments-methods-card/#method-id
 const PaymentRequestData kPaymentRequestData[]{
-    {"americanExpressCC", "amex", IDR_AUTOFILL_CC_AMEX, IDS_AUTOFILL_CC_AMEX},
-    {"dinersCC", "diners", IDR_AUTOFILL_CC_DINERS, IDS_AUTOFILL_CC_DINERS},
-    {"discoverCC", "discover", IDR_AUTOFILL_CC_DISCOVER,
+    {autofill::kAmericanExpressCard, "amex", IDR_AUTOFILL_CC_AMEX,
+     IDS_AUTOFILL_CC_AMEX},
+    {autofill::kDinersCard, "diners", IDR_AUTOFILL_CC_DINERS,
+     IDS_AUTOFILL_CC_DINERS},
+    {autofill::kDiscoverCard, "discover", IDR_AUTOFILL_CC_DISCOVER,
      IDS_AUTOFILL_CC_DISCOVER},
-    {"jcbCC", "jcb", IDR_AUTOFILL_CC_JCB, IDS_AUTOFILL_CC_JCB},
-    {"masterCardCC", "mastercard", IDR_AUTOFILL_CC_MASTERCARD,
+    {autofill::kJCBCard, "jcb", IDR_AUTOFILL_CC_JCB, IDS_AUTOFILL_CC_JCB},
+    {autofill::kMasterCard, "mastercard", IDR_AUTOFILL_CC_MASTERCARD,
      IDS_AUTOFILL_CC_MASTERCARD},
-    {"mirCC", "mir", IDR_AUTOFILL_CC_MIR, IDS_AUTOFILL_CC_MIR},
-    {"unionPayCC", "unionpay", IDR_AUTOFILL_CC_UNIONPAY,
+    {autofill::kMirCard, "mir", IDR_AUTOFILL_CC_MIR, IDS_AUTOFILL_CC_MIR},
+    {autofill::kUnionPay, "unionpay", IDR_AUTOFILL_CC_UNIONPAY,
      IDS_AUTOFILL_CC_UNION_PAY},
-    {"visaCC", "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
+    {autofill::kVisaCard, "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
 };
 const PaymentRequestData kGenericPaymentRequestData = {
-    "genericCC", "generic", IDR_AUTOFILL_CC_GENERIC, IDS_AUTOFILL_CC_GENERIC};
+    autofill::kGenericCard, "generic", IDR_AUTOFILL_CC_GENERIC,
+    IDS_AUTOFILL_CC_GENERIC};
 
 const char* const name_prefixes[] = {
     "1lt",     "1st", "2lt", "2nd",    "3rd",  "admiral", "capt",

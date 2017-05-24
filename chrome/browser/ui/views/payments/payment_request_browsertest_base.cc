@@ -415,6 +415,11 @@ void PaymentRequestBrowserTestBase::AddAutofillProfile(
 void PaymentRequestBrowserTestBase::AddCreditCard(
     const autofill::CreditCard& card) {
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  if (card.record_type() != autofill::CreditCard::LOCAL_CARD) {
+    personal_data_manager->AddServerCreditCardForTest(
+        base::MakeUnique<autofill::CreditCard>(card));
+    return;
+  }
   size_t card_count = personal_data_manager->GetCreditCards().size();
 
   PersonalDataLoadedObserverMock personal_data_observer;
