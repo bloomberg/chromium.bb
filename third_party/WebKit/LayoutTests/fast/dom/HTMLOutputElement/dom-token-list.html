@@ -58,7 +58,7 @@ shouldBeEqualToString('element.htmlFor.toString()', 'x');
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/007.htm
 createElement('x  x');
 element.htmlFor.add('x');
-shouldBeEqualToString('element.htmlFor.toString()', 'x  x');
+shouldBeEqualToString('element.htmlFor.toString()', 'x x');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/008.htm
 createElement('y');
@@ -111,11 +111,11 @@ shouldBeEqualToString('element.htmlFor.toString()', 'x y');
 
 createElement('x\t');
 element.htmlFor.add('y');
-shouldBeEqualToString('element.htmlFor.toString()', 'x\ty');
+shouldBeEqualToString('element.htmlFor.toString()', 'x y');
 
 createElement(' ');
 element.htmlFor.add('y');
-shouldBeEqualToString('element.htmlFor.toString()', ' y');
+shouldBeEqualToString('element.htmlFor.toString()', 'y');
 
 
 debug('- Test invalid tokens');

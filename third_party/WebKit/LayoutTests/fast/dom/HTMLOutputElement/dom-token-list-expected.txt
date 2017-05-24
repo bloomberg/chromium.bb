@@ -14,7 +14,7 @@ PASS element.htmlFor.length is 2
 PASS element.htmlFor.length is 2
 PASS element.htmlFor.toString() is "x"
 PASS element.htmlFor.toString() is "x"
-PASS element.htmlFor.toString() is "x  x"
+PASS element.htmlFor.toString() is "x x"
 PASS element.htmlFor.toString() is "y x"
 PASS element.htmlFor.toString() is ""
 PASS element.htmlFor.toString() is ""
@@ -29,8 +29,8 @@ PASS element.htmlFor.contains('x') is true
 PASS element.htmlFor[1] is undefined.
 - Testing add in presence of trailing white spaces.
 PASS element.htmlFor.toString() is "x y"
-PASS element.htmlFor.toString() is "x\ty"
-PASS element.htmlFor.toString() is " y"
+PASS element.htmlFor.toString() is "x y"
+PASS element.htmlFor.toString() is "y"
 - Test invalid tokens
 PASS element.htmlFor.contains("") did not throw exception.
 PASS element.htmlFor.contains("x y") did not throw exception.

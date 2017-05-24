@@ -49,7 +49,7 @@ shouldBeEqualToString('element.className', 'x');
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/007.htm
 createElement('x  x');
 element.classList.add('x');
-shouldBeEqualToString('element.className', 'x  x');
+shouldBeEqualToString('element.className', 'x x');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/008.htm
 createElement('y');
@@ -120,11 +120,11 @@ shouldBeEqualToString('element.className', 'x y');
 
 createElement('x\t');
 element.classList.add('y');
-shouldBeEqualToString('element.className', 'x\ty');
+shouldBeEqualToString('element.className', 'x y');
 
 createElement(' ');
 element.classList.add('y');
-shouldBeEqualToString('element.className', ' y');
+shouldBeEqualToString('element.className', 'y');
 
 
 debug('Test invalid tokens');

@@ -89,10 +89,12 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   bool ValidateToken(const String&, ExceptionState&) const;
   bool ValidateTokens(const Vector<String>&, ExceptionState&) const;
   virtual bool ValidateTokenValue(const AtomicString&, ExceptionState&) const;
-  static AtomicString AddToken(const AtomicString&, const AtomicString&);
-  static AtomicString AddTokens(const AtomicString&, const Vector<String>&);
-  static AtomicString RemoveToken(const AtomicString&, const AtomicString&);
-  static AtomicString RemoveTokens(const AtomicString&, const Vector<String>&);
+  AtomicString AddToken(const AtomicString&);
+  AtomicString AddTokens(const Vector<String>&);
+  AtomicString RemoveToken(const AtomicString&);
+  AtomicString RemoveTokens(const Vector<String>&);
+  virtual SpaceSplitString& MutableSet() { return tokens_; }
+  static AtomicString SerializeSet(const SpaceSplitString&);
 
  private:
   SpaceSplitString tokens_;

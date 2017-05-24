@@ -28,6 +28,7 @@ class RelList final : public DOMTokenList {
 
   bool ContainsInternal(const AtomicString&) const override;
 
+  SpaceSplitString& MutableSet() override { return rel_values_; }
   const AtomicString& value() const override {
     return element_->getAttribute(HTMLNames::relAttr);
   }
