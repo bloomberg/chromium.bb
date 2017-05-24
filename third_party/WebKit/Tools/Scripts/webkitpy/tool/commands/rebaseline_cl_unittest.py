@@ -278,7 +278,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # MOCK Try Mac is listed because it's listed in the BuilderList in setUp.
         # Test for protected method - pylint: disable=protected-access
         builds = [Build('MOCK Try Linux', None), Build('MOCK Try Win', 123)]
-        self.assertEqual(self.command.builders_with_no_jobs(builds), {'MOCK Try Mac', 'MOCK Try Linux'})
+        self.assertEqual(self.command.builders_with_no_jobs(builds), {'MOCK Try Mac'})
 
     def test_bails_when_one_build_is_missing_results(self):
         self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)

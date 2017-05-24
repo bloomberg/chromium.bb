@@ -134,10 +134,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
     def builders_with_no_jobs(self, builds):
         """Returns the set of builders that don't have triggered builds."""
-        builders = set(self._try_bots()) - {b.builder_name for b in builds}
-        # TODO(qyearsley): Change this so that it doesn't also return
-        # builders with scheduled jobs.
-        return builders | self._builders_with_scheduled_jobs(builds)
+        return set(self._try_bots()) - {b.builder_name for b in builds}
 
     def _log_scheduled_jobs(self, builds):
         builders = self._builders_with_scheduled_jobs(builds)
