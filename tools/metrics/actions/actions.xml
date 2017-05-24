@@ -14454,15 +14454,6 @@ should be able to be added at any place in this file.
   <description>User interacts with an answer card.</description>
 </action>
 
-<action name="SearchEnginePromo.ExistingDevice.PromoSelected">
-  <owner>yusufo@chromium.org</owner>
-  <description>
-    The user has made a selection in the search engine promo in an existing
-    device that is setup before the promo was first introduced. This is a dialog
-    prompting the user to pick a default search engine. Android only.
-  </description>
-</action>
-
 <action name="SearchEnginePromo.ExistingDevice.Shown.Dialog">
   <owner>dfalcantara@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
@@ -14479,15 +14470,6 @@ should be able to be added at any place in this file.
   <description>
     The Existing Device search engine promo screen was shown in the first run
     experience.
-  </description>
-</action>
-
-<action name="SearchEnginePromo.NewDevice.PromoSelected">
-  <owner>yusufo@chromium.org</owner>
-  <description>
-    The user has made a selection in the search engine promo in a new device
-    that is setup after the promo was introduced. This is a dialog prompting the
-    user to pick a default search engine. Android only.
   </description>
 </action>
 
@@ -14517,20 +14499,6 @@ should be able to be added at any place in this file.
     disables search engine auto switch feature in special locale. This is
     recorded on Android for every locale, but is currently only meaningful for
     studying special locales.
-  </description>
-</action>
-
-<action name="SearchWidget.SearchMade">
-  <owner>yusufo@chromium.org</owner>
-  <description>
-    The user made a search from the Android search widget.
-  </description>
-</action>
-
-<action name="SearchWidget.WidgetSelected">
-  <owner>yusufo@chromium.org</owner>
-  <description>
-    The user launched the Android search widget from home screen.
   </description>
 </action>
 

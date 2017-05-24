@@ -47,7 +47,7 @@ public class DefaultSearchEngineDialogHelperTest {
         }
 
         @Override
-        protected void onUserSeachEngineChoice(List<String> keywords, String keyword) {
+        protected void onUserSeachEngineChoice(String keyword) {
             chosenKeyword = keyword;
         }
     }

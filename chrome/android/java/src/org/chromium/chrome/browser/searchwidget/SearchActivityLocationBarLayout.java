@@ -11,7 +11,6 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.UiUtils;
@@ -42,7 +41,6 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     @Override
     protected void loadUrl(String url, int transition) {
         mDelegate.loadUrl(url);
-        LocaleManager.getInstance().recordLocaleBasedSearchMetrics(true, url, transition);
     }
 
     @Override
