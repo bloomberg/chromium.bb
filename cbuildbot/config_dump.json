@@ -28380,6 +28380,7 @@
             "x86-alex"
         ],
         "buildslave_type": "baremetal",
+        "important": false,
         "manifest": "official.xml"
     },
     "x86-alex-chromium-pfq": {
