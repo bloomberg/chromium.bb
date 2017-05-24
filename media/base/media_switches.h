@@ -110,6 +110,7 @@ MEDIA_EXPORT extern const base::Feature kBackgroundVideoTrackOptimization;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
 MEDIA_EXPORT extern const base::Feature kLowDelayVideoRenderingOnLiveStream;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
+MEDIA_EXPORT extern const base::Feature kMojoCdm;
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kNewRemotePlaybackPipeline;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;

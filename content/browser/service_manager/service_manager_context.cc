@@ -373,6 +373,15 @@ ServiceManagerContext::ServiceManagerContext() {
                        base::ASCIIToUTF16("Video Capture Service")));
   }
 
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+  // TODO(xhwang): This is only used for test/experiment for now so it's okay
+  // to run it in an unsandboxed utility process. Fix CDM loading so that we can
+  // run it in the sandboxed utility process. See http://crbug.com/510604
+  // TODO(xhwang): Replace the service name "media" with a constant string.
+  unsandboxed_services.insert(
+      std::make_pair("media", base::ASCIIToUTF16("Media Service")));
+#endif
+
   for (const auto& service : unsandboxed_services) {
     packaged_services_connection_->AddServiceRequestHandler(
         service.first, base::Bind(&StartServiceInUtilityProcess, service.first,
