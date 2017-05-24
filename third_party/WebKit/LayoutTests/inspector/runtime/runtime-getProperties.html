@@ -18,26 +18,17 @@ function test()
     }
 
     InspectorTest.runTestSuite([
-        function testSetUp(next)
+        async function testSetUp(next)
         {
-            InspectorTest.evaluateInPage("dumpObjects('Initial')", step0);
+            await new Promise(resolve => InspectorTest.evaluateInPage("dumpObjects('Initial')", resolve));
 
-            function step0()
-            {
-                InspectorTest.RuntimeAgent.evaluate("object1", step1);
-            }
+            var result = await InspectorTest.RuntimeAgent.evaluate("object1");
 
-            function step1(error, result, exceptionDetails)
-            {
-                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
-                InspectorTest.RuntimeAgent.evaluate("object2", step2);
-            }
+            obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
+            var result = await InspectorTest.RuntimeAgent.evaluate("object2");
 
-            function step2(error, result, exceptionDetails)
-            {
-                obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
-                next();
-            }
+            obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
+            next();
         },
 
         function testGetterAndSetter(next)
