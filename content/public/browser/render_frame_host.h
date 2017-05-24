@@ -261,6 +261,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void DisableBeforeUnloadHangMonitorForTesting() = 0;
   virtual bool IsBeforeUnloadHangMonitorDisabledForTesting() = 0;
 
+  // Returns true if the given Feature Policy |feature| is enabled for this
+  // RenderFrameHost and is allowed to be used by it. Use this in the browser
+  // process to determine whether access to a feature is allowed.
   virtual bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) = 0;
 
  private:
