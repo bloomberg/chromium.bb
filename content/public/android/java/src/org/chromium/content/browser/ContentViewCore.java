@@ -1068,7 +1068,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * @see View#onCreateInputConnection(EditorInfo)
      */
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return mImeAdapter.onCreateInputConnection(outAttrs);
+        boolean allowKeyboardLearning = getWebContents() != null && !getWebContents().isIncognito();
+        return mImeAdapter.onCreateInputConnection(outAttrs, allowKeyboardLearning);
     }
 
     /**

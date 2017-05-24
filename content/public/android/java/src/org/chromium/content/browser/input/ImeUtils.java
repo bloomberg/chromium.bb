@@ -37,7 +37,6 @@ public class ImeUtils {
      */
     public static void computeEditorInfo(int inputType, int inputFlags, int inputMode,
             int initialSelStart, int initialSelEnd, EditorInfo outAttrs) {
-        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
         outAttrs.inputType =
                 EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT;
 
