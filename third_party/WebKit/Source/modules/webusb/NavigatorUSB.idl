@@ -5,5 +5,5 @@
 // https://wicg.github.io/webusb/#enumeration
 
 partial interface Navigator {
-    [SecureContext, OriginTrialEnabled=WebUSB] readonly attribute USB usb;
+    [SecureContext, RuntimeEnabled=WebUSB] readonly attribute USB usb;
 };

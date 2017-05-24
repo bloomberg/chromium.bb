@@ -61,10 +61,6 @@ void InstallConditionalFeaturesForModules(
                                           v8::Local<v8::Object>(),
                                           prototype_object, interface_object);
     }
-    if (OriginTrials::webUSBEnabled(execution_context)) {
-      V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
-                                        prototype_object, interface_object);
-    }
     if (OriginTrials::webVREnabled(execution_context)) {
       V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
                                        prototype_object, interface_object);
@@ -72,13 +68,6 @@ void InstallConditionalFeaturesForModules(
   } else if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
     v8::Local<v8::Object> instance_object =
         script_state->GetContext()->Global();
-    // Mimics the [SecureContext] extended attribute. Work-around for
-    // https://crbug.com/695123.
-    if (OriginTrials::webUSBEnabled(execution_context) &&
-        execution_context->IsSecureContext()) {
-      V8WindowPartial::installWebUSB(isolate, world, instance_object,
-                                     prototype_object, interface_object);
-    }
     if (OriginTrials::webVREnabled(execution_context)) {
       V8WindowPartial::installWebVR(isolate, world, instance_object,
                                     prototype_object, interface_object);
@@ -186,19 +175,6 @@ void InstallPendingConditionalFeatureForModules(
       V8NavigatorPartial::installWebShare(isolate, world,
                                           v8::Local<v8::Object>(),
                                           prototype_object, interface_object);
-    }
-    return;
-  }
-  if (feature == "WebUSB2") {
-    global_instance_object = script_state->GetContext()->Global();
-    V8WindowPartial::installWebUSB(isolate, world, global_instance_object,
-                                   v8::Local<v8::Object>(),
-                                   v8::Local<v8::Function>());
-    if (context_data->GetExistingConstructorAndPrototypeForType(
-            &V8Navigator::wrapperTypeInfo, &prototype_object,
-            &interface_object)) {
-      V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
-                                        prototype_object, interface_object);
     }
     return;
   }
