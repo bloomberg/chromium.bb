@@ -77,8 +77,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                    int num_entries,
                    int* entries_processed) override;
 
-  const char* GetCommandName(unsigned int command_id) const override;
-
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
 
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface,

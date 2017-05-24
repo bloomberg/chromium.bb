@@ -82,7 +82,8 @@ typedef base::Callback<void(const std::string& key,
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
-class GPU_EXPORT GLES2Decoder : public CommonDecoder {
+class GPU_EXPORT GLES2Decoder : public CommonDecoder,
+                                NON_EXPORTED_BASE(public AsyncAPIInterface) {
  public:
   typedef error::Error Error;
   typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
@@ -320,14 +321,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
 
  protected:
   GLES2Decoder();
-
-  // Decode a command, and call the corresponding GL functions.
-  // NOTE: DoCommand() is slower than calling DoCommands() on larger batches
-  // of commands at once, and is now only used for tests that need to track
-  // individual commands.
-  error::Error DoCommand(unsigned int command,
-                         unsigned int arg_count,
-                         const volatile void* cmd_data) override;
 
   base::StringPiece GetLogPrefix() override;
 

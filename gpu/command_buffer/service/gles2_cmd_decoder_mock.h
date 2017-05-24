@@ -39,11 +39,6 @@ class MockGLES2Decoder : public GLES2Decoder {
   MockGLES2Decoder();
   virtual ~MockGLES2Decoder();
 
-  error::Error FakeDoCommands(unsigned int num_commands,
-                              const volatile void* buffer,
-                              int num_entries,
-                              int* entries_processed);
-
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
 
   MOCK_METHOD5(Initialize,
@@ -106,10 +101,6 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));
   MOCK_METHOD1(SetForceShaderNameHashingForTest, void(bool force));
   MOCK_METHOD1(SetAllowExit, void(bool allow));
-  MOCK_METHOD3(DoCommand,
-               error::Error(unsigned int command,
-                            unsigned int arg_count,
-                            const volatile void* cmd_data));
   MOCK_METHOD4(DoCommands,
                error::Error(unsigned int num_commands,
                             const volatile void* buffer,
@@ -117,7 +108,6 @@ class MockGLES2Decoder : public GLES2Decoder {
                             int* entries_processed));
   MOCK_METHOD2(GetServiceTextureId,
                bool(uint32_t client_texture_id, uint32_t* service_texture_id));
-  MOCK_CONST_METHOD1(GetCommandName, const char*(unsigned int command_id));
   MOCK_METHOD9(ClearLevel,
                bool(Texture* texture,
                     unsigned target,

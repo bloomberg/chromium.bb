@@ -82,16 +82,20 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   error::Error ExecuteCmd(const T& cmd) {
     static_assert(T::kArgFlags == cmd::kFixed,
                   "T::kArgFlags should equal cmd::kFixed");
-    return decoder_->DoCommands(
-        1, (const void*)&cmd, ComputeNumEntries(sizeof(cmd)), 0);
+    int entries_processed = 0;
+    return decoder_->DoCommands(1, (const void*)&cmd,
+                                ComputeNumEntries(sizeof(cmd)),
+                                &entries_processed);
   }
 
   template <typename T>
   error::Error ExecuteImmediateCmd(const T& cmd, size_t data_size) {
     static_assert(T::kArgFlags == cmd::kAtLeastN,
                   "T::kArgFlags should equal cmd::kAtLeastN");
-    return decoder_->DoCommands(
-        1, (const void*)&cmd, ComputeNumEntries(sizeof(cmd) + data_size), 0);
+    int entries_processed = 0;
+    return decoder_->DoCommands(1, (const void*)&cmd,
+                                ComputeNumEntries(sizeof(cmd) + data_size),
+                                &entries_processed);
   }
 
   template <typename T>

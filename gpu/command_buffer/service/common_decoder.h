@@ -28,7 +28,7 @@ class CommandBufferServiceBase;
 
 // This class is a helper base class for implementing the common parts of the
 // o3d/gl2 command buffer decoder.
-class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
+class GPU_EXPORT CommonDecoder {
  public:
   typedef error::Error Error;
 
@@ -110,7 +110,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   };
 
   CommonDecoder();
-  ~CommonDecoder() override;
+  ~CommonDecoder();
 
   // Sets the engine, to get shared memory buffers from, and to set the token
   // to.
