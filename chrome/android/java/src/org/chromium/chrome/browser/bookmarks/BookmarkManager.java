@@ -215,6 +215,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
             return true;
         }
 
+        if (mToolbar.isSearching()) {
+            mToolbar.hideSearchView();
+            return true;
+        }
+
         if (!mStateStack.empty()) {
             mStateStack.pop();
             if (!mStateStack.empty()) {
