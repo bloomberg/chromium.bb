@@ -57,7 +57,6 @@ class ClassCollection final : public HTMLCollection {
   ClassCollection(ContainerNode& root_node, const AtomicString& class_names);
 
   SpaceSplitString class_names_;
-  AtomicString original_class_names_;
 };
 
 DEFINE_TYPE_CASTS(ClassCollection,
