@@ -194,6 +194,11 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
           SUBMISSION_INDICATOR_EVENT_COUNT);
 }
 
+void LogSubmittedFormFrame(SubmittedFormFrame frame) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormFrame", frame,
+                            SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

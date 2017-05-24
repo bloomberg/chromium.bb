@@ -377,6 +377,29 @@ void PasswordManager::ProvisionallySavePassword(
   // post-submit navigation concludes, we compare the landing URL against the
   // cached and report the difference through UMA.
   main_frame_url_ = client_->GetMainFrameURL();
+
+  // Report SubmittedFormFrame metric.
+  if (driver) {
+    metrics_util::SubmittedFormFrame frame;
+    if (driver->IsMainFrame()) {
+      frame = metrics_util::SubmittedFormFrame::MAIN_FRAME;
+    } else if (form.origin == main_frame_url_) {
+      frame =
+          metrics_util::SubmittedFormFrame::IFRAME_WITH_SAME_URL_AS_MAIN_FRAME;
+    } else {
+      GURL::Replacements rep;
+      rep.SetPathStr("");
+      std::string main_frame_signon_realm =
+          main_frame_url_.ReplaceComponents(rep).spec();
+      frame =
+          (main_frame_signon_realm == form.signon_realm)
+              ? metrics_util::SubmittedFormFrame::
+                    IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME
+              : metrics_util::SubmittedFormFrame::
+                    IFRAME_WITH_DIFFERENT_SIGNON_REALM;
+    }
+    metrics_util::LogSubmittedFormFrame(frame);
+  }
 }
 
 void PasswordManager::UpdateFormManagers() {

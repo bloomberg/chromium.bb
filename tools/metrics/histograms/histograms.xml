@@ -50263,6 +50263,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SubmittedFormFrame"
+    enum="SubmittedPasswordFormFrame">
+  <owner>dvadym@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records a frame type (eg. main frame, iframe with the same url as the main
+    frame) of a submitted password form.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SubmittedFormType" enum="PasswordFormType">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>

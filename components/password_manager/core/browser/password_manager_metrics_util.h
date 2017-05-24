@@ -184,6 +184,15 @@ enum PasswordReusePasswordFieldDetected {
   PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT
 };
 
+// Recorded into a UMA histogram, so order of enumerators should not be changed.
+enum class SubmittedFormFrame {
+  MAIN_FRAME,
+  IFRAME_WITH_SAME_URL_AS_MAIN_FRAME,
+  IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME,
+  IFRAME_WITH_DIFFERENT_SIGNON_REALM,
+  SUBMITTED_FORM_FRAME_COUNT
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -269,6 +278,9 @@ void LogPasswordSuccessfulSubmissionIndicatorEvent(
 // or update.
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
     autofill::PasswordForm::SubmissionIndicatorEvent event);
+
+// Log a frame of a submitted password form.
+void LogSubmittedFormFrame(SubmittedFormFrame frame);
 
 }  // namespace metrics_util
 

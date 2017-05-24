@@ -38,6 +38,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_generation_manager_(client, this),
       password_autofill_manager_(this, autofill_client),
       next_free_key_(0),
+      is_main_frame_(render_frame_host->GetParent() == nullptr),
       password_manager_binding_(this),
       weak_factory_(this) {
   // Does nothing if a VisiblePasswordObserver has already been created
@@ -159,6 +160,10 @@ void ContentPasswordManagerDriver::AllowToRunFormClassifier() {
 autofill::AutofillDriver* ContentPasswordManagerDriver::GetAutofillDriver() {
   return autofill::ContentAutofillDriver::GetForRenderFrameHost(
       render_frame_host_);
+}
+
+bool ContentPasswordManagerDriver::IsMainFrame() const {
+  return is_main_frame_;
 }
 
 PasswordGenerationManager*
