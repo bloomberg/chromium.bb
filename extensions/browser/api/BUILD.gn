@@ -106,10 +106,6 @@ source_set("api") {
 
   if (is_chromeos) {
     sources += [
-      "media_perception_private/conversion_utils.cc",
-      "media_perception_private/conversion_utils.h",
-      "media_perception_private/media_perception_api_manager.cc",
-      "media_perception_private/media_perception_api_manager.h",
       "media_perception_private/media_perception_private_api.cc",
       "media_perception_private/media_perception_private_api.h",
     ]
@@ -123,10 +119,7 @@ source_set("api") {
       "//extensions/browser/api/webcam_private",
     ]
 
-    deps += [
-      "//chromeos",
-      "//chromeos:media_perception_proto",
-    ]
+    deps += [ "//chromeos" ]
   }
 }
 
