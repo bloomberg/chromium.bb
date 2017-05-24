@@ -430,6 +430,10 @@ def AddInstrumentationTestOptions(parser):
       '--timeout-scale',
       type=float,
       help='Factor by which timeouts should be scaled.')
+  parser.add_argument(
+      '--ui-screenshot-directory',
+      dest='ui_screenshot_dir', type=os.path.realpath,
+      help='Destination for screenshots captured by the tests')
 
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.
