@@ -9,7 +9,6 @@
 #include "components/translate/core/common/translate_constants.h"
 
 using InfoBarUtilities::MoveControl;
-using InfoBarUtilities::VerifyControlOrderAndSpacing;
 
 @implementation AfterTranslateInfobarController
 

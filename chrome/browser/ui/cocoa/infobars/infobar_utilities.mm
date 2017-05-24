@@ -50,14 +50,6 @@ void MoveControl(NSView* anchor, NSView* toMove, int spacing, bool after) {
   [toMove setFrame:toMoveFrame];
 }
 
-// Check that the control |before| is ordered visually before the |after|
-// control. Also, check that there is space between them.
-bool VerifyControlOrderAndSpacing(id before, id after) {
-  NSRect beforeFrame = [before frame];
-  NSRect afterFrame = [after frame];
-  return NSMinX(afterFrame) >= NSMaxX(beforeFrame);
-}
-
 // Vertically center |toMove| in its container.
 void VerticallyCenterView(NSView* toMove) {
   NSRect superViewFrame = [[toMove superview] frame];

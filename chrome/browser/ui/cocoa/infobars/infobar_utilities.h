@@ -18,10 +18,6 @@ void MoveControl(NSView* anchor, NSView* toMove, int spacing, bool after);
 // Vertically center |toMove| in its container.
 void VerticallyCenterView(NSView *toMove);
 
-// Check that the control |before| is ordered visually before the |after|
-// control. Also, check that there is space between them.
-bool VerifyControlOrderAndSpacing(id before, id after);
-
 // Creates a label control in the style we need for the infobar's labels
 // within |bounds|.
 NSTextField* CreateLabel(NSRect bounds);

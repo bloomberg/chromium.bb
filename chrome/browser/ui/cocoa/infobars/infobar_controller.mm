@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -14,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -85,6 +87,8 @@
 
   [infoBarView_ setInfobarType:[self delegate]->GetInfoBarType()];
   [infoBarView_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary(
+      base::mac::ObjCCast<NSView>(infoBarView_));
 }
 
 - (void)dealloc {
