@@ -29,8 +29,8 @@ namespace {
 constexpr base::char16 kActiveSetupMajorVersion[] =
     AsChar16String(ACTIVE_SETUP_MAJOR_VERSION);
 
-#undef AsString
-#undef AsString2
+#undef AsChar16String
+#undef AsChar16String2
 
 }  // namespace
 
