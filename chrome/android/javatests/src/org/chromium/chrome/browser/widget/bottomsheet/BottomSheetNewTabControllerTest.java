@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPageBase;
@@ -144,6 +145,7 @@ public class BottomSheetNewTabControllerTest extends BottomSheetTestCaseBase {
     }
 
     @SmallTest
+    @DisabledTest(message = "crbug.com/726032")
     public void testCloseNTP()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Create a new tab.
@@ -158,6 +160,7 @@ public class BottomSheetNewTabControllerTest extends BottomSheetTestCaseBase {
     }
 
     @SmallTest
+    @DisabledTest(message = "crbug.com/726032")
     public void testCloseNTP_Incognito()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Create new incognito NTP.
