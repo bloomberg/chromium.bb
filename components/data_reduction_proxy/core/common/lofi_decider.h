@@ -54,11 +54,6 @@ class LoFiDecider {
   virtual void RemoveAcceptTransformHeader(
       net::HttpRequestHeaders* headers) const = 0;
 
-  // Adds a directive to tell the server to ignore blacklists when a Lite Page
-  // preview is being requested due to command line flags being set.
-  virtual void MaybeSetIgnorePreviewsBlacklistDirective(
-      net::HttpRequestHeaders* headers) const = 0;
-
   // Returns true if the Lo-Fi specific UMA should be recorded. It is set to
   // true if Lo-Fi is enabled for |request|, Chrome session is in Lo-Fi
   // Enabled or Control field trial, and the network quality was slow.

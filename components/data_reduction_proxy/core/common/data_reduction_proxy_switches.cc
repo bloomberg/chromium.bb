@@ -18,6 +18,10 @@ const char kDataReductionProxyConfigURL[] = "data-reduction-proxy-config-url";
 // Proxy field trials.
 const char kDataReductionProxyExperiment[] = "data-reduction-proxy-experiment";
 
+// The Chrome-Proxy "exp" directive value used by data reduction proxy to
+// receive an alternative back end implementation.
+const char kDataReductionProxyServerAlternative[] = "alternative";
+
 // The origin of the data reduction proxy fallback.
 const char kDataReductionProxyFallback[] = "spdy-proxy-auth-fallback";
 

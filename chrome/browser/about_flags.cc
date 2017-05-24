@@ -255,6 +255,12 @@ const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
      data_reduction_proxy::switches::
          kDataReductionProxyLoFiValueSlowConnectionsOnly}};
 
+const FeatureEntry::Choice kDataReductionProxyServerExperiment[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kDataReductionProxyServerAlternative,
+     data_reduction_proxy::switches::kDataReductionProxyExperiment,
+     data_reduction_proxy::switches::kDataReductionProxyServerAlternative}};
+
 const FeatureEntry::Choice kShowSavedCopyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kEnableShowSavedCopyPrimary,
@@ -1924,6 +1930,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDataReductionProxyLitePageDescription, kOsAll,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kEnableDataReductionProxyLitePage)},
+    {"enable-data-reduction-proxy-server-experiment",
+     flag_descriptions::kEnableDataReductionProxyServerExperimentName,
+     flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
+     kOsAll, MULTI_VALUE_TYPE(kDataReductionProxyServerExperiment)},
 #if defined(OS_ANDROID)
     {"enable-data-reduction-proxy-savings-promo",
      flag_descriptions::kEnableDataReductionProxySavingsPromoName,

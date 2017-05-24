@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -172,8 +173,17 @@ int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
 void VerifyHttpRequestHeaders(bool via_chrome_proxy,
                               const net::HttpRequestHeaders& headers) {
   if (via_chrome_proxy) {
-    DCHECK(headers.HasHeader(chrome_proxy_header()));
     DCHECK(headers.HasHeader(chrome_proxy_ect_header()));
+    std::string chrome_proxy_header_value;
+    DCHECK(
+        headers.GetHeader(chrome_proxy_header(), &chrome_proxy_header_value));
+    // Check that only 1 "exp" directive is sent.
+    DCHECK_GT(3u, base::SplitStringUsingSubstr(chrome_proxy_header_value,
+                                               "exp=", base::TRIM_WHITESPACE,
+                                               base::SPLIT_WANT_ALL)
+                      .size());
+    // Silence unused variable warning in release builds.
+    (void)chrome_proxy_header_value;
   } else {
     DCHECK(!headers.HasHeader(chrome_proxy_header()));
     DCHECK(!headers.HasHeader(chrome_proxy_accept_transform_header()));
@@ -374,8 +384,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
 
   data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
 
-  if (lofi_decider)
-    lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
   VerifyHttpRequestHeaders(true, *headers);
 }
 
