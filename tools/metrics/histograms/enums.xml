@@ -15012,6 +15012,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1994"
       label="CredentialManagerCredentialRequestOptionsOnlyUnmediated"/>
   <int value="1995" label="InertAttribute"/>
+  <int value="1996" label="PluginInstanceAccessFromIsolatedWorld"/>
+  <int value="1997" label="PluginInstanceAccessFromMainWorld"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
