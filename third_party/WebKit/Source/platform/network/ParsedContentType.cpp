@@ -30,33 +30,12 @@
  */
 
 #include "platform/network/ParsedContentType.h"
-#include "platform/network/HTTPParsers.h"
 
+#include "platform/network/HeaderFieldTokenizer.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringView.h"
 
 namespace blink {
-
-using Mode = ParsedContentType::Mode;
-
-ParsedContentType::ParsedContentType(const String& content_type, Mode mode)
-    : mode_(mode) {
-  is_valid_ = Parse(content_type);
-}
-
-String ParsedContentType::Charset() const {
-  return ParameterValueForName("charset");
-}
-
-String ParsedContentType::ParameterValueForName(const String& name) const {
-  if (!name.ContainsOnlyASCII())
-    return String();
-  return parameters_.at(name.DeprecatedLower());
-}
-
-size_t ParsedContentType::ParameterCount() const {
-  return parameters_.size();
-}
 
 // From http://tools.ietf.org/html/rfc2045#section-5.1:
 //
@@ -103,22 +82,21 @@ size_t ParsedContentType::ParameterCount() const {
 //               "/" / "[" / "]" / "?" / "="
 //               ; Must be in quoted-string,
 //               ; to use within parameter values
-
-bool ParsedContentType::Parse(const String& content_type) {
-  unsigned index = 0;
+ParsedContentType::ParsedContentType(const String& content_type, Mode mode) {
+  HeaderFieldTokenizer tokenizer(content_type);
 
   StringView type, subtype;
-  if (!ConsumeToken(Mode::kNormal, content_type, index, type)) {
+  if (!tokenizer.ConsumeToken(Mode::kNormal, type)) {
     DVLOG(1) << "Failed to find `type' in '" << content_type << "'";
-    return false;
+    return;
   }
-  if (!Consume('/', content_type, index)) {
+  if (!tokenizer.Consume('/')) {
     DVLOG(1) << "Failed to find '/' in '" << content_type << "'";
-    return false;
+    return;
   }
-  if (!ConsumeToken(Mode::kNormal, content_type, index, subtype)) {
-    DVLOG(1) << "Failed to find `type' in '" << content_type << "'";
-    return false;
+  if (!tokenizer.ConsumeToken(Mode::kNormal, subtype)) {
+    DVLOG(1) << "Failed to find `subtype' in '" << content_type << "'";
+    return;
   }
 
   StringBuilder builder;
@@ -127,40 +105,11 @@ bool ParsedContentType::Parse(const String& content_type) {
   builder.Append(subtype);
   mime_type_ = builder.ToString();
 
-  KeyValuePairs map;
-  while (!IsEnd(content_type, index)) {
-    if (!Consume(';', content_type, index)) {
-      DVLOG(1) << "Failed to find ';'";
-      return false;
-    }
+  parameters_.ParseParameters(std::move(tokenizer), mode);
+}
 
-    StringView key;
-    String value;
-    if (!ConsumeToken(Mode::kNormal, content_type, index, key)) {
-      DVLOG(1) << "Invalid Content-Type parameter name. (at " << index << ")";
-      return false;
-    }
-    if (!Consume('=', content_type, index)) {
-      DVLOG(1) << "Failed to find '='";
-      return false;
-    }
-    if (!ConsumeTokenOrQuotedString(mode_, content_type, index, value)) {
-      DVLOG(1) << "Invalid Content-Type, invalid parameter value (at " << index
-               << ", for '" << key.ToString() << "').";
-      return false;
-    }
-    // As |key| is parsed as a token, it consists of ascii characters
-    // and hence we don't need to care about non-ascii lowercasing.
-    DCHECK(key.ToString().ContainsOnlyASCII());
-    String key_string = key.ToString().DeprecatedLower();
-    if (mode_ == Mode::kStrict && map.find(key_string) != map.end()) {
-      DVLOG(1) << "Parameter " << key_string << " is defined multiple times.";
-      return false;
-    }
-    map.Set(key_string, value);
-  }
-  parameters_ = std::move(map);
-  return true;
+String ParsedContentType::Charset() const {
+  return ParameterValueForName("charset");
 }
 
 }  // namespace blink
