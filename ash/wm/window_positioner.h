@@ -9,6 +9,10 @@
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
 
+namespace aura {
+class Window;
+}
+
 namespace display {
 class Display;
 }
@@ -18,8 +22,6 @@ class Rect;
 }
 
 namespace ash {
-
-class WmWindow;
 
 namespace test {
 class WindowPositionerTest;
@@ -48,7 +50,7 @@ class ASH_EXPORT WindowPositioner {
   // |is_saved_bounds| indicates the |bounds_in_out| is the saved
   // bounds.
   static void GetBoundsAndShowStateForNewWindow(
-      const WmWindow* new_window,
+      const aura::Window* new_window,
       bool is_saved_bounds,
       ui::WindowShowState show_state_in,
       gfx::Rect* bounds_in_out,
@@ -61,7 +63,7 @@ class ASH_EXPORT WindowPositioner {
   // automated desktop location management can be performed and
   // rearrange accordingly.
   static void RearrangeVisibleWindowOnHideOrRemove(
-      const WmWindow* removed_window);
+      const aura::Window* removed_window);
 
   // Turn the automatic positioning logic temporarily off. Returns the previous
   // state.
@@ -70,7 +72,7 @@ class ASH_EXPORT WindowPositioner {
   // Check if after insertion or showing of the given |added_window|
   // an automated desktop location management can be performed and
   // rearrange accordingly.
-  static void RearrangeVisibleWindowOnShow(WmWindow* added_window);
+  static void RearrangeVisibleWindowOnShow(aura::Window* added_window);
 
   WindowPositioner();
   ~WindowPositioner();

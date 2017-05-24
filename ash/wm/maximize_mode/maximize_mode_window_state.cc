@@ -111,13 +111,13 @@ void MaximizeModeWindowState::UpdateWindowPosition(
 }
 
 MaximizeModeWindowState::MaximizeModeWindowState(
-    WmWindow* window,
+    aura::Window* window,
     MaximizeModeWindowManager* creator)
     : window_(window),
       creator_(creator),
-      current_state_type_(window->GetWindowState()->GetStateType()),
+      current_state_type_(wm::GetWindowState(window)->GetStateType()),
       defer_bounds_updates_(false) {
-  old_state_.reset(window_->GetWindowState()
+  old_state_.reset(wm::GetWindowState(window)
                        ->SetStateObject(std::unique_ptr<State>(this))
                        .release());
 }
@@ -138,7 +138,7 @@ void MaximizeModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
 
   defer_bounds_updates_ = defer_bounds_updates;
   if (!defer_bounds_updates_)
-    UpdateBounds(window_->GetWindowState(), true);
+    UpdateBounds(wm::GetWindowState(window_), true);
 }
 
 void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,

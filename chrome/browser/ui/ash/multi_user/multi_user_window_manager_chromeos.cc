@@ -687,10 +687,8 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // are not user activatable. Since invisible windows are not being tracked,
   // we tell it to maximize / track this window now before it gets shown, to
   // reduce animation jank from multiple resizes.
-  if (visible) {
-    ash::Shell::Get()->maximize_mode_controller()->AddWindow(
-        ash::WmWindow::Get(window));
-  }
+  if (visible)
+    ash::Shell::Get()->maximize_mode_controller()->AddWindow(window);
 
   AnimationSetter animation_setter(
       window,

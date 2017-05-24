@@ -12,11 +12,11 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/chromeos/accelerometer/accelerometer_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -169,7 +169,7 @@ ScreenOrientationController::~ScreenOrientationController() {
   ShellPort::Get()->RemoveDisplayObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto& windows : lock_info_map_)
-    windows.first->aura_window()->RemoveObserver(this);
+    windows.first->RemoveObserver(this);
 }
 
 void ScreenOrientationController::AddObserver(Observer* observer) {
@@ -181,31 +181,32 @@ void ScreenOrientationController::RemoveObserver(Observer* observer) {
 }
 
 void ScreenOrientationController::LockOrientationForWindow(
-    WmWindow* requesting_window,
+    aura::Window* requesting_window,
     blink::WebScreenOrientationLockType lock_orientation,
     LockCompletionBehavior lock_completion_behavior) {
   if (lock_info_map_.empty())
     Shell::Get()->activation_client()->AddObserver(this);
 
-  if (!requesting_window->aura_window()->HasObserver(this))
-    requesting_window->aura_window()->AddObserver(this);
+  if (!requesting_window->HasObserver(this))
+    requesting_window->AddObserver(this);
   lock_info_map_[requesting_window] =
       LockInfo(lock_orientation, lock_completion_behavior);
 
   ApplyLockForActiveWindow();
 }
 
-void ScreenOrientationController::UnlockOrientationForWindow(WmWindow* window) {
+void ScreenOrientationController::UnlockOrientationForWindow(
+    aura::Window* window) {
   lock_info_map_.erase(window);
   if (lock_info_map_.empty())
     Shell::Get()->activation_client()->RemoveObserver(this);
-  window->aura_window()->RemoveObserver(this);
+  window->RemoveObserver(this);
   ApplyLockForActiveWindow();
 }
 
 void ScreenOrientationController::UnlockAll() {
   for (auto pair : lock_info_map_)
-    pair.first->aura_window()->RemoveObserver(this);
+    pair.first->RemoveObserver(this);
   lock_info_map_.clear();
   Shell::Get()->activation_client()->RemoveObserver(this);
   SetRotationLockedInternal(false);
@@ -249,7 +250,7 @@ void ScreenOrientationController::OnWindowActivated(ActivationReason reason,
 }
 
 void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
-  UnlockOrientationForWindow(WmWindow::Get(window));
+  UnlockOrientationForWindow(window);
 }
 
 // Currently contents::WebContents will only be able to lock rotation while
@@ -262,7 +263,7 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 void ScreenOrientationController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (lock_info_map_.find(WmWindow::Get(window)) == lock_info_map_.end())
+  if (lock_info_map_.find(window) == lock_info_map_.end())
     return;
   ApplyLockForActiveWindow();
 }
@@ -525,11 +526,11 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
   MruWindowTracker::WindowList mru_windows(
       Shell::Get()->mru_window_tracker()->BuildMruWindowList());
 
-  for (WmWindow* window : mru_windows) {
-    if (!window->GetTargetVisibility())
+  for (auto* window : mru_windows) {
+    if (!window->TargetVisibility())
       continue;
     for (auto& pair : lock_info_map_) {
-      if (pair.first->GetTargetVisibility() && window->Contains(pair.first)) {
+      if (pair.first->TargetVisibility() && window->Contains(pair.first)) {
         LockRotationToOrientation(ResolveOrientationLock(
             pair.second.orientation, user_locked_orientation_));
         if (pair.second.lock_completion_behavior ==
@@ -543,8 +544,9 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
     }
     // The default orientation for all chrome browser/apps windows is
     // ANY, so use the user_locked_orientation_;
-    if (window->GetTargetVisibility() &&
-        static_cast<AppType>(window->GetAppType()) != AppType::OTHERS) {
+    if (window->TargetVisibility() &&
+        static_cast<AppType>(window->GetProperty(aura::client::kAppType)) !=
+            AppType::OTHERS) {
       LockRotationToOrientation(user_locked_orientation_);
       return;
     }

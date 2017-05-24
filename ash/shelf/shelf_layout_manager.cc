@@ -876,14 +876,13 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 }
 
 bool ShelfLayoutManager::HasVisibleWindow() const {
-  WmWindow* root =
-      WmWindow::Get(shelf_widget_->GetNativeWindow())->GetRootWindow();
-  const std::vector<WmWindow*> windows =
+  aura::Window* root = shelf_widget_->GetNativeWindow()->GetRootWindow();
+  const aura::Window::Windows windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
   // Process the window list and check if there are any visible windows.
   // Ignore app list windows that may be animating to hide after dismissal.
   for (auto* window : windows) {
-    if (window->IsVisible() && !IsAppListWindow(window->aura_window()) &&
+    if (window->IsVisible() && !IsAppListWindow(window) &&
         root->Contains(window)) {
       return true;
     }

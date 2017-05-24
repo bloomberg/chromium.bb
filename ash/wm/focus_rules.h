@@ -7,15 +7,17 @@
 
 #include "ash/ash_export.h"
 
-namespace ash {
+namespace aura {
+class Window;
+}
 
-class WmWindow;
+namespace ash {
 
 // These functions provide the ash implementation wm::FocusRules. See
 // description there for details.
-ASH_EXPORT bool IsToplevelWindow(WmWindow* window);
-ASH_EXPORT bool IsWindowConsideredActivatable(WmWindow* window);
-ASH_EXPORT bool IsWindowConsideredVisibleForActivation(WmWindow* window);
+ASH_EXPORT bool IsToplevelWindow(aura::Window* window);
+ASH_EXPORT bool IsWindowConsideredActivatable(aura::Window* window);
+ASH_EXPORT bool IsWindowConsideredVisibleForActivation(aura::Window* window);
 
 }  // namespace ash
 

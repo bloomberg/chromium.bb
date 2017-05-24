@@ -364,8 +364,8 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
     }
     case ANIMATION_STEP_FINALIZE: {
       // Reactivate the MRU window of the new user.
-      aura::Window::Windows mru_list = ash::WmWindow::ToAuraWindows(
-          ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList());
+      aura::Window::Windows mru_list =
+          ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList();
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);

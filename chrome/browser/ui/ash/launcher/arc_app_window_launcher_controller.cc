@@ -678,8 +678,7 @@ void ArcAppWindowLauncherController::UnregisterApp(
 
 void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
     AppWindow* app_window) {
-  ash::WmWindow* window =
-      ash::WmWindow::Get(app_window->widget()->GetNativeWindow());
+  aura::Window* window = app_window->widget()->GetNativeWindow();
   if (!window)
     return;
   AppWindowInfo* info = GetAppWindowInfoForTask(app_window->task_id());

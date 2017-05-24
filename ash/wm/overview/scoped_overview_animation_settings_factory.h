@@ -9,10 +9,13 @@
 
 #include "ash/wm/overview/overview_animation_type.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
 
 class ScopedOverviewAnimationSettings;
-class WmWindow;
 
 // Factory for creating ScopedOverviewAnimationSettings.
 class ScopedOverviewAnimationSettingsFactory {
@@ -21,7 +24,7 @@ class ScopedOverviewAnimationSettingsFactory {
 
   virtual std::unique_ptr<ScopedOverviewAnimationSettings>
   CreateOverviewAnimationSettings(OverviewAnimationType animation_type,
-                                  WmWindow* window) = 0;
+                                  aura::Window* window) = 0;
 
  protected:
   ScopedOverviewAnimationSettingsFactory();

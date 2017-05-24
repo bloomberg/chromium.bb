@@ -21,7 +21,6 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -2991,26 +2990,26 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   // Set up windows with portrait,lanscape and any.
   aura::Window* window_a = CreateTestWindowInShellWithId(0);
   {
-    WmWindow* wm_window_a = WmWindow::Get(window_a);
-    wm_window_a->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    window_a->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_a, blink::kWebScreenOrientationLockAny,
+        window_a, blink::kWebScreenOrientationLockAny,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   aura::Window* window_p = CreateTestWindowInShellWithId(0);
   {
-    WmWindow* wm_window_p = WmWindow::Get(window_p);
-    wm_window_p->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    window_p->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_p, blink::kWebScreenOrientationLockPortrait,
+        window_p, blink::kWebScreenOrientationLockPortrait,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   aura::Window* window_l = CreateTestWindowInShellWithId(0);
   {
-    WmWindow* wm_window_l = WmWindow::Get(window_l);
-    wm_window_l->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    window_l->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_l, blink::kWebScreenOrientationLockLandscape,
+        window_l, blink::kWebScreenOrientationLockLandscape,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
 
@@ -3119,8 +3118,8 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
 
   // Set up windows with portrait,lanscape and any.
   aura::Window* window = CreateTestWindowInShellWithId(0);
-  WmWindow* wm_window = WmWindow::Get(window);
-  wm_window->SetAppType(static_cast<int>(AppType::CHROME_APP));
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(AppType::CHROME_APP));
   display::Screen* screen = display::Screen::GetScreen();
 
   // Just enabling will not save the lock.
@@ -3128,7 +3127,7 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
       true);
 
   orientation_controller->LockOrientationForWindow(
-      wm_window, blink::kWebScreenOrientationLockPortrait,
+      window, blink::kWebScreenOrientationLockPortrait,
       ScreenOrientationController::LockCompletionBehavior::None);
   EXPECT_EQ(display::Display::ROTATE_90,
             screen->GetPrimaryDisplay().rotation());
@@ -3165,10 +3164,10 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
 
   aura::Window* window_a = CreateTestWindowInShellWithId(0);
   {
-    WmWindow* wm_window_a = WmWindow::Get(window_a);
-    wm_window_a->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    window_a->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_a, blink::kWebScreenOrientationLockAny,
+        window_a, blink::kWebScreenOrientationLockAny,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   wm::ActivateWindow(window_a);
@@ -3184,10 +3183,10 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
 
   aura::Window* window_ps = CreateTestWindowInShellWithId(1);
   {
-    WmWindow* wm_window_ps = WmWindow::Get(window_ps);
-    wm_window_ps->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    window_ps->SetProperty(aura::client::kAppType,
+                           static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_ps, blink::kWebScreenOrientationLockPortrait,
+        window_ps, blink::kWebScreenOrientationLockPortrait,
         ScreenOrientationController::LockCompletionBehavior::DisableSensor);
     wm::ActivateWindow(window_ps);
   }

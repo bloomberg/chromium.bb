@@ -48,6 +48,7 @@
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -171,14 +172,14 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   // Return the window with the given index.
   aura::Window* window(size_t index) {
-    DCHECK(index < window_.size());
-    return window_[index];
+    DCHECK(index < windows_.size());
+    return windows_[index];
   }
 
   // Delete the window at the given index, and set the referefence to NULL.
   void delete_window_at(size_t index) {
-    delete window_[index];
-    window_[index] = NULL;
+    delete windows_[index];
+    windows_[index] = NULL;
   }
 
   // The accessor to the MultiWindowManager.
@@ -285,7 +286,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
  private:
   // These get created for each session.
-  std::vector<aura::Window*> window_;
+  aura::Window::Windows windows_;
 
   // The instance of the MultiUserWindowManager.
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
@@ -319,10 +320,10 @@ void MultiUserWindowManagerChromeOSTest::SetUp() {
 }
 
 void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
-  DCHECK(window_.empty());
+  DCHECK(windows_.empty());
   for (int i = 0; i < windows; i++) {
-    window_.push_back(CreateTestWindowInShellWithId(i));
-    window_[i]->Show();
+    windows_.push_back(CreateTestWindowInShellWithId(i));
+    windows_[i]->Show();
   }
   multi_user_window_manager_ =
       new chrome::MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
@@ -338,9 +339,9 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
 void MultiUserWindowManagerChromeOSTest::TearDown() {
   // Since the AuraTestBase is needed to create our assets, we have to
   // also delete them before we tear it down.
-  while (!window_.empty()) {
-    delete *(window_.begin());
-    window_.erase(window_.begin());
+  while (!windows_.empty()) {
+    delete *(windows_.begin());
+    windows_.erase(windows_.begin());
   }
 
   chrome::MultiUserWindowManager::DeleteInstance();
@@ -351,7 +352,7 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
 
 std::string MultiUserWindowManagerChromeOSTest::GetStatus() {
   std::string s;
-  for (size_t i = 0; i < window_.size(); i++) {
+  for (size_t i = 0; i < windows_.size(); i++) {
     if (i)
       s += ", ";
     if (!window(i)) {
@@ -1520,8 +1521,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   activation_client->ActivateWindow(window(0));
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
-  aura::Window::Windows mru_list = WmWindow::ToAuraWindows(
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList());
+  aura::Window::Windows mru_list =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));
@@ -1538,8 +1539,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
-  mru_list = WmWindow::ToAuraWindows(
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList());
+  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));

@@ -87,7 +87,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   UpdateFullscreenState();
 
   backdrop_controller_->OnWindowAddedToLayout(child);
-  WindowPositioner::RearrangeVisibleWindowOnShow(WmWindow::Get(child));
+  WindowPositioner::RearrangeVisibleWindowOnShow(child);
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
     wm::GetWindowState(child)->DisableAlwaysOnTop(nullptr);
 }
@@ -98,8 +98,7 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   wm::GetWindowState(child)->RemoveObserver(this);
 
   if (child->layer()->GetTargetVisibility())
-    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(
-        WmWindow::Get(child));
+    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
 }
 
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
@@ -116,10 +115,9 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
     window_state->Unminimize();
 
   if (child->layer()->GetTargetVisibility())
-    WindowPositioner::RearrangeVisibleWindowOnShow(WmWindow::Get(child));
+    WindowPositioner::RearrangeVisibleWindowOnShow(child);
   else
-    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(
-        WmWindow::Get(child));
+    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
   UpdateFullscreenState();
   UpdateShelfVisibility();
   backdrop_controller_->OnChildWindowVisibilityChanged(child, visible);
