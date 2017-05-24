@@ -727,6 +727,11 @@ class ValidationPool(object):
       if change.pass_count > 0:
         s += ' | passed:%d' % change.pass_count
 
+      # Add the subject line of the commit message.
+      if change.commit_message:
+        s += ' | %s' % cros_build_lib.TruncateStringToLine(
+            change.commit_message, 80)
+
       logging.PrintBuildbotLink(s, change.url)
 
   def FilterChangesForThrottledTree(self):

@@ -48,6 +48,22 @@ class RunCommandErrorStrTest(cros_test_lib.TestCase):
     str(rce)
 
 
+class TruncateStringTest(cros_test_lib.TestCase):
+  """Test the TruncateStringToLine function."""
+
+  def testTruncate(self):
+    self.assertEqual(cros_build_lib.TruncateStringToLine('1234567', 5),
+                     '12...')
+
+  def testNoTruncate(self):
+    self.assertEqual(cros_build_lib.TruncateStringToLine('1234567', 7),
+                     '1234567')
+
+  def testNoTruncateMultiline(self):
+    self.assertEqual(cros_build_lib.TruncateStringToLine('1234567\nasdf', 7),
+                     '1234567')
+
+
 class CmdToStrTest(cros_test_lib.TestCase):
   """Test the CmdToStr function."""
 

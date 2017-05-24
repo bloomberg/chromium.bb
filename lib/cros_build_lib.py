@@ -101,6 +101,26 @@ def ShellQuote(s):
   return '"%s"' % s
 
 
+def TruncateStringToLine(s, maxlen=80):
+  """Truncate |s| to a maximum length of |maxlen| including elipsis (...)
+
+  Args:
+    s: A string.
+    maxlen: Maximum length of desired returned string. Must be at least 3.
+
+  Returns:
+    s if len(s) <= maxlen already and s has no newline in it.
+    Otherwise, a single line truncation that ends with '...' and is of
+    length |maxlen|.
+  """
+  assert maxlen >= 3
+  line = s.splitlines()[0]
+  if len(line) <= maxlen:
+    return line
+  else:
+    return line[:maxlen-3] + '...'
+
+
 def ShellUnquote(s):
   """Do the opposite of ShellQuote.
 
