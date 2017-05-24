@@ -291,15 +291,7 @@ bool StyleRareNonInheritedData::operator==(
 
 bool StyleRareNonInheritedData::ContentDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  ContentData* a = content_.Get();
-  ContentData* b = o.content_.Get();
-
-  while (a && b && *a == *b) {
-    a = a->Next();
-    b = b->Next();
-  }
-
-  return !a && !b;
+  return DataEquivalent(content_, o.content_);
 }
 
 bool StyleRareNonInheritedData::CounterDataEquivalent(
