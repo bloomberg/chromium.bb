@@ -273,8 +273,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   delegate_id_ = delegate_->AddObserver(this);
   delegate_->SetIdle(delegate_id_, true);
 
-  media_log_->AddEvent(
-      media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
+  media_log_->AddEvent(media_log_->CreateCreatedEvent(
+      url::Origin(frame_->GetSecurityOrigin()).GetURL().spec()));
 
   if (params->initial_cdm())
     SetCdm(params->initial_cdm());

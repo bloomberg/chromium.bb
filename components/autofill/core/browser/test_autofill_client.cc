@@ -48,7 +48,7 @@ rappor::RapporServiceImpl* TestAutofillClient::GetRapporServiceImpl() {
 }
 
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
-  return &test_ukm_recorder_;
+  return ukm::UkmRecorder::Get();
 }
 
 SaveCardBubbleController* TestAutofillClient::GetSaveCardBubbleController() {

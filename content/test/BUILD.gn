@@ -1470,6 +1470,8 @@ test("content_unittests") {
     "//components/payments/mojom",
     "//components/payments/mojom:mojom_payment_app",
     "//components/rappor:test_support",
+    "//components/ukm:test_support",
+    "//components/ukm/public/interfaces",
     "//components/viz/display_compositor",
     "//components/viz/frame_sinks",
     "//content:resources",

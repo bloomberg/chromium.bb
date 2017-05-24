@@ -49,6 +49,7 @@ source_set("browser") {
     "//components/rappor",
     "//components/tracing",
     "//components/tracing:startup_tracing",
+    "//components/ukm/public",
     "//components/url_formatter",
     "//components/variations",
     "//components/viz/display_compositor",

@@ -75,6 +75,8 @@ class MEDIA_EXPORT MediaLog {
   std::unique_ptr<MediaLogEvent> CreateBooleanEvent(MediaLogEvent::Type type,
                                                     const std::string& property,
                                                     bool value);
+  std::unique_ptr<MediaLogEvent> CreateCreatedEvent(
+      const std::string& origin_url);
   std::unique_ptr<MediaLogEvent> CreateStringEvent(MediaLogEvent::Type type,
                                                    const std::string& property,
                                                    const std::string& value);

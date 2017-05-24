@@ -4,13 +4,16 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-static_library("public") {
+component("public") {
   sources = [
     "ukm_entry_builder.cc",
     "ukm_entry_builder.h",
+    "ukm_export.h",
     "ukm_recorder.cc",
     "ukm_recorder.h",
   ]
+
+  defines = [ "UKM_IMPLEMENTATION" ]
 
   public_deps = [
     "//base",

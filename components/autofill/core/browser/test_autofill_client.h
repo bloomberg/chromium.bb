@@ -88,15 +88,12 @@ class TestAutofillClient : public AutofillClient {
 
   void set_form_origin(const GURL& url) { form_origin_ = url; }
 
-  ukm::TestUkmRecorder* GetTestUkmRecorder() { return &test_ukm_recorder_; }
-
  private:
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
   std::unique_ptr<FakeOAuth2TokenService> token_service_;
   std::unique_ptr<FakeIdentityProvider> identity_provider_;
   std::unique_ptr<rappor::TestRapporServiceImpl> rappor_service_;
-  ukm::TestUkmRecorder test_ukm_recorder_;
 #if !defined(OS_ANDROID)
   std::unique_ptr<SaveCardBubbleController> save_card_bubble_controller_;
 #endif
