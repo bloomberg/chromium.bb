@@ -956,6 +956,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called by |beforeunload_timeout_| when the beforeunload timeout fires.
   void BeforeUnloadTimeout();
 
+  // Called when a navigation commits succesfully to |url|. This will update
+  // |last_committed_site_url_| if it's not equal to the site url corresponding
+  // to |url|.
+  void SetLastCommittedSiteUrl(const GURL& url);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -998,6 +1003,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;
+
+  // Track the site URL of the last site we committed successfully, as obtained
+  // from SiteInstance::GetSiteURL.
+  GURL last_committed_site_url_;
 
   // The most recent non-error URL to commit in this frame.  Remove this in
   // favor of GetLastCommittedURL() once PlzNavigate is enabled or cross-process

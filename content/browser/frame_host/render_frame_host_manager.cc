@@ -484,8 +484,8 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // https://code.google.com/p/chromium/issues/detail?id=75195
     if (was_caused_by_user_gesture) {
       if (IsBrowserSideNavigationEnabled()) {
-        CleanUpNavigation();
         frame_tree_node_->ResetNavigationRequest(false, true);
+        CleanUpNavigation();
       } else {
         CancelPending();
       }

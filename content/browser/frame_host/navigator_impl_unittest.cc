@@ -252,14 +252,22 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_FALSE(node->navigation_request());
 
   // Commit the navigation.
-  main_test_rfh()->SendNavigate(0, true, kUrl2);
+  if (AreAllSitesIsolatedForTesting()) {
+    GetSpeculativeRenderFrameHost(node)->SendNavigate(0, true, kUrl2);
+  } else {
+    main_test_rfh()->SendNavigate(0, true, kUrl2);
+  }
   EXPECT_TRUE(main_test_rfh()->is_active());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
   EXPECT_FALSE(node->render_manager()->pending_frame_host());
 
-  // The SiteInstance did not change.
-  EXPECT_EQ(site_instance_id_1, main_test_rfh()->GetSiteInstance()->GetId());
+  // The SiteInstance did not change unless site-per-process is enabled.
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(site_instance_id_1, main_test_rfh()->GetSiteInstance()->GetId());
+  } else {
+    EXPECT_EQ(site_instance_id_1, main_test_rfh()->GetSiteInstance()->GetId());
+  }
 }
 
 // PlzNavigate: Test that a beforeUnload denial cancels the navigation.

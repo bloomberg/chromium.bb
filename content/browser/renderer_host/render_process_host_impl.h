@@ -309,6 +309,25 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void set_render_process_host_factory(
       const RenderProcessHostFactory* rph_factory);
 
+  // Tracks which sites frames are hosted in which RenderProcessHosts.
+  static void AddFrameWithSite(BrowserContext* browser_context,
+                               RenderProcessHost* render_process_host,
+                               const GURL& site_url);
+  static void RemoveFrameWithSite(BrowserContext* browser_context,
+                                  RenderProcessHost* render_process_host,
+                                  const GURL& site_url);
+
+  // Tracks which sites navigations are expected to commit in which
+  // RenderProcessHosts.
+  static void AddExpectedNavigationToSite(
+      BrowserContext* browser_context,
+      RenderProcessHost* render_process_host,
+      const GURL& site_url);
+  static void RemoveExpectedNavigationToSite(
+      BrowserContext* browser_context,
+      RenderProcessHost* render_process_host,
+      const GURL& site_url);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -414,6 +433,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       BrowserContext* browser_context,
       SiteInstanceImpl* site_instance,
       bool is_for_guests_only);
+
+  // Returns a RenderProcessHost that is rendering |site_url| in one of its
+  // frames, or that is expecting a navigation to |site_url|.
+  static RenderProcessHost* FindReusableProcessHostForSite(
+      BrowserContext* browser_context,
+      const GURL& site_url);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   void OnRegisterAecDumpConsumer(int id);

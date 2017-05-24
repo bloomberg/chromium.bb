@@ -484,6 +484,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // RenderFrameHost during cleanup.
   ClearAllWebUI();
 
+  SetLastCommittedSiteUrl(GURL());
+
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
@@ -1454,6 +1456,15 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       TakeNavigationHandleForCommit(validated_params);
   DCHECK(navigation_handle);
+
+  // Update the site url if the navigation was successful and the page is not an
+  // interstitial.
+  if (validated_params.url_is_unreachable ||
+      delegate_->GetAsInterstitialPage()) {
+    SetLastCommittedSiteUrl(GURL());
+  } else {
+    SetLastCommittedSiteUrl(validated_params.url);
+  }
 
   // PlzNavigate sends searchable form data in the BeginNavigation message
   // while non-PlzNavigate sends it in the DidCommitProvisionalLoad message.
@@ -3924,6 +3935,32 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
     return;
 
   SimulateBeforeUnloadAck();
+}
+
+void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
+  GURL site_url =
+      url.is_empty() ? GURL()
+                     : SiteInstance::GetSiteForURL(frame_tree_node_->navigator()
+                                                       ->GetController()
+                                                       ->GetBrowserContext(),
+                                                   url);
+
+  if (last_committed_site_url_ == site_url)
+    return;
+
+  if (!last_committed_site_url_.is_empty()) {
+    RenderProcessHostImpl::RemoveFrameWithSite(
+        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+        GetProcess(), last_committed_site_url_);
+  }
+
+  last_committed_site_url_ = site_url;
+
+  if (!last_committed_site_url_.is_empty()) {
+    RenderProcessHostImpl::AddFrameWithSite(
+        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+        GetProcess(), last_committed_site_url_);
+  }
 }
 
 #if defined(OS_ANDROID)
