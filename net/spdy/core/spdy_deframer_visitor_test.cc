@@ -10,7 +10,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/mock_spdy_framer_visitor.h"
