@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
+import("//ppapi/features/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 declare_args() {
@@ -104,7 +105,7 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media = is_android || is_chromecast
+  enable_mojo_media = is_android || is_chromecast || enable_pepper_cdms
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.
@@ -165,9 +166,11 @@ declare_args() {
         "audio_decoder",
       ]
       mojo_media_host = "gpu"
-    } else {
-      mojo_media_services = [ "video_decoder" ]
-      mojo_media_host = "gpu"
+    } else if (enable_pepper_cdms) {
+      # TODO(xhwang): Also support running "video_decoder" service in the "gpu"
+      # process. See http://crbug.com/664364
+      mojo_media_services = [ "cdm" ]
+      mojo_media_host = "utility"
     }
   }
 }

@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
 #include "content/public/common/content_switches.h"
@@ -13,6 +14,7 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/features.h"
+#include "ppapi/features/features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -22,12 +24,11 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_CDM)
+#if BUILDFLAG(ENABLE_MOJO_CDM) && !BUILDFLAG(ENABLE_PEPPER_CDMS)
 // When mojo CDM is enabled, External Clear Key is supported in //content/shell/
 // by using mojo CDM with AesDecryptor running in the remote (e.g. GPU or
-// Browser) process.
-// Note that External Clear Key is also supported in chrome/ when pepper CDM is
-// used, which is tested in browser_tests.
+// Browser) process. When pepper CDM is supported, External Clear Key is
+// supported in chrome/, which is tested in browser_tests.
 #define SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL
 #endif
 
@@ -152,10 +153,12 @@ class EncryptedMediaTest : public MediaBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    media::kExternalClearKeyForTesting.name);
+    scoped_feature_list_.InitWithFeatures({media::kExternalClearKeyForTesting},
+                                          {});
 #endif
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 using ::testing::Combine;

@@ -3253,10 +3253,6 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
-#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  services->emplace("media", base::ASCIIToUTF16("Media Service"));
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING)
   services->emplace(printing::mojom::kServiceName,
                     base::ASCIIToUTF16("PDF Compositor Service"));
