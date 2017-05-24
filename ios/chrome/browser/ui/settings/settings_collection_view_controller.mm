@@ -1137,9 +1137,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 #pragma mark - SigninPromoViewConsumer
 
-- (void)configureSigninPromoViewWithNewIdentity:(BOOL)newIdentity
-                                   configurator:(SigninPromoViewConfigurator*)
-                                                    configurator {
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
   if (_signinInteractionController) {
     // When sign-in is started in a cold state (no default account), the sign-in
     // interaction controller does the sign-in and then asks for sync
@@ -1167,7 +1167,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   if (signinPromoItem) {
     signinPromoItem.configurator = configurator;
     [self reconfigureCellsForItems:@[ signinPromoItem ]];
-    if (newIdentity)
+    if (identityChanged)
       [self.collectionViewLayout invalidateLayout];
   }
 }

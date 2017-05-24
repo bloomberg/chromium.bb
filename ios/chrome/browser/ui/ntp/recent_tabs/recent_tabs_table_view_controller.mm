@@ -1014,16 +1014,16 @@ enum CellType {
 
 #pragma mark - SigninPromoViewConsumer
 
-- (void)configureSigninPromoViewWithNewIdentity:(BOOL)newIdentity
-                                   configurator:(SigninPromoViewConfigurator*)
-                                                    configurator {
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
   DCHECK(_signinPromoViewMediator);
   NSInteger sectionIndex =
       [self sectionIndexForSectionType:OTHER_DEVICES_SECTION];
   DCHECK(sectionIndex != NSNotFound);
   NSIndexPath* indexPath =
       [NSIndexPath indexPathForRow:1 inSection:sectionIndex];
-  if (newIdentity) {
+  if (identityChanged) {
     [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
                           withRowAnimation:UITableViewRowAnimationNone];
     return;

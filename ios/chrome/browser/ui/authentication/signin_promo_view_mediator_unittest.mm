@@ -59,15 +59,16 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     CheckWarmStateConfigurator([mediator_ createConfigurator]);
   }
 
-  void ExpectConfiguratorNotification(BOOL new_identity) {
+  void ExpectConfiguratorNotification(BOOL identity_changed) {
     configurator_ = nil;
+    SigninPromoViewConfigurator* configurator_arg =
+        [OCMArg checkWithBlock:^BOOL(id value) {
+          configurator_ = value;
+          return YES;
+        }];
     OCMExpect([consumer_
-        configureSigninPromoViewWithNewIdentity:new_identity
-                                   configurator:[OCMArg checkWithBlock:^BOOL(
-                                                            id value) {
-                                     configurator_ = value;
-                                     return YES;
-                                   }]]);
+        configureSigninPromoWithConfigurator:configurator_arg
+                             identityChanged:identity_changed]);
   }
 
   void ExpectColdStateConfiguration() {
