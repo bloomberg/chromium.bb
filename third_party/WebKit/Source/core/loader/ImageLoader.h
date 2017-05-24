@@ -25,7 +25,6 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
@@ -40,6 +39,10 @@ class IncrementLoadEventDelayCount;
 class Element;
 class ImageLoader;
 class LayoutImageResource;
+
+template <typename T>
+class EventSender;
+using ImageEventSender = EventSender<ImageLoader>;
 
 class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
                                 public ImageResourceObserver {
@@ -109,9 +112,14 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   bool HasPendingActivity() const { return HasPendingEvent() || pending_task_; }
 
-  bool HasPendingError() const { return pending_error_event_.IsActive(); }
+  bool HasPendingError() const { return has_pending_error_event_; }
 
   bool HadError() const { return !failed_load_url_.IsEmpty(); }
+
+  void DispatchPendingEvent(ImageEventSender*);
+
+  static void DispatchPendingLoadEvents();
+  static void DispatchPendingErrorEvents();
 
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
 
@@ -134,8 +142,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   bool HasPendingEvent() const;
   void UpdatedHasPendingEvent();
 
-  void DispatchPendingLoadEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
-  void DispatchPendingErrorEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
+  void DispatchPendingLoadEvent();
+  void DispatchPendingErrorEvent();
 
   LayoutImageResource* GetLayoutImageResource();
   void UpdateLayoutObject();
@@ -198,8 +206,10 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   std::unique_ptr<IncrementLoadEventDelayCount>
       delay_until_image_notify_finished_;
 
-  TaskHandle pending_load_event_;
-  TaskHandle pending_error_event_;
+  // Indicates whether there is a pending task for the load/error event on
+  // EventSender. Will be replaced when EventSender is removed crbug/624697.
+  bool has_pending_load_event_ : 1;
+  bool has_pending_error_event_ : 1;
 
   bool image_complete_ : 1;
   bool loading_image_document_ : 1;
