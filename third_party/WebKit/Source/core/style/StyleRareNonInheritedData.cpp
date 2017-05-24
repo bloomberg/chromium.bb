@@ -82,6 +82,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
       shape_outside_(ComputedStyle::InitialShapeOutside()),
       clip_path_(ComputedStyle::InitialClipPath()),
       mask_(kMaskFillLayer, true),
+      mask_box_image_(NinePieceImage::MaskDefaults()),
       page_size_(),
       shape_margin_(ComputedStyle::InitialShapeMargin()),
       text_decoration_color_(StyleColor::CurrentColor()),
@@ -129,9 +130,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
       resize_(ComputedStyle::InitialResize()),
       has_compositor_proxy_(false),
       has_author_background_(false),
-      has_author_border_(false) {
-  mask_box_image_.SetMaskDefaults();
-}
+      has_author_border_(false) {}
 
 StyleRareNonInheritedData::StyleRareNonInheritedData(
     const StyleRareNonInheritedData& o)

@@ -100,8 +100,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
     reflection->SetOffset(reflect_value.Offset()->ConvertToLength(
         state.CssToLengthConversionData()));
   if (reflect_value.Mask()) {
-    NinePieceImage mask;
-    mask.SetMaskDefaults();
+    NinePieceImage mask = NinePieceImage::MaskDefaults();
     CSSToStyleMap::MapNinePieceImage(state, CSSPropertyWebkitBoxReflect,
                                      *reflect_value.Mask(), mask);
     reflection->SetMask(mask);
