@@ -187,7 +187,7 @@ message DeviceServiceApiAccessResponse {
 }
 
 message PolicyFetchRequest {
-  reserved 5, 10;
+  reserved 5;
 
   // This is the policy type, which maps to D3 policy type internally.
   // By convention, we use "/" as separator to create policy namespace.
@@ -280,6 +280,8 @@ message DeviceState {
 // This message is included in serialized form in PolicyFetchResponse below. It
 // may also be signed, with the signature being created for the serialized form.
 message PolicyData {
+  reserved 10;
+
   // See PolicyFetchRequest.policy_type.
   optional string policy_type = 1;
 
