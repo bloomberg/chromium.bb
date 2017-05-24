@@ -5,7 +5,7 @@
 // https://wicg.github.io/webusb/#usbintransferresult
 
 [
-    OriginTrialEnabled=WebUSB,
+    RuntimeEnabled=WebUSB,
     Constructor(USBTransferStatus status, optional DataView? data)
 ] interface USBInTransferResult {
     readonly attribute DataView? data;

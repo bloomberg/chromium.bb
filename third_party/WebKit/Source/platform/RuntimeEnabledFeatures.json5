@@ -1078,8 +1078,7 @@
     },
     {
       name: "WebUSB",
-      origin_trial_feature_name: "WebUSB2",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebVR",

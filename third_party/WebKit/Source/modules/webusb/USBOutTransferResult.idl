@@ -5,7 +5,7 @@
 // https://wicg.github.io/webusb/#usbouttransferresult
 
 [
-    OriginTrialEnabled=WebUSB,
+    RuntimeEnabled=WebUSB,
     Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0)
 ] interface USBOutTransferResult {
     readonly attribute unsigned long bytesWritten;
