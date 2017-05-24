@@ -44,5 +44,5 @@ Its previewer type: SearchableView > widget vbox
 Running: testBinaryBlankImageFile
 Creating a NetworkRequest with mimeType: image/png
 Content: 
-Its previewer type: widget vbox empty-view
+Its previewer type: widget vbox empty-view-scroller
 
