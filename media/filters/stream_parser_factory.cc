@@ -107,11 +107,6 @@ static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-bool CheckIfMp4Vp9DemuxingEnabled(const std::string& codec_id,
-                                  MediaLog* media_log) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVp9InMp4);
-}
 
 // AAC Object Type IDs that Chrome supports.
 static const int kAACLCObjectType = 2;
@@ -178,8 +173,7 @@ static const CodecInfo kDolbyVisionHEVCCodecInfo2 = {
     "dvhe.*", CodecInfo::VIDEO, NULL, CodecInfo::HISTOGRAM_DOLBYVISION};
 #endif
 #endif
-static const CodecInfo kMPEG4VP09CodecInfo = {"vp09.*", CodecInfo::VIDEO,
-                                              &CheckIfMp4Vp9DemuxingEnabled,
+static const CodecInfo kMPEG4VP09CodecInfo = {"vp09.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_VP9};
 static const CodecInfo kMPEG4AACCodecInfo = { "mp4a.40.*", CodecInfo::AUDIO,
                                               &ValidateMP4ACodecID,

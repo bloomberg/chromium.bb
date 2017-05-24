@@ -138,10 +138,6 @@ const char kVideoUnderflowThresholdMs[] = "video-underflow-threshold-ms";
 const char kDisableRTCSmoothnessAlgorithm[] =
     "disable-rtc-smoothness-algorithm";
 
-// Enables demuxing of vp9 in mp4. Note that this flag will not have any effect
-// if MP4 demuxing is not enabled in the build.
-const char kEnableVp9InMp4[] = "enable-vp9-in-mp4";
-
 // Force media player using SurfaceView instead of SurfaceTexture on Android.
 const char kForceVideoOverlays[] = "force-video-overlays";
 

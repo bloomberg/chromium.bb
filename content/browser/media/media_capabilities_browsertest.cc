@@ -42,7 +42,6 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaCapabilities");
     command_line->AppendSwitch(switches::kEnableNewVp9CodecString);
-    command_line->AppendSwitch(switches::kEnableVp9InMp4);
   }
 
   std::string CanDecodeAudio(const std::string& content_type) {
@@ -104,7 +103,6 @@ IN_PROC_BROWSER_TEST_F(MediaCapabilitiesTest, VideoDecodeTypes) {
             CanDecodeVideo("'video/mp4; codecs=\"avc1.42701E\"'"));
   EXPECT_EQ(kPropSupported,
             CanDecodeVideo("'video/mp4; codecs=\"avc1.42F01E\"'"));
-  // Requires command line flag switches::kEnableVp9InMp4
   EXPECT_EQ(kPropSupported,
             CanDecodeVideo("'video/mp4; codecs=\"vp09.00.10.08\"'"));
 

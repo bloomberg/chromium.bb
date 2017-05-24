@@ -161,7 +161,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableVp9InMp4);
     command_line->AppendSwitch(switches::kEnableNewVp9CodecString);
   }
 
