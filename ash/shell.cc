@@ -102,7 +102,6 @@
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
-#include "ash/wm/overview/scoped_overview_animation_settings_factory_aura.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -846,8 +845,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (config != Config::MASH)
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
 
-  scoped_overview_animation_settings_factory_.reset(
-      new ScopedOverviewAnimationSettingsFactoryAura);
   window_positioner_ = base::MakeUnique<WindowPositioner>();
 
   if (config == Config::CLASSIC) {

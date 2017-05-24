@@ -16,7 +16,6 @@
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -109,13 +108,9 @@ static const float kPreCloseScale = 0.02f;
 void SetupFadeInAfterLayout(views::Widget* widget) {
   aura::Window* window = widget->GetNativeWindow();
   window->layer()->SetOpacity(0.0f);
-  std::unique_ptr<ScopedOverviewAnimationSettings>
-      scoped_overview_animation_settings =
-          ScopedOverviewAnimationSettingsFactory::Get()
-              ->CreateOverviewAnimationSettings(
-                  OverviewAnimationType::
-                      OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-                  window);
+  ScopedOverviewAnimationSettings scoped_overview_animation_settings(
+      OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      window);
   window->layer()->SetOpacity(1.0f);
 }
 
@@ -688,9 +683,8 @@ void WindowSelectorItem::UpdateHeaderLayout(
     SetupFadeInAfterLayout(item_widget_.get());
   }
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-      ScopedOverviewAnimationSettingsFactory::Get()
-          ->CreateOverviewAnimationSettings(animation_type, widget_window);
+  ScopedOverviewAnimationSettings animation_settings(animation_type,
+                                                     widget_window);
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.
@@ -716,9 +710,8 @@ void WindowSelectorItem::AnimateOpacity(float opacity,
 
   const float header_opacity = selected_ ? 0.f : kHeaderOpacity * opacity;
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings_label =
-      ScopedOverviewAnimationSettingsFactory::Get()
-          ->CreateOverviewAnimationSettings(animation_type, widget_window);
+  ScopedOverviewAnimationSettings animation_settings_label(animation_type,
+                                                           widget_window);
   widget_window->layer()->SetOpacity(header_opacity);
 }
 
@@ -732,12 +725,9 @@ void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {
 
   // Fade out the widget. This animation continues past the lifetime of |this|.
   aura::Window* widget_window = widget->GetNativeWindow();
-  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-      ScopedOverviewAnimationSettingsFactory::Get()
-          ->CreateOverviewAnimationSettings(
-              OverviewAnimationType::
-                  OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
-              widget_window);
+  ScopedOverviewAnimationSettings animation_settings(
+      OverviewAnimationType::OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
+      widget_window);
   // CleanupAnimationObserver will delete itself (and the widget) when the
   // opacity animation is complete.
   // Ownership over the observer is passed to the window_selector_->delegate()
@@ -746,7 +736,7 @@ void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {
   views::Widget* widget_ptr = widget.get();
   std::unique_ptr<CleanupAnimationObserver> observer(
       new CleanupAnimationObserver(std::move(widget)));
-  animation_settings->AddObserver(observer.get());
+  animation_settings.AddObserver(observer.get());
   window_selector_->delegate()->AddDelayedAnimationObserver(
       std::move(observer));
   widget_ptr->SetOpacity(0.f);

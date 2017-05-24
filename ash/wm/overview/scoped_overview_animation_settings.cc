@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
@@ -123,7 +123,7 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
 
 }  // namespace
 
-ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
+ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
     OverviewAnimationType animation_type,
     aura::Window* window)
     : animation_settings_(new ui::ScopedLayerAnimationSettings(
@@ -165,9 +165,9 @@ ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
       GetMetricsReporter(animation_type));
 }
 
-ScopedOverviewAnimationSettingsAura::~ScopedOverviewAnimationSettingsAura() {}
+ScopedOverviewAnimationSettings::~ScopedOverviewAnimationSettings() {}
 
-void ScopedOverviewAnimationSettingsAura::AddObserver(
+void ScopedOverviewAnimationSettings::AddObserver(
     ui::ImplicitAnimationObserver* observer) {
   animation_settings_->AddObserver(observer);
 }

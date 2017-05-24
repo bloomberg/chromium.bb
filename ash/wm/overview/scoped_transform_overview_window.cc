@@ -9,7 +9,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
@@ -43,13 +42,6 @@ aura::Window* GetTransientRoot(aura::Window* window) {
   while (window && ::wm::GetTransientParent(window))
     window = ::wm::GetTransientParent(window);
   return window;
-}
-
-std::unique_ptr<ScopedOverviewAnimationSettings>
-CreateScopedOverviewAnimationSettings(OverviewAnimationType animation_type,
-                                      aura::Window* window) {
-  return ScopedOverviewAnimationSettingsFactory::Get()
-      ->CreateOverviewAnimationSettings(animation_type, window);
 }
 
 // An iterator class that traverses an aura::Window and all of its transient
@@ -197,10 +189,9 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_);
-  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-      CreateScopedOverviewAnimationSettings(
-          OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
-          window_);
+  ScopedOverviewAnimationSettings animation_settings(
+      OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
+      window_);
   wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   SetOpacity(original_opacity_);
 }
@@ -210,7 +201,8 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     ScopedAnimationSettings* animation_settings) {
   for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
     animation_settings->push_back(
-        CreateScopedOverviewAnimationSettings(animation_type, window));
+        base::MakeUnique<ScopedOverviewAnimationSettings>(animation_type,
+                                                          window));
   }
 }
 
