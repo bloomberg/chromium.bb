@@ -6,7 +6,7 @@
 <body id="body">
 
 <div role="listbox">
-<div role="option">option 1</div>
+<div role="option" tabindex="-1">option 1</div>
 <div role="option" aria-label="label 2">option 2</div>
 </div>
 
@@ -33,6 +33,8 @@
 
           shouldBe("firstChild.childrenCount", "0");
           shouldBe("secondChild.childrenCount", "0");
+
+          shouldBe("firstChild.isFocusable", "true");
     }
 
 </script>

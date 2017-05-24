@@ -1,5 +1,10 @@
  
 link  submit
+treeitem
+option
+tab
+gridcell
+checkbox
 This tests that the aria-disabled attribute works. The text field should not be enabled.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -10,6 +15,11 @@ PASS textField.isEnabled is true
 PASS group.isEnabled is false
 PASS link.isEnabled is false
 PASS button.isEnabled is true
+PASS treeitem.isEnabled is false
+PASS option.isEnabled is false
+PASS tab.isEnabled is false
+PASS gridcell.isEnabled is false
+PASS checkbox.isEnabled is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

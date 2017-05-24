@@ -1,0 +1,25 @@
+rootWebArea focusable
+++genericContainer
+++++popUpButton focusable
+++++++menuListPopup
+++++++++menuListOption focusable selectable selected name='Placeholder option'
+++++++++menuListOption focusable selectable name='Option 1'
+++++++++menuListOption focusable selectable name='Option 2'
+++++popUpButton focusable
+++++++menuListPopup
+++++++++menuListOption focusable selectable name='Option 1'
+++++++++menuListOption focusable selectable selected name='Option 2'
+++++++++menuListOption focusable selectable name='Option 3'
+++++popUpButton focusable
+++++++menuListPopup
+++++++++menuListOption focusable selectable selected name='Option 1'
+++++++++menuListOption focusable selectable name='Option 2'
+++++++++menuListOption focusable selectable name='Option 3'
+++++listBox focusable
+++++++listBoxOption focusable selectable name='Option 1'
+++++++listBoxOption focusable selectable name='Option 2'
+++++++listBoxOption focusable selectable name='Option 3'
+++++listBox focusable
+++++++listBoxOption focusable selectable name='Option 1'
+++++++listBoxOption focusable selectable name='Option 2'
+++++++listBoxOption focusable selectable name='Option 3'

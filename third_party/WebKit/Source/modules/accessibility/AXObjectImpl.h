@@ -714,6 +714,8 @@ class MODULES_EXPORT AXObjectImpl
   virtual AXObjectImpl* ComputeParentIfExists() const { return 0; }
   AXObjectImpl* CachedParentObject() const { return parent_; }
   AXObjectImpl* ParentObjectUnignored() const;
+  AXObjectImpl* ContainerWidget() const;
+  bool IsContainerWidget() const;
 
   // Low-level accessibility tree exploration, only for use within the
   // accessibility module.

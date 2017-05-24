@@ -10,9 +10,13 @@
   <div role="group">
     <a id="link1" href="#">link</a>
     <button id="button1" type="submit" aria-disabled="false">submit</button>
-  <div>
-<div>
+  </div>
 </div>
+<div id="treeitem1" role="treeitem" tabindex="-1" aria-disabled="true">treeitem</div>
+<div id="option1" role="option" tabindex="-1" aria-disabled="true">option</div>
+<div id="tab1" role="tab" tabindex="-1" aria-disabled="true">tab</div>
+<div id="gridcell1" role="gridcell" tabindex="-1" aria-disabled="true">gridcell</div>
+<div id="checkbox1" role="checkbox" tabindex="-1" aria-disabled="true">checkbox</div>
 <p id="description"></p>
 <div id="console"></div>
 
@@ -36,8 +40,23 @@
 
           var button = accessibilityController.accessibleElementById("button1");
           shouldBe("button.isEnabled", "true");
-    }
 
+          var treeitem = accessibilityController.accessibleElementById("treeitem1");
+          shouldBe("treeitem.isEnabled", "false");
+
+          var option = accessibilityController.accessibleElementById("option1");
+          shouldBe("option.isEnabled", "false");
+
+          var tab = accessibilityController.accessibleElementById("tab1");
+          shouldBe("tab.isEnabled", "false");
+
+          var gridcell = accessibilityController.accessibleElementById("gridcell1");
+          shouldBe("gridcell.isEnabled", "false");
+
+          var checkbox = accessibilityController.accessibleElementById("checkbox1");
+          shouldBe("checkbox.isEnabled", "false");
+
+      }
 </script>
 
 </body>

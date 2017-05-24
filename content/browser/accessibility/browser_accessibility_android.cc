@@ -105,10 +105,6 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
     return false;
   }
 
-  // If it has a focusable child, we definitely can't leave out children.
-  if (HasFocusableChild())
-    return false;
-
   // Date and time controls should drop their children.
   switch (GetRole()) {
     case ui::AX_ROLE_DATE:
@@ -118,6 +114,10 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
     default:
       break;
   }
+
+  // If it has a focusable child, we definitely can't leave out children.
+  if (HasFocusableNonOptionChild())
+    return false;
 
   BrowserAccessibilityManagerAndroid* manager_android =
       static_cast<BrowserAccessibilityManagerAndroid*>(manager());
@@ -1320,14 +1320,16 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   }
 }
 
-bool BrowserAccessibilityAndroid::HasFocusableChild() const {
+bool BrowserAccessibilityAndroid::HasFocusableNonOptionChild() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
   for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibility* child = InternalGetChild(i);
-    if (child->HasState(ui::AX_STATE_FOCUSABLE))
+    if (child->HasState(ui::AX_STATE_FOCUSABLE) &&
+        child->GetRole() != ui::AX_ROLE_MENU_LIST_OPTION)
       return true;
-    if (static_cast<BrowserAccessibilityAndroid*>(child)->HasFocusableChild())
+    if (static_cast<BrowserAccessibilityAndroid*>(child)
+            ->HasFocusableNonOptionChild())
       return true;
   }
   return false;

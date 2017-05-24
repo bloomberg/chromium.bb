@@ -5348,9 +5348,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_LIST_BOX_OPTION:
       ia_role = ROLE_SYSTEM_LISTITEM;
-      if (ia_state & STATE_SYSTEM_SELECTABLE) {
-        ia_state |= STATE_SYSTEM_FOCUSABLE;
-      }
       break;
     case ui::AX_ROLE_LIST_ITEM:
       ia_role = ROLE_SYSTEM_LISTITEM;
@@ -5396,9 +5393,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_MENU_LIST_OPTION:
       ia_role = ROLE_SYSTEM_LISTITEM;
       ia2_state &= ~(IA2_STATE_EDITABLE);
-      if (ia_state & STATE_SYSTEM_SELECTABLE) {
-        ia_state |= STATE_SYSTEM_FOCUSABLE;
-      }
       break;
     case ui::AX_ROLE_METER:
       role_name = html_tag;

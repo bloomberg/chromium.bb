@@ -27,6 +27,7 @@
 
 #include "SkMatrix44.h"
 #include "core/dom/AccessibleNode.h"
+#include "core/html/HTMLSelectElement.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
@@ -97,7 +98,21 @@ void AXMenuListOption::SetSelected(bool b) {
   element_->SetSelected(b);
 }
 
+bool AXMenuListOption::CanSetFocusAttribute() const {
+  return CanSetSelectedAttribute();
+}
+
 bool AXMenuListOption::CanSetSelectedAttribute() const {
+  if (!isHTMLOptionElement(GetNode()))
+    return false;
+
+  if (toHTMLOptionElement(GetNode())->IsDisabledFormControl())
+    return false;
+
+  HTMLSelectElement* select_element = ParentSelectNode();
+  if (!select_element || select_element->IsDisabledFormControl())
+    return false;
+
   return IsEnabled();
 }
 
@@ -158,6 +173,16 @@ String AXMenuListOption::TextAlternative(bool recursive,
   }
 
   return text_alternative;
+}
+
+HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
+  if (!GetNode())
+    return 0;
+
+  if (isHTMLOptionElement(GetNode()))
+    return toHTMLOptionElement(GetNode())->OwnerSelectElement();
+
+  return 0;
 }
 
 DEFINE_TRACE(AXMenuListOption) {

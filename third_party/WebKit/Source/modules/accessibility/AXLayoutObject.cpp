@@ -457,22 +457,28 @@ bool AXLayoutObject::IsFocused() const {
 }
 
 bool AXLayoutObject::IsSelected() const {
-  if (!GetLayoutObject() || !GetNode())
+  if (!GetLayoutObject() || !GetNode() || !CanSetSelectedAttribute())
     return false;
 
-  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kSelected))
-    return true;
+  // aria-selected overrides automatic behaviors
+  bool is_selected;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected, is_selected))
+    return is_selected;
 
-  AXObjectImpl* focused_object = AxObjectCache().FocusedObject();
-  if (AriaRoleAttribute() == kListBoxOptionRole && focused_object &&
-      focused_object->ActiveDescendant() == this) {
-    return true;
-  }
-
+  // Tab item with focus in the associated tab
   if (IsTabItem() && IsTabItemSelected())
     return true;
 
-  return false;
+  // Selection follows focus, but ONLY in single selection containers,
+  // and only if aria-selected was not present to override
+
+  AXObjectImpl* container = ContainerWidget();
+  if (!container || container->IsMultiSelectable())
+    return false;
+
+  AXObjectImpl* focused_object = AxObjectCache().FocusedObject();
+  return focused_object == this ||
+         (focused_object && focused_object->ActiveDescendant() == this);
 }
 
 //
