@@ -15013,6 +15013,9 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="CredentialManagerCredentialRequestOptionsOnlyUnmediated"/>
   <int value="1996" label="PluginInstanceAccessFromIsolatedWorld"/>
   <int value="1997" label="PluginInstanceAccessFromMainWorld"/>
+  <int value="1998" label="RequestFullscreenForDialogElement"/>
+  <int value="1999" label="RequestFullscreenForDialogElementInTopLayer"/>
+  <int value="2000" label="ShowModalForElementInFullscreenStack"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">

@@ -62,6 +62,7 @@ class CORE_EXPORT Fullscreen final
   static Element* CurrentFullScreenElementFrom(Document&);
   static Element* CurrentFullScreenElementForBindingFrom(Document&);
   static bool IsCurrentFullScreenElement(const Element&);
+  static bool IsInFullscreenElementStack(const Element&);
 
   enum class RequestType {
     // Element.requestFullscreen()

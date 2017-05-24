@@ -29,6 +29,7 @@
 
 #include "core/dom/Fullscreen.h"
 
+#include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
@@ -308,6 +309,17 @@ Element* Fullscreen::CurrentFullScreenElementForBindingFrom(
   return document.AdjustedElement(*element);
 }
 
+bool Fullscreen::IsInFullscreenElementStack(const Element& element) {
+  const Fullscreen* found = FromIfExists(element.GetDocument());
+  if (!found)
+    return false;
+  for (size_t i = 0; i < found->fullscreen_element_stack_.size(); ++i) {
+    if (found->fullscreen_element_stack_[i].first.Get() == &element)
+      return true;
+  }
+  return false;
+}
+
 Fullscreen::Fullscreen(Document& document)
     : Supplement<Document>(document),
       ContextLifecycleObserver(&document),
@@ -379,6 +391,20 @@ void Fullscreen::RequestFullscreen(Element& element,
     // Note: MathML is not supported.
     if (!element.IsHTMLElement() && !isSVGSVGElement(element))
       break;
+
+    // TODO(foolip): In order to reinstate the hierarchy restrictions in the
+    // spec, something has to prevent dialog elements from moving within top
+    // layer. Either disallowing fullscreen for dialog elements entirely or just
+    // preventing dialog elements from simultaneously being fullscreen and modal
+    // are good candidates. See https://github.com/whatwg/fullscreen/pull/91
+    if (isHTMLDialogElement(element)) {
+      UseCounter::Count(document,
+                        UseCounter::kRequestFullscreenForDialogElement);
+      if (element.IsInTopLayer()) {
+        UseCounter::Count(
+            document, UseCounter::kRequestFullscreenForDialogElementInTopLayer);
+      }
+    }
 
     // The fullscreen element ready check for |element| returns true.
     if (!FullscreenElementReady(element))
