@@ -120,6 +120,10 @@ component("freetype") {
 
     # Selects those three modules in freetype-custom-config/ftmodule.h.
     defines += [ "PDFIUM_REQUIRED_MODULES" ]
+  } else {
+    # Using HarfBuzz assisted autohinting has a performance impact that we do
+    # not want to take on Android, see crbug.com/724095.
+    defines += [ "WITHOUT_HARFBUZZ" ]
   }
 
   if (is_linux || is_chromecast) {
@@ -174,10 +178,12 @@ component("freetype") {
   }
 
   if (!use_system_harfbuzz) {
-    deps += [
-      "//third_party/harfbuzz-ng:harfbuzz-ng-ft",
-      "//third_party/harfbuzz-ng:harfbuzz-ng-without-freetype",
-    ]
+    if (!is_android) {
+      # See "WITHOUT_HARFBUZZ" above, harfbuzz-ng-ft is only needed if we build
+      # FreeType with HarfBuzz support.
+      deps += [ "//third_party/harfbuzz-ng:harfbuzz-ng-ft" ]
+    }
+    deps += [ "//third_party/harfbuzz-ng:harfbuzz-ng-without-freetype" ]
   } else {
     deps += [ "//third_party/harfbuzz-ng:harfbuzz-ng" ]
   }
