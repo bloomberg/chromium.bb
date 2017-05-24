@@ -522,9 +522,6 @@ void GpuCommandBufferStub::Destroy() {
     }
   }
 
-  if (decoder_)
-    decoder_->set_command_buffer_service(nullptr);
-
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
   executor_.reset();
