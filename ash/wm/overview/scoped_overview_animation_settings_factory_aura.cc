@@ -5,8 +5,8 @@
 #include "ash/wm/overview/scoped_overview_animation_settings_factory_aura.h"
 
 #include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -19,9 +19,9 @@ ScopedOverviewAnimationSettingsFactoryAura::
 std::unique_ptr<ScopedOverviewAnimationSettings>
 ScopedOverviewAnimationSettingsFactoryAura::CreateOverviewAnimationSettings(
     OverviewAnimationType animation_type,
-    WmWindow* window) {
-  return base::MakeUnique<ScopedOverviewAnimationSettingsAura>(
-      animation_type, WmWindow::GetAuraWindow(window));
+    aura::Window* window) {
+  return base::MakeUnique<ScopedOverviewAnimationSettingsAura>(animation_type,
+                                                               window);
 }
 
 }  // namespace ash

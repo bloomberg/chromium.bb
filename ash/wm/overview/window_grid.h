@@ -50,8 +50,8 @@ class WindowSelectorItem;
 class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                               public wm::WindowStateObserver {
  public:
-  WindowGrid(WmWindow* root_window,
-             const std::vector<WmWindow*>& window_list,
+  WindowGrid(aura::Window* root_window,
+             const std::vector<aura::Window*>& window_list,
              WindowSelector* window_selector);
   ~WindowGrid() override;
 
@@ -86,7 +86,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Returns true if a window is contained in any of the WindowSelectorItems
   // this grid owns.
-  bool Contains(const WmWindow* window) const;
+  bool Contains(const aura::Window* window) const;
 
   // Dims the items whose titles do not contain |pattern| and prevents their
   // selection. The pattern has its accents removed and is converted to
@@ -109,7 +109,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   bool is_selecting() const { return selection_widget_ != nullptr; }
 
   // Returns the root window in which the grid displays the windows.
-  const WmWindow* root_window() const { return root_window_; }
+  const aura::Window* root_window() const { return root_window_; }
 
   const std::vector<std::unique_ptr<WindowSelectorItem>>& window_list() const {
     return window_list_;
@@ -161,7 +161,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                               int* max_right);
 
   // Root window the grid is in.
-  WmWindow* root_window_;
+  aura::Window* root_window_;
 
   // Pointer to the window selector that spawned this grid.
   WindowSelector* window_selector_;

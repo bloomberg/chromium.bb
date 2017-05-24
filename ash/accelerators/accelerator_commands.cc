@@ -9,24 +9,23 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "base/metrics/user_metrics.h"
 
 namespace ash {
 namespace accelerators {
 
 bool ToggleMinimized() {
-  WmWindow* window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* window = wm::GetActiveWindow();
   // Attempt to restore the window that would be cycled through next from
   // the launcher when there is no active window.
   if (!window) {
     MruWindowTracker::WindowList mru_windows(
         Shell::Get()->mru_window_tracker()->BuildMruWindowList());
     if (!mru_windows.empty())
-      mru_windows.front()->GetWindowState()->Activate();
+      wm::GetWindowState(mru_windows.front())->Activate();
     return true;
   }
-  wm::WindowState* window_state = window->GetWindowState();
+  wm::WindowState* window_state = wm::GetWindowState(window);
   if (!window_state->CanMinimize())
     return false;
   window_state->Minimize();
@@ -34,20 +33,20 @@ bool ToggleMinimized() {
 }
 
 void ToggleMaximized() {
-  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* active_window = wm::GetActiveWindow();
   if (!active_window)
     return;
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Maximized"));
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
-  active_window->GetWindowState()->OnWMEvent(&event);
+  wm::GetWindowState(active_window)->OnWMEvent(&event);
 }
 
 void ToggleFullscreen() {
-  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* active_window = wm::GetActiveWindow();
   if (!active_window)
     return;
   const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  active_window->GetWindowState()->OnWMEvent(&event);
+  wm::GetWindowState(active_window)->OnWMEvent(&event);
 }
 
 }  // namespace accelerators

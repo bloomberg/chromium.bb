@@ -110,6 +110,6 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
       browser_->window() ? browser_->window()->GetNativeWindow() : NULL;
 
   ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      ash::WmWindow::Get(browser_window), is_saved_bounds, passed_show_state,
-      bounds_in_screen, show_state);
+      browser_window, is_saved_bounds, passed_show_state, bounds_in_screen,
+      show_state);
 }

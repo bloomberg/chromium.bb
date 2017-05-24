@@ -19,6 +19,10 @@
 #include "ui/display/display.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
 namespace test {
 class ScreenOrientationControllerTestApi;
@@ -64,10 +68,10 @@ class ASH_EXPORT ScreenOrientationController
 
   // Allows/unallows a window to lock the screen orientation.
   void LockOrientationForWindow(
-      WmWindow* requesting_window,
+      aura::Window* requesting_window,
       blink::WebScreenOrientationLockType lock_orientation,
       LockCompletionBehavior lock_completion_behavior);
-  void UnlockOrientationForWindow(WmWindow* window);
+  void UnlockOrientationForWindow(aura::Window* window);
 
   // Unlock all and set the rotation back to the user specified rotation.
   void UnlockAll();
@@ -226,7 +230,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // Tracks all windows that have requested a lock, as well as the requested
   // orientation.
-  std::unordered_map<WmWindow*, LockInfo> lock_info_map_;
+  std::unordered_map<aura::Window*, LockInfo> lock_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationController);
 };

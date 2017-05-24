@@ -66,10 +66,10 @@ void WallpaperWindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
   std::set<aura::Window*>* results =
       &user_id_hash_window_list_map_[user_id_hash];
 
-  std::vector<aura::Window*> windows = ash::WmWindow::ToAuraWindows(
-      ash::Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal());
+  aura::Window::Windows windows =
+      ash::Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
-  for (std::vector<aura::Window*>::iterator iter = windows.begin();
+  for (aura::Window::Windows::iterator iter = windows.begin();
        iter != windows.end(); ++iter) {
     // Ignore active window and minimized windows.
     if (*iter == active_window || ash::wm::GetWindowState(*iter)->IsMinimized())

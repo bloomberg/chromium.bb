@@ -9,10 +9,11 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm_window.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
-bool IsToplevelWindow(WmWindow* window) {
+bool IsToplevelWindow(aura::Window* window) {
   DCHECK(window);
   // The window must in a valid hierarchy.
   if (!window->GetRootWindow())
@@ -20,10 +21,10 @@ bool IsToplevelWindow(WmWindow* window) {
 
   // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return IsActivatableShellWindowId(window->GetParent()->aura_window()->id());
+  return IsActivatableShellWindowId(window->parent()->id());
 }
 
-bool IsWindowConsideredActivatable(WmWindow* window) {
+bool IsWindowConsideredActivatable(aura::Window* window) {
   DCHECK(window);
   // Only toplevel windows can be activated.
   if (!IsToplevelWindow(window))
@@ -33,11 +34,12 @@ bool IsWindowConsideredActivatable(WmWindow* window) {
   return IsWindowConsideredVisibleForActivation(window);
 }
 
-bool IsWindowConsideredVisibleForActivation(WmWindow* window) {
+bool IsWindowConsideredVisibleForActivation(aura::Window* window) {
   DCHECK(window);
   // If the |window| doesn't belong to the current active user and also doesn't
   // show for the current active user, then it should not be activated.
-  if (!Shell::Get()->shell_delegate()->CanShowWindowForUser(window))
+  if (!Shell::Get()->shell_delegate()->CanShowWindowForUser(
+          WmWindow::Get(window)))
     return false;
 
   if (window->IsVisible())
@@ -45,13 +47,13 @@ bool IsWindowConsideredVisibleForActivation(WmWindow* window) {
 
   // Minimized windows are hidden in their minimized state, but they can always
   // be activated.
-  if (window->GetWindowState()->IsMinimized())
+  if (wm::GetWindowState(window)->IsMinimized())
     return true;
 
-  if (!window->GetTargetVisibility())
+  if (!window->TargetVisibility())
     return false;
 
-  const int parent_shell_window_id = window->GetParent()->aura_window()->id();
+  const int parent_shell_window_id = window->parent()->id();
   return parent_shell_window_id == kShellWindowId_DefaultContainer ||
          parent_shell_window_id == kShellWindowId_LockScreenContainer;
 }

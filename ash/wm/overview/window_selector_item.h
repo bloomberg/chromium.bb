@@ -29,7 +29,6 @@ class ImageButton;
 namespace ash {
 
 class WindowSelector;
-class WmWindow;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
@@ -48,16 +47,16 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
   };
 
-  WindowSelectorItem(WmWindow* window, WindowSelector* window_selector);
+  WindowSelectorItem(aura::Window* window, WindowSelector* window_selector);
   ~WindowSelectorItem() override;
 
-  WmWindow* GetWindow();
+  aura::Window* GetWindow();
 
   // Returns the root window on which this item is shown.
-  WmWindow* root_window() { return root_window_; }
+  aura::Window* root_window() { return root_window_; }
 
   // Returns true if |target| is contained in this WindowSelectorItem.
-  bool Contains(const WmWindow* target) const;
+  bool Contains(const aura::Window* target) const;
 
   // Restores and animates the managed window to its non overview mode state.
   void RestoreWindow();
@@ -165,14 +164,14 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Allows a test to directly set animation state.
   gfx::SlideAnimation* GetBackgroundViewAnimation();
 
-  WmWindow* GetOverviewWindowForMinimizedStateForTest();
+  aura::Window* GetOverviewWindowForMinimizedStateForTest();
 
   // True if the item is being shown in the overview, false if it's being
   // filtered.
   bool dimmed_;
 
   // The root window this item is being displayed on.
-  WmWindow* root_window_;
+  aura::Window* root_window_;
 
   // The contained Window's wrapper.
   ScopedTransformOverviewWindow transform_window_;

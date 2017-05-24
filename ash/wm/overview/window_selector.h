@@ -31,7 +31,6 @@ class WindowSelectorDelegate;
 class WindowSelectorItem;
 class WindowSelectorTest;
 class WindowGrid;
-class WmWindow;
 
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
@@ -41,11 +40,11 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public views::TextfieldController {
  public:
   // Returns true if the window can be selected in overview mode.
-  static bool IsSelectable(WmWindow* window);
+  static bool IsSelectable(aura::Window* window);
 
   enum Direction { LEFT, UP, RIGHT, DOWN };
 
-  using WindowList = std::vector<WmWindow*>;
+  using WindowList = std::vector<aura::Window*>;
 
   explicit WindowSelector(WindowSelectorDelegate* delegate);
   ~WindowSelector() override;
@@ -112,8 +111,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
  private:
   friend class WindowSelectorTest;
 
-  // Returns the WmWindow for |text_filter_widget_|.
-  WmWindow* GetTextFilterWidgetWindow();
+  // Returns the aura::Window for |text_filter_widget_|.
+  aura::Window* GetTextFilterWidgetWindow();
 
   // Position all of the windows in the overview.
   void PositionWindows(bool animate);
@@ -134,7 +133,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void RemoveAllObservers();
 
   // Tracks observed windows.
-  std::set<WmWindow*> observed_windows_;
+  std::set<aura::Window*> observed_windows_;
 
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
@@ -143,7 +142,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // A weak pointer to the window which was focused on beginning window
   // selection. If window selection is canceled the focus should be restored to
   // this window.
-  WmWindow* restore_focus_window_;
+  aura::Window* restore_focus_window_;
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation.
