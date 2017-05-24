@@ -17,6 +17,8 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -95,6 +97,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       if (chromeos::switches::IsVoiceInteractionEnabled()) {
+        base::RecordAction(base::UserMetricsAction(
+            "VoiceInteraction.Started.AppListButtonLongPress"));
         Shell::Get()->app_list()->StartVoiceInteractionSession();
         event->SetHandled();
       } else {

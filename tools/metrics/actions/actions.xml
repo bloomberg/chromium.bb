@@ -16843,6 +16843,33 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="VoiceInteraction.MetalayerStarted.Search_Shift_A">
+  <owner>muyuanli@chromium.org</owner>
+  <description>User launched metalayer through Search + Shift + A.</description>
+</action>
+
+<action name="VoiceInteraction.Started.AppListButtonLongPress">
+  <owner>muyuanli@chromium.org</owner>
+  <description>
+    User launched voice interaction session through long pressing app list
+    button.
+  </description>
+</action>
+
+<action name="VoiceInteraction.Started.Search_A">
+  <owner>muyuanli@chromium.org</owner>
+  <description>
+    User launched voice interaction session through Search + A.
+  </description>
+</action>
+
+<action name="VoiceInteraction.Started.Search_Space">
+  <owner>muyuanli@chromium.org</owner>
+  <description>
+    User launched voice interaction session through Search + Space.
+  </description>
+</action>
+
 <action name="WP_EditImage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

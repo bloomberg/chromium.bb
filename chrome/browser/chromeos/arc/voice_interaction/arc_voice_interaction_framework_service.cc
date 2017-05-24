@@ -15,6 +15,8 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -122,6 +124,25 @@ void EncodeAndReturnImage(
       callback);
 }
 
+void RecordShortcutAction(const ui::Accelerator& accelerator) {
+  if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
+    if (accelerator.IsShiftDown()) {
+      base::RecordAction(base::UserMetricsAction(
+          "VoiceInteraction.MetalayerStarted.Search_Shift_A"));
+      return;
+    }
+    base::RecordAction(
+        base::UserMetricsAction("VoiceInteraction.Started.Search_A"));
+    return;
+  }
+
+  if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_SPACE) {
+    base::RecordAction(
+        base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
+    return;
+  }
+}
+
 }  // namespace
 
 // static
@@ -170,6 +191,8 @@ void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
 bool ArcVoiceInteractionFrameworkService::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  RecordShortcutAction(accelerator);
 
   if (accelerator.IsShiftDown()) {
     // Temporary, used for debugging.
