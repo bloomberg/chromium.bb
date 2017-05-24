@@ -58,7 +58,6 @@ AV1_COMMON_SRCS-yes += common/reconinter.c
 AV1_COMMON_SRCS-yes += common/reconintra.c
 AV1_COMMON_SRCS-yes += common/resize.c
 AV1_COMMON_SRCS-yes += common/resize.h
-AV1_COMMON_SRCS-yes += common/restoration.h
 AV1_COMMON_SRCS-yes += common/common_data.h
 AV1_COMMON_SRCS-yes += common/scan.c
 AV1_COMMON_SRCS-yes += common/scan.h
