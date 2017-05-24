@@ -2906,6 +2906,9 @@
     <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LABEL" desc="Label describing a dropdown that lets the user pick their default note-taking applications. The dropdown contains a list of all available choices. The user can install additional apps, so the contents of the dropdown is dynamic.">
       Note-taking app
     </message>
+    <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LOCK_SCREEN_CHECKBOX" desc="Label for a check box that enables note-taking by selected note-taking application when user session is locked (i.e. when lock screen is shown).">
+      Enable note-taking from lock screen
+    </message>
     <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE" desc="Secondary label used when there are no note-taking applications available.">
       None available
     </message>
