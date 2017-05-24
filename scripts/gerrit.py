@@ -342,7 +342,7 @@ UserActVerify.arg_min = 2
 
 
 def UserActReady(opts, *args):
-  """Mark CL <n> [n ...] with ready status <0,1,2>"""
+  """Mark CL <n> [n ...] with ready status <0,1>"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
