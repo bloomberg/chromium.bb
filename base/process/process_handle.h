@@ -16,6 +16,10 @@
 #include <windows.h>
 #endif
 
+#if defined(OS_FUCHSIA)
+#include <magenta/types.h>
+#endif
+
 namespace base {
 
 // ProcessHandle is a platform specific type which represents the underlying OS
@@ -27,6 +31,11 @@ typedef DWORD ProcessId;
 typedef HANDLE UserTokenHandle;
 const ProcessHandle kNullProcessHandle = NULL;
 const ProcessId kNullProcessId = 0;
+#elif defined(OS_FUCHSIA)
+typedef mx_handle_t ProcessHandle;
+typedef mx_koid_t ProcessId;
+const ProcessHandle kNullProcessHandle = MX_HANDLE_INVALID;
+const ProcessId kNullProcessId = MX_KOID_INVALID;
 #elif defined(OS_POSIX)
 // On POSIX, our ProcessHandle will just be the PID.
 typedef pid_t ProcessHandle;

@@ -1238,8 +1238,11 @@ component("base") {
       "message_loop/message_pump_libevent.h",
       "process/kill_posix.cc",
       "process/launch_posix.cc",
+      "process/process_handle_posix.cc",
       "process/process_posix.cc",
     ]
+
+    sources += [ "process/process_fuchsia.cc" ]
   }
 
   # NaCl.
