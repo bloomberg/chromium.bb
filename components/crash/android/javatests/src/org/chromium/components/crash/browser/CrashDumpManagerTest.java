@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 
@@ -52,6 +53,7 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
+    @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_NullMinidumpPath() {
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
