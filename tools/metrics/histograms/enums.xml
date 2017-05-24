@@ -33794,6 +33794,13 @@ from previous Chrome versions.
   <int value="9" label="Filled input elements on start provisional load"/>
 </enum>
 
+<enum name="SubmittedPasswordFormFrame" type="int">
+  <int value="0" label="Main frame"/>
+  <int value="1" label="Iframe with the same url as main frame"/>
+  <int value="2" label="Iframe with different url and the same signon realm"/>
+  <int value="3" label="Iframe with different signon realm"/>
+</enum>
+
 <enum name="SubresourceFilterActions" type="int">
   <int value="0" label="New Navigation"/>
   <int value="1" label="UI Shown"/>

@@ -78,6 +78,7 @@ class ContentPasswordManagerDriver
   void SendLoggingAvailability() override;
   void AllowToRunFormClassifier() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
+  bool IsMainFrame() const override;
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;
@@ -144,6 +145,11 @@ class ContentPasswordManagerDriver
   // the latter two classes can reference to the same instance without sending
   // it to each other over IPC. The counter below is used to generate new IDs.
   int next_free_key_;
+
+  // It should be filled in the constructor, since later the frame might be
+  // detached and it would be impossible to check whether the frame is a main
+  // frame.
+  const bool is_main_frame_;
 
   autofill::mojom::PasswordAutofillAgentPtr password_autofill_agent_;
 

@@ -101,6 +101,9 @@ class PasswordManagerDriver
   // Return the associated AutofillDriver.
   virtual autofill::AutofillDriver* GetAutofillDriver() = 0;
 
+  // Return true iff the driver corresponds to the main frame.
+  virtual bool IsMainFrame() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };

@@ -37,6 +37,7 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   PasswordManager* GetPasswordManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
+  bool IsMainFrame() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerDriver);
