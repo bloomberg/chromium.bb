@@ -54,6 +54,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTPostMessageAPI,
     &kChromeHomeFeature,
     &kChromeHomeExpandButton,
+    &kContentSuggestionsCategories,
     &kContentSuggestionsSettings,
     &kContentSuggestionsShowSummary,
     &kContextualSearchSingleActions,
@@ -135,6 +136,9 @@ const base::Feature kChromeHomeFeature{"ChromeHome",
 
 const base::Feature kChromeHomeExpandButton{"ChromeHomeExpandButton",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContentSuggestionsCategories{
+    "ContentSuggestionsCategories", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsSettings{
     "ContentSuggestionsSettings", base::FEATURE_DISABLED_BY_DEFAULT};

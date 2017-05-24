@@ -871,6 +871,9 @@ extern const char kEnableConsistentOmniboxGeolocationDescription[];
 extern const char kEnableContentSuggestionsNewFaviconServerName[];
 extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 
+extern const char kEnableContentSuggestionsCategoriesName[];
+extern const char kEnableContentSuggestionsCategoriesDescription[];
+
 extern const char kEnableContentSuggestionsSettingsName[];
 extern const char kEnableContentSuggestionsSettingsDescription[];
 
