@@ -76,7 +76,6 @@ void TabletPowerButtonController::TestApi::TriggerShutdownTimeout() {
 TabletPowerButtonController::TabletPowerButtonController(
     LockStateController* controller)
     : tick_clock_(new base::DefaultTickClock()),
-      force_off_on_button_up_(true),
       controller_(controller),
       weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(

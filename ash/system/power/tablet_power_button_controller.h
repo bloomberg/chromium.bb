@@ -127,7 +127,7 @@ class ASH_EXPORT TabletPowerButtonController
   base::TimeTicks last_button_up_time_;
 
   // True if power button released should force off display.
-  bool force_off_on_button_up_;
+  bool force_off_on_button_up_ = true;
 
   // Started when the tablet power button is pressed and stopped when it's
   // released. Runs OnShutdownTimeout() to start shutdown.
