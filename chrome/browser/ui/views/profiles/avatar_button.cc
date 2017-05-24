@@ -70,7 +70,29 @@ class AvatarButtonThemedBorder : public views::Border {
   ~AvatarButtonThemedBorder() override {}
 
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
-    // Start with an outer dark stroke.
+    // Fill the color/background image from the theme.
+    cc::PaintFlags fill_flags;
+    fill_flags.setAntiAlias(true);
+    const ui::ThemeProvider* theme = view.GetThemeProvider();
+    fill_flags.setColor(
+        theme->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND));
+    SkPath fill_path;
+    gfx::Rect fill_bounds = view.GetLocalBounds();
+    // The fill should overlap the inner stroke but not the outer stroke. But we
+    // don't inset the top because as it stands, the asset-based window controls
+    // fill one pixel higher due to how the background masking works out. Not
+    // matching that is very noticeable. TODO(estade): when the window
+    // controls use this same code, inset all sides equally.
+    fill_bounds.Inset(gfx::Insets(0, kStrokeWidth, kStrokeWidth, kStrokeWidth));
+    fill_path.addRoundRect(gfx::RectToSkRect(fill_bounds), kCornerRadius,
+                           kCornerRadius);
+    canvas->DrawPath(fill_path, fill_flags);
+    fill_flags.setColor(SK_ColorBLACK);
+    canvas->DrawImageInPath(
+        *theme->GetImageSkiaNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND), 0, 0,
+        fill_path, fill_flags);
+
+    // Paint an outer dark stroke.
     cc::PaintFlags stroke_flags;
     stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
     // The colors are chosen to match the assets we use for Linux.
@@ -155,21 +177,22 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
 #endif
 
   if (apply_ink_drop) {
-    constexpr int kIconSize = 16;
-    constexpr SkColor kIconColor =
-        SkColorSetA(SK_ColorBLACK, static_cast<SkAlpha>(0.54 * 0xFF));
-    generic_avatar_ =
-        gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize, kIconColor);
-
     SetInkDropMode(InkDropMode::ON);
     SetFocusPainter(nullptr);
+    constexpr int kIconSize = 16;
 #if defined(OS_LINUX)
     set_ink_drop_base_color(SK_ColorWHITE);
     SetBorder(base::MakeUnique<AvatarButtonThemedBorder>());
+    generic_avatar_ = gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
+                                            kIconSize, gfx::kPlaceholderColor);
 #elif defined(OS_WIN)
     DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
     set_ink_drop_base_color(SK_ColorBLACK);
     SetBorder(views::CreateEmptyBorder(kBorderInsets));
+    constexpr SkColor kIconColor =
+        SkColorSetA(SK_ColorBLACK, static_cast<SkAlpha>(0.54 * 0xFF));
+    generic_avatar_ =
+        gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize, kIconColor);
 #endif  // defined(OS_WIN)
   } else if (button_style == AvatarButtonStyle::THEMED) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
