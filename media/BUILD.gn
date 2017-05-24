@@ -201,36 +201,6 @@ component("media") {
     "filters/webvtt_util.h",
     "filters/wsola_internals.cc",
     "filters/wsola_internals.h",
-    "formats/ac3/ac3_util.cc",
-    "formats/ac3/ac3_util.h",
-    "formats/common/offset_byte_queue.cc",
-    "formats/common/offset_byte_queue.h",
-    "formats/webm/webm_audio_client.cc",
-    "formats/webm/webm_audio_client.h",
-    "formats/webm/webm_cluster_parser.cc",
-    "formats/webm/webm_cluster_parser.h",
-    "formats/webm/webm_colour_parser.cc",
-    "formats/webm/webm_colour_parser.h",
-    "formats/webm/webm_constants.cc",
-    "formats/webm/webm_constants.h",
-    "formats/webm/webm_content_encodings.cc",
-    "formats/webm/webm_content_encodings.h",
-    "formats/webm/webm_content_encodings_client.cc",
-    "formats/webm/webm_content_encodings_client.h",
-    "formats/webm/webm_crypto_helpers.cc",
-    "formats/webm/webm_crypto_helpers.h",
-    "formats/webm/webm_info_parser.cc",
-    "formats/webm/webm_info_parser.h",
-    "formats/webm/webm_parser.cc",
-    "formats/webm/webm_parser.h",
-    "formats/webm/webm_stream_parser.cc",
-    "formats/webm/webm_stream_parser.h",
-    "formats/webm/webm_tracks_parser.cc",
-    "formats/webm/webm_tracks_parser.h",
-    "formats/webm/webm_video_client.cc",
-    "formats/webm/webm_video_client.h",
-    "formats/webm/webm_webvtt_parser.cc",
-    "formats/webm/webm_webvtt_parser.h",
     "muxers/webm_muxer.cc",
     "muxers/webm_muxer.h",
     "renderers/audio_renderer_impl.cc",
@@ -305,7 +275,7 @@ component("media") {
     ":media_features",
     ":shared_memory_support",
     "//media/audio",
-    "//media/base",
+    "//media/formats",
     "//ui/gfx:color_space",
   ]
 
@@ -349,8 +319,6 @@ component("media") {
     sources += [
       "filters/h265_parser.cc",
       "filters/h265_parser.h",
-      "formats/mp4/hevc.cc",
-      "formats/mp4/hevc.h",
     ]
     if (media_use_ffmpeg) {
       sources += [
@@ -358,12 +326,6 @@ component("media") {
         "filters/ffmpeg_h265_to_annex_b_bitstream_converter.h",
       ]
     }
-  }
-  if (proprietary_codecs && enable_dolby_vision_demuxing) {
-    sources += [
-      "formats/mp4/dolby_vision.cc",
-      "formats/mp4/dolby_vision.h",
-    ]
   }
 
   if (current_cpu == "arm" && arm_use_neon) {
@@ -421,75 +383,7 @@ component("media") {
       "cdm/cenc_utils.h",
       "filters/h264_to_annex_b_bitstream_converter.cc",
       "filters/h264_to_annex_b_bitstream_converter.h",
-      "formats/mp4/aac.cc",
-      "formats/mp4/aac.h",
-      "formats/mp4/avc.cc",
-      "formats/mp4/avc.h",
-      "formats/mp4/bitstream_converter.cc",
-      "formats/mp4/bitstream_converter.h",
-      "formats/mp4/box_definitions.cc",
-      "formats/mp4/box_definitions.h",
-      "formats/mp4/box_reader.cc",
-      "formats/mp4/box_reader.h",
-      "formats/mp4/es_descriptor.cc",
-      "formats/mp4/es_descriptor.h",
-      "formats/mp4/mp4_stream_parser.cc",
-      "formats/mp4/mp4_stream_parser.h",
-      "formats/mp4/sample_to_group_iterator.cc",
-      "formats/mp4/sample_to_group_iterator.h",
-      "formats/mp4/track_run_iterator.cc",
-      "formats/mp4/track_run_iterator.h",
-      "formats/mpeg/adts_constants.cc",
-      "formats/mpeg/adts_constants.h",
-      "formats/mpeg/adts_stream_parser.cc",
-      "formats/mpeg/adts_stream_parser.h",
-      "formats/mpeg/mpeg1_audio_stream_parser.cc",
-      "formats/mpeg/mpeg1_audio_stream_parser.h",
-      "formats/mpeg/mpeg_audio_stream_parser_base.cc",
-      "formats/mpeg/mpeg_audio_stream_parser_base.h",
     ]
-    if (enable_mse_mpeg2ts_stream_parser) {
-      sources += [
-        "formats/mp2t/descriptors.cc",
-        "formats/mp2t/descriptors.h",
-        "formats/mp2t/es_adapter_video.cc",
-        "formats/mp2t/es_adapter_video.h",
-        "formats/mp2t/es_parser.cc",
-        "formats/mp2t/es_parser.h",
-        "formats/mp2t/es_parser_adts.cc",
-        "formats/mp2t/es_parser_adts.h",
-        "formats/mp2t/es_parser_h264.cc",
-        "formats/mp2t/es_parser_h264.h",
-        "formats/mp2t/es_parser_mpeg1audio.cc",
-        "formats/mp2t/es_parser_mpeg1audio.h",
-        "formats/mp2t/mp2t_common.h",
-        "formats/mp2t/mp2t_stream_parser.cc",
-        "formats/mp2t/mp2t_stream_parser.h",
-        "formats/mp2t/timestamp_unroller.cc",
-        "formats/mp2t/timestamp_unroller.h",
-        "formats/mp2t/ts_packet.cc",
-        "formats/mp2t/ts_packet.h",
-        "formats/mp2t/ts_section.h",
-        "formats/mp2t/ts_section_pat.cc",
-        "formats/mp2t/ts_section_pat.h",
-        "formats/mp2t/ts_section_pes.cc",
-        "formats/mp2t/ts_section_pes.h",
-        "formats/mp2t/ts_section_pmt.cc",
-        "formats/mp2t/ts_section_pmt.h",
-        "formats/mp2t/ts_section_psi.cc",
-        "formats/mp2t/ts_section_psi.h",
-      ]
-      if (enable_hls_sample_aes) {
-        sources += [
-          "formats/mp2t/ts_section_cat.cc",
-          "formats/mp2t/ts_section_cat.h",
-          "formats/mp2t/ts_section_cets_ecm.cc",
-          "formats/mp2t/ts_section_cets_ecm.h",
-          "formats/mp2t/ts_section_cets_pssh.cc",
-          "formats/mp2t/ts_section_cets_pssh.h",
-        ]
-      }
-    }
   }
 
   if (use_low_memory_buffer) {
