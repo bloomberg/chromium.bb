@@ -46647,12 +46647,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Omnibox.SuggestionUsed.Provider.ByPageContext"
+    enum="OmniboxProviderType">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The provider of the suggestion the user selected when the user used the
+    omnibox to go somewhere, only for omnibox interactions that start in the
+    specified page context:
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SuggestionUsed.ProviderAndResultType"
     enum="OmniboxProviderAndResultType">
   <owner>mpearson@chromium.org</owner>
   <summary>
     The provider and result type of the suggestion the user selected when the
     user used the omnibox to go somewhere.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="Omnibox.SuggestionUsed.ProviderAndResultType.ByPageContext"
+    enum="OmniboxProviderAndResultType">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The provider and result type of the suggestion the user selected when the
+    user used the omnibox to go somewhere, only for omnibox interactions that
+    start in the specified page context:
   </summary>
 </histogram>
 
@@ -46721,6 +46742,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The rough type of the suggestion the user selected when the user used the
     omnibox to go somewhere.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Omnibox.SuggestionUsed.SearchVsUrl.ByPageContext"
+    enum="OmniboxSummarizedResultType">
+  <owner>mpearson@google.com</owner>
+  <summary>
+    The rough type of the suggestion the user selected when the user used the
+    omnibox to go somewhere, only for omnibox interactions that start in the
+    specified page context:
   </summary>
 </histogram>
 
@@ -89914,6 +89945,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OfflinePages.PageSize"/>
   <affected-histogram name="OfflinePages.SavePageResult"/>
   <affected-histogram name="OfflinePages.SavePageTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OmniboxPageContext" separator=".">
+  <suffix name="INVALID_SPEC" label="invalid spec; shouldn't happen"/>
+  <suffix name="NTP"
+      label="extension-replaced new tab page OR obsolete new tab page"/>
+  <suffix name="BLANK" label="about:blank"/>
+  <suffix name="HOME_PAGE" label="the user's home page"/>
+  <suffix name="OTHER"
+      label="other (typically an arbitrary URL, not a search results page,
+             new tab page, etc.)"/>
+  <suffix name="OBSOLETE_INSTANT_NTP" label="obsolete: instant new tab page"/>
+  <suffix name="OBSOLETE_SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT"
+      label="obsolete: search results page with search term replacement"/>
+  <suffix name="INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS"
+      label="new tab page with omnibox as starting focus"/>
+  <suffix name="INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS"
+      label="new tab page with fakebox as starting focus"/>
+  <suffix name="SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT"
+      label="search results page without search term replacement"/>
+  <suffix name="APP_HOME" label="home screen"/>
+  <suffix name="APP_SEARCH" label="search app"/>
+  <suffix name="APP_MAPS" label="maps app"/>
+  <affected-histogram name="Omnibox.SuggestionUsed.Provider.ByPageContext"/>
+  <affected-histogram
+      name="Omnibox.SuggestionUsed.ProviderAndResultType.ByPageContext"/>
+  <affected-histogram name="Omnibox.SuggestionUsed.SearchVsUrl.ByPageContext"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OmniboxProviderTime" separator=".">

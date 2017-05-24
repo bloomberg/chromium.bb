@@ -26023,7 +26023,8 @@ from previous Chrome versions.
   <int value="3" label="the user's home page"/>
   <int value="4" label="other (typically an arbitrary URL)"/>
   <int value="5" label="obsolete: instant new tab page"/>
-  <int value="6" label="search results page with search term replacement"/>
+  <int value="6"
+      label="obsolete: search results page with search term replacement"/>
   <int value="7" label="new tab page with omnibox as starting focus"/>
   <int value="8" label="new tab page with fakebox as starting focus"/>
   <int value="9" label="search results page without search term replacement"/>
