@@ -298,26 +298,22 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   // Enclosing all the temporary data structures in a scope, so that the heap
   // profiler does not see unbalanced malloc/free calls from these containers.
   {
-    size_t shim_allocated_objects_size = 0;
-    size_t shim_allocated_objects_count = 0;
     TraceEventMemoryOverhead overhead;
     std::unordered_map<AllocationContext, AllocationMetrics> metrics_by_context;
     if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
-      ShardedAllocationRegister::OutputMetrics metrics =
+      ShardedAllocationRegister::OutputMetrics shim_metrics =
           allocation_register_.UpdateAndReturnsMetrics(metrics_by_context);
 
       // Aggregate data for objects allocated through the shim.
-      shim_allocated_objects_size += metrics.size;
-      shim_allocated_objects_count += metrics.count;
+      inner_dump->AddScalar("shim_allocated_objects_size",
+                            MemoryAllocatorDump::kUnitsBytes,
+                            shim_metrics.size);
+      inner_dump->AddScalar("shim_allocator_object_count",
+                            MemoryAllocatorDump::kUnitsObjects,
+                            shim_metrics.count);
     }
     allocation_register_.EstimateTraceMemoryOverhead(&overhead);
 
-    inner_dump->AddScalar("shim_allocated_objects_size",
-                          MemoryAllocatorDump::kUnitsBytes,
-                          shim_allocated_objects_size);
-    inner_dump->AddScalar("shim_allocator_object_count",
-                          MemoryAllocatorDump::kUnitsObjects,
-                          shim_allocated_objects_count);
     pmd->DumpHeapUsage(metrics_by_context, overhead, "malloc");
   }
   tid_dumping_heap_ = kInvalidThreadId;
