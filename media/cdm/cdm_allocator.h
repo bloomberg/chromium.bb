@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 
@@ -24,9 +23,6 @@ class VideoFrameImpl;
 
 class MEDIA_EXPORT CdmAllocator {
  public:
-  // Callback to create CdmAllocator for the created CDM.
-  using CreationCB = base::RepeatingCallback<std::unique_ptr<CdmAllocator>()>;
-
   virtual ~CdmAllocator();
 
   // Creates a buffer with at least |capacity| bytes. Caller is required to
