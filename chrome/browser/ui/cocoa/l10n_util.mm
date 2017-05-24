@@ -117,6 +117,14 @@ NSCellImagePosition TrailingCellImagePosition() {
 }
 #endif  // MAC_OS_X_VERSION_10_12
 
+NSRectEdge LeadingEdge() {
+  return ShouldDoExperimentalRTLLayout() ? NSMaxXEdge : NSMinXEdge;
+}
+
+NSRectEdge TrailingEdge() {
+  return ShouldDoExperimentalRTLLayout() ? NSMinXEdge : NSMaxXEdge;
+}
+
 // Adapted from Apple's RTL docs (goo.gl/cBaFnT)
 NSImage* FlippedImage(NSImage* image) {
   const NSSize size = [image size];

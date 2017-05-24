@@ -56,6 +56,10 @@ NSCellImagePosition LeadingCellImagePosition();
 // Returns NSImageTrailing when available (10.12+), otherwise
 // NSImageRight for LTR and NSImageLeft in RTL.
 NSCellImagePosition TrailingCellImagePosition();
+// Returns NSMinXEdge for LTR and NSMaxXEdge for RTL.
+NSRectEdge LeadingEdge();
+// Returns NSMaxXEdge for LTR and NSMinXEdge for RTL.
+NSRectEdge TrailingEdge();
 
 // Returns an autoreleased image containing |image| flipped
 // across the x axis.
