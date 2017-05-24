@@ -629,7 +629,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 {##############################################################################}
 {% block constructor_callback %}
-{% if constructors or has_custom_constructor or has_event_constructor or has_html_constructor %}
+{% if constructors or has_custom_constructor or has_html_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% if measure_as %}
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{measure_as('Constructor')}});
