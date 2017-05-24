@@ -107,6 +107,12 @@ public class WebApkUma {
                 "WebApk.Session.TotalDuration", duration, TimeUnit.MILLISECONDS);
     }
 
+    /** Records the amount of time that it takes to bind to the play install service. */
+    public static void recordGooglePlayBindDuration(long durationMs) {
+        RecordHistogram.recordTimesHistogram(
+                "WebApk.Install.GooglePlayBindDuration", durationMs, TimeUnit.MILLISECONDS);
+    }
+
     /** Records the current Shell APK version. */
     public static void recordShellApkVersion(int shellApkVersion, String packageName) {
         String name = packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)

@@ -79954,6 +79954,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Install.GooglePlayBindDuration" units="ms">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the amount of time that it takes to bind to the play install service
+    for WebAPK installs.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Install.GooglePlayInstallResult"
     enum="WebApkGooglePlayInstallResult">
   <owner>hanxi@chromium.org</owner>
@@ -80025,6 +80035,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     user could either accept to install or dismiss the infobar; while via the
     add to homescreen menu, the installation will start automatically. This stat
     tracks the ways that user accepts to install a WebAPK.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Install.RequestTokenDuration" units="ms">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the amount of time which has elapsed from the &quot;install infobar
+    showing&quot; to the &quot;install request being sent to Google Play&quot;.
+    This time includes the time that it takes to request the WebAPK token and
+    the time that it takes to compute the hashes for the launcher icon and the
+    badge icon.
   </summary>
 </histogram>
 
