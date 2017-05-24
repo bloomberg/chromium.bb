@@ -64,7 +64,7 @@ enum weston_option_type {
 struct weston_option {
 	enum weston_option_type type;
 	const char *name;
-	int short_name;
+	char short_name;
 	void *data;
 };
 
