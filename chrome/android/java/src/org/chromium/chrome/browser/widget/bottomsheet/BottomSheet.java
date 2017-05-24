@@ -12,6 +12,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.Region;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -133,6 +134,9 @@ public class BottomSheet
 
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
+
+    /** The height of the bottom navigation bar that appears when the bottom sheet is expanded. */
+    private final float mBottomNavHeight;
 
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
@@ -401,6 +405,8 @@ public class BottomSheet
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
 
+        mBottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height);
+
         mVelocityTracker = VelocityTracker.obtain();
 
         mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
@@ -499,6 +505,14 @@ public class BottomSheet
     }
 
     /**
+     * Defocus the omnibox.
+     */
+    public void defocusOmnibox() {
+        if (mDefaultToolbarView == null) return;
+        mDefaultToolbarView.getLocationBar().setUrlBarFocus(false);
+    }
+
+    /**
      * @param tabModelSelector A TabModelSelector for getting the current tab and activity.
      */
     public void setTabModelSelector(TabModelSelector tabModelSelector) {
@@ -565,17 +579,44 @@ public class BottomSheet
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            /** The height of the screen minus the keyboard height. */
+            private float mHeightMinusKeyboard;
+
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // Compute the new height taking the keyboard into account.
+                // TODO(mdjones): Share this logic with LocationBarLayout: crbug.com/725725.
+                int decorHeight = mActivity.getWindow().getDecorView().getHeight();
+                Rect displayFrame = new Rect();
+                mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(displayFrame);
+                int heightMinusKeyboard = Math.min(decorHeight, displayFrame.height());
+
+                boolean keyboardHeightChanged = heightMinusKeyboard != mHeightMinusKeyboard;
+
                 // Make sure the size of the layout actually changed.
-                if (bottom - top == oldBottom - oldTop && right - left == oldRight - oldLeft) {
+                if (!keyboardHeightChanged && bottom - top == oldBottom - oldTop
+                        && right - left == oldRight - oldLeft) {
                     return;
                 }
 
                 mContainerWidth = right - left;
                 mContainerHeight = bottom - top;
+                mHeightMinusKeyboard = heightMinusKeyboard;
+                int keyboardHeight = (int) (mContainerHeight - mHeightMinusKeyboard);
                 updateSheetDimensions();
+
+                for (BottomSheetObserver o : mObservers) {
+                    o.onSheetLayout((int) mContainerHeight, (int) mHeightMinusKeyboard);
+                }
+
+                // If the keyboard height changed, recompute the padding for the content area. This
+                // shrinks the content size while retaining the default background color where the
+                // keyboard is appearing.
+                if (keyboardHeightChanged && isSheetOpen()) {
+                    mBottomSheetContentContainer.setPadding(
+                            0, 0, 0, (int) mBottomNavHeight + keyboardHeight);
+                }
 
                 // If we are in the middle of a touch event stream (i.e. scrolling while keyboard is
                 // up) don't set the sheet state. Instead allow the gesture detector to position the
@@ -964,6 +1005,8 @@ public class BottomSheet
      * @param offset The offset that the sheet should be.
      */
     private void setSheetOffsetFromBottom(float offset) {
+        if (MathUtils.areFloatsEqual(offset, getSheetOffsetFromBottom())) return;
+
         if (MathUtils.areFloatsEqual(getSheetOffsetFromBottom(), getMinOffset())
                 && offset > getMinOffset()) {
             onSheetOpened();

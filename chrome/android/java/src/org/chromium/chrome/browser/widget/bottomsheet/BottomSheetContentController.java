@@ -76,9 +76,18 @@ public class BottomSheetContentController extends BottomNavigationView
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
         public void onSheetOffsetChanged(float heightFraction) {
-            float offsetY = (mBottomSheet.getMinOffset() - mBottomSheet.getSheetOffsetFromBottom())
-                    + mDistanceBelowToolbarPx;
-            setTranslationY((int) Math.max(offsetY, 0f));
+            // If the omnibox is not focused, allow the navigation bar to set its Y translation.
+            if (!mOmniboxHasFocus) {
+                float offsetY =
+                        (mBottomSheet.getMinOffset() - mBottomSheet.getSheetOffsetFromBottom())
+                        + mDistanceBelowToolbarPx;
+                setTranslationY(Math.max(offsetY, 0f));
+
+                if (mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
+                        && mSelectedItemId == PLACEHOLDER_ID) {
+                    showBottomSheetContent(R.id.action_home);
+                }
+            }
             setVisibility(MathUtils.areFloatsEqual(heightFraction, 0f) ? View.GONE : View.VISIBLE);
 
             mSnackbarManager.dismissAllSnackbars();
@@ -124,6 +133,11 @@ public class BottomSheetContentController extends BottomNavigationView
                 mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
             }
         }
+
+        @Override
+        public void onSheetLayout(int windowHeight, int containerHeight) {
+            setTranslationY(containerHeight - windowHeight);
+        }
     };
 
     private BottomSheet mBottomSheet;
@@ -135,6 +149,7 @@ public class BottomSheetContentController extends BottomNavigationView
     private ChromeActivity mActivity;
     private boolean mShouldOpenSheetOnNextContentChange;
     private PlaceholderSheetContent mPlaceholderContent;
+    private boolean mOmniboxHasFocus;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -218,11 +233,15 @@ public class BottomSheetContentController extends BottomNavigationView
      * @param hasFocus Whether or not the omnibox has focus.
      */
     public void onOmniboxFocusChange(boolean hasFocus) {
+        mOmniboxHasFocus = hasFocus;
+
         // If the omnibox is being focused, show the placeholder.
         if (hasFocus && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_HALF
                 && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_FULL) {
             mBottomSheet.showContent(mPlaceholderContent);
             mBottomSheet.endTransitionAnimations();
+            if (mSelectedItemId > 0) getMenu().findItem(mSelectedItemId).setChecked(false);
+            mSelectedItemId = PLACEHOLDER_ID;
         }
 
         if (!hasFocus && mBottomSheet.getCurrentSheetContent() == mPlaceholderContent) {
@@ -233,6 +252,8 @@ public class BottomSheetContentController extends BottomNavigationView
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         if (mSelectedItemId == item.getItemId()) return false;
+
+        mBottomSheet.defocusOmnibox();
 
         mSnackbarManager.dismissAllSnackbars();
         showBottomSheetContent(item.getItemId());
@@ -290,7 +311,7 @@ public class BottomSheetContentController extends BottomNavigationView
         // There are some bugs related to programatically selecting menu items that are fixed in
         // newer support library versions.
         // TODO(twellington): remove this after the support library is rolled.
-        if (mSelectedItemId != 0) getMenu().findItem(mSelectedItemId).setChecked(false);
+        if (mSelectedItemId > 0) getMenu().findItem(mSelectedItemId).setChecked(false);
         mSelectedItemId = navItemId;
         getMenu().findItem(mSelectedItemId).setChecked(true);
 
