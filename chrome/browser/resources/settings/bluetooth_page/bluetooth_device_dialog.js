@@ -328,11 +328,7 @@ settings.BluetoothPairDeviceBehavior = {
 Polymer({
   is: 'bluetooth-device-dialog',
 
-  behaviors: [
-    I18nBehavior,
-    CrScrollableBehavior,
-    settings.BluetoothPairDeviceBehavior,
-  ],
+  behaviors: [I18nBehavior, settings.BluetoothPairDeviceBehavior],
 
   properties: {
     /**
