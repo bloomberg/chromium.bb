@@ -60,7 +60,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCannotMakePayment_Abort()
+    public void testCannotMakePayment_UserAbort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -151,13 +151,13 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
 
     /**
      * Tests that the CanMakePayment metrics are correctly logged for the case of a merchant
-     * calling it, receiving yeas as a response, showing the Payment Request and the user aborts the
-     * flow.
+     * calling it, receiving yes as a response, showing the Payment Request and the merchant aborts
+     * the flow.
      */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePayment_Abort()
+    public void testCanMakePayment_MerchantAbort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Install the app so CanMakePayment returns true.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -166,16 +166,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
         mPaymentRequestTestRule.triggerUIAndWait(
                 "queryShow", mPaymentRequestTestRule.getReadyForInput());
 
-        // Press the back button.
-        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
-            }
-        });
-        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        // Simulate an abort by the merchant.
+        mPaymentRequestTestRule.clickNodeAndWait("abort", mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Abort"});
 
         // CanMakePayment was queried.
         Assert.assertEquals(1,
@@ -195,12 +188,12 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
-                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
     }
 
     /**
      * Tests that the CanMakePayment metrics are correctly logged for the case of a merchant
-     * calling it, receiving yeas as a response, showing the Payment Request and the user completes
+     * calling it, receiving yes as a response, showing the Payment Request and the user completes
      * the flow.
      */
     @Test
@@ -245,7 +238,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoQuery_Abort()
+    public void testNoQuery_UserAbort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -283,7 +276,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoQuery_Completes()
+    public void testNoQuery_Complete()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Install the app so the user can complete the Payment Request.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
