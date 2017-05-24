@@ -6,6 +6,7 @@
     // The name parameter represents the name of the function to be created.
 
     fields_to_diff: {
+      default: [],
     },
 
     // A list of methods to diff (these can be public getters of fields or 
@@ -22,15 +23,21 @@
         name: "ScrollAnchorDisablingPropertyChanged",
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
                   "left", "right", "top", "bottom", "padding-top", 
-                  "padding-left", "padding-right", "padding-bottom"]
+                  "padding-left", "padding-right", "padding-bottom"],
+        methods_to_diff: [
+          {
+            method: "GetPosition()",
+            field_dependencies: ["position"]
+          },
+        ]
     },
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right", 
-                "padding-bottom", "line-height", "font", "-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing"],
+                "padding-bottom", "line-height", "font", "-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing", "TextAutosizingMultiplier"],
         methods_to_diff: [
           {
-            method: "BorderLeftWidth()", 
+            method: "BorderLeftWidth()",
             field_dependencies: ["border-left-width"]
           },
           {
@@ -44,12 +51,98 @@
           {
             method: "BorderRightWidth()",
             field_dependencies: ["border-right-width"]
-          }
+          },
+          {
+            method: "FontInternal().LoadingCustomFonts()",
+            field_dependencies: ["font"]
+          },
+          {
+            method: "HasPseudoStyle(kPseudoIdScrollbar)",
+            field_dependencies: ["StyleType"]
+          },
+          {
+            method: "BoxDirection()",
+            field_dependencies: ["-webkit-box-direction"]
+          },
+          {
+            method: "RtlOrdering()",
+            field_dependencies: ["-webkit-rtl-ordering"]
+          },
+          {
+            method: "GetTextAlign()",
+            field_dependencies: ["text-align"]
+          },
+          {
+            method: "TextTransform()",
+            field_dependencies: ["text-transform"]
+          },
+          {
+            method: "Direction()",
+            field_dependencies: ["direction"]
+          },
+          {
+            method: "WhiteSpace()",
+            field_dependencies: ["white-space"]
+          },
+          {
+            method: "GetWritingMode()",
+            field_dependencies: ["writing-mode"]
+          },
+          {
+            method: "OverflowX()",
+            field_dependencies: ["overflow-x"]
+          },
+          {
+            method: "OverflowY()",
+            field_dependencies: ["overflow-y"]
+          },
+          {
+            method: "Clear()",
+            field_dependencies: ["clear"]
+          },
+          {
+            method: "GetUnicodeBidi()",
+            field_dependencies: ["unicode-bidi"]
+          },
+          {
+            method: "Floating()",
+            field_dependencies: ["float"]
+          },
+          {
+            method: "OriginalDisplay()",
+            field_dependencies: ["OriginalDisplay"]
+          },
         ]
     },
     {
         name: "DiffNeedsFullLayout",
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "box-sizing"]
+    },
+    {
+        name: "DiffNeedsPaintInvalidationObject",
+        methods_to_diff: [
+          {
+            method: "Visibility()",
+            field_dependencies: ["visibility"]
+          },
+          {
+            method: "PrintColorAdjust()",
+            field_dependencies: ["-webkit-print-color-adjust"]
+          },
+          {
+            method: "InsideLink()",
+            field_dependencies: ["InsideLink"]
+          }
+        ]
+    },
+    {
+        name: "DiffNeedsVisualRectUpdate",
+        methods_to_diff: [
+          {
+            method: "Visibility()",
+            field_dependencies: ["visibility"]
+          }
+        ]
     }
   ],
 }

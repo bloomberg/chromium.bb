@@ -561,9 +561,6 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
     const ComputedStyle& other,
     const StyleDifference& diff) const {
-  if (GetPosition() != other.GetPosition())
-    return true;
-
   if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(other))
     return true;
 
@@ -720,28 +717,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
       return true;
   }
 
-  if (inherited_data_->text_autosizing_multiplier_ !=
-      other.inherited_data_->text_autosizing_multiplier_)
-    return true;
-
-  if (inherited_data_->font_.LoadingCustomFonts() !=
-      other.inherited_data_->font_.LoadingCustomFonts())
-    return true;
-
-  if (BoxDirection() != other.BoxDirection() ||
-      RtlOrdering() != other.RtlOrdering() ||
-      GetTextAlign() != other.GetTextAlign() ||
-      TextTransform() != other.TextTransform() ||
-      Direction() != other.Direction() || WhiteSpace() != other.WhiteSpace() ||
-      GetWritingMode() != other.GetWritingMode())
-    return true;
-
-  if (OverflowX() != other.OverflowX() || OverflowY() != other.OverflowY() ||
-      Clear() != other.Clear() || GetUnicodeBidi() != other.GetUnicodeBidi() ||
-      Floating() != other.Floating() ||
-      OriginalDisplay() != other.OriginalDisplay())
-    return true;
-
   if (IsDisplayTableType(Display())) {
     if (BorderCollapse() != other.BorderCollapse() ||
         EmptyCells() != other.EmptyCells() ||
@@ -777,10 +752,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
 
   if ((Visibility() == EVisibility::kCollapse) !=
       (other.Visibility() == EVisibility::kCollapse))
-    return true;
-
-  if (HasPseudoStyle(kPseudoIdScrollbar) !=
-      other.HasPseudoStyle(kPseudoIdScrollbar))
     return true;
 
   // Movement of non-static-positioned object is special cased in
@@ -845,10 +816,11 @@ bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     const ComputedStyle& other) const {
-  if (Visibility() != other.Visibility() ||
-      PrintColorAdjust() != other.PrintColorAdjust() ||
-      InsideLink() != other.InsideLink() || !BorderVisuallyEqual(other) ||
-      !RadiiEqual(other) || *background_data_ != *other.background_data_)
+  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(other))
+    return true;
+
+  if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
+      *background_data_ != *other.background_data_)
     return true;
 
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
@@ -941,7 +913,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
 bool ComputedStyle::DiffNeedsVisualRectUpdate(
     const ComputedStyle& other) const {
   // Visual rect is empty if visibility is hidden.
-  if (Visibility() != other.Visibility())
+  if (ComputedStyleBase::DiffNeedsVisualRectUpdate(other))
     return true;
 
   // Need to update visual rect of the resizer.
