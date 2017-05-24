@@ -1539,6 +1539,12 @@ static LayoutUnit InitialContentPositionOffset(
 
     return available_free_space / 2;
   }
+  if (data.Distribution() == kContentDistributionSpaceEvenly) {
+    if (available_free_space > 0 && number_of_items)
+      return available_free_space / (number_of_items + 1);
+    // Fallback to 'center'
+    return available_free_space / 2;
+  }
   return LayoutUnit();
 }
 
@@ -1552,6 +1558,8 @@ static LayoutUnit ContentDistributionSpaceBetweenChildren(
     if (data.Distribution() == kContentDistributionSpaceAround ||
         data.Distribution() == kContentDistributionStretch)
       return available_free_space / number_of_items;
+    if (data.Distribution() == kContentDistributionSpaceEvenly)
+      return available_free_space / (number_of_items + 1);
   }
   return LayoutUnit();
 }

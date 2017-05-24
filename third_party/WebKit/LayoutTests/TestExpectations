@@ -2800,7 +2800,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.
 # [css-align]
 crbug.com/668639 external/wpt/css/css-align-3/default-alignment/place-items-shorthand-006.html [ Failure ]
 crbug.com/668639 external/wpt/css/css-align-3/self-alignment/place-self-shorthand-006.html [ Failure ]
-crbug.com/708121 external/wpt/css/css-align-3/distribution-values/space-evenly-001.html [ Failure ]
 
 # [selectors-4]
 crbug.com/706118 external/wpt/css/selectors4/hover-001-manual.html [ Skip ]
