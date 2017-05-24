@@ -220,10 +220,12 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged) {
   SetBodyInnerHTML("<div style='margin: 100px'>foo</div>");
   Node* text = GetDocument().body()->firstChild()->firstChild();
   GetDocument().UpdateStyleAndLayout();
-  MarkerController().AddCompositionMarker(Position(text, 0), Position(text, 1),
-                                          Color::kBlack, false, Color::kBlack);
-  MarkerController().AddCompositionMarker(Position(text, 1), Position(text, 3),
-                                          Color::kBlack, true, Color::kBlack);
+  MarkerController().AddCompositionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 1)), Color::kBlack,
+      false, Color::kBlack);
+  MarkerController().AddCompositionMarker(
+      EphemeralRange(Position(text, 1), Position(text, 3)), Color::kBlack, true,
+      Color::kBlack);
 
   EXPECT_EQ(2u, MarkerController().Markers().size());
 }

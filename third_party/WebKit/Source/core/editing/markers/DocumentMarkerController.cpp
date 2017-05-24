@@ -156,15 +156,14 @@ void DocumentMarkerController::AddTextMatchMarker(
   // throttling algorithm. crbug.com/6819.
 }
 
-void DocumentMarkerController::AddCompositionMarker(const Position& start,
-                                                    const Position& end,
+void DocumentMarkerController::AddCompositionMarker(const EphemeralRange& range,
                                                     Color underline_color,
                                                     bool thick,
                                                     Color background_color) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
 
-  for (TextIterator marked_text(start, end); !marked_text.AtEnd();
-       marked_text.Advance()) {
+  for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
+       !marked_text.AtEnd(); marked_text.Advance()) {
     AddMarker(marked_text.CurrentContainer(),
               new DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
                                  marked_text.EndOffsetInCurrentContainer(),

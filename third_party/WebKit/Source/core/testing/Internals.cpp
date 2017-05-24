@@ -1064,8 +1064,7 @@ void Internals::addCompositionMarker(const Range* range,
       ParseColor(background_color_value, background_color, exception_state,
                  "Invalid background color.")) {
     range->OwnerDocument().Markers().AddCompositionMarker(
-        range->StartPosition(), range->EndPosition(), underline_color, thick,
-        background_color);
+        EphemeralRange(range), underline_color, thick, background_color);
   }
 }
 
