@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string16.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -36,13 +37,12 @@ class SearchGeolocationService : public KeyedService {
   // testing.
   class SearchEngineDelegate {
    public:
-    // Returns true if the current DSE is Google (Google is the only search
-    // engine to currently support DSE geolocation).
-    virtual bool IsDSEGoogle() = 0;
+    // Returns the name of the current DSE.
+    virtual base::string16 GetDSEName() = 0;
 
-    // Returns the origin of the current Google CCTLD if Google is the default
-    // search engine. Otherwise returns a unique Origin.
-    virtual url::Origin GetGoogleDSECCTLD() = 0;
+    // Returns the origin of the DSE. If the current DSE is Google this will
+    // return the current CCTLD.
+    virtual url::Origin GetDSEOrigin() = 0;
 
     // Set a callback that will be called if the DSE or CCTLD changes for any
     // reason.

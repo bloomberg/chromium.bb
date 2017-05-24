@@ -9,7 +9,9 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +31,9 @@ const char kGoogleAusURL[] = "https://www.google.com.au";
 const char kGoogleHTTPURL[] = "http://www.google.com";
 const char kExampleURL[] = "https://www.example.com";
 
+const char kIsGoogleSearchEngineKey[] = "is_google_search_engine";
+const char kDSESettingKey[] = "dse_setting";
+
 url::Origin ToOrigin(const char* url) {
   return url::Origin(GURL(url));
 }
@@ -37,29 +42,26 @@ url::Origin ToOrigin(const char* url) {
 class TestSearchEngineDelegate
     : public SearchGeolocationService::SearchEngineDelegate {
  public:
-  bool IsDSEGoogle() override {
-    // A rough heuristic that is good enough for this test.
-    return dse_cctld_.host().find("google.com") != std::string::npos;
+  base::string16 GetDSEName() override {
+    if (dse_origin_.host().find("google") != std::string::npos)
+      return base::ASCIIToUTF16("Google");
+
+    return base::ASCIIToUTF16("Example");
   }
 
-  url::Origin GetGoogleDSECCTLD() override {
-    if (!IsDSEGoogle())
-      return url::Origin();
-
-    return dse_cctld_;
-  }
+  url::Origin GetDSEOrigin() override { return dse_origin_; }
 
   void SetDSEChangedCallback(const base::Closure& callback) override {
     dse_changed_callback_ = callback;
   }
 
-  void SetDSECCTLD(const std::string& dse_cctld) {
-    dse_cctld_ = url::Origin(GURL(dse_cctld));
+  void SetDSEOrigin(const std::string& dse_origin) {
+    dse_origin_ = url::Origin(GURL(dse_origin));
     dse_changed_callback_.Run();
   }
 
  private:
-  url::Origin dse_cctld_;
+  url::Origin dse_origin_;
   base::Closure dse_changed_callback_;
 };
 
@@ -112,9 +114,18 @@ class SearchGeolocationServiceTest : public testing::Test {
   // created.
   void ReinitializeService(bool clear_pref) {
     if (clear_pref)
-      profile()->GetPrefs()->ClearPref(prefs::kGoogleDSEGeolocationSetting);
+      profile()->GetPrefs()->ClearPref(prefs::kDSEGeolocationSetting);
 
     GetService()->InitializeDSEGeolocationSettingIfNeeded();
+  }
+
+  // Simulate setting the old preference to test migration.
+  void SetOldPreference(bool is_google, bool setting) {
+    base::DictionaryValue dict;
+    dict.SetBoolean(kIsGoogleSearchEngineKey, is_google);
+    dict.SetBoolean(kDSESettingKey, setting);
+    profile()->GetPrefs()->Set(prefs::kGoogleDSEGeolocationSettingDeprecated,
+                               dict);
   }
 
  private:
@@ -128,7 +139,7 @@ class SearchGeolocationServiceTest : public testing::Test {
 };
 
 TEST_F(SearchGeolocationServiceTest, Initialization) {
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
 
   // DSE setting initialized to true if the content setting is ALLOW.
   SetContentSetting(kGoogleURL, CONTENT_SETTING_ALLOW);
@@ -154,12 +165,60 @@ TEST_F(SearchGeolocationServiceTest, Initialization) {
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
   EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
 
-  // For non-Google search engine, the setting may be initialized to true, but
-  // it won't be used.
-  test_delegate()->SetDSECCTLD(kExampleURL);
+  // For non-Google search engine, the setting should also be used.
+  test_delegate()->SetDSEOrigin(kExampleURL);
   SetContentSetting(kExampleURL, CONTENT_SETTING_ALLOW);
   ReinitializeService(true /* clear_pref */);
-  EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kExampleURL)));
+  EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kExampleURL)));
+}
+
+TEST_F(SearchGeolocationServiceTest, Migration) {
+  // First test migrating when the search engine is Google, and the setting is
+  // on.
+  test_delegate()->SetDSEOrigin(kGoogleURL);
+  SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
+      profile());
+  SetOldPreference(true /* is_google */, true /* setting */);
+  ReinitializeService(true /* clear_pref */);
+
+  // The setting should be true, and the disclosure should not be reset as it
+  // has been shown for Google, and the current search engine is Google.
+  EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
+  EXPECT_FALSE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
+      profile()));
+
+  // Now test that migration won't happen again.
+  GetService()->SetDSEGeolocationSetting(false);
+  ReinitializeService(false /* clear_pref */);
+  EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
+
+  // Secondly, test migrating when the search engine isn't Google, and the
+  // setting is on.
+  test_delegate()->SetDSEOrigin(kExampleURL);
+  SetOldPreference(false /* is_google */, true /* setting */);
+  ReinitializeService(true /* clear_pref */);
+
+  // The setting should be true, and the disclosure should be reset as it would
+  // have only been shown for Google.
+  EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
+  EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
+      profile()));
+
+  // Last, test migrating when the search engine isn't Google, and the setting
+  // is off.
+  SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
+      profile());
+  SetOldPreference(false /* is_google */, false /* setting */);
+  ReinitializeService(true /* clear_pref */);
+
+  // The setting should be false, and the disclosure should not be reset as the
+  // setting is off.
+  EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
+  EXPECT_FALSE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
+      profile()));
+
+  // Note there isn't any need to test when the search engine was Google and the
+  // setting was off, as the code paths have been tested by the above cases.
 }
 
 TEST_F(SearchGeolocationServiceTest, OffTheRecord) {
@@ -172,19 +231,19 @@ TEST_F(SearchGeolocationServiceTest, OffTheRecord) {
 
 TEST_F(SearchGeolocationServiceTest, UseDSEGeolocationSetting) {
   // True for origin that matches the CCTLD and meets all requirements.
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
 
   // False for different origin.
   EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleAusURL)));
 
   // False for http origin.
-  test_delegate()->SetDSECCTLD(kGoogleHTTPURL);
+  test_delegate()->SetDSEOrigin(kGoogleHTTPURL);
   EXPECT_FALSE(
       GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleHTTPURL)));
 
   // False if the feature is disabled.
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
   {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndDisableFeature(
@@ -200,7 +259,7 @@ TEST_F(SearchGeolocationServiceTest, UseDSEGeolocationSetting) {
 }
 
 TEST_F(SearchGeolocationServiceTest, GetDSEGeolocationSetting) {
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
 
   // The case where the pref is set to true.
   GetService()->SetDSEGeolocationSetting(true);
@@ -223,7 +282,7 @@ TEST_F(SearchGeolocationServiceTest, GetDSEGeolocationSetting) {
 }
 
 TEST_F(SearchGeolocationServiceTest, SetDSEGeolocationSetting) {
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
 
   GetService()->SetDSEGeolocationSetting(true);
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
@@ -252,12 +311,12 @@ TEST_F(SearchGeolocationServiceTest, SetDSEGeolocationSetting) {
 }
 
 TEST_F(SearchGeolocationServiceTest, DSEChanges) {
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
 
   // Change to google.com.au, setting should remain the same.
-  test_delegate()->SetDSECCTLD(kGoogleAusURL);
+  test_delegate()->SetDSEOrigin(kGoogleAusURL);
   EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleAusURL)));
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
@@ -265,7 +324,7 @@ TEST_F(SearchGeolocationServiceTest, DSEChanges) {
   // Set the content setting for google.com to block. When we change back to
   // google.com, the setting should be set to false.
   SetContentSetting(kGoogleURL, CONTENT_SETTING_BLOCK);
-  test_delegate()->SetDSECCTLD(kGoogleURL);
+  test_delegate()->SetDSEOrigin(kGoogleURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
   EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
 
@@ -273,19 +332,45 @@ TEST_F(SearchGeolocationServiceTest, DSEChanges) {
   // google.com.au, its content setting should be reset and the setting should
   // still be false.
   SetContentSetting(kGoogleAusURL, CONTENT_SETTING_ALLOW);
-  test_delegate()->SetDSECCTLD(kGoogleAusURL);
+  test_delegate()->SetDSEOrigin(kGoogleAusURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleAusURL)));
   EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
   EXPECT_EQ(CONTENT_SETTING_ASK, GetContentSetting(kGoogleAusURL));
 
-  // Now set to a non-google search. The setting should never be used.
-  test_delegate()->SetDSECCTLD(kExampleURL);
+  // Now set to a non-google search. The setting should still be used, but only
+  // for the non-google search.
+  test_delegate()->SetDSEOrigin(kExampleURL);
   EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleAusURL)));
-  EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kExampleURL)));
+  EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kExampleURL)));
 
   // Go back to google.com.au. The setting should still be false because that's
   // what it last was.
-  test_delegate()->SetDSECCTLD(kGoogleAusURL);
+  test_delegate()->SetDSEOrigin(kGoogleAusURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleAusURL)));
   EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
+}
+
+TEST_F(SearchGeolocationServiceTest, DSEChangesAndDisclosure) {
+  test_delegate()->SetDSEOrigin(kGoogleURL);
+  SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
+      profile());
+  EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
+  EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
+
+  // Change to google.com.au. The disclosure should not be reset.
+  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  EXPECT_FALSE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
+      profile()));
+
+  // Now set to a non-google search. The disclosure should be reset.
+  test_delegate()->SetDSEOrigin(kExampleURL);
+  EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
+      profile()));
+  SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
+      profile());
+
+  // Go back to google.com.au. The disclosure should again be reset.
+  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
+      profile()));
 }

@@ -120,13 +120,13 @@ public class PreferencesTest {
                 Assert.assertEquals("1", pref.getValueForTesting());
 
                 // Simulate selecting the third search engine, ensure that TemplateUrlService is
-                // updated, but location permission not granted for the new engine.
+                // updated, and location permission granted by default for the new engine.
                 String keyword2 = pref.setValueForTesting("2");
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
                 Assert.assertEquals(keyword2,
                         templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
                 Assert.assertEquals(
-                        ContentSetting.ASK, locationPermissionForSearchEngine(keyword2));
+                        ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
 
                 // Simulate selecting the fourth search engine and but set a blocked permission
                 // first and ensure that location permission is NOT granted.
@@ -145,7 +145,11 @@ public class PreferencesTest {
                         ContentSetting.ASK, locationPermissionForSearchEngine(keyword2));
 
                 // Make sure a pre-existing ALLOW value does not get deleted when switching away
-                // from a search engine.
+                // from a search engine. For this to work we need to change the DSE setting to true
+                // for search engine 3 before changing to search engine 2. Otherwise the false DSE
+                // setting will cause the content setting for search engine 2 to be reset when we
+                // switch to it.
+                WebsitePreferenceBridge.setDSEGeolocationSetting(true);
                 keyword2 = pref.getKeywordFromIndexForTesting(2);
                 url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(

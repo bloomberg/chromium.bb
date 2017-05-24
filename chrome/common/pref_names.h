@@ -888,7 +888,10 @@ extern const char kSearchGeolocationPreDisclosureMetricsRecorded[];
 extern const char kSearchGeolocationPostDisclosureMetricsRecorded[];
 #endif
 
-extern const char kGoogleDSEGeolocationSetting[];
+extern const char kDSEGeolocationSetting[];
+
+// Deprecated Google-specific version of the above.
+extern const char kGoogleDSEGeolocationSettingDeprecated[];
 
 extern const char kWebShareVisitedTargets[];
 
