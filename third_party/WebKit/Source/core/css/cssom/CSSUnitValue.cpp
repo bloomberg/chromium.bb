@@ -44,6 +44,12 @@ CSSUnitValue* CSSUnitValue::Create(double value,
   return new CSSUnitValue(value, unit);
 }
 
+CSSUnitValue* CSSUnitValue::Create(double value,
+                                   CSSPrimitiveValue::UnitType unit) {
+  DCHECK(IsValidUnit(unit));
+  return new CSSUnitValue(value, unit);
+}
+
 CSSUnitValue* CSSUnitValue::FromCSSValue(
     const CSSPrimitiveValue& css_primitive_value) {
   if (!IsValidUnit(css_primitive_value.TypeWithCalcResolved()))

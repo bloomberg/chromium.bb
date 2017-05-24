@@ -544,9 +544,37 @@ interface CDATASection : Text
     attribute @@toStringTag
     method constructor
 interface CSS
+    static method Hz
+    static method ch
+    static method cm
+    static method deg
+    static method dpcm
+    static method dpi
+    static method dppx
+    static method em
     static method escape
+    static method ex
+    static method fr
+    static method grad
+    static method in
+    static method kHz
+    static method mm
+    static method ms
+    static method number
+    static method pc
+    static method percent
+    static method pt
+    static method px
+    static method rad
     static method registerProperty
+    static method rem
+    static method s
     static method supports
+    static method turn
+    static method vh
+    static method vmax
+    static method vmin
+    static method vw
     attribute @@toStringTag
     method constructor
 interface CSSAngleValue : CSSStyleValue
