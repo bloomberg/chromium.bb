@@ -894,6 +894,7 @@ public class BottomSheet
         mIsSheetOpen = false;
         for (BottomSheetObserver o : mObservers) o.onSheetClosed();
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_closed));
+        clearFocus();
         mActivity.removeViewObscuringAllTabs(this);
     }
 
