@@ -57,8 +57,11 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
   if (!text_selection_triggered_)
     return false;
 
+  // For Android version < M, stylus button pressed state is BUTTON_SECONDARY.
+  // From Android M, this state has changed to BUTTON_STYLUS_PRIMARY.
   secondary_button_pressed_ =
-      event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
+      event.GetButtonState() == MotionEvent::BUTTON_SECONDARY ||
+      event.GetButtonState() == MotionEvent::BUTTON_STYLUS_PRIMARY;
 
   switch (event.GetAction()) {
     case MotionEvent::ACTION_DOWN:
@@ -140,8 +143,12 @@ bool StylusTextSelector::ShouldStartTextSelection(const MotionEvent& event) {
   DCHECK_GT(event.GetPointerCount(), 0u);
   // Currently we are supporting stylus-only cases.
   const bool is_stylus = event.GetToolType(0) == MotionEvent::TOOL_TYPE_STYLUS;
+
+  // For Android version < M, stylus button pressed state is BUTTON_SECONDARY.
+  // From Android M, this state has changed to BUTTON_STYLUS_PRIMARY.
   const bool is_only_secondary_button_pressed =
-      event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
+      event.GetButtonState() == MotionEvent::BUTTON_SECONDARY ||
+      event.GetButtonState() == MotionEvent::BUTTON_STYLUS_PRIMARY;
   return is_stylus && is_only_secondary_button_pressed;
 }
 
