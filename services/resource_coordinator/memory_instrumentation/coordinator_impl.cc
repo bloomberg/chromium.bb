@@ -27,12 +27,14 @@ namespace {
 
 memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
 
+// Returns the private memory footprint calcualted from given |os_dump|.
+//
 // See design docs linked in the bugs for the rationale of the computation:
 // - Linux/Android: https://crbug.com/707019 .
 // - Mac OS: https://crbug.com/707021 .
 // - Win: https://crbug.com/707022 .
 uint32_t CalculatePrivateFootprintKb(
-    base::trace_event::MemoryDumpCallbackResult::OSMemDump& os_dump) {
+    const base::trace_event::MemoryDumpCallbackResult::OSMemDump& os_dump) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   uint64_t rss_anon_bytes = os_dump.platform_private_footprint.rss_anon_bytes;
   uint64_t vm_swap_bytes = os_dump.platform_private_footprint.vm_swap_bytes;
@@ -50,6 +52,8 @@ uint32_t CalculatePrivateFootprintKb(
         os_dump.platform_private_footprint.compressed_bytes;
     return (internal_bytes + compressed_bytes) / 1024;
   }
+#elif defined(OS_WIN)
+  return os_dump.platform_private_footprint.private_bytes;
 #else
   return 0;
 #endif

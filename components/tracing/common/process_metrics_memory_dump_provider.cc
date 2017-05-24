@@ -618,12 +618,13 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
   pmd->process_totals()->SetExtraFieldInBytes("shared_bytes", shared_bytes);
   pmd->process_totals()->SetExtraFieldInBytes("locked_bytes", locked_bytes);
 
-  base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint& footprint =
-      pmd->process_totals()->GetPlatformPrivateFootprint();
+  base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint footprint;
   base::ProcessMetrics::TaskVMInfo info = process_metrics_->GetTaskVMInfo();
   footprint.phys_footprint_bytes = info.phys_footprint;
   footprint.internal_bytes = info.internal;
   footprint.compressed_bytes = info.compressed;
+
+  pmd->process_totals()->SetPlatformPrivateFootprint(footprint);
 #else
   uint64_t rss_bytes = process_metrics_->GetWorkingSetSize();
 #endif  // defined(OS_MACOSX)
@@ -637,7 +638,7 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
   uint64_t peak_rss_bytes = 0;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  auto& footprint = pmd->process_totals()->GetPlatformPrivateFootprint();
+  base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint footprint;
 
   base::ScopedFD autoclose;
   int statm_fd = fast_polling_statm_fd_.get();
@@ -657,7 +658,18 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
 
   footprint.rss_anon_bytes = (resident_pages - shared_pages) * page_size;
   footprint.vm_swap_bytes = process_metrics_->GetVmSwapBytes();
+  pmd->process_totals()->SetPlatformPrivateFootprint(footprint);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+  {
+    size_t private_bytes;
+    base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint footprint;
+    process_metrics_->GetMemoryBytes(&private_bytes, nullptr);
+    footprint.private_bytes = private_bytes;
+    pmd->process_totals()->SetPlatformPrivateFootprint(footprint);
+  }
+#endif
 
 #if !defined(OS_IOS)
   peak_rss_bytes = process_metrics_->GetPeakWorkingSetSize();

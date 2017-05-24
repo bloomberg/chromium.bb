@@ -25,12 +25,17 @@ struct RequestArgs {
   LevelOfDetail level_of_detail;
 };
 
+// Keep this in sync with ProcessMemoryTotals::PlatformPrivateFootprint
+// in base/trace_event/process_memory_totals.h.
+//
+// See that header for explanation of the fields.
 struct PlatformPrivateFootprint {
   uint64 phys_footprint_bytes = 0;
   uint64 internal_bytes = 0;
   uint64 compressed_bytes = 0;
   uint64 rss_anon_bytes = 0;
   uint64 vm_swap_bytes = 0;
+  uint64 private_bytes = 0;
 };
 
 struct OSMemDump {
