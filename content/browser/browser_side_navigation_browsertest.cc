@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -320,6 +322,63 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, SanitizeReferrer) {
   EXPECT_TRUE(manager.WaitForResponse());
   manager.WaitForNavigationFinished();
   EXPECT_EQ(kInsecureUrl, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Test to verify that an exploited renderer process trying to upload a file
+// it hasn't been explicitly granted permissions to is correctly terminated.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       PostUploadIllegalFilePath) {
+  GURL form_url(
+      embedded_test_server()->GetURL("/form_that_posts_to_echoall.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+
+  // Prepare a file for the upload form.
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedTempDir temp_dir;
+  base::FilePath file_path;
+  std::string file_content("test-file-content");
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &file_path));
+  ASSERT_LT(
+      0, base::WriteFile(file_path, file_content.data(), file_content.size()));
+
+  // Fill out the form to refer to the test file.
+  std::unique_ptr<FileChooserDelegate> delegate(
+      new FileChooserDelegate(file_path));
+  shell()->web_contents()->SetDelegate(delegate.get());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.getElementById('file').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+
+  // Ensure that the process is allowed to access to the chosen file and
+  // does not have access to the other file name.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      rfh->GetProcess()->GetID(), file_path));
+
+  // Revoke the access to the file and submit the form. The renderer process
+  // should be terminated.
+  RenderProcessHostWatcher process_exit_observer(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  ChildProcessSecurityPolicyImpl* security_policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  security_policy->RevokeAllPermissionsForFile(rfh->GetProcess()->GetID(),
+                                               file_path);
+
+  // Use ExecuteScriptAndExtractBool and respond back to the browser process
+  // before doing the actual submission. This will ensure that the process
+  // termination is guaranteed to arrive after the response from the executed
+  // JavaScript.
+  bool result = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell(),
+      "window.domAutomationController.send(true);"
+      "document.getElementById('file-form').submit();",
+      &result));
+  EXPECT_TRUE(result);
+  process_exit_observer.Wait();
 }
 
 }  // namespace content

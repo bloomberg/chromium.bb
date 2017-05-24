@@ -961,6 +961,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // to |url|.
   void SetLastCommittedSiteUrl(const GURL& url);
 
+  // Ensures that the upload parameters sent by the renderer process are
+  // valid and any files specified are allowed for access.
+  bool ValidateUploadParams(const CommonNavigationParams& common_params);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
