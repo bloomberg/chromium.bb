@@ -499,7 +499,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   SkColor color_background =
       tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND)
           ? GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND)
-          : SkColorSetRGB(0x32, 0x32, 0x32);
+          : ThemeProperties::GetDefaultColor(
+                ThemeProperties::COLOR_NTP_BACKGROUND, true /* incognito */);
 
   // Generate the replacements.
   ui::TemplateReplacements substitutions;

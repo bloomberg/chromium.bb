@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
@@ -67,7 +68,11 @@ constexpr SkColor kDefaultColorNTPBackground = SK_ColorWHITE;
 constexpr SkColor kDefaultColorNTPText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
 #endif  // OS_WIN
-const SkColor kDefaultColorNTPBackgroundOtr = SkColorSetRGB(0x30, 0x30, 0x30);
+
+// Then new MD Incognito NTP uses a slightly different shade of black.
+// TODO(msramek): Remove the old entry when the new NTP fully launches.
+const SkColor kDefaultColorNTPBackgroundOtr = SkColorSetRGB(0x32, 0x32, 0x32);
+const SkColor kDefaultColorNTPBackgroundOtrMD = SkColorSetRGB(0x30, 0x30, 0x30);
 
 const SkColor kDefaultColorNTPHeader = SkColorSetRGB(0x96, 0x96, 0x96);
 constexpr SkColor kDefaultColorButtonBackground = SK_ColorTRANSPARENT;
@@ -236,7 +241,11 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
       return otr ? kDefaultColorBackgroundTabTextIncognito
                  : kDefaultColorBackgroundTabText;
     case COLOR_NTP_BACKGROUND:
-      return otr ? kDefaultColorNTPBackgroundOtr : kDefaultColorNTPBackground;
+      if (!otr)
+        return kDefaultColorNTPBackground;
+      return base::FeatureList::IsEnabled(features::kMaterialDesignIncognitoNTP)
+                 ? kDefaultColorNTPBackgroundOtrMD
+                 : kDefaultColorNTPBackgroundOtr;
     case COLOR_NTP_TEXT:
       return kDefaultColorNTPText;
     case COLOR_NTP_LINK:
