@@ -76,19 +76,19 @@ void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
 
 std::unique_ptr<Surface> SurfaceManager::CreateSurface(
     base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
-    const LocalSurfaceId& local_surface_id) {
+    const SurfaceInfo& surface_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(local_surface_id.is_valid() && compositor_frame_sink_support);
-
-  SurfaceId surface_id(compositor_frame_sink_support->frame_sink_id(),
-                       local_surface_id);
+  DCHECK(surface_info.is_valid());
+  DCHECK(compositor_frame_sink_support);
+  DCHECK_EQ(surface_info.id().frame_sink_id(),
+            compositor_frame_sink_support->frame_sink_id());
 
   // If no surface with this SurfaceId exists, simply create the surface and
   // return.
-  auto surface_iter = surface_map_.find(surface_id);
+  auto surface_iter = surface_map_.find(surface_info.id());
   if (surface_iter == surface_map_.end()) {
     auto surface =
-        base::MakeUnique<Surface>(surface_id, compositor_frame_sink_support);
+        base::MakeUnique<Surface>(surface_info, compositor_frame_sink_support);
     surface_map_[surface->surface_id()] = surface.get();
     return surface;
   }
@@ -103,8 +103,8 @@ std::unique_ptr<Surface> SurfaceManager::CreateSurface(
   // the queue and reuse it.
   auto it =
       std::find_if(surfaces_to_destroy_.begin(), surfaces_to_destroy_.end(),
-                   [&surface_id](const std::unique_ptr<Surface>& surface) {
-                     return surface->surface_id() == surface_id;
+                   [&surface_info](const std::unique_ptr<Surface>& surface) {
+                     return surface->surface_id() == surface_info.id();
                    });
   DCHECK(it != surfaces_to_destroy_.end());
   std::unique_ptr<Surface> surface = std::move(*it);

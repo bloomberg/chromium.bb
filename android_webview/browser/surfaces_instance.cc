@@ -139,14 +139,16 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   frame.metadata.begin_frame_ack =
       cc::BeginFrameAck::CreateManualAckWithDamage();
   frame.render_pass_list.push_back(std::move(render_pass));
+  frame.metadata.device_scale_factor = 1.f;
   frame.metadata.referenced_surfaces = child_ids_;
 
-  if (!root_id_.is_valid() || frame_size != surface_size_) {
+  if (!root_id_.is_valid() || viewport != surface_size_) {
     root_id_ = local_surface_id_allocator_->GenerateId();
-    surface_size_ = frame_size;
+    surface_size_ = viewport;
     display_->SetLocalSurfaceId(root_id_, 1.f);
   }
-  support_->SubmitCompositorFrame(root_id_, std::move(frame));
+  bool result = support_->SubmitCompositorFrame(root_id_, std::move(frame));
+  DCHECK(result);
 
   display_->Resize(viewport);
   display_->DrawAndSwap();
@@ -186,7 +188,9 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   frame.metadata.begin_frame_ack =
       cc::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.referenced_surfaces = child_ids_;
-  support_->SubmitCompositorFrame(root_id_, std::move(frame));
+  frame.metadata.device_scale_factor = 1;
+  bool result = support_->SubmitCompositorFrame(root_id_, std::move(frame));
+  DCHECK(result);
 }
 
 void SurfacesInstance::DidReceiveCompositorFrameAck(

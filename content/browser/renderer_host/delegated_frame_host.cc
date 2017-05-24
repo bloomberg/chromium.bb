@@ -456,7 +456,9 @@ void DelegatedFrameHost::SubmitCompositorFrame(
                                        skipped_latency_info_list_.end());
     skipped_latency_info_list_.clear();
 
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    bool result =
+        support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    DCHECK(result);
 
     if (local_surface_id != local_surface_id_ || !has_frame_) {
       // manager must outlive compositors using it.

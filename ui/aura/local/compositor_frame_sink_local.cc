@@ -66,20 +66,21 @@ void CompositorFrameSinkLocal::SubmitCompositorFrame(
             frame.metadata.begin_frame_ack.sequence_number);
 
   cc::LocalSurfaceId old_local_surface_id = local_surface_id_;
-  if (!frame.render_pass_list.empty()) {
-    const auto& frame_size = frame.render_pass_list.back()->output_rect.size();
-    if (frame_size != last_submitted_frame_size_ ||
-        !local_surface_id_.is_valid()) {
-      last_submitted_frame_size_ = frame_size;
-      local_surface_id_ = id_allocator_.GenerateId();
-    }
+  const auto& frame_size = frame.render_pass_list.back()->output_rect.size();
+  if (frame_size != surface_size_ ||
+      frame.metadata.device_scale_factor != device_scale_factor_ ||
+      !local_surface_id_.is_valid()) {
+    surface_size_ = frame_size;
+    device_scale_factor_ = frame.metadata.device_scale_factor;
+    local_surface_id_ = id_allocator_.GenerateId();
   }
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  bool result =
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  DCHECK(result);
 
   if (local_surface_id_ != old_local_surface_id) {
     surface_changed_callback_.Run(
-        cc::SurfaceId(frame_sink_id_, local_surface_id_),
-        last_submitted_frame_size_);
+        cc::SurfaceId(frame_sink_id_, local_surface_id_), surface_size_);
   }
 }
 
