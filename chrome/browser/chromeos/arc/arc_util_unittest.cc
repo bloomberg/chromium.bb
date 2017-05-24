@@ -160,21 +160,16 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
-  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 
   // false for nullptr.
   EXPECT_FALSE(IsArcAllowedForProfile(nullptr));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(nullptr));
 
   // false for incognito mode profile.
   EXPECT_FALSE(IsArcAllowedForProfile(profile()->GetOffTheRecordProfile()));
-  EXPECT_FALSE(
-      IsArcAllowedInAppListForProfile(profile()->GetOffTheRecordProfile()));
 
   // false for Legacy supervised user.
   profile()->SetSupervisedUserId("foo");
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
@@ -183,21 +178,16 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
-  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 
   // false for nullptr.
   EXPECT_FALSE(IsArcAllowedForProfile(nullptr));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(nullptr));
 
   // false for incognito mode profile.
   EXPECT_FALSE(IsArcAllowedForProfile(profile()->GetOffTheRecordProfile()));
-  EXPECT_FALSE(
-      IsArcAllowedInAppListForProfile(profile()->GetOffTheRecordProfile()));
 
   // false for Legacy supervised user.
   profile()->SetSupervisedUserId("foo");
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {
@@ -206,7 +196,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_NonPrimaryProfile) {
@@ -219,7 +208,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_NonPrimaryProfile) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 // User without GAIA account.
@@ -230,7 +218,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_PublicAccount) {
                     AccountId::FromUserEmail("public_user@gmail.com"),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
@@ -244,7 +231,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
-  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
@@ -257,7 +243,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcNotAvailable) {
@@ -269,7 +254,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcNotAvailable) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcInstalled) {
@@ -282,7 +266,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcInstalled) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
-  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
@@ -295,7 +278,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
-  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_SupervisedUserFlow) {
@@ -317,7 +299,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_GuestAccount) {
   ScopedLogIn login(GetFakeUserManager(),
                     GetFakeUserManager()->GetGuestAccountId());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 // Demo account is interpreted as EphemeralDataUser.
@@ -326,15 +307,12 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DemoAccount) {
       {"", "--arc-availability=officially-supported"});
   ScopedLogIn login(GetFakeUserManager(), user_manager::DemoAccountId());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
-  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--arc-availability=officially-supported"});
-  // TODO(kinaba): Come up with some way to test the conditions below
-  // causes differences in the return values of IsArcAllowedForProfile()
-  // and IsArcAllowedInAppListForProfile().
+
   const AccountId id(AccountId::FromUserEmailGaiaId(
       profile()->GetProfileUserName(), kTestGaiaId));
   ScopedLogIn login(GetFakeUserManager(), id);

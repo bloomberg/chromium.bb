@@ -279,8 +279,7 @@ bool LaunchApp(content::BrowserContext* context,
   // Even when ARC is not allowed for the profile, ARC apps may still show up
   // as a placeholder to show the guide notification for proper configuration.
   // Handle such a case here and shows the desired notification.
-  if (IsArcAllowedInAppListForProfile(profile) &&
-      !IsArcAllowedForProfile(profile)) {
+  if (IsArcBlockedDueToIncompatibleFileSystem(profile)) {
     arc::ShowArcMigrationGuideNotification(profile);
     return false;
   }

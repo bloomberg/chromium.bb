@@ -46,12 +46,17 @@ enum FileSystemCompatibilityState : int32_t {
 // nullptr can be safely passed to this function. In that case, returns false.
 bool IsArcAllowedForProfile(const Profile* profile);
 
-// Returns true if ARC app is allowed to show up on app list for the given
-// profile. This can be a looser condition than IsArcAllowedForProfile.
-// ARC may be temporaliry disallowed for the profile, but it may become again
-// avaiable after the user's action. ARC app list can stay there to ease the
-// user (by showing apps not gone) and to give a guide for the action.
-bool IsArcAllowedInAppListForProfile(const Profile* profile);
+// Returns true if the profile is temporarily blocked to run ARC in the current
+// session, because the filesystem storing the profile is incomaptible with the
+// currently installed ARC version.
+//
+// The actual filesystem check is performed only when it is running on the
+// Chrome OS device. Otherwise, it just returns the dummy value set by
+// SetArcBlockedDueToIncompatibleFileSystemForTesting (false by default.)
+bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile);
+
+// Sets the result of IsArcBlockedDueToIncompatibleFileSystem for testing.
+void SetArcBlockedDueToIncompatibleFileSystemForTesting(bool block);
 
 // Returns true if the profile is already marked to be on a filesystem
 // compatible to the currently installed ARC version. The check almost never

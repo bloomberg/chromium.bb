@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -573,8 +574,21 @@ void ArcSessionManager::RequestEnableImpl() {
   // there will be no one who is eligible to accept them.
   // If opt-in verification is disabled, skip negotiation, too. This is for
   // testing purpose.
-  if (prefs->GetBoolean(prefs::kArcSignedIn) || ShouldArcAlwaysStart() ||
-      IsArcKioskMode() || IsArcOptInVerificationDisabled()) {
+  const bool start_arc_directly = prefs->GetBoolean(prefs::kArcSignedIn) ||
+                                  ShouldArcAlwaysStart() || IsArcKioskMode() ||
+                                  IsArcOptInVerificationDisabled();
+
+  // When ARC is blocked because of filesystem compatibility, do not proceed
+  // to starting ARC nor follow further state transitions.
+  if (IsArcBlockedDueToIncompatibleFileSystem(profile_)) {
+    // If the next step was the ToS negotiation, show a notification instead.
+    // Otherwise, be silent now. Users are notified when clicking ARC app icons.
+    if (!start_arc_directly && !g_disable_ui_for_testing)
+      arc::ShowArcMigrationGuideNotification(profile_);
+    return;
+  }
+
+  if (start_arc_directly) {
     StartArc();
     // Check Android management in parallel.
     // Note: StartBackgroundAndroidManagementCheck() may call
