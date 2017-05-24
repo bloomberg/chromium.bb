@@ -11,8 +11,7 @@
 namespace content {
 
 // This class lives in the browser and provides MojoCompositorFrameSink for the
-// renderer. To access this class in the renderer, call:
-// RenderThreadImpl::current()->GetFrameSinkProvider().
+// renderer.
 class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
  public:
   explicit FrameSinkProviderImpl(int32_t process_id);
