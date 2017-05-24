@@ -38,7 +38,7 @@ void PaymentRequestRowView::ShowBottomSeparator() {
 }
 
 void PaymentRequestRowView::HideBottomSeparator() {
-  SetBorder(views::NullBorder());
+  SetBorder(views::CreateEmptyBorder(insets_));
 }
 
 void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
