@@ -200,6 +200,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);
   void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);
   void SetUpdateEngineClient(std::unique_ptr<UpdateEngineClient> client);
+  void SetUpstartClient(std::unique_ptr<UpstartClient> client);
 
  private:
   friend class DBusThreadManager;
