@@ -216,8 +216,8 @@ void VrShellDelegate::CreateNonPresentingDelegate() {
                                                 interval_seconds_);
 }
 
-void VrShellDelegate::OnActivateDisplayHandled(bool present_requested) {
-  if (!present_requested) {
+void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
+  if (will_not_present) {
     // WebVR page didn't request presentation in the vrdisplayactivate handler.
     // Tell VrShell that we are in VR Browsing Mode.
     ExitWebVRPresent();

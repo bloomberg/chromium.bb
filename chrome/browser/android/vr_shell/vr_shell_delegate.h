@@ -72,7 +72,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   void CreateNonPresentingDelegate();
 
-  void OnActivateDisplayHandled(bool present_requested);
+  void OnActivateDisplayHandled(bool will_not_present);
 
   std::unique_ptr<NonPresentingGvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
