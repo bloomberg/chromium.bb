@@ -1011,6 +1011,14 @@ void SetFeaturePolicy(Document* document, const String& feature_policy_header) {
   WebParsedFeaturePolicy container_policy;
   if (frame->Owner())
     container_policy = frame->Owner()->ContainerPolicy();
+  // Check that if there is a parent frame, that its feature policy is
+  // correctly initialized. Crash if that is not the case. (Temporary crash for
+  // isolating the cause of https://crbug.com/722333)
+  // Note that even with this check removed, the process will stil crash in
+  // feature_policy.cc when it attempts to dereference parent_feature_policy.
+  // This check is to distinguish between two possible causes.
+  if (!container_policy.empty())
+    CHECK(frame->IsMainFrame() || parent_feature_policy);
   frame->GetSecurityContext()->InitializeFeaturePolicy(
       parsed_header, container_policy, parent_feature_policy);
 
