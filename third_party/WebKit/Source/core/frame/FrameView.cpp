@@ -554,11 +554,6 @@ void FrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
     RecalculateCustomScrollbarStyle();
 }
 
-void FrameView::Clear() {
-  Reset();
-  SetScrollbarsSuppressed(true);
-}
-
 bool FrameView::DidFirstLayout() const {
   return !first_layout_;
 }

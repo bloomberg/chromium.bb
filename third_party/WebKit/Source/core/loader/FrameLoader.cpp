@@ -44,7 +44,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/editing/Editor.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
@@ -358,24 +357,6 @@ void FrameLoader::DidExplicitOpen() {
   frame_->GetNavigationScheduler().Cancel();
 }
 
-void FrameLoader::Clear() {
-  // clear() is called during (Local)Frame detachment or when reusing a
-  // FrameLoader by putting a new Document within it
-  // (DocumentLoader::ensureWriter().)
-  if (state_machine_.CreatingInitialEmptyDocument())
-    return;
-
-  frame_->GetEditor().Clear();
-  frame_->GetEventHandler().Clear();
-  if (frame_->View())
-    frame_->View()->Clear();
-
-  if (state_machine_.IsDisplayingInitialEmptyDocument())
-    state_machine_.AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
-
-  TakeObjectSnapshot();
-}
-
 // This is only called by ScriptController::executeScriptIfJavaScriptURL and
 // always contains the result of evaluating a javascript: url. This is the
 // <iframe src="javascript:'html'"> case.
@@ -404,7 +385,6 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   SubframeLoadingDisabler disabler(frame_->GetDocument());
   frame_->DetachChildren();
   frame_->GetDocument()->Shutdown();
-  Clear();
 
   // detachChildren() potentially detaches the frame from the document. The
   // loading cannot continue in that case.

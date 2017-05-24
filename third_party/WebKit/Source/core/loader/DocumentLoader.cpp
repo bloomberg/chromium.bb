@@ -667,7 +667,6 @@ void DocumentLoader::EnsureWriter(const AtomicString& mime_type,
   }
   DocumentInit init(owner, Url(), frame_);
   init.WithNewRegistrationContext();
-  frame_->Loader().Clear();
   DCHECK(frame_->GetPage());
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
@@ -1057,6 +1056,11 @@ void DocumentLoader::InstallNewDocument(
   DCHECK_EQ(init.GetFrame(), frame_);
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
+
+  if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
+    GetFrameLoader().StateMachine()->AdvanceTo(
+        FrameLoaderStateMachine::kCommittedFirstRealLoad);
+  }
 
   SecurityOrigin* previous_security_origin = nullptr;
   if (frame_->GetDocument())

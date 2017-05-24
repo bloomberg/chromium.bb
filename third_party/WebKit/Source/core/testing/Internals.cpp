@@ -259,7 +259,6 @@ void Internals::ResetToConsistentState(Page* page) {
           page->GetScrollingCoordinator())
     scrolling_coordinator->Reset();
 
-  page->DeprecatedLocalMainFrame()->View()->Clear();
   KeyboardEventManager::SetCurrentCapsLockState(
       OverrideCapsLockState::kDefault);
 }

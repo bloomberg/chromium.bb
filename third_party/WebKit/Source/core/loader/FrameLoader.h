@@ -101,10 +101,6 @@ class CORE_EXPORT FrameLoader final {
   // won't in any way access the LocalFrame after stopAllLoaders returns.
   void StopAllLoaders();
 
-  // FIXME: clear() is trying to do too many things. We should break it down
-  // into smaller functions.
-  void Clear();
-
   void ReplaceDocumentWhileExecutingJavaScriptURL(const String& source,
                                                   Document* owner_document);
 
