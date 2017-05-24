@@ -36,10 +36,9 @@ void DispatchOnEmbedRequestedEventImpl(
     content::BrowserContext* context) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(std::move(app_embedding_request_data));
-  std::unique_ptr<Event> event(
-      new Event(events::APP_RUNTIME_ON_EMBED_REQUESTED,
-                app_runtime::OnEmbedRequested::kEventName, std::move(args)));
-  event->restrict_to_browser_context = context;
+  auto event = base::MakeUnique<Event>(
+      events::APP_RUNTIME_ON_EMBED_REQUESTED,
+      app_runtime::OnEmbedRequested::kEventName, std::move(args), context);
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, std::move(event));
 
@@ -66,10 +65,9 @@ void DispatchOnLaunchedEventImpl(
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(std::move(launch_data));
-  std::unique_ptr<Event> event(new Event(events::APP_RUNTIME_ON_LAUNCHED,
-                                         app_runtime::OnLaunched::kEventName,
-                                         std::move(args)));
-  event->restrict_to_browser_context = context;
+  auto event = base::MakeUnique<Event>(events::APP_RUNTIME_ON_LAUNCHED,
+                                       app_runtime::OnLaunched::kEventName,
+                                       std::move(args), context);
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, std::move(event));
   ExtensionPrefs::Get(context)
@@ -147,10 +145,9 @@ void AppRuntimeEventRouter::DispatchOnRestartedEvent(
     BrowserContext* context,
     const Extension* extension) {
   std::unique_ptr<base::ListValue> arguments(new base::ListValue());
-  std::unique_ptr<Event> event(new Event(events::APP_RUNTIME_ON_RESTARTED,
-                                         app_runtime::OnRestarted::kEventName,
-                                         std::move(arguments)));
-  event->restrict_to_browser_context = context;
+  auto event = base::MakeUnique<Event>(events::APP_RUNTIME_ON_RESTARTED,
+                                       app_runtime::OnRestarted::kEventName,
+                                       std::move(arguments), context);
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension->id(), std::move(event));
 }

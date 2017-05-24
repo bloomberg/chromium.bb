@@ -412,9 +412,9 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
 
   std::unique_ptr<base::ListValue> args(
       OnDetach::Create(debuggee_, detach_reason_));
-  std::unique_ptr<Event> event(new Event(
-      events::DEBUGGER_ON_DETACH, OnDetach::kEventName, std::move(args)));
-  event->restrict_to_browser_context = profile_;
+  auto event =
+      base::MakeUnique<Event>(events::DEBUGGER_ON_DETACH, OnDetach::kEventName,
+                              std::move(args), profile_);
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(extension_id_, std::move(event));
 }
@@ -460,9 +460,9 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
 
     std::unique_ptr<base::ListValue> args(
         OnEvent::Create(debuggee_, method_name, params));
-    std::unique_ptr<Event> event(new Event(
-        events::DEBUGGER_ON_EVENT, OnEvent::kEventName, std::move(args)));
-    event->restrict_to_browser_context = profile_;
+    auto event =
+        base::MakeUnique<Event>(events::DEBUGGER_ON_EVENT, OnEvent::kEventName,
+                                std::move(args), profile_);
     EventRouter::Get(profile_)
         ->DispatchEventToExtension(extension_id_, std::move(event));
   } else {

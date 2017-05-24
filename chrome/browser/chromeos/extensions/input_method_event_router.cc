@@ -47,10 +47,9 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
       manager->GetActiveIMEState()->GetCurrentInputMethod().id());
 
   // The router will only send the event to extensions that are listening.
-  std::unique_ptr<extensions::Event> event(
-      new extensions::Event(extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
-                            OnChanged::kEventName, std::move(args)));
-  event->restrict_to_browser_context = context_;
+  auto event = base::MakeUnique<extensions::Event>(
+      extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
+      OnChanged::kEventName, std::move(args), context_);
   router->BroadcastEvent(std::move(event));
 }
 

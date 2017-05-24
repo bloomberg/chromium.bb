@@ -264,9 +264,9 @@ void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
                                        const std::string& event_name,
                                        WindowController* window_controller,
                                        std::unique_ptr<base::ListValue> args) {
-  std::unique_ptr<Event> event =
-      base::MakeUnique<Event>(histogram_value, event_name, std::move(args));
-  event->restrict_to_browser_context = window_controller->profile();
+  auto event =
+      base::MakeUnique<Event>(histogram_value, event_name, std::move(args),
+                              window_controller->profile());
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowEvent, window_controller);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));

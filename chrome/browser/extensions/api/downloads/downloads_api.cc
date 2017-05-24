@@ -1886,15 +1886,20 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   args->Append(std::move(arg));
   std::string json_args;
   base::JSONWriter::Write(*args, &json_args);
-  std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, std::move(args)));
   // The downloads system wants to share on-record events with off-record
   // extension renderers even in incognito_split_mode because that's how
   // chrome://downloads works. The "restrict_to_profile" mechanism does not
   // anticipate this, so it does not automatically prevent sharing off-record
   // events with on-record extension renderers.
-  event->restrict_to_browser_context =
-      (include_incognito && !profile_->IsOffTheRecord()) ? NULL : profile_;
+  // TODO(lazyboy): When |restrict_to_browser_context| is nullptr, this will
+  // broadcast events to unrelated profiles, not just incognito. Fix this
+  // by introducing "include incognito" option to Event constructor.
+  // https://crbug.com/726022.
+  Profile* restrict_to_browser_context =
+      (include_incognito && !profile_->IsOffTheRecord()) ? nullptr : profile_;
+  auto event =
+      base::MakeUnique<Event>(histogram_value, event_name, std::move(args),
+                              restrict_to_browser_context);
   event->will_dispatch_callback = will_dispatch_callback;
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   DownloadsNotificationSource notification_source;
