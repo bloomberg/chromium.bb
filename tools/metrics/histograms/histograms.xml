@@ -26808,6 +26808,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Audio.InputRestartAttemptsMac">
+  <obsolete>
+    Deprecated May 2017. Restart mechanism is removed.
+  </obsolete>
   <owner>henrika@chromium.org</owner>
   <summary>
     Counts the total number of times an attempt to restart input audio has been
