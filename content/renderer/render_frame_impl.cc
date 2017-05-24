@@ -6559,17 +6559,14 @@ void RenderFrameImpl::SendUpdateState() {
 }
 
 void RenderFrameImpl::MaybeEnableMojoBindings() {
-  // BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO,
-  // BINDINGS_POLICY_HEADLESS_MAIN_WORLD and
-  // BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD are mutually exclusive. They
-  // provide access to Mojo bindings, but do so in incompatible ways.
-  const int kAllBindingsTypes = BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO |
-                                BINDINGS_POLICY_HEADLESS_MAIN_WORLD |
-                                BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD;
+  // BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO and BINDINGS_POLICY_HEADLESS
+  // are mutually exclusive. They provide access to Mojo bindings, but do so in
+  // incompatible ways.
+  const int kAllBindingsTypes =
+      BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO | BINDINGS_POLICY_HEADLESS;
 
   // Make sure that at most one of BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO
-  // BINDINGS_POLICY_HEADLESS_MAIN_WORLD and
-  // BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD have been set.
+  // and BINDINGS_POLICY_HEADLESS have been set.
   // NOTE x & (x - 1) == 0 is true iff x is zero or a power of two.
   DCHECK_EQ((enabled_bindings_ & kAllBindingsTypes) &
                 ((enabled_bindings_ & kAllBindingsTypes) - 1),
@@ -6587,6 +6584,8 @@ void RenderFrameImpl::MaybeEnableMojoBindings() {
     new MojoBindingsController(this, MojoBindingsType::FOR_WEB_UI);
   } else if (enabled_bindings_ & BINDINGS_POLICY_MOJO) {
     new MojoBindingsController(this, MojoBindingsType::FOR_LAYOUT_TESTS);
+  } else if (enabled_bindings_ & BINDINGS_POLICY_HEADLESS) {
+    new MojoBindingsController(this, MojoBindingsType::FOR_HEADLESS);
   }
 }
 

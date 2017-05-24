@@ -29,6 +29,10 @@
 
 namespace headless {
 
+namespace {
+const char kHeadlessMojomProtocol[] = "headless-mojom";
+}
+
 // Contains net::URLRequestContextGetter required for resource loading.
 // Must be destructed on the IO thread as per content::ResourceContext
 // requirements.
@@ -410,6 +414,19 @@ HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
 
 HeadlessBrowserContext* HeadlessBrowserContext::Builder::Build() {
   if (!mojo_bindings_.empty()) {
+    std::unique_ptr<InMemoryProtocolHandler> headless_mojom_protocol_handler(
+        new InMemoryProtocolHandler());
+    for (const MojoBindings& binding : mojo_bindings_) {
+      headless_mojom_protocol_handler->InsertResponse(
+          binding.mojom_name,
+          InMemoryProtocolHandler::Response(binding.js_bindings,
+                                            "application/javascript"));
+    }
+    DCHECK(options_->protocol_handlers_.find(kHeadlessMojomProtocol) ==
+           options_->protocol_handlers_.end());
+    options_->protocol_handlers_[kHeadlessMojomProtocol] =
+        std::move(headless_mojom_protocol_handler);
+
     // Unless you know what you're doing it's unsafe to allow http/https for a
     // context with mojo bindings.
     if (!enable_http_and_https_if_mojo_used_) {

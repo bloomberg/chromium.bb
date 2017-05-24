@@ -16,6 +16,7 @@ class HeadlessContentRendererClient : public content::ContentRendererClient {
 
  private:
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessContentRendererClient);
 };
