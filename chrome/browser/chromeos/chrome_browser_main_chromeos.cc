@@ -288,7 +288,10 @@ class DBusServices {
       service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
           base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
-    service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
+    // TODO(teravest): Remove this provider once all callers are using
+    // |liveness_service_| instead: http://crbug.com/644322
+    service_providers.push_back(
+        base::MakeUnique<LivenessServiceProvider>(kLibCrosServiceInterface));
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
     // TODO(sky): once mash supports simplified display mode we should always
     // use ChromeConsoleServiceProviderDelegate.
@@ -322,6 +325,12 @@ class DBusServices {
             base::MakeUnique<KioskInfoService>(
                 kKioskAppServiceInterface,
                 kKioskAppServiceGetRequiredPlatformVersionMethod)));
+
+    liveness_service_ = CrosDBusService::Create(
+        kLivenessServiceName, dbus::ObjectPath(kLivenessServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            base::MakeUnique<LivenessServiceProvider>(
+                kLivenessServiceInterface)));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
@@ -374,6 +383,7 @@ class DBusServices {
     cros_dbus_service_.reset();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
+    liveness_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -393,6 +403,7 @@ class DBusServices {
 
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
+  std::unique_ptr<CrosDBusService> liveness_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
