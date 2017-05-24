@@ -467,9 +467,9 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 #pragma mark - SigninPromoViewConsumer
 
-- (void)configureSigninPromoViewWithNewIdentity:(BOOL)newIdentity
-                                   configurator:(SigninPromoViewConfigurator*)
-                                                    configurator {
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
   DCHECK(_signinPromoView);
   DCHECK(_signinPromoViewMediator);
   [configurator configureSigninPromoView:_signinPromoView];
