@@ -90,8 +90,10 @@
 #include "core/html/HTMLSlotElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutPart.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"
+#include "core/plugins/PluginView.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -2594,6 +2596,22 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
       }
     }
   }
+}
+
+WebPluginContainerBase* Node::GetWebPluginContainerBase() const {
+  if (!isHTMLObjectElement(this) && !isHTMLEmbedElement(this)) {
+    return nullptr;
+  }
+
+  LayoutObject* object = GetLayoutObject();
+  if (object && object->IsLayoutPart()) {
+    PluginView* plugin = ToLayoutPart(object)->Plugin();
+    if (plugin) {
+      return plugin->GetWebPluginContainerBase();
+    }
+  }
+
+  return nullptr;
 }
 
 DEFINE_TRACE(Node) {

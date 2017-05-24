@@ -1197,15 +1197,6 @@ LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameInWidget() const {
              : nullptr;
 }
 
-WebPlugin* WebFrameWidgetImpl::FocusedPluginIfInputMethodSupported(
-    LocalFrame* frame) const {
-  WebPluginContainerBase* container =
-      WebLocalFrameImpl::CurrentPluginContainer(frame);
-  if (container && container->SupportsInputMethod())
-    return container->Plugin();
-  return nullptr;
-}
-
 LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameAvailableForIme() const {
   if (!ime_accept_events_)
     return nullptr;

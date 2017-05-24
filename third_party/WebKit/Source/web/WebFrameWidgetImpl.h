@@ -189,8 +189,6 @@ class WebFrameWidgetImpl final
   // focused frame has a different local root.
   LocalFrame* FocusedLocalFrameInWidget() const;
 
-  WebPlugin* FocusedPluginIfInputMethodSupported(LocalFrame*) const;
-
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
   CompositorMutatorImpl& Mutator();

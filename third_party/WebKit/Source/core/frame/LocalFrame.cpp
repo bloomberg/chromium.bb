@@ -55,6 +55,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/html/PluginDocument.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
@@ -74,6 +75,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/TransformRecorder.h"
+#include "core/plugins/PluginView.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/timing/Performance.h"
@@ -972,6 +974,25 @@ void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
 
 std::unique_ptr<WebURLLoader> LocalFrame::CreateURLLoader() {
   return Client()->CreateURLLoader();
+}
+
+WebPluginContainerBase* LocalFrame::GetWebPluginContainerBase(
+    Node* node) const {
+  if (GetDocument() && GetDocument()->IsPluginDocument()) {
+    PluginDocument* plugin_document = ToPluginDocument(GetDocument());
+    if (plugin_document->GetPluginView()) {
+      return plugin_document->GetPluginView()->GetWebPluginContainerBase();
+    }
+  }
+  if (!node) {
+    DCHECK(GetDocument());
+    node = GetDocument()->FocusedElement();
+  }
+
+  if (node) {
+    return node->GetWebPluginContainerBase();
+  }
+  return nullptr;
 }
 
 }  // namespace blink

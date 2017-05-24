@@ -74,6 +74,7 @@ using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
 class Text;
 class WebMouseEvent;
+class WebPluginContainerBase;
 
 const int kNodeStyleChangeShift = 18;
 const int kNodeCustomElementShift = 20;
@@ -831,6 +832,9 @@ class CORE_EXPORT Node : public EventTarget {
   void CheckSlotChangeBeforeRemoved() {
     CheckSlotChange(SlotChangeType::kInitial);
   }
+
+  // If the node is a plugin, then this returns its WebPluginContainerBase.
+  WebPluginContainerBase* GetWebPluginContainerBase() const;
 
   DECLARE_VIRTUAL_TRACE();
 

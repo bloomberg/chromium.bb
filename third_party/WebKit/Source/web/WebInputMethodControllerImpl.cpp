@@ -157,10 +157,10 @@ InputMethodController& WebInputMethodControllerImpl::GetInputMethodController()
 
 WebPlugin* WebInputMethodControllerImpl::FocusedPluginIfInputMethodSupported()
     const {
-  WebPluginContainerBase* container =
-      WebLocalFrameImpl::CurrentPluginContainer(GetFrame());
-  if (container && container->SupportsInputMethod())
+  WebPluginContainerBase* container = GetFrame()->GetWebPluginContainerBase();
+  if (container && container->SupportsInputMethod()) {
     return container->Plugin();
+  }
   return nullptr;
 }
 
