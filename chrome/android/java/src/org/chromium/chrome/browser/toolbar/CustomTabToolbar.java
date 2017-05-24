@@ -245,6 +245,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public boolean allowKeyboardLearning() {
+        return !super.isIncognito();
+    }
+
+    @Override
     public boolean shouldEmphasizeHttpsScheme() {
         int securityLevel = getSecurityLevel();
         return securityLevel == ConnectionSecurityLevel.DANGEROUS
