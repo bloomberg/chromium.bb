@@ -9,6 +9,7 @@
 
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/common_decoder.h"
+#include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -55,21 +56,11 @@ TEST(CommonDecoderBucket, SetData) {
 
 class TestCommonDecoder : public CommonDecoder {
  public:
-  // AsyncAPIInterface implementation
-  void BeginDecoding() override {}
-  void EndDecoding() override {}
-
-  const char* GetCommandName(unsigned int command_id) const override {
-    return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
-  }
-
   error::Error DoCommand(unsigned int command,
                          unsigned int arg_count,
-                         const volatile void* cmd_data) override {
+                         const volatile void* cmd_data) {
     return DoCommonCommand(command, arg_count, cmd_data);
   }
-
-  base::StringPiece GetLogPrefix() override { return "None"; }
 
   CommonDecoder::Bucket* GetBucket(uint32_t id) const {
     return CommonDecoder::GetBucket(id);
@@ -93,16 +84,14 @@ class CommonDecoderTest : public testing::Test {
   error::Error ExecuteCmd(const T& cmd) {
     static_assert(T::kArgFlags == cmd::kFixed,
                   "T::kArgFlags should equal cmd::kFixed");
-    return decoder_.DoCommands(
-        1, (const void*)&cmd, ComputeNumEntries(sizeof(cmd)), 0);
+    return decoder_.DoCommand(cmd.header.command, cmd.header.size - 1, &cmd);
   }
 
   template <typename T>
   error::Error ExecuteImmediateCmd(const T& cmd, size_t data_size) {
     static_assert(T::kArgFlags == cmd::kAtLeastN,
                   "T::kArgFlags should equal cmd::kAtLeastN");
-    return decoder_.DoCommands(
-        1, (const void*)&cmd, ComputeNumEntries(sizeof(cmd) + data_size), 0);
+    return decoder_.DoCommand(cmd.header.command, cmd.header.size - 1, &cmd);
   }
 
   template <typename T>
@@ -282,9 +271,10 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
             ExecuteImmediateCmd(cmd, sizeof(kData2)));
 
   // Check that it fails if the size is out of range.
+  size_cmd.Init(kBucketId, sizeof(kData2));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
   cmd.Init(kBucketId, 0, bucket->size() + 1);
-  EXPECT_NE(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(kData2)));
+  EXPECT_NE(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(kData)));
 }
 
 TEST_F(CommonDecoderTest, GetBucketStart) {

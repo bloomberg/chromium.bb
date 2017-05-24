@@ -492,12 +492,6 @@ void GLES2Decoder::BeginDecoding() {}
 
 void GLES2Decoder::EndDecoding() {}
 
-error::Error GLES2Decoder::DoCommand(unsigned int command,
-                                     unsigned int arg_count,
-                                     const volatile void* cmd_data) {
-  return DoCommands(1, cmd_data, arg_count + 1, 0);
-}
-
 base::StringPiece GLES2Decoder::GetLogPrefix() {
   return GetLogger()->GetLogPrefix();
 }
@@ -519,9 +513,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                               const volatile void* buffer,
                               int num_entries,
                               int* entries_processed);
-
-  // Overridden from AsyncAPIInterface.
-  const char* GetCommandName(unsigned int command_id) const override;
 
   // Overridden from GLES2Decoder.
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
@@ -684,6 +675,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     kBindBufferBase,
     kBindBufferRange
   };
+
+  const char* GetCommandName(unsigned int command_id) const;
 
   // Initialize or re-initialize the shader translator.
   bool InitializeShaderTranslator();
@@ -5226,6 +5219,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
                                               const volatile void* buffer,
                                               int num_entries,
                                               int* entries_processed) {
+  DCHECK(entries_processed);
   commands_to_process_ = num_commands;
   error::Error result = error::kNoError;
   const volatile CommandBufferEntry* cmd_data =
@@ -5306,8 +5300,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
     }
   }
 
-  if (entries_processed)
-    *entries_processed = process_pos;
+  *entries_processed = process_pos;
 
   if (error::IsError(result)) {
     LOG(ERROR) << "Error: " << result << " for Command "

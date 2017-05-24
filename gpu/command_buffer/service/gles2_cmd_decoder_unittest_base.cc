@@ -232,11 +232,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // will initialize itself.
   mock_decoder_.reset(new MockGLES2Decoder());
 
-  // Install FakeDoCommands handler so we can use individual DoCommand()
-  // expectations.
-  EXPECT_CALL(*mock_decoder_, DoCommands(_, _, _, _)).WillRepeatedly(
-      Invoke(mock_decoder_.get(), &MockGLES2Decoder::FakeDoCommands));
-
   EXPECT_TRUE(group_->Initialize(mock_decoder_.get(), init.context_type,
                                  DisallowedFeatures()));
 

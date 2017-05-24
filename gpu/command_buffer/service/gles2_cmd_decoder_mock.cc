@@ -10,21 +10,11 @@ namespace gpu {
 namespace gles2 {
 
 MockGLES2Decoder::MockGLES2Decoder() : GLES2Decoder(), weak_ptr_factory_(this) {
-  ON_CALL(*this, GetCommandName(testing::_))
-      .WillByDefault(testing::Return(""));
   ON_CALL(*this, MakeCurrent())
       .WillByDefault(testing::Return(true));
 }
 
 MockGLES2Decoder::~MockGLES2Decoder() {}
-
-error::Error MockGLES2Decoder::FakeDoCommands(unsigned int num_commands,
-                                              const volatile void* buffer,
-                                              int num_entries,
-                                              int* entries_processed) {
-  return AsyncAPIInterface::DoCommands(
-      num_commands, buffer, num_entries, entries_processed);
-}
 
 base::WeakPtr<GLES2Decoder> MockGLES2Decoder::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();

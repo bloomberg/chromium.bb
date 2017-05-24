@@ -74,10 +74,6 @@ class AsyncAPIMock : public AsyncAPIInterface {
                             int num_entries,
                             int* entries_processed));
 
-  const char* GetCommandName(unsigned int command_id) const {
-    return "";
-  };
-
   base::StringPiece GetLogPrefix() override { return "None"; }
 
   // Sets the engine, to forward SetToken commands to it.
