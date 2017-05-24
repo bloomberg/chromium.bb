@@ -70,7 +70,7 @@ TEST(MinidumpWriterTest, SetupWithPath) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -87,6 +87,7 @@ TEST(MinidumpWriterTest, SetupWithPath) {
   ASSERT_GT(st.st_size, 0);
 
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 TEST(MinidumpWriterTest, SetupWithFD) {
@@ -99,7 +100,7 @@ TEST(MinidumpWriterTest, SetupWithFD) {
     char b;
     HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -117,6 +118,7 @@ TEST(MinidumpWriterTest, SetupWithFD) {
   ASSERT_GT(st.st_size, 0);
 
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that mapping info can be specified when writing a minidump,
@@ -152,7 +154,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -213,6 +215,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_DSO_DEBUG, &len));
 
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that minidumping is skipped while writing minidumps if principal mapping
@@ -227,7 +230,7 @@ TEST(MinidumpWriterTest, MinidumpSkippedIfRequested) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -245,6 +248,7 @@ TEST(MinidumpWriterTest, MinidumpSkippedIfRequested) {
                             true, static_cast<uintptr_t>(0x0102030405060708ull),
                             false));
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that minidumping is skipped while writing minidumps if principal mapping
@@ -271,7 +275,7 @@ TEST(MinidumpWriterTest, MinidumpStacksSkippedIfRequested) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -304,6 +308,7 @@ TEST(MinidumpWriterTest, MinidumpStacksSkippedIfRequested) {
   }
   ASSERT_EQ(1, threads_with_stacks);
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that stacks can be sanitized while writing minidumps.
@@ -317,7 +322,7 @@ TEST(MinidumpWriterTest, StacksAreSanitizedIfRequested) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -353,6 +358,7 @@ TEST(MinidumpWriterTest, StacksAreSanitizedIfRequested) {
     ASSERT_TRUE(memmem(data, sz, &defaced, sizeof(defaced)) != nullptr);
   }
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that a binary with a longer-than-usual build id note
@@ -369,7 +375,7 @@ TEST(MinidumpWriterTest, BuildIDLong) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -400,6 +406,8 @@ TEST(MinidumpWriterTest, BuildIDLong) {
       "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
   EXPECT_EQ(module_identifier, module->debug_identifier());
   EXPECT_EQ(build_id, module->code_identifier());
+
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that mapping info can be specified, and that it overrides
@@ -448,7 +456,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
     char b;
     IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -494,6 +502,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   EXPECT_EQ(module_identifier, module->debug_identifier());
 
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 TEST(MinidumpWriterTest, DeletedBinary) {
@@ -585,6 +594,8 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   // which is always zero on Linux.
   module_identifier += "0";
   EXPECT_EQ(module_identifier, module->debug_identifier());
+
+  IGNORE_EINTR(waitpid(child_pid, nullptr, 0));
 }
 
 // Test that an additional memory region can be added to the minidump.
@@ -612,7 +623,7 @@ TEST(MinidumpWriterTest, AdditionalMemory) {
     char b;
     HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -657,6 +668,7 @@ TEST(MinidumpWriterTest, AdditionalMemory) {
 
   delete[] memory;
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that an invalid thread stack pointer still results in a minidump.
@@ -670,7 +682,7 @@ TEST(MinidumpWriterTest, InvalidStackPointer) {
     char b;
     HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
     close(fds[0]);
-    syscall(__NR_exit);
+    syscall(__NR_exit_group);
   }
   close(fds[0]);
 
@@ -736,6 +748,7 @@ TEST(MinidumpWriterTest, InvalidStackPointer) {
 #endif
 
   close(fds[1]);
+  IGNORE_EINTR(waitpid(child, nullptr, 0));
 }
 
 // Test that limiting the size of the minidump works.
@@ -910,6 +923,7 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
 
   // Kill the helper program.
   kill(child_pid, SIGKILL);
+  IGNORE_EINTR(waitpid(child_pid, nullptr, 0));
 }
 
 }  // namespace
