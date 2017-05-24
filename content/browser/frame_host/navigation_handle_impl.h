@@ -380,6 +380,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     source_location_ = source_location;
   }
 
+  // PlzNavigate
+  // Sets ID of the RenderProcessHost we expect the navigation to commit in.
+  // This is used to inform the RenderProcessHost to expect a navigation to the
+  // url we're navigating to.
+  void SetExpectedProcess(RenderProcessHost* expected_process);
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -426,6 +432,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // WillStartRequest and WillRedirectRequest to prevent the navigation.
   bool IsSelfReferentialURL();
 
+  // Updates the destination site URL for this navigation. This is called on
+  // redirects.
+  // PlzNavigate: When redirected cross-site, the speculative RenderProcessHost
+  // will stop expecting this navigation to commit.
+  void UpdateSiteURL();
+
   // See NavigationHandle for a description of those member variables.
   GURL url_;
   scoped_refptr<SiteInstance> starting_site_instance_;
@@ -447,6 +459,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The original url of the navigation. This may differ from |url_| if the
   // navigation encounters redirects.
   const GURL original_url_;
+
+  // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
+  GURL site_url_;
 
   // The HTTP method used for the navigation.
   std::string method_;
@@ -560,6 +575,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Information about the JavaScript that started the navigation. For
   // navigations initiated by Javascript.
   SourceLocation source_location_;
+
+  // PlzNavigate
+  // Used to inform a RenderProcessHost that we expect this navigation to commit
+  // in it.
+  int expected_render_process_host_id_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

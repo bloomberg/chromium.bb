@@ -629,6 +629,106 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostIsReadyObserver);
 };
 
+// The following class is used to track the sites each RenderProcessHost is
+// hosting frames for and expecting navigations to. There are two of them per
+// BrowserContext: one for frames and one for navigations.
+//
+// For each site, the SiteProcessCountTracker keeps a map of counts per
+// RenderProcessHost, which represents the number of frames/navigations
+// for this site that are associated with the RenderProcessHost. This allows to
+// quickly lookup a list of RenderProcessHost that can be used by a particular
+// SiteInstance. On the other hand, it does not allow to quickly lookup which
+// sites are hosted by a RenderProcessHost. This class is meant to help reusing
+// RenderProcessHosts among SiteInstances, not to perform security checks for a
+// RenderProcessHost.
+const void* const kCommittedSiteProcessCountTrackerKey =
+    "CommittedSiteProcessCountTrackerKey";
+const void* const kPendingSiteProcessCountTrackerKey =
+    "PendingSiteProcessCountTrackerKey";
+class SiteProcessCountTracker : public base::SupportsUserData::Data,
+                                public RenderProcessHostObserver {
+ public:
+  SiteProcessCountTracker() {}
+  ~SiteProcessCountTracker() override { DCHECK(map_.empty()); }
+
+  void IncrementSiteProcessCount(const GURL& site_url,
+                                 int render_process_host_id) {
+    std::map<ProcessID, Count>& counts_per_process = map_[site_url];
+    ++counts_per_process[render_process_host_id];
+
+#ifndef NDEBUG
+    // In debug builds, observe the RenderProcessHost destruction, to check
+    // that it is properly removed from the map.
+    RenderProcessHost* host = RenderProcessHost::FromID(render_process_host_id);
+    if (!HasProcess(host))
+      host->AddObserver(this);
+#endif
+  }
+
+  void DecrementSiteProcessCount(const GURL& site_url,
+                                 int render_process_host_id) {
+    auto result = map_.find(site_url);
+    DCHECK(result != map_.end());
+    std::map<ProcessID, Count>& counts_per_process = result->second;
+
+    --counts_per_process[render_process_host_id];
+    DCHECK(counts_per_process[render_process_host_id] >= 0);
+
+    if (counts_per_process[render_process_host_id] == 0)
+      counts_per_process.erase(render_process_host_id);
+
+    if (counts_per_process.empty())
+      map_.erase(site_url);
+  }
+
+  void FindRenderProcessesForSite(
+      const GURL& site_url,
+      std::set<RenderProcessHost*>* foreground_processes,
+      std::set<RenderProcessHost*>* background_processes) {
+    auto result = map_.find(site_url);
+    if (result == map_.end())
+      return;
+
+    std::map<ProcessID, Count>& counts_per_process = result->second;
+    for (auto iter : counts_per_process) {
+      RenderProcessHost* host = RenderProcessHost::FromID(iter.first);
+      DCHECK(host);
+      if (host->VisibleWidgetCount())
+        foreground_processes->insert(host);
+      else
+        background_processes->insert(host);
+    }
+  }
+
+ private:
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+#ifndef NDEBUG
+    host->RemoveObserver(this);
+    DCHECK(!HasProcess(host));
+#endif
+  }
+
+#ifndef NDEBUG
+  // Used in debug builds to ensure that RenderProcessHost don't persist in the
+  // map after they've been destroyed.
+  bool HasProcess(RenderProcessHost* process) {
+    for (auto iter : map_) {
+      std::map<ProcessID, Count>& counts_per_process = iter.second;
+      for (auto iter_process : counts_per_process) {
+        if (iter_process.first == process->GetID())
+          return true;
+      }
+    }
+    return false;
+  }
+#endif
+
+  using ProcessID = int;
+  using Count = int;
+  using CountPerProcessPerSiteMap = std::map<GURL, std::map<ProcessID, Count>>;
+  CountPerProcessPerSiteMap map_;
+};
+
 }  // namespace
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
@@ -1746,6 +1846,78 @@ void RenderProcessHostImpl::OnAudioStreamRemoved() {
 void RenderProcessHostImpl::set_render_process_host_factory(
     const RenderProcessHostFactory* rph_factory) {
   g_render_process_host_factory_ = rph_factory;
+}
+
+// static
+void RenderProcessHostImpl::AddFrameWithSite(
+    BrowserContext* browser_context,
+    RenderProcessHost* render_process_host,
+    const GURL& site_url) {
+  if (site_url.is_empty())
+    return;
+
+  SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
+      browser_context->GetUserData(kCommittedSiteProcessCountTrackerKey));
+  if (!tracker) {
+    tracker = new SiteProcessCountTracker();
+    browser_context->SetUserData(kCommittedSiteProcessCountTrackerKey,
+                                 base::WrapUnique(tracker));
+  }
+  tracker->IncrementSiteProcessCount(site_url, render_process_host->GetID());
+}
+
+// static
+void RenderProcessHostImpl::RemoveFrameWithSite(
+    BrowserContext* browser_context,
+    RenderProcessHost* render_process_host,
+    const GURL& site_url) {
+  if (site_url.is_empty())
+    return;
+
+  SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
+      browser_context->GetUserData(kCommittedSiteProcessCountTrackerKey));
+  if (!tracker) {
+    tracker = new SiteProcessCountTracker();
+    browser_context->SetUserData(kCommittedSiteProcessCountTrackerKey,
+                                 base::WrapUnique(tracker));
+  }
+  tracker->DecrementSiteProcessCount(site_url, render_process_host->GetID());
+}
+
+// static
+void RenderProcessHostImpl::AddExpectedNavigationToSite(
+    BrowserContext* browser_context,
+    RenderProcessHost* render_process_host,
+    const GURL& site_url) {
+  if (site_url.is_empty())
+    return;
+
+  SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
+      browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
+  if (!tracker) {
+    tracker = new SiteProcessCountTracker();
+    browser_context->SetUserData(kPendingSiteProcessCountTrackerKey,
+                                 base::WrapUnique(tracker));
+  }
+  tracker->IncrementSiteProcessCount(site_url, render_process_host->GetID());
+}
+
+// static
+void RenderProcessHostImpl::RemoveExpectedNavigationToSite(
+    BrowserContext* browser_context,
+    RenderProcessHost* render_process_host,
+    const GURL& site_url) {
+  if (site_url.is_empty())
+    return;
+
+  SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
+      browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
+  if (!tracker) {
+    tracker = new SiteProcessCountTracker();
+    browser_context->SetUserData(kPendingSiteProcessCountTrackerKey,
+                                 base::WrapUnique(tracker));
+  }
+  tracker->DecrementSiteProcessCount(site_url, render_process_host->GetID());
 }
 
 bool RenderProcessHostImpl::IsForGuestsOnly() const {
@@ -2874,6 +3046,10 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       render_process_host = GetDefaultSubframeProcessHost(
           browser_context, site_instance, is_for_guests_only);
       break;
+    case SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE:
+      render_process_host =
+          FindReusableProcessHostForSite(browser_context, site_url);
+      break;
     default:
       break;
   }
@@ -3264,6 +3440,57 @@ RenderProcessHost* RenderProcessHostImpl::GetDefaultSubframeProcessHost(
   }
 
   return holder->GetProcessHost(site_instance, is_for_guests_only);
+}
+
+// static
+RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
+    BrowserContext* browser_context,
+    const GURL& site_url) {
+  if (site_url.is_empty())
+    return nullptr;
+
+  std::set<RenderProcessHost*> eligible_foreground_hosts;
+  std::set<RenderProcessHost*> eligible_background_hosts;
+
+  // First, add the RenderProcessHosts expecting a navigation to |site_url| to
+  // the list of eligible RenderProcessHosts.
+  SiteProcessCountTracker* pending_tracker =
+      static_cast<SiteProcessCountTracker*>(
+          browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
+  if (pending_tracker) {
+    pending_tracker->FindRenderProcessesForSite(
+        site_url, &eligible_foreground_hosts, &eligible_background_hosts);
+  }
+
+  if (eligible_foreground_hosts.empty()) {
+    // If needed, add the RenderProcessHosts hosting a frame for |site_url| to
+    // the list of eligible RenderProcessHosts.
+    SiteProcessCountTracker* committed_tracker =
+        static_cast<SiteProcessCountTracker*>(
+            browser_context->GetUserData(kCommittedSiteProcessCountTrackerKey));
+    if (committed_tracker) {
+      committed_tracker->FindRenderProcessesForSite(
+          site_url, &eligible_foreground_hosts, &eligible_background_hosts);
+    }
+  }
+
+  if (!eligible_foreground_hosts.empty()) {
+    int index = base::RandInt(0, eligible_foreground_hosts.size() - 1);
+    auto iterator = eligible_foreground_hosts.begin();
+    for (int i = 0; i < index; ++i)
+      ++iterator;
+    return (*iterator);
+  }
+
+  if (!eligible_background_hosts.empty()) {
+    int index = base::RandInt(0, eligible_background_hosts.size() - 1);
+    auto iterator = eligible_background_hosts.begin();
+    for (int i = 0; i < index; ++i)
+      ++iterator;
+    return (*iterator);
+  }
+
+  return nullptr;
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)

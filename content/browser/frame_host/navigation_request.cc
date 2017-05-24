@@ -729,6 +729,8 @@ void NavigationRequest::OnStartChecksComplete(
           : frame_tree_node_->current_frame_host();
   DCHECK(navigating_frame_host);
 
+  navigation_handle_->SetExpectedProcess(navigating_frame_host->GetProcess());
+
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
   StoragePartition* partition = BrowserContext::GetStoragePartition(
