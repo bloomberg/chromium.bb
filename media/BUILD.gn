@@ -405,21 +405,6 @@ component("media") {
       "device_monitors/device_monitor_udev.h",
     ]
   }
-
-  # TODO(xhwang): Move other library CDM related files to this block as well.
-  if (enable_pepper_cdms) {
-    deps += [
-      ":cdm_paths",
-
-      # TODO(xhwang): Remove this after Widevine specific logic is removed in
-      # CdmAdapterFactory. See http://crbug.com/510604
-      "//third_party/widevine/cdm:headers",
-    ]
-    sources += [
-      "cdm/cdm_adapter_factory.cc",
-      "cdm/cdm_adapter_factory.h",
-    ]
-  }
 }
 
 config("cdm_manager_implementation") {
