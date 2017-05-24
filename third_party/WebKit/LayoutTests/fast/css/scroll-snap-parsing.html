@@ -45,17 +45,17 @@ div#container {
 <div class="test" property="scroll-snap-destination" style="scroll-snap-destination: 5% 100%;" expected="5% 100%" desc="percentage/percentage destination" ></div>
 <div class="test" property="scroll-snap-destination" style="scroll-snap-destination: calc(10% + 20px) 40%;" expected="calc(20px + 10%) 40%" desc="calc/percentage destination" ></div>
 
-<div class="test" property="scroll-snap-destination" style="scroll-snap-destination: left top 50%;" expected="0% 50%" desc="3 piece percentage destination" ></div>
+<div class="test" property="scroll-snap-destination" style="scroll-snap-destination: left top 50%;" expected="0px 0px" desc="3 piece percentage destination" ></div>
 <div class="test" property="scroll-snap-destination" style="scroll-snap-destination: top;" expected="50% 0%" desc="1 piece destination with implied center" ></div>
 
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50px 100px;" expected="50px 100px" desc="single pixel coordinate" ></div>
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50% 100%;" expected="50% 100%" desc="single percentage coordinate" ></div>
-<div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: left top 50%;" expected="0% 50%" desc="3 piece percentage coordinate" ></div>
+<div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: left top 50%;" expected="none" desc="3 piece percentage coordinate" ></div>
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: left 10px top 15px;" expected="10px 15px" desc="4 piece pixel coordinate" ></div>
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: left;" expected="0% 50%" desc="1 piece coordinate with implied center" ></div>
 
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50px 100px, 150px 100px, left 200px top 100px;" expected="50px 100px, 150px 100px, 200px 100px" desc="multiple pixel coordinates" ></div>
-<div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50% 100%, left top 100%, 200% 100%;" expected="50% 100%, 0% 100%, 200% 100%" desc="multiple percentage coordinates" ></div>
+<div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50% 100%, left 0% top 100%, 200% 100%;" expected="50% 100%, 0% 100%, 200% 100%" desc="multiple percentage coordinates" ></div>
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: calc(10% + 100px) 100%, 150%, 200px calc(5% + 10px);" expected="calc(100px + 10%) 100%, 150% 50%, 200px calc(10px + 5%)" desc="multiple mixed pixel/percentage/calc coordinates" ></div>
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50px 100px, junk;" expected="none" desc="reject invalid position list" ></div>
 <div class="test" property="scroll-snap-coordinate" style="scroll-snap-coordinate: 50px 100px / 1px 1px;" expected="none" desc="reject invalid position separator" ></div>

@@ -82,7 +82,7 @@ Test case: calc/percentage destination
 PASS style.scrollSnapDestination is "calc(20px + 10%) 40%"
 
 Test case: 3 piece percentage destination
-PASS style.scrollSnapDestination is "0% 50%"
+PASS style.scrollSnapDestination is "0px 0px"
 
 Test case: 1 piece destination with implied center
 PASS style.scrollSnapDestination is "50% 0%"
@@ -94,7 +94,7 @@ Test case: single percentage coordinate
 PASS style.scrollSnapCoordinate is "50% 100%"
 
 Test case: 3 piece percentage coordinate
-PASS style.scrollSnapCoordinate is "0% 50%"
+PASS style.scrollSnapCoordinate is "none"
 
 Test case: 4 piece pixel coordinate
 PASS style.scrollSnapCoordinate is "10px 15px"

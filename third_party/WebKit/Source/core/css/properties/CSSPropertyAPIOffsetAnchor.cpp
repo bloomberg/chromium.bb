@@ -11,15 +11,17 @@
 
 namespace blink {
 
+using namespace CSSPropertyParserHelpers;
+
 const CSSValue* CSSPropertyAPIOffsetAnchor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     CSSPropertyID) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return ConsumePosition(range, context.Mode(),
-                         CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+    return ConsumeIdent(range);
+  return ConsumePosition(range, context, UnitlessQuirk::kForbid,
+                         Optional<UseCounter::Feature>());
 }
 
 }  // namespace blink

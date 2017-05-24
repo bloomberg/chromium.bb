@@ -11,10 +11,18 @@ body {
 #child1 {
     offset-position: inherit;
 }
+#child3 {
+    offset-position: left 10% top; /* invalid */
+}
+#child4 {
+    offset-position: bottom 10% right 20%;
+}
 </style>
 <div id="container">
     <div id="child1"></div>
     <div id="child2"></div>
+    <div id="child3"></div>
+    <div id="child4"></div>
 </div>
 <script>
 "use strict";
@@ -36,6 +44,14 @@ test(function() {
 test(function() {
     assert_equals(getComputedStyle(child2, null).offsetPosition, 'auto');
 }, 'offset-position is not inherited by default');
+
+test(function() {
+    assert_equals(getComputedStyle(child3, null).offsetPosition, 'auto');
+}, 'offset-position may not use three values');
+
+test(function() {
+    assert_equals(getComputedStyle(child4, null).offsetPosition, '80% 90%');
+}, 'offset-position may use four values');
 
 function computed(specified) {
     var element = document.createElement('div');

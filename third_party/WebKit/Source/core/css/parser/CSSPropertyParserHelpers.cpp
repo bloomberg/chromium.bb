@@ -717,13 +717,14 @@ static void PositionFromThreeOrFourValues(CSSValue** values,
 }
 
 bool ConsumePosition(CSSParserTokenRange& range,
-                     CSSParserMode css_parser_mode,
+                     const CSSParserContext& context,
                      UnitlessQuirk unitless,
+                     WTF::Optional<UseCounter::Feature> threeValuePosition,
                      CSSValue*& result_x,
                      CSSValue*& result_y) {
   bool horizontal_edge = false;
   bool vertical_edge = false;
-  CSSValue* value1 = ConsumePositionComponent(range, css_parser_mode, unitless,
+  CSSValue* value1 = ConsumePositionComponent(range, context.Mode(), unitless,
                                               horizontal_edge, vertical_edge);
   if (!value1)
     return false;
@@ -731,20 +732,21 @@ bool ConsumePosition(CSSParserTokenRange& range,
     horizontal_edge = true;
 
   CSSParserTokenRange range_after_first_consume = range;
-  CSSValue* value2 = ConsumePositionComponent(range, css_parser_mode, unitless,
+  CSSValue* value2 = ConsumePositionComponent(range, context.Mode(), unitless,
                                               horizontal_edge, vertical_edge);
   if (!value2) {
     PositionFromOneValue(value1, result_x, result_y);
     return true;
   }
 
+  CSSParserTokenRange range_after_second_consume = range;
   CSSValue* value3 = nullptr;
   if (value1->IsIdentifierValue() &&
       value2->IsIdentifierValue() != (range.Peek().GetType() == kIdentToken) &&
       (value2->IsIdentifierValue()
            ? ToCSSIdentifierValue(value2)->GetValueID()
            : ToCSSIdentifierValue(value1)->GetValueID()) != CSSValueCenter)
-    value3 = ConsumePositionComponent(range, css_parser_mode, unitless,
+    value3 = ConsumePositionComponent(range, context.Mode(), unitless,
                                       horizontal_edge, vertical_edge);
   if (!value3) {
     if (vertical_edge && !value2->IsIdentifierValue()) {
@@ -760,8 +762,24 @@ bool ConsumePosition(CSSParserTokenRange& range,
   if (value3->IsIdentifierValue() &&
       ToCSSIdentifierValue(value3)->GetValueID() != CSSValueCenter &&
       range.Peek().GetType() != kIdentToken)
-    value4 = ConsumePositionComponent(range, css_parser_mode, unitless,
+    value4 = ConsumePositionComponent(range, context.Mode(), unitless,
                                       horizontal_edge, vertical_edge);
+
+  if (!value4) {
+    if (!threeValuePosition) {
+      // [top | bottom] <length-percentage> is not permitted
+      if (vertical_edge && !value2->IsIdentifierValue()) {
+        range = range_after_first_consume;
+        PositionFromOneValue(value1, result_x, result_y);
+        return true;
+      }
+      range = range_after_second_consume;
+      PositionFromTwoValues(value1, value2, result_x, result_y);
+      return true;
+    }
+    context.Count(*threeValuePosition);
+  }
+
   CSSValue* values[5];
   values[0] = value1;
   values[1] = value2;
@@ -772,12 +790,15 @@ bool ConsumePosition(CSSParserTokenRange& range,
   return true;
 }
 
-CSSValuePair* ConsumePosition(CSSParserTokenRange& range,
-                              CSSParserMode css_parser_mode,
-                              UnitlessQuirk unitless) {
+CSSValuePair* ConsumePosition(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    UnitlessQuirk unitless,
+    WTF::Optional<UseCounter::Feature> threeValuePosition) {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
-  if (ConsumePosition(range, css_parser_mode, unitless, result_x, result_y))
+  if (ConsumePosition(range, context, unitless, threeValuePosition, result_x,
+                      result_y))
     return CSSValuePair::Create(result_x, result_y,
                                 CSSValuePair::kKeepIdenticalValues);
   return nullptr;
@@ -1050,7 +1071,7 @@ static CSSValue* ConsumeDeprecatedRadialGradient(CSSParserTokenRange& args,
 }
 
 static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
-                                       CSSParserMode css_parser_mode,
+                                       const CSSParserContext& context,
                                        CSSGradientRepeat repeating) {
   const CSSIdentifierValue* shape = nullptr;
   const CSSIdentifierValue* size_keyword = nullptr;
@@ -1078,13 +1099,13 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
       }
     } else {
       CSSPrimitiveValue* center =
-          ConsumeLengthOrPercent(args, css_parser_mode, kValueRangeAll);
+          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
       if (!center)
         break;
       if (horizontal_size)
         return nullptr;
       horizontal_size = center;
-      center = ConsumeLengthOrPercent(args, css_parser_mode, kValueRangeAll);
+      center = ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
       if (center) {
         vertical_size = center;
         ++i;
@@ -1116,7 +1137,8 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   CSSValue* center_y = nullptr;
   if (args.Peek().Id() == CSSValueAt) {
     args.ConsumeIncludingWhitespace();
-    ConsumePosition(args, css_parser_mode, UnitlessQuirk::kForbid, center_x,
+    ConsumePosition(args, context, UnitlessQuirk::kForbid,
+                    UseCounter::kThreeValuedPositionGradient, center_x,
                     center_y);
     if (!(center_x && center_y))
       return nullptr;
@@ -1131,7 +1153,7 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   CSSGradientValue* result = CSSRadialGradientValue::Create(
       center_x, center_y, shape, size_keyword, horizontal_size, vertical_size,
       repeating, kCSSRadialGradient);
-  return ConsumeGradientColorStops(args, css_parser_mode, result,
+  return ConsumeGradientColorStops(args, context.Mode(), result,
                                    ConsumeLengthOrPercent)
              ? result
              : nullptr;
@@ -1175,7 +1197,7 @@ static CSSValue* ConsumeLinearGradient(CSSParserTokenRange& args,
 }
 
 static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
-                                      CSSParserMode css_parser_mode,
+                                      const CSSParserContext& context,
                                       CSSGradientRepeat repeating) {
   if (!RuntimeEnabledFeatures::conicGradientEnabled())
     return nullptr;
@@ -1189,8 +1211,9 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   CSSValue* center_x = nullptr;
   CSSValue* center_y = nullptr;
   if (ConsumeIdent<CSSValueAt>(args)) {
-    if (!ConsumePosition(args, css_parser_mode, UnitlessQuirk::kForbid,
-                         center_x, center_y))
+    if (!ConsumePosition(args, context, UnitlessQuirk::kForbid,
+                         UseCounter::kThreeValuedPositionGradient, center_x,
+                         center_y))
       return nullptr;
   }
 
@@ -1202,7 +1225,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
 
   CSSGradientValue* result =
       CSSConicGradientValue::Create(center_x, center_y, from_angle, repeating);
-  return ConsumeGradientColorStops(args, css_parser_mode, result,
+  return ConsumeGradientColorStops(args, context.Mode(), result,
                                    ConsumeAngleOrPercent)
              ? result
              : nullptr;
@@ -1291,9 +1314,9 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   CSSParserTokenRange args = ConsumeFunction(range_copy);
   CSSValue* result = nullptr;
   if (id == CSSValueRadialGradient) {
-    result = ConsumeRadialGradient(args, context->Mode(), kNonRepeating);
+    result = ConsumeRadialGradient(args, *context, kNonRepeating);
   } else if (id == CSSValueRepeatingRadialGradient) {
-    result = ConsumeRadialGradient(args, context->Mode(), kRepeating);
+    result = ConsumeRadialGradient(args, *context, kRepeating);
   } else if (id == CSSValueWebkitLinearGradient) {
     context->Count(UseCounter::kDeprecatedWebKitLinearGradient);
     result = ConsumeLinearGradient(args, context->Mode(), kNonRepeating,
@@ -1319,9 +1342,9 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
     context->Count(UseCounter::kDeprecatedWebKitRepeatingRadialGradient);
     result = ConsumeDeprecatedRadialGradient(args, context->Mode(), kRepeating);
   } else if (id == CSSValueConicGradient) {
-    result = ConsumeConicGradient(args, context->Mode(), kNonRepeating);
+    result = ConsumeConicGradient(args, *context, kNonRepeating);
   } else if (id == CSSValueRepeatingConicGradient) {
-    result = ConsumeConicGradient(args, context->Mode(), kRepeating);
+    result = ConsumeConicGradient(args, *context, kRepeating);
   } else if (id == CSSValueWebkitCrossFade) {
     result = ConsumeCrossFade(args, context);
   } else if (id == CSSValuePaint) {
