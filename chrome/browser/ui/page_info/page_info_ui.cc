@@ -343,6 +343,9 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
     }
   }
 
+  if (permission.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)
+    message_id = IDS_PAGE_INFO_PERMISSION_SUBRESOURCE_FILTER_SUBTITLE;
+
   if (message_id == kInvalidResourceID)
     return base::string16();
   return l10n_util::GetStringUTF16(message_id);

@@ -300,6 +300,9 @@
     <message name="IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED" desc="The label used underneath a permission listed in the Page Info bubble if the permission was blocked by Chrome on behalf of the user.">
       Automatically blocked
     </message>
+    <message name="IDS_PAGE_INFO_PERMISSION_SUBRESOURCE_FILTER_SUBTITLE" desc="The label used underneath the subresource filter permission in the Page Info UI. Used on desktop and Android platforms" translateable="false" formatter_data="android_java">
+       Subresource filter activated
+    </message>
 
     <!-- Permission change infobar. -->
     <if expr="not is_android">

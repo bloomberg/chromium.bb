@@ -623,10 +623,10 @@ public class PageInfoPopup implements OnClickListener {
 
         // The subresource filter permission requires an additional static subtitle.
         if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
-            TextView permissionUnavailable =
+            TextView permissionSubtitle =
                     (TextView) permissionRow.findViewById(R.id.page_info_permission_subtitle);
-            permissionUnavailable.setVisibility(View.VISIBLE);
-            permissionUnavailable.setText(R.string.subresource_filter_permission_title);
+            permissionSubtitle.setVisibility(View.VISIBLE);
+            permissionSubtitle.setText(R.string.page_info_permission_subresource_filter_subtitle);
         }
 
         TextView permissionStatus = (TextView) permissionRow.findViewById(
