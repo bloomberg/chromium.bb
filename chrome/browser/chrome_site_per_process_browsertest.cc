@@ -517,6 +517,48 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PrintIgnoredInUnloadHandler) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create 2 iframes and navigate them to b.com.
+  EXPECT_TRUE(ExecuteScript(active_web_contents,
+                            "var i = document.createElement('iframe'); i.id = "
+                            "'child-0'; document.body.appendChild(i);"));
+  EXPECT_TRUE(ExecuteScript(active_web_contents,
+                            "var i = document.createElement('iframe'); i.id = "
+                            "'child-1'; document.body.appendChild(i);"));
+  EXPECT_TRUE(NavigateIframeToURL(
+      active_web_contents, "child-0",
+      GURL(embedded_test_server()->GetURL("b.com", "/title1.html"))));
+  EXPECT_TRUE(NavigateIframeToURL(
+      active_web_contents, "child-1",
+      GURL(embedded_test_server()->GetURL("b.com", "/title1.html"))));
+
+  content::RenderFrameHost* child_0 =
+      ChildFrameAt(active_web_contents->GetMainFrame(), 0);
+  content::RenderFrameHost* child_1 =
+      ChildFrameAt(active_web_contents->GetMainFrame(), 1);
+
+  // Add an unload handler that calls print() to child-0 iframe.
+  EXPECT_TRUE(ExecuteScript(
+      child_0, "document.body.onunload = function() { print(); }"));
+
+  // Transfer child-0 to a new process hosting c.com.
+  EXPECT_TRUE(NavigateIframeToURL(
+      active_web_contents, "child-0",
+      GURL(embedded_test_server()->GetURL("c.com", "/title1.html"))));
+
+  // Check that b.com's process is still alive.
+  bool renderer_alive = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child_1, "window.domAutomationController.send(true);", &renderer_alive));
+  EXPECT_TRUE(renderer_alive);
+}
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 // Class to sniff incoming IPCs for spell check messages.
 class TestSpellCheckMessageFilter : public content::BrowserMessageFilter {
