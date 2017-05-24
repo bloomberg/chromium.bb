@@ -41,7 +41,7 @@ function SwitchAccess() {
   this.automationManager_ = null;
 
   this.init_();
-};
+}
 
 SwitchAccess.prototype = {
   /**

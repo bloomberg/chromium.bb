@@ -15,7 +15,7 @@ cr.define('options', function() {
     Page.call(this, 'supervisedUserLearnMore',
               loadTimeData.getString('supervisedUserLearnMoreTitle'),
               'supervised-user-learn-more');
-  };
+  }
 
   cr.addSingletonGetter(SupervisedUserLearnMoreOverlay);
 

@@ -73,7 +73,7 @@ cvox.ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(
       // The keys are the same length. Sort lexicographically.
       return a[0].localeCompare(b[0]);
     }
-  };
+  }
 
   sortingArray.sort(compareKeyStr);
   return sortingArray;

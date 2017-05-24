@@ -195,7 +195,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                                                     this.doRetry_.bind(this));
       function doneCallback() {
         chrome.send('oauthEnrollClose', ['done']);
-      };
+      }
 
       $('oauth-enroll-attribute-prompt-error-card').addEventListener(
           'buttonclick', doneCallback);

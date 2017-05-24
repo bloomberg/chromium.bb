@@ -17,7 +17,7 @@ cr.define('options', function() {
     Page.call(this, 'supervisedUserCreateConfirm',
               '',  // The title will be based on the new profile name.
               'supervised-user-created');
-  };
+  }
 
   cr.addSingletonGetter(SupervisedUserCreateConfirmOverlay);
 

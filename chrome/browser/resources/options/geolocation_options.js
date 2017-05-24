@@ -15,7 +15,7 @@ cr.define('options', function() {
     Page.call(this, 'geolocationOptions',
               loadTimeData.getString('geolocationOptionsPageTabTitle'),
               'geolocationCheckbox');
-  };
+  }
 
   cr.addSingletonGetter(GeolocationOptions);
 

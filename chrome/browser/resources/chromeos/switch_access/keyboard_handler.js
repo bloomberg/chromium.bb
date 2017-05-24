@@ -19,7 +19,7 @@ function KeyboardHandler(switchAccess) {
   this.switchAccess_ = switchAccess;
 
   this.init_();
-};
+}
 
 KeyboardHandler.prototype = {
   /**

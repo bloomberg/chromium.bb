@@ -32,7 +32,7 @@ function AutoScanManager(switchAccess) {
   let enabled = switchAccess.switchAccessPrefs.getBooleanPref('enableAutoScan');
   if (enabled)
     this.start_();
-};
+}
 
 AutoScanManager.prototype = {
   /**

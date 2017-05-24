@@ -17,7 +17,7 @@ cr.define('options', function() {
   function SupervisedUserImportOverlay() {
     var title = loadTimeData.getString('supervisedUserImportTitle');
     Page.call(this, 'supervisedUserImport', title, 'supervised-user-import');
-  };
+  }
 
   cr.addSingletonGetter(SupervisedUserImportOverlay);
 

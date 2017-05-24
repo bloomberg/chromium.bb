@@ -41,7 +41,7 @@ function AutomationTreeWalker(start, scope, restrictions) {
    * @private {!AutomationTreeWalker.Unary}
    */
   this.visitPred_ = restrictions.visit;
-};
+}
 
 /**
  * @typedef {{leaf: AutomationTreeWalker.Unary,

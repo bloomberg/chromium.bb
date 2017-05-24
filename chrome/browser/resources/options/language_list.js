@@ -22,7 +22,7 @@ cr.define('options', function() {
     el.language_ = languageInfo;
     el.decorate();
     return el;
-  };
+  }
 
   LanguageListItem.prototype = {
     __proto__: DeletableItem.prototype,

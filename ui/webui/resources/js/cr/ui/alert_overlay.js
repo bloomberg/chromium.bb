@@ -35,7 +35,7 @@ cr.define('alertOverlay', function() {
       okButton.clickCallback = null;
       cancelButton.clickCallback = null;
     });
-  };
+  }
 
   /**
    * Updates the alert overlay with the given message, button titles, and
@@ -72,7 +72,7 @@ cr.define('alertOverlay', function() {
       cancelButton.textContent = opt_cancelTitle;
     cancelButton.hidden = !opt_cancelTitle;
     cancelButton.clickCallback = opt_cancelCallback;
-  };
+  }
 
   // Export
   return {initialize: initialize, setValues: setValues};
