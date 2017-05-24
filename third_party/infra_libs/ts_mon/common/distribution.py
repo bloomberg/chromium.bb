@@ -9,23 +9,25 @@ import collections
 class Bucketer(object):
   """Bucketing function for histograms recorded by the Distribution class."""
 
-  def __init__(self, width, growth_factor, num_finite_buckets):
+  def __init__(self, width, growth_factor, num_finite_buckets, scale=1):
     """The bucket sizes are controlled by width and growth_factor, and the total
     number of buckets is set by num_finite_buckets:
 
     Args:
-      width: fixed size of each bucket.
+      width: fixed size of each bucket (prior to applying |scale|)
       growth_factor: if non-zero, the size of each bucket increases by another
           multiplicative factor of this factor (see lower bound formula below).
       num_finite_buckets: the number of finite buckets.  There are two
           additional buckets - an underflow and an overflow bucket - that have
           lower and upper bounds of Infinity.
+      scale: overall scale factor to apply to buckets. Useful with a
+             GeometricBucketer to set the size of the first (smallest) bucket.
 
     Specify a width for fixed-size buckets or specify a growth_factor for bucket
     sizes that follow a geometric progression.  Specifying both is valid as
     well::
 
-      lower bound of bucket i = width * i + growth_factor ^ (i - 1)
+      lower bound of bucket i = (width * i + growth_factor ^ (i - 1)) * scale
     """
 
     if num_finite_buckets < 0:
@@ -38,6 +40,7 @@ class Bucketer(object):
     self.total_buckets = num_finite_buckets + 2
     self.underflow_bucket = 0
     self.overflow_bucket = self.total_buckets - 1
+    self.scale = scale
 
     self._lower_bounds = list(self._generate_lower_bounds())
 
@@ -45,16 +48,16 @@ class Bucketer(object):
     yield float('-Inf')
     yield 0
 
-    previous = 0
+    previous_unscaled = 0
     for i in xrange(self.num_finite_buckets):
-      lower_bound = self.width * (i + 1)
+      lower_bound_unscaled = self.width * (i + 1)
       if self.growth_factor != 0:
-        lower_bound += self.growth_factor ** i
+        lower_bound_unscaled += self.growth_factor ** i
 
-      if lower_bound <= previous:
+      if lower_bound_unscaled <= previous_unscaled:
         raise ValueError('bucket boundaries must be monotonically increasing')
-      yield lower_bound
-      previous = lower_bound
+      yield lower_bound_unscaled * self.scale
+      previous_unscaled = lower_bound_unscaled
 
   def bucket_for_value(self, value):
     """Returns the index of the bucket that this value belongs to."""
@@ -100,10 +103,11 @@ def FixedWidthBucketer(width, num_finite_buckets=100):
       num_finite_buckets=num_finite_buckets)
 
 
-def GeometricBucketer(growth_factor=10**0.2, num_finite_buckets=100):
+def GeometricBucketer(growth_factor=10**0.2, num_finite_buckets=100, scale=1):
   """Convenience function that returns a geometric progression Bucketer."""
   return Bucketer(width=0, growth_factor=growth_factor,
-      num_finite_buckets=num_finite_buckets)
+                  num_finite_buckets=num_finite_buckets,
+                  scale=scale)
 
 
 class Distribution(object):
