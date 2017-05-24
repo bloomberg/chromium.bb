@@ -705,6 +705,7 @@ if (!is_android) {
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc",
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h",
         "../browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc",
+        "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
         "data/chromeos/service_login.html",
       ]
       deps += [

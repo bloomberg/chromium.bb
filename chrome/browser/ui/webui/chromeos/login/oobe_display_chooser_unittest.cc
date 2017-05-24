@@ -9,6 +9,7 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -63,6 +64,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
 
   EXPECT_EQ(ids[0], GetPrimaryDisplay());
   display_chooser.TryToPlaceUiOnTouchDisplay();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ids[1], GetPrimaryDisplay());
 }
@@ -77,6 +79,7 @@ TEST_F(OobeDisplayChooserTest, AddingSecondTouchDisplayShouldbeNOP) {
 
   EXPECT_EQ(ids[0], GetPrimaryDisplay());
   display_chooser.TryToPlaceUiOnTouchDisplay();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ids[0], GetPrimaryDisplay());
 }
