@@ -3488,6 +3488,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
 
+  bool HasFilters() const;
+
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
   bool HasFilterInducingProperty() const {
