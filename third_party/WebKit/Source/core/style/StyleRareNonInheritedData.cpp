@@ -319,11 +319,7 @@ bool StyleRareNonInheritedData::ReflectionDataEquivalent(
 
 bool StyleRareNonInheritedData::AnimationDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  if (!animations_ && !o.animations_)
-    return true;
-  if (!animations_ || !o.animations_)
-    return false;
-  return animations_->AnimationsMatchForStyleRecalc(*o.animations_);
+  return DataEquivalent(animations_, o.animations_);
 }
 
 bool StyleRareNonInheritedData::TransitionDataEquivalent(
