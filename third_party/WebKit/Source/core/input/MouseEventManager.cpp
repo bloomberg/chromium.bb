@@ -718,7 +718,10 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
   //    that ends as a result of a mouse release does not send a mouse release
   //    event. As a result, m_mousePressed also ends up remaining true until
   //    the next mouse release event seen by the EventHandler.
-  if (event.Event().button != WebPointerProperties::Button::kLeft)
+  // 3. When pressing Esc key while dragging and the object is outside of the
+  //    we get a mouse leave event here
+  if (event.Event().button != WebPointerProperties::Button::kLeft ||
+      event.Event().GetType() == WebInputEvent::kMouseLeave)
     mouse_pressed_ = false;
 
   if (!mouse_pressed_)
