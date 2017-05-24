@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/native_device_keymap.h"
+#include "remoting/client/input/native_device_keymap.h"
 
 #include "base/logging.h"
 

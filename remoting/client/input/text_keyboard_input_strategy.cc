@@ -5,7 +5,7 @@
 #include "remoting/client/input/text_keyboard_input_strategy.h"
 
 #include "remoting/client/input/client_input_injector.h"
-#include "remoting/client/native_device_keymap.h"
+#include "remoting/client/input/native_device_keymap.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace remoting {

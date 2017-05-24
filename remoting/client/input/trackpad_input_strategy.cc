@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/ui/trackpad_input_strategy.h"
+#include "remoting/client/input/trackpad_input_strategy.h"
 
 #include "remoting/client/ui/desktop_viewport.h"
 
@@ -87,4 +87,5 @@ float TrackpadInputStrategy::GetFeedbackRadius(InputFeedbackType type) const {
 bool TrackpadInputStrategy::IsCursorVisible() const {
   return true;
 }
+
 }  // namespace remoting

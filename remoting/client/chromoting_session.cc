@@ -18,7 +18,7 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/client_telemetry_logger.h"
-#include "remoting/client/native_device_keymap.h"
+#include "remoting/client/input/native_device_keymap.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/client_authentication_config.h"

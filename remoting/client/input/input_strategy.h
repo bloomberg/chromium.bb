@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_UI_INPUT_STRATEGY_H_
-#define REMOTING_CLIENT_UI_INPUT_STRATEGY_H_
+#ifndef REMOTING_CLIENT_INPUT_INPUT_STRATEGY_H_
+#define REMOTING_CLIENT_INPUT_INPUT_STRATEGY_H_
 
 #include "remoting/client/ui/view_matrix.h"
 
@@ -76,4 +76,4 @@ class InputStrategy {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_UI_INPUT_STRATEGY_H_
+#endif  // REMOTING_CLIENT_INPUT_INPUT_STRATEGY_H_

@@ -11,7 +11,7 @@
 #import "remoting/ios/session/remoting_client.h"
 
 #include "base/logging.h"
-#include "remoting/client/ui/gesture_interpreter.h"
+#include "remoting/client/gesture_interpreter.h"
 
 remoting::GestureInterpreter::GestureState toGestureState(
     UIGestureRecognizerState state) {

@@ -23,9 +23,9 @@
 #include "remoting/client/display/gl_canvas.h"
 #include "remoting/client/display/gl_renderer.h"
 #include "remoting/client/display/gl_renderer_delegate.h"
+#include "remoting/client/display/renderer_proxy.h"
 #include "remoting/client/dual_buffer_frame_consumer.h"
 #include "remoting/client/software_video_renderer.h"
-#include "remoting/client/ui/renderer_proxy.h"
 
 namespace remoting {
 
