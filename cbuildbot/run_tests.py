@@ -84,7 +84,6 @@ SPECIAL_TESTS = {
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
-    'scripts/cros_mark_mojo_as_stable_unittest': INSIDE,
     'scripts/sync_package_status_unittest': INSIDE,
     'scripts/cros_portage_upgrade_unittest': INSIDE,
     'scripts/dep_tracker_unittest': INSIDE,
