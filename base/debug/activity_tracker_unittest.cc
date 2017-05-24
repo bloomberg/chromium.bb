@@ -397,7 +397,7 @@ TEST_F(ActivityTrackerTest, ThreadDeathTest) {
 TEST_F(ActivityTrackerTest, ProcessDeathTest) {
   // This doesn't actually create and destroy a process. Instead, it uses for-
   // testing interfaces to simulate data created by other processes.
-  const ProcessId other_process_id = GetCurrentProcId() + 1;
+  const int64_t other_process_id = GetCurrentProcId() + 1;
 
   GlobalActivityTracker::CreateWithLocalMemory(kMemorySize, 0, "", 3, 0);
   GlobalActivityTracker* global = GlobalActivityTracker::Get();
