@@ -80,6 +80,9 @@ class FakeDownloadItem : public DownloadItem {
   void SetReceivedBytes(int64_t received_bytes);
   int64_t GetReceivedBytes() const override;
 
+  void SetTotalBytes(int64_t total_bytes);
+  int64_t GetTotalBytes() const override;
+
   void SetLastAccessTime(base::Time time) override;
   base::Time GetLastAccessTime() const override;
 
@@ -122,7 +125,6 @@ class FakeDownloadItem : public DownloadItem {
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
   bool AllDataSaved() const override;
-  int64_t GetTotalBytes() const override;
   const std::vector<DownloadItem::ReceivedSlice>& GetReceivedSlices()
       const override;
   bool CanShowInFolder() override;
@@ -160,6 +162,7 @@ class FakeDownloadItem : public DownloadItem {
   DownloadInterruptReason last_reason_ =
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
   int64_t received_bytes_ = 0;
+  int64_t total_bytes_ = 0;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

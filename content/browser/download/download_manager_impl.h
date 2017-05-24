@@ -108,6 +108,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       base::Time last_access_time,
       bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
+  void PostInitialization() override;
+  bool IsManagerInitialized() const override;
   int InProgressCount() const override;
   int NonMaliciousInProgressCount() const override;
   BrowserContext* GetBrowserContext() const override;
@@ -226,6 +228,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;
+
+  // True if the download manager has been initialized and loaded all the data.
+  bool initialized_;
 
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer> observers_;

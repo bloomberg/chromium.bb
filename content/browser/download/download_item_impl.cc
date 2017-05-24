@@ -203,7 +203,8 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    uint32_t download_id,
                                    const DownloadCreateInfo& info,
                                    const net::NetLogWithSource& net_log)
-    : guid_(base::ToUpperASCII(base::GenerateGUID())),
+    : guid_(info.guid.empty() ? base::ToUpperASCII(base::GenerateGUID())
+                              : info.guid),
       download_id_(download_id),
       target_disposition_((info.save_info->prompt_for_save_location)
                               ? TARGET_DISPOSITION_PROMPT

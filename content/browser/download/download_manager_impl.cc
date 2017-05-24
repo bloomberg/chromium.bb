@@ -181,6 +181,7 @@ DownloadManagerImpl::DownloadManagerImpl(net::NetLog* net_log,
     : item_factory_(new DownloadItemFactoryImpl()),
       file_factory_(new DownloadFileFactory()),
       shutdown_needed_(true),
+      initialized_(false),
       browser_context_(browser_context),
       delegate_(nullptr),
       net_log_(net_log),
@@ -672,6 +673,17 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     observer.OnDownloadCreated(this, item);
   DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
   return item;
+}
+
+void DownloadManagerImpl::PostInitialization() {
+  DCHECK(!initialized_);
+  initialized_ = true;
+  for (auto& observer : observers_)
+    observer.OnManagerInitialized();
+}
+
+bool DownloadManagerImpl::IsManagerInitialized() const {
+  return initialized_;
 }
 
 int DownloadManagerImpl::InProgressCount() const {

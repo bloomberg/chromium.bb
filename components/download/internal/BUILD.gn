@@ -11,14 +11,18 @@ static_library("internal") {
   visibility = [
     ":*",
     "//components/download",
+    "//components/download/content",
     "//components/download/internal/test:test_support",
   ]
 
   sources = [
     "config.cc",
     "config.h",
+    "download_driver.h",
     "download_service_impl.cc",
     "download_service_impl.h",
+    "driver_entry.cc",
+    "driver_entry.h",
     "entry.cc",
     "entry.h",
     "model.h",
