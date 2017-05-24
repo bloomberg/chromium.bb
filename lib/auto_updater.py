@@ -439,7 +439,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """
     shutil.copytree(
         source_python_dir, dest_temp_dir,
-        ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static', '*~'),
+        ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static',
+                                      '*~', 'venv'),
         symlinks=True)
 
 
