@@ -359,7 +359,7 @@ void PageHandler::CaptureScreenshot(
       base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback)), screenshot_format,
                  screenshot_quality),
-      from_surface.fromMaybe(false));
+      from_surface.fromMaybe(true));
 }
 
 void PageHandler::PrintToPDF(Maybe<bool> landscape,
