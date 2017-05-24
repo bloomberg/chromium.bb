@@ -1411,6 +1411,7 @@ class CORE_EXPORT UseCounter {
     kCSSValueUserModifyReadOnly = 1798,
     kCSSValueUserModifyReadWrite = 1799,
     kCSSValueUserModifyReadWritePlaintextOnly = 1800,
+    kV8TextDetector_Detect_Method = 1801,
     kCSSValueOnDemand = 1802,
     kServiceWorkerNavigationPreload = 1803,
     kFullscreenRequestWithPendingElement = 1804,
@@ -1603,6 +1604,7 @@ class CORE_EXPORT UseCounter {
     kShapeDetection_FaceDetectorConstructor = 1992,
     kShapeDetection_TextDetectorConstructor = 1993,
     kCredentialManagerCredentialRequestOptionsOnlyUnmediated = 1994,
+    kInertAttribute = 1995,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
