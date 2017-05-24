@@ -31,10 +31,10 @@ class HeaderFieldTokenizer final {
 
   unsigned Index() const { return index_; }
   bool IsConsumed() const { return index_ >= input_.length(); }
-  void SkipSpaces();
 
  private:
   bool ConsumeQuotedString(String& output);
+  void SkipSpaces();
 
   unsigned index_;
   const String input_;
