@@ -2049,7 +2049,8 @@ bool LayoutBlock::RecalcOverflowAfterStyleChange() {
   if (ChildNeedsOverflowRecalcAfterStyleChange())
     children_overflow_changed = RecalcChildOverflowAfterStyleChange();
 
-  if (!SelfNeedsOverflowRecalcAfterStyleChange() && !children_overflow_changed)
+  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalcAfterStyleChange();
+  if (!self_needs_overflow_recalc && !children_overflow_changed)
     return false;
 
   ClearSelfNeedsOverflowRecalcAfterStyleChange();
@@ -2066,7 +2067,7 @@ bool LayoutBlock::RecalcOverflowAfterStyleChange() {
   if (HasOverflowClip())
     Layer()->GetScrollableArea()->UpdateAfterOverflowRecalc();
 
-  return !HasOverflowClip();
+  return !HasOverflowClip() || self_needs_overflow_recalc;
 }
 
 // Called when a positioned object moves but doesn't necessarily change size.
