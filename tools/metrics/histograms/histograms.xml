@@ -26686,15 +26686,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.Audio.Capture.DetectedMissingCallbacks"
-    enum="BooleanMissingCallbacks">
-  <owner>grunell@chromium.org</owner>
-  <summary>
-    Whether missing callbacks where detected during audio capture. Logged when
-    AudioInputDevice is stopped.
-  </summary>
-</histogram>
-
 <histogram name="Media.Audio.Capture.FramesProvided" units="frames">
   <owner>grunell@chromium.org</owner>
   <summary>

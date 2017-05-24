@@ -2920,11 +2920,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Migrated"/>
 </enum>
 
-<enum name="BooleanMissingCallbacks" type="int">
-  <int value="0" label="No missing callbacks"/>
-  <int value="1" label="Had missing callbacks"/>
-</enum>
-
 <enum name="BooleanMissingFromDiskCache" type="int">
   <int value="0" label="Has data in disk cache"/>
   <int value="1" label="Missing data in disk cache"/>
