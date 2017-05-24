@@ -1,21 +1,28 @@
+[INTERFACES]
 interface BackgroundFetchClickEvent : BackgroundFetchEvent
+    attribute @@toStringTag
     getter state
     method constructor
 interface BackgroundFetchEvent : ExtendableEvent
+    attribute @@toStringTag
     getter tag
     method constructor
 interface BackgroundFetchFailEvent : BackgroundFetchEvent
+    attribute @@toStringTag
     getter fetches
     method constructor
 interface BackgroundFetchFetch
+    attribute @@toStringTag
     getter request
     method constructor
 interface BackgroundFetchManager
+    attribute @@toStringTag
     method constructor
     method fetch
     method get
     method getTags
 interface BackgroundFetchRegistration
+    attribute @@toStringTag
     getter icons
     getter tag
     getter title
@@ -23,16 +30,20 @@ interface BackgroundFetchRegistration
     method abort
     method constructor
 interface BackgroundFetchSettledFetch : BackgroundFetchFetch
+    attribute @@toStringTag
     getter response
     method constructor
 interface BackgroundFetchedEvent : BackgroundFetchEvent
+    attribute @@toStringTag
     getter fetches
     method constructor
     method updateUI
 interface BarcodeDetector
+    attribute @@toStringTag
     method constructor
     method detect
 interface Blob
+    attribute @@toStringTag
     getter isClosed
     getter size
     getter type
@@ -40,6 +51,7 @@ interface Blob
     method constructor
     method slice
 interface BroadcastChannel : EventTarget
+    attribute @@toStringTag
     getter name
     getter onmessage
     getter onmessageerror
@@ -49,11 +61,13 @@ interface BroadcastChannel : EventTarget
     setter onmessage
     setter onmessageerror
 interface BudgetService
+    attribute @@toStringTag
     method constructor
     method getBudget
     method getCost
     method reserve
 interface BudgetState
+    attribute @@toStringTag
     getter budgetAt
     getter time
     method constructor
@@ -61,6 +75,7 @@ interface ByteLengthQueuingStrategy
     method constructor
     method size
 interface Cache
+    attribute @@toStringTag
     method add
     method addAll
     method constructor
@@ -70,6 +85,7 @@ interface Cache
     method matchAll
     method put
 interface CacheStorage
+    attribute @@toStringTag
     method constructor
     method delete
     method has
@@ -77,11 +93,14 @@ interface CacheStorage
     method match
     method open
 interface CanvasGradient
+    attribute @@toStringTag
     method addColorStop
     method constructor
 interface CanvasPattern
+    attribute @@toStringTag
     method constructor
 interface Client
+    attribute @@toStringTag
     getter frameType
     getter id
     getter type
@@ -89,12 +108,14 @@ interface Client
     method constructor
     method postMessage
 interface Clients
+    attribute @@toStringTag
     method claim
     method constructor
     method get
     method matchAll
     method openWindow
 interface CloseEvent : Event
+    attribute @@toStringTag
     getter code
     getter reason
     getter wasClean
@@ -103,20 +124,24 @@ interface CountQueuingStrategy
     method constructor
     method size
 interface Crypto
+    attribute @@toStringTag
     getter subtle
     method constructor
     method getRandomValues
 interface CryptoKey
+    attribute @@toStringTag
     getter algorithm
     getter extractable
     getter type
     getter usages
     method constructor
 interface CustomEvent : Event
+    attribute @@toStringTag
     getter detail
     method constructor
     method initCustomEvent
 interface DOMException
+    attribute @@toStringTag
     attribute ABORT_ERR
     attribute DATA_CLONE_ERR
     attribute DOMSTRING_SIZE_ERR
@@ -148,6 +173,7 @@ interface DOMException
     method constructor
     method toString
 interface DOMMatrix : DOMMatrixReadOnly
+    attribute @@toStringTag
     getter a
     getter b
     getter c
@@ -209,6 +235,7 @@ interface DOMMatrixReadOnly
     static method fromFloat32Array
     static method fromFloat64Array
     static method fromMatrix
+    attribute @@toStringTag
     getter a
     getter b
     getter c
@@ -252,6 +279,7 @@ interface DOMMatrixReadOnly
     method transformPoint
     method translate
 interface DOMPoint : DOMPointReadOnly
+    attribute @@toStringTag
     getter w
     getter x
     getter y
@@ -263,6 +291,7 @@ interface DOMPoint : DOMPointReadOnly
     setter z
 interface DOMPointReadOnly
     static method fromPoint
+    attribute @@toStringTag
     getter w
     getter x
     getter y
@@ -273,6 +302,7 @@ interface DOMPointReadOnly
 interface DOMQuad
     static method fromQuad
     static method fromRect
+    attribute @@toStringTag
     getter p1
     getter p2
     getter p3
@@ -281,6 +311,7 @@ interface DOMQuad
     method getBounds
     method toJSON
 interface DOMRect : DOMRectReadOnly
+    attribute @@toStringTag
     getter height
     getter width
     getter x
@@ -292,6 +323,7 @@ interface DOMRect : DOMRectReadOnly
     setter y
 interface DOMRectReadOnly
     static method fromRect
+    attribute @@toStringTag
     getter bottom
     getter height
     getter left
@@ -303,11 +335,14 @@ interface DOMRectReadOnly
     method constructor
     method toJSON
 interface DOMStringList
+    attribute @@toStringTag
     getter length
+    method @@iterator
     method constructor
     method contains
     method item
 interface DataView
+    attribute @@toStringTag
     getter buffer
     getter byteLength
     getter byteOffset
@@ -329,6 +364,7 @@ interface DataView
     method setUint32
     method setUint8
 interface Event
+    attribute @@toStringTag
     attribute AT_TARGET
     attribute BUBBLING_PHASE
     attribute CAPTURING_PHASE
@@ -355,6 +391,7 @@ interface Event
     setter cancelBubble
     setter returnValue
 interface EventSource : EventTarget
+    attribute @@toStringTag
     attribute CLOSED
     attribute CONNECTING
     attribute OPEN
@@ -370,14 +407,17 @@ interface EventSource : EventTarget
     setter onmessage
     setter onopen
 interface EventTarget
+    attribute @@toStringTag
     method addEventListener
     method constructor
     method dispatchEvent
     method removeEventListener
 interface ExtendableEvent : Event
+    attribute @@toStringTag
     method constructor
     method waitUntil
 interface ExtendableMessageEvent : ExtendableEvent
+    attribute @@toStringTag
     getter data
     getter lastEventId
     getter origin
@@ -385,9 +425,11 @@ interface ExtendableMessageEvent : ExtendableEvent
     getter source
     method constructor
 interface FaceDetector
+    attribute @@toStringTag
     method constructor
     method detect
 interface FetchEvent : ExtendableEvent
+    attribute @@toStringTag
     getter clientId
     getter isReload
     getter preloadResponse
@@ -395,16 +437,20 @@ interface FetchEvent : ExtendableEvent
     method constructor
     method respondWith
 interface File : Blob
+    attribute @@toStringTag
     getter lastModified
     getter lastModifiedDate
     getter name
     getter webkitRelativePath
     method constructor
 interface FileList
+    attribute @@toStringTag
     getter length
+    method @@iterator
     method constructor
     method item
 interface FileReader : EventTarget
+    attribute @@toStringTag
     attribute DONE
     attribute EMPTY
     attribute LOADING
@@ -430,11 +476,14 @@ interface FileReader : EventTarget
     setter onloadstart
     setter onprogress
 interface ForeignFetchEvent : ExtendableEvent
+    attribute @@toStringTag
     getter origin
     getter request
     method constructor
     method respondWith
 interface FormData
+    attribute @@toStringTag
+    method @@iterator
     method append
     method constructor
     method delete
@@ -447,6 +496,8 @@ interface FormData
     method set
     method values
 interface Headers
+    attribute @@toStringTag
+    method @@iterator
     method append
     method constructor
     method delete
@@ -458,6 +509,7 @@ interface Headers
     method set
     method values
 interface IDBCursor
+    attribute @@toStringTag
     getter direction
     getter key
     getter primaryKey
@@ -469,9 +521,11 @@ interface IDBCursor
     method delete
     method update
 interface IDBCursorWithValue : IDBCursor
+    attribute @@toStringTag
     getter value
     method constructor
 interface IDBDatabase : EventTarget
+    attribute @@toStringTag
     getter name
     getter objectStoreNames
     getter onabort
@@ -489,11 +543,13 @@ interface IDBDatabase : EventTarget
     setter onerror
     setter onversionchange
 interface IDBFactory
+    attribute @@toStringTag
     method cmp
     method constructor
     method deleteDatabase
     method open
 interface IDBIndex
+    attribute @@toStringTag
     getter keyPath
     getter multiEntry
     getter name
@@ -513,6 +569,7 @@ interface IDBKeyRange
     static method lowerBound
     static method only
     static method upperBound
+    attribute @@toStringTag
     getter lower
     getter lowerOpen
     getter upper
@@ -520,6 +577,7 @@ interface IDBKeyRange
     method constructor
     method includes
 interface IDBObjectStore
+    attribute @@toStringTag
     getter autoIncrement
     getter indexNames
     getter keyPath
@@ -542,21 +600,25 @@ interface IDBObjectStore
     method put
     setter name
 interface IDBObservation
+    attribute @@toStringTag
     getter key
     getter type
     getter value
     method constructor
 interface IDBObserver
+    attribute @@toStringTag
     method constructor
     method observe
     method unobserve
 interface IDBOpenDBRequest : IDBRequest
+    attribute @@toStringTag
     getter onblocked
     getter onupgradeneeded
     method constructor
     setter onblocked
     setter onupgradeneeded
 interface IDBRequest : EventTarget
+    attribute @@toStringTag
     getter error
     getter onerror
     getter onsuccess
@@ -568,6 +630,7 @@ interface IDBRequest : EventTarget
     setter onerror
     setter onsuccess
 interface IDBTransaction : EventTarget
+    attribute @@toStringTag
     getter db
     getter error
     getter mode
@@ -582,17 +645,20 @@ interface IDBTransaction : EventTarget
     setter oncomplete
     setter onerror
 interface IDBVersionChangeEvent : Event
+    attribute @@toStringTag
     getter dataLoss
     getter dataLossMessage
     getter newVersion
     getter oldVersion
     method constructor
 interface ImageBitmap
+    attribute @@toStringTag
     getter height
     getter width
     method close
     method constructor
 interface ImageData
+    attribute @@toStringTag
     getter data
     getter dataUnion
     getter height
@@ -600,13 +666,16 @@ interface ImageData
     method constructor
     method getColorSettings
 interface InstallEvent : ExtendableEvent
+    attribute @@toStringTag
     method constructor
     method registerForeignFetch
 interface MessageChannel
+    attribute @@toStringTag
     getter port1
     getter port2
     method constructor
 interface MessageEvent : Event
+    attribute @@toStringTag
     getter data
     getter lastEventId
     getter origin
@@ -616,6 +685,7 @@ interface MessageEvent : Event
     method constructor
     method initMessageEvent
 interface MessagePort : EventTarget
+    attribute @@toStringTag
     getter onmessage
     getter onmessageerror
     method close
@@ -625,12 +695,14 @@ interface MessagePort : EventTarget
     setter onmessage
     setter onmessageerror
 interface NavigationPreloadManager
+    attribute @@toStringTag
     method constructor
     method disable
     method enable
     method getState
     method setHeaderValue
 interface NetworkInformation : EventTarget
+    attribute @@toStringTag
     getter downlink
     getter downlinkMax
     getter onchange
@@ -643,6 +715,7 @@ interface NetworkInformation : EventTarget
 interface Notification : EventTarget
     static getter maxActions
     static getter permission
+    attribute @@toStringTag
     getter actions
     getter badge
     getter body
@@ -669,11 +742,13 @@ interface Notification : EventTarget
     setter onerror
     setter onshow
 interface NotificationEvent : ExtendableEvent
+    attribute @@toStringTag
     getter action
     getter notification
     getter reply
     method constructor
 interface OffscreenCanvas : EventTarget
+    attribute @@toStringTag
     getter height
     getter width
     method constructor
@@ -683,6 +758,7 @@ interface OffscreenCanvas : EventTarget
     setter height
     setter width
 interface OffscreenCanvasRenderingContext2D
+    attribute @@toStringTag
     getter canvas
     getter fillStyle
     getter filter
@@ -754,6 +830,7 @@ interface OffscreenCanvasRenderingContext2D
     setter shadowOffsetY
     setter strokeStyle
 interface Path2D
+    attribute @@toStringTag
     method addPath
     method arc
     method arcTo
@@ -766,6 +843,7 @@ interface Path2D
     method quadraticCurveTo
     method rect
 interface PaymentInstruments
+    attribute @@toStringTag
     method clear
     method constructor
     method delete
@@ -774,45 +852,54 @@ interface PaymentInstruments
     method keys
     method set
 interface PaymentRequestEvent : ExtendableEvent
+    attribute @@toStringTag
     getter appRequest
     method constructor
     method respondWith
 interface PerformanceObserverEntryList
+    attribute @@toStringTag
     method constructor
     method getEntries
     method getEntriesByName
     method getEntriesByType
 interface PermissionStatus : EventTarget
+    attribute @@toStringTag
     getter onchange
     getter state
     method constructor
     setter onchange
 interface Permissions
+    attribute @@toStringTag
     method constructor
     method query
     method request
     method requestAll
     method revoke
 interface PromiseRejectionEvent : Event
+    attribute @@toStringTag
     getter promise
     getter reason
     method constructor
 interface PushEvent : ExtendableEvent
+    attribute @@toStringTag
     getter data
     method constructor
 interface PushManager
     static getter supportedContentEncodings
+    attribute @@toStringTag
     method constructor
     method getSubscription
     method permissionState
     method subscribe
 interface PushMessageData
+    attribute @@toStringTag
     method arrayBuffer
     method blob
     method constructor
     method json
     method text
 interface PushSubscription
+    attribute @@toStringTag
     getter endpoint
     getter expirationTime
     getter options
@@ -821,6 +908,7 @@ interface PushSubscription
     method toJSON
     method unsubscribe
 interface PushSubscriptionOptions
+    attribute @@toStringTag
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
@@ -833,6 +921,7 @@ interface ReadableStream
     method pipeTo
     method tee
 interface Request
+    attribute @@toStringTag
     getter bodyUsed
     getter cache
     getter credentials
@@ -854,6 +943,7 @@ interface Request
 interface Response
     static method error
     static method redirect
+    attribute @@toStringTag
     getter body
     getter bodyUsed
     getter headers
@@ -871,8 +961,10 @@ interface Response
     method json
     method text
 interface ServiceWorkerGlobalScope : WorkerGlobalScope
+    attribute @@toStringTag
     method constructor
 interface ServiceWorkerRegistration : EventTarget
+    attribute @@toStringTag
     getter active
     getter backgroundFetch
     getter installing
@@ -890,14 +982,17 @@ interface ServiceWorkerRegistration : EventTarget
     method update
     setter onupdatefound
 interface SharedArrayBuffer
+    attribute @@toStringTag
     getter byteLength
     method constructor
     method slice
 interface StorageManager
+    attribute @@toStringTag
     method constructor
     method estimate
     method persisted
 interface SubtleCrypto
+    attribute @@toStringTag
     method constructor
     method decrypt
     method deriveBits
@@ -912,27 +1007,33 @@ interface SubtleCrypto
     method verify
     method wrapKey
 interface SyncEvent : ExtendableEvent
+    attribute @@toStringTag
     getter lastChance
     getter tag
     method constructor
 interface SyncManager
+    attribute @@toStringTag
     method constructor
     method getTags
     method register
 interface TextDecoder
+    attribute @@toStringTag
     getter encoding
     getter fatal
     getter ignoreBOM
     method constructor
     method decode
 interface TextDetector
+    attribute @@toStringTag
     method constructor
     method detect
 interface TextEncoder
+    attribute @@toStringTag
     getter encoding
     method constructor
     method encode
 interface URL
+    attribute @@toStringTag
     getter hash
     getter host
     getter hostname
@@ -958,6 +1059,8 @@ interface URL
     setter search
     setter username
 interface URLSearchParams
+    attribute @@toStringTag
+    method @@iterator
     method append
     method constructor
     method delete
@@ -971,6 +1074,7 @@ interface URLSearchParams
     method toString
     method values
 interface WebGL2RenderingContext
+    attribute @@toStringTag
     attribute ACTIVE_ATTRIBUTES
     attribute ACTIVE_TEXTURE
     attribute ACTIVE_UNIFORMS
@@ -1760,6 +1864,7 @@ interface WebGL2RenderingContext
     method viewport
     method waitSync
 interface WebGLRenderingContext
+    attribute @@toStringTag
     attribute ACTIVE_ATTRIBUTES
     attribute ACTIVE_TEXTURE
     attribute ACTIVE_UNIFORMS
@@ -2198,6 +2303,7 @@ interface WebGLRenderingContext
     method vertexAttribPointer
     method viewport
 interface WebSocket : EventTarget
+    attribute @@toStringTag
     attribute CLOSED
     attribute CLOSING
     attribute CONNECTING
@@ -2221,12 +2327,14 @@ interface WebSocket : EventTarget
     setter onmessage
     setter onopen
 interface WindowClient : Client
+    attribute @@toStringTag
     getter focused
     getter visibilityState
     method constructor
     method focus
     method navigate
 interface WorkerGlobalScope : EventTarget
+    attribute @@toStringTag
     getter addressSpace
     getter caches
     getter crypto
@@ -2255,6 +2363,7 @@ interface WorkerGlobalScope : EventTarget
     setter onunhandledrejection
     setter origin
 interface WorkerLocation
+    attribute @@toStringTag
     getter hash
     getter host
     getter hostname
@@ -2267,6 +2376,7 @@ interface WorkerLocation
     method constructor
     method toString
 interface WorkerNavigator
+    attribute @@toStringTag
     getter appCodeName
     getter appName
     getter appVersion
@@ -2285,7 +2395,7 @@ interface WritableStream
     method abort
     method constructor
     method getWriter
-global object
+[GLOBAL OBJECT]
     attribute Atomics
     attribute console
     attribute internals
