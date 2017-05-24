@@ -163,13 +163,14 @@ def main():
   if args.whitelist:
     whitelist = ParseWhiteList(open(args.whitelist).read())
     missing -= whitelist
+    nonexisting -= whitelist
 
   missing = sorted(missing)
   nonexisting = sorted(nonexisting)
 
   if args.json:
     with open(args.json, 'w') as f:
-      json.dump(missing, f)
+      json.dump(sorted(missing + nonexisting), f)
 
   if len(missing) == 0 and len(nonexisting) == 0:
     return 0
