@@ -272,10 +272,8 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
 
-  set_skip_context(xd, mi_row, mi_col);
-
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
-
+  set_skip_context(xd, mi_row, mi_col);
 #if CONFIG_VAR_TX
   xd->above_txfm_context = cm->above_txfm_context + mi_col;
   xd->left_txfm_context =
