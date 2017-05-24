@@ -126,11 +126,9 @@ void ClosedInfoBarTracker::Clear() {
 class TestSearchEngineDelegate
     : public SearchGeolocationService::SearchEngineDelegate {
  public:
-  bool IsDSEGoogle() override { return true; }
+  base::string16 GetDSEName() override { return base::string16(); }
 
-  url::Origin GetGoogleDSECCTLD() override {
-    return url::Origin(GURL(kDSETestUrl));
-  }
+  url::Origin GetDSEOrigin() override { return url::Origin(GURL(kDSETestUrl)); }
 
   void SetDSEChangedCallback(const base::Closure& callback) override {}
 

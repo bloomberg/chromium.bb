@@ -34,6 +34,10 @@ class SearchGeolocationDisclosureTabHelper
 
   static void ResetDisclosure(Profile* profile);
 
+  // Testing methods to ensure the disclosure is reset when it should be.
+  static void FakeShowingDisclosureForTests(Profile* profile);
+  static bool IsDisclosureResetForTests(Profile* profile);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers native methods.
