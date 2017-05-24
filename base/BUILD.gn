@@ -1242,7 +1242,10 @@ component("base") {
       "process/process_posix.cc",
     ]
 
-    sources += [ "process/process_fuchsia.cc" ]
+    sources += [
+      "process/process_fuchsia.cc",
+      "sys_info_fuchsia.cc",
+    ]
   }
 
   # NaCl.
