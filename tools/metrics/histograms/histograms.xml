@@ -13036,7 +13036,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.NcnOffline.Result">
+<histogram name="DnsProbe.Probe.NcnOffline.Result"
+    enum="DnsProbe.ObsoleteProbeResult">
   <obsolete>
     Removed 7/2013.
   </obsolete>
@@ -13056,7 +13057,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.NcnOnline.Result">
+<histogram name="DnsProbe.Probe.NcnOnline.Result"
+    enum="DnsProbe.ObsoleteProbeResult">
   <obsolete>
     Removed 7/2013.
   </obsolete>
@@ -13066,7 +13068,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.Result">
+<histogram name="DnsProbe.Probe.Result" enum="DnsProbe.ObsoleteProbeResult">
   <obsolete>
     Renamed 7/2013 to DnsProbe.ProbeResult.  (Also switched to the full
     DnsProbe.ProbeStatus enum.)
