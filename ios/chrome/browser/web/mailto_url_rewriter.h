@@ -19,11 +19,11 @@ class GURL;
 
 // An object that manages the available Mail client apps. The currently selected
 // Mail client to handle mailto: URL is stored in a key in NSUserDefaults.
-// If the key in NSUserDefaults is not set, the system-provided Mail client app
-// will be used.
+// If the key in NSUserDefaults is not set or the corresponding app is no longer
+// installed, the system-provided Mail client app will be used.
 @interface MailtoURLRewriter : NSObject
 
-// The unique ID of the Mail client app was set to handle mailto: URL scheme.
+// The unique ID of the Mail client app that handles mailto: URL scheme.
 @property(nonatomic, copy) NSString* defaultHandlerID;
 
 // Observer object that will be called when |defaultHandlerID| is changed.

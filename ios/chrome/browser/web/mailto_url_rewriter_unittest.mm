@@ -55,9 +55,29 @@ TEST_F(MailtoURLRewriterTest, TestStandardInstance) {
   for (MailtoHandler* handler in handlers) {
     ASSERT_TRUE(handler);
     NSString* appStoreID = [handler appStoreID];
+    NSString* expectedDefaultAppID =
+        [handler isAvailable] ? appStoreID : [MailtoURLRewriter systemMailApp];
     [rewriter setDefaultHandlerID:appStoreID];
-    EXPECT_NSEQ(appStoreID, [rewriter defaultHandlerID]);
+    EXPECT_NSEQ(expectedDefaultAppID, [rewriter defaultHandlerID]);
   }
+}
+
+TEST_F(MailtoURLRewriterTest, TestDefaultsInvalidToSystemMail) {
+  // Sets up a MailtoURLRewriter with 2 MailtoHandler objects:
+  // - system-provided Mail client app
+  // - Gmail app, but it is not installed
+  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
+  MailtoHandler* fakeGmailHandler =
+      [[FakeMailtoHandlerGmailNotInstalled alloc] init];
+  [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
+  // Sets the default handler to Gmail (which is not installed). This simulates
+  // the situation when Gmail was installed and set as the default handler.
+  // Then Gmail app is deleted from the device.
+  [rewriter setDefaultHandlerID:[fakeGmailHandler appStoreID]];
+  // Verifies that the system-provided Mail app automatically assumes the
+  // default handler.
+  EXPECT_NSEQ([MailtoURLRewriter systemMailApp], [rewriter defaultHandlerID]);
 }
 
 TEST_F(MailtoURLRewriterTest, TestUserPreferencePersistence) {
