@@ -50,13 +50,15 @@
 
 namespace blink {
 
-static void PreciselyCollectGarbage() {
+namespace {
+
+void PreciselyCollectGarbage() {
   ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
                                          BlinkGC::kGCWithSweep,
                                          BlinkGC::kForcedGC);
 }
 
-static void ConservativelyCollectGarbage() {
+void ConservativelyCollectGarbage() {
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithSweep, BlinkGC::kForcedGC);
 }
@@ -252,6 +254,8 @@ struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<T> {
     return t.TraceInCollection(visitor, strongify);
   }
 };
+
+}  // namespace
 
 }  // namespace blink
 
