@@ -512,12 +512,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return cached_pseudo_styles_.get();
   }
 
-  bool BorderWidthEquals(float border_width_first,
-                         float border_width_second) const {
-    return WidthToFixedPoint(border_width_first) ==
-           WidthToFixedPoint(border_width_second);
-  }
-
   /**
      * ComputedStyle properties
      *
@@ -717,12 +711,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     if (BorderTopStyle() == EBorderStyle::kNone ||
         BorderTopStyle() == EBorderStyle::kHidden)
       return 0;
-    return static_cast<float>(BorderTopWidthInternal()) /
-           kBorderWidthDenominator;
+    return BorderTopWidthInternal().ToFloat();
   }
-  void SetBorderTopWidth(float v) {
-    SetBorderTopWidthInternal(WidthToFixedPoint(v));
-  }
+  void SetBorderTopWidth(float v) { SetBorderTopWidthInternal(LayoutUnit(v)); }
   bool BorderTopNonZero() const {
     return BorderTopWidth() && (BorderTopStyle() != EBorderStyle::kNone);
   }
@@ -732,11 +723,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     if (BorderBottomStyle() == EBorderStyle::kNone ||
         BorderBottomStyle() == EBorderStyle::kHidden)
       return 0;
-    return static_cast<float>(BorderBottomWidthInternal()) /
-           kBorderWidthDenominator;
+    return BorderBottomWidthInternal().ToFloat();
   }
   void SetBorderBottomWidth(float v) {
-    SetBorderBottomWidthInternal(WidthToFixedPoint(v));
+    SetBorderBottomWidthInternal(LayoutUnit(v));
   }
   bool BorderBottomNonZero() const {
     return BorderBottomWidth() && (BorderBottomStyle() != EBorderStyle::kNone);
@@ -747,11 +737,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     if (BorderLeftStyle() == EBorderStyle::kNone ||
         BorderLeftStyle() == EBorderStyle::kHidden)
       return 0;
-    return static_cast<float>(BorderLeftWidthInternal()) /
-           kBorderWidthDenominator;
+    return BorderLeftWidthInternal().ToFloat();
   }
   void SetBorderLeftWidth(float v) {
-    SetBorderLeftWidthInternal(WidthToFixedPoint(v));
+    SetBorderLeftWidthInternal(LayoutUnit(v));
   }
   bool BorderLeftNonZero() const {
     return BorderLeftWidth() && (BorderLeftStyle() != EBorderStyle::kNone);
@@ -762,11 +751,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     if (BorderRightStyle() == EBorderStyle::kNone ||
         BorderRightStyle() == EBorderStyle::kHidden)
       return 0;
-    return static_cast<float>(BorderRightWidthInternal()) /
-           kBorderWidthDenominator;
+    return BorderRightWidthInternal().ToFloat();
   }
   void SetBorderRightWidth(float v) {
-    SetBorderRightWidthInternal(WidthToFixedPoint(v));
+    SetBorderRightWidthInternal(LayoutUnit(v));
   }
   bool BorderRightNonZero() const {
     return BorderRightWidth() && (BorderRightStyle() != EBorderStyle::kNone);
@@ -3038,35 +3026,31 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   void SetBorderImageSlicesFill(bool);
   const BorderValue BorderLeft() const {
-    return BorderValue(
-        BorderLeftStyle(), BorderLeftColor(),
-        static_cast<float>(BorderLeftWidthInternal()) / kBorderWidthDenominator,
-        OutlineStyleIsAuto());
+    return BorderValue(BorderLeftStyle(), BorderLeftColor(),
+                       BorderLeftWidthInternal().ToFloat(),
+                       OutlineStyleIsAuto());
   }
   const BorderValue BorderRight() const {
     return BorderValue(BorderRightStyle(), BorderRightColor(),
-                       static_cast<float>(BorderRightWidthInternal()) /
-                           kBorderWidthDenominator,
+                       BorderRightWidthInternal().ToFloat(),
                        OutlineStyleIsAuto());
   }
   const BorderValue BorderTop() const {
-    return BorderValue(
-        BorderTopStyle(), BorderTopColor(),
-        static_cast<float>(BorderTopWidthInternal()) / kBorderWidthDenominator,
-        OutlineStyleIsAuto());
+    return BorderValue(BorderTopStyle(), BorderTopColor(),
+                       BorderTopWidthInternal().ToFloat(),
+                       OutlineStyleIsAuto());
   }
   const BorderValue BorderBottom() const {
     return BorderValue(BorderBottomStyle(), BorderBottomColor(),
-                       static_cast<float>(BorderBottomWidthInternal()) /
-                           kBorderWidthDenominator,
+                       BorderBottomWidthInternal().ToFloat(),
                        OutlineStyleIsAuto());
   }
 
   bool BorderSizeEquals(const ComputedStyle& o) const {
-    return BorderWidthEquals(BorderLeftWidth(), o.BorderLeftWidth()) &&
-           BorderWidthEquals(BorderTopWidth(), o.BorderTopWidth()) &&
-           BorderWidthEquals(BorderRightWidth(), o.BorderRightWidth()) &&
-           BorderWidthEquals(BorderBottomWidth(), o.BorderBottomWidth());
+    return BorderLeftWidthInternal() == o.BorderLeftWidthInternal() &&
+           BorderTopWidthInternal() == o.BorderTopWidthInternal() &&
+           BorderRightWidthInternal() == o.BorderRightWidthInternal() &&
+           BorderBottomWidthInternal() == o.BorderBottomWidthInternal();
   }
 
   BorderValue BorderBefore() const;
