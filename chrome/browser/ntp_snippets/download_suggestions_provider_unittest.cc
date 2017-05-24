@@ -5,6 +5,7 @@
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -89,8 +90,21 @@ namespace {
 
 const int kDefaultMaxDownloadAgeHours = 6 * 7 * 24;
 
-// Tue, 31 Jan 2017 13:00:00 UTC
-const base::Time now = base::Time::FromJavaTime(1485867600000);
+base::Time CalculateDummyNowTime() {
+  base::Time now;
+  CHECK(base::Time::FromUTCString("2017-01-31 13:00:00", &now));
+  return now;
+}
+
+const base::Time now = CalculateDummyNowTime();
+
+const base::Time kNotOutdatedTime =
+    now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
+    base::TimeDelta::FromSeconds(1);
+
+const base::Time kOutdatedTime =
+    now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
+    base::TimeDelta::FromSeconds(1);
 
 // TODO(vitaliii): Move this and outputting functions above to common file and
 // replace remaining |Property(&ContentSuggestion::url, GURL("some_url"))|.
@@ -1035,34 +1049,30 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldNotShowOutdatedDownloads) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
 
-  const base::Time not_outdated =
-      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
-      base::TimeDelta::FromSeconds(1);
-  const base::Time outdated =
-      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
-      base::TimeDelta::FromSeconds(1);
-
   *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({0, 1});
 
   offline_pages_model()->mutable_items()->at(0).url =
       GURL("http://dummy.com/0");
-  offline_pages_model()->mutable_items()->at(0).creation_time = not_outdated;
-  offline_pages_model()->mutable_items()->at(0).last_access_time = not_outdated;
+  offline_pages_model()->mutable_items()->at(0).creation_time =
+      kNotOutdatedTime;
+  offline_pages_model()->mutable_items()->at(0).last_access_time =
+      kNotOutdatedTime;
 
   offline_pages_model()->mutable_items()->at(1).url =
       GURL("http://dummy.com/1");
-  offline_pages_model()->mutable_items()->at(1).creation_time = outdated;
-  offline_pages_model()->mutable_items()->at(1).last_access_time = outdated;
+  offline_pages_model()->mutable_items()->at(1).creation_time = kOutdatedTime;
+  offline_pages_model()->mutable_items()->at(1).last_access_time =
+      kOutdatedTime;
 
   *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({0, 1});
 
   downloads_manager()->mutable_items()->at(0)->SetURL(
       GURL("http://download.com/0"));
-  downloads_manager()->mutable_items()->at(0)->SetStartTime(not_outdated);
+  downloads_manager()->mutable_items()->at(0)->SetStartTime(kNotOutdatedTime);
 
   downloads_manager()->mutable_items()->at(1)->SetURL(
       GURL("http://download.com/1"));
-  downloads_manager()->mutable_items()->at(1)->SetStartTime(outdated);
+  downloads_manager()->mutable_items()->at(1)->SetStartTime(kOutdatedTime);
 
   EXPECT_CALL(
       *observer(),
@@ -1080,21 +1090,14 @@ TEST_F(DownloadSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
 
-  const base::Time not_outdated =
-      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
-      base::TimeDelta::FromSeconds(1);
-  const base::Time outdated =
-      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
-      base::TimeDelta::FromSeconds(1);
-
   std::vector<OfflinePageItem> offline_pages = CreateDummyOfflinePages({0, 1});
 
   offline_pages[0].url = GURL("http://dummy.com/0");
-  offline_pages[0].creation_time = outdated;
-  offline_pages[0].last_access_time = not_outdated;
+  offline_pages[0].creation_time = kOutdatedTime;
+  offline_pages[0].last_access_time = kNotOutdatedTime;
 
   offline_pages[1].url = GURL("http://dummy.com/1");
-  offline_pages[1].creation_time = outdated;
+  offline_pages[1].creation_time = kOutdatedTime;
   offline_pages[1].last_access_time = offline_pages[1].creation_time;
 
   *(offline_pages_model()->mutable_items()) = offline_pages;
@@ -1116,23 +1119,17 @@ TEST_F(DownloadSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
 
-  const base::Time not_outdated =
-      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
-      base::TimeDelta::FromSeconds(1);
-  const base::Time outdated =
-      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
-      base::TimeDelta::FromSeconds(1);
-
   *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({0, 1});
 
   downloads_manager()->mutable_items()->at(0)->SetURL(
       GURL("http://download.com/0"));
-  downloads_manager()->mutable_items()->at(0)->SetStartTime(outdated);
-  downloads_manager()->mutable_items()->at(0)->SetLastAccessTime(not_outdated);
+  downloads_manager()->mutable_items()->at(0)->SetStartTime(kOutdatedTime);
+  downloads_manager()->mutable_items()->at(0)->SetLastAccessTime(
+      kNotOutdatedTime);
 
   downloads_manager()->mutable_items()->at(1)->SetURL(
       GURL("http://download.com/1"));
-  downloads_manager()->mutable_items()->at(1)->SetStartTime(outdated);
+  downloads_manager()->mutable_items()->at(1)->SetStartTime(kOutdatedTime);
   downloads_manager()->mutable_items()->at(1)->SetLastAccessTime(
       downloads_manager()->mutable_items()->at(1)->GetStartTime());
 
