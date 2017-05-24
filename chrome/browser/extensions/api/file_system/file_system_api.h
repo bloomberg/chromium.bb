@@ -100,11 +100,6 @@ class ConsentProvider {
  private:
   DelegateInterface* const delegate_;
 
-  // Converts the clicked button to a consent result and passes it via the
-  // |callback|.
-  void DialogResultToConsent(const ConsentCallback& callback,
-                             ui::DialogButton button);
-
   DISALLOW_COPY_AND_ASSIGN(ConsentProvider);
 };
 
