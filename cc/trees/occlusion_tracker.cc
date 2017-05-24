@@ -221,16 +221,17 @@ static void ReduceOcclusionBelowSurface(
   if (affected_area_in_target.IsEmpty())
     return;
 
+  // The filter's bounds for asymmetric filters (ex: drop shadow) are
+  // relative to the target surface, which moves the pixels from outside of the
+  // clip to the filtered surface. As a result, |affected_area| needs to expand.
+  // Since we are concerned with the target surface, we need to swap the outsets
+  // before applying them to the filtered surface bounds.
   int outset_top, outset_right, outset_bottom, outset_left;
   contributing_surface->BackgroundFilters().GetOutsets(
-      &outset_top, &outset_right, &outset_bottom, &outset_left);
+      &outset_bottom, &outset_left, &outset_top, &outset_right);
 
-  // The filter can move pixels from outside of the clip, so allow affected_area
-  // to expand outside the clip. Notably the content we're concerned with here
-  // is not the affected area, but rather stuff slightly outside it. Thus the
-  // directions of the outsets are reversed from normal.
-  affected_area_in_target.Inset(-outset_right, -outset_bottom, -outset_left,
-                                -outset_top);
+  affected_area_in_target.Inset(-outset_left, -outset_top, -outset_right,
+                                -outset_bottom);
   SimpleEnclosedRegion affected_occlusion = *occlusion_from_inside_target;
   affected_occlusion.Intersect(affected_area_in_target);
 
