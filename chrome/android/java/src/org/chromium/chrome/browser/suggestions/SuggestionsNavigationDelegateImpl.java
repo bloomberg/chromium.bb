@@ -108,11 +108,6 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
             return;
         }
 
-        // TODO(treib): Also track other dispositions. crbug.com/665915
-        if (windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB) {
-            NewTabPageUma.monitorContentSuggestionVisit(mHost.getActiveTab(), article.mCategory);
-        }
-
         LoadUrlParams loadUrlParams;
         // We explicitly open an offline page only for offline page downloads. For all other
         // sections the URL is opened and it is up to Offline Pages whether to open its offline
@@ -139,6 +134,11 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         }
 
         openUrl(windowOpenDisposition, loadUrlParams);
+
+        // TODO(treib): Also track other dispositions. crbug.com/665915
+        if (windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB) {
+            NewTabPageUma.monitorContentSuggestionVisit(mHost.getActiveTab(), article.mCategory);
+        }
     }
 
     @Override
