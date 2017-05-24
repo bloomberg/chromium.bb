@@ -265,7 +265,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   RenderViewHostImpl* render_view_host_;
 
   // The frame tree structure of the current page.
-  FrameTree frame_tree_;
+  std::unique_ptr<FrameTree> frame_tree_;
 
   // The IDs for the Render[View|Process]Host hidden by this interstitial.
   int original_child_id_;

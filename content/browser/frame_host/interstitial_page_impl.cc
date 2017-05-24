@@ -163,11 +163,12 @@ InterstitialPageImpl::InterstitialPageImpl(
       // While we get the code to a point to do this, pass NULL for it.
       // TODO(creis): We will also need to pass delegates for the RVHM as we
       // start to use it.
-      frame_tree_(new InterstitialPageNavigatorImpl(this, controller_),
-                  this,
-                  this,
-                  this,
-                  static_cast<WebContentsImpl*>(web_contents)),
+      frame_tree_(base::MakeUnique<FrameTree>(
+          new InterstitialPageNavigatorImpl(this, controller_),
+          this,
+          this,
+          this,
+          static_cast<WebContentsImpl*>(web_contents))),
       original_child_id_(web_contents->GetRenderProcessHost()->GetID()),
       original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
       should_revert_web_contents_title_(false),
@@ -181,6 +182,11 @@ InterstitialPageImpl::InterstitialPageImpl(
 }
 
 InterstitialPageImpl::~InterstitialPageImpl() {
+  // RenderViewHostImpl::RenderWidgetLostFocus() will be eventually executed in
+  // the destructor of FrameTree. It uses InterstitialPageRVHDelegate, which
+  // will be deleted because std::unique_ptr<InterstitialPageRVHDelegateView> is
+  // placed after frame_tree_. See bug http://crbug.com/725594.
+  frame_tree_.reset();
 }
 
 void InterstitialPageImpl::Show() {
@@ -247,8 +253,9 @@ void InterstitialPageImpl::Show() {
 
   GURL data_url = GURL("data:text/html;charset=utf-8," +
                        net::EscapePath(delegate_->GetHTMLContents()));
-  frame_tree_.root()->current_frame_host()->NavigateToInterstitialURL(data_url);
-  frame_tree_.root()->current_frame_host()->UpdateAccessibilityMode();
+  frame_tree_->root()->current_frame_host()->NavigateToInterstitialURL(
+      data_url);
+  frame_tree_->root()->current_frame_host()->UpdateAccessibilityMode();
 
   notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(controller_));
@@ -296,7 +303,7 @@ void InterstitialPageImpl::Hide() {
       FROM_HERE, base::Bind(&InterstitialPageImpl::Shutdown,
                             weak_ptr_factory_.GetWeakPtr()));
   render_view_host_ = NULL;
-  frame_tree_.root()->ResetForNewProcess();
+  frame_tree_->root()->ResetForNewProcess();
   controller_->delegate()->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = controller_->GetVisibleEntry();
@@ -427,7 +434,7 @@ AccessibilityMode InterstitialPageImpl::GetAccessibilityMode() const {
 }
 
 void InterstitialPageImpl::Cut() {
-  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
   if (!focused_node)
     return;
 
@@ -437,7 +444,7 @@ void InterstitialPageImpl::Cut() {
 }
 
 void InterstitialPageImpl::Copy() {
-  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
   if (!focused_node)
     return;
 
@@ -447,7 +454,7 @@ void InterstitialPageImpl::Copy() {
 }
 
 void InterstitialPageImpl::Paste() {
-  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
   if (!focused_node)
     return;
 
@@ -457,7 +464,7 @@ void InterstitialPageImpl::Paste() {
 }
 
 void InterstitialPageImpl::SelectAll() {
-  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
   if (!focused_node)
     return;
 
@@ -586,10 +593,10 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
   // TODO(avi): The view routing ID can be restored to MSG_ROUTING_NONE once
   // RenderViewHostImpl has-a RenderWidgetHostImpl. https://crbug.com/545684
   int32_t widget_routing_id = site_instance->GetProcess()->GetNextRoutingID();
-  frame_tree_.root()->render_manager()->Init(
+  frame_tree_->root()->render_manager()->Init(
       site_instance.get(), widget_routing_id, MSG_ROUTING_NONE,
       widget_routing_id, false);
-  return frame_tree_.root()->current_frame_host()->render_view_host();
+  return frame_tree_->root()->current_frame_host()->render_view_host();
 }
 
 WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
@@ -608,7 +615,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
                                       FrameReplicationState(),
                                       false);
   controller_->delegate()->RenderFrameForInterstitialPageCreated(
-      frame_tree_.root()->current_frame_host());
+      frame_tree_->root()->current_frame_host());
   view->SetSize(web_contents()->GetContainerBounds().size());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();
@@ -753,7 +760,7 @@ void InterstitialPageImpl::CreateNewWindow(
 
 void InterstitialPageImpl::SetFocusedFrame(FrameTreeNode* node,
                                            SiteInstance* source) {
-  frame_tree_.SetFocusedFrame(node, source);
+  frame_tree_->SetFocusedFrame(node, source);
 
   if (web_contents_) {
     static_cast<WebContentsImpl*>(web_contents_)
@@ -799,7 +806,7 @@ SessionStorageNamespace* InterstitialPageImpl::GetSessionStorageNamespace(
 }
 
 FrameTree* InterstitialPageImpl::GetFrameTree() {
-  return &frame_tree_;
+  return frame_tree_.get();
 }
 
 void InterstitialPageImpl::Disable() {
