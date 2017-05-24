@@ -67,6 +67,10 @@ class CreditCardEditorViewController : public EditorViewController {
   // higher opacity. If empty string, selects none of them (all full opacity).
   void SelectBasicCardNetworkIcon(const std::string& basic_card_network);
 
+  // Exposed for validation delegate.
+  bool IsValidCreditCardNumber(const base::string16& card_number,
+                               base::string16* error_message);
+
  protected:
   // PaymentRequestSheetController:
   void FillContentView(views::View* content_view) override;
@@ -77,12 +81,9 @@ class CreditCardEditorViewController : public EditorViewController {
   class CreditCardValidationDelegate : public ValidationDelegate {
    public:
     // Used to validate |field| type. A reference to the |controller| should
-    // outlive this delegate, and a list of |supported_card_networks| can be
-    // passed in to validate |field| (the data will be copied to the delegate).
-    CreditCardValidationDelegate(
-        const EditorField& field,
-        CreditCardEditorViewController* controller,
-        const std::vector<std::string>& supported_card_networks);
+    // outlive this delegate.
+    CreditCardValidationDelegate(const EditorField& field,
+                                 CreditCardEditorViewController* controller);
     ~CreditCardValidationDelegate() override;
 
     // ValidationDelegate:
@@ -105,8 +106,6 @@ class CreditCardEditorViewController : public EditorViewController {
     EditorField field_;
     // Outlives this class.
     CreditCardEditorViewController* controller_;
-    // The list of supported basic card networks.
-    std::set<std::string> supported_card_networks_;
 
     DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };
@@ -134,6 +133,9 @@ class CreditCardEditorViewController : public EditorViewController {
 
   // The value to use for the add billing address button tag.
   int add_billing_address_button_tag_;
+
+  // The list of supported basic card networks.
+  std::set<std::string> supported_card_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardEditorViewController);
 };
