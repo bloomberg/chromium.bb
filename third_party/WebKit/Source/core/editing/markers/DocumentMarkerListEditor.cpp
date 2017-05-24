@@ -81,10 +81,44 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
   return doc_dirty;
 }
 
-bool DocumentMarkerListEditor::ShiftMarkers(MarkerList* list,
-                                            unsigned offset,
-                                            unsigned old_length,
-                                            unsigned new_length) {
+// TODO(rlanday): make this not take O(n^2) time when all the markers are
+// removed
+bool DocumentMarkerListEditor::ShiftMarkersContentDependent(
+    MarkerList* list,
+    unsigned offset,
+    unsigned old_length,
+    unsigned new_length) {
+  bool did_shift_marker = false;
+  for (MarkerList::iterator it = list->begin(); it != list->end(); ++it) {
+    DocumentMarker& marker = **it;
+
+    // marked text is neither changed nor shifted
+    if (marker.EndOffset() <= offset)
+      continue;
+
+    // marked text is (potentially) changed by edit, remove marker
+    if (marker.StartOffset() < offset + old_length) {
+      list->erase(it - list->begin());
+      --it;
+      did_shift_marker = true;
+      continue;
+    }
+
+    // marked text is shifted but not changed
+    marker.ShiftOffsets(new_length - old_length);
+    did_shift_marker = true;
+  }
+
+  return did_shift_marker;
+}
+
+// TODO(rlanday): make this not take O(n^2) time when all the markers are
+// removed
+bool DocumentMarkerListEditor::ShiftMarkersContentIndependent(
+    MarkerList* list,
+    unsigned offset,
+    unsigned old_length,
+    unsigned new_length) {
   bool did_shift_marker = false;
   for (MarkerList::iterator it = list->begin(); it != list->end(); ++it) {
     DocumentMarker& marker = **it;

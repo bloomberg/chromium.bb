@@ -44,8 +44,8 @@ bool TextMatchMarkerListImpl::RemoveMarkers(unsigned start_offset, int length) {
 bool TextMatchMarkerListImpl::ShiftMarkers(unsigned offset,
                                            unsigned old_length,
                                            unsigned new_length) {
-  return DocumentMarkerListEditor::ShiftMarkers(&markers_, offset, old_length,
-                                                new_length);
+  return DocumentMarkerListEditor::ShiftMarkersContentDependent(
+      &markers_, offset, old_length, new_length);
 }
 
 DEFINE_TRACE(TextMatchMarkerListImpl) {

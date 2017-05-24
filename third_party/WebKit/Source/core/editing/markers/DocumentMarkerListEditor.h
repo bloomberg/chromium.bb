@@ -26,11 +26,25 @@ class DocumentMarkerListEditor {
   // Returns true if a marker was removed, false otherwise.
   static bool RemoveMarkers(MarkerList*, unsigned start_offset, int length);
 
+  // The following two methods both update the position of a list's
+  // DocumentMarkers in response to editing operations. The difference is that
+  // if an editing operation actually changes the text spanned by a marker (as
+  // opposed to only changing text before or after the marker),
+  // ShiftMarkersContentDependent will remove the marker, and
+  // ShiftMarkersContentIndependent will attempt to keep tracking the marked
+  // region across edits.
+
   // Returns true if a marker was shifted or removed, false otherwise.
-  static bool ShiftMarkers(MarkerList*,
-                           unsigned offset,
-                           unsigned old_length,
-                           unsigned new_length);
+  static bool ShiftMarkersContentDependent(MarkerList*,
+                                           unsigned offset,
+                                           unsigned old_length,
+                                           unsigned new_length);
+
+  // Returns true if a marker was shifted or removed, false otherwise.
+  static bool ShiftMarkersContentIndependent(MarkerList*,
+                                             unsigned offset,
+                                             unsigned old_length,
+                                             unsigned new_length);
 };
 
 }  // namespace blink
