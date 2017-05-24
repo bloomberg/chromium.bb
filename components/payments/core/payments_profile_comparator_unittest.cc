@@ -247,6 +247,103 @@ TEST(PaymentRequestProfileUtilTest, IsContactInfoComplete) {
   EXPECT_TRUE(empty_comp.IsContactInfoComplete(nullptr));
 }
 
+TEST(PaymentRequestProfileUtilTest, FilterProfilesForShipping) {
+  MockPaymentOptionsProvider provider(kRequestShipping);
+  PaymentsProfileComparator comp("en-US", provider);
+
+  AutofillProfile address_only = CreateProfileWithCompleteAddress("", "");
+
+  AutofillProfile no_name = CreateProfileWithCompleteAddress("", "6515553226");
+  AutofillProfile no_phone = CreateProfileWithCompleteAddress("Homer", "");
+
+  AutofillProfile empty = CreateProfileWithContactInfo("", "", "");
+
+  AutofillProfile complete1 =
+      CreateProfileWithCompleteAddress("Homer", "6515553226");
+
+  AutofillProfile partial_address =
+      CreateProfileWithPartialAddress("Homer", "6515553226");
+  AutofillProfile no_address =
+      CreateProfileWithContactInfo("Homer", "", "6515553226");
+
+  AutofillProfile complete2 =
+      CreateProfileWithCompleteAddress("Bart", "6515553226");
+
+  AutofillProfile partial_no_phone =
+      CreateProfileWithPartialAddress("", "6515553226");
+  AutofillProfile partial_no_name =
+      CreateProfileWithPartialAddress("Homer", "");
+
+  std::vector<AutofillProfile*> profiles = {
+      &address_only,     &no_name,         &no_phone,   &empty,
+      &complete1,        &partial_address, &no_address, &complete2,
+      &partial_no_phone, &partial_no_name};
+
+  std::vector<AutofillProfile*> filtered =
+      comp.FilterProfilesForShipping(profiles);
+
+  // Current logic does not remove profiles, only reorder them.
+  ASSERT_EQ(10u, filtered.size());
+
+  // First, the complete profiles should be hoisted to the top, keeping their
+  // relative order.
+  EXPECT_EQ(&complete1, filtered[0]);
+  EXPECT_EQ(&complete2, filtered[1]);
+
+  // Next are profiles with a complete address but missing one other field.
+  EXPECT_EQ(&no_name, filtered[2]);
+  EXPECT_EQ(&no_phone, filtered[3]);
+
+  // A profile with only a complete address should still appear before profiles
+  // with partial/empty addresses.
+  EXPECT_EQ(&address_only, filtered[4]);
+
+  // Profiles with partial/no address then are sorted by whether or not they
+  // have names and/or phone numbers.
+  EXPECT_EQ(&partial_address, filtered[5]);
+  EXPECT_EQ(&no_address, filtered[6]);
+
+  EXPECT_EQ(&partial_no_phone, filtered[7]);
+  EXPECT_EQ(&partial_no_name, filtered[8]);
+
+  EXPECT_EQ(&empty, filtered[9]);
+}
+
+TEST(PaymentRequestProfileUtilTest, GetShippingCompletenessScore) {
+  MockPaymentOptionsProvider provider(kRequestShipping);
+  PaymentsProfileComparator comp("en-US", provider);
+
+  // 12 points for a complete profile: 10 for address, 1 each for name/phone.
+  AutofillProfile p1 = CreateProfileWithCompleteAddress("Homer", "6515553226");
+  EXPECT_EQ(12, comp.GetShippingCompletenessScore(&p1));
+
+  // 11 points if name or phone is missing.
+  AutofillProfile p2 = CreateProfileWithCompleteAddress("", "6515553226");
+  AutofillProfile p3 = CreateProfileWithCompleteAddress("Homer", "");
+  EXPECT_EQ(11, comp.GetShippingCompletenessScore(&p2));
+  EXPECT_EQ(11, comp.GetShippingCompletenessScore(&p3));
+
+  // 10 points for complete address only.
+  AutofillProfile p4 = CreateProfileWithCompleteAddress("", "");
+  EXPECT_EQ(10, comp.GetShippingCompletenessScore(&p4));
+
+  // 2 points for name and phone without address.
+  AutofillProfile p5 = CreateProfileWithContactInfo("Homer", "", "6515553226");
+  EXPECT_EQ(2, comp.GetShippingCompletenessScore(&p5));
+
+  // 1 point for name or phone alone.
+  AutofillProfile p6 = CreateProfileWithContactInfo("Homer", "", "");
+  AutofillProfile p7 = CreateProfileWithContactInfo("", "", "6515553226");
+  EXPECT_EQ(1, comp.GetShippingCompletenessScore(&p6));
+  EXPECT_EQ(1, comp.GetShippingCompletenessScore(&p7));
+
+  // No points for empty profile, or profile with only a partial address.
+  AutofillProfile p8 = CreateProfileWithContactInfo("", "", "");
+  AutofillProfile p9 = CreateProfileWithPartialAddress("", "");
+  EXPECT_EQ(0, comp.GetShippingCompletenessScore(&p8));
+  EXPECT_EQ(0, comp.GetShippingCompletenessScore(&p9));
+}
+
 TEST(PaymentRequestProfileUtilTest, IsShippingComplete) {
   MockPaymentOptionsProvider provider(kRequestShipping);
   PaymentsProfileComparator comp("en-US", provider);

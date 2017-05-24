@@ -71,19 +71,23 @@ class PaymentsProfileComparator : public autofill::AutofillProfileComparator {
   // |profile|.
   bool IsContactInfoComplete(const autofill::AutofillProfile* profile) const;
 
-  // Comparison function suitable for sorting profiles by contact completeness
-  // score with std::sort.
-  bool IsContactMoreComplete(const autofill::AutofillProfile* p1,
-                             const autofill::AutofillProfile* p2) const;
+  // Returns profiles for shipping, ordered by completeness. |profiles| should
+  // be passed in order of frecency, and this order will be preserved among
+  // equally-complete profiles.
+  std::vector<autofill::AutofillProfile*> FilterProfilesForShipping(
+      const std::vector<autofill::AutofillProfile*>& profiles) const;
+
+  int GetShippingCompletenessScore(
+      const autofill::AutofillProfile* profile) const;
+
+  // Returns true iff every field needed to use |profile| as a shipping address
+  // is populated.
+  bool IsShippingComplete(const autofill::AutofillProfile* profile) const;
 
   // Returns a localized string to be displayed in UI indicating what action,
   // if any, must be taken for the given profile to be used as contact info.
   base::string16 GetStringForMissingContactFields(
       const autofill::AutofillProfile& profile) const;
-
-  // Returns true iff every field needed to use |profile| as a shipping address
-  // is populated.
-  bool IsShippingComplete(const autofill::AutofillProfile* profile) const;
 
   // Returns a localized string to be displayed in UI indicating what action,
   // if any, must be taken for the given profile to be used as a shipping
@@ -103,6 +107,14 @@ class PaymentsProfileComparator : public autofill::AutofillProfileComparator {
   base::string16 GetStringForMissingFields(ProfileFields fields) const;
   bool AreRequiredAddressFieldsPresent(
       const autofill::AutofillProfile& profile) const;
+
+  // Comparison functions suitable for sorting profiles by completeness
+  // score with std::sort.
+  bool IsContactMoreComplete(const autofill::AutofillProfile* p1,
+                             const autofill::AutofillProfile* p2) const;
+  bool IsShippingMoreComplete(const autofill::AutofillProfile* p1,
+                              const autofill::AutofillProfile* p2) const;
+
   mutable std::map<std::string, ProfileFields> cache_;
   const PaymentOptionsProvider& options_;
 };
