@@ -54,6 +54,7 @@ class HttpRequestHeaders;
 }
 
 namespace storage {
+class FileSystemContext;
 class ShareableFileReference;
 }
 
@@ -259,6 +260,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void BeginNavigationRequest(
       ResourceContext* resource_context,
       net::URLRequestContext* request_context,
+      storage::FileSystemContext* upload_file_system_context,
       const NavigationRequestInfo& info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       NavigationURLLoaderImplCore* loader,
