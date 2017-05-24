@@ -49,6 +49,11 @@ crbug.com/608015 virtual/mojo-loading/http/tests/inspector-protocol/access-inspe
 crbug.com/608023 http/tests/inspector/injected-script-for-origin.html [ Failure ]
 crbug.com/608023 virtual/mojo-loading/http/tests/inspector/injected-script-for-origin.html [ Failure ]
 
+# https://crbug.com/716085 - Feature Policy tests failing when both
+# allowpaymentrequest and allow attribute enables payment feature.
+crbug.com/716085 http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]
+crbug.com/716085 http/tests/feature-policy/payment-allowed-by-container-policy.html [ Failure ]
+
 # https://crbug.com/602493 - Layout tests harness doesn't support history dump across OOPIFs
 crbug.com/602493 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
 crbug.com/602493 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
