@@ -68323,6 +68323,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidAccountSigninViewSeedingTime" units="ms">
+  <owner>bsazonov@chromium.org</owner>
+  <summary>
+    The time it takes to seed accounts before proceeding to the account
+    confirmation screen.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidGetAccountsTime" units="ms">
   <owner>nyquist@chromium.org</owner>
   <summary>
