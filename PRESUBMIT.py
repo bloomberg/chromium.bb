@@ -2324,6 +2324,8 @@ def _CheckForInvalidIfDefinedMacros(input_api, output_api):
   """Check all affected files for invalid "if defined" macros."""
   bad_macros = []
   for f in input_api.AffectedFiles():
+    if f.LocalPath().startswith('third_party/sqlite/'):
+      continue
     if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm')):
       bad_macros.extend(_CheckForInvalidIfDefinedMacrosInFile(input_api, f))
 
