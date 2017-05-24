@@ -446,9 +446,7 @@ void PreferenceAPIBase::SetExtensionControlledPref(
     ExtensionPrefs::ScopedDictionaryUpdate update(extension_prefs(),
                                                   extension_id,
                                                   scope_string);
-    base::DictionaryValue* preference = update.Get();
-    if (!preference)
-      preference = update.Create();
+    auto preference = update.Create();
     preference->SetWithoutPathExpansion(pref_key, value->CreateDeepCopy());
   }
   extension_pref_value_map()->SetExtensionPref(
@@ -468,7 +466,7 @@ void PreferenceAPIBase::RemoveExtensionControlledPref(
     ExtensionPrefs::ScopedDictionaryUpdate update(extension_prefs(),
                                                   extension_id,
                                                   scope_string);
-    base::DictionaryValue* preference = update.Get();
+    auto preference = update.Get();
     if (preference)
       preference->RemoveWithoutPathExpansion(pref_key, NULL);
   }

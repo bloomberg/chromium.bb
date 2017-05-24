@@ -60,9 +60,7 @@ void AddSavedFileEntry(ExtensionPrefs* prefs,
                        const SavedFileEntry& file_entry) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       prefs, extension_id, kFileEntries);
-  base::DictionaryValue* file_entries = update.Get();
-  if (!file_entries)
-    file_entries = update.Create();
+  auto file_entries = update.Create();
   DCHECK(!file_entries->GetDictionaryWithoutPathExpansion(file_entry.id, NULL));
 
   std::unique_ptr<base::DictionaryValue> file_entry_dict =
@@ -81,9 +79,9 @@ void UpdateSavedFileEntry(ExtensionPrefs* prefs,
                           const SavedFileEntry& file_entry) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       prefs, extension_id, kFileEntries);
-  base::DictionaryValue* file_entries = update.Get();
+  auto file_entries = update.Get();
   DCHECK(file_entries);
-  base::DictionaryValue* file_entry_dict = NULL;
+  std::unique_ptr<prefs::DictionaryValueUpdate> file_entry_dict;
   file_entries->GetDictionaryWithoutPathExpansion(file_entry.id,
                                                   &file_entry_dict);
   DCHECK(file_entry_dict);
@@ -97,9 +95,7 @@ void RemoveSavedFileEntry(ExtensionPrefs* prefs,
                           const std::string& file_entry_id) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       prefs, extension_id, kFileEntries);
-  base::DictionaryValue* file_entries = update.Get();
-  if (!file_entries)
-    file_entries = update.Create();
+  auto file_entries = update.Create();
   file_entries->RemoveWithoutPathExpansion(file_entry_id, NULL);
 }
 

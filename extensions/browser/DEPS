@@ -24,6 +24,7 @@ include_rules = [
   "+net",
   # This directory contains build flags and does not pull all of PPAPI in.
   "+ppapi/features",
+  "+services/preferences/public/cpp",
   "+services/service_manager/public/cpp",
   "+skia/ext/image_operations.h",
   "+third_party/leveldatabase",
