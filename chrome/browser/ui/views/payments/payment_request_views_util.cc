@@ -232,6 +232,7 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
                                .AsImageSkia());
   card_icon_view->SetTooltipText(tooltip_text);
   card_icon_view->SetPaintToLayer();
+  card_icon_view->layer()->SetFillsBoundsOpaquely(false);
   card_icon_view->layer()->SetOpacity(opacity);
   return card_icon_view;
 }
