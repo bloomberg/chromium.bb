@@ -286,6 +286,13 @@ void HTMLFormElement::PrepareForSubmission(
   if (!frame || is_submitting_ || in_user_js_submit_event_)
     return;
 
+  if (!isConnected()) {
+    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
+        "Form submission canceled because the form is not connected"));
+    return;
+  }
+
   if (GetDocument().IsSandboxed(kSandboxForms)) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
