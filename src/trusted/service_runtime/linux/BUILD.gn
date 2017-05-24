@@ -131,12 +131,12 @@ if (current_toolchain == bootstrap_toolchain) {
       # layout.  The script uses the symbol RESERVE_TOP.
       "--defsym",
       "RESERVE_TOP=" + nacl_reserve_top,
-      "--script=" + rebase_path(linker_script_path),
+      "--script=" + rebase_path(linker_script_path, root_build_dir),
       "-o",
-      rebase_path(bootstrap_raw_path),
+      rebase_path(bootstrap_raw_path, root_build_dir),
 
       "--whole-archive",
-      rebase_path(bootstrap_lib_path),
+      rebase_path(bootstrap_lib_path, root_build_dir),
       "--no-whole-archive",
     ]
   }
@@ -153,7 +153,7 @@ if (current_toolchain == bootstrap_toolchain) {
     outputs = [
       bootstrap_exe_path,
     ]
-    args = rebase_path(inputs + outputs)
+    args = rebase_path(inputs + outputs, root_build_dir)
   }
 } else if (is_linux) {
   copy("bootstrap") {
