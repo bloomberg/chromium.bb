@@ -1561,6 +1561,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="24" label="Kerberos credentials cache not found"/>
   <int value="25" label="Kerberos ticket expired while renewing credentials"/>
   <int value="26" label="klist exited with unspecified error"/>
+  <int value="27" label="kinit failed because of bad machine name."/>
 </enum>
 
 <enum name="AutocheckoutBubble" type="int">
