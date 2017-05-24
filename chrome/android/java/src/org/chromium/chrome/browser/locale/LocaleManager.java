@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -67,6 +68,8 @@ public class LocaleManager {
 
     private static LocaleManager sInstance;
 
+    private boolean mSearchEnginePromoShown;
+
     // LocaleManager is a singleton and it should not have strong reference to UI objects.
     // SnackbarManager is owned by ChromeActivity and is not null as long as the activity is alive.
     private WeakReference<SnackbarManager> mSnackbarManager;
@@ -95,6 +98,15 @@ public class LocaleManager {
             sInstance = AppHooks.get().createLocaleManager();
         }
         return sInstance;
+    }
+
+    /**
+     * Default constructor.
+     */
+    public LocaleManager() {
+        int state = ContextUtils.getAppSharedPreferences().getInt(
+                KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
+        mSearchEnginePromoShown = state == SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN;
     }
 
     /**
@@ -284,17 +296,37 @@ public class LocaleManager {
     }
 
     /**
+     * @return The search engine type for the given url if applicable.
+     *         See template_url_prepopulate_data.cc for all values.
+     */
+    protected static int getSearchEngineType(String url) {
+        return nativeGetEngineType(url);
+    }
+
+    /**
+     * To be called after the user has made a selection from a search engine promo dialog.
+     * @param type The type of search engine promo dialog that was shown.
+     * @param keywords The keywords for all search engines listed in the order shown to the user.
+     * @param keyword The keyword for the search engine chosen.
+     */
+    protected void onUserSearchEngineChoiceFromPromoDialog(
+            @SearchEnginePromoType int type, List<String> keywords, String keyword) {
+        TemplateUrlService.getInstance().setSearchEngine(keyword);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN)
+                .apply();
+        mSearchEnginePromoShown = true;
+    }
+
+    /**
      * To be called after the user has made a selection from a search engine promo dialog.
      * @param type The type of search engine promo dialog that was shown.
      * @param keyword The keyword for the search engine chosen.
      */
     protected void onUserSearchEngineChoiceFromPromoDialog(
             @SearchEnginePromoType int type, String keyword) {
-        TemplateUrlService.getInstance().setSearchEngine(keyword);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN)
-                .apply();
+        // TODO(yusufo) : Not used. Remove this.
     }
 
     private SpecialLocaleHandler getSpecialLocaleHandler() {
@@ -316,7 +348,31 @@ public class LocaleManager {
     /** Set a LocaleManager to be used for testing. */
     @VisibleForTesting
     public static void setInstanceForTest(LocaleManager instance) {
-        assert sInstance == null;
         sInstance = instance;
     }
+
+    /**
+     * Record any locale based metrics related with the search widget. Recorded on initialization
+     * only.
+     * @param widgetPresent Whether there is at least one search widget on home screen.
+     */
+    public void recordLocaleBasedSearchWidgetMetrics(boolean widgetPresent) {}
+
+    /**
+     * @return Whether the search engine promo has been shown.
+     */
+    public boolean hasShownSearchEnginePromo() {
+        return mSearchEnginePromoShown;
+    }
+
+    /**
+     * Record any locale based metrics related with search. Recorded per search.
+     * @param isFromSearchWidget Whether the search was performed from the search widget.
+     * @param url Url for the search made.
+     * @param transition The transition type for the navigation.
+     */
+    public void recordLocaleBasedSearchMetrics(
+            boolean isFromSearchWidget, String url, @PageTransition int transition) {}
+
+    private static native int nativeGetEngineType(String url);
 }

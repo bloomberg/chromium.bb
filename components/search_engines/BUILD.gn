@@ -4,6 +4,10 @@
 
 import("//build/config/features.gni")
 import("//tools/json_to_struct/json_to_struct.gni")
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
 
 static_library("search_engines") {
   sources = [
@@ -157,4 +161,12 @@ json_to_struct("prepopulated_engines") {
   source = "prepopulated_engines.json"
   schema_file = "prepopulated_engines_schema.json"
   namespace = "TemplateURLPrepopulateData"
+}
+
+if (is_android) {
+  java_cpp_enum("search_engine_type_java") {
+    sources = [
+      "search_engine_type.h",
+    ]
+  }
 }

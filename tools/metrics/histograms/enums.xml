@@ -26215,6 +26215,7 @@ from previous Chrome versions.
   <int value="45" label="Yahoo!"/>
   <int value="46" label="Yandex"/>
   <int value="47" label="Zoznam"/>
+  <int value="48" label="360"/>
 </enum>
 
 <enum name="OmniboxSuggestRequests" type="int">
@@ -31473,6 +31474,18 @@ from previous Chrome versions.
   <int value="31" label="ZOZNAM"/>
   <int value="32" label="YAHOOQC"/>
   <int value="33" label="NONE"/>
+</enum>
+
+<enum name="SearchEntryPoint" type="int">
+  <int value="0" label="From search widget"/>
+  <int value="1" label="From omnibox"/>
+</enum>
+
+<enum name="SearchWidgetUseInfo" type="int">
+  <int value="0" label="Present in partnership device"/>
+  <int value="1" label="Not present in partnership device"/>
+  <int value="2" label="Present in non-partnership device"/>
+  <int value="3" label="Not present in non-partnership device"/>
 </enum>
 
 <enum name="SecurityInterstitialDecision" type="int">
