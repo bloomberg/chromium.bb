@@ -84,22 +84,25 @@ void DisplayManager::AddDisplayForWindowManager(
 }
 
 void DisplayManager::DestroyDisplay(Display* display) {
-  if (pending_displays_.count(display)) {
+  const bool is_pending = pending_displays_.count(display) > 0;
+  if (is_pending) {
     pending_displays_.erase(display);
   } else {
-    for (const auto& pair : user_display_managers_)
-      pair.second->OnWillDestroyDisplay(display->GetId());
-
     DCHECK(displays_.count(display));
     displays_.erase(display);
     window_server_->OnDisplayDestroyed(display);
   }
+  const int64_t display_id = display->GetId();
   delete display;
 
   // If we have no more roots left, let the app know so it can terminate.
   // TODO(sky): move to delegate/observer.
-  if (displays_.empty() && pending_displays_.empty())
+  if (displays_.empty() && pending_displays_.empty()) {
     window_server_->OnNoMoreDisplays();
+  } else {
+    for (const auto& pair : user_display_managers_)
+      pair.second->OnDisplayDestroyed(display_id);
+  }
 }
 
 void DisplayManager::DestroyAllDisplays() {
@@ -117,9 +120,9 @@ std::set<const Display*> DisplayManager::displays() const {
   return ret_value;
 }
 
-void DisplayManager::OnDisplayUpdate(const display::Display& display) {
+void DisplayManager::OnDisplayUpdated(const display::Display& display) {
   for (const auto& pair : user_display_managers_)
-    pair.second->OnDisplayUpdate(display);
+    pair.second->OnDisplayUpdated(display);
 }
 
 Display* DisplayManager::GetDisplayContaining(const ServerWindow* window) {
@@ -248,7 +251,7 @@ void DisplayManager::OnDisplayModified(
   // OnWmDisplayModified() so the WM has updated the display size.
   ws_display->OnViewportMetricsChanged(metrics);
 
-  OnDisplayUpdate(display);
+  OnDisplayUpdated(display);
 }
 
 void DisplayManager::OnPrimaryDisplayChanged(int64_t primary_display_id) {

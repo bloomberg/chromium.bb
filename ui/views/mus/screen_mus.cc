@@ -8,12 +8,14 @@
 
 #include "ui/views/mus/screen_mus.h"
 
+#include "base/stl_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
@@ -95,64 +97,64 @@ aura::Window* ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
   return delegate_->GetWindowAtScreenPoint(point);
 }
 
-void ScreenMus::OnDisplays(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
-                           int64_t primary_display_id,
-                           int64_t internal_display_id) {
-  // This should only be called once when ScreenMus is added as an observer.
-  DCHECK(display_list().displays().empty());
-
-  for (size_t i = 0; i < ws_displays.size(); ++i) {
-    const display::Display& display = ws_displays[i]->display;
-    const bool is_primary = display.id() == primary_display_id;
-    display_list().AddDisplay(display,
-                              is_primary ? Type::PRIMARY : Type::NOT_PRIMARY);
-    if (is_primary) {
-      // TODO(sky): Make WindowManagerFrameValues per display.
-      WindowManagerFrameValues frame_values =
-          ws_displays[i]
-              ->frame_decoration_values.To<WindowManagerFrameValues>();
-      WindowManagerFrameValues::SetInstance(frame_values);
-    }
-  }
-
-  DCHECK(display_list().GetPrimaryDisplayIterator() !=
-         display_list().displays().end());
+void ScreenMus::OnDisplaysChanged(
+    std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+    int64_t primary_display_id,
+    int64_t internal_display_id) {
+  const bool primary_changed = primary_display_id != GetPrimaryDisplay().id();
+  int64_t handled_display_id = display::kInvalidDisplayId;
+  const WindowManagerFrameValues initial_frame_values =
+      WindowManagerFrameValues::instance();
 
   if (internal_display_id != display::kInvalidDisplayId)
     display::Display::SetInternalDisplayId(internal_display_id);
 
-  DCHECK(!display_list().displays().empty());
-}
+  if (primary_changed) {
+    handled_display_id = primary_display_id;
+    for (auto& ws_display_ptr : ws_displays) {
+      if (ws_display_ptr->display.id() == primary_display_id) {
+        // TODO(sky): Make WindowManagerFrameValues per display.
+        WindowManagerFrameValues frame_values =
+            ws_display_ptr->frame_decoration_values
+                .To<WindowManagerFrameValues>();
+        WindowManagerFrameValues::SetInstance(frame_values);
 
-void ScreenMus::OnDisplaysChanged(
-    std::vector<ui::mojom::WsDisplayPtr> ws_displays) {
-  for (size_t i = 0; i < ws_displays.size(); ++i) {
-    const display::Display& display = ws_displays[i]->display;
-    const bool is_primary =
-        display.id() == display_list().GetPrimaryDisplayIterator()->id();
-    ProcessDisplayChanged(display, is_primary);
-    if (is_primary) {
-      WindowManagerFrameValues frame_values =
-          ws_displays[i]
-              ->frame_decoration_values.To<WindowManagerFrameValues>();
-      WindowManagerFrameValues::SetInstance(frame_values);
-      delegate_->OnWindowManagerFrameValuesChanged();
+        const bool is_primary = true;
+        ProcessDisplayChanged(ws_display_ptr->display, is_primary);
+        break;
+      }
     }
   }
-}
 
-void ScreenMus::OnDisplayRemoved(int64_t display_id) {
-  display_list().RemoveDisplay(display_id);
-}
+  // Add new displays and update existing ones.
+  std::set<int64_t> display_ids;
+  for (auto& ws_display_ptr : ws_displays) {
+    display_ids.insert(ws_display_ptr->display.id());
+    if (handled_display_id == ws_display_ptr->display.id())
+      continue;
 
-void ScreenMus::OnPrimaryDisplayChanged(int64_t primary_display_id) {
-  // TODO(kylechar): DisplayList would need to change to handle having no
-  // primary display.
-  if (primary_display_id == display::kInvalidDisplayId)
-    return;
+    const bool is_primary = false;
+    ProcessDisplayChanged(ws_display_ptr->display, is_primary);
+  }
 
-  ProcessDisplayChanged(*display_list().FindDisplayById(primary_display_id),
-                        true);
+  // Remove any displays no longer in |ws_displays|.
+  std::set<int64_t> existing_display_ids;
+  for (const auto& display : display_list().displays())
+    existing_display_ids.insert(display.id());
+  std::set<int64_t> removed_display_ids =
+      base::STLSetDifference<std::set<int64_t>>(existing_display_ids,
+                                                display_ids);
+  for (int64_t display_id : removed_display_ids) {
+    // TODO(kylechar): DisplayList would need to change to handle having no
+    // primary display.
+    if (display_id != GetPrimaryDisplay().id())
+      display_list().RemoveDisplay(display_id);
+  }
+
+  if (primary_changed &&
+      initial_frame_values != WindowManagerFrameValues::instance()) {
+    delegate_->OnWindowManagerFrameValuesChanged();
+  }
 }
 
 }  // namespace views
