@@ -80,6 +80,15 @@ void AV1WarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
         (4 * abs(*gamma) + 4 * abs(*delta) >= (1 << WARPEDMODEL_PREC_BITS)))
       continue;
 
+    *alpha = ROUND_POWER_OF_TWO_SIGNED(*alpha, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
+    *beta = ROUND_POWER_OF_TWO_SIGNED(*beta, WARP_PARAM_REDUCE_BITS) *
+            (1 << WARP_PARAM_REDUCE_BITS);
+    *gamma = ROUND_POWER_OF_TWO_SIGNED(*gamma, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
+    *delta = ROUND_POWER_OF_TWO_SIGNED(*delta, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
+
     // We have a valid model, so finish
     return;
   }
@@ -204,6 +213,15 @@ void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
     if ((4 * abs(*alpha) + 7 * abs(*beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
         (4 * abs(*gamma) + 4 * abs(*delta) >= (1 << WARPEDMODEL_PREC_BITS)))
       continue;
+
+    *alpha = ROUND_POWER_OF_TWO_SIGNED(*alpha, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
+    *beta = ROUND_POWER_OF_TWO_SIGNED(*beta, WARP_PARAM_REDUCE_BITS) *
+            (1 << WARP_PARAM_REDUCE_BITS);
+    *gamma = ROUND_POWER_OF_TWO_SIGNED(*gamma, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
+    *delta = ROUND_POWER_OF_TWO_SIGNED(*delta, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
 
     // We have a valid model, so finish
     return;
