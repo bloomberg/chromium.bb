@@ -23,6 +23,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
@@ -1695,6 +1696,21 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
     return;
 
   purge_and_suspend_memory_metrics_ = memory_metrics;
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this), "30min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(30));
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this), "60min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(60));
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this), "90min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(90));
 }
 
 // TODO(tasak): Replace the following GetMallocUsage() with memory-infra
@@ -1796,12 +1812,12 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
        ? current.allocator - previous.allocator         \
        : 0)
 
-#define UMA_HISTOGRAM_MEMORY_GROWTH_KB(basename, suffix, memory_usage) \
-  {                                                                    \
-    std::string histogram_name =                                       \
-        base::StringPrintf("%s.%s", basename, suffix);                 \
-    UMA_HISTOGRAM_MEMORY_KB(histogram_name, memory_usage);             \
-  }
+static void RecordPurgeAndSuspendMemoryGrowthKB(const char* basename,
+                                                const char* suffix,
+                                                int memory_usage) {
+  std::string histogram_name = base::StringPrintf("%s.%s", basename, suffix);
+  base::UmaHistogramMemoryKB(histogram_name, memory_usage);
+}
 
 void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
     const char* suffix,
@@ -1816,29 +1832,29 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
   if (!GetRendererMemoryMetrics(&memory_metrics))
     return;
 
-  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+  RecordPurgeAndSuspendMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         partition_alloc_kb));
-  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+  RecordPurgeAndSuspendMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         blink_gc_kb));
-  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+  RecordPurgeAndSuspendMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         malloc_mb) *
           1024);
-  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+  RecordPurgeAndSuspendMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         discardable_kb));
-  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+  RecordPurgeAndSuspendMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         v8_main_thread_isolate_mb) *
           1024);
-  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+  RecordPurgeAndSuspendMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         total_allocated_mb) *
