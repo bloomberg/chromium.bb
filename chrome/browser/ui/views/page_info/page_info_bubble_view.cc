@@ -507,6 +507,14 @@ void PageInfoBubbleView::WebContentsDestroyed() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
+void PageInfoBubbleView::WasHidden() {
+  GetWidget()->Close();
+}
+
+void PageInfoBubbleView::DidStartNavigation(content::NavigationHandle* handle) {
+  GetWidget()->Close();
+}
+
 void PageInfoBubbleView::OnPermissionChanged(
     const PageInfoUI::PermissionInfo& permission) {
   presenter_->OnSitePermissionChanged(permission.type, permission.setting);
