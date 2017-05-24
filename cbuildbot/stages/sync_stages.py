@@ -1480,6 +1480,8 @@ class PreCQLauncherStage(SyncStage):
       action = clactions.CLAction.FromGerritPatchAndAction(
           change, action_string)
       db.InsertCLActions(build_id, [action])
+      logging.info('Record change %s with action %s build_id %s.',
+                   change, action_string, build_id)
 
   def _ProcessExpiry(self, change, status, timestamp, pool, current_time):
     """Enforce expiry of a PASSED or FULLY_VERIFIED status.
@@ -1657,13 +1659,17 @@ class PreCQLauncherStage(SyncStage):
         c: clactions.GetCLPreCQStatusAndTime(c, action_history)
         for c in changes}
     status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
+    logging.info('Processing status map: %s', status_map)
 
     # Filter out failed speculative changes.
     changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
                or c.HasReadyFlag()]
 
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
-    _, inflight, verified = clactions.GetPreCQCategories(progress_map)
+    busy, inflight, verified = clactions.GetPreCQCategories(progress_map)
+    logging.info('Changes in busy: %s\nChanges in inflight: %s\nChanges in '
+                 'verified: %s', busy, inflight, verified)
+
     current_db_time = db.GetTime()
 
     to_process = set(c for c in changes
