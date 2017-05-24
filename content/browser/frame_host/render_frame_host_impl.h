@@ -664,6 +664,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       bool renderer_initiated_creation);
 
  private:
+  friend class RenderFrameHostFeaturePolicyTest;
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
 
