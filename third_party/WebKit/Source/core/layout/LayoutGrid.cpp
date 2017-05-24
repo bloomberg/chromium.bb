@@ -1234,12 +1234,6 @@ void LayoutGrid::LayoutPositionedObjects(bool relayout_children,
     return;
 
   for (auto* child : *positioned_descendants) {
-    if (IsOrthogonalChild(*child)) {
-      // FIXME: Properly support orthogonal writing mode.
-      LayoutPositionedObject(child, relayout_children, info);
-      continue;
-    }
-
     LayoutUnit column_offset = LayoutUnit();
     LayoutUnit column_breadth = LayoutUnit();
     OffsetAndBreadthForPositionedChild(*child, kForColumns, column_offset,
@@ -1260,8 +1254,13 @@ void LayoutGrid::LayoutPositionedObjects(bool relayout_children,
 
     LayoutPositionedObject(child, relayout_children, info);
 
-    child->SetLogicalLocation(LayoutPoint(child->LogicalLeft() + column_offset,
-                                          child->LogicalTop() + row_offset));
+    bool is_orthogonal_child = IsOrthogonalChild(*child);
+    LayoutUnit logical_left =
+        child->LogicalLeft() +
+        (is_orthogonal_child ? row_offset : column_offset);
+    LayoutUnit logical_top = child->LogicalTop() +
+                             (is_orthogonal_child ? column_offset : row_offset);
+    child->SetLogicalLocation(LayoutPoint(logical_left, logical_top));
   }
 }
 
@@ -1270,7 +1269,6 @@ void LayoutGrid::OffsetAndBreadthForPositionedChild(
     GridTrackSizingDirection direction,
     LayoutUnit& offset,
     LayoutUnit& breadth) {
-  DCHECK(!IsOrthogonalChild(child));
   bool is_for_columns = direction == kForColumns;
 
   GridSpan positions = GridPositionsResolver::ResolveGridPositionsFromStyle(

@@ -2780,6 +2780,8 @@ crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-c
 # [css-grid]
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
+crbug.com/725903 external/wpt/css/css-grid-1/abspos/orthogonal-positioned-grid-items-013.html [ Failure ]
+crbug.com/725903 external/wpt/css/css-grid-1/abspos/orthogonal-positioned-grid-items-017.html [ Failure ]
 crbug.com/511177 external/wpt/css/css-grid-1/grid-layout-properties.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-align-baseline-vertical.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failure ]
