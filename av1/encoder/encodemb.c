@@ -1188,12 +1188,13 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
   if (tx_size == plane_tx_size) {
     encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
   } else {
+    assert(tx_size < TX_SIZES_ALL);
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    assert(sub_txs < tx_size);
     // This is the square transform block partition entry point.
     int bsl = tx_size_wide_unit[sub_txs];
     int i;
     assert(bsl > 0);
-    assert(tx_size < TX_SIZES_ALL);
 
     for (i = 0; i < 4; ++i) {
       const int offsetr = blk_row + ((i >> 1) * bsl);

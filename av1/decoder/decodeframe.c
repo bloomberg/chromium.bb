@@ -753,6 +753,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
+    assert(sub_txs < tx_size);
     int i;
 
     assert(bsl > 0);

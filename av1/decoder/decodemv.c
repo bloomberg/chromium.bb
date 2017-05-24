@@ -1121,6 +1121,16 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
       xd->corrupted |=
           !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
+#if CONFIG_VAR_TX
+      // TODO(aconverse@google.com): Evaluate allowing VAR TX on intrabc blocks
+      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+      const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+      int idx, idy;
+      for (idy = 0; idy < height; ++idy)
+        for (idx = 0; idx < width; ++idx)
+          mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
+      mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+#endif  // CONFIG_VAR_TX
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
       av1_read_tx_type(cm, xd,
 #if CONFIG_SUPERTX
