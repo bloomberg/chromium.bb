@@ -653,8 +653,8 @@ GridLayout::~GridLayout() {
 // static
 GridLayout* GridLayout::CreatePanel(View* host) {
   GridLayout* layout = new GridLayout(host);
-  host->SetBorder(
-      CreateEmptyBorder(LayoutProvider::Get()->GetInsetsMetric(INSETS_PANEL)));
+  host->SetBorder(CreateEmptyBorder(
+      LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_CONTENTS)));
   host->SetLayoutManager(layout);
   return layout;
 }

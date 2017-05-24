@@ -31,8 +31,8 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const int border_horiz_margin =
-      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN);
+  const int border_horiz_margin = provider->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN);
   SetBorder(views::CreateEmptyBorder(
       0, border_horiz_margin, trailing_vertical_space, border_horiz_margin));
   if (menu_controller)

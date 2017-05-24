@@ -64,13 +64,15 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       description_label_(new views::Label()),
       audio_share_checkbox_(nullptr),
       pane_(new views::TabbedPane()) {
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
-      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN),
-      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+      provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
+      provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

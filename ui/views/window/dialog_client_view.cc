@@ -77,7 +77,7 @@ class DialogClientView::ButtonRowContainer : public View {
 DialogClientView::DialogClientView(Widget* owner, View* contents_view)
     : ClientView(owner, contents_view),
       button_row_insets_(
-          LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_BUTTON)) {
+          LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_BUTTON_ROW)) {
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -347,8 +347,8 @@ void DialogClientView::SetupLayout() {
   LayoutProvider* const layout_provider = LayoutProvider::Get();
   // Support dialogs that clear |button_row_insets_| to do their own layout.
   // They expect GetDialogRelatedControlVerticalSpacing() in this case.
-  // TODO(tapted): Remove this under Harmony.
-  if (insets.top() == 0) {
+  if (insets.top() == 0 &&
+      !ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     const int top =
         layout_provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL);
     insets.Set(top, insets.left(), insets.bottom(), insets.right());

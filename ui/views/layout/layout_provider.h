@@ -19,16 +19,19 @@ enum InsetsMetric {
   // actual Insets: the rest are markers.
   VIEWS_INSETS_START = 0,
 
-  // The margins around the contents area of a bubble (popover)-style dialog.
+  // The margins around the contents of a bubble (popover)-style dialog.
   INSETS_BUBBLE_CONTENTS = VIEWS_INSETS_START,
-  // The margins around the title of a bubble (popover)-style dialog.
+  // The margins around the title of a bubble (popover)-style dialog. The bottom
+  // margin is implied by the content insets.
   INSETS_BUBBLE_TITLE,
-  // The margins around the button row of a dialog.
-  INSETS_DIALOG_BUTTON,
-  // The margins around the icon/title of a dialog.
+  // The margins around the button row of a dialog. The top margin is implied
+  // by the content insets.
+  INSETS_DIALOG_BUTTON_ROW,
+  // The margins that should be applied around the contents of a dialog.
+  INSETS_DIALOG_CONTENTS,
+  // The margins around the icon/title of a dialog. The bottom margin is implied
+  // by the content insets.
   INSETS_DIALOG_TITLE,
-  // The margins that should be applied around a panel GridLayout.
-  INSETS_PANEL,
   // Padding to add to vector image buttons to increase their click and touch
   // target size.
   INSETS_VECTOR_IMAGE_BUTTON,
@@ -46,8 +49,12 @@ enum DistanceMetric {
   // two types have not been interchanged.
   VIEWS_DISTANCE_START = VIEWS_INSETS_MAX,
 
+  // Margin on the left and right of the contents of a bubble.
+  DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN = VIEWS_DISTANCE_START,
+  // Margin on the top and bottom of the contents of a bubble.
+  DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN,
   // The default padding to add on each side of a button's label.
-  DISTANCE_BUTTON_HORIZONTAL_PADDING = VIEWS_DISTANCE_START,
+  DISTANCE_BUTTON_HORIZONTAL_PADDING,
   // The maximum width a button can have and still influence the sizes of
   // other linked buttons.  This allows short buttons to have linked widths
   // without long buttons making things overly wide.
@@ -55,8 +62,14 @@ enum DistanceMetric {
   // The distance between a dialog's edge and the close button in the upper
   // trailing corner.
   DISTANCE_CLOSE_BUTTON_MARGIN,
+  // Margin between the bottom edge of a dialog and a contained button.
+  DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN,
   // The default minimum width of a dialog button.
   DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH,
+  // Margin on the left and right of the contents of a dialog.
+  DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN,
+  // Margin on the top and bottom of the contents of a dialog.
+  DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN,
   // The spacing between a pair of related horizontal buttons, used for
   // dialog layout.
   DISTANCE_RELATED_BUTTON_HORIZONTAL,

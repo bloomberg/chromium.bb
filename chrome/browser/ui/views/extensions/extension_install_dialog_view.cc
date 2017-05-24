@@ -283,7 +283,8 @@ void ExtensionInstallDialogView::InitView() {
 
   const int content_width =
       left_column_width +
-      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN) + kIconSize;
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL) +
+      kIconSize;
 
   // Create the scrollable view which will contain the permissions and retained
   // files/devices. It will span the full content width.
@@ -300,9 +301,9 @@ void ExtensionInstallDialogView::InitView() {
       views::GridLayout::USE_PREF, content_width, content_width);
 
   // Pad to the very right of the dialog, so the scrollbar will be on the edge.
-  const int button_margin =
-      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
-  scrollable_column_set->AddPaddingColumn(0, button_margin);
+  const gfx::Insets button_row_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW);
+  scrollable_column_set->AddPaddingColumn(0, button_row_insets.right());
 
   layout->StartRow(0, column_set_id);
   scroll_view_ = new views::ScrollView();
@@ -384,7 +385,7 @@ void ExtensionInstallDialogView::InitView() {
       0,
       std::min(kScrollViewMaxHeight, scrollable->GetPreferredSize().height()));
 
-  dialog_size_ = gfx::Size(content_width + 2 * button_margin,
+  dialog_size_ = gfx::Size(content_width + button_row_insets.width(),
                            container_->GetPreferredSize().height());
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
@@ -444,10 +445,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
     int column_set_id) {
   container_ = new views::View();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const int horizontal_margin =
-      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
-  const int bottom_margin =
-      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN);
+  const gfx::Insets content_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS);
 
   // This is views::GridLayout::CreatePanel(), but without a top or right
   // margin. The empty dialog title will then become the top margin, and a
@@ -457,8 +456,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   // content can have its scrollbar aligned with the right edge of the dialog.
   views::GridLayout* layout = new views::GridLayout(container_);
   container_->SetLayoutManager(layout);
-  container_->SetBorder(
-      views::CreateEmptyBorder(0, horizontal_margin, bottom_margin, 0));
+  container_->SetBorder(views::CreateEmptyBorder(0, content_insets.left(),
+                                                 content_insets.bottom(), 0));
   AddChildView(container_);
 
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
@@ -474,7 +473,7 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
                         views::GridLayout::USE_PREF,
                         0,  // no fixed width
                         kIconSize);
-  column_set->AddPaddingColumn(0, horizontal_margin);
+  column_set->AddPaddingColumn(0, content_insets.right());
 
   layout->StartRow(0, column_set_id);
   views::Label* title = new views::Label(prompt_->GetDialogTitle(),

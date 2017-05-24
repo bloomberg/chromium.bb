@@ -81,11 +81,14 @@ WebShareTargetPickerView::WebShareTargetPickerView(
     : targets_(targets),
       table_model_(base::MakeUnique<TargetPickerTableModel>(&targets_)),
       close_callback_(std::move(close_callback)) {
-  const int panel_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_PANEL_CONTENT_MARGIN);
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, panel_margin,
-                           panel_margin, views::kRelatedControlVerticalSpacing);
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kVertical,
+      provider->GetDistanceMetric(
+          views::DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN),
+      provider->GetDistanceMetric(
+          views::DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   SetLayoutManager(layout);
 
   views::Label* overview_label = new views::Label(
