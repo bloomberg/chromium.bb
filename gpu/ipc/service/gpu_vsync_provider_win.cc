@@ -11,6 +11,7 @@
 
 #include "base/atomicops.h"
 #include "base/debug/alias.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
@@ -74,6 +75,16 @@ class GpuVSyncWorker : public base::Thread,
   friend class base::RefCountedThreadSafe<GpuVSyncWorker>;
   ~GpuVSyncWorker() override;
 
+  // These error codes are specified for diagnostic purposes when falling back
+  // to delay based v-sync.
+  enum class WaitForVBlankErrorCode {
+    kSuccess = 0,
+    kGetMonitorInfo = 1,
+    kOpenAdapter = 2,
+    kWaitForVBlankEvent = 3,
+    kMaxValue = 4
+  };
+
   void Reschedule();
   bool OpenAdapter(const wchar_t* device_name);
   void CloseAdapter();
@@ -92,7 +103,8 @@ class GpuVSyncWorker : public base::Thread,
 
   void InvokeCallbackAndReschedule(base::TimeTicks timestamp,
                                    base::TimeDelta interval);
-  void UseDelayBasedVSyncOnError();
+  void UseDelayBasedVSyncOnError(WaitForVBlankErrorCode error_code);
+  void ReportErrorCode(WaitForVBlankErrorCode error_code);
 
   // Specifies whether background tasks are running.
   // This can be set on background thread only.
@@ -222,7 +234,7 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
   if (!success) {
     // This is possible when a monitor is switched off or disconnected.
     CloseAdapter();
-    UseDelayBasedVSyncOnError();
+    UseDelayBasedVSyncOnError(WaitForVBlankErrorCode::kGetMonitorInfo);
     return;
   }
 
@@ -230,7 +242,7 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
     // Monitor changed. Close the current adapter handle and open a new one.
     CloseAdapter();
     if (!OpenAdapter(monitor_info.szDevice)) {
-      UseDelayBasedVSyncOnError();
+      UseDelayBasedVSyncOnError(WaitForVBlankErrorCode::kOpenAdapter);
       return;
     }
   }
@@ -247,7 +259,7 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
   if (wait_result != STATUS_SUCCESS) {
     if (wait_result == STATUS_GRAPHICS_PRESENT_OCCLUDED) {
       // This may be triggered by the monitor going into sleep.
-      UseDelayBasedVSyncOnError();
+      UseDelayBasedVSyncOnError(WaitForVBlankErrorCode::kWaitForVBlankEvent);
       return;
     } else {
       base::debug::Alias(&wait_result);
@@ -256,6 +268,12 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
   }
 
   SendGpuVSyncUpdate(base::TimeTicks::Now(), use_dwm);
+  ReportErrorCode(WaitForVBlankErrorCode::kSuccess);
+}
+
+void GpuVSyncWorker::ReportErrorCode(WaitForVBlankErrorCode error_code) {
+  UMA_HISTOGRAM_ENUMERATION("GPU.WaitForVBlankErrorCode", error_code,
+                            WaitForVBlankErrorCode::kMaxValue);
 }
 
 void GpuVSyncWorker::AddTimestamp(base::TimeTicks timestamp) {
@@ -385,12 +403,12 @@ void GpuVSyncWorker::InvokeCallbackAndReschedule(base::TimeTicks timestamp,
   }
 }
 
-void GpuVSyncWorker::UseDelayBasedVSyncOnError() {
+void GpuVSyncWorker::UseDelayBasedVSyncOnError(
+    WaitForVBlankErrorCode error_code) {
   // This is called in a case of an error.
   // Use timer based mechanism as a backup for one v-sync cycle, start with
   // getting VSync parameters to determine timebase and interval.
   // TODO(stanisc): Consider a slower v-sync rate in this particular case.
-
   base::TimeTicks timebase;
   GetDwmVBlankTimestamp(&timebase);
 
@@ -403,6 +421,8 @@ void GpuVSyncWorker::UseDelayBasedVSyncOnError() {
       base::Bind(&GpuVSyncWorker::InvokeCallbackAndReschedule,
                  base::Unretained(this), next_vsync, interval),
       next_vsync - now);
+
+  ReportErrorCode(error_code);
 }
 
 bool GpuVSyncWorker::OpenAdapter(const wchar_t* device_name) {
@@ -416,14 +436,12 @@ bool GpuVSyncWorker::OpenAdapter(const wchar_t* device_name) {
   NTSTATUS result = open_adapter_from_hdc_ptr_(&open_adapter_data);
   DeleteDC(hdc);
 
-  if (result == (NTSTATUS)STATUS_INVALID_PARAMETER) {
-    // The most likely reason for this is invalid |open_adapter_data.hDc| field
-    // as a result of race condition between this code and the monitor going to
-    // sleep or being locked out.
+  if (result != STATUS_SUCCESS) {
+    // The most likely reason for this is a result of race condition between
+    // this code and the monitor being disconnected, going to sleep, or being
+    // locked out.
     return false;
   }
-
-  CHECK(result == STATUS_SUCCESS);
 
   current_device_name_ = device_name;
   current_adapter_handle_ = open_adapter_data.hAdapter;

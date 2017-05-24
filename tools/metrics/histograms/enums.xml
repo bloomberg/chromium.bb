@@ -36115,6 +36115,13 @@ from previous Chrome versions.
   <int value="5" label="Unsupported Stream"/>
 </enum>
 
+<enum name="WaitForVBlankErrorCode" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to get monitor info"/>
+  <int value="2" label="Failed to open adapter"/>
+  <int value="3" label="Failed to wait for VBlank event"/>
+</enum>
+
 <enum name="WakeOnWiFiFeaturesEnabledState" type="int">
   <summary>
     The wake on WiFi features enabled in shill, which come from

@@ -22898,6 +22898,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.WaitForVBlankErrorCode" enum="WaitForVBlankErrorCode">
+  <owner>stanisc@chromium.org</owner>
+  <summary>
+    Whether WaitForVBlank operation has been successful or failed with one of
+    the errors prompting a backup delay based v-sync mechanism. Recorded each
+    time a new GPU v-sync signal is generated.
+  </summary>
+</histogram>
+
 <histogram name="Hardware.Display.Count.OnChange">
   <owner>erikchen@chromium.org</owner>
   <summary>
