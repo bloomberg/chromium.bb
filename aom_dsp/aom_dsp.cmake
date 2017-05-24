@@ -392,6 +392,18 @@ if (CONFIG_AV1_ENCODER)
   endif ()
 endif ()
 
+if (CONFIG_LOOP_RESTORATION)
+  set(AOM_DSP_COMMON_INTRIN_SSE2
+      ${AOM_DSP_COMMON_INTRIN_SSE2}
+      "${AOM_ROOT}/aom_dsp/x86/aom_convolve_hip_sse2.c")
+
+  if (CONFIG_HIGHBITDEPTH)
+    set(AOM_DSP_COMMON_INTRIN_SSSE3
+      ${AOM_DSP_COMMON_INTRIN_SSSE3}
+        "${AOM_ROOT}/aom_dsp/x86/aom_highbd_convolve_hip_ssse3.c")
+  endif ()
+endif ()
+
 if (CONFIG_MOTION_VAR)
   set(AOM_DSP_ENCODER_INTRIN_SSE4_1
       ${AOM_DSP_ENCODER_INTRIN_SSE4_1}

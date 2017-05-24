@@ -60,7 +60,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/reconintra.h"
     "${AOM_ROOT}/av1/common/resize.c"
     "${AOM_ROOT}/av1/common/resize.h"
-    "${AOM_ROOT}/av1/common/restoration.h"
     "${AOM_ROOT}/av1/common/scale.c"
     "${AOM_ROOT}/av1/common/scale.h"
     "${AOM_ROOT}/av1/common/scan.c"
@@ -337,6 +336,22 @@ if (CONFIG_CFL)
       ${AOM_AV1_COMMON_SOURCES}
     "${AOM_ROOT}/av1/common/cfl.c"
     "${AOM_ROOT}/av1/common/cfl.h")
+endif ()
+
+if (CONFIG_LOOP_RESTORATION)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/restoration.c"
+      "${AOM_ROOT}/av1/common/restoration.h")
+
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+      "${AOM_ROOT}/av1/common/x86/selfguided_sse4.c")
+
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/pickrst.c"
+      "${AOM_ROOT}/av1/encoder/pickrst.h")
 endif ()
 
 if (CONFIG_PVQ)
