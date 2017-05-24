@@ -339,8 +339,6 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
   (void)ref_frame;
   x->mvcost = x->mv_cost_stack[nmv_ctx];
   x->nmvjointcost = x->nmv_vec_cost[nmv_ctx];
-  x->mvsadcost = x->mvcost;
-  x->nmvjointsadcost = x->nmvjointcost;
 }
 
 void av1_initialize_rd_consts(AV1_COMP *cpi) {
@@ -368,8 +366,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   }
   x->mvcost = x->mv_cost_stack[0];
   x->nmvjointcost = x->nmv_vec_cost[0];
-  x->mvsadcost = x->mvcost;
-  x->nmvjointsadcost = x->nmvjointcost;
 
   if (cpi->oxcf.pass != 1) {
     av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);

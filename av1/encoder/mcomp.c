@@ -110,7 +110,7 @@ static int mvsad_err_cost(const MACROBLOCK *x, const MV *mv, const MV *ref,
                           int sad_per_bit) {
   const MV diff = { (mv->row - ref->row) * 8, (mv->col - ref->col) * 8 };
   return ROUND_POWER_OF_TWO(
-      (unsigned)mv_cost(&diff, x->nmvjointsadcost, x->mvsadcost) * sad_per_bit,
+      (unsigned)mv_cost(&diff, x->nmvjointcost, x->mvcost) * sad_per_bit,
       AV1_PROB_COST_SHIFT);
 }
 

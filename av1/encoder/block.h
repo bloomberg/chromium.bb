@@ -142,12 +142,10 @@ struct macroblock {
   int *nmvcost[NMV_CONTEXTS][2];
   int *nmvcost_hp[NMV_CONTEXTS][2];
   int **mv_cost_stack[NMV_CONTEXTS];
-  int *nmvjointsadcost;
 
   int **mvcost;
   int *nmvsadcost[2];
   int *nmvsadcost_hp[2];
-  int **mvsadcost;
 #if CONFIG_MOTION_VAR
   int32_t *wsrc_buf;
   int32_t *mask_buf;

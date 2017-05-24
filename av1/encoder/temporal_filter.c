@@ -283,10 +283,8 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 
   x->mvcost = x->mv_cost_stack[0];
   x->nmvjointcost = x->nmv_vec_cost[0];
-  x->mvsadcost = x->mvcost;
-  x->nmvjointsadcost = x->nmvjointcost;
 
-  // Ignore mv costing by sending NULL pointer instead of cost arrays
+  // Use mv costing from x->mvcost directly
   av1_hex_search(x, &best_ref_mv1_full, step_param, sadpb, 1,
                  cond_cost_list(cpi, cost_list), &cpi->fn_ptr[BLOCK_16X16], 0,
                  &best_ref_mv1);

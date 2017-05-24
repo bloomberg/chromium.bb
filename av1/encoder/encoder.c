@@ -250,13 +250,11 @@ void av1_set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv) {
     int i;
     for (i = 0; i < NMV_CONTEXTS; ++i) {
       mb->mv_cost_stack[i] = mb->nmvcost_hp[i];
-      mb->mvsadcost = mb->nmvsadcost_hp;
     }
   } else {
     int i;
     for (i = 0; i < NMV_CONTEXTS; ++i) {
       mb->mv_cost_stack[i] = mb->nmvcost[i];
-      mb->mvsadcost = mb->nmvsadcost;
     }
   }
 }
