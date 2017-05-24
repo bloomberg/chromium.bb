@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <memory>
+#include "net/http/http_util.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -390,16 +391,88 @@ void CrossOriginAccessControl::PreflightErrorString(
   }
 }
 
+// A parser for the value of the Access-Control-Expose-Headers header.
+class HTTPHeaderNameListParser {
+  STACK_ALLOCATED();
+
+ public:
+  explicit HTTPHeaderNameListParser(const String& value)
+      : value_(value), pos_(0) {}
+
+  // Tries parsing |value_| expecting it to be conforming to the #field-name
+  // ABNF rule defined in RFC 7230. Returns with the field-name entries stored
+  // in |output| when successful. Otherwise, returns with |output| kept empty.
+  //
+  // |output| must be empty.
+  void Parse(HTTPHeaderSet& output) {
+    DCHECK(output.IsEmpty());
+
+    while (true) {
+      ConsumeSpaces();
+
+      size_t token_start = pos_;
+      ConsumeTokenChars();
+      size_t token_size = pos_ - token_start;
+      if (token_size == 0) {
+        output.clear();
+        return;
+      }
+      output.insert(value_.Substring(token_start, token_size));
+
+      ConsumeSpaces();
+
+      if (pos_ == value_.length()) {
+        return;
+      }
+
+      if (value_[pos_] == ',') {
+        ++pos_;
+      } else {
+        output.clear();
+        return;
+      }
+    }
+  }
+
+ private:
+  // Consumes zero or more spaces (SP and HTAB) from value_.
+  void ConsumeSpaces() {
+    while (true) {
+      if (pos_ == value_.length()) {
+        return;
+      }
+
+      UChar c = value_[pos_];
+      if (c != ' ' && c != '\t') {
+        return;
+      }
+      ++pos_;
+    }
+  }
+
+  // Consumes zero or more tchars from value_.
+  void ConsumeTokenChars() {
+    while (true) {
+      if (pos_ == value_.length()) {
+        return;
+      }
+
+      UChar c = value_[pos_];
+      if (c > 0x7F || !net::HttpUtil::IsTokenChar(c)) {
+        return;
+      }
+      ++pos_;
+    }
+  }
+
+  const String& value_;
+  size_t pos_;
+};
+
 void ParseAccessControlExposeHeadersAllowList(const String& header_value,
                                               HTTPHeaderSet& header_set) {
-  Vector<String> headers;
-  header_value.Split(',', false, headers);
-  for (unsigned header_count = 0; header_count < headers.size();
-       header_count++) {
-    String stripped_header = headers[header_count].StripWhiteSpace();
-    if (!stripped_header.IsEmpty())
-      header_set.insert(stripped_header);
-  }
+  HTTPHeaderNameListParser parser(header_value);
+  parser.Parse(header_set);
 }
 
 void ExtractCorsExposedHeaderNamesList(const ResourceResponse& response,

@@ -76,6 +76,86 @@ TEST(CreateAccessControlPreflightRequestTest,
             preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
+TEST(ParseAccessControlExposeHeadersAllowListTest, ValidInput) {
+  HTTPHeaderSet set;
+  ParseAccessControlExposeHeadersAllowList("valid", set);
+  EXPECT_EQ(1U, set.size());
+  EXPECT_TRUE(set.Contains("valid"));
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("a,b", set);
+  EXPECT_EQ(2U, set.size());
+  EXPECT_TRUE(set.Contains("a"));
+  EXPECT_TRUE(set.Contains("b"));
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("   a ,  b ", set);
+  EXPECT_EQ(2U, set.size());
+  EXPECT_TRUE(set.Contains("a"));
+  EXPECT_TRUE(set.Contains("b"));
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList(" \t   \t\t a", set);
+  EXPECT_EQ(1U, set.size());
+  EXPECT_TRUE(set.Contains("a"));
+}
+
+TEST(ParseAccessControlExposeHeadersAllowListTest, DuplicatedEntries) {
+  HTTPHeaderSet set;
+  ParseAccessControlExposeHeadersAllowList("a, a", set);
+  EXPECT_EQ(1U, set.size());
+  EXPECT_TRUE(set.Contains("a"));
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("a, a, b", set);
+  EXPECT_EQ(2U, set.size());
+  EXPECT_TRUE(set.Contains("a"));
+  EXPECT_TRUE(set.Contains("b"));
+}
+
+TEST(ParseAccessControlExposeHeadersAllowListTest, InvalidInput) {
+  HTTPHeaderSet set;
+  ParseAccessControlExposeHeadersAllowList("not valid", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("///", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("/a/", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList(",", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList(" , ", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList(" , a", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("a , ", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList("", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  ParseAccessControlExposeHeadersAllowList(" ", set);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.clear();
+  // U+0141 which is 'A' (0x41) + 0x100.
+  ParseAccessControlExposeHeadersAllowList(String::FromUTF8("\xC5\x81"), set);
+  EXPECT_TRUE(set.IsEmpty());
+}
+
 }  // namespace
 
 }  // namespace blink
