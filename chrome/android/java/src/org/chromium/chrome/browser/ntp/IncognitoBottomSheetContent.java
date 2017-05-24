@@ -76,6 +76,11 @@ public class IncognitoBottomSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean isIncognitoThemedContent() {
+        return true;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return mScrollView.getScrollY();
     }

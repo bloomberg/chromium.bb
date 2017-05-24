@@ -83,6 +83,11 @@ public class DownloadSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean isIncognitoThemedContent() {
+        return false;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return mDownloadManager.getVerticalScrollOffset();
     }

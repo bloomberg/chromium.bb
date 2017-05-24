@@ -248,6 +248,11 @@ public class BottomSheet
         boolean isUsingLightToolbarTheme();
 
         /**
+         * @return Whether or not the content is themed for incognito (i.e. dark colors).
+         */
+        boolean isIncognitoThemedContent();
+
+        /**
          * @return The vertical scroll offset of the content view.
          */
         int getVerticalScrollOffset();
@@ -748,8 +753,12 @@ public class BottomSheet
 
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
-        mToolbarHolder.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
+        int colorId = content.isIncognitoThemedContent() ? R.color.incognito_primary_color
+                                                         : R.color.default_primary_color;
+        mToolbarHolder.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), colorId));
+        mBottomSheetContentContainer.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(getResources(), colorId));
+
         mContentSwapAnimatorSet.playTogether(animators);
         mContentSwapAnimatorSet.start();
 
