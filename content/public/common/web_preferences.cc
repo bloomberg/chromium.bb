@@ -76,7 +76,6 @@ WebPreferences::WebPreferences()
 #endif
       javascript_enabled(true),
       web_security_enabled(true),
-      javascript_can_open_windows_automatically(true),
       loads_images_automatically(true),
       images_enabled(true),
       plugins_enabled(true),

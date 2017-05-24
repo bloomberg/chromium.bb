@@ -2833,9 +2833,6 @@ TEST_P(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   ViewCreatingWebViewClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(true, 0, &client);
-  web_view_impl->GetPage()
-      ->GetSettings()
-      .SetJavaScriptCanOpenWindowsAutomatically(true);
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
@@ -2860,9 +2857,6 @@ TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
   ViewCreatingWebViewClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(true, 0, &client);
-  web_view_impl->GetPage()
-      ->GetSettings()
-      .SetJavaScriptCanOpenWindowsAutomatically(true);
   WebLocalFrameImpl* frame = web_view_impl->MainFrameImpl();
   frame->SetName("_start");
 
@@ -3815,10 +3809,6 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
   ViewCreatingWebViewClient client;
   FrameTestHelpers::WebViewHelper main_web_view;
   main_web_view.InitializeAndLoad("about:blank", true, 0, &client);
-  main_web_view.WebView()
-      ->GetPage()
-      ->GetSettings()
-      .SetJavaScriptCanOpenWindowsAutomatically(true);
 
   WebFrame* frame = main_web_view.WebView()->MainFrame();
   v8::HandleScope scope(v8::Isolate::GetCurrent());
