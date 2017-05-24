@@ -1245,6 +1245,7 @@ component("base") {
     sources += [
       "process/process_fuchsia.cc",
       "sys_info_fuchsia.cc",
+      "threading/platform_thread_fuchsia.cc",
     ]
   }
 
