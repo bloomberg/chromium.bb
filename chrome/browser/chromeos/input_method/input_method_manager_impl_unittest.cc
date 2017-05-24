@@ -1547,5 +1547,18 @@ TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsAndExtensions) {
                                    ImeIdFromEngineId(kNaclMozcUsId)));
 }
 
+TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedKeyboardLayouts) {
+  InitComponentExtension();
+
+  std::vector<std::string> allowed = {"xkb:us::eng", "xkb:de::ger",
+                                      "xkb:fr::fra"};
+  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  manager_->GetActiveIMEState()->SetInputMethodLoginDefault();
+  EXPECT_THAT(manager_->GetActiveIMEState()->GetActiveInputMethodIds(),
+              testing::ElementsAre(ImeIdFromEngineId("xkb:us::eng"),
+                                   ImeIdFromEngineId("xkb:de::ger"),
+                                   ImeIdFromEngineId("xkb:fr::fra")));
+}
+
 }  // namespace input_method
 }  // namespace chromeos
