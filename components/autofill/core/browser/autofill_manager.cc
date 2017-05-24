@@ -1381,6 +1381,12 @@ int AutofillManager::SetProfilesForCreditCardUpload(
     *rappor_metric_name = "Autofill.CardUploadNotOfferedNoAddress";
   }
 
+  std::unique_ptr<AutofillProfileComparator> comparator;
+  if (!candidate_profiles.empty() &&
+      (base::FeatureList::IsEnabled(
+          kAutofillUpstreamUseAutofillProfileComparator)))
+    comparator = base::MakeUnique<AutofillProfileComparator>(app_locale_);
+
   // If any of the names on the card or the addresses don't match the
   // candidate set is invalid. This matches the rules for name matching applied
   // server-side by Google Payments and ensures that we don't send upload
@@ -1393,20 +1399,19 @@ int AutofillManager::SetProfilesForCreditCardUpload(
   } else {
     bool found_conflicting_names = false;
     if (base::FeatureList::IsEnabled(
-            kAutofillUpstreamUseAutofillProfileComparatorForName)) {
+            kAutofillUpstreamUseAutofillProfileComparator)) {
       upload_request->active_experiments.push_back(
-          kAutofillUpstreamUseAutofillProfileComparatorForName.name);
-      AutofillProfileComparator comparator(app_locale_);
-      verified_name = comparator.NormalizeForComparison(card_name);
+          kAutofillUpstreamUseAutofillProfileComparator.name);
+      verified_name = comparator->NormalizeForComparison(card_name);
       for (const AutofillProfile& profile : candidate_profiles) {
-        const base::string16 address_name = comparator.NormalizeForComparison(
+        const base::string16 address_name = comparator->NormalizeForComparison(
             profile.GetInfo(AutofillType(NAME_FULL), app_locale_));
         if (address_name.empty())
           continue;
         if (verified_name.empty() ||
-            comparator.IsNameVariantOf(address_name, verified_name)) {
+            comparator->IsNameVariantOf(address_name, verified_name)) {
           verified_name = address_name;
-        } else if (!comparator.IsNameVariantOf(verified_name, address_name)) {
+        } else if (!comparator->IsNameVariantOf(verified_name, address_name)) {
           found_conflicting_names = true;
           break;
         }
@@ -1445,14 +1450,34 @@ int AutofillManager::SetProfilesForCreditCardUpload(
 
   // If any of the candidate addresses have a non-empty zip that doesn't match
   // any other non-empty zip, then the candidate set is invalid.
+  const bool use_autofill_profile_comparator_for_zip =
+      base::FeatureList::IsEnabled(
+          kAutofillUpstreamUseAutofillProfileComparator);
   base::string16 verified_zip;
+  base::string16 normalized_verified_zip;
+  const AutofillType kZipCode(ADDRESS_HOME_ZIP);
   for (const AutofillProfile& profile : candidate_profiles) {
-    // TODO(jdonnelly): Use GetInfo instead of GetRawInfo once zip codes are
-    // canonicalized. See http://crbug.com/587465.
-    const base::string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
+    const base::string16 zip = use_autofill_profile_comparator_for_zip
+                                   ? profile.GetInfo(kZipCode, app_locale_)
+                                   : profile.GetRawInfo(ADDRESS_HOME_ZIP);
+    const base::string16 normalized_zip =
+        use_autofill_profile_comparator_for_zip
+            ? comparator->NormalizeForComparison(
+                  zip, AutofillProfileComparator::DISCARD_WHITESPACE)
+            : base::string16();
     if (!zip.empty()) {
       if (verified_zip.empty()) {
         verified_zip = zip;
+        normalized_verified_zip = normalized_zip;
+      } else if (use_autofill_profile_comparator_for_zip) {
+        if (normalized_zip.find(normalized_verified_zip) ==
+                base::string16::npos &&
+            normalized_verified_zip.find(normalized_zip) ==
+                base::string16::npos) {
+          upload_decision_metrics |=
+              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS;
+          break;
+        }
       } else {
         // To compare two zips, we check to see if either is a prefix of the
         // other. This allows us to consider a 5-digit zip and a zip+4 to be a
