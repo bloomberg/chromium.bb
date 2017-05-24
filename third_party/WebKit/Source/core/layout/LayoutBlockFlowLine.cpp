@@ -754,7 +754,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
       break;
   }
   if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    logical_left += VerticalScrollbarWidth();
+    logical_left += VerticalScrollbarWidthClampedToContentBox();
 }
 
 static void UpdateLogicalInlinePositions(LayoutBlockFlow* block,
