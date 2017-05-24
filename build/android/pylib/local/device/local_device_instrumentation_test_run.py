@@ -57,6 +57,11 @@ LOGCAT_FILTERS = ['*:e', 'chromium:v', 'cr_*:v', 'DEBUG:I',
 EXTRA_SCREENSHOT_FILE = (
     'org.chromium.base.test.ScreenshotOnFailureStatement.ScreenshotFile')
 
+EXTRA_UI_CAPTURE_DIR = (
+    'org.chromium.base.test.util.Screenshooter.ScreenshotDir')
+
+UI_CAPTURE_DIRS = ['chromium_tests_root', 'UiCapture']
+
 FEATURE_ANNOTATION = 'Feature'
 RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
 
@@ -106,6 +111,7 @@ class LocalDeviceInstrumentationTestRun(
   def __init__(self, env, test_instance):
     super(LocalDeviceInstrumentationTestRun, self).__init__(env, test_instance)
     self._flag_changers = {}
+    self._ui_capture_dir = dict()
 
   #override
   def TestPackage(self):
@@ -230,8 +236,20 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
 
+      @trace_event.traced
+      def setup_ui_capture_dir():
+        # Make sure the UI capture directory exists and is empty by deleting
+        # and recreating it.
+        # TODO (aberent) once DeviceTempDir exists use it here.
+        self._ui_capture_dir[dev] = posixpath.join(dev.GetExternalStoragePath(),
+                                              *UI_CAPTURE_DIRS)
+
+        if dev.PathExists(self._ui_capture_dir[dev]):
+          dev.RunShellCommand(['rm', '-rf', self._ui_capture_dir[dev]])
+        dev.RunShellCommand(['mkdir', self._ui_capture_dir[dev]])
+
       steps += [set_debug_app, edit_shared_prefs, push_test_data,
-                create_flag_changer]
+                create_flag_changer, setup_ui_capture_dir]
       if self._env.concurrent_adb:
         reraiser_thread.RunAsync(steps)
       else:
@@ -257,6 +275,20 @@ class LocalDeviceInstrumentationTestRun(
       dev.RunShellCommand(['am', 'clear-debug-app'], check_return=True)
 
       valgrind_tools.SetChromeTimeoutScale(dev, None)
+
+      if self._test_instance.ui_screenshot_dir:
+        pull_ui_screen_captures(dev)
+
+    @trace_event.traced
+    def pull_ui_screen_captures(dev):
+      file_names = dev.ListDirectory(self._ui_capture_dir[dev])
+      target_path = self._test_instance.ui_screenshot_dir
+      if not os.path.exists(target_path):
+        os.makedirs(target_path)
+
+      for file_name in file_names:
+        dev.PullFile(posixpath.join(self._ui_capture_dir[dev], file_name),
+                     target_path)
 
     self._env.parallel_devices.pMap(individual_device_tear_down)
 
@@ -305,6 +337,8 @@ class LocalDeviceInstrumentationTestRun(
       screenshot_device_file = device_temp_file.DeviceTempFile(
           device.adb, suffix='.png', dir=device.GetExternalStoragePath())
       extras[EXTRA_SCREENSHOT_FILE] = screenshot_device_file.name
+
+    extras[EXTRA_UI_CAPTURE_DIR] = self._ui_capture_dir[device]
 
     if isinstance(test, list):
       if not self._test_instance.driver_apk:

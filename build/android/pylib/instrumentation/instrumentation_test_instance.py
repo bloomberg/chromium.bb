@@ -671,6 +671,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._render_results_dir = args.render_results_dir
     self._screenshot_dir = args.screenshot_dir
     self._timeout_scale = args.timeout_scale or 1
+    self._ui_screenshot_dir = args.ui_screenshot_dir
 
   def _initializeTestCoverageAttributes(self, args):
     self._coverage_directory = args.coverage_dir
@@ -807,6 +808,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def total_external_shards(self):
     return self._total_external_shards
+
+  @property
+  def ui_screenshot_dir(self):
+    return self._ui_screenshot_dir
 
   #override
   def TestType(self):
