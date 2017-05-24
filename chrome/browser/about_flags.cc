@@ -2832,6 +2832,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMojoLoadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLoadingWithMojo)},
 
+    {"enable-fetch-keepalive-timeout-setting",
+     flag_descriptions::kFetchKeepaliveTimeoutSettingName,
+     flag_descriptions::kFetchKeepaliveTimeoutSettingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFetchKeepaliveTimeoutSetting)},
+
 #if defined(OS_CHROMEOS)
     {"force-tablet-mode", flag_descriptions::kForceTabletModeName,
      flag_descriptions::kForceTabletModeDescription, kOsCrOS,
