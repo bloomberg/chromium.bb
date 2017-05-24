@@ -425,15 +425,6 @@ void VrShellGl::OnWebVRFrameAvailable() {
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
 
-  // It is legal for the WebVR client to submit a new frame now, since
-  // we've consumed the image. TODO(klausw): would timing be better if
-  // we move the "rendered" notification after draw, or suppress
-  // the next vsync until that's done?
-
-  if (submit_client_) {
-    submit_client_->OnSubmitFrameRendered();
-  }
-
   DrawFrame(frame_index);
 }
 
@@ -1072,6 +1063,14 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     // TODO(mthiesse): Support asynchronous SwapBuffers.
     TRACE_EVENT0("gpu", "VrShellGl::SwapBuffers");
     surface_->SwapBuffers();
+  }
+
+  // Report rendering completion to WebVR so that it's permitted to submit
+  // a fresh frame. We could do this earlier, as soon as the frame got pulled
+  // off the transfer surface, but that appears to result in overstuffed
+  // buffers.
+  if (submit_client_) {
+    submit_client_->OnSubmitFrameRendered();
   }
 
 #if DCHECK_IS_ON()
