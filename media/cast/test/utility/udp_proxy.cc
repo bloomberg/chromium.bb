@@ -594,6 +594,23 @@ std::unique_ptr<PacketPipe> WifiNetwork() {
   return pipe;
 }
 
+std::unique_ptr<PacketPipe> SlowNetwork() {
+  // This represents the buffer on the sender.
+  std::unique_ptr<PacketPipe> pipe;
+  BuildPipe(&pipe, new Buffer(256 << 10, 1.5));
+  BuildPipe(&pipe, new RandomDrop(0.005));
+  // This represents the buffer on the router.
+  BuildPipe(&pipe, new ConstantDelay(10E-3));
+  BuildPipe(&pipe, new RandomSortedDelay(10E-3, 20E-3, 3));
+  BuildPipe(&pipe, new Buffer(256 << 10, 20));
+  BuildPipe(&pipe, new ConstantDelay(10E-3));
+  BuildPipe(&pipe, new RandomSortedDelay(10E-3, 20E-3, 3));
+  BuildPipe(&pipe, new RandomDrop(0.005));
+  // This represents the buffer on the receiving device.
+  BuildPipe(&pipe, new Buffer(256 << 10, 20));
+  return pipe;
+}
+
 std::unique_ptr<PacketPipe> BadNetwork() {
   std::unique_ptr<PacketPipe> pipe;
   // This represents the buffer on the sender.

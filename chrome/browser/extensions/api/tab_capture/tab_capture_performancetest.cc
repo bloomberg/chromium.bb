@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
@@ -28,17 +30,29 @@
 
 namespace {
 
-const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+constexpr char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+
+// Number of events to trim from the begining and end. These events don't
+// contribute anything toward stable measurements: A brief moment of startup
+// "jank" is acceptable, and shutdown may result in missing events (since
+// render widget draws may stop before capture stops).
+constexpr size_t kTrimEvents = 24;  // 1 sec at 24fps, or 0.4 sec at 60 fps.
+
+// Minimum number of events required for a reasonable analysis.
+constexpr size_t kMinDataPoints = 100;  // ~5 sec at 24fps.
 
 enum TestFlags {
-  kUseGpu              = 1 << 0, // Only execute test if --enable-gpu was given
+  // TODO(miu): Remove kUseGpu (since the GPU is required), kForceGpuComposited
+  // (because there's no longer a such thing as Chrome w/o a compositor), and
+  // maybe kDisableVsync. http://crbug.com/567848
+  kUseGpu = 1 << 0,              // Only execute test if --enable-gpu was given
                                  // on the command line.  This is required for
                                  // tests that run on GPU.
-  kForceGpuComposited  = 1 << 1, // Force the test to use the compositor.
-  kDisableVsync        = 1 << 2, // Do not limit framerate to vertical refresh.
+  kForceGpuComposited = 1 << 1,  // Force the test to use the compositor.
+  kDisableVsync = 1 << 2,        // Do not limit framerate to vertical refresh.
                                  // when on GPU, nor to 60hz when not on GPU.
-  kTestThroughWebRTC   = 1 << 3, // Send captured frames through webrtc
-  kSmallWindow         = 1 << 4, // 1 = 800x600, 0 = 2000x1000
+  kTestThroughWebRTC = 1 << 3,   // Send video through a webrtc loopback.
+  kSmallWindow = 1 << 4,         // Window size: 1 = 800x600, 0 = 2000x1000
 };
 
 class TabCapturePerformanceTest
@@ -100,11 +114,9 @@ class TabCapturePerformanceTest
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
-  bool PrintResults(trace_analyzer::TraceAnalyzer *analyzer,
-                    const std::string& test_name,
-                    const std::string& event_name,
-                    const std::string& unit) {
-    trace_analyzer::TraceEventVector events;
+  void FindEvents(trace_analyzer::TraceAnalyzer* analyzer,
+                  const std::string& event_name,
+                  trace_analyzer::TraceEventVector* events) {
     trace_analyzer::Query query =
         trace_analyzer::Query::EventNameIs(event_name) &&
         (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
@@ -112,16 +124,25 @@ class TabCapturePerformanceTest
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT));
-    analyzer->FindEvents(query, &events);
-    if (events.size() < 20) {
+    analyzer->FindEvents(query, events);
+  }
+
+  // Analyze and print the mean and stddev of how often events having the name
+  // |event_name| occur.
+  bool PrintRateResults(trace_analyzer::TraceAnalyzer* analyzer,
+                        const std::string& test_name,
+                        const std::string& event_name) {
+    trace_analyzer::TraceEventVector events;
+    FindEvents(analyzer, event_name, &events);
+    if (events.size() < (2 * kTrimEvents + kMinDataPoints)) {
       LOG(ERROR) << "Not enough events of type " << event_name << " found ("
-                 << events.size() << ").";
+                 << events.size() << ") for rate analysis.";
       return false;
     }
 
-    // Ignore some events for startup/setup/caching.
-    trace_analyzer::TraceEventVector rate_events(events.begin() + 3,
-                                                 events.end() - 3);
+    // Ignore some events for startup/setup/caching/teardown.
+    trace_analyzer::TraceEventVector rate_events(events.begin() + kTrimEvents,
+                                                 events.end() - kTrimEvents);
     trace_analyzer::RateStats stats;
     if (!GetRateStats(rate_events, &stats, NULL)) {
       LOG(ERROR) << "GetRateStats failed";
@@ -131,12 +152,97 @@ class TabCapturePerformanceTest
     double std_dev_ms = stats.standard_deviation_us / 1000.0;
     std::string mean_and_error = base::StringPrintf("%f,%f", mean_ms,
                                                     std_dev_ms);
-    perf_test::PrintResultMeanAndError(test_name,
-                                       GetSuffixForTestFlags(),
-                                       event_name,
-                                       mean_and_error,
-                                       unit,
-                                       true);
+    perf_test::PrintResultMeanAndError(test_name, GetSuffixForTestFlags(),
+                                       event_name, mean_and_error, "ms", true);
+    return true;
+  }
+
+  // Analyze and print the mean and stddev of the amount of time between the
+  // begin and end timestamps of each event having the name |event_name|.
+  bool PrintLatencyResults(trace_analyzer::TraceAnalyzer* analyzer,
+                           const std::string& test_name,
+                           const std::string& event_name) {
+    trace_analyzer::TraceEventVector events;
+    FindEvents(analyzer, event_name, &events);
+    if (events.size() < (2 * kTrimEvents + kMinDataPoints)) {
+      LOG(ERROR) << "Not enough events of type " << event_name << " found ("
+                 << events.size() << ") for latency analysis.";
+      return false;
+    }
+
+    // Ignore some events for startup/setup/caching/teardown.
+    trace_analyzer::TraceEventVector events_to_analyze(
+        events.begin() + kTrimEvents, events.end() - kTrimEvents);
+
+    // Compute mean and standard deviation of all capture latencies.
+    double sum = 0.0;
+    double sqr_sum = 0.0;
+    int count = 0;
+    for (const auto* begin_event : events_to_analyze) {
+      const auto* end_event = begin_event->other_event;
+      if (!end_event)
+        continue;
+      const double latency = end_event->timestamp - begin_event->timestamp;
+      sum += latency;
+      sqr_sum += latency * latency;
+      ++count;
+    }
+    DCHECK_GE(static_cast<size_t>(count), kMinDataPoints);
+    const double mean_us = sum / count;
+    const double std_dev_us =
+        sqrt(std::max(0.0, count * sqr_sum - sum * sum)) / count;
+    perf_test::PrintResultMeanAndError(
+        test_name, GetSuffixForTestFlags(), event_name + "Latency",
+        base::StringPrintf("%f,%f", mean_us / 1000.0, std_dev_us / 1000.0),
+        "ms", true);
+    return true;
+  }
+
+  // Analyze and print the mean and stddev of how often events having the name
+  // |event_name| are missing the success=true flag.
+  bool PrintFailRateResults(trace_analyzer::TraceAnalyzer* analyzer,
+                            const std::string& test_name,
+                            const std::string& event_name) {
+    trace_analyzer::TraceEventVector events;
+    FindEvents(analyzer, event_name, &events);
+    if (events.size() < (2 * kTrimEvents + kMinDataPoints)) {
+      LOG(ERROR) << "Not enough events of type " << event_name << " found ("
+                 << events.size() << ") for fail rate analysis.";
+      return false;
+    }
+
+    // Ignore some events for startup/setup/caching/teardown.
+    trace_analyzer::TraceEventVector events_to_analyze(
+        events.begin() + kTrimEvents, events.end() - kTrimEvents);
+
+    // Compute percentage of begin→end events missing a success=true flag.
+    double fail_percent = 100.0;
+    if (events_to_analyze.empty()) {
+      // If there are no events to analyze, then the failure rate is 100%.
+    } else {
+      int fail_count = 0;
+      for (const auto* begin_event : events_to_analyze) {
+        const auto* end_event = begin_event->other_event;
+        if (!end_event) {
+          // This indicates the operation never completed, and so is counted as
+          // a failure.
+          ++fail_count;
+          continue;
+        }
+        const auto it = end_event->arg_numbers.find("success");
+        if (it == end_event->arg_numbers.end()) {
+          LOG(ERROR) << "Missing 'success' value in Capture end event.";
+          return false;
+        }
+        if (it->second == 0.0) {
+          ++fail_count;
+        }
+      }
+      fail_percent *= fail_count / events_to_analyze.size();
+    }
+    perf_test::PrintResult(
+        test_name, GetSuffixForTestFlags(), event_name + "FailRate",
+        base::StringPrintf("%f", fail_percent), "percent", true);
     return true;
   }
 
@@ -160,31 +266,32 @@ class TabCapturePerformanceTest
     ASSERT_TRUE(tracing::EndTracing(&json_events));
     std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer;
     analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
+    analyzer->AssociateAsyncBeginEndEvents();
 
-    // The printed result will be the average time between frames in the
-    // browser window.
-    bool gpu_frames = PrintResults(
-        analyzer.get(),
-        test_name,
-        "RenderWidget::DidCommitAndDrawCompositorFrame",
-        "ms");
-    EXPECT_TRUE(gpu_frames);
-
-    // This prints out the average time between capture events.
-    // As the capture frame rate is capped at 30fps, this score
-    // cannot get any better than (lower) 33.33 ms.
-    // TODO(ericrk): Remove the "Capture" result once we are confident that
-    // "CaptureSucceeded" is giving the coverage we want. crbug.com/489817
-    EXPECT_TRUE(PrintResults(analyzer.get(),
-                             test_name,
-                             "Capture",
-                             "ms"));
-
-    // Also track the CaptureSucceeded event. Capture only indicates that a
-    // capture was requested, but this capture may later be aborted without
-    // running. CaptureSucceeded tracks successful frame captures.
+    // The printed result will be the average time between composites in the
+    // renderer of the page being captured. This may not reach the full frame
+    // rate if the renderer cannot draw as fast as is desired.
+    //
+    // Note that any changes to drawing or compositing in the renderer,
+    // including changes to Blink (e.g., Canvas drawing), layout, etc.; will
+    // have an impact on this result.
     EXPECT_TRUE(
-        PrintResults(analyzer.get(), test_name, "CaptureSucceeded", "ms"));
+        PrintRateResults(analyzer.get(), test_name,
+                         "RenderWidget::DidCommitAndDrawCompositorFrame"));
+
+    // This prints out the average time between capture events in the browser
+    // process. This should roughly match the renderer's draw+composite rate.
+    EXPECT_TRUE(PrintRateResults(analyzer.get(), test_name, "Capture"));
+
+    // Analyze mean/stddev of the capture latency. This is a measure of how long
+    // each capture took, from initiation until read-back from the GPU into a
+    // media::VideoFrame was complete. Lower is better.
+    EXPECT_TRUE(PrintLatencyResults(analyzer.get(), test_name, "Capture"));
+
+    // Analyze percentage of failed captures. This measures how often captures
+    // were initiated, but not completed successfully. Lower is better, and zero
+    // is ideal.
+    EXPECT_TRUE(PrintFailRateResults(analyzer.get(), test_name, "Capture"));
   }
 };
 
@@ -208,4 +315,3 @@ INSTANTIATE_TEST_CASE_P(
         kTestThroughWebRTC | kUseGpu | kForceGpuComposited,
         kTestThroughWebRTC | kDisableVsync,
         kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited));
-

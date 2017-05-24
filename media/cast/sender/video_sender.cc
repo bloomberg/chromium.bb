@@ -145,11 +145,10 @@ void VideoSender::InsertRawVideoFrame(
                             rtp_timestamp);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
-  TRACE_EVENT_INSTANT2(
-      "cast_perf_test", "InsertRawVideoFrame",
-      TRACE_EVENT_SCOPE_THREAD,
-      "timestamp", reference_time.ToInternalValue(),
-      "rtp_timestamp", rtp_timestamp.lower_32_bits());
+  TRACE_EVENT_INSTANT2("cast_perf_test", "InsertRawVideoFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "timestamp",
+                       (reference_time - base::TimeTicks()).InMicroseconds(),
+                       "rtp_timestamp", rtp_timestamp.lower_32_bits());
 
   bool low_latency_mode;
   if (video_frame->metadata()->GetBoolean(

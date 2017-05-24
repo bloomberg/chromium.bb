@@ -234,11 +234,10 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
         frame = media::WrapAsI420VideoFrame(video_frame);
 
       // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
-      TRACE_EVENT_INSTANT2(
-          "cast_perf_test", "MediaStreamVideoSink::OnVideoFrame",
-          TRACE_EVENT_SCOPE_THREAD,
-          "timestamp",  timestamp.ToInternalValue(),
-          "time_delta", frame->timestamp().ToInternalValue());
+      TRACE_EVENT_INSTANT2("cast_perf_test", "ConsumeVideoFrame",
+                           TRACE_EVENT_SCOPE_THREAD, "timestamp",
+                           (timestamp - base::TimeTicks()).InMicroseconds(),
+                           "time_delta", frame->timestamp().InMicroseconds());
       frame_input_->InsertRawVideoFrame(frame, timestamp);
     }
 
