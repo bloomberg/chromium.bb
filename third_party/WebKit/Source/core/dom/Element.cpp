@@ -1487,10 +1487,10 @@ bool Element::ShouldInvalidateDistributionWhenAttributeChanged(
     if (ClassStringHasClassName(new_class_string) ==
         ClassStringContent::kHasClasses) {
       const SpaceSplitString& old_classes = GetElementData()->ClassNames();
-      const SpaceSplitString new_classes(
-          new_class_string, GetDocument().InQuirksMode()
-                                ? SpaceSplitString::kShouldFoldCase
-                                : SpaceSplitString::kShouldNotFoldCase);
+      const SpaceSplitString new_classes(GetDocument().InQuirksMode()
+                                             ? new_class_string.LowerASCII()
+                                             : new_class_string,
+                                         SpaceSplitString::kShouldNotFoldCase);
       if (feature_set.CheckSelectorsForClassChange(old_classes, new_classes))
         return true;
     } else {
