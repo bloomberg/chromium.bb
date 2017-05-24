@@ -315,7 +315,7 @@ EXPERIMENT_LIST="
     new_multisymbol
     compound_singleref
     aom_qm
-    lowdelay_compound
+    one_sided_compound
     smooth_hv
     var_refs
 "

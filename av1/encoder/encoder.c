@@ -324,7 +324,7 @@ static void setup_frame(AV1_COMP *cpi) {
     av1_zero(cpi->interp_filter_selected[0]);
   }
 #if CONFIG_EXT_REFS
-#if CONFIG_LOWDELAY_COMPOUND  // No change to bitstream
+#if CONFIG_ONE_SIDED_COMPOUND  // No change to bitstream
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     cpi->refresh_bwd_ref_frame = cpi->refresh_last_frame;
     cpi->rc.is_bipred_frame = 1;
@@ -4292,7 +4292,7 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
   const int last3_is_last =
       map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[0]];
   const int gld_is_last = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[0]];
-#if CONFIG_LOWDELAY_COMPOUND
+#if CONFIG_ONE_SIDED_COMPOUND
   const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idxes[0]];
   const int last3_is_last2 =
       map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[1]];
@@ -4345,7 +4345,7 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
 
   if (gld_is_last2 || gld_is_last3) flags &= ~AOM_GOLD_FLAG;
 
-#if CONFIG_LOWDELAY_COMPOUND  // Changes LL & HL bitstream
+#if CONFIG_ONE_SIDED_COMPOUND  // Changes LL & HL bitstream
   /* Allow biprediction between two identical frames (e.g. bwd_is_last = 1) */
   if (bwd_is_alt && (flags & AOM_BWD_FLAG)) flags &= ~AOM_BWD_FLAG;
 #else

@@ -10330,7 +10330,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     // This is only used in motion vector unit test.
     if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
 
-#if CONFIG_LOWDELAY_COMPOUND  // Changes LL bitstream
+#if CONFIG_ONE_SIDED_COMPOUND  // Changes LL bitstream
 #if CONFIG_EXT_REFS
     if (cpi->oxcf.pass == 0) {
       // Complexity-compression trade-offs
@@ -11946,7 +11946,7 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
     // This is only used in motion vector unit test.
     if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
 
-#if CONFIG_LOWDELAY_COMPOUND  // Changes LL bitstream
+#if CONFIG_ONE_SIDED_COMPOUND  // Changes LL bitstream
 #if CONFIG_EXT_REFS
     if (cpi->oxcf.pass == 0) {
       // Complexity-compression trade-offs
