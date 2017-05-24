@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
@@ -128,10 +129,6 @@
 
 namespace {
 
-#define ARRAYSIZE(a)            \
-  ((sizeof(a) / sizeof(*(a))) / \
-   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
-
 // Use multiple URLs in the test in case the complexity of a website has an
 // effect on the performance of UIWebView -renderInContext.
 static const char* url_list[] = {
@@ -247,7 +244,7 @@ void StackViewControllerPerfTest::LoadNextURL() {
 
 const GURL StackViewControllerPerfTest::NextURL() {
   current_url_index_++;
-  if (static_cast<unsigned long>(current_url_index_) >= ARRAYSIZE(url_list))
+  if (static_cast<unsigned long>(current_url_index_) >= arraysize(url_list))
     current_url_index_ = 0;
   return GURL(url_list[current_url_index_]);
 }
