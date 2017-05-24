@@ -76,7 +76,7 @@ class ActivityTrackerTest : public testing::Test {
     GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
     if (!global_tracker)
       return 0;
-    base::AutoLock autolock(global_tracker->thread_tracker_allocator_lock_);
+    AutoLock autolock(global_tracker->thread_tracker_allocator_lock_);
     return global_tracker->thread_tracker_allocator_.cache_used();
   }
 
@@ -216,7 +216,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
   ASSERT_EQ(0U, snapshot.activity_stack.size());
 
   {
-    PendingTask task1(FROM_HERE, base::BindOnce(&DoNothing));
+    PendingTask task1(FROM_HERE, BindOnce(&DoNothing));
     ScopedTaskRunActivity activity1(task1);
     ActivityUserData& user_data1 = activity1.user_data();
     (void)user_data1;  // Tell compiler it's been used.
@@ -227,7 +227,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
     EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[0].activity_type);
 
     {
-      PendingTask task2(FROM_HERE, base::BindOnce(&DoNothing));
+      PendingTask task2(FROM_HERE, BindOnce(&DoNothing));
       ScopedTaskRunActivity activity2(task2);
       ActivityUserData& user_data2 = activity2.user_data();
       (void)user_data2;  // Tell compiler it's been used.
@@ -308,6 +308,8 @@ TEST_F(ActivityTrackerTest, BasicTest) {
   EXPECT_NE(0U, global->process_data().id());
 }
 
+namespace {
+
 class SimpleActivityThread : public SimpleThread {
  public:
   SimpleActivityThread(const std::string& name,
@@ -318,6 +320,8 @@ class SimpleActivityThread : public SimpleThread {
         origin_(origin),
         activity_(activity),
         data_(data),
+        ready_(false),
+        exit_(false),
         exit_condition_(&lock_) {}
 
   ~SimpleActivityThread() override {}
@@ -330,8 +334,8 @@ class SimpleActivityThread : public SimpleThread {
 
     {
       AutoLock auto_lock(lock_);
-      ready_ = true;
-      while (!exit_)
+      ready_.store(true, std::memory_order_release);
+      while (!exit_.load(std::memory_order_relaxed))
         exit_condition_.Wait();
     }
 
@@ -340,12 +344,12 @@ class SimpleActivityThread : public SimpleThread {
 
   void Exit() {
     AutoLock auto_lock(lock_);
-    exit_ = true;
+    exit_.store(true, std::memory_order_relaxed);
     exit_condition_.Signal();
   }
 
   void WaitReady() {
-    SPIN_FOR_1_SECOND_OR_UNTIL_TRUE(ready_);
+    SPIN_FOR_1_SECOND_OR_UNTIL_TRUE(ready_.load(std::memory_order_acquire));
   }
 
  private:
@@ -353,13 +357,15 @@ class SimpleActivityThread : public SimpleThread {
   Activity::Type activity_;
   ActivityData data_;
 
-  bool ready_ = false;
-  bool exit_ = false;
+  std::atomic<bool> ready_;
+  std::atomic<bool> exit_;
   Lock lock_;
   ConditionVariable exit_condition_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleActivityThread);
 };
+
+}  // namespace
 
 TEST_F(ActivityTrackerTest, ThreadDeathTest) {
   GlobalActivityTracker::CreateWithLocalMemory(kMemorySize, 0, "", 3, 0);
@@ -411,7 +417,7 @@ TEST_F(ActivityTrackerTest, ProcessDeathTest) {
   global->RecordProcessLaunch(other_process_id, FILE_PATH_LITERAL("foo --bar"));
 
   // Do some activities.
-  PendingTask task(FROM_HERE, base::BindOnce(&DoNothing));
+  PendingTask task(FROM_HERE, BindOnce(&DoNothing));
   ScopedTaskRunActivity activity(task);
   ActivityUserData& user_data = activity.user_data();
   ASSERT_NE(0U, user_data.id());
