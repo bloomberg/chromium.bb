@@ -31,11 +31,10 @@ message Diagnostics {
 message State {
   enum Status {
     STATUS_UNSPECIFIED = 0;  // Unused required default value for Proto enums.
-    TIMEOUT = 1;             // Unable to reach media analysis process.
-    UNINITIALIZED = 2;  // Media analytics working on loading configuration.
-    STARTED = 3;        // Analysis process running but not recieving frames.
-    RUNNING = 4;        // Analysis process running and injesting frames.
-    SUSPENDED = 5;      // Media analytics process waiting to be started.
+    UNINITIALIZED = 1;  // Media analytics working on loading configuration.
+    STARTED = 2;        // Analysis process running but not recieving frames.
+    RUNNING = 3;        // Analysis process running and injesting frames.
+    SUSPENDED = 4;      // Media analytics process waiting to be started.
   }
 
   // Note: RUNNING and SUSPENDED are the only two states which should be sent to

@@ -5,7 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_MEDIA_PERCEPTION_PRIVATE_MEDIA_PERCEPTION_PRIVATE_API_H_
 #define EXTENSIONS_BROWSER_API_MEDIA_PERCEPTION_PRIVATE_MEDIA_PERCEPTION_PRIVATE_API_H_
 
+#include "extensions/browser/api/media_perception_private/media_perception_api_manager.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/media_perception_private.h"
 
 namespace extensions {
 
@@ -21,6 +23,9 @@ class MediaPerceptionPrivateGetStateFunction
 
   // ExtensionFunction:
   ResponseAction Run() override;
+
+  void GetStateCallback(MediaPerceptionAPIManager::CallbackStatus status,
+                        extensions::api::media_perception_private::State state);
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionPrivateGetStateFunction);
 };
@@ -38,6 +43,9 @@ class MediaPerceptionPrivateSetStateFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
+  void SetStateCallback(MediaPerceptionAPIManager::CallbackStatus status,
+                        extensions::api::media_perception_private::State state);
+
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionPrivateSetStateFunction);
 };
 
@@ -53,6 +61,10 @@ class MediaPerceptionPrivateGetDiagnosticsFunction
 
   // ExtensionFunction:
   ResponseAction Run() override;
+
+  void GetDiagnosticsCallback(
+      MediaPerceptionAPIManager::CallbackStatus status,
+      extensions::api::media_perception_private::Diagnostics diagnostics);
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionPrivateGetDiagnosticsFunction);
 };
