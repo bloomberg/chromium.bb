@@ -40,7 +40,7 @@ if (!({{getter_expression(field)}} == {{value}}))
 {% endmacro %}
 
 {% macro nonconst_ref(field) %}
-{% if field.is_bit_field -%}
+{% if field.is_bit_field or field.field_template == 'primitive' -%}
 {{field.type_name}}
 {%- else -%}
 {{field.type_name}}&
@@ -48,7 +48,7 @@ if (!({{getter_expression(field)}} == {{value}}))
 {% endmacro %}
 
 {% macro const_ref(field) %}
-{% if field.is_bit_field -%}
+{% if field.is_bit_field or field.field_template == 'primitive' -%}
 {{field.type_name}}
 {%- else -%}
 const {{field.type_name}}&
