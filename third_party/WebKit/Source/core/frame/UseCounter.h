@@ -1605,6 +1605,9 @@ class CORE_EXPORT UseCounter {
     // https://codereview.chromium.org/2088453002 is relanded.
     kPluginInstanceAccessFromIsolatedWorld = 1996,
     kPluginInstanceAccessFromMainWorld = 1997,
+    kRequestFullscreenForDialogElement = 1998,
+    kRequestFullscreenForDialogElementInTopLayer = 1999,
+    kShowModalForElementInFullscreenStack = 2000,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
