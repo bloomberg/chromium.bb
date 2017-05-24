@@ -31,7 +31,7 @@ namespace ntp_snippets {
 namespace {
 
 const int kMaxBookmarks = 10;
-const int kMaxBookmarkAgeInDays = 42;
+const int kMaxBookmarkAgeInDays = 7;
 
 const char* kMaxBookmarksParamName = "bookmarks_max_count";
 const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
@@ -57,7 +57,7 @@ int GetMaxCount() {
 bool AreDesktopVisitsConsidered() {
   return variations::GetVariationParamByFeatureAsBool(
       ntp_snippets::kBookmarkSuggestionsFeature,
-      kConsiderDesktopVisitsParamName, false);
+      kConsiderDesktopVisitsParamName, true);
 }
 
 }  // namespace
