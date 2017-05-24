@@ -16,7 +16,6 @@ class GURL;
 
 // A protocol used by the StackViewController for test purposes.
 @protocol StackViewControllerTestDelegate
-@required
 // Informs the delegate that the show tab animation starts.
 - (void)stackViewControllerShowWithSelectedTabAnimationDidStart;
 // Informs the delegate that the show tab animation finished.
