@@ -4148,8 +4148,8 @@ IntRect ComputeTextRect(const EphemeralRangeInFlatTree& range) {
   return EnclosingIntRect(ComputeTextRectTemplate(range));
 }
 
-Vector<FloatQuad> ComputeTextQuads(const EphemeralRange& range) {
-  return ComputeTextBounds(range);
+FloatRect ComputeTextFloatRect(const EphemeralRange& range) {
+  return ComputeTextRectTemplate(range);
 }
 
 }  // namespace blink

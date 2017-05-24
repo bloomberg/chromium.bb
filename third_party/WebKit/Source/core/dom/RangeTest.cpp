@@ -245,16 +245,6 @@ TEST_F(RangeTest, ExpandNotCrash) {
   range->expand("", ASSERT_NO_EXCEPTION);
 }
 
-TEST_F(RangeTest, MultipleTextQuads) {
-  SetBodyContent("<div><p id='one'>one</p><p id='two'>two</p></div>");
-  Position start(GetDocument().getElementById("one")->firstChild(), 0);
-  Position end(GetDocument().getElementById("two")->firstChild(), 3);
-  Range* range = Range::Create(GetDocument(), start, end);
-  Vector<FloatQuad> quads;
-  quads.AppendVector(ComputeTextQuads(EphemeralRange(range)));
-  EXPECT_EQ(2u, quads.size());
-}
-
 TEST_F(RangeTest, ToPosition) {
   Node& textarea = *HTMLTextAreaElement::Create(GetDocument());
   Range& range = *Range::Create(GetDocument());
