@@ -71,7 +71,7 @@ def CombineList(test_files_dir, list_output_file, include_filters,
   test_filters = GetTestFilters(test_files_dir, test_names, include_filters)
   test_commands = [
       "{} {} {}".format(test_name,
-                        additional_runtime_options,
+                        additional_runtime_options or "",
                         test_filters.get(test_name, ""))
       for test_name in test_names
   ]
@@ -162,7 +162,7 @@ def DoMain(argv):
   list_output_file = options.list_output_file
   deps_output_file = options.deps_output_file
   test_files_dir = options.test_files_dir
-  additional_runtime_options = options.additional_runtime_options or ""
+  additional_runtime_options = options.additional_runtime_options
 
   if len(inputs) < 1:
     parser.error("No command given.\n")
