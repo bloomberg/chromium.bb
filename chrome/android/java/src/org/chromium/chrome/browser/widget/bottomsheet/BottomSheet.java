@@ -517,6 +517,13 @@ public class BottomSheet
         }
 
         mNtpController.setTabModelSelector(tabModelSelector);
+
+        mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                setSheetState(SHEET_STATE_PEEK, true);
+            }
+        });
     }
 
     /**
