@@ -198,6 +198,32 @@ bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
 
 }  // namespace
 
+DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
+  DisplayMode_Params params;
+  params.size = mode.size();
+  params.is_interlaced = mode.is_interlaced();
+  params.refresh_rate = mode.refresh_rate();
+  return params;
+}
+
+std::unique_ptr<const display::DisplayMode> CreateDisplayModeFromParams(
+    const DisplayMode_Params& pmode) {
+  return base::MakeUnique<const display::DisplayMode>(
+      pmode.size, pmode.is_interlaced, pmode.refresh_rate);
+}
+
+const gfx::Size ModeSize(const drmModeModeInfo& mode) {
+  return gfx::Size(mode.hdisplay, mode.vdisplay);
+}
+
+float ModeRefreshRate(const drmModeModeInfo& mode) {
+  return GetRefreshRate(mode);
+}
+
+bool ModeIsInterlaced(const drmModeModeInfo& mode) {
+  return mode.flags & DRM_MODE_FLAG_INTERLACE;
+}
+
 gfx::Size GetMaximumCursorSize(int fd) {
   uint64_t width = 0, height = 0;
   // Querying cursor dimensions is optional and is unsupported on older Chrome

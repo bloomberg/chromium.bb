@@ -10,21 +10,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 
 namespace ui {
-
-namespace {
-
-DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
-  DisplayMode_Params params;
-  params.size = mode.size();
-  params.is_interlaced = mode.is_interlaced();
-  params.refresh_rate = mode.refresh_rate();
-  return params;
-}
-
-}  // namespace
 
 DrmDisplayHost::DrmDisplayHost(GpuThreadAdapter* sender,
                                const DisplaySnapshot_Params& params,

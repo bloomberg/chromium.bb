@@ -26,6 +26,7 @@ struct FileDescriptor;
 }
 
 namespace display {
+class DisplayMode;
 struct GammaRampRGBEntry;
 }
 
@@ -99,7 +100,7 @@ class DrmThread : public base::Thread, public ozone::mojom::DeviceCursor {
       base::OnceCallback<void(const std::vector<DisplaySnapshot_Params>&)>
           callback);
   void ConfigureNativeDisplay(int64_t id,
-                              const DisplayMode_Params& mode,
+                              std::unique_ptr<const display::DisplayMode> mode,
                               const gfx::Point& origin,
                               base::OnceCallback<void(int64_t, bool)> callback);
   void DisableNativeDisplay(int64_t id,

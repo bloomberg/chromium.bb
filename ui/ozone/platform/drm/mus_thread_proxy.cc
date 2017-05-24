@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
@@ -211,19 +212,21 @@ bool MusThreadProxy::GpuRefreshNativeDisplays() {
 }
 
 bool MusThreadProxy::GpuConfigureNativeDisplay(int64_t id,
-                                               const DisplayMode_Params& mode,
+                                               const DisplayMode_Params& pmode,
                                                const gfx::Point& origin) {
   DCHECK(drm_thread_->IsRunning());
   DCHECK(on_window_server_thread_.CalledOnValidThread());
 
+  auto mode = CreateDisplayModeFromParams(pmode);
   auto callback =
       base::BindOnce(&MusThreadProxy::GpuConfigureNativeDisplayCallback,
                      weak_ptr_factory_.GetWeakPtr());
   auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DrmThread::ConfigureNativeDisplay,
-                                base::Unretained(drm_thread_), id, mode, origin,
-                                std::move(safe_callback)));
+      FROM_HERE,
+      base::BindOnce(&DrmThread::ConfigureNativeDisplay,
+                     base::Unretained(drm_thread_), id, std::move(mode), origin,
+                     std::move(safe_callback)));
   return true;
 }
 

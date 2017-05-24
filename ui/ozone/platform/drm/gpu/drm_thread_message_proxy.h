@@ -26,7 +26,6 @@ class Rect;
 }
 
 namespace ui {
-
 class DrmThread;
 struct DisplayMode_Params;
 struct DisplaySnapshot_Params;

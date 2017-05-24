@@ -4,10 +4,12 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 
@@ -136,14 +138,16 @@ void DrmThreadMessageProxy::OnConfigureNativeDisplay(
     const DisplayMode_Params& mode,
     const gfx::Point& origin) {
   DCHECK(drm_thread_->IsRunning());
+  auto dmode = CreateDisplayModeFromParams(mode);
   auto callback =
       base::BindOnce(&DrmThreadMessageProxy::OnConfigureNativeDisplayCallback,
                      weak_ptr_factory_.GetWeakPtr());
   auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DrmThread::ConfigureNativeDisplay,
-                                base::Unretained(drm_thread_), id, mode, origin,
-                                std::move(safe_callback)));
+      FROM_HERE,
+      base::BindOnce(&DrmThread::ConfigureNativeDisplay,
+                     base::Unretained(drm_thread_), id, std::move(dmode),
+                     origin, std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnDisableNativeDisplay(int64_t id) {

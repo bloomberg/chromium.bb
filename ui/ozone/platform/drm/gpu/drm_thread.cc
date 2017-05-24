@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/display/types/display_mode.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -233,11 +234,11 @@ void DrmThread::RefreshNativeDisplays(
 
 void DrmThread::ConfigureNativeDisplay(
     int64_t id,
-    const DisplayMode_Params& mode,
+    std::unique_ptr<const display::DisplayMode> mode,
     const gfx::Point& origin,
     base::OnceCallback<void(int64_t, bool)> callback) {
-  std::move(callback).Run(id,
-                          display_manager_->ConfigureDisplay(id, mode, origin));
+  std::move(callback).Run(
+      id, display_manager_->ConfigureDisplay(id, *mode, origin));
 }
 
 void DrmThread::DisableNativeDisplay(
