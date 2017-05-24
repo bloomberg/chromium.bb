@@ -2249,13 +2249,16 @@ public class LocationBarLayout extends FrameLayout
         updateSecurityIcon(getSecurityLevel());
     }
 
-    /**
-     * @return The Tab currently showing.
-     */
     @Override
     public Tab getCurrentTab() {
         if (mToolbarDataProvider == null) return null;
         return mToolbarDataProvider.getTab();
+    }
+
+    @Override
+    public boolean allowKeyboardLearning() {
+        if (mToolbarDataProvider == null) return false;
+        return !mToolbarDataProvider.isIncognito();
     }
 
     private void initOmniboxResultsContainer() {

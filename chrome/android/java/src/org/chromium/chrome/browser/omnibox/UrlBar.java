@@ -27,6 +27,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -54,6 +56,11 @@ public class UrlBar extends AutocompleteEditText {
     private static final String TAG = "cr_UrlBar";
 
     private static final boolean DEBUG = false;
+
+    // TODO(tedchoc): Replace with EditorInfoCompat#IME_FLAG_NO_PERSONALIZED_LEARNING or
+    //                EditorInfo#IME_FLAG_NO_PERSONALIZED_LEARNING as soon as either is available in
+    //                all build config types.
+    private static final int IME_FLAG_NO_PERSONALIZED_LEARNING = 0x1000000;
 
     // TextView becomes very slow on long strings, so we limit maximum length
     // of what is displayed to the user, see limitDisplayableLength().
@@ -139,6 +146,11 @@ public class UrlBar extends AutocompleteEditText {
          * @return The current active {@link Tab}.
          */
         Tab getCurrentTab();
+
+        /**
+         * @return Whether the keyboard should be allowed to learn from the user input.
+         */
+        boolean allowKeyboardLearning();
 
         /**
          * Called when the text state has changed and the autocomplete suggestions should be
@@ -637,6 +649,15 @@ public class UrlBar extends AutocompleteEditText {
         bringPointIntoView(urlComponents.first.length());
 
         return true;
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        InputConnection connection = super.onCreateInputConnection(outAttrs);
+        if (mUrlBarDelegate == null || !mUrlBarDelegate.allowKeyboardLearning()) {
+            outAttrs.imeOptions |= IME_FLAG_NO_PERSONALIZED_LEARNING;
+        }
+        return connection;
     }
 
     @Override
