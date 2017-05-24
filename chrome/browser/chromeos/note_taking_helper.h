@@ -44,6 +44,20 @@ struct ActionData;
 
 namespace chromeos {
 
+// Describes an app's level of support for lock screen enabled note taking.
+enum class NoteTakingLockScreenSupport {
+  // The app does not support note taking on lock screen.
+  kNotSupported,
+  // The app supports note taking on lock screen, but is not selected as the
+  // lock screen note taking app by the user. This state implies that the user
+  // can be offered to select this app as the lock screen note taking handler.
+  kSupported,
+  // The app is selected as the lock screen note taking app by the user.
+  // Currently, only the preferred note taking app can be selected as the lock
+  // screen handler.
+  kSelected
+};
+
 // Information about an installed note-taking app.
 struct NoteTakingAppInfo {
   // Application name to display to user.
@@ -55,6 +69,11 @@ struct NoteTakingAppInfo {
 
   // True if this is the preferred note-taking app.
   bool preferred;
+
+  // Whether the app supports taking notes on Chrome OS lock screen. Note that
+  // this ability is guarded by enable-lock-screen-apps feature flag, and
+  // whitelisted to Keep apps.
+  NoteTakingLockScreenSupport lock_screen_support;
 };
 
 using NoteTakingAppInfos = std::vector<NoteTakingAppInfo>;
@@ -170,6 +189,10 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // note-taking apps for |profile|.
   std::vector<const extensions::Extension*> GetChromeApps(
       Profile* profile) const;
+
+  // Returns whether |app| is a note taking app that supports note taking on
+  // lock screen.
+  bool IsLockScreenEnabled(const extensions::Extension* app);
 
   // Requests a list of Android note-taking apps from ARC.
   void UpdateAndroidApps();

@@ -703,6 +703,12 @@ const char kLaunchPaletteOnEjectEvent[] =
 // indicates that the user hasn't selected an app yet.
 const char kNoteTakingAppId[] = "settings.note_taking_app_id";
 
+// A boolean pref indicating whether preferred note-taking app (see
+// |kNoteTakingAppId|) is allowed to handle note taking actions on the lock
+// screen.
+const char kNoteTakingAppEnabledOnLockScreen[] =
+    "settings.note_taking_app_enabled_on_lock_screen";
+
 // A boolean pref indicating whether user activity has been observed in the
 // current session already. The pref is used to restore information about user
 // activity after browser crashes.

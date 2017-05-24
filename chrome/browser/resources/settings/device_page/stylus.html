@@ -69,6 +69,16 @@
       </div>
     </div>
 
+    <template is="dom-if" if="[[supportsLockScreen_(selectedApp_)]]">
+      <div class="settings-box">
+        <settings-toggle-button id="enable-app-on-lock-screen-toggle"
+            class="start"
+            pref="{{prefs.settings.note_taking_app_enabled_on_lock_screen}}"
+            label="$i18n{stylusNoteTakingAppEnabledOnLockScreen}">
+        </settings-toggle-button>
+      </div>
+    </template>
+
     <!-- TODO(scottchen): Make a proper a[href].settings-box with
          icon-external (see: https://crbug.com/684005)-->
     <div class="settings-box two-line" on-tap="onFindAppsTap_" actionable

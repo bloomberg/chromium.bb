@@ -632,6 +632,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"stylusFindMoreAppsSecondary",
        IDS_SETTINGS_STYLUS_FIND_MORE_APPS_SECONDARY},
       {"stylusNoteTakingApp", IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LABEL},
+      {"stylusNoteTakingAppEnabledOnLockScreen",
+       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LOCK_SCREEN_CHECKBOX},
       {"stylusNoteTakingAppNoneAvailable",
        IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE},
       {"stylusNoteTakingAppWaitingForAndroid",
