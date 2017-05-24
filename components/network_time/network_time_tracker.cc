@@ -191,6 +191,7 @@ void RecordFetchValidHistogram(bool valid) {
 void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping,
                                    base::MakeUnique<base::DictionaryValue>());
+  registry->RegisterBooleanPref(prefs::kNetworkTimeQueriesEnabled, true);
 }
 
 NetworkTimeTracker::NetworkTimeTracker(
@@ -478,7 +479,11 @@ void NetworkTimeTracker::CheckTime() {
         policy {
           cookies_allowed: false
           setting: "This feature cannot be disabled by settings."
-          policy_exception_justification: "Not implemented."
+          chrome_policy {
+            NetworkTimeQueriesEnabled {
+                NetworkTimeQueriesEnabled: false
+            }
+          }
         })");
   // This cancels any outstanding fetch.
   time_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this,
@@ -618,6 +623,11 @@ void NetworkTimeTracker::QueueCheckTime(base::TimeDelta delay) {
 bool NetworkTimeTracker::ShouldIssueTimeQuery() {
   // Do not query the time service if not enabled via Variations Service.
   if (!AreTimeFetchesEnabled()) {
+    return false;
+  }
+
+  // Do not query the time service if queries are disabled by policy.
+  if (!pref_service_->GetBoolean(prefs::kNetworkTimeQueriesEnabled)) {
     return false;
   }
 

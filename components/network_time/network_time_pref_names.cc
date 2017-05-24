@@ -11,5 +11,9 @@ namespace prefs {
 // network time tracker when browser starts.
 const char kNetworkTimeMapping[] = "network_time.network_time_mapping";
 
+// Stores a boolean indicating whether network time queries should be enabled.
+const char kNetworkTimeQueriesEnabled[] =
+    "network_time.network_time_queries_enabled";
+
 }  // namespace prefs
 }  // namespace network_time

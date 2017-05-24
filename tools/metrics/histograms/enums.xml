@@ -10274,6 +10274,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="367" label="InstantTetheringAllowed"/>
   <int value="368" label="RemoteAccessHostDomainList"/>
   <int value="369" label="RemoteAccessHostClientDomainList"/>
+  <int value="370" label="NetworkTimeQueriesEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
