@@ -213,6 +213,16 @@ uplow \x016c\x016d 4-346-136 Ŭŭ
 
 uplow \x0178\x00ff 45-25-13456 Ÿÿ
 
+# Early Forms of English
+uplow \x021c\x021d 3456-13456 Ȝȝ yogh
+uplow \x00de\x00fe 3456-2346 Þþ thorn
+uplow \x00d0\x00f0 3456-1246 Ðð eth
+uplow \x01f7\x01bf 3456-2456 Ƿƿ wynn (wen)
+uppercase \x00c6 6-1-6-45-235-15 Æ capital ligature ae (ash)
+lowercase \x00e6 1-45-235-15 æ lowercase ligature ae (ash)
+uppercase \x0152 6-135-6-45-235-15 Œ capital ligature oe
+lowercase \x0153 135-45-235-15 œ ligature oe
+
 sign \x0300 45-16 ̀̀  grave accent
 noback correct [$l]"̀" "̀"*
 
