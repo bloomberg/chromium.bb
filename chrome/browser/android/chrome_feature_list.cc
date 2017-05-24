@@ -40,6 +40,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kConsistentOmniboxGeolocation,
     &features::kCopylessPaste,
     &features::kImportantSitesInCbd,
+    &features::kMaterialDesignIncognitoNTP,
     &features::kServiceWorkerPaymentApps,
     &features::kSimplifiedFullscreenUI,
     &features::kVrShell,

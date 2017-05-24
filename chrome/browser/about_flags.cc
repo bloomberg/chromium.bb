@@ -2212,7 +2212,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignFeedback)},
     {"enable-md-incognito-ntp",
      flag_descriptions::kMaterialDesignIncognitoNTPName,
-     flag_descriptions::kMaterialDesignIncognitoNTPDescription, kOsDesktop,
+     flag_descriptions::kMaterialDesignIncognitoNTPDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kMaterialDesignIncognitoNTP)},
     {"enable-md-settings", flag_descriptions::kEnableMaterialDesignSettingsName,
      flag_descriptions::kEnableMaterialDesignSettingsDescription, kOsDesktop,
