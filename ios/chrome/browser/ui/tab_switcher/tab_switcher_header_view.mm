@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_view.h"
 
+#import "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_cell.h"
@@ -136,23 +138,25 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
   DCHECK(updateBlock);
 
   __weak TabSwitcherHeaderView* weakSelf = self;
-  [_collectionView performBatchUpdates:^{
+  ProceduralBlock batchUpdates = ^{
     TabSwitcherHeaderView* strongSelf = weakSelf;
     if (!strongSelf)
       return;
     strongSelf->_performingUpdate = YES;
     updateBlock(strongSelf);
     strongSelf->_performingUpdate = NO;
-  }
-      completion:^(BOOL finished) {
-        // Reestablish selection after the update.
-        const NSInteger selectedPanelIndex =
-            [[weakSelf delegate] tabSwitcherHeaderViewSelectedPanelIndex];
-        if (selectedPanelIndex != NSNotFound)
-          [weakSelf selectItemAtIndex:selectedPanelIndex];
-        if (completion)
-          completion();
-      }];
+  };
+  ProceduralBlockWithBool batchCompletion = ^(BOOL finished) {
+    // Reestablish selection after the update.
+    const NSInteger selectedPanelIndex =
+        [[weakSelf delegate] tabSwitcherHeaderViewSelectedPanelIndex];
+    if (selectedPanelIndex != NSNotFound)
+      [weakSelf selectItemAtIndex:selectedPanelIndex];
+    if (completion)
+      completion();
+  };
+
+  [_collectionView performBatchUpdates:batchUpdates completion:batchCompletion];
 }
 
 - (void)insertSessionsAtIndexes:(NSArray*)indexes {
