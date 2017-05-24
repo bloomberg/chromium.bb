@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<iframe src="resources/feature-policy-vibrate-relocate.html" allow="vibrate"></iframe>
+<script>
+window.onload = function () {
+  var iframe = document.querySelector('iframe');
+  window.addEventListener('message', function() {
+    // The iframe uses eventSender to emulate a user navigatation, which
+    // requires absolute coordinates.
+    iframe.contentWindow.postMessage(
+      {x: iframe.offsetLeft, y: iframe.offsetTop}, "*");
+  }, { once: true });
+  promise_test(function() {
+    return new Promise(function(resolve, reject) {
+      window.addEventListener('message', function(e) {
+        if (e.data.type === 'result') {
+          resolve(e.data);
+        }
+      });
+    }).then(function(data) {
+      assert_false(data.enabled, 'navigator.vibrate():');
+    });
+  }, 'Iframe navigated itself to a new origin, vibrate is disabled by ' +
+  'container policy.');
+}
+</script>

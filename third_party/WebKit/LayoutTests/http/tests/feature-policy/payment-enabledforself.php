@@ -13,13 +13,42 @@ Header("Feature-Policy: {\"payment\": [\"self\"]}");
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/helper.js"></script>
+<iframe></iframe>
+<iframe allowpaymentrequest></iframe>
 <script>
-  if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.dumpChildFramesAsText();
-  }
+var srcs = [
+  "resources/feature-policy-payment.html",
+  "http://localhost:8000/feature-policy/resources/feature-policy-payment.html"
+];
+
+function loadFrame(iframe, src) {
+  var allowpaymentrequest = iframe.hasAttribute('allowpaymentrequest');
+  promise_test(function() {
+    iframe.src = src;
+    return new Promise(function(resolve, reject) {
+      window.addEventListener('message', function(e) {
+        resolve(e.data);
+      }, { once: true });
+    }).then(function(data) {
+      // paymentrequest is enabled if:
+      //     a. same origin; or
+      //     b. enabled by allowpaymentrequest.
+      if (src === srcs[0] || allowpaymentrequest) {
+        assert_true(data.enabled, 'Paymentrequest():');
+      } else {
+        assert_false(data.enabled, 'Paymentrequest():');
+        assert_equals(data.name, 'SecurityError', 'Exception Name:');
+        assert_equals(data.message, "Failed to construct 'PaymentRequest': " +
+          "Must be in a top-level browsing context or an iframe needs to " +
+          "specify 'allowpaymentrequest' explicitly", 'Error Message:');
+      }
+    });
+  }, 'Paymentrequest enabled for self on URL: ' + src + ' with '+
+    'allowpaymentrequest = ' + allowpaymentrequest);
+}
+
+window.onload = function() {
+  loadIframes(srcs);
+}
 </script>
-<iframe id="f1" src="resources/feature-policy-payment-enabled.html"></iframe>
-<iframe id="f2" src="http://localhost:8000/feature-policy/resources/feature-policy-payment-disabled.html"></iframe>
-<iframe id="f3" src="resources/feature-policy-payment-enabled.html" allowpaymentrequest></iframe>
-<iframe id="f4" src="http://localhost:8000/feature-policy/resources/feature-policy-payment-enabled.html" allowpaymentrequest></iframe>
