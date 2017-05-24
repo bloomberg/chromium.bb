@@ -21552,6 +21552,7 @@ from previous Chrome versions.
   <int value="-1077752943" label="enable-password-generation"/>
   <int value="-1075156797" label="enable-brotli"/>
   <int value="-1075089382" label="enable-physical-web"/>
+  <int value="-1074107607" label="data-reduction-proxy-experiment"/>
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>

@@ -331,6 +331,56 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   }
 }
 
+TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
+  // Tests that combinations of configurations that trigger "exp=" directive in
+  // the Chrome-Proxy header have the right precendence, and only append a value
+  // for the highest priority value.
+
+  // Field trial has the lowest priority.
+  std::map<std::string, std::string> server_experiment;
+  server_experiment["exp"] = "foo";
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      params::GetServerExperimentsFieldTrialName(), "enabled",
+      server_experiment));
+
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(
+      params::GetServerExperimentsFieldTrialName(), "enabled");
+  std::vector<std::string> expected_experiments;
+  expected_experiments.push_back("foo");
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
+                        expected_experiments, &expected_header);
+  CreateRequestOptions(kVersion);
+  VerifyExpectedHeader(expected_header, kPageIdValue);
+
+  // "ignore_preview_blacklist" has the next lowest priority.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLitePage);
+  expected_experiments.clear();
+  expected_experiments.push_back(chrome_proxy_lite_page_ignore_blacklist());
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
+                        expected_experiments, &expected_header);
+  CreateRequestOptions(kVersion);
+  VerifyExpectedHeader(expected_header, kPageIdValue);
+
+  // Setting the experiment explicitly has the highest priority.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      data_reduction_proxy::switches::kDataReductionProxyExperiment, "bar");
+  expected_experiments.clear();
+  expected_experiments.push_back("bar");
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
+                        expected_experiments, &expected_header);
+  CreateRequestOptions(kVersion);
+  VerifyExpectedHeader(expected_header, kPageIdValue);
+}
+
 TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
   const struct {
     std::string chrome_proxy_header_key;

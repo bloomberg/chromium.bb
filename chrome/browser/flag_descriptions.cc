@@ -1179,6 +1179,16 @@ const char kEnableDataReductionProxyLitePageDescription[] =
     "shown instead of image placeholders when Lo-Fi is on. Data Saver and "
     "Lo-Fi must be enabled for lite pages to be shown.";
 
+const char kDataReductionProxyServerAlternative[] =
+    "Use alternative server configuration";
+
+const char kEnableDataReductionProxyServerExperimentName[] =
+    "Use an alternative Data Saver back end configuration.";
+
+const char kEnableDataReductionProxyServerExperimentDescription[] =
+    "Enable a different approach to saving data by configuring the back end "
+    "server";
+
 const char kDataReductionProxyCarrierTestName[] =
     "Enable a carrier-specific Data Reduction Proxy for testing.";
 

@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -100,12 +101,13 @@ std::string DataReductionProxyRequestOptions::GetHeaderValueForTesting() const {
 }
 
 void DataReductionProxyRequestOptions::UpdateExperiments() {
-  // TODO(bengr): Simplify this so there's only one way to set experiment via
-  // flags. See crbug.com/656195.
+  experiments_.clear();
   std::string experiments =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           data_reduction_proxy::switches::kDataReductionProxyExperiment);
 
+  // The command line override takes precedence over field trial "exp"
+  // directives.
   if (!experiments.empty()) {
     base::StringTokenizer experiment_tokenizer(experiments, ", ");
     experiment_tokenizer.set_quote_chars("\"");
@@ -113,7 +115,11 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
       if (!experiment_tokenizer.token().empty())
         experiments_.push_back(experiment_tokenizer.token());
     }
+  } else if (params::AreLitePagesEnabledViaFlags()) {
+    experiments_.push_back(chrome_proxy_lite_page_ignore_blacklist());
   } else {
+    // If no other "exp" directive is forced by flags, add the field trial
+    // value.
     AddServerExperimentFromFieldTrial();
   }
 

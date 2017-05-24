@@ -189,6 +189,10 @@ extern const char kEnableClearBrowsingDataCountersDescription[];
 extern const char kEnableDataReductionProxyLitePageName[];
 extern const char kEnableDataReductionProxyLitePageDescription[];
 
+extern const char kDataReductionProxyServerAlternative[];
+extern const char kEnableDataReductionProxyServerExperimentName[];
+extern const char kEnableDataReductionProxyServerExperimentDescription[];
+
 extern const char kEnableDataReductionProxySavingsPromoName[];
 extern const char kEnableDataReductionProxySavingsPromoDescription[];
 

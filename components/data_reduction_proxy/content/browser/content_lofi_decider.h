@@ -38,8 +38,6 @@ class ContentLoFiDecider : public LoFiDecider {
       const net::HttpRequestHeaders& headers) const override;
   void RemoveAcceptTransformHeader(
       net::HttpRequestHeaders* headers) const override;
-  void MaybeSetIgnorePreviewsBlacklistDirective(
-      net::HttpRequestHeaders* headers) const override;
   bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override;
   bool IsClientLoFiImageRequest(const net::URLRequest& request) const override;
   bool IsClientLoFiAutoReloadRequest(

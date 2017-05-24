@@ -194,9 +194,6 @@ class TestLoFiDecider : public LoFiDecider {
     headers->RemoveHeader(chrome_proxy_accept_transform_header());
   }
 
-  void MaybeSetIgnorePreviewsBlacklistDirective(
-      net::HttpRequestHeaders* headers) const override {}
-
   bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override {
     return should_request_lofi_resource_;
   }

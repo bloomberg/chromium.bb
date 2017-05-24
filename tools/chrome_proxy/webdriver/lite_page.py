@@ -14,9 +14,6 @@ class LitePage(IntegrationTest):
   # experiment is being used.
   def testLitePage(self):
     # If it was attempted to run with another experiment, skip this test.
-    if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
-        in common.ParseFlags().browser_args):
-      self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
@@ -32,8 +29,11 @@ class LitePage(IntegrationTest):
           continue
         if response.url.startswith('data:'):
           continue
-        self.assertIn('exp=ignore_preview_blacklist',
-          response.request_headers['chrome-proxy'])
+        if not common.ParseFlags().browser_args or (
+          '--data-reduction-proxy-experiment' not in
+          common.ParseFlags().browser_args):
+            self.assertIn('exp=ignore_preview_blacklist',
+              response.request_headers['chrome-proxy'])
         if (self.checkLitePageResponse(response)):
           lite_page_responses = lite_page_responses + 1
 
@@ -44,9 +44,6 @@ class LitePage(IntegrationTest):
   # of the page and is able to load all resources.
   def testLitePageBTF(self):
     # If it was attempted to run with another experiment, skip this test.
-    if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
-        in common.ParseFlags().browser_args):
-      self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
@@ -64,8 +61,11 @@ class LitePage(IntegrationTest):
           continue
         if response.url.startswith('data:'):
           continue
-        self.assertIn('exp=ignore_preview_blacklist',
-          response.request_headers['chrome-proxy'])
+        if not common.ParseFlags().browser_args or (
+          '--data-reduction-proxy-experiment' not in
+          common.ParseFlags().browser_args):
+            self.assertIn('exp=ignore_preview_blacklist',
+              response.request_headers['chrome-proxy'])
         if (self.checkLitePageResponse(response)):
           lite_page_responses = lite_page_responses + 1
       self.assertEqual(1, lite_page_responses)
