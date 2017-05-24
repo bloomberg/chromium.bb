@@ -12,7 +12,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/focus_cycler.h"
-#include "ash/ime_control_delegate.h"
+#include "ash/ime/ime_switch_type.h"
 #include "ash/media_controller.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_controller.h"
@@ -68,6 +68,7 @@ namespace ash {
 namespace {
 
 using base::UserMetricsAction;
+using chromeos::input_method::InputMethodManager;
 using message_center::Notification;
 
 // Identifier for the high contrast toggle accelerator notification.
@@ -171,6 +172,11 @@ void RecordUmaHistogram(const char* histogram_name,
   histogram->Add(sample);
 }
 
+void RecordImeSwitchByAccelerator() {
+  UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch",
+                            ImeSwitchType::kAccelerator, ImeSwitchType::kCount);
+}
+
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
@@ -251,8 +257,15 @@ void HandleNewWindow() {
   Shell::Get()->new_window_controller()->NewWindow(false /* is_incognito */);
 }
 
-bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
-  return ime_control_delegate && ime_control_delegate->CanCycleIme();
+bool CanCycleInputMethod() {
+  InputMethodManager* manager = InputMethodManager::Get();
+  DCHECK(manager);
+  if (!manager->GetActiveIMEState()) {
+    LOG(WARNING) << "Cannot cycle through input methods as they are not "
+                    "initialized yet.";
+    return false;
+  }
+  return manager->GetActiveIMEState()->CanCycleInputMethod();
 }
 
 bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
@@ -267,9 +280,10 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   return !(keyboard_controller && keyboard_controller->keyboard_visible());
 }
 
-void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
+void HandleNextIme() {
   base::RecordAction(UserMetricsAction("Accel_Next_Ime"));
-  ime_control_delegate->HandleNextIme();
+  RecordImeSwitchByAccelerator();
+  InputMethodManager::Get()->GetActiveIMEState()->SwitchToNextInputMethod();
 }
 
 void HandleOpenFeedbackPage() {
@@ -277,15 +291,14 @@ void HandleOpenFeedbackPage() {
   Shell::Get()->new_window_controller()->OpenFeedbackPage();
 }
 
-bool CanHandlePreviousIme(ImeControlDelegate* ime_control_delegate) {
-  return ime_control_delegate && ime_control_delegate->CanCycleIme();
-}
-
-void HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
-                       const ui::Accelerator& accelerator) {
+void HandlePreviousIme(const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Previous_Ime"));
-  if (accelerator.key_state() == ui::Accelerator::KeyState::PRESSED)
-    ime_control_delegate->HandlePreviousIme();
+  if (accelerator.key_state() == ui::Accelerator::KeyState::PRESSED) {
+    RecordImeSwitchByAccelerator();
+    InputMethodManager::Get()
+        ->GetActiveIMEState()
+        ->SwitchToPreviousInputMethod();
+  }
   // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
 }
 
@@ -352,16 +365,22 @@ void HandleShowTaskManager() {
   Shell::Get()->new_window_controller()->ShowTaskManager();
 }
 
-bool CanHandleSwitchIme(ImeControlDelegate* ime_control_delegate,
-                        const ui::Accelerator& accelerator) {
-  return ime_control_delegate &&
-         ime_control_delegate->CanSwitchIme(accelerator);
+bool CanHandleSwitchIme(const ui::Accelerator& accelerator) {
+  InputMethodManager* manager = InputMethodManager::Get();
+  DCHECK(manager);
+  if (!manager->GetActiveIMEState()) {
+    LOG(WARNING) << "Cannot switch input methods as they are not "
+                    "initialized yet.";
+    return false;
+  }
+  return manager->GetActiveIMEState()->CanSwitchInputMethod(accelerator);
 }
 
-void HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
-                     const ui::Accelerator& accelerator) {
+void HandleSwitchIme(const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Switch_Ime"));
-  ime_control_delegate->HandleSwitchIme(accelerator);
+  RecordImeSwitchByAccelerator();
+  InputMethodManager::Get()->GetActiveIMEState()->SwitchInputMethod(
+      accelerator);
 }
 
 bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
@@ -735,11 +754,6 @@ AcceleratorController::GetCurrentAcceleratorRestriction() {
   return GetAcceleratorProcessingRestriction(-1);
 }
 
-void AcceleratorController::SetImeControlDelegate(
-    std::unique_ptr<ImeControlDelegate> ime_control_delegate) {
-  ime_control_delegate_ = std::move(ime_control_delegate);
-}
-
 bool AcceleratorController::ShouldCloseMenuAndRepostAccelerator(
     const ui::Accelerator& accelerator) const {
   auto itr = accelerators_.find(accelerator);
@@ -912,15 +926,15 @@ bool AcceleratorController::CanPerformAction(
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
     case NEXT_IME:
-      return CanHandleNextIme(ime_control_delegate_.get());
+      return CanCycleInputMethod();
     case PREVIOUS_IME:
-      return CanHandlePreviousIme(ime_control_delegate_.get());
+      return CanCycleInputMethod();
     case SHOW_MESSAGE_CENTER_BUBBLE:
       return CanHandleShowMessageCenterBubble();
     case SHOW_STYLUS_TOOLS:
       return CanHandleShowStylusTools();
     case SWITCH_IME:
-      return CanHandleSwitchIme(ime_control_delegate_.get(), accelerator);
+      return CanHandleSwitchIme(accelerator);
     case SWITCH_TO_PREVIOUS_USER:
     case SWITCH_TO_NEXT_USER:
       return CanHandleCycleUser();
@@ -1111,7 +1125,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleNewWindow();
       break;
     case NEXT_IME:
-      HandleNextIme(ime_control_delegate_.get());
+      HandleNextIme();
       break;
     case OPEN_CROSH:
       HandleCrosh();
@@ -1126,7 +1140,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleGetHelp();
       break;
     case PREVIOUS_IME:
-      HandlePreviousIme(ime_control_delegate_.get(), accelerator);
+      HandlePreviousIme(accelerator);
       break;
     case PRINT_UI_HIERARCHIES:
       debug::PrintUIHierarchies();
@@ -1159,7 +1173,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleSuspend();
       break;
     case SWITCH_IME:
-      HandleSwitchIme(ime_control_delegate_.get(), accelerator);
+      HandleSwitchIme(accelerator);
       break;
     case SWITCH_TO_NEXT_USER:
       HandleCycleUser(CycleUserDirection::NEXT);

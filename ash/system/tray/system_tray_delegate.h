@@ -56,12 +56,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns a non-empty string if IMEs are managed by policy.
   virtual base::string16 GetIMEManagedMessage();
 
-  // Switches to the selected input method.
-  virtual void SwitchIME(const std::string& ime_id);
-
-  // Activates an IME property.
-  virtual void ActivateIMEProperty(const std::string& key);
-
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
 

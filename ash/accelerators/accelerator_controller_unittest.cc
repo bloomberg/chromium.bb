@@ -8,7 +8,6 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/ash_switches.h"
-#include "ash/ime_control_delegate.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -53,6 +52,8 @@
 #include <X11/Xlib.h>
 #include "ui/events/test/events_test_utils_x11.h"
 #endif
+
+using chromeos::input_method::InputMethodManager;
 
 namespace ash {
 
@@ -124,34 +125,57 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
 };
 
-class DummyImeControlDelegate : public ImeControlDelegate {
+class TestInputMethodManagerState
+    : public chromeos::input_method::MockInputMethodManager::State {
  public:
-  DummyImeControlDelegate()
-      : handle_next_ime_count_(0),
-        handle_previous_ime_count_(0),
-        handle_switch_ime_count_(0) {}
-  ~DummyImeControlDelegate() override {}
+  TestInputMethodManagerState() = default;
 
-  bool CanCycleIme() override { return true; }
-  void HandleNextIme() override { ++handle_next_ime_count_; }
-  void HandlePreviousIme() override { ++handle_previous_ime_count_; }
-  bool CanSwitchIme(const ui::Accelerator& accelerator) override {
-    return true;
+  // InputMethodManager::State:
+  bool CanCycleInputMethod() override { return can_change_input_method_; }
+  void SwitchToNextInputMethod() override { next_ime_count_++; }
+  void SwitchToPreviousInputMethod() override { previous_ime_count_++; }
+  bool CanSwitchInputMethod(const ui::Accelerator& accelerator) override {
+    return can_change_input_method_;
   }
-  void HandleSwitchIme(const ui::Accelerator& accelerator) override {
-    ++handle_switch_ime_count_;
+  void SwitchInputMethod(const ui::Accelerator& accelerator) override {
+    switch_ime_count_++;
   }
 
-  int handle_next_ime_count() const { return handle_next_ime_count_; }
-  int handle_previous_ime_count() const { return handle_previous_ime_count_; }
-  int handle_switch_ime_count() const { return handle_switch_ime_count_; }
+  bool can_change_input_method_ = true;
+  int next_ime_count_ = 0;
+  int previous_ime_count_ = 0;
+  int switch_ime_count_ = 0;
 
  private:
-  int handle_next_ime_count_;
-  int handle_previous_ime_count_;
-  int handle_switch_ime_count_;
+  // Base class is ref-counted.
+  ~TestInputMethodManagerState() override = default;
 
-  DISALLOW_COPY_AND_ASSIGN(DummyImeControlDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerState);
+};
+
+class TestInputMethodManager
+    : public chromeos::input_method::MockInputMethodManager {
+ public:
+  TestInputMethodManager() : state_(new TestInputMethodManagerState) {}
+  ~TestInputMethodManager() override = default;
+
+  void SetCanChangeInputMethod(bool can_change) {
+    state_->can_change_input_method_ = can_change;
+  }
+
+  // MockInputMethodManager:
+  chromeos::input_method::ImeKeyboard* GetImeKeyboard() override {
+    return &keyboard_;
+  }
+  scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
+    return state_;
+  }
+
+  chromeos::input_method::FakeImeKeyboard keyboard_;
+  scoped_refptr<TestInputMethodManagerState> state_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
 };
 
 class DummyKeyboardBrightnessControlDelegate
@@ -207,8 +231,20 @@ bool TestTarget::CanHandleAccelerators() const {
 
 class AcceleratorControllerTest : public test::AshTestBase {
  public:
-  AcceleratorControllerTest() {}
-  ~AcceleratorControllerTest() override {}
+  AcceleratorControllerTest() = default;
+  ~AcceleratorControllerTest() override = default;
+
+  void SetUp() override {
+    test::AshTestBase::SetUp();
+    test_input_method_manager_ = new TestInputMethodManager;
+    // Takes ownership.
+    InputMethodManager::Initialize(test_input_method_manager_);
+  }
+
+  void TearDown() override {
+    InputMethodManager::Shutdown();
+    test::AshTestBase::TearDown();
+  }
 
  protected:
   static AcceleratorController* GetController();
@@ -263,6 +299,9 @@ class AcceleratorControllerTest : public test::AshTestBase {
       std::unique_ptr<KeyboardBrightnessControlDelegate> delegate) {
     Shell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
   }
+
+  // Owned by InputMethodManager.
+  TestInputMethodManager* test_input_method_manager_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
@@ -849,7 +888,11 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
-  // Test IME shortcuts.
+  TestInputMethodManagerState* test_state =
+      test_input_method_manager_->state_.get();
+
+  // Test IME shortcuts when cycling IME is blocked.
+  test_state->can_change_input_method_ = false;
   ui::Accelerator control_space_down(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   ui::Accelerator control_space_up(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   control_space_up.set_key_state(ui::Accelerator::KeyState::RELEASED);
@@ -865,25 +908,25 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   EXPECT_FALSE(ProcessInController(wide_half_1));
   EXPECT_FALSE(ProcessInController(wide_half_2));
   EXPECT_FALSE(ProcessInController(hangul));
-  DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
-  GetController()->SetImeControlDelegate(
-      std::unique_ptr<ImeControlDelegate>(delegate));
-  EXPECT_EQ(0, delegate->handle_previous_ime_count());
+
+  // Test IME shortcuts when cycling IME is allowed.
+  test_state->can_change_input_method_ = true;
+  EXPECT_EQ(0, test_state->previous_ime_count_);
   EXPECT_TRUE(ProcessInController(control_space_down));
-  EXPECT_EQ(1, delegate->handle_previous_ime_count());
+  EXPECT_EQ(1, test_state->previous_ime_count_);
   EXPECT_TRUE(ProcessInController(control_space_up));
-  EXPECT_EQ(1, delegate->handle_previous_ime_count());
-  EXPECT_EQ(0, delegate->handle_switch_ime_count());
+  EXPECT_EQ(1, test_state->previous_ime_count_);
+  EXPECT_EQ(0, test_state->switch_ime_count_);
   EXPECT_TRUE(ProcessInController(convert));
-  EXPECT_EQ(1, delegate->handle_switch_ime_count());
+  EXPECT_EQ(1, test_state->switch_ime_count_);
   EXPECT_TRUE(ProcessInController(non_convert));
-  EXPECT_EQ(2, delegate->handle_switch_ime_count());
+  EXPECT_EQ(2, test_state->switch_ime_count_);
   EXPECT_TRUE(ProcessInController(wide_half_1));
-  EXPECT_EQ(3, delegate->handle_switch_ime_count());
+  EXPECT_EQ(3, test_state->switch_ime_count_);
   EXPECT_TRUE(ProcessInController(wide_half_2));
-  EXPECT_EQ(4, delegate->handle_switch_ime_count());
+  EXPECT_EQ(4, test_state->switch_ime_count_);
   EXPECT_TRUE(ProcessInController(hangul));
-  EXPECT_EQ(5, delegate->handle_switch_ime_count());
+  EXPECT_EQ(5, test_state->switch_ime_count_);
 }
 
 // TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
@@ -932,45 +975,8 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 
 namespace {
 
-class TestInputMethodManager
-    : public chromeos::input_method::MockInputMethodManager {
- public:
-  TestInputMethodManager() = default;
-  ~TestInputMethodManager() override = default;
-
-  // MockInputMethodManager:
-  chromeos::input_method::ImeKeyboard* GetImeKeyboard() override {
-    return &keyboard_;
-  }
-
- private:
-  chromeos::input_method::FakeImeKeyboard keyboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
-};
-
-class ToggleCapsLockTest : public AcceleratorControllerTest {
- public:
-  ToggleCapsLockTest() = default;
-  ~ToggleCapsLockTest() override = default;
-
-  void SetUp() override {
-    AcceleratorControllerTest::SetUp();
-    chromeos::input_method::InputMethodManager::Initialize(
-        new TestInputMethodManager);
-  }
-
-  void TearDown() override {
-    chromeos::input_method::InputMethodManager::Shutdown();
-    AcceleratorControllerTest::TearDown();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToggleCapsLockTest);
-};
-
 // Tests the five combinations of the TOGGLE_CAPS_LOCK accelerator.
-TEST_F(ToggleCapsLockTest, ToggleCapsLockAccelerators) {
+TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   chromeos::input_method::InputMethodManager* input_method_manager =
       chromeos::input_method::InputMethodManager::Get();
   ASSERT_TRUE(input_method_manager);
@@ -1262,17 +1268,8 @@ namespace {
 // defines a class to test the behavior of deprecated accelerators.
 class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
  public:
-  DeprecatedAcceleratorTester() {}
-  ~DeprecatedAcceleratorTester() override {}
-
-  void SetUp() override {
-    AcceleratorControllerTest::SetUp();
-
-    // For testing the deprecated and new IME shortcuts.
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
-    GetController()->SetImeControlDelegate(
-        std::unique_ptr<ImeControlDelegate>(delegate));
-  }
+  DeprecatedAcceleratorTester() = default;
+  ~DeprecatedAcceleratorTester() override = default;
 
   ui::Accelerator CreateAccelerator(const AcceleratorData& data) const {
     ui::Accelerator result(data.keycode, data.modifiers);

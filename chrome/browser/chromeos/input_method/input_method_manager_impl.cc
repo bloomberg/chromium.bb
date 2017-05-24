@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
-#include "chrome/browser/chromeos/input_method/input_method_switch_recorder.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -748,7 +747,6 @@ void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethod() {
   // Find the next input method and switch to it.
   SwitchToNextInputMethodInternal(active_input_method_ids,
                                   current_input_method.id());
-  InputMethodSwitchRecorder::Get()->RecordSwitch(false /* by_tray_menu*/);
 }
 
 void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
@@ -772,7 +770,6 @@ void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
     return;
   }
   ChangeInputMethod(*iter, true);
-  InputMethodSwitchRecorder::Get()->RecordSwitch(false /* by_tray_menu*/);
 }
 
 bool InputMethodManagerImpl::StateImpl::CanSwitchInputMethod(
@@ -790,10 +787,8 @@ void InputMethodManagerImpl::StateImpl::SwitchInputMethod(
   std::vector<std::string> candidate_ids;
   GetCandidateInputMethodsForAccelerator(accelerator, &candidate_ids);
   DCHECK(!candidate_ids.empty());
-  if (!candidate_ids.empty()) {
+  if (!candidate_ids.empty())
     SwitchToNextInputMethodInternal(candidate_ids, current_input_method.id());
-    InputMethodSwitchRecorder::Get()->RecordSwitch(false /* by_tray_menu*/);
-  }
 }
 
 void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethodInternal(
