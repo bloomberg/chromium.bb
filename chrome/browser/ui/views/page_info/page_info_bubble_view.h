@@ -101,6 +101,8 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   // WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
+  void WasHidden() override;
+  void DidStartNavigation(content::NavigationHandle* handle) override;
 
   // PermissionSelectorRowObserver implementation.
   void OnPermissionChanged(
