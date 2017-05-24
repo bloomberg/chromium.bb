@@ -8,6 +8,9 @@ source_set("tools") {
     "tools_coordinator.mm",
     "tools_mediator.h",
     "tools_mediator.mm",
+    "tools_mediator_private.h",
+    "tools_menu_model.h",
+    "tools_menu_model.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -15,12 +18,16 @@ source_set("tools") {
   deps = [
     ":tools_ui",
     "//base",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/tools_menu",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/presenters",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/shared/chrome/browser/ui/tools_menu",
+    "//ui/base",
   ]
 }
 
