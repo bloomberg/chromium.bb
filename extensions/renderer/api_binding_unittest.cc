@@ -491,7 +491,12 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
 // Tests that events specified in the API are created as properties of the API
 // object.
 TEST_F(APIBindingUnittest, TestEventCreation) {
-  SetEvents("[{'name': 'onFoo'}, {'name': 'onBar'}]");
+  SetEvents(
+      R"([
+           {'name': 'onFoo'},
+           {'name': 'onBar'},
+           {'name': 'onBaz', 'options': {'maxListeners': 1}}
+         ])");
   SetFunctions(kFunctions);
   InitializeBinding();
 
@@ -517,7 +522,25 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   v8::Maybe<bool> has_on_baz =
       binding_object->Has(context, gin::StringToV8(isolate(), "onBaz"));
   EXPECT_TRUE(has_on_baz.IsJust());
-  EXPECT_FALSE(has_on_baz.FromJust());
+  EXPECT_TRUE(has_on_baz.FromJust());
+
+  // Test that the maxListeners property is correctly used.
+  v8::Local<v8::Function> add_listener = FunctionFromString(
+      context, "(function(e) { e.addListener(function() {}); })");
+  v8::Local<v8::Value> args[] = {
+      GetPropertyFromObject(binding_object, context, "onBaz")};
+  RunFunction(add_listener, context, arraysize(args), args);
+  EXPECT_EQ(1u, event_handler()->GetNumEventListenersForTesting("test.onBaz",
+                                                                context));
+  RunFunctionAndExpectError(add_listener, context, arraysize(args), args,
+                            "Uncaught TypeError: Too many listeners.");
+  EXPECT_EQ(1u, event_handler()->GetNumEventListenersForTesting("test.onBaz",
+                                                                context));
+
+  v8::Maybe<bool> has_nonexistent_event = binding_object->Has(
+      context, gin::StringToV8(isolate(), "onNonexistentEvent"));
+  EXPECT_TRUE(has_nonexistent_event.IsJust());
+  EXPECT_FALSE(has_nonexistent_event.FromJust());
 }
 
 TEST_F(APIBindingUnittest, TestProperties) {

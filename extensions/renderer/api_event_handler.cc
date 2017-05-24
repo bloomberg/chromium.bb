@@ -115,6 +115,7 @@ APIEventHandler::~APIEventHandler() {}
 v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
     const std::string& event_name,
     bool supports_filters,
+    int max_listeners,
     v8::Local<v8::Context> context) {
   // We need a context scope since gin::CreateHandle only takes the isolate
   // and infers the context from that.
@@ -129,10 +130,11 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
       base::Bind(listeners_changed_, event_name);
   std::unique_ptr<APIEventListeners> listeners;
   if (supports_filters) {
-    listeners = base::MakeUnique<FilteredEventListeners>(updated, event_name,
-                                                         &event_filter_);
+    listeners = base::MakeUnique<FilteredEventListeners>(
+        updated, event_name, max_listeners, &event_filter_);
   } else {
-    listeners = base::MakeUnique<UnfilteredEventListeners>(updated);
+    listeners =
+        base::MakeUnique<UnfilteredEventListeners>(updated, max_listeners);
   }
 
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
@@ -156,7 +158,7 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
   bool supports_filters = false;
   std::unique_ptr<APIEventListeners> listeners =
       base::MakeUnique<UnfilteredEventListeners>(
-          base::Bind(&DoNothingOnListenersChanged));
+          base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax);
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
       context->GetIsolate(),
       new EventEmitter(supports_filters, std::move(listeners), call_js_));

@@ -27,9 +27,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
         chrome.mdns.onServiceList.addListener(
             function() {},
             {'serviceType': '_one_too_many._tcp.local'});
-      } catch (x) {
-        chrome.test.assertEq('Too many listeners for mdns.onServiceList',
-                             x.message);
+      } catch (e) {
+        chrome.test.assertTrue(e.message.indexOf('Too many listeners') != -1,
+                               e.message);
         failedToAddLast = true;
       }
       chrome.test.assertBool(

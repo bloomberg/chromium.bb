@@ -78,7 +78,8 @@ class APIEventListeners {
 // dispatched is dispatched to all the associated listeners.
 class UnfilteredEventListeners final : public APIEventListeners {
  public:
-  UnfilteredEventListeners(const ListenersUpdated& listeners_updated);
+  UnfilteredEventListeners(const ListenersUpdated& listeners_updated,
+                           int max_listeners);
   ~UnfilteredEventListeners() override;
 
   bool AddListener(v8::Local<v8::Function> listener,
@@ -107,6 +108,9 @@ class UnfilteredEventListeners final : public APIEventListeners {
 
   ListenersUpdated listeners_updated_;
 
+  // The maximum number of supported listeners.
+  int max_listeners_;
+
   DISALLOW_COPY_AND_ASSIGN(UnfilteredEventListeners);
 };
 
@@ -118,6 +122,7 @@ class FilteredEventListeners final : public APIEventListeners {
  public:
   FilteredEventListeners(const ListenersUpdated& listeners_updated,
                          const std::string& event_name,
+                         int max_listeners,
                          EventFilter* event_filter);
   ~FilteredEventListeners() override;
 
@@ -147,6 +152,9 @@ class FilteredEventListeners final : public APIEventListeners {
   ListenersUpdated listeners_updated_;
 
   std::string event_name_;
+
+  // The maximum number of supported listeners.
+  int max_listeners_;
 
   // The associated EventFilter; required to outlive this object.
   EventFilter* event_filter_ = nullptr;
