@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import android.Manifest;
-import android.Manifest.permission;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -43,7 +42,7 @@ import javax.annotation.Nullable;
 /**
  * Util methods for platform networking APIs.
  */
-public class PlatformNetworksManager {
+class PlatformNetworksManager {
     @VisibleForTesting
     static TimeProvider sTimeProvider = new TimeProvider();
 
@@ -258,7 +257,7 @@ public class PlatformNetworksManager {
      *     not connected. This should only be true when performing a background non-synchronous
      *     call, since including not connected networks can degrade latency.
      */
-    public static VisibleNetworks computeVisibleNetworks(
+    static VisibleNetworks computeVisibleNetworks(
             Context context, boolean includeAllVisibleNotConnectedNetworks) {
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(
                 Context.WIFI_SERVICE);
@@ -312,18 +311,18 @@ public class PlatformNetworksManager {
      * Wrapper around static time providers that allows us to mock the implementation in
      * tests.
      */
-    public static class TimeProvider {
+    static class TimeProvider {
         /**
          * Get current time in milliseconds.
          */
-        public long getCurrentTime() {
+        long getCurrentTime() {
             return System.currentTimeMillis();
         }
 
         /**
          * Get elapsed real time in milliseconds.
          */
-        public long getElapsedRealtime() {
+        long getElapsedRealtime() {
             return SystemClock.elapsedRealtime();
         }
     }
