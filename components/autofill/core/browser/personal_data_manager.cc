@@ -762,6 +762,18 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   return iter != credit_cards.end() ? *iter : nullptr;
 }
 
+CreditCard* PersonalDataManager::GetCreditCardByNumber(
+    const std::string& number) {
+  CreditCard numbered_card;
+  numbered_card.SetNumber(base::ASCIIToUTF16(number));
+  for (CreditCard* credit_card : GetCreditCards()) {
+    DCHECK(credit_card);
+    if (credit_card->HasSameNumberAs(numbered_card))
+      return credit_card;
+  }
+  return nullptr;
+}
+
 void PersonalDataManager::GetNonEmptyTypes(
     ServerFieldTypeSet* non_empty_types) {
   for (AutofillProfile* profile : GetProfiles())

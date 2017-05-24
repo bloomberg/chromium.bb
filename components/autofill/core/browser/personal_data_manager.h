@@ -184,6 +184,10 @@ class PersonalDataManager : public KeyedService,
   // no credit card with the specified |guid|.
   virtual CreditCard* GetCreditCardByGUID(const std::string& guid);
 
+  // Returns the credit card with the specified |number|, or nullptr if there is
+  // no credit card with the specified |number|.
+  virtual CreditCard* GetCreditCardByNumber(const std::string& number);
+
   // Gets the field types availabe in the stored address and credit card data.
   void GetNonEmptyTypes(ServerFieldTypeSet* non_empty_types);
 

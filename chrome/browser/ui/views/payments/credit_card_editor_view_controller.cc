@@ -222,7 +222,10 @@ CreditCardEditorViewController::CreditCardEditorViewController(
       on_edited_(std::move(on_edited)),
       on_added_(std::move(on_added)),
       credit_card_to_edit_(credit_card),
-      add_billing_address_button_tag_(next_ui_tag) {}
+      add_billing_address_button_tag_(next_ui_tag) {
+  if (spec)
+    supported_card_networks_ = spec->supported_card_networks_set();
+}
 
 CreditCardEditorViewController::~CreditCardEditorViewController() {}
 
@@ -499,11 +502,8 @@ CreditCardEditorViewController::CreateValidationDelegate(
   // The supported card networks for non-cc-number types are not passed to avoid
   // the data copy in the delegate.
   return base::MakeUnique<
-      CreditCardEditorViewController::CreditCardValidationDelegate>(
-      field, this,
-      field.type == autofill::CREDIT_CARD_NUMBER
-          ? spec()->supported_card_networks()
-          : std::vector<std::string>());
+      CreditCardEditorViewController::CreditCardValidationDelegate>(field,
+                                                                    this);
 }
 
 std::unique_ptr<ui::ComboboxModel>
@@ -565,6 +565,31 @@ void CreditCardEditorViewController::FillContentView(
   combobox->SetEnabled(combobox->GetRowCount() > 1);
 }
 
+bool CreditCardEditorViewController::IsValidCreditCardNumber(
+    const base::string16& card_number,
+    base::string16* error_message) {
+  if (!autofill::IsValidCreditCardNumberForBasicCardNetworks(
+          card_number, supported_card_networks_, error_message)) {
+    return false;
+  }
+  // Now check if another credit card has already been created with this number.
+  // TODO(crbug.com/725604): the UI should offer to load / update the existing
+  // credit card info.
+  autofill::CreditCard* existing_card =
+      state()->GetPersonalDataManager()->GetCreditCardByNumber(
+          base::UTF16ToASCII(card_number));
+  // If a card exists, it could be the one currently edited.
+  if (!existing_card || (credit_card_to_edit_ && credit_card_to_edit_->guid() ==
+                                                     existing_card->guid())) {
+    return true;
+  }
+  if (error_message) {
+    *error_message = l10n_util::GetStringUTF16(
+        IDS_PAYMENTS_VALIDATION_ALREADY_USED_CREDIT_CARD_NUMBER);
+  }
+  return false;
+}
+
 base::string16 CreditCardEditorViewController::GetSheetTitle() {
   if (!credit_card_to_edit_)
     return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
@@ -611,14 +636,9 @@ void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::
-    CreditCardValidationDelegate(
-        const EditorField& field,
-        CreditCardEditorViewController* controller,
-        const std::vector<std::string>& supported_card_networks)
-    : field_(field),
-      controller_(controller),
-      supported_card_networks_(supported_card_networks.begin(),
-                               supported_card_networks.end()) {}
+    CreditCardValidationDelegate(const EditorField& field,
+                                 CreditCardEditorViewController* controller)
+    : field_(field), controller_(controller) {}
 CreditCardEditorViewController::CreditCardValidationDelegate::
     ~CreditCardValidationDelegate() {}
 
@@ -678,12 +698,14 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
     ValidateValue(const base::string16& value, base::string16* error_message) {
   if (!value.empty()) {
     base::string16 local_error_message;
-    bool is_valid =
-        field_.type == autofill::CREDIT_CARD_NUMBER
-            ? autofill::IsValidCreditCardNumberForBasicCardNetworks(
-                  value, supported_card_networks_, &local_error_message)
-            : autofill::IsValidForType(value, field_.type,
-                                       &local_error_message);
+    bool is_valid = false;
+    if (field_.type == autofill::CREDIT_CARD_NUMBER) {
+      is_valid =
+          controller_->IsValidCreditCardNumber(value, &local_error_message);
+    } else {
+      is_valid =
+          autofill::IsValidForType(value, field_.type, &local_error_message);
+    }
     if (error_message)
       *error_message = local_error_message;
     return is_valid;

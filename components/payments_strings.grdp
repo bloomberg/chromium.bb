@@ -161,6 +161,9 @@
   <message name="IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE" desc="Message displayed to user when the credit card type (e.g visa, mastercard) is not supported for this transaction.">
     This type of card isn’t supported
   </message>
+  <message name="IDS_PAYMENTS_VALIDATION_ALREADY_USED_CREDIT_CARD_NUMBER" desc="Message displayed to user when the credit card number they have entered corresponds to an existing credit card number in their user profile.">
+    This card number is already used
+  </message>
   <message name="IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE" desc="The text that informs the user that '*' character indicates an input field that is required. The '*' character should not be changed." formatter_data="android_java">
      * Field is required
   </message>
