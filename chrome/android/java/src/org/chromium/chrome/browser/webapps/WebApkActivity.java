@@ -156,9 +156,8 @@ public class WebApkActivity extends WebappActivity {
     protected void onDeferredStartupWithNullStorage() {
         super.onDeferredStartupWithNullStorage();
 
-        // Register the WebAPK. The WebAPK is not registered when it is created so it has to be
-        // registered now. The WebAPK may also become unregistered after a user clears Chrome's
-        // data.
+        // Register the WebAPK. The WebAPK was registered when it was created, but may also become
+        // unregistered after a user clears Chrome's data.
         WebappRegistry.getInstance().register(
                 mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override

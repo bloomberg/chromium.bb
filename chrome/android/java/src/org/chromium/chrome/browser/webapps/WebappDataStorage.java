@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -277,12 +278,16 @@ public class WebappDataStorage {
             editor.putBoolean(KEY_IS_ICON_GENERATED, IntentUtils.safeGetBooleanExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_IS_ICON_GENERATED, false));
             editor.putString(KEY_ACTION, shortcutIntent.getAction());
-            editor.putInt(KEY_SOURCE, IntentUtils.safeGetIntExtra(
-                        shortcutIntent, ShortcutHelper.EXTRA_SOURCE,
-                        ShortcutSource.UNKNOWN));
-            editor.putString(KEY_WEBAPK_PACKAGE_NAME,
-                    IntentUtils.safeGetStringExtra(
-                            shortcutIntent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME));
+
+            String webApkPackageName = IntentUtils.safeGetStringExtra(
+                    shortcutIntent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+            editor.putString(KEY_WEBAPK_PACKAGE_NAME, webApkPackageName);
+
+            if (TextUtils.isEmpty(webApkPackageName)) {
+                editor.putInt(KEY_SOURCE,
+                        IntentUtils.safeGetIntExtra(shortcutIntent, ShortcutHelper.EXTRA_SOURCE,
+                                ShortcutSource.UNKNOWN));
+            }
             updated = true;
         }
         if (updated) editor.apply();
@@ -338,6 +343,16 @@ public class WebappDataStorage {
      */
     public String getUrl() {
         return mPreferences.getString(KEY_URL, URL_INVALID);
+    }
+
+    /** Returns the source stored in this object, or ShortcutSource.UNKNOWN if it is not stored. */
+    public int getSource() {
+        return mPreferences.getInt(KEY_SOURCE, ShortcutSource.UNKNOWN);
+    }
+
+    /** Updates the source. */
+    public void updateSource(int source) {
+        mPreferences.edit().putInt(KEY_SOURCE, source).apply();
     }
 
     /**
