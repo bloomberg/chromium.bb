@@ -1244,11 +1244,14 @@ component("base") {
 
     sources += [
       "debug/stack_trace_fuchsia.cc",
+      "process/launch_fuchsia.cc",
       "process/process_fuchsia.cc",
       "process/process_handle_fuchsia.cc",
       "sys_info_fuchsia.cc",
       "threading/platform_thread_fuchsia.cc",
     ]
+
+    libs = [ "launchpad" ]
   }
 
   # NaCl.
