@@ -24,6 +24,10 @@ TranslateCompactInfoBar::TranslateCompactInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
     : InfoBarAndroid(std::move(delegate)), action_flags_(FLAG_NONE) {
   GetDelegate()->SetObserver(this);
+
+  // Flip the translate bit if auto translate is enabled.
+  if (GetDelegate()->translate_step() == translate::TRANSLATE_STEP_TRANSLATING)
+    action_flags_ |= FLAG_TRANSLATE;
 }
 
 TranslateCompactInfoBar::~TranslateCompactInfoBar() {
@@ -59,7 +63,6 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
 
-  // TODO(ramyasharma): Handle other button clicks.
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
     action_flags_ |= FLAG_TRANSLATE;
@@ -72,8 +75,6 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
   } else if (action == InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
     action_flags_ |= FLAG_REVERT;
     delegate->RevertWithoutClosingInfobar();
-  } else if (action == InfoBarAndroid::ACTION_CANCEL) {
-    delegate->TranslationDeclined();
   } else {
     DCHECK_EQ(InfoBarAndroid::ACTION_NONE, action);
   }
@@ -141,8 +142,21 @@ bool TranslateCompactInfoBar::ShouldAutoAlwaysTranslate() {
 
 jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean menu_expanded) {
+  // Flip menu expanded bit.
+  if (menu_expanded)
+    action_flags_ |= FLAG_EXPAND_MENU;
+
+  if (!IsDeclinedByUser())
+    return false;
+
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
+  // Don't trigger if it's off the record or already blocked.
+  if (delegate->is_off_the_record() ||
+      !delegate->IsTranslatableLanguageByPrefs())
+    return false;
+
   return (delegate->GetTranslationDeniedCount() == kDeniedCountThreshold);
 }
 
@@ -165,8 +179,9 @@ void TranslateCompactInfoBar::OnTranslateStepChanged(
 }
 
 bool TranslateCompactInfoBar::IsDeclinedByUser() {
+  // Whether there is any affirmative action bit.
   return action_flags_ == FLAG_NONE;
-};
+}
 
 // Native JNI methods ---------------------------------------------------------
 

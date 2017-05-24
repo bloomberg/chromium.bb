@@ -44,11 +44,15 @@ class TranslateCompactInfoBar
   // Check whether we should automatically trigger "Never Translate Language".
   jboolean ShouldAutoNeverTranslate(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean menu_expanded);
 
   // TranslateInfoBarDelegate::Observer implementation.
   void OnTranslateStepChanged(translate::TranslateStep step,
                     translate::TranslateErrors::Type error_type) override;
+  // Returns true if the user didn't take any affirmative action.
+  // The function will be called when the translate infobar is dismissed.
+  // If it's true, we will record a declined event.
   bool IsDeclinedByUser() override;
 
  private:
@@ -61,10 +65,10 @@ class TranslateCompactInfoBar
 
   translate::TranslateInfoBarDelegate* GetDelegate();
 
-  // Bits for trace user actions.
+  // Bits for trace user's affirmative actions.
   unsigned int action_flags_;
 
-  // User action flags to record what the user has done in each session.
+  // Affirmative action flags to record what the user has done in one session.
   enum ActionFlag {
     FLAG_NONE = 0,
     FLAG_TRANSLATE = 1 << 0,
@@ -72,6 +76,7 @@ class TranslateCompactInfoBar
     FLAG_ALWAYS_TRANSLATE = 1 << 2,
     FLAG_NEVER_LANGUAGE = 1 << 3,
     FLAG_NEVER_SITE = 1 << 4,
+    FLAG_EXPAND_MENU = 1 << 5,
   };
 
   // If number of consecutive translations is equal to this number, infobar will
