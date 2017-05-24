@@ -333,7 +333,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
 
   AtomicString image_source_url = element_->ImageSourceURL();
   ImageResourceContent* new_image = nullptr;
-  if (!url.IsNull()) {
+  if (!url.IsNull() && !url.IsEmpty()) {
     // Unlike raw <img>, we block mixed content inside of <picture> or
     // <img srcset>.
     ResourceLoaderOptions resource_loader_options =
