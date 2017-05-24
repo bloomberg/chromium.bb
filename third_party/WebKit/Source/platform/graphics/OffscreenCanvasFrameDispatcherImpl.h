@@ -67,10 +67,25 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   int pending_compositor_frames_ = 0;
 
   unsigned next_resource_id_;
-  HashMap<unsigned, RefPtr<StaticBitmapImage>> cached_images_;
-  HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> shared_bitmaps_;
-  HashMap<unsigned, GLuint> cached_texture_ids_;
-  HashSet<unsigned> spare_resource_locks_;
+
+  struct FrameResource {
+    RefPtr<StaticBitmapImage> image_;
+    std::unique_ptr<cc::SharedBitmap> shared_bitmap_;
+    GLuint texture_id_ = 0;
+    GLuint image_id_ = 0;
+    bool spare_lock_ = true;
+    gpu::Mailbox mailbox_;
+
+    FrameResource() {}
+    ~FrameResource();
+  };
+
+  std::unique_ptr<FrameResource> recycleable_resource_;
+  std::unique_ptr<FrameResource> createOrRecycleFrameResource();
+
+  typedef HashMap<unsigned, std::unique_ptr<FrameResource>> ResourceMap;
+  void ReclaimResourceInternal(const ResourceMap::iterator&);
+  ResourceMap resources_;
 
   bool VerifyImageSize(const IntSize);
   void PostImageToPlaceholder(RefPtr<StaticBitmapImage>);
