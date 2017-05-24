@@ -277,9 +277,9 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
     case WorldType::kInspectorIsolated: {
       DCHECK(IsMainThread());
       static int next_devtools_isolated_world_id =
-          WorldId::kDevToolsFirstIsolatedWorldId;
+          IsolatedWorldId::kDevToolsFirstIsolatedWorldId;
       if (next_devtools_isolated_world_id >
-          WorldId::kDevToolsLastIsolatedWorldId)
+          IsolatedWorldId::kDevToolsLastIsolatedWorldId)
         return WorldId::kInvalidWorldId;
       return next_devtools_isolated_world_id++;
     }

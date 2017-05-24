@@ -115,6 +115,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::unique_ptr<content::WebContents> web_contents_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::list<MojoService> mojo_services_;
+  bool inject_mojo_services_into_isolated_world_;
   std::unique_ptr<HeadlessTabSocketImpl> headless_tab_socket_;
 
   HeadlessBrowserContextImpl* browser_context_;      // Not owned.
