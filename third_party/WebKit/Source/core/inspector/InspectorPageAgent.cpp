@@ -106,6 +106,8 @@ String DialogTypeToProtocol(ChromeClient::DialogType dialog_type) {
       return protocol::Page::DialogTypeEnum::Prompt;
     case ChromeClient::kHTMLDialog:
       return protocol::Page::DialogTypeEnum::Beforeunload;
+    case ChromeClient::kPrintDialog:
+      NOTREACHED();
   }
   return protocol::Page::DialogTypeEnum::Alert;
 }

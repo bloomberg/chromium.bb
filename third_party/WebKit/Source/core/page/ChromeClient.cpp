@@ -29,6 +29,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/FrameTree.h"
+#include "core/page/Page.h"
 #include "core/page/ScopedPageSuspender.h"
 #include "core/page/WindowFeatures.h"
 #include "core/probe/CoreProbes.h"
@@ -222,6 +223,11 @@ void ChromeClient::ClearToolTip(LocalFrame& frame) {
 }
 
 bool ChromeClient::Print(LocalFrame* frame) {
+  if (!CanOpenModalIfDuringPageDismissal(*frame->GetPage()->MainFrame(),
+                                         ChromeClient::kPrintDialog, "")) {
+    return false;
+  }
+
   if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(frame, UseCounter::kDialogInSandboxedContext);
     frame->Console().AddMessage(ConsoleMessage::Create(

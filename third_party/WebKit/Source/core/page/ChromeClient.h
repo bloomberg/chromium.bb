@@ -299,7 +299,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
     kAlertDialog = 0,
     kConfirmDialog = 1,
     kPromptDialog = 2,
-    kHTMLDialog = 3
+    kHTMLDialog = 3,
+    kPrintDialog = 4
   };
   virtual bool ShouldOpenModalDialogDuringPageDismissal(
       LocalFrame&,

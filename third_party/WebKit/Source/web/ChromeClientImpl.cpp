@@ -139,6 +139,8 @@ const char* DialogTypeToString(ChromeClient::DialogType dialog_type) {
       return "confirm";
     case ChromeClient::kPromptDialog:
       return "prompt";
+    case ChromeClient::kPrintDialog:
+      return "print";
     case ChromeClient::kHTMLDialog:
       NOTREACHED();
   }
