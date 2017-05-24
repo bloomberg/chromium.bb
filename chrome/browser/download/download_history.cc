@@ -315,6 +315,7 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
     ++history_size_;
   }
   notifier_.GetManager()->CheckForHistoryFilesRemoval();
+  notifier_.GetManager()->PostInitialization();
 
   initial_history_query_complete_ = true;
   for (Observer& observer : observers_)

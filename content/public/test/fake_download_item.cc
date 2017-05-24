@@ -157,6 +157,10 @@ void FakeDownloadItem::SetReceivedBytes(int64_t received_bytes) {
   received_bytes_ = received_bytes;
 }
 
+void FakeDownloadItem::SetTotalBytes(int64_t total_bytes) {
+  total_bytes_ = total_bytes;
+}
+
 int64_t FakeDownloadItem::GetReceivedBytes() const {
   return received_bytes_;
 }
@@ -206,7 +210,6 @@ void FakeDownloadItem::ShowDownloadInShell() {
 }
 
 bool FakeDownloadItem::IsPaused() const {
-  NOTREACHED();
   return false;
 }
 
@@ -351,8 +354,7 @@ bool FakeDownloadItem::AllDataSaved() const {
 }
 
 int64_t FakeDownloadItem::GetTotalBytes() const {
-  NOTREACHED();
-  return 1;
+  return total_bytes_;
 }
 
 const std::vector<DownloadItem::ReceivedSlice>&

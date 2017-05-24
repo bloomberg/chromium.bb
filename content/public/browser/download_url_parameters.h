@@ -209,6 +209,11 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // download is short-lived and is not shown in the UI.
   void set_transient(bool transient) { transient_ = transient; }
 
+  // Sets the optional guid for the download, the guid serves as the unique
+  // identitfier for the download item. If no guid is provided, download
+  // system will automatically generate one.
+  void set_guid(const std::string& guid) { guid_ = guid; }
+
   // For downloads of blob URLs, the caller can store a BlobDataHandle in the
   // DownloadUrlParameters object so that the blob will remain valid until
   // the download starts. The BlobDataHandle will be attached to the associated
@@ -262,6 +267,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const GURL& url() const { return url_; }
   bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
   bool is_transient() const { return transient_; }
+  std::string guid() const { return guid_; }
 
   // STATE_CHANGING: Return the BlobDataHandle.
   std::unique_ptr<storage::BlobDataHandle> GetBlobDataHandle() {
@@ -294,6 +300,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   GURL url_;
   bool do_not_prompt_for_login_;
   bool transient_;
+  std::string guid_;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
