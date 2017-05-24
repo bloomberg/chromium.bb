@@ -4,6 +4,7 @@
 
 #include "core/dom/Range.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/input/EventHandler.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
@@ -16,7 +17,6 @@
 #include "public/web/WebSettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 using ::testing::_;
@@ -51,7 +51,7 @@ class LinkSelectionTestBase : public ::testing::Test {
 
   FrameTestHelpers::WebViewHelper helper_;
   WebViewBase* web_view_ = nullptr;
-  Persistent<WebLocalFrameImpl> main_frame_ = nullptr;
+  Persistent<WebLocalFrameBase> main_frame_ = nullptr;
 };
 
 void LinkSelectionTestBase::EmulateMouseDrag(const IntPoint& down_point,

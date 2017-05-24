@@ -36,7 +36,7 @@ class WebInputEvent;
 class WebInputMethodControllerImpl;
 class WebKeyboardEvent;
 class WebLayer;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebLayerTreeView;
 class WebPagePopupImpl;
 class WebSettingsImpl;
@@ -71,7 +71,7 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
 
   // Returns the main frame associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
-  virtual WebLocalFrameImpl* MainFrameImpl() const = 0;
+  virtual WebLocalFrameBase* MainFrameImpl() const = 0;
 
   virtual float DefaultMinimumPageScaleFactor() const = 0;
   virtual float DefaultMaximumPageScaleFactor() const = 0;
@@ -137,8 +137,8 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   //   2) Calling updateAllLifecyclePhases() is a no-op.
   // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
   // notification unless the view did not need a layout.
-  virtual void LayoutUpdated(WebLocalFrameImpl*) = 0;
-  virtual void ResizeAfterLayout(WebLocalFrameImpl*) = 0;
+  virtual void LayoutUpdated(WebLocalFrameBase*) = 0;
+  virtual void ResizeAfterLayout(WebLocalFrameBase*) = 0;
 
   virtual void UpdatePageDefinedViewportConstraints(
       const ViewportDescription&) = 0;

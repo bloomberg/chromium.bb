@@ -30,6 +30,7 @@
 
 #include "web/tests/FrameTestHelpers.h"
 
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
@@ -48,7 +49,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
@@ -72,7 +72,7 @@ namespace {
 //    progress, it exits the run loop.
 // 7. At this point, all parsing, resource loads, and layout should be finished.
 TestWebFrameClient* TestClientForFrame(WebFrame* frame) {
-  return static_cast<TestWebFrameClient*>(ToWebLocalFrameImpl(frame)->Client());
+  return static_cast<TestWebFrameClient*>(ToWebLocalFrameBase(frame)->Client());
 }
 
 void RunServeAsyncRequestsTask(TestWebFrameClient* client) {
@@ -149,7 +149,7 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,
   return result;
 }
 
-WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame* parent,
+WebLocalFrameBase* CreateLocalChild(WebRemoteFrame* parent,
                                     const WebString& name,
                                     WebFrameClient* client,
                                     WebWidgetClient* widget_client,
@@ -158,7 +158,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame* parent,
   if (!client)
     client = DefaultWebFrameClient();
 
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent->CreateLocalChild(
+  WebLocalFrameBase* frame = ToWebLocalFrameBase(parent->CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
       static_cast<TestWebFrameClient*>(client)->GetInterfaceProvider(), nullptr,
       previous_sibling, WebParsedFeaturePolicy(), properties, nullptr));
@@ -219,7 +219,7 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
   web_view_->SetDeviceScaleFactor(
       web_view_client->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);
-  WebLocalFrame* frame = WebLocalFrameImpl::Create(
+  WebLocalFrame* frame = WebLocalFrameBase::Create(
       WebTreeScopeType::kDocument, web_frame_client,
       web_frame_client->GetInterfaceProvider(), nullptr, opener);
   web_view_->SetMainFrame(frame);

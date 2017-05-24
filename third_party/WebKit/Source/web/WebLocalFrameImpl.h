@@ -395,7 +395,7 @@ class WEB_EXPORT WebLocalFrameImpl final
     return shared_worker_repository_client_.get();
   }
 
-  void SetInputEventsTransformForEmulation(const IntSize&, float);
+  void SetInputEventsTransformForEmulation(const IntSize&, float) override;
 
   static void SelectWordAroundPosition(LocalFrame*, VisiblePosition);
 
@@ -404,7 +404,7 @@ class WEB_EXPORT WebLocalFrameImpl final
     return text_check_client_;
   }
 
-  TextFinder* GetTextFinder() const;
+  TextFinder* GetTextFinder() const override;
   // Returns the text finder object if it already exists.
   // Otherwise creates it and then returns.
   TextFinder& EnsureTextFinder() override;

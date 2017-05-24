@@ -6,11 +6,11 @@
 #define WebViewFrameWidget_h
 
 #include "core/frame/WebFrameWidgetBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
 #include "web/WebInputMethodControllerImpl.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -38,7 +38,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
  public:
   explicit WebViewFrameWidget(WebWidgetClient&,
                               WebViewBase&,
-                              WebLocalFrameImpl&);
+                              WebLocalFrameBase&);
   virtual ~WebViewFrameWidget();
 
   // WebFrameWidget overrides:
@@ -91,7 +91,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   void SetBaseBackgroundColorOverride(WebColor) override;
   void ClearBaseBackgroundColorOverride() override;
   void SetBaseBackgroundColor(WebColor) override;
-  WebLocalFrameImpl* LocalRoot() const override;
+  WebLocalFrameBase* LocalRoot() const override;
   WebInputMethodControllerImpl* GetActiveWebInputMethodController()
       const override;
 
@@ -110,7 +110,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
  private:
   WebWidgetClient* client_;
   RefPtr<WebViewBase> web_view_;
-  Persistent<WebLocalFrameImpl> main_frame_;
+  Persistent<WebLocalFrameBase> main_frame_;
 };
 
 }  // namespace blink

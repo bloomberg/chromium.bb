@@ -8,6 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/page/Page.h"
@@ -21,7 +22,6 @@
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
@@ -127,7 +127,7 @@ class ExternalPopupMenuTest : public ::testing::Test {
   const ExternalPopupMenuWebFrameClient& Client() const {
     return web_frame_client_;
   }
-  WebLocalFrameImpl* MainFrame() const {
+  WebLocalFrameBase* MainFrame() const {
     return helper_.WebView()->MainFrameImpl();
   }
 

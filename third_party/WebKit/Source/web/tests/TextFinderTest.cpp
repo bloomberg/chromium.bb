@@ -12,6 +12,7 @@
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
@@ -20,7 +21,6 @@
 #include "public/platform/Platform.h"
 #include "public/web/WebDocument.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 using blink::testing::RunPendingTasks;
@@ -31,7 +31,7 @@ class TextFinderTest : public ::testing::Test {
  protected:
   TextFinderTest() {
     web_view_helper_.Initialize();
-    WebLocalFrameImpl& frame_impl =
+    WebLocalFrameBase& frame_impl =
         *web_view_helper_.WebView()->MainFrameImpl();
     frame_impl.ViewImpl()->Resize(WebSize(640, 480));
     frame_impl.ViewImpl()->UpdateAllLifecyclePhases();

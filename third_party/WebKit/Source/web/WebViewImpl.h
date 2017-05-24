@@ -88,7 +88,7 @@ class WebElement;
 class WebInputMethodControllerImpl;
 class WebLayerTreeView;
 class WebLocalFrame;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class CompositorMutatorImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
@@ -309,7 +309,7 @@ class WEB_EXPORT WebViewImpl final
 
   // Returns the main frame associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
-  WebLocalFrameImpl* MainFrameImpl() const override;
+  WebLocalFrameBase* MainFrameImpl() const override;
 
   // Event related methods:
   void MouseContextMenu(const WebMouseEvent&);
@@ -348,8 +348,8 @@ class WEB_EXPORT WebViewImpl final
   //   2) Calling updateAllLifecyclePhases() is a no-op.
   // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
   // notification unless the view did not need a layout.
-  void LayoutUpdated(WebLocalFrameImpl*) override;
-  void ResizeAfterLayout(WebLocalFrameImpl*) override;
+  void LayoutUpdated(WebLocalFrameBase*) override;
+  void ResizeAfterLayout(WebLocalFrameBase*) override;
 
   void DidChangeContentsSize() override;
   void PageScaleFactorChanged() override;
@@ -582,7 +582,7 @@ class WEB_EXPORT WebViewImpl final
   WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
                                                     WebGestureDevice) const;
 
-  void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
+  void EnablePopupMouseWheelEventListener(WebLocalFrameBase* local_root);
   void DisablePopupMouseWheelEventListener();
 
   void CancelPagePopup();
@@ -726,7 +726,7 @@ class WEB_EXPORT WebViewImpl final
 
   // The local root whose document has |popup_mouse_wheel_event_listener_|
   // registered.
-  WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
+  WeakPersistent<WebLocalFrameBase> local_root_with_empty_mouse_wheel_listener_;
 
   WebPageImportanceSignals page_importance_signals_;
 

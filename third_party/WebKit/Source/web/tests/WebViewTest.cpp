@@ -47,6 +47,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -108,7 +109,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "web/DevToolsEmulator.h"
 #include "web/WebInputMethodControllerImpl.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
@@ -513,7 +513,7 @@ TEST_P(WebViewTest, FocusIsInactive) {
 
   web_view->SetFocus(true);
   web_view->SetIsActive(true);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   EXPECT_TRUE(frame->GetFrame()->GetDocument()->IsHTMLDocument());
 
   Document* document = frame->GetFrame()->GetDocument();
@@ -675,7 +675,7 @@ void WebViewTest::TestAutoResize(
       web_view_helper_.InitializeAndLoad(url, true, 0, &client);
   client.GetTestData().SetWebView(web_view);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   FrameView* frame_view = frame->GetFrame()->View();
   frame_view->UpdateLayout();
   EXPECT_FALSE(frame_view->LayoutPending());
@@ -782,7 +782,7 @@ void WebViewTest::TestTextInputType(WebTextInputType expected_type,
   RegisterMockedHttpURLLoad(html_file);
   WebViewBase* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + html_file);
-  WebInputMethodControllerImpl* controller =
+  WebInputMethodController* controller =
       web_view->MainFrameImpl()->GetInputMethodController();
   EXPECT_EQ(kWebTextInputTypeNone, controller->TextInputType());
   EXPECT_EQ(kWebTextInputTypeNone, controller->TextInputInfo().type);
@@ -908,8 +908,8 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
-  WebInputMethodControllerImpl* active_input_method_controller =
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
+  WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   frame->SetEditableSelectionOffsets(5, 13);
   EXPECT_EQ("56789abc", frame->SelectionAsText());
@@ -1331,7 +1331,7 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
 
   // Set up a composition from existing text that needs to be committed.
   Vector<CompositionUnderline> empty_underlines;
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->GetFrame()->GetInputMethodController().SetCompositionFromExistingText(
       empty_underlines, 0, 3);
 
@@ -1362,7 +1362,7 @@ TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
 
   WebVector<WebCompositionUnderline> empty_underlines;
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   frame->SetEditableSelectionOffsets(4, 4);
@@ -1401,7 +1401,7 @@ TEST_P(WebViewTest, ExtendSelectionAndDelete) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   web_view->SetInitialFocus(false);
   frame->SetEditableSelectionOffsets(10, 10);
   frame->ExtendSelectionAndDelete(5, 8);
@@ -1420,7 +1420,7 @@ TEST_P(WebViewTest, DeleteSurroundingText) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(web_view->MainFrame());
+  WebLocalFrameBase* frame = ToWebLocalFrameBase(web_view->MainFrame());
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   web_view->SetInitialFocus(false);
@@ -1466,7 +1466,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingText) {
   web_view->SetInitialFocus(false);
   WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
   underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   frame->SetEditableSelectionOffsets(4, 10);
@@ -1492,7 +1492,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInTextArea) {
   web_view->SetInitialFocus(false);
   WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
   underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
   frame->SetEditableSelectionOffsets(27, 27);
@@ -1535,7 +1535,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInRichText) {
   web_view->SetInitialFocus(false);
   WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
   underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(1, 1);
   WebDocument document = web_view->MainFrame()->GetDocument();
   EXPECT_FALSE(document.GetElementById("bold").IsNull());
@@ -1570,7 +1570,7 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
   EXPECT_EQ(6, info.composition_start);
   EXPECT_EQ(11, info.composition_end);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(6, 6);
   info = active_input_method_controller->TextInputInfo();
   EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
@@ -2291,7 +2291,7 @@ TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
   event.source_device = kWebGestureDeviceTouchscreen;
   event.x = 300;
   event.y = 300;
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2309,7 +2309,7 @@ TEST_P(WebViewTest, LongPressSelection) {
 
   WebString target = WebString::FromUTF8("target");
   WebString onselectstartfalse = WebString::FromUTF8("onselectstartfalse");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   EXPECT_TRUE(
       TapElementById(WebInputEvent::kGestureLongPress, onselectstartfalse));
@@ -2328,7 +2328,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   RunPendingTasks();
 
   WebString target = WebString::FromUTF8("target");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureTap, target));
@@ -2364,7 +2364,7 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   RunPendingTasks();
 
   WebString blanklinestextbox = WebString::FromUTF8("blanklinestextbox");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   // Long-press on carriage returns.
   EXPECT_TRUE(
@@ -2425,7 +2425,7 @@ TEST_P(WebViewTest, BlinkCaretAfterLongPress) {
   RunPendingTasks();
 
   WebString target = WebString::FromUTF8("target");
-  WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* main_frame = web_view->MainFrameImpl();
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
   EXPECT_FALSE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
@@ -2452,7 +2452,7 @@ TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
   web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
   RunPendingTasks();
 
-  WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* main_frame = web_view->MainFrameImpl();
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking is still suspended after showing context menu.
@@ -2475,7 +2475,7 @@ TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
 
   std::string test_word = "This text should be selected.";
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   EXPECT_EQ(test_word, std::string(frame->SelectionAsText().Utf8().data()));
 
   WebRange range = web_view->CaretOrSelectionRange();
@@ -2650,7 +2650,7 @@ TEST_P(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
   MockAutofillClient client;
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -2692,7 +2692,7 @@ TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
   MockAutofillClient client;
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "composition_not_cancelled_by_backspace.html");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -2738,7 +2738,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   MockAutofillClient client;
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -2780,7 +2780,7 @@ TEST_P(WebViewTest,
   MockAutofillClient client;
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html", true);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -2843,7 +2843,7 @@ TEST_P(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   // Make a request from a local frame.
   WebURLRequest web_url_request_with_target_start;
   LocalFrame* local_frame =
-      ToWebLocalFrameImpl(web_view_impl->MainFrame()->FirstChild())->GetFrame();
+      ToWebLocalFrameBase(web_view_impl->MainFrame()->FirstChild())->GetFrame();
   FrameLoadRequest request_with_target_start(
       local_frame->GetDocument(),
       web_url_request_with_target_start.ToResourceRequest(), "_top");
@@ -2857,7 +2857,7 @@ TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
   ViewCreatingWebViewClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(true, 0, &client);
-  WebLocalFrameImpl* frame = web_view_impl->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view_impl->MainFrameImpl();
   frame->SetName("_start");
 
   // Make a request that will open a new window
@@ -3409,8 +3409,8 @@ TEST_P(WebViewTest, TextInputFlags) {
   WebViewBase* web_view_impl = web_view_helper_.InitializeAndLoad(url, true);
   web_view_impl->SetInitialFocus(false);
 
-  WebLocalFrameImpl* frame = web_view_impl->MainFrameImpl();
-  WebInputMethodControllerImpl* active_input_method_controller =
+  WebLocalFrameBase* frame = web_view_impl->MainFrameImpl();
+  WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   Document* document = frame->GetFrame()->GetDocument();
 
@@ -3468,7 +3468,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
   MockAutofillClient client;
   WebViewBase* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form.html", true);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -3492,7 +3492,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
   MockAutofillClient client;
   WebViewBase* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form.html", true);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -3516,7 +3516,7 @@ TEST_P(WebViewTest, CompositionIsUserGesture) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   MockAutofillClient client;
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
@@ -3537,7 +3537,7 @@ TEST_P(WebViewTest, CompareSelectAllToContentAsText) {
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html", true);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->ExecuteScript(WebScriptSource(
       WebString::FromUTF8("document.execCommand('SelectAll', false, null)")));
   std::string actual = frame->SelectionAsText().Utf8();
@@ -3731,7 +3731,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom) {
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
   RunPendingTasks();
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   // Test dom mutation.
   TEST_EACH_MOUSEEVENT("mutateDom", TRUE);
@@ -3756,7 +3756,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle) {
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
   RunPendingTasks();
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   // Test style mutation.
   TEST_EACH_MOUSEEVENT("mutateStyle", TRUE);
@@ -3790,7 +3790,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithPreventDefault) {
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
   RunPendingTasks();
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   // Testswallowing.
   TEST_EACH_MOUSEEVENT("preventDefault", FALSE);
@@ -3829,7 +3829,7 @@ TEST_P(WebViewTest, WebSubstringUtil) {
       base_url_ + "content_editable_populated.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->Resize(WebSize(400, 400));
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
 
   WebPoint baseline_point;
   NSAttributedString* result = WebSubstringUtil::AttributedSubstringInRange(
@@ -3859,7 +3859,7 @@ TEST_P(WebViewTest, WebSubstringUtilPinchZoom) {
       base_url_ + "content_editable_populated.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->Resize(WebSize(400, 400));
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   NSAttributedString* result = nil;
 
   WebPoint baseline_point;
@@ -3888,8 +3888,8 @@ TEST_P(WebViewTest, WebSubstringUtilIframe) {
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
   web_view->Resize(WebSize(400, 400));
-  WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
-  WebLocalFrameImpl* child_frame = WebLocalFrameImpl::FromFrame(
+  WebLocalFrameBase* main_frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* child_frame = WebLocalFrameBase::FromFrame(
       ToLocalFrame(main_frame->GetFrame()->Tree().FirstChild()));
 
   WebPoint baseline_point;
@@ -3923,7 +3923,7 @@ TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
   MockAutofillClient client;
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_password.html", true);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
@@ -4191,7 +4191,7 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
                                    "<div id=vw></div>",
                                    base_url);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   Document* document = frame->GetFrame()->GetDocument();
   Element* vw_element = document->getElementById("vw");
 
@@ -4236,7 +4236,7 @@ TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
                                    "<div id=d></div>",
                                    base_url);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   Document* document = frame->GetFrame()->GetDocument();
   Element* div = document->getElementById("d");
 
@@ -4272,7 +4272,7 @@ TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
                                    "<div id=t2></div>",
                                    base_url);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   Document* document = frame->GetFrame()->GetDocument();
   Element* t1 = document->getElementById("t1");
   Element* t2 = document->getElementById("t2");
@@ -4309,7 +4309,7 @@ TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {
                                    "</style>",
                                    base_url);
 
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  WebLocalFrameBase* frame = web_view->MainFrameImpl();
   auto* frame_view = frame->GetFrameView();
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {

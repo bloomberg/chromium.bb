@@ -677,7 +677,7 @@ TEST_F(RootScrollerTest, RemoteMainFrame) {
   FrameTestHelpers::TestWebRemoteFrameClient remote_client;
   FrameTestHelpers::TestWebWidgetClient web_widget_client;
   WebFrameWidget* widget;
-  WebLocalFrameImpl* local_frame;
+  WebLocalFrameBase* local_frame;
 
   Initialize("root-scroller-iframe.html");
 
