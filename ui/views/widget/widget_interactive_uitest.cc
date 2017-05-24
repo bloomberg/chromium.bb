@@ -232,6 +232,43 @@ void ShowInactiveSync(Widget* widget) {
   RunPendingMessagesForActiveStatusChange();
 }
 
+// Wait until |callback| returns |expected_value|, but no longer than 1 second.
+class PropertyWaiter {
+ public:
+  PropertyWaiter(const base::Callback<bool(void)>& callback,
+                 bool expected_value)
+      : callback_(callback), expected_value_(expected_value) {}
+
+  bool Wait() {
+    if (callback_.Run() == expected_value_) {
+      success_ = true;
+      return success_;
+    }
+    start_time_ = base::TimeTicks::Now();
+    timer_.Start(FROM_HERE, base::TimeDelta(), this, &PropertyWaiter::Check);
+    run_loop_.Run();
+    return success_;
+  }
+
+ private:
+  void Check() {
+    DCHECK(!success_);
+    success_ = callback_.Run() == expected_value_;
+    if (success_ || base::TimeTicks::Now() - start_time_ > kTimeout) {
+      timer_.Stop();
+      run_loop_.Quit();
+    }
+  }
+
+  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1);
+  base::Callback<bool(void)> callback_;
+  const bool expected_value_;
+  bool success_ = false;
+  base::TimeTicks start_time_;
+  base::RunLoop run_loop_;
+  base::RepeatingTimer timer_;
+};
+
 }  // namespace
 
 class WidgetTestInteractive : public WidgetTest {
@@ -1214,6 +1251,24 @@ TEST_F(WidgetTestInteractive, InitialFocus) {
   widget->Show();
   EXPECT_TRUE(delegate.view()->HasFocus());
   EXPECT_EQ(delegate.view(), widget->GetFocusManager()->GetStoredFocusView());
+}
+
+TEST_F(WidgetTestInteractive, RestoreAfterMinimize) {
+  Widget* widget = CreateWidget();
+  ShowSync(widget);
+  ASSERT_FALSE(widget->IsMinimized());
+
+  PropertyWaiter minimize_waiter(
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
+  widget->Minimize();
+  EXPECT_TRUE(minimize_waiter.Wait());
+
+  PropertyWaiter restore_waiter(
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
+  widget->Restore();
+  EXPECT_TRUE(restore_waiter.Wait());
+
+  widget->CloseNow();
 }
 
 namespace {
