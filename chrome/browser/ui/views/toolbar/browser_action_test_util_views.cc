@@ -167,6 +167,12 @@ gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
   return popup_owner ? popup_owner->GetPopupNativeView() : nullptr;
 }
 
+bool BrowserActionTestUtil::WaitForPopup() {
+  // TODO(tapted): Implement this for MacViews.
+  NOTIMPLEMENTED();
+  return HasPopup();
+}
+
 bool BrowserActionTestUtil::HasPopup() {
   return GetPopupNativeView() != nullptr;
 }

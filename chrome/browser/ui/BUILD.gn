@@ -3582,6 +3582,7 @@ static_library("test_support") {
         "cocoa/extensions/browser_action_test_util_mac.mm",
         "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
       ]
+      deps += [ "//ui/base:test_support" ]
     }
   }
 
