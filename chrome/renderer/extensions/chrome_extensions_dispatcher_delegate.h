@@ -28,6 +28,9 @@ class ChromeExtensionsDispatcherDelegate
   void RequireAdditionalModules(extensions::ScriptContext* context) override;
   void OnActiveExtensionsUpdated(
       const std::set<std::string>& extensions_ids) override;
+  void InitializeBindingsSystem(
+      extensions::Dispatcher* dispatcher,
+      extensions::APIBindingsSystem* bindings_system) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsDispatcherDelegate);
 };

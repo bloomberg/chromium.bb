@@ -67,6 +67,13 @@ class APIRequestHandler {
                    v8::Local<v8::Function> custom_callback,
                    binding::RequestThread thread);
 
+  // Adds a pending request for the request handler to manage (and complete via
+  // CompleteRequest). This is used by renderer-side implementations that
+  // shouldn't be dispatched to the browser in the normal flow, but means other
+  // classes don't have to worry about context invalidation.
+  int AddPendingRequest(v8::Local<v8::Context> context,
+                        v8::Local<v8::Function> callback);
+
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.
   // Invalid ids are ignored.

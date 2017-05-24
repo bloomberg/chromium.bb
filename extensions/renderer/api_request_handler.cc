@@ -142,6 +142,15 @@ void APIRequestHandler::CompleteRequest(int request_id,
     last_error_.ClearError(context, true);
 }
 
+int APIRequestHandler::AddPendingRequest(v8::Local<v8::Context> context,
+                                         v8::Local<v8::Function> callback) {
+  int request_id = next_request_id_++;
+  pending_requests_.emplace(
+      request_id, PendingRequest(context->GetIsolate(), callback, context,
+                                 std::vector<v8::Local<v8::Value>>()));
+  return request_id;
+}
+
 void APIRequestHandler::InvalidateContext(v8::Local<v8::Context> context) {
   for (auto iter = pending_requests_.begin();
        iter != pending_requests_.end();) {
