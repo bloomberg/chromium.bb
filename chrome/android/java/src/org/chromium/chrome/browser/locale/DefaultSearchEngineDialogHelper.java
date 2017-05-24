@@ -39,20 +39,15 @@ public class DefaultSearchEngineDialogHelper implements OnCheckedChangeListener,
         }
 
         /** Called when the search engine the user selected is confirmed to be the one they want. */
-        protected void onUserSeachEngineChoice(List<String> keywords, String keyword) {
+        protected void onUserSeachEngineChoice(String keyword) {
             LocaleManager.getInstance().onUserSearchEngineChoiceFromPromoDialog(
-                    mDialogType, keywords, keyword);
+                    mDialogType, keyword);
         }
     }
 
     private final HelperDelegate mDelegate;
     private final Runnable mFinishRunnable;
     private final Button mConfirmButton;
-
-    /**
-     * List of search engine keywords in the order shown to the user.
-     */
-    private final List<String> mSearchEngineKeywords;
 
     /**
      * Keyword for the search engine that is selected in the RadioButtonLayout.
@@ -79,16 +74,16 @@ public class DefaultSearchEngineDialogHelper implements OnCheckedChangeListener,
         // Shuffle up the engines.
         List<TemplateUrl> engines = mDelegate.getSearchEngines();
         List<CharSequence> engineNames = new ArrayList<>();
-        mSearchEngineKeywords = new ArrayList<>();
+        List<String> engineKeywords = new ArrayList<>();
         Collections.shuffle(engines);
         for (int i = 0; i < engines.size(); i++) {
             TemplateUrl engine = engines.get(i);
             engineNames.add(engine.getShortName());
-            mSearchEngineKeywords.add(engine.getKeyword());
+            engineKeywords.add(engine.getKeyword());
         }
 
         // Add the search engines to the dialog without any of them being selected by default.
-        controls.addOptions(engineNames, mSearchEngineKeywords);
+        controls.addOptions(engineNames, engineKeywords);
         controls.selectChildAtIndex(RadioButtonLayout.INVALID_INDEX);
         controls.setOnCheckedChangeListener(this);
 
@@ -122,8 +117,7 @@ public class DefaultSearchEngineDialogHelper implements OnCheckedChangeListener,
             return;
         }
 
-        mDelegate.onUserSeachEngineChoice(
-                mSearchEngineKeywords, mCurrentlySelectedKeyword.toString());
+        mDelegate.onUserSeachEngineChoice(mCurrentlySelectedKeyword.toString());
         mFinishRunnable.run();
     }
 
