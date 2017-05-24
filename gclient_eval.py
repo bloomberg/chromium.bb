@@ -129,8 +129,9 @@ def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
       return _convert(node.left) % _convert(node.right)
     else:
       raise ValueError(
-          'unexpected AST node: %s (file %r, line %s)' % (
-              node, filename, getattr(node, 'lineno', '<unknown>')))
+          'unexpected AST node: %s %s (file %r, line %s)' % (
+              node, ast.dump(node), filename,
+              getattr(node, 'lineno', '<unknown>')))
   return _convert(node_or_string)
 
 
@@ -164,16 +165,18 @@ def _gclient_exec(node_or_string, global_scope, filename='<unknown>'):
       result_scope[target.id] = value
     else:
       raise ValueError(
-          'unexpected AST node: %s (file %r, line %s)' % (
-              node, filename, getattr(node, 'lineno', '<unknown>')))
+          'unexpected AST node: %s %s (file %r, line %s)' % (
+              node, ast.dump(node), filename,
+              getattr(node, 'lineno', '<unknown>')))
 
   if isinstance(node_or_string, ast.Module):
     for stmt in node_or_string.body:
       _visit_in_module(stmt)
   else:
     raise ValueError(
-        'unexpected AST node: %s (file %r, line %s)' % (
+        'unexpected AST node: %s %s (file %r, line %s)' % (
             node_or_string,
+            ast.dump(node_or_string),
             filename,
             getattr(node_or_string, 'lineno', '<unknown>')))
 
