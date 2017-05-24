@@ -175,6 +175,11 @@ std::unique_ptr<PacketPipe> GoodNetwork();
 // good wifi network. ~20mbit, 1% packet loss, ~3ms latency.
 std::unique_ptr<PacketPipe> WifiNetwork();
 
+// This method builds a stack of PacketPipes to emulate a slow, but
+// reasonably good "older technology" wifi network. ~2mbit, 1% packet loss,
+// ~30ms latency.
+std::unique_ptr<PacketPipe> SlowNetwork();
+
 // This method builds a stack of PacketPipes to emulate a
 // bad wifi network. ~5mbit, 5% packet loss, ~7ms latency
 // 40ms dropouts every ~2 seconds. Can reorder packets.
