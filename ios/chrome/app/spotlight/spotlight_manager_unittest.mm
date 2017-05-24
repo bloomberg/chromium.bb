@@ -78,6 +78,8 @@ class SpotlightManagerTest : public testing::Test {
         .WillRepeatedly(PostReply<5>(CreateTestBitmap(24, 24)));
   }
 
+  ~SpotlightManagerTest() override { [bookmarksSpotlightManager_ shutdown]; }
+
   base::MessageLoop loop_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
