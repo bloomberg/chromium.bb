@@ -515,6 +515,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
+    protected void onPrimaryColorChanged(boolean shouldAnimate) {
+        // Intentionally not calling super to avoid needless work.
+        getProgressBar().setThemeColor(getProgressBarColor(), isIncognito());
+    }
+
+    @Override
     protected void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
         super.updateLocationBarBackgroundBounds(out, visualState);
 

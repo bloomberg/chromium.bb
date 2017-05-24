@@ -172,6 +172,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     private boolean mShouldUpdateTabCount = true;
     private boolean mShouldUpdateToolbarPrimaryColor = true;
+    private int mCurrentThemeColor;
 
     /**
      * Creates a ToolbarManager object.
@@ -1030,9 +1031,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     public void updatePrimaryColor(int color, boolean shouldAnimate) {
         if (!mShouldUpdateToolbarPrimaryColor) return;
 
-        boolean colorChanged = mToolbarModel.getPrimaryColor() != color;
+        boolean colorChanged = mCurrentThemeColor != color;
         if (!colorChanged) return;
 
+        mCurrentThemeColor = color;
         mToolbarModel.setPrimaryColor(color);
         mToolbar.onPrimaryColorChanged(shouldAnimate);
     }
