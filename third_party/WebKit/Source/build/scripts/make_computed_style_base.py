@@ -207,11 +207,12 @@ def _create_diff_groups(fields_to_diff, methods_to_diff, root_group):
         if any(field.property_name in (fields_to_diff + field_dependencies) for field in subgroup.all_fields):
             diff_group.subgroups.append(_create_diff_groups(fields_to_diff, methods_to_diff, subgroup))
     for field in root_group.fields:
-        if field.property_name in fields_to_diff:
-            diff_group.expressions.append(field.getter_expression)
-        for entry in methods_to_diff:
-            if field.property_name in entry['field_dependencies']:
-                diff_group.expressions.append(entry['method'])
+        if not field.is_inherited_flag:
+            if field.property_name in fields_to_diff:
+                diff_group.expressions.append(field.getter_expression)
+            for entry in methods_to_diff:
+                if field.property_name in entry['field_dependencies']:
+                    diff_group.expressions.append(entry['method'])
     return diff_group
 
 
