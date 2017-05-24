@@ -350,54 +350,6 @@ static FloatRect LocalQuadForTextBox(InlineTextBox* box,
   return FloatRect();
 }
 
-void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
-                                       unsigned start,
-                                       unsigned end) const {
-  // Work around signed/unsigned issues. This function takes unsigneds, and is
-  // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
-  // coordinates are unsigneds, so changing this function to take ints causes
-  // various internal mismatches. But selectionRect takes ints, and passing
-  // UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take
-  // unsigneds, but that would cause many ripple effects, so for now we'll just
-  // clamp our unsigned parameters to INT_MAX.
-  DCHECK(end == UINT_MAX || end <= INT_MAX);
-  DCHECK_LE(start, static_cast<unsigned>(INT_MAX));
-  start = std::min(start, static_cast<unsigned>(INT_MAX));
-  end = std::min(end, static_cast<unsigned>(INT_MAX));
-
-  // This function is always called in sequence that this check should work.
-  bool has_checked_box_in_range = !rects.IsEmpty();
-
-  for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox()) {
-    // Note: box->end() returns the index of the last character, not the index
-    // past it
-    if (start <= box->Start() && box->end() < end) {
-      FloatRect r(box->FrameRect());
-      if (!has_checked_box_in_range) {
-        has_checked_box_in_range = true;
-        rects.clear();
-      }
-      rects.push_back(LocalToAbsoluteQuad(r).EnclosingBoundingBox());
-    } else if ((box->Start() <= start && start <= box->end()) ||
-               (box->Start() < end && end <= box->end())) {
-      FloatRect rect = LocalQuadForTextBox(box, start, end);
-      if (!rect.IsZero()) {
-        if (!has_checked_box_in_range) {
-          has_checked_box_in_range = true;
-          rects.clear();
-        }
-        rects.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
-      }
-    } else if (!has_checked_box_in_range) {
-      // FIXME: This code is wrong. It's converting local to absolute twice.
-      // http://webkit.org/b/65722
-      FloatRect rect = LocalQuadForTextBox(box, start, end);
-      if (!rect.IsZero())
-        rects.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
-    }
-  }
-}
-
 static IntRect EllipsisRectForBox(InlineTextBox* box,
                                   unsigned start_pos,
                                   unsigned end_pos) {
