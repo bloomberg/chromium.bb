@@ -285,6 +285,7 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
       base::android::ConvertUTF8ToJavaString(env, shortcut_info_.url.spec());
 
   if (task_type_ == WebApkInstaller::INSTALL) {
+    webapk::TrackRequestTokenDuration(install_duration_timer_->Elapsed());
     Java_WebApkInstaller_installWebApkAsync(env, java_ref_, java_webapk_package,
                                             version, java_title, java_token,
                                             java_url, shortcut_info_.source);

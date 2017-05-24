@@ -17,6 +17,10 @@ const char kInstallSourceHistogram[] = "WebApk.Install.InstallSource";
 const char kInfoBarShownHistogram[] = "WebApk.Install.InfoBarShown";
 const char kUserActionHistogram[] = "WebApk.Install.UserAction";
 
+void TrackRequestTokenDuration(base::TimeDelta delta) {
+  UMA_HISTOGRAM_TIMES("WebApk.Install.RequestTokenDuration", delta);
+}
+
 void TrackInstallDuration(base::TimeDelta delta) {
   UMA_HISTOGRAM_MEDIUM_TIMES(kInstallDurationHistogram, delta);
 }

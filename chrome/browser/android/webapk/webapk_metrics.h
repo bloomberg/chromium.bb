@@ -56,6 +56,7 @@ enum UserAction {
   USER_ACTION_MAX,
 };
 
+void TrackRequestTokenDuration(base::TimeDelta delta);
 void TrackInstallDuration(base::TimeDelta delta);
 void TrackInstallEvent(InstallEvent event);
 void TrackInstallSource(InstallSource event);
