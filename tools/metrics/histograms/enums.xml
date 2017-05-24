@@ -27829,6 +27829,7 @@ from previous Chrome versions.
   <int value="2" label="Mapped-File Success"/>
   <int value="3" label="Mapped-File Failure"/>
   <int value="5" label="Mapped-File Already Exists"/>
+  <int value="6" label="No Spare File"/>
 </enum>
 
 <enum name="PhotoEditorFileType" type="int">

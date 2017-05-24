@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -15,6 +17,7 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -34,6 +37,20 @@
 
 namespace {
 
+// Creating a "spare" file for persistent metrics involves a lot of I/O and
+// isn't important so delay the operation for a while after startup.
+#if defined(OS_ANDROID)
+// Android needs the spare file and also launches faster.
+constexpr bool kSpareFileRequired = true;
+constexpr int kSpareFileCreateDelaySeconds = 10;
+#else
+// Desktop may have to restore a lot of tabs so give it more time before doing
+// non-essential work. The spare file is still a performance boost but not as
+// significant of one so it's not required.
+constexpr bool kSpareFileRequired = false;
+constexpr int kSpareFileCreateDelaySeconds = 90;
+#endif
+
 // Check for feature enabling the use of persistent histogram storage and
 // enable the global allocator if so.
 // TODO(bcwhite): Move this and CreateInstallerFileMetricsProvider into a new
@@ -43,10 +60,12 @@ void InstantiatePersistentHistograms() {
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &metrics_dir))
     return;
 
-  base::FilePath metrics_file, active_file;
+  base::FilePath metrics_file;
+  base::FilePath active_file;
+  base::FilePath spare_file;
   base::GlobalHistogramAllocator::ConstructFilePaths(
       metrics_dir, ChromeMetricsServiceClient::kBrowserMetricsName,
-      &metrics_file, &active_file);
+      &metrics_file, &active_file, &spare_file);
 
   // Move any existing "active" file to the final name from which it will be
   // read when reporting initial stability metrics. If there is no file to
@@ -61,6 +80,7 @@ void InstantiatePersistentHistograms() {
     MAPPED_FILE_SUCCESS,
     MAPPED_FILE_FAILED,
     MAPPED_FILE_EXISTS,
+    NO_SPARE_FILE,
     INIT_RESULT_MAX
   };
   InitResult result;
@@ -90,15 +110,31 @@ void InstantiatePersistentHistograms() {
           kAllocSize, kAllocId,
           ChromeMetricsServiceClient::kBrowserMetricsName);
     } else {
-      // Create global allocator with the "active" file.
-      if (base::GlobalHistogramAllocator::CreateWithFile(
-              active_file, kAllocSize, kAllocId,
-              ChromeMetricsServiceClient::kBrowserMetricsName)) {
+      // Move any sparse file into the active position.
+      base::ReplaceFile(spare_file, active_file, nullptr);
+      // Create global allocator using the "active" file.
+      if (kSpareFileRequired && !base::PathExists(active_file)) {
+        result = NO_SPARE_FILE;
+        base::GlobalHistogramAllocator::CreateWithLocalMemory(
+            kAllocSize, kAllocId,
+            ChromeMetricsServiceClient::kBrowserMetricsName);
+      } else if (base::GlobalHistogramAllocator::CreateWithFile(
+                     active_file, kAllocSize, kAllocId,
+                     ChromeMetricsServiceClient::kBrowserMetricsName)) {
         result = MAPPED_FILE_SUCCESS;
       } else {
         result = MAPPED_FILE_FAILED;
       }
     }
+    // Schedule the creation of a "spare" file for use on the next run.
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::LOWEST,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce(base::IgnoreResult(
+                           &base::GlobalHistogramAllocator::CreateSpareFile),
+                       base::Passed(&spare_file), kAllocSize),
+        base::TimeDelta::FromSeconds(kSpareFileCreateDelaySeconds));
   } else if (storage == "LocalMemory") {
     // Use local memory for storage even though it will not persist across
     // an unclean shutdown.

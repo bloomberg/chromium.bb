@@ -181,8 +181,8 @@ void RegisterOrRemovePreviousRunMetricsFile(
     scoped_refptr<base::TaskRunner> task_runner,
     metrics::FileMetricsProvider* file_metrics_provider) {
   base::FilePath metrics_file;
-  base::GlobalHistogramAllocator::ConstructFilePaths(dir, metrics_name,
-                                                     &metrics_file, nullptr);
+  base::GlobalHistogramAllocator::ConstructFilePaths(
+      dir, metrics_name, &metrics_file, nullptr, nullptr);
 
   if (metrics_reporting_enabled) {
     // Enable reading any existing saved metrics.
@@ -237,8 +237,8 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
     if (metrics_reporting_enabled) {
       base::FilePath active_path;
       base::GlobalHistogramAllocator::ConstructFilePaths(
-          user_data_dir, kCrashpadHistogramAllocatorName, nullptr,
-          &active_path);
+          user_data_dir, kCrashpadHistogramAllocatorName, nullptr, &active_path,
+          nullptr);
       // Register data that will be populated for the current run. "Active"
       // files need an empty "prefs_key" because they update the file itself.
       file_metrics_provider->RegisterSource(
