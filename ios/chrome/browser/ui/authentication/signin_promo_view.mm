@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,6 +43,7 @@ const CGFloat kButtonHeight = 36;
 @synthesize textLabel = _textLabel;
 @synthesize primaryButton = _primaryButton;
 @synthesize secondaryButton = _secondaryButton;
+@synthesize closeButton = _closeButton;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -75,6 +77,11 @@ const CGFloat kButtonHeight = 36;
                forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_secondaryButton];
 
+    _closeButton = [[UIButton alloc] init];
+    _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _closeButton.accessibilityIdentifier = @"signin_promo_close_button";
+    [self addSubview:_closeButton];
+
     // Adding style.
     _imageView.contentMode = UIViewContentModeCenter;
     _imageView.layer.masksToBounds = YES;
@@ -92,6 +99,10 @@ const CGFloat kButtonHeight = 36;
 
     _secondaryButton.customTitleColor = [[MDCPalette cr_bluePalette] tint500];
     _secondaryButton.uppercaseTitle = NO;
+
+    [_closeButton setImage:[UIImage imageNamed:@"signin_promo_close_gray"]
+                  forState:UIControlStateNormal];
+    _closeButton.hidden = YES;
 
     // Adding constraints.
     NSDictionary* metrics = @{
@@ -122,6 +133,10 @@ const CGFloat kButtonHeight = 36;
     ];
     ApplyVisualConstraintsWithMetricsAndOptions(
         visualConstraints, views, metrics, NSLayoutFormatAlignAllCenterX);
+    NSArray* buttonVisualConstraints =
+        @[ @"H:[closeButton]-|", @"V:|-[closeButton]" ];
+    ApplyVisualConstraints(buttonVisualConstraints,
+                           @{ @"closeButton" : _closeButton });
 
     // Constraints for cold state mode.
     NSArray* coldStateVisualConstraints = @[
@@ -201,6 +216,10 @@ const CGFloat kButtonHeight = 36;
   [_secondaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
+- (void)accessibilityCloseAction:(id)unused {
+  [_closeButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+}
+
 - (CGFloat)horizontalPadding {
   return kHorizontalPadding;
 }
@@ -223,6 +242,8 @@ const CGFloat kButtonHeight = 36;
 #pragma mark - NSObject(Accessibility)
 
 - (NSArray<UIAccessibilityCustomAction*>*)accessibilityCustomActions {
+  NSMutableArray* actions = [NSMutableArray array];
+
   NSString* primaryActionName =
       [_primaryButton titleForState:UIControlStateNormal];
   UIAccessibilityCustomAction* primaryCustomAction =
@@ -230,17 +251,31 @@ const CGFloat kButtonHeight = 36;
           initWithName:primaryActionName
                 target:self
               selector:@selector(accessibilityPrimaryAction:)];
-  if (_mode == SigninPromoViewModeColdState) {
-    return @[ primaryCustomAction ];
+  [actions addObject:primaryCustomAction];
+
+  if (_mode == SigninPromoViewModeWarmState) {
+    NSString* secondaryActionName =
+        [_secondaryButton titleForState:UIControlStateNormal];
+    UIAccessibilityCustomAction* secondaryCustomAction =
+        [[UIAccessibilityCustomAction alloc]
+            initWithName:secondaryActionName
+                  target:self
+                selector:@selector(accessibilitySecondaryAction:)];
+    [actions addObject:secondaryCustomAction];
   }
-  NSString* secondaryActionName =
-      [_secondaryButton titleForState:UIControlStateNormal];
-  UIAccessibilityCustomAction* secondaryCustomAction =
-      [[UIAccessibilityCustomAction alloc]
-          initWithName:secondaryActionName
-                target:self
-              selector:@selector(accessibilitySecondaryAction:)];
-  return @[ primaryCustomAction, secondaryCustomAction ];
+
+  if (!_closeButton.hidden) {
+    NSString* closeActionName =
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_CLOSE_ACCESSIBILITY);
+    UIAccessibilityCustomAction* closeCustomAction =
+        [[UIAccessibilityCustomAction alloc]
+            initWithName:closeActionName
+                  target:self
+                selector:@selector(accessibilityCloseAction:)];
+    [actions addObject:closeCustomAction];
+  }
+
+  return actions;
 }
 
 - (NSString*)accessibilityLabel {
