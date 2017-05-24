@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 
 namespace {
 const size_t kDefaultNumElementTypesToReserve = 32;
@@ -29,7 +30,7 @@ class ListContainerHelper::CharAllocator {
   // This class holds the raw memory chunk, as well as information about its
   // size and availability.
   struct InnerList {
-    std::unique_ptr<char[]> data;
+    std::unique_ptr<char[], base::AlignedFreeDeleter> data;
     // The number of elements in total the memory can hold. The difference
     // between capacity and size is the how many more elements this list can
     // hold.
@@ -56,7 +57,7 @@ class ListContainerHelper::CharAllocator {
       --capacity;
     }
 
-    void InsertBefore(char** position, size_t count) {
+    void InsertBefore(size_t alignment, char** position, size_t count) {
       DCHECK_LE(*position, LastElement() + step);
       DCHECK_GE(*position, Begin());
 
@@ -66,7 +67,8 @@ class ListContainerHelper::CharAllocator {
       capacity = size;
 
       // Allocate the new data and update the iterator's pointer.
-      std::unique_ptr<char[]> new_data(new char[size * step]);
+      std::unique_ptr<char[], base::AlignedFreeDeleter> new_data(
+          static_cast<char*>(base::AlignedAlloc(size * step, alignment)));
       size_t position_offset = *position - Begin();
       *position = new_data.get() + position_offset;
 
@@ -75,7 +77,7 @@ class ListContainerHelper::CharAllocator {
       // Copy the data after the inserted segment.
       memcpy(new_data.get() + position_offset + count * step,
              data.get() + position_offset, old_size * step - position_offset);
-      new_data.swap(data);
+      data = std::move(new_data);
     }
 
     bool IsEmpty() const { return !size; }
@@ -102,20 +104,16 @@ class ListContainerHelper::CharAllocator {
     DISALLOW_COPY_AND_ASSIGN(InnerList);
   };
 
-  explicit CharAllocator(size_t element_size)
-      : element_size_(element_size),
+  CharAllocator(size_t alignment, size_t element_size, size_t element_count)
+      // base::AlignedAlloc does not accept alignment less than sizeof(void*).
+      : alignment_(std::max(sizeof(void*), alignment)),
+        element_size_(element_size),
         size_(0),
         last_list_index_(0),
         last_list_(nullptr) {
-    AllocateNewList(kDefaultNumElementTypesToReserve);
-    last_list_ = storage_[last_list_index_].get();
-  }
-
-  CharAllocator(size_t element_size, size_t element_count)
-      : element_size_(element_size),
-        size_(0),
-        last_list_index_(0),
-        last_list_(nullptr) {
+    // If this fails, then alignment of elements after the first could be wrong,
+    // and we need to pad sizes to fix that.
+    DCHECK_EQ(element_size % alignment, 0u);
     AllocateNewList(element_count > 0 ? element_count
                                       : kDefaultNumElementTypesToReserve);
     last_list_ = storage_[last_list_index_].get();
@@ -138,6 +136,7 @@ class ListContainerHelper::CharAllocator {
     return last_list_->AddElement();
   }
 
+  size_t alignment() const { return alignment_; }
   size_t element_size() const { return element_size_; }
   size_t list_count() const { return storage_.size(); }
   size_t size() const { return size_; }
@@ -203,8 +202,8 @@ class ListContainerHelper::CharAllocator {
       for (size_t i = 1; i < count; ++i)
         Allocate();
     } else {
-      storage_[position->vector_index]->InsertBefore(&position->item_iterator,
-                                                     count);
+      storage_[position->vector_index]->InsertBefore(
+          alignment_, &position->item_iterator, count);
       size_ += count;
     }
   }
@@ -244,11 +243,13 @@ class ListContainerHelper::CharAllocator {
     new_list->capacity = list_size;
     new_list->size = 0;
     new_list->step = element_size_;
-    new_list->data.reset(new char[list_size * element_size_]);
+    new_list->data.reset(static_cast<char*>(
+        base::AlignedAlloc(list_size * element_size_, alignment_)));
     storage_.push_back(std::move(new_list));
   }
 
   std::vector<std::unique_ptr<InnerList>> storage_;
+  const size_t alignment_;
   const size_t element_size_;
 
   // The number of elements in the list.
@@ -341,12 +342,11 @@ ListContainerHelper::PositionInCharAllocator::ReverseIncrement() {
 
 // ListContainerHelper
 ////////////////////////////////////////////
-ListContainerHelper::ListContainerHelper(size_t max_size_for_derived_class)
-    : data_(new CharAllocator(max_size_for_derived_class)) {}
-
-ListContainerHelper::ListContainerHelper(size_t max_size_for_derived_class,
+ListContainerHelper::ListContainerHelper(size_t alignment,
+                                         size_t max_size_for_derived_class,
                                          size_t num_of_elements_to_reserve_for)
-    : data_(new CharAllocator(max_size_for_derived_class,
+    : data_(new CharAllocator(alignment,
+                              max_size_for_derived_class,
                               num_of_elements_to_reserve_for)) {}
 
 ListContainerHelper::~ListContainerHelper() {}
@@ -456,7 +456,9 @@ ListContainerHelper::Iterator ListContainerHelper::IteratorAt(size_t index) {
                   original_index);
 }
 
-void* ListContainerHelper::Allocate(size_t size_of_actual_element_in_bytes) {
+void* ListContainerHelper::Allocate(size_t alignment,
+                                    size_t size_of_actual_element_in_bytes) {
+  DCHECK_LE(alignment, data_->alignment());
   DCHECK_LE(size_of_actual_element_in_bytes, data_->element_size());
   return data_->Allocate();
 }

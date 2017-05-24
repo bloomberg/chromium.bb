@@ -22,12 +22,9 @@ class CC_BASE_EXPORT ListContainerHelper final {
   template <typename T>
   friend class ListContainer;
 
-  template <typename T>
-  friend class RandomAccessListContainer;
-
-  explicit ListContainerHelper(size_t max_size_for_derived_class);
-  ListContainerHelper(size_t max_size_for_derived_class,
-                      size_t num_of_elements_to_reserve_for);
+  explicit ListContainerHelper(size_t alignment,
+                               size_t max_size_for_derived_class,
+                               size_t num_of_elements_to_reserve_for);
   ~ListContainerHelper();
 
   // This class deals only with char* and void*. It does allocation and passing
@@ -170,7 +167,7 @@ class CC_BASE_EXPORT ListContainerHelper final {
   size_t AvailableSizeWithoutAnotherAllocationForTesting() const;
 
   // Hands out memory location for an element at the end of data structure.
-  void* Allocate(size_t size_of_actual_element_in_bytes);
+  void* Allocate(size_t alignment, size_t size_of_actual_element_in_bytes);
 
   std::unique_ptr<CharAllocator> data_;
 

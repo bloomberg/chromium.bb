@@ -37,12 +37,14 @@ const size_t kDefaultNumQuadsToReserve = 128;
 namespace cc {
 
 QuadList::QuadList()
-    : ListContainer<DrawQuad>(LargestDrawQuadSize(),
+    : ListContainer<DrawQuad>(LargestDrawQuadAlignment(),
+                              LargestDrawQuadSize(),
                               kDefaultNumSharedQuadStatesToReserve) {}
 
 QuadList::QuadList(size_t default_size_to_reserve)
-    : ListContainer<DrawQuad>(LargestDrawQuadSize(), default_size_to_reserve) {
-}
+    : ListContainer<DrawQuad>(LargestDrawQuadAlignment(),
+                              LargestDrawQuadSize(),
+                              default_size_to_reserve) {}
 
 std::unique_ptr<RenderPass> RenderPass::Create() {
   return base::WrapUnique(new RenderPass());
@@ -61,7 +63,8 @@ std::unique_ptr<RenderPass> RenderPass::Create(
 
 RenderPass::RenderPass()
     : quad_list(kDefaultNumQuadsToReserve),
-      shared_quad_state_list(sizeof(SharedQuadState),
+      shared_quad_state_list(ALIGNOF(SharedQuadState),
+                             sizeof(SharedQuadState),
                              kDefaultNumSharedQuadStatesToReserve) {}
 
 // Each layer usually produces one shared quad state, so the number of layers
@@ -69,16 +72,17 @@ RenderPass::RenderPass()
 RenderPass::RenderPass(size_t num_layers)
     : has_transparent_background(true),
       quad_list(kDefaultNumQuadsToReserve),
-      shared_quad_state_list(sizeof(SharedQuadState), num_layers) {
-}
+      shared_quad_state_list(ALIGNOF(SharedQuadState),
+                             sizeof(SharedQuadState),
+                             num_layers) {}
 
 RenderPass::RenderPass(size_t shared_quad_state_list_size,
                        size_t quad_list_size)
     : has_transparent_background(true),
       quad_list(quad_list_size),
-      shared_quad_state_list(sizeof(SharedQuadState),
-                             shared_quad_state_list_size) {
-}
+      shared_quad_state_list(ALIGNOF(SharedQuadState),
+                             sizeof(SharedQuadState),
+                             shared_quad_state_list_size) {}
 
 RenderPass::~RenderPass() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
