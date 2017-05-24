@@ -4181,10 +4181,6 @@
     ],
     "scripts": [
       {
-        "name": "check_gn_headers",
-        "script": "check_gn_headers.py"
-      },
-      {
         "name": "checkdeps",
         "script": "checkdeps.py"
       },
@@ -4800,10 +4796,6 @@
       }
     ],
     "scripts": [
-      {
-        "name": "check_gn_headers",
-        "script": "check_gn_headers.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
