@@ -40,7 +40,10 @@ namespace {
 using testing::IsEmpty;
 using testing::IsNull;
 using testing::Eq;
+using testing::HasSubstr;
 using testing::NiceMock;
+using testing::Not;
+using testing::Property;
 using testing::Return;
 using testing::SaveArg;
 using testing::_;
@@ -116,6 +119,7 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
   MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 };
 
+// TODO(jkrcal): Make the tests a bit crisper, see crbug.com/725822.
 class LargeIconServiceTest : public testing::Test {
  public:
   LargeIconServiceTest()
@@ -159,7 +163,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyUrl), /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, callback.Get());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          callback.Get());
 
   EXPECT_CALL(callback, Run(true));
   base::RunLoop().RunUntilIdle();
@@ -172,13 +177,13 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
       "LargeIconServiceFetching",
       {{"request_format",
         "https://t0.gstatic.com/"
-        "faviconV2?size=%d&min_size=%d&max_size=%d&url=%s"},
+        "faviconV2?%ssize=%d&min_size=%d&max_size=%d&url=%s"},
        {"enforced_min_size_in_pixel", "43"},
        {"desired_to_max_size_factor", "1.5"}},
       {"LargeIconServiceFetching"});
   const GURL kExpectedServerUrl(
-      "https://t0.gstatic.com/"
-      "faviconV2?size=61&min_size=43&max_size=91&url=http://www.example.com/");
+      "https://t0.gstatic.com/faviconV2?check_seen=true&"
+      "size=61&min_size=43&max_size=91&url=http://www.example.com/");
 
   EXPECT_CALL(mock_favicon_service_, UnableToDownloadFavicon(_)).Times(0);
 
@@ -195,7 +200,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyUrl), /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, callback.Get());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          callback.Get());
 
   EXPECT_CALL(callback, Run(true));
   base::RunLoop().RunUntilIdle();
@@ -225,7 +231,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyUrl), /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, callback.Get());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          callback.Get());
 
   EXPECT_CALL(callback, Run(true));
   base::RunLoop().RunUntilIdle();
@@ -249,8 +256,29 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyUrlWithQuery), /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, base::Callback<void(bool success)>());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          base::Callback<void(bool success)>());
 
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
+  // The request has no "check_seen=true"; full URL is tested elsewhere.
+  EXPECT_CALL(
+      *mock_image_fetcher_,
+      StartOrQueueNetworkRequest(
+          _, Property(&GURL::query, Not(HasSubstr("check_seen=true"))), _, _))
+      .WillOnce(PostFetchReply(gfx::Image()));
+
+  base::MockCallback<base::Callback<void(bool success)>> callback;
+
+  large_icon_service_
+      .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+          GURL(kDummyUrl), /*min_source_size_in_pixel=*/42,
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/false,
+          callback.Get());
+
+  EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -265,7 +293,8 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyFtpUrl), /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, callback.Get());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          callback.Get());
 
   EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();
@@ -294,7 +323,8 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           kDummyUrlWithQuery, /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, callback.Get());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          callback.Get());
 
   EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();
@@ -322,7 +352,8 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyUrl), /*min_source_size_in_pixel=*/42,
-          /*desired_size_in_pixel=*/61, callback.Get());
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          callback.Get());
 
   EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();

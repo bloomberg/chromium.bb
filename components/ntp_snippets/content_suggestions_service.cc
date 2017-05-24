@@ -245,9 +245,13 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
   }
 
   // Try to fetch the favicon from a Google favicon server.
+  // TODO(jkrcal): Currently used only for Articles for you which have public
+  // URLs. Let the provider decide whether |publisher_url| may be private or
+  // not.
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           publisher_url, minimum_size_in_pixel, desired_size_in_pixel,
+          /*may_page_url_be_private=*/false,
           base::Bind(
               &ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished,
               base::Unretained(this), publisher_url, minimum_size_in_pixel,

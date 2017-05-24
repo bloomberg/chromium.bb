@@ -75,6 +75,11 @@ class LargeIconService : public KeyedService {
   // |desired_size_in_pixel| serves only as a hint to the service, no guarantees
   // on the fetched size are provided.
   //
+  // Unless you are sure |page_url| is a public URL (known to Google Search),
+  // set |may_page_url_be_private| to true. This slighty increases the chance of
+  // a failure (e.g. if the URL _is_ private) but it makes sure Google servers
+  // do not crawl a private URL as a result of this call.
+  //
   // The callback is triggered when the operation finishes, where |success|
   // tells whether the fetch actually managed to database a new icon in the
   // FaviconService.
@@ -88,6 +93,7 @@ class LargeIconService : public KeyedService {
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
+      bool may_page_url_be_private,
       const base::Callback<void(bool success)>& callback);
 
  private:

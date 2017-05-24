@@ -219,6 +219,7 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           page_url, kTileIconMinSizePx, kTileIconDesiredSizePx,
+          /*may_page_url_be_private=*/true,
           base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), page_url));
 }
