@@ -442,9 +442,10 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   fetcher->SetRequestContext(url_request_context_getter_);
   // |fetcher| should not retry on 5xx errors since the server may already be
   // overloaded. Spurious 5xx errors are still retried on exponential backoff.
-  // |fetcher| should not retry on network changes since a new fetch will be
-  // initiated.
-  fetcher->SetAutomaticallyRetryOnNetworkChanges(0);
+  // |fetcher| should retry on network changes since the network stack may
+  // receive the connection change event later than |this|.
+  static const int kMaxRetries = 5;
+  fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
   return fetcher;
 }
 

@@ -358,9 +358,12 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
     // for fetching user initiated requests.
     fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
     fetcher_->SetRequestContext(url_request_context_getter_.get());
-    // |fetcher| should not retry on 5xx errors.
+    // |fetcher| should not retry on 5xx errors. |fetcher_| should retry on
+    // network changes since the network stack may receive the connection change
+    // event later than |this|.
+    static const int kMaxRetries = 5;
     fetcher_->SetAutomaticallyRetryOn5xx(false);
-    fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
+    fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
     fetcher_->Start();
   }
 
