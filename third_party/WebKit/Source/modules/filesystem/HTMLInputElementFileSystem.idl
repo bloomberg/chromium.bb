@@ -33,6 +33,5 @@
 [
     RuntimeEnabled=FileSystem,
 ] partial interface HTMLInputElement {
-    // TODO(jsbell): |webkitEntries| should be FrozenArray<Entry>.
-    [CallWith=ScriptState, Measure] readonly attribute Entry[] webkitEntries;
+    [CallWith=ScriptState, Measure] readonly attribute FrozenArray<Entry> webkitEntries;
 };

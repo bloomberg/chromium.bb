@@ -65,6 +65,8 @@ function doTest(index)
 function onInputFileChange(index)
 {
     droppedEntries = document.getElementById('files').webkitEntries;
+    shouldBeTrue('Array.isArray(droppedEntries)');
+    shouldBeTrue('Object.isFrozen(droppedEntries)');
     shouldEvaluateTo('droppedEntries.length', testCases[index].length);
     verifyEntry(index, 0);
 }
