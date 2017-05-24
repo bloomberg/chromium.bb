@@ -60,6 +60,16 @@ const SpaceSplitString& ClassList::ClassNames() const {
   return element_->ClassNames();
 }
 
+SpaceSplitString& ClassList::MutableSet() {
+  // We can't mutate element_->ClassNames() because it is used to compare class
+  // names before/after class attribute change.
+  if (element_->HasClass())
+    mutable_set_ = ClassNames();
+  else
+    mutable_set_ = SpaceSplitString();
+  return mutable_set_;
+}
+
 DEFINE_TRACE(ClassList) {
   visitor->Trace(element_);
   DOMTokenList::Trace(visitor);

@@ -12,7 +12,7 @@ PASS element.classList.length is 2
 PASS element.classList.length is 2
 PASS element.className is "x"
 PASS element.className is "x"
-PASS element.className is "x  x"
+PASS element.className is "x x"
 PASS element.className is "y x"
 PASS element.className is ""
 PASS element.className is ""
@@ -38,8 +38,8 @@ PASS element.classList.toggle('', true) threw expected DOMException with code 12
 PASS element.classList.toggle('x y', false) threw expected DOMException with code 5
 Testing add in presence of trailing white spaces.
 PASS element.className is "x y"
-PASS element.className is "x\ty"
-PASS element.className is " y"
+PASS element.className is "x y"
+PASS element.className is "y"
 Test invalid tokens
 PASS element.classList.contains("") did not throw exception.
 PASS element.classList.contains("x y") did not throw exception.

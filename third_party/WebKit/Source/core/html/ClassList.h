@@ -53,16 +53,19 @@ class ClassList final : public DOMTokenList {
   bool ContainsInternal(const AtomicString&) const override;
 
   const SpaceSplitString& ClassNames() const;
+  SpaceSplitString& MutableSet() override;
 
   const AtomicString& value() const override {
     return element_->getAttribute(HTMLNames::classAttr);
   }
   void setValue(const AtomicString& value) override {
     element_->setAttribute(HTMLNames::classAttr, value);
+    mutable_set_.Clear();
   }
 
   Member<Element> element_;
   mutable std::unique_ptr<SpaceSplitString> class_names_for_quirks_mode_;
+  SpaceSplitString mutable_set_;
 };
 
 }  // namespace blink

@@ -116,6 +116,8 @@ void SpaceSplitString::Add(const AtomicString& string) {
   EnsureUnique();
   if (data_)
     data_->Add(string);
+  else
+    data_ = Data::Create(string);
 }
 
 bool SpaceSplitString::Remove(const AtomicString& string) {

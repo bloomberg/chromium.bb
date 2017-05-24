@@ -31,14 +31,22 @@
 
 namespace blink {
 
+// This implements the common part of the following operations:
+// https://dom.spec.whatwg.org/#dom-domtokenlist-add
+// https://dom.spec.whatwg.org/#dom-domtokenlist-remove
+// https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
+// https://dom.spec.whatwg.org/#dom-domtokenlist-replace
 bool DOMTokenList::ValidateToken(const String& token,
                                  ExceptionState& exception_state) const {
+  // 1. If token is the empty string, then throw a SyntaxError.
   if (token.IsEmpty()) {
     exception_state.ThrowDOMException(kSyntaxError,
                                       "The token provided must not be empty.");
     return false;
   }
 
+  // 2. If token contains any ASCII whitespace, then throw an
+  // InvalidCharacterError.
   if (token.Find(IsHTMLSpace) != kNotFound) {
     exception_state.ThrowDOMException(kInvalidCharacterError,
                                       "The token provided ('" + token +
@@ -79,24 +87,15 @@ void DOMTokenList::add(const AtomicString& token,
   add(tokens, exception_state);
 }
 
+// https://dom.spec.whatwg.org/#dom-domtokenlist-add
 // Optimally, this should take a Vector<AtomicString> const ref in argument but
 // the bindings generator does not handle that.
 void DOMTokenList::add(const Vector<String>& tokens,
                        ExceptionState& exception_state) {
-  Vector<String> filtered_tokens;
-  filtered_tokens.ReserveCapacity(tokens.size());
-  for (const auto& token : tokens) {
-    if (!ValidateToken(token, exception_state))
-      return;
-    if (ContainsInternal(AtomicString(token)))
-      continue;
-    if (filtered_tokens.Contains(token))
-      continue;
-    filtered_tokens.push_back(token);
-  }
+  if (!ValidateTokens(tokens, exception_state))
+    return;
 
-  if (!filtered_tokens.IsEmpty())
-    setValue(AddTokens(value(), filtered_tokens));
+  setValue(AddTokens(tokens));
 }
 
 void DOMTokenList::remove(const AtomicString& token,
@@ -106,6 +105,7 @@ void DOMTokenList::remove(const AtomicString& token,
   remove(tokens, exception_state);
 }
 
+// https://dom.spec.whatwg.org/#dom-domtokenlist-remove
 // Optimally, this should take a Vector<AtomicString> const ref in argument but
 // the bindings generator does not handle that.
 void DOMTokenList::remove(const Vector<String>& tokens,
@@ -113,17 +113,11 @@ void DOMTokenList::remove(const Vector<String>& tokens,
   if (!ValidateTokens(tokens, exception_state))
     return;
 
-  // Check using containsInternal first since it is a lot faster than going
-  // through the string character by character.
-  bool found = false;
-  for (const auto& token : tokens) {
-    if (ContainsInternal(AtomicString(token))) {
-      found = true;
-      break;
-    }
-  }
-
-  setValue(found ? RemoveTokens(value(), tokens) : value());
+  // TODO(tkent): This null check doesn't conform to the DOM specification.
+  // See https://github.com/whatwg/dom/issues/462
+  if (value().IsNull())
+    return;
+  setValue(RemoveTokens(tokens));
 }
 
 bool DOMTokenList::toggle(const AtomicString& token,
@@ -160,7 +154,7 @@ bool DOMTokenList::supports(const AtomicString& token,
 
 void DOMTokenList::AddInternal(const AtomicString& token) {
   if (!ContainsInternal(token))
-    setValue(AddToken(value(), token));
+    setValue(AddToken(token));
 }
 
 void DOMTokenList::RemoveInternal(const AtomicString& token) {
@@ -168,95 +162,62 @@ void DOMTokenList::RemoveInternal(const AtomicString& token) {
   // of character by character testing.
   if (!ContainsInternal(token))
     return;
-  setValue(RemoveToken(value(), token));
+  setValue(RemoveToken(token));
 }
 
-AtomicString DOMTokenList::AddToken(const AtomicString& input,
-                                    const AtomicString& token) {
+AtomicString DOMTokenList::AddToken(const AtomicString& token) {
   Vector<String> tokens;
   tokens.push_back(token.GetString());
-  return AddTokens(input, tokens);
+  return AddTokens(tokens);
 }
 
+// https://dom.spec.whatwg.org/#dom-domtokenlist-add
 // This returns an AtomicString because it is always passed as argument to
 // setValue() and setValue() takes an AtomicString in argument.
-AtomicString DOMTokenList::AddTokens(const AtomicString& input,
-                                     const Vector<String>& tokens) {
-  bool needs_space = false;
+AtomicString DOMTokenList::AddTokens(const Vector<String>& tokens) {
+  SpaceSplitString& token_set = MutableSet();
+  // 2. For each token in tokens, append token to context object’s token set.
+  for (const auto& token : tokens)
+    token_set.Add(AtomicString(token));
+  // 3. Run the update steps.
+  return SerializeSet(token_set);
+}
 
+AtomicString DOMTokenList::RemoveToken(const AtomicString& token) {
+  Vector<String> tokens;
+  tokens.push_back(token.GetString());
+  return RemoveTokens(tokens);
+}
+
+// https://dom.spec.whatwg.org/#dom-domtokenlist-remove
+// This returns an AtomicString because it is always passed as argument to
+// setValue() and setValue() takes an AtomicString in argument.
+AtomicString DOMTokenList::RemoveTokens(const Vector<String>& tokens) {
+  SpaceSplitString& token_set = MutableSet();
+  // 2. For each token in tokens, remove token from context object’s token set.
+  for (const auto& token : tokens)
+    token_set.Remove(AtomicString(token));
+  // 3. Run the update steps.
+  return SerializeSet(token_set);
+}
+
+// https://dom.spec.whatwg.org/#concept-ordered-set-serializer
+// The ordered set serializer takes a set and returns the concatenation of the
+// strings in set, separated from each other by U+0020, if set is non-empty, and
+// the empty string otherwise.
+AtomicString DOMTokenList::SerializeSet(const SpaceSplitString& token_set) {
+  size_t size = token_set.size();
+  if (size == 0)
+    return g_empty_atom;
+  if (size == 1)
+    return token_set[0];
   StringBuilder builder;
-  if (!input.IsEmpty()) {
-    builder.Append(input);
-    needs_space = !IsHTMLSpace<UChar>(input[input.length() - 1]);
+  builder.Append(token_set[0]);
+  for (size_t i = 1; i < size; ++i) {
+    builder.Append(' ');
+    builder.Append(token_set[i]);
   }
-
-  for (const auto& token : tokens) {
-    if (needs_space)
-      builder.Append(' ');
-    builder.Append(token);
-    needs_space = true;
-  }
-
   return builder.ToAtomicString();
-}
-
-AtomicString DOMTokenList::RemoveToken(const AtomicString& input,
-                                       const AtomicString& token) {
-  Vector<String> tokens;
-  tokens.push_back(token.GetString());
-  return RemoveTokens(input, tokens);
-}
-
-// This returns an AtomicString because it is always passed as argument to
-// setValue() and setValue() takes an AtomicString in argument.
-AtomicString DOMTokenList::RemoveTokens(const AtomicString& input,
-                                        const Vector<String>& tokens) {
-  // Algorithm defined at
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
-  // New spec is at https://dom.spec.whatwg.org/#remove-a-token-from-a-string
-
-  unsigned input_length = input.length();
-  StringBuilder output;  // 3
-  output.ReserveCapacity(input_length);
-  unsigned position = 0;  // 4
-
-  // Step 5
-  while (position < input_length) {
-    if (IsHTMLSpace<UChar>(input[position])) {  // 6
-      position++;
-      continue;  // 6.3
-    }
-
-    // Step 7
-    StringBuilder token_builder;
-    while (position < input_length && IsNotHTMLSpace<UChar>(input[position]))
-      token_builder.Append(input[position++]);
-
-    // Step 8
-    String token = token_builder.ToString();
-    if (tokens.Contains(token)) {
-      // Step 8.1
-      while (position < input_length && IsHTMLSpace<UChar>(input[position]))
-        ++position;
-
-      // Step 8.2
-      size_t j = output.length();
-      while (j > 0 && IsHTMLSpace<UChar>(output[j - 1]))
-        --j;
-      output.Resize(j);
-    } else {
-      output.Append(token);  // Step 9
-    }
-
-    if (position < input_length && !output.IsEmpty())
-      output.Append(' ');
-  }
-
-  size_t j = output.length();
-  if (j > 0 && IsHTMLSpace<UChar>(output[j - 1]))
-    output.Resize(j - 1);
-
-  return output.ToAtomicString();
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
