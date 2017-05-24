@@ -25,23 +25,13 @@
 namespace ash {
 
 PowerButtonController::PowerButtonController(LockStateController* controller)
-    : power_button_down_(false),
-      lock_button_down_(false),
-      volume_down_pressed_(false),
-      volume_percent_before_screenshot_(0),
-      brightness_is_zero_(false),
-      internal_display_off_and_external_display_on_(false),
-      has_legacy_power_button_(
+    : has_legacy_power_button_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
       lock_state_controller_(controller) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchView)) {
-    tablet_controller_.reset(
-        new TabletPowerButtonController(lock_state_controller_));
-  }
+  chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   Shell::Get()->display_configurator()->AddObserver(this);
   Shell::Get()->PrependPreTargetHandler(this);
 }
@@ -49,9 +39,10 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
 PowerButtonController::~PowerButtonController() {
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->display_configurator()->RemoveObserver(this);
-  tablet_controller_.reset();
+  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+  tablet_controller_.reset();
 }
 
 void PowerButtonController::OnScreenBrightnessChanged(double percent) {
@@ -196,9 +187,16 @@ void PowerButtonController::PowerButtonEventReceived(
   OnPowerButtonEvent(down, timestamp);
 }
 
-void PowerButtonController::ResetTabletPowerButtonControllerForTest() {
+void PowerButtonController::OnAccelerometerUpdated(
+    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
+  if (tablet_controller_)
+    return;
   tablet_controller_.reset(
       new TabletPowerButtonController(lock_state_controller_));
+}
+
+void PowerButtonController::ResetTabletPowerButtonControllerForTest() {
+  tablet_controller_.reset();
 }
 
 }  // namespace ash
