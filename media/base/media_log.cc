@@ -261,6 +261,14 @@ void MediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
   DVLOG(1) << "Default MediaLog doesn't support rappor reporting.";
 }
 
+std::unique_ptr<MediaLogEvent> MediaLog::CreateCreatedEvent(
+    const std::string& origin_url) {
+  std::unique_ptr<MediaLogEvent> event(
+      CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
+  event->params.SetString("origin_url", origin_url);
+  return event;
+}
+
 std::unique_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {
   std::unique_ptr<MediaLogEvent> event(new MediaLogEvent);
   event->id = id_;

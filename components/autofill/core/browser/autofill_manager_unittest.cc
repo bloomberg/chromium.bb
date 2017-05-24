@@ -1081,15 +1081,13 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void ExpectUniqueFillableFormParsedUkm() {
-    ukm::TestUkmRecorder* ukm_recorder = autofill_client_.GetTestUkmRecorder();
-
     // Check that one source is logged.
-    ASSERT_EQ(1U, ukm_recorder->sources_count());
-    const ukm::UkmSource* source = GetUkmSources(ukm_recorder)[0];
+    ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
+    const ukm::UkmSource* source = GetUkmSources(&test_ukm_recorder_)[0];
 
     // Check that one entry is logged.
-    EXPECT_EQ(1U, ukm_recorder->entries_count());
-    const ukm::mojom::UkmEntry* entry = ukm_recorder->GetEntry(0);
+    EXPECT_EQ(1U, test_ukm_recorder_.entries_count());
+    const ukm::mojom::UkmEntry* entry = test_ukm_recorder_.GetEntry(0);
     EXPECT_EQ(source->id(), entry->source_id);
 
     EXPECT_EQ(source->id(), entry->source_id);
@@ -1140,11 +1138,9 @@ class AutofillManagerTest : public testing::Test {
                     const char* entry_name,
                     int expected_metric_value,
                     int expected_num_matching_entries) {
-    ukm::TestUkmRecorder* ukm_recorder = autofill_client_.GetTestUkmRecorder();
-
     int num_matching_entries = 0;
-    for (size_t i = 0; i < ukm_recorder->entries_count(); ++i) {
-      const ukm::mojom::UkmEntry* entry = ukm_recorder->GetEntry(i);
+    for (size_t i = 0; i < test_ukm_recorder_.entries_count(); ++i) {
+      const ukm::mojom::UkmEntry* entry = test_ukm_recorder_.GetEntry(i);
       // Check if there is an entry for |entry_name|.
       if (entry->event_hash == base::HashMetricName(entry_name)) {
         EXPECT_EQ(1UL, entry->metrics.size());
@@ -1162,6 +1158,7 @@ class AutofillManagerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ukm::TestUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;

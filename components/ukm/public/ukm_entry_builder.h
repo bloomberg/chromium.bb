@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/ukm/public/interfaces/ukm_interface.mojom.h"
+#include "components/ukm/public/ukm_export.h"
 
 namespace ukm {
 
@@ -28,7 +29,7 @@ typedef int64_t SourceId;
 //
 // When there exists an added metric, the builder will automatically add the
 // UkmEntry to UkmService upon destruction when going out of scope.
-class UkmEntryBuilder {
+class UKM_EXPORT UkmEntryBuilder {
  public:
   using AddEntryCallback = base::Callback<void(mojom::UkmEntryPtr)>;
   UkmEntryBuilder(const AddEntryCallback& callback,

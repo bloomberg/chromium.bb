@@ -28,6 +28,7 @@ static_library("ukm") {
   public_deps = [
     "//components/metrics/proto",
     "//components/ukm/public",
+    "//components/ukm/public/interfaces",
   ]
 
   deps = [

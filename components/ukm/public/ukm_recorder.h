@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/ukm/public/interfaces/ukm_interface.mojom.h"
 #include "components/ukm/public/ukm_entry_builder.h"
+#include "components/ukm/public/ukm_export.h"
 #include "url/gurl.h"
 
 class ContextualSearchRankerLoggerImpl;
@@ -24,6 +25,7 @@ class AutofillMetrics;
 }
 
 namespace content {
+class MediaInternals;
 class RenderFrameImpl;
 }
 
@@ -42,15 +44,20 @@ class UkmInterface;
 class TestRecordingHelper;
 
 // This feature controls whether UkmService should be created.
-extern const base::Feature kUkmFeature;
+UKM_EXPORT extern const base::Feature kUkmFeature;
 
 typedef int64_t SourceId;
 
 // Interface for recording UKM
-class UkmRecorder {
+class UKM_EXPORT UkmRecorder {
  public:
   UkmRecorder();
   virtual ~UkmRecorder();
+
+  // Provides access to a previously constructed UkmRecorder instance. Only one
+  // instance exists per process and must have been constructed prior to any
+  // calls to this method.
+  static UkmRecorder* Get();
 
   // Get the new source ID, which is unique for the duration of a browser
   // session.
@@ -69,6 +76,7 @@ class UkmRecorder {
   friend translate::TranslateRankerImpl;
   friend TestRecordingHelper;
   friend UkmInterface;
+  friend content::MediaInternals;
   friend content::RenderFrameImpl;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);

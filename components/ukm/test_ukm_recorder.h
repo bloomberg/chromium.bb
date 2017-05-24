@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UKM_TEST_UKM_SERVICE_H_
-#define COMPONENTS_UKM_TEST_UKM_SERVICE_H_
+#ifndef COMPONENTS_UKM_TEST_UKM_RECORDER_H_
+#define COMPONENTS_UKM_TEST_UKM_RECORDER_H_
 
 #include <stddef.h>
 #include <memory>
@@ -40,4 +40,4 @@ class TestUkmRecorder : public UkmRecorderImpl {
 
 }  // namespace ukm
 
-#endif  // COMPONENTS_UKM_TEST_UKM_SERVICE_H_
+#endif  // COMPONENTS_UKM_TEST_UKM_RECORDER_H_
