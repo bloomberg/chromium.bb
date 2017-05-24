@@ -64,12 +64,8 @@ CQ_PIPELINE_CONFIGS = {CQ_CONFIG, PRE_CQ_LAUNCHER_CONFIG}
 # normal.  Setting timeout to 3 minutes to be safe-ish.
 SUBMITTED_WAIT_TIMEOUT = 3 * 60 # Time in seconds.
 
-# Default sleep time (second) in the apply_patch loop
-DEFAULT_APPLY_PATCH_SLEEP_TIME = 1
-
 # Default timeout (second) for computing dependency map.
 COMPUTE_DEPENDENCY_MAP_TIMEOUT = 5 * 60
-
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -847,8 +843,6 @@ class ValidationPool(object):
           raise
         else:
           applied.append(change)
-        finally:
-          time.sleep(DEFAULT_APPLY_PATCH_SLEEP_TIME)
 
     self.RecordPatchesInMetadataAndDatabase(applied)
     self.PrintLinksToChanges(applied)
