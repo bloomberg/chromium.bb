@@ -18,7 +18,6 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -49,20 +48,6 @@
 
 namespace ash {
 namespace {
-
-using Windows = aura::Window::Windows;
-
-// A comparator for locating a given target window.
-struct WindowSelectorItemComparator {
-  explicit WindowSelectorItemComparator(const aura::Window* target_window)
-      : target(target_window) {}
-
-  bool operator()(std::unique_ptr<WindowSelectorItem>& window) const {
-    return window->GetWindow() == target;
-  }
-
-  const aura::Window* target;
-};
 
 // Time it takes for the selector widget to move to the next target. The same
 // time is used for fading out shield widget when the overview mode is opened
@@ -557,11 +542,9 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
   if (!selection_widget_ || SelectedWindow() != window)
     return;
   aura::Window* selection_widget_window = selection_widget_->GetNativeWindow();
-  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings_label =
-      ScopedOverviewAnimationSettingsFactory::Get()
-          ->CreateOverviewAnimationSettings(
-              OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,
-              selection_widget_window);
+  ScopedOverviewAnimationSettings animation_settings_label(
+      OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,
+      selection_widget_window);
   selection_widget_->SetOpacity(0.f);
 }
 
@@ -569,8 +552,9 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));
   auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           WindowSelectorItemComparator(window));
-
+                           [window](std::unique_ptr<WindowSelectorItem>& item) {
+                             return item->GetWindow() == window;
+                           });
   DCHECK(iter != window_list_.end());
 
   size_t removed_index = iter - window_list_.begin();
@@ -605,7 +589,9 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
     return;
 
   auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           WindowSelectorItemComparator(window));
+                           [window](std::unique_ptr<WindowSelectorItem>& item) {
+                             return item->GetWindow() == window;
+                           });
   DCHECK(iter != window_list_.end());
 
   // Immediately finish any active bounds animation.

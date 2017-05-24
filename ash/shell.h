@@ -137,7 +137,6 @@ class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
 class ShellPort;
-class ScopedOverviewAnimationSettingsFactoryAura;
 class ScreenLayoutObserver;
 class ScreenOrientationController;
 class ScreenshotController;
@@ -677,8 +676,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
-  std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
-      scoped_overview_animation_settings_factory_;
   std::unique_ptr<ShellPort> shell_port_;
 
   // The CompoundEventFilter owned by aura::Env object.
