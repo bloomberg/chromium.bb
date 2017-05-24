@@ -24523,6 +24523,14 @@ from previous Chrome versions.
   <int value="4"
       label="Persistent sparse histogram active sample overflowed and became
              negative."/>
+  <int value="5"
+      label="Persistent sparse histogram accumulated a negative count."/>
+  <int value="6"
+      label="Persistent sparse histogram accumulated a negative count that
+             caused a negative value."/>
+  <int value="7"
+      label="Persistent sparse histogram active sample overflowed during
+             accumulation and became negative."/>
 </enum>
 
 <enum name="NetCacheState" type="int">
