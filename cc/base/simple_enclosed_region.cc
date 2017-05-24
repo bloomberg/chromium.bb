@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "cc/base/region.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
@@ -124,10 +125,22 @@ void SimpleEnclosedRegion::Union(const gfx::Rect& new_rect) {
   }
 
   rect_.SetRect(left, top, right - left, bottom - top);
-
+  int64_t rect_area = static_cast<int64_t>(rect_.width()) * rect_.height();
   gfx::Rect adjusted_new_rect(
       new_left, new_top, new_right - new_left, new_bottom - new_top);
-  if (RectIsLargerArea(adjusted_new_rect, rect_))
+  int64_t adjust_new_rect_area =
+      static_cast<int64_t>(adjusted_new_rect.width()) *
+      adjusted_new_rect.height();
+  gfx::Rect overlap = gfx::IntersectRects(rect_, adjusted_new_rect);
+  int64_t overlap_area =
+      static_cast<int64_t>(overlap.width()) * overlap.height();
+
+  // Based on the assumption that as we compute occlusion, each step is
+  // more likely to be occluded by things added to this region more recently due
+  // to the way we build scenes with overlapping elements adjacent to each other
+  // in the Z order. So, the area of the new rect has a weight of 2 in the
+  // weighted area calculation.
+  if (adjust_new_rect_area * 2 > rect_area + overlap_area)
     rect_ = adjusted_new_rect;
 }
 

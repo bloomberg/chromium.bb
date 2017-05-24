@@ -337,80 +337,134 @@ TEST(SimpleEnclosedRegionTest, Union) {
   r.Union(gfx::Rect(2, 3, 9, 10));
   EXPECT_TRUE(ExpectRegionEq(gfx::Rect(2, 3, 9, 10), r));
 
-  // Union with a smaller disjoint rect is ignored.
-  r.Union(gfx::Rect(20, 21, 9, 9));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(2, 3, 9, 10), r));
+  // Union with a second disjoint rect with area larger than half of the first
+  // one.
+  // +---+     +--+
+  // |   |     |  |
+  // +---+     +--+
+  r.Union(gfx::Rect(20, 20, 6, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(20, 20, 6, 10), r));
 
-  // Union with a smaller overlapping rect is ignored.
-  r.Union(gfx::Rect(3, 4, 9, 9));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(2, 3, 9, 10), r));
+  // Union with a second disjoint rect with area smaller than half of the first
+  // one.
+  // +----+     +--+
+  // |    |     +--+
+  // +----+
+  r.Union(gfx::Rect(2, 3, 3, 3));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(20, 20, 6, 10), r));
 
-  // Union with an equal sized rect can be either one.
-  r.Union(gfx::Rect(4, 4, 9, 10));
-  EXPECT_EQ(1u, r.GetRegionComplexity());
-  EXPECT_TRUE(r.bounds() == gfx::Rect(2, 3, 9, 10) ||
-              r.bounds() == gfx::Rect(4, 4, 9, 10));
+  // Union with a second disjoint rect with area larger than the first one.
+  // +---+     +-------+
+  // |   |     |       |
+  // +---+     +-------+
+  r.Union(gfx::Rect(2, 3, 15, 15));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(2, 3, 15, 15), r));
 
-  // Union with a larger disjoint rect is taken.
-  r.Union(gfx::Rect(20, 21, 12, 13));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(20, 21, 12, 13), r));
-
-  // Union with a larger overlapping rect is taken.
-  r.Union(gfx::Rect(19, 19, 12, 14));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(19, 19, 12, 14), r));
-
-  // True also when the rect covers one edge of the existing region.
+  // Union with rect which extends from the first one:
+  // +----------+
+  // |  1  |  2 |
+  // +-----+----+
   r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(12, 7, 9, 16));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(12, 7, 9, 16), r));
-
-  r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(9, 7, 9, 16));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(9, 7, 9, 16), r));
-
-  r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(7, 12, 16, 9));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(7, 12, 16, 9), r));
+  r.Union(gfx::Rect(20, 10, 5, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 15, 10), r));
 
   r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(7, 9, 16, 9));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(7, 9, 16, 9), r));
-
-  // But if the existing region can be expanded to make a larger rect, then it
-  // will. Union area is 9*12 = 108. By merging, we make a rect with an area of
-  // 10*11 = 110. The resulting rect is expanded as far as possible while
-  // remaining enclosed in the Union.
-  r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(12, 9, 9, 12));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 11, 10), r));
+  r.Union(gfx::Rect(10, 5, 10, 5));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 5, 10, 15), r));
 
   r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(9, 9, 9, 12));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(9, 10, 11, 10), r));
+  r.Union(gfx::Rect(5, 10, 5, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(5, 10, 15, 10), r));
 
   r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(9, 12, 12, 9));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 11), r));
+  r.Union(gfx::Rect(10, 20, 10, 5));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 15), r));
+
+  // Union with rect which overlaps and extends from the first one:
+  // +----+--+---+
+  // |  1 |  |2  |
+  // |    |  |   |
+  // +----+--+---+
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(10, 2, 10, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 2, 10, 18), r));
 
   r = gfx::Rect(10, 10, 10, 10);
-  r.Union(gfx::Rect(9, 9, 12, 9));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 9, 10, 11), r));
+  r.Union(gfx::Rect(2, 10, 10, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(2, 10, 18, 10), r));
 
-  r = gfx::Rect(12, 9, 9, 12);
-  r.Union(gfx::Rect(10, 10, 10, 10));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 11, 10), r));
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(10, 18, 10, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 18), r));
 
-  r = gfx::Rect(9, 9, 9, 12);
-  r.Union(gfx::Rect(10, 10, 10, 10));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(9, 10, 11, 10), r));
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(18, 10, 10, 10));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 18, 10), r));
 
-  r = gfx::Rect(9, 12, 12, 9);
-  r.Union(gfx::Rect(10, 10, 10, 10));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 11), r));
+  // Union with a second rect which overlaps with the first one and
+  // area(rect 1) + area(overlap) > area(rect 2)*2 and
+  // area(rect 1) < area(rect 2)*2.
+  //       +---+
+  //   +---|+ 2|
+  //   |   +---+
+  //   | 1  |
+  //   +----+    (same figure for next test case.)
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(14, 12, 8, 7));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 10), r));
 
-  r = gfx::Rect(9, 9, 12, 9);
-  r.Union(gfx::Rect(10, 10, 10, 10));
-  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 9, 10, 11), r));
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(11, 9, 8, 7));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 10), r));
+
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(9, 12, 8, 7));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 10), r));
+
+  r = gfx::Rect(10, 10, 10, 10);
+  r.Union(gfx::Rect(13, 11, 8, 7));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 10), r));
+
+  // Union with a second rect which overlaps with the first one and
+  // area(rect 1) + area(overlap) < area(rect 2)*2 and
+  // area(rect 1) > area(rect 2).
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(7, 7, 4, 4));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(7, 7, 4, 4), r));
+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(14, 7, 4, 4));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(14, 7, 4, 4), r));
+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(7, 14, 4, 4));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(7, 14, 4, 4), r));
+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(14, 14, 4, 4));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(14, 14, 4, 4), r));
+
+  // Union with a second rect which overlaps with the first one and the new
+  // unioned rect should combine both rect.
+  //  +---+-+-----------+
+  //  |  1| |    2      |
+  //  |   +-|-----------+
+  //  +-----+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(5, 11, 7, 4));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(5, 11, 10, 4), r));
+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(13, 10, 7, 4));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 10, 4), r));
+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(10, 12, 4, 7));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(10, 10, 4, 9), r));
+
+  r = gfx::Rect(10, 10, 5, 5);
+  r.Union(gfx::Rect(11, 11, 4, 7));
+  EXPECT_TRUE(ExpectRegionEq(gfx::Rect(11, 10, 4, 8), r));
 }
 
 TEST(SimpleEnclosedRegionTest, Subtract) {
