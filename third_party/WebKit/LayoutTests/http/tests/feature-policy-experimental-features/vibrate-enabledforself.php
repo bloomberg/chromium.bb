@@ -10,28 +10,39 @@ Header("Feature-Policy: {\"vibrate\": [\"self\"]}");
 ?>
 
 <!DOCTYPE html>
-<html>
-<head>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/helper.js"></script>
+<iframe></iframe>
 <script>
-if (window.testRunner) {
-  testRunner.dumpAsText();
-  testRunner.dumpChildFramesAsText();
-}
+var srcs = [
+  "resources/feature-policy-vibrate.html",
+  "http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate.html"];
 
-function loaded() {
-  var iframes = document.getElementsByTagName('iframe');
-  for (var i = 0; i < iframes.length; ++i) {
-    var iframe = iframes[i];
-    // The iframe uses eventSender to emulate a user navigatation, which requires absolute coordinates.
-    iframe.contentWindow.postMessage({x: iframe.offsetLeft, y: iframe.offsetTop}, "*");
+window.onload = function () {
+  var iframe = document.querySelector('iframe');
+  iframe.addEventListener('load', sendClick);
+  function loadFrame(src) {
+    promise_test(function() {
+      iframe.src = src;
+      return new Promise(function(resolve, reject) {
+        window.addEventListener('message', function(e) {
+          if (e.data.type === 'result') {
+            resolve(e.data);
+          }
+        });
+      }).then(function(data) {
+        // vibrate is only enabled within the same origin.
+        if (src === srcs[0]) {
+          assert_true(data.enabled, 'navigator.vibrate():');
+        } else {
+          assert_false(data.enabled, 'navigator.vibrate():');
+        }
+      });
+    }, 'Navigator.vibrate enabled for self on URL: ' + src);
+  }
+  for (var src of srcs) {
+    loadFrame(src);
   }
 }
 </script>
-</head>
-<body onload="loaded();">
-<iframe id="f1" src="resources/feature-policy-vibrate-enabled.html"></iframe>
-<iframe id="f2" src="http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate-disabled.html"></iframe>
-</body>
-</html>

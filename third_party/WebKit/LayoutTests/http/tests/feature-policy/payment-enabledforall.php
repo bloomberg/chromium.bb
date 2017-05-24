@@ -13,13 +13,31 @@ Header("Feature-Policy: {\"payment\": [\"*\"]}");
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/helper.js"></script>
+<iframe></iframe>
+<iframe allowpaymentrequest></iframe>
 <script>
-  if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.dumpChildFramesAsText();
-  }
+var srcs = [
+  "resources/feature-policy-payment.html",
+  "http://localhost:8000/feature-policy/resources/feature-policy-payment.html"
+];
+
+function loadFrame(iframe, src) {
+  var allowpaymentrequest = iframe.hasAttribute('allowpaymentrequest');
+  promise_test(function() {
+    iframe.src = src;
+    return new Promise(function(resolve, reject) {
+      window.addEventListener('message', function(e) {
+        resolve(e.data);
+      }, { once: true });
+    }).then(function(data) {
+      assert_true(data.enabled, 'Paymentrequest():');
+    });
+  }, 'Paymentrequest enabled for all on URL: ' + src + ' with ' +
+    'allowpaymentrequest = ' + allowpaymentrequest);
+}
+
+window.onload = function() {
+  loadIframes(srcs);
+}
 </script>
-<iframe id="f1" src="resources/feature-policy-payment-enabled.html"></iframe>
-<iframe id="f2" src="http://localhost:8000/feature-policy/resources/feature-policy-payment-enabled.html"></iframe>
-<iframe id="f3" src="resources/feature-policy-payment-enabled.html" allowpaymentrequest></iframe>
-<iframe id="f4" src="http://localhost:8000/feature-policy/resources/feature-policy-payment-enabled.html" allowpaymentrequest></iframe>

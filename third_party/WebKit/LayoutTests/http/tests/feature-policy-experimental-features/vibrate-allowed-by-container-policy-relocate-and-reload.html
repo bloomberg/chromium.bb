@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/helper.js"></script>
+<iframe src="about:blank" allow="vibrate"></iframe>
+<script>
+window.onload = function () {
+  var iframe = document.querySelector('iframe');
+  var src = "http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate.html";
+  iframe.addEventListener('load', sendClick);
+  promise_test(function() {
+    iframe.src = src;
+    return new Promise(function(resolve, reject) {
+      window.addEventListener('message', function(e) {
+        if (e.data.type === 'result') {
+          resolve(e.data);
+        }
+      });
+    }).then(function(data) {
+      assert_true(data.enabled, 'navigator.vibrate():');
+    });
+  }, 'Iframe src set to ' + src + ', is enabled by container policy.');
+}
+</script>

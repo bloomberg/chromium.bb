@@ -1,23 +1,6 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/716085: Started failing after r466634 landed.
-crbug.com/716085 http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]
-crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Failure ]
-crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Failure ]
-crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Failure ]
-crbug.com/716085 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy.html [ Failure ]
-crbug.com/716085 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy-relocate.html [ Failure ]
-crbug.com/716085 virtual/feature-policy/http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]
-crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-allowed-by-container-policy-relocate.html [ Failure ]
-crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Failure ]
-crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Failure ]
-crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Failure ]
-crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]
-crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Failure ]
-crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Failure ]
-crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Failure ]
-
 # https://crbug.com/710098: Tests failing because of r462933.
 crbug.com/710098 http/tests/security/document-all.html [ Failure ]
 crbug.com/710098 http/tests/security/window-named-proto.html [ Failure ]
