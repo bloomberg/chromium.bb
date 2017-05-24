@@ -10,10 +10,14 @@
 
 // Headless shell uses |MessagePumpMac|, so it needs to implement the
 // |CRAppProtocol|.
-@interface HeadlessShellCrApplication : NSApplication<CrAppProtocol>
+@interface HeadlessShellCrApplication
+    : NSApplication<CrAppProtocol, CrAppControlProtocol>
 
 // CrAppProtocol:
 - (BOOL)isHandlingSendEvent;
+
+// CrAppControlProtocol:
+- (void)setHandlingSendEvent:(BOOL)handlingSendEvent;
 
 @end
 

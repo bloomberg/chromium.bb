@@ -13,4 +13,8 @@
   return false;
 }
 
+// This method is required to allow handling some input events on Mac OS.
+- (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
+}
+
 @end
