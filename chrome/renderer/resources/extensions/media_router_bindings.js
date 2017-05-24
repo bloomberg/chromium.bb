@@ -155,27 +155,18 @@ define('media_router_bindings', [
     }
   }
 
-  // TODO(crbug.com/688177): remove this conversion.
-  /**
-   * Converts Mojo origin to string.
-   * @param {!originMojom.Origin} Mojo origin
-   * @return {string}
-   */
-  function mojoOriginToString_(origin) {
-    return origin.unique ? '' :
-        `${origin.scheme}:\/\/${origin.host}` +
-        `${origin.port ? `:${origin.port}` : ''}/`
-  }
-
-  // TODO(crbug.com/688177): remove this conversion.
+  // TODO(crbug.com/688177): remove this conversion when M60 is in stable.
   /**
    * Converts string to Mojo origin.
-   * @param {string} origin
+   * @param {string|!originMojom.Origin} origin
    * @return {!originMojom.Origin}
    */
   function stringToMojoOrigin_(origin) {
-    var url = new URL(origin);
-    var mojoOrigin = {};
+    if (origin instanceof originMojom.Origin) {
+      return origin;
+    }
+    const url = new URL(origin);
+    const mojoOrigin = {};
     mojoOrigin.scheme = url.protocol.replace(':', '');
     mojoOrigin.host = url.hostname;
     var port = url.port ? Number.parseInt(url.port) : 0;
@@ -286,6 +277,7 @@ define('media_router_bindings', [
       MediaController: mediaControllerMojom.MediaController,
       MediaStatus: mediaStatusMojom.MediaStatus,
       MediaStatusObserverPtr: mediaStatusMojom.MediaStatusObserverPtr,
+      Origin: originMojom.Origin,
       Sink: mediaRouterMojom.MediaSink,
       SinkExtraData: mediaRouterMojom.MediaSinkExtraData,
       TimeDelta: timeMojom.TimeDelta,
@@ -674,7 +666,7 @@ define('media_router_bindings', [
                timeout, incognito) {
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_.createRoute(
-        sourceUrn, sinkId, presentationId, mojoOriginToString_(origin), tabId,
+        sourceUrn, sinkId, presentationId, origin, tabId,
         Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
@@ -705,7 +697,7 @@ define('media_router_bindings', [
                incognito) {
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_.joinRoute(
-        sourceUrn, presentationId, mojoOriginToString_(origin), tabId,
+        sourceUrn, presentationId, origin, tabId,
         Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
@@ -737,7 +729,7 @@ define('media_router_bindings', [
                timeout, incognito) {
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_.connectRouteByRouteId(
-        sourceUrn, routeId, presentationId, mojoOriginToString_(origin), tabId,
+        sourceUrn, routeId, presentationId, origin, tabId,
         Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
