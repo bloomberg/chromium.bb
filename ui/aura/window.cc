@@ -47,12 +47,12 @@
 
 namespace aura {
 
-Window::Window(WindowDelegate* delegate, ui::wm::WindowType type)
+Window::Window(WindowDelegate* delegate, client::WindowType type)
     : Window(delegate, nullptr, type) {}
 
 Window::Window(WindowDelegate* delegate,
                std::unique_ptr<WindowPort> port,
-               ui::wm::WindowType type)
+               client::WindowType type)
     : port_owner_(std::move(port)),
       port_(port_owner_.get()),
       host_(nullptr),
@@ -149,7 +149,7 @@ void Window::Init(ui::LayerType layer_type) {
   Env::GetInstance()->NotifyWindowInitialized(this);
 }
 
-void Window::SetType(ui::wm::WindowType type) {
+void Window::SetType(client::WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());
   type_ = type;

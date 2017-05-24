@@ -300,7 +300,7 @@ void ArcAppWindowLauncherController::AdditionalUserAddedToSession(
 void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {
   // An arc window has type WINDOW_TYPE_NORMAL, a WindowDelegate and
   // is a top level views widget.
-  if (window->type() != ui::wm::WINDOW_TYPE_NORMAL || !window->delegate())
+  if (window->type() != aura::client::WINDOW_TYPE_NORMAL || !window->delegate())
     return;
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (!widget || !widget->is_top_level())

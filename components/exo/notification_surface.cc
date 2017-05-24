@@ -77,7 +77,7 @@ NotificationSurface::NotificationSurface(NotificationSurfaceManager* manager,
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
 
-  window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetName("ExoNotificationSurface");
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->set_owned_by_parent(false);

@@ -91,27 +91,27 @@ class AshEventGeneratorDelegate
 };
 
 ui::mojom::WindowType MusWindowTypeFromWmWindowType(
-    ui::wm::WindowType wm_window_type) {
-  switch (wm_window_type) {
-    case ui::wm::WINDOW_TYPE_UNKNOWN:
+    aura::client::WindowType window_type) {
+  switch (window_type) {
+    case aura::client::WINDOW_TYPE_UNKNOWN:
       break;
 
-    case ui::wm::WINDOW_TYPE_NORMAL:
+    case aura::client::WINDOW_TYPE_NORMAL:
       return ui::mojom::WindowType::WINDOW;
 
-    case ui::wm::WINDOW_TYPE_POPUP:
+    case aura::client::WINDOW_TYPE_POPUP:
       return ui::mojom::WindowType::POPUP;
 
-    case ui::wm::WINDOW_TYPE_CONTROL:
+    case aura::client::WINDOW_TYPE_CONTROL:
       return ui::mojom::WindowType::CONTROL;
 
-    case ui::wm::WINDOW_TYPE_PANEL:
+    case aura::client::WINDOW_TYPE_PANEL:
       return ui::mojom::WindowType::PANEL;
 
-    case ui::wm::WINDOW_TYPE_MENU:
+    case aura::client::WINDOW_TYPE_MENU:
       return ui::mojom::WindowType::MENU;
 
-    case ui::wm::WINDOW_TYPE_TOOLTIP:
+    case aura::client::WINDOW_TYPE_TOOLTIP:
       return ui::mojom::WindowType::TOOLTIP;
   }
 
@@ -253,7 +253,7 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
 
 std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
     const gfx::Rect& bounds_in_screen,
-    ui::wm::WindowType type,
+    aura::client::WindowType type,
     int shell_window_id) {
   if (AshTestHelper::config() != Config::MASH) {
     return base::WrapUnique<aura::Window>(
@@ -291,7 +291,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
     const gfx::Rect& bounds_in_screen,
     int shell_window_id) {
   if (AshTestHelper::config() == Config::MASH) {
-    return CreateTestWindow(bounds_in_screen, ui::wm::WINDOW_TYPE_NORMAL,
+    return CreateTestWindow(bounds_in_screen, aura::client::WINDOW_TYPE_NORMAL,
                             shell_window_id);
   }
 
@@ -299,7 +299,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
       aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
   return base::WrapUnique<aura::Window>(
       CreateTestWindowInShellWithDelegateAndType(
-          delegate, ui::wm::WINDOW_TYPE_NORMAL, shell_window_id,
+          delegate, aura::client::WINDOW_TYPE_NORMAL, shell_window_id,
           bounds_in_screen));
 }
 
@@ -324,7 +324,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateChildWindow(
     const gfx::Rect& bounds,
     int shell_window_id) {
   std::unique_ptr<aura::Window> window =
-      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL);
+      base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(bounds);
   window->set_id(shell_window_id);
@@ -338,12 +338,12 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegate(
     int id,
     const gfx::Rect& bounds) {
   return CreateTestWindowInShellWithDelegateAndType(
-      delegate, ui::wm::WINDOW_TYPE_NORMAL, id, bounds);
+      delegate, aura::client::WINDOW_TYPE_NORMAL, id, bounds);
 }
 
 aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     aura::WindowDelegate* delegate,
-    ui::wm::WindowType type,
+    aura::client::WindowType type,
     int id,
     const gfx::Rect& bounds) {
   aura::Window* window = new aura::Window(delegate);
@@ -369,7 +369,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
                           ui::mojom::kResizeBehaviorCanMinimize |
                           ui::mojom::kResizeBehaviorCanResize);
   // Setting the item type triggers ShelfWindowWatcher to create a shelf item.
-  if (type == ui::wm::WINDOW_TYPE_PANEL)
+  if (type == aura::client::WINDOW_TYPE_PANEL)
     window->SetProperty<int>(kShelfItemTypeKey, TYPE_APP_PANEL);
 
   return window;

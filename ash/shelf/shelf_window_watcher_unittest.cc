@@ -305,8 +305,8 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
 TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   const int initial_item_count = model_->item_count();
 
-  std::unique_ptr<aura::Window> window(
-      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  std::unique_ptr<aura::Window> window(base::MakeUnique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_NORMAL));
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetProperty(kShelfIDKey, new std::string(ShelfID("foo").Serialize()));
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
@@ -316,8 +316,8 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   window->Show();
   EXPECT_EQ(initial_item_count + 1, model_->item_count());
 
-  std::unique_ptr<aura::Window> child_window(
-      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  std::unique_ptr<aura::Window> child_window(base::MakeUnique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_NORMAL));
   child_window->Init(ui::LAYER_NOT_DRAWN);
   child_window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
   window->AddChild(child_window.get());

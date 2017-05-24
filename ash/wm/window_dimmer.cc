@@ -23,7 +23,7 @@ const float kDefaultDimOpacity = 0.5f;
 
 WindowDimmer::WindowDimmer(aura::Window* parent)
     : parent_(parent),
-      window_(new aura::Window(nullptr, ui::wm::WINDOW_TYPE_NORMAL)) {
+      window_(new aura::Window(nullptr, aura::client::WINDOW_TYPE_NORMAL)) {
   window_->Init(ui::LAYER_SOLID_COLOR);
   ::wm::SetWindowVisibilityChangesAnimated(window_);
   ::wm::SetWindowVisibilityAnimationType(

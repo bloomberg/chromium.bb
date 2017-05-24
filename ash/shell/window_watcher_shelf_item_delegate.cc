@@ -29,7 +29,7 @@ void WindowWatcherShelfItemDelegate::ItemSelected(
     ShelfLaunchSource source,
     ItemSelectedCallback callback) {
   aura::Window* window = watcher_->GetWindowByID(shelf_id());
-  if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
+  if (window->type() == aura::client::WINDOW_TYPE_PANEL)
     wm::MoveWindowToDisplay(window, display_id);
   window->Show();
   wm::ActivateWindow(window);

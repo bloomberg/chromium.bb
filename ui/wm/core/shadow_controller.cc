@@ -36,12 +36,12 @@ constexpr ShadowElevation kInactiveNormalShadowElevation =
 
 ShadowElevation GetDefaultShadowElevationForWindow(aura::Window* window) {
   switch (window->type()) {
-    case ui::wm::WINDOW_TYPE_NORMAL:
-    case ui::wm::WINDOW_TYPE_PANEL:
+    case aura::client::WINDOW_TYPE_NORMAL:
+    case aura::client::WINDOW_TYPE_PANEL:
       return kInactiveNormalShadowElevation;
 
-    case ui::wm::WINDOW_TYPE_MENU:
-    case ui::wm::WINDOW_TYPE_TOOLTIP:
+    case aura::client::WINDOW_TYPE_MENU:
+    case aura::client::WINDOW_TYPE_TOOLTIP:
       return ShadowElevation::SMALL;
 
     default:

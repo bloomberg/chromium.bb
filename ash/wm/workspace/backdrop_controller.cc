@@ -210,7 +210,7 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
        ++window_iter) {
     aura::Window* window = *window_iter;
     if (window != backdrop_window_ && window->layer()->GetTargetVisibility() &&
-        window->type() == ui::wm::WINDOW_TYPE_NORMAL &&
+        window->type() == aura::client::WINDOW_TYPE_NORMAL &&
         ::wm::CanActivateWindow(window) && WindowShouldHaveBackdrop(window)) {
       return window;
     }

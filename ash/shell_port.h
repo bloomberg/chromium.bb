@@ -16,11 +16,11 @@
 #include "ash/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/wm/public/activation_change_observer.h"
-#include "ui/wm/public/window_types.h"
 
 namespace display {
 class Display;

@@ -84,7 +84,7 @@ void CycleSnap(WindowState* window_state, WMEventType event) {
 
   if (window_state->CanSnap() &&
       window_state->GetStateType() != desired_snap_state &&
-      window_state->window()->type() != ui::wm::WINDOW_TYPE_PANEL) {
+      window_state->window()->type() != aura::client::WINDOW_TYPE_PANEL) {
     const wm::WMEvent event(desired_snap_state ==
                                     wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
                                 ? wm::WM_EVENT_SNAP_LEFT

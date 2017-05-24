@@ -58,8 +58,8 @@ void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
                                                     intptr_t old) {
   if (window != always_on_top_container_ &&
       key == aura::client::kAlwaysOnTopKey) {
-    DCHECK(window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-           window->type() == ui::wm::WINDOW_TYPE_POPUP);
+    DCHECK(window->type() == aura::client::WINDOW_TYPE_NORMAL ||
+           window->type() == aura::client::WINDOW_TYPE_POPUP);
     aura::Window* container = GetContainer(window);
     if (window->parent() != container)
       container->AddChild(window);

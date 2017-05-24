@@ -35,6 +35,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
@@ -43,7 +44,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/wm/public/activation_delegate.h"
-#include "ui/wm/public/window_types.h"
 
 namespace aura {
 namespace client {
@@ -386,7 +386,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   class WindowAncestorObserver;
   friend class WindowAncestorObserver;
 
-  void CreateAuraWindow(ui::wm::WindowType type);
+  void CreateAuraWindow(aura::client::WindowType type);
 
   void CreateDelegatedFrameHostClient();
 

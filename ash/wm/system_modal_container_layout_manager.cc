@@ -77,8 +77,8 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
-  DCHECK(child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-         child->type() == ui::wm::WINDOW_TYPE_POPUP);
+  DCHECK(child->type() == aura::client::WINDOW_TYPE_NORMAL ||
+         child->type() == aura::client::WINDOW_TYPE_POPUP);
   // TODO(mash): IsUserSessionBlocked() depends on knowing the login state. We
   // need a non-stub version of SessionStateDelegate. crbug.com/648964
   if (Shell::GetAshConfig() != Config::MASH) {

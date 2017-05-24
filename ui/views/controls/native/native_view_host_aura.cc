@@ -68,7 +68,7 @@ NativeViewHostAura::NativeViewHostAura(NativeViewHost* host)
       clipping_window_(clipping_window_delegate_.get()) {
   // Set the type so descendant views (including popups) get positioned
   // appropriately.
-  clipping_window_.SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  clipping_window_.SetType(aura::client::WINDOW_TYPE_CONTROL);
   clipping_window_.Init(ui::LAYER_NOT_DRAWN);
   clipping_window_.set_owned_by_parent(false);
   clipping_window_.SetName("NativeViewHostAuraClip");

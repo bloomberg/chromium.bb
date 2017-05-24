@@ -62,7 +62,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   aura::Window* CreatePanelWindow(const gfx::Point& origin) {
     gfx::Rect bounds(origin, gfx::Size(101, 101));
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
+        NULL, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
     static int id = 0;
     std::string shelf_id(ash::ShelfID(base::IntToString(id++)).Serialize());
     window->SetProperty(kShelfIDKey, new std::string(shelf_id));
@@ -209,13 +209,13 @@ class PanelWindowResizerTextDirectionTest
 // transient children of supported types.
 class PanelWindowResizerTransientTest
     : public PanelWindowResizerTest,
-      public testing::WithParamInterface<ui::wm::WindowType> {
+      public testing::WithParamInterface<aura::client::WindowType> {
  public:
   PanelWindowResizerTransientTest() : transient_window_type_(GetParam()) {}
   virtual ~PanelWindowResizerTransientTest() {}
 
  protected:
-  ui::wm::WindowType transient_window_type_;
+  aura::client::WindowType transient_window_type_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTransientTest);
@@ -561,7 +561,7 @@ INSTANTIATE_TEST_CASE_P(LtrRtl,
                         testing::Bool());
 INSTANTIATE_TEST_CASE_P(NormalPanelPopup,
                         PanelWindowResizerTransientTest,
-                        testing::Values(ui::wm::WINDOW_TYPE_NORMAL,
-                                        ui::wm::WINDOW_TYPE_POPUP));
+                        testing::Values(aura::client::WINDOW_TYPE_NORMAL,
+                                        aura::client::WINDOW_TYPE_POPUP));
 
 }  // namespace ash
