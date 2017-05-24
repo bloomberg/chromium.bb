@@ -1079,11 +1079,8 @@ void BookmarkBarView::PaintChildren(const ui::PaintContext& context) {
 
     // Since the drop indicator is painted directly onto the canvas, we must
     // make sure it is painted in the right location if the locale is RTL.
-    gfx::Rect indicator_bounds(x - kDropIndicatorWidth / 2,
-                               y,
-                               kDropIndicatorWidth,
-                               h);
-    indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
+    gfx::Rect indicator_bounds = GetMirroredRect(
+        gfx::Rect(x - kDropIndicatorWidth / 2, y, kDropIndicatorWidth, h));
 
     ui::PaintRecorder recorder(context, size());
     // TODO(sky/glen): make me pretty!

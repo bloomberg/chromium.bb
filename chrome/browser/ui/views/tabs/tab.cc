@@ -320,8 +320,7 @@ class Tab::TabCloseButton : public views::ImageButton,
       return ViewTargeterDelegate::TargetForRect(root, rect);
 
     // Ignore the padding set on the button.
-    gfx::Rect contents_bounds = GetContentsBounds();
-    contents_bounds.set_x(GetMirroredXForRect(contents_bounds));
+    gfx::Rect contents_bounds = GetMirroredRect(GetContentsBounds());
 
 #if defined(USE_AURA)
     // Include the padding in hit-test for touch events.
@@ -342,9 +341,7 @@ class Tab::TabCloseButton : public views::ImageButton,
 
   // We need to define this so hit-testing won't include the border region.
   bool GetHitTestMask(gfx::Path* mask) const override {
-    gfx::Rect button_bounds(GetContentsBounds());
-    button_bounds.set_x(GetMirroredXForRect(button_bounds));
-    mask->addRect(gfx::RectToSkRect(button_bounds));
+    mask->addRect(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
     return true;
   }
 
@@ -1269,8 +1266,7 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
 }
 
 void Tab::PaintIcon(gfx::Canvas* canvas) {
-  gfx::Rect bounds = favicon_bounds_;
-  bounds.set_x(GetMirroredXForRect(bounds));
+  gfx::Rect bounds = GetMirroredRect(favicon_bounds_);
   bounds.Offset(0, favicon_hiding_offset_);
   bounds.Intersect(GetContentsBounds());
   if (bounds.IsEmpty())
@@ -1446,8 +1442,7 @@ void Tab::ScheduleIconPaint() {
   // Extends the area to the bottom when the crash animation is in progress.
   if (crash_icon_animation_->is_animating())
     bounds.set_height(height() - bounds.y());
-  bounds.set_x(GetMirroredXForRect(bounds));
-  SchedulePaintInRect(bounds);
+  SchedulePaintInRect(GetMirroredRect(bounds));
 }
 
 Tab::BackgroundCache::BackgroundCache() = default;

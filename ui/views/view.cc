@@ -575,9 +575,14 @@ int View::GetMirroredX() const {
   return parent_ ? parent_->GetMirroredXForRect(bounds_) : x();
 }
 
-int View::GetMirroredXForRect(const gfx::Rect& bounds) const {
-  return base::i18n::IsRTL() ?
-      (width() - bounds.x() - bounds.width()) : bounds.x();
+int View::GetMirroredXForRect(const gfx::Rect& rect) const {
+  return base::i18n::IsRTL() ? (width() - rect.x() - rect.width()) : rect.x();
+}
+
+gfx::Rect View::GetMirroredRect(const gfx::Rect& rect) const {
+  gfx::Rect mirrored_rect = rect;
+  mirrored_rect.set_x(GetMirroredXForRect(rect));
+  return mirrored_rect;
 }
 
 int View::GetMirroredXInView(int x) const {

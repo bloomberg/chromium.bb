@@ -157,13 +157,14 @@ std::unique_ptr<InkDrop> InkDropHostView::CreateInkDrop() {
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
-  return CreateDefaultInkDropRipple(GetLocalBounds().CenterPoint());
+  return CreateDefaultInkDropRipple(
+      GetMirroredRect(GetContentsBounds()).CenterPoint());
 }
 
 std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
     const {
   return CreateDefaultInkDropHighlight(
-      gfx::RectF(GetLocalBounds()).CenterPoint());
+      gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint());
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
@@ -198,7 +199,7 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
 gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
   return last_ripple_triggering_event_
              ? last_ripple_triggering_event_->location()
-             : GetLocalBounds().CenterPoint();
+             : GetMirroredRect(GetContentsBounds()).CenterPoint();
 }
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
