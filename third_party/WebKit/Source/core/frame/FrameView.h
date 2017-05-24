@@ -209,8 +209,6 @@ class CORE_EXPORT FrameView final
   void RecalculateCustomScrollbarStyle();
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
-  void Clear();
-
   // True if the FrameView's base background color is completely opaque.
   bool HasOpaqueBackground() const;
 

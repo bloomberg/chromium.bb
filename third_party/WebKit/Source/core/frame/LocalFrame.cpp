@@ -293,9 +293,6 @@ void LocalFrame::Init() {
 void LocalFrame::SetView(FrameView* view) {
   DCHECK(!view_ || view_ != view);
   DCHECK(!GetDocument() || !GetDocument()->IsActive());
-
-  GetEventHandler().Clear();
-
   view_ = view;
 }
 
@@ -442,7 +439,6 @@ void LocalFrame::Detach(FrameDetachType type) {
   // - FrameLoader::detach() can fire XHR abort events
   // - Document::shutdown()'s deferred widget updates can run script.
   ScriptForbiddenScope forbid_script;
-  loader_.Clear();
   if (!Client())
     return;
 
@@ -526,6 +522,8 @@ void LocalFrame::DetachChildren() {
 
 void LocalFrame::DocumentAttached() {
   DCHECK(GetDocument());
+  GetEditor().Clear();
+  GetEventHandler().Clear();
   Selection().DocumentAttached(GetDocument());
   GetInputMethodController().DocumentAttached(GetDocument());
   GetSpellChecker().DocumentAttached(GetDocument());

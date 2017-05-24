@@ -1040,7 +1040,6 @@ Editor::Editor(LocalFrame& frame)
 Editor::~Editor() {}
 
 void Editor::Clear() {
-  GetFrame().GetInputMethodController().Clear();
   should_style_with_css_ = false;
   default_paragraph_separator_ = kEditorParagraphSeparatorIsDiv;
   last_edit_command_ = nullptr;
