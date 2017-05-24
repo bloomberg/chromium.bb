@@ -134,9 +134,17 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool ShouldRepresentNodeOffsetZero();
   bool ShouldEmitSpaceBeforeAndAfterNode(Node*);
   void RepresentNodeOffsetZero();
+
+  // Return true if the iteration progress should advance to |kHandledNode|
+  // after calling a |HandleXXX| function.
+  // TODO(xiaochengh): The meaning of the return values is unclear, and they do
+  // not always clearly control the iteration progress. Should consider removing
+  // the return values and control the iteration in a cleaner way.
   bool HandleTextNode();
+  bool HandlePreFormattedTextNode();
   bool HandleReplacedElement();
   bool HandleNonTextNode();
+
   void HandleTextBox();
   void HandleTextNodeFirstLetter(LayoutTextFragment*);
   bool ShouldHandleFirstLetter(const LayoutText&) const;

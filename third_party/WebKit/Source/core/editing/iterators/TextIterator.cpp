@@ -516,6 +516,60 @@ bool TextIteratorAlgorithm<Strategy>::ShouldHandleFirstLetter(
 }
 
 template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
+  // TODO(xiaochengh): Get rid of repeated computation of these fields.
+  Text* const text_node = ToText(node_);
+  LayoutText* const layout_object = text_node->GetLayoutObject();
+  const String str = layout_object->GetText();
+
+  if (last_text_node_ended_with_collapsed_space_ &&
+      HasVisibleTextNode(layout_object)) {
+    if (!behavior_.CollapseTrailingSpace() ||
+        (offset_ > 0 && str[offset_ - 1] == ' ')) {
+      SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
+      return false;
+    }
+  }
+  if (ShouldHandleFirstLetter(*layout_object)) {
+    HandleTextNodeFirstLetter(ToLayoutTextFragment(layout_object));
+    if (first_letter_text_) {
+      const String first_letter = first_letter_text_->GetText();
+      const unsigned run_start = offset_;
+      const bool stops_in_first_letter =
+          text_node == end_container_ &&
+          end_offset_ <= static_cast<int>(first_letter.length());
+      const unsigned run_end =
+          stops_in_first_letter ? end_offset_ : first_letter.length();
+      EmitText(text_node, first_letter_text_, run_start, run_end);
+      first_letter_text_ = nullptr;
+      text_box_ = 0;
+      offset_ = run_end;
+      return stops_in_first_letter;
+    }
+    // We are here only if the DOM and/or layout trees are broken.
+    // For robustness, we should stop processing this node.
+    NOTREACHED();
+    return false;
+  }
+  if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
+      !IgnoresStyleVisibility())
+    return false;
+  DCHECK_GE(static_cast<unsigned>(offset_), layout_object->TextStartOffset());
+  const unsigned run_start = offset_ - layout_object->TextStartOffset();
+  const unsigned str_length = str.length();
+  const unsigned end = (text_node == end_container_)
+                           ? end_offset_ - layout_object->TextStartOffset()
+                           : str_length;
+  const unsigned run_end = std::min(str_length, end);
+
+  if (run_start >= run_end)
+    return true;
+
+  EmitText(text_node, text_node->GetLayoutObject(), run_start, run_end);
+  return true;
+}
+
+template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   if (ExcludesAutofilledValue()) {
     TextControlElement* control = EnclosingTextControl(node_);
@@ -532,54 +586,8 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   String str = layout_object->GetText();
 
   // handle pre-formatted text
-  if (!layout_object->Style()->CollapseWhiteSpace()) {
-    if (last_text_node_ended_with_collapsed_space_ &&
-        HasVisibleTextNode(layout_object)) {
-      if (behavior_.CollapseTrailingSpace()) {
-        if (offset_ > 0 && str[offset_ - 1] == ' ') {
-          SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
-          return false;
-        }
-      } else {
-        SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
-        return false;
-      }
-    }
-    if (ShouldHandleFirstLetter(*layout_object)) {
-      HandleTextNodeFirstLetter(ToLayoutTextFragment(layout_object));
-      if (first_letter_text_) {
-        String first_letter = first_letter_text_->GetText();
-        const unsigned run_start = offset_;
-        const bool stops_in_first_letter =
-            text_node == end_container_ &&
-            end_offset_ <= static_cast<int>(first_letter.length());
-        const unsigned run_end =
-            stops_in_first_letter ? end_offset_ : first_letter.length();
-        EmitText(text_node, first_letter_text_, run_start, run_end);
-        first_letter_text_ = nullptr;
-        text_box_ = 0;
-        offset_ = run_end;
-        return stops_in_first_letter;
-      }
-      // We are here only if the DOM and/or layout trees are broken.
-      NOTREACHED();
-    }
-    if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
-        !IgnoresStyleVisibility())
-      return false;
-    const unsigned run_start = offset_ - layout_object->TextStartOffset();
-    const unsigned str_length = str.length();
-    const unsigned end = (text_node == end_container_)
-                             ? end_offset_ - layout_object->TextStartOffset()
-                             : INT_MAX;
-    const unsigned run_end = std::min(str_length, end);
-
-    if (run_start >= run_end)
-      return true;
-
-    EmitText(text_node, text_node->GetLayoutObject(), run_start, run_end);
-    return true;
-  }
+  if (!layout_object->Style()->CollapseWhiteSpace())
+    return HandlePreFormattedTextNode();
 
   if (layout_object->FirstTextBox())
     text_box_ = layout_object->FirstTextBox();
