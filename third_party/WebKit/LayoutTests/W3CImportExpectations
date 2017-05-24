@@ -17,7 +17,8 @@
 # Further documentation:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
 
-external/wpt/2dcontext [ Skip ]
+## Owners: paint-dev@chromium.org
+# external/wpt/2dcontext [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
@@ -290,7 +291,8 @@ external/wpt/html-longdesc [ Skip ]
 # external/wpt/http [ Pass ]
 ## Owners: none; No tests in the directory.
 # external/wpt/images [ Pass ]
-external/wpt/imagebitmap-renderingcontext [ Skip ]
+## Owners: paint-dev@chromium.org
+# external/wpt/imagebitmap-renderingcontext [ Pass ]
 ## Owners: smcgruer@chromium.org
 # external/wpt/infrastructure [ Pass ]
 ## Owners: none; No tests in the directory.
@@ -320,7 +322,8 @@ external/wpt/microdata [ Skip ]
 external/wpt/navigation-timing [ Pass ]
 ## Owners: platform-capabilities@chromium.org
 # external/wpt/notifications [ Pass ]
-external/wpt/offscreen-canvas [ Skip ]
+## Owners: paint-dev@chromium.org
+# external/wpt/offscreen-canvas [ Pass ]
 external/wpt/old-tests [ Skip ]
 ## Owners: timvolodine@chromium.org,reillyg@chromium.org
 # external/wpt/orientation-event [ Pass ]
