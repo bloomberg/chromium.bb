@@ -216,8 +216,8 @@ void BookmarkBubbleView::Init() {
 
   layout->AddView(title_tf_, 5, 1);
 
-  layout->AddPaddingRow(0,
-                        provider->GetInsetsMetric(views::INSETS_PANEL).top());
+  layout->AddPaddingRow(
+      0, provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).top());
 
   layout->StartRow(0, cs_id);
   layout->AddView(combobox_label);

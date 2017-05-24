@@ -149,10 +149,10 @@ void CookieInfoView::Init() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  int dialog_button_margin =
-      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
-  SetBorder(views::CreateEmptyBorder(0, dialog_button_margin, 0,
-                                     dialog_button_margin));
+  const gfx::Insets button_row_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW);
+  SetBorder(views::CreateEmptyBorder(0, button_row_insets.left(), 0,
+                                     button_row_insets.right()));
 
   int three_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);

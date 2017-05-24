@@ -89,8 +89,8 @@ views::NonClientFrameView* ChooserDialogView::CreateNonClientFrameView(
   // always be true.
   DCHECK(ShouldUseCustomFrame());
   return views::DialogDelegate::CreateDialogFrameView(
-      widget, gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  DISTANCE_PANEL_CONTENT_MARGIN)));
+      widget, ChromeLayoutProvider::Get()->GetInsetsMetric(
+                  views::INSETS_BUBBLE_CONTENTS));
 }
 
 bool ChooserDialogView::Accept() {

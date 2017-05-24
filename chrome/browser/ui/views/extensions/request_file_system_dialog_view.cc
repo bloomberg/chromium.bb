@@ -86,7 +86,8 @@ gfx::Size RequestFileSystemDialogView::GetPreferredSize() const {
 }
 
 gfx::Insets RequestFileSystemDialogView::GetInsets() const {
-  return ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_PANEL);
+  return ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS);
 }
 
 RequestFileSystemDialogView::RequestFileSystemDialogView(

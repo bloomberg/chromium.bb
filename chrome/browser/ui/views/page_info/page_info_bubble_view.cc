@@ -487,7 +487,7 @@ PageInfoBubbleView::PageInfoBubbleView(
     // horizontal insets match.
     set_title_margins(
         gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_PANEL_CONTENT_MARGIN),
+                        views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
                     side_margin, 0, side_margin));
   }
   views::BubbleDialogDelegateView::CreateBubble(this);
