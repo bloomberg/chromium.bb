@@ -222,10 +222,6 @@ class _BuildHelper(object):
     return 'gs://chrome-perf/%s Builder/' % self.target_os.title()
 
   @property
-  def download_output_dir(self):
-    return 'out/Release' if self.IsAndroid() else 'full-build-linux'
-
-  @property
   def map_file_path(self):
     return self.main_lib_path + '.map.gz'
 
@@ -637,25 +633,26 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
   if build.IsAndroid():
     to_extract += ['build_vars.txt', build.apk_path, build.apk_path + '.size']
   extract_dir = dl_dst + '_' + 'unzipped'
-  # Storage bucket stores entire output directory including out/Release prefix.
   logging.info('Extracting build artifacts')
   with zipfile.ZipFile(dl_dst, 'r') as z:
-    _ExtractFiles(to_extract, build.download_output_dir, extract_dir, z)
-    dl_out = os.path.join(extract_dir, build.download_output_dir)
+    dl_out = _ExtractFiles(to_extract, extract_dir, z)
     build.output_directory, output_directory = dl_out, build.output_directory
     archive.ArchiveBuildResults(supersize_path)
     build.output_directory = output_directory
 
 
-def _ExtractFiles(to_extract, prefix, dst, z):
-  """Extract prefixed files in |to_extract| from |z| if they exist."""
-  zipped_names = z.namelist()
-  assert all(name.startswith(prefix) for name in zipped_names), (
-      'Storage bucket folder structure doesn\'t start with %s' % prefix)
-  to_extract = [os.path.join(prefix, f) for f in to_extract]
+def _ExtractFiles(to_extract, dst, z):
+  """Extract a list of files. Returns the common prefix of the extracted files.
+
+  Paths in |to_extract| should be relative to the output directory.
+  """
+  zipped_paths = z.namelist()
+  output_dir = os.path.commonprefix(zipped_paths)
   for f in to_extract:
-    if f in zipped_names:
-      z.extract(f, path=dst)
+    path = os.path.join(output_dir, f)
+    if path in zipped_paths:
+      z.extract(path, path=dst)
+  return os.path.join(dst, output_dir)
 
 
 def _PrintAndWriteToFile(logfile, s, *args, **kwargs):
