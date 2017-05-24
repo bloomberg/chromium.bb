@@ -141,4 +141,26 @@ NSImage* FlippedImage(NSImage* image) {
   return flipped_image;
 }
 
+void FlipAllSubviewsIfNecessary(NSView* view) {
+  if (!ShouldDoExperimentalRTLLayout())
+    return;
+  CGFloat width = NSWidth([view frame]);
+  for (NSView* subview in [view subviews]) {
+    NSRect subviewFrame = [subview frame];
+    subviewFrame.origin.x =
+        width - NSWidth(subviewFrame) - NSMinX(subviewFrame);
+    [subview setFrame:subviewFrame];
+    if (subview.autoresizingMask & (NSViewMinXMargin | NSViewMaxXMargin)) {
+      // No-op. Skip reversing autoresizing mask if both horizontal margins
+      // are flexible.
+    } else if (subview.autoresizingMask & NSViewMinXMargin) {
+      subview.autoresizingMask &= ~NSViewMinXMargin;
+      subview.autoresizingMask |= NSViewMaxXMargin;
+    } else if (subview.autoresizingMask & NSViewMaxXMargin) {
+      subview.autoresizingMask &= ~NSViewMaxXMargin;
+      subview.autoresizingMask |= NSViewMinXMargin;
+    }
+  }
+}
+
 }  // namespace cocoa_l10n_util

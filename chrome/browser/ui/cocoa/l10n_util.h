@@ -61,6 +61,12 @@ NSCellImagePosition TrailingCellImagePosition();
 // across the x axis.
 NSImage* FlippedImage(NSImage* image);
 
+// In RTL, mirrors all subviews of |view|. Additionally,
+// reverses horizontal margin autoresizing masks.
+// This method is *not* recursive.
+// In LTR, this is a no-op.
+void FlipAllSubviewsIfNecessary(NSView* view);
+
 }  // namespace cocoa_l10n_util
 
 #endif  // CHROME_BROWSER_UI_COCOA_L10N_UTIL_H_

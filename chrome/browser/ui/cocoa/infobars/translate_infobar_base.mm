@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -28,9 +29,22 @@
 
 using InfoBarUtilities::MoveControl;
 using InfoBarUtilities::VerticallyCenterView;
-using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
+
+namespace {
+
+// Check that the control |before| is ordered visually before the |after|
+// control. Also, check that there is space between them. Is RTL-aware.
+bool VerifyControlOrderAndSpacing(id before, id after) {
+  NSRect beforeFrame = [before frame];
+  NSRect afterFrame = [after frame];
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    std::swap(beforeFrame, afterFrame);
+  return NSMinX(afterFrame) >= NSMaxX(beforeFrame);
+}
+
+}  // namespace
 
 std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
@@ -388,8 +402,11 @@ std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
   [self rebuildOptionsMenu:NO];
   [[optionsPopUp_ cell] setArrowPosition:NSPopUpArrowAtBottom];
   [optionsPopUp_ sizeToFit];
-
-  MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
+  // Typically, infobars are mirrored after |addAdditionalControls| in RTL.
+  // Since the options menu is being moved after that code runs, an RTL
+  // check is necessary here as well.
+  MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_,
+              cocoa_l10n_util::ShouldDoExperimentalRTLLayout());
   if (!VerifyControlOrderAndSpacing(lastView, optionsPopUp_)) {
     [self rebuildOptionsMenu:YES];
     NSRect oldFrame = [optionsPopUp_ frame];
