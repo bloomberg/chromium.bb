@@ -14,7 +14,7 @@
     <org.chromium.chrome.browser.infobar.translate.TranslateTabLayout
         android:id="@+id/translate_infobar_tabs"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:requiresFadingEdge="horizontal"
         android:fadingEdgeLength="@dimen/infobar_translate_fade_edge_length"
@@ -26,7 +26,7 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/translate_infobar_menu_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:minHeight="@dimen/min_touch_target_size"
         android:minWidth="@dimen/min_touch_target_size"
         android:scaleType="center"
