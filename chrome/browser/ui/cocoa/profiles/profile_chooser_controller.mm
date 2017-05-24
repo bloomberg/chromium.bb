@@ -156,7 +156,7 @@ NSTextField* BuildLabel(NSString* title,
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [label setStringValue:title];
   [label setEditable:NO];
-  [label setAlignment:NSLeftTextAlignment];
+  [label setAlignment:NSNaturalTextAlignment];
   [label setBezeled:NO];
   [label setFont:[NSFont labelFontOfSize:kTextFontSize]];
   [label setDrawsBackground:NO];
@@ -419,50 +419,50 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   DISALLOW_COPY_AND_ASSIGN(ActiveProfileObserverBridge);
 };
 
-// Custom button cell that adds a left padding before the button image, and
+// Custom button cell that adds a leading padding before the button image, and
 // a custom spacing between the button image and title.
 @interface CustomPaddingImageButtonCell : NSButtonCell {
  @private
-  // Padding added to the left margin of the button.
-  int leftMarginSpacing_;
+  // Padding added to the leading margin of the button.
+  int leadingMarginSpacing_;
   // Spacing between the cell image and title.
   int imageTitleSpacing_;
-  // Padding added to the right margin of the button.
-  int rightMarginSpacing_;
+  // Padding added to the traling margin of the button.
+  int trailingMarginSpacing_;
 }
 
-- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
-              imageTitleSpacing:(int)imageTitleSpacing;
+- (id)initWithLeadingMarginSpacing:(int)leadingMarginSpacing
+                 imageTitleSpacing:(int)imageTitleSpacing;
 
-- (void)setRightMarginSpacing:(int)rightMarginSpacing;
+- (void)setTrailingMarginSpacing:(int)trailingMarginSpacing;
 @end
 
 @implementation CustomPaddingImageButtonCell
-- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
-              imageTitleSpacing:(int)imageTitleSpacing {
+- (id)initWithLeadingMarginSpacing:(int)leadingMarginSpacing
+                 imageTitleSpacing:(int)imageTitleSpacing {
   if ((self = [super init])) {
-    leftMarginSpacing_ = leftMarginSpacing;
+    leadingMarginSpacing_ = leadingMarginSpacing;
     imageTitleSpacing_ = imageTitleSpacing;
   }
   return self;
 }
 
-- (void)setRightMarginSpacing:(int)rightMarginSpacing {
-  rightMarginSpacing_ = rightMarginSpacing;
+- (void)setTrailingMarginSpacing:(int)trailingMarginSpacing {
+  trailingMarginSpacing_ = trailingMarginSpacing;
 }
 
 - (NSRect)drawTitle:(NSAttributedString*)title
           withFrame:(NSRect)frame
              inView:(NSView*)controlView {
   NSRect marginRect;
-  NSDivideRect(frame, &marginRect, &frame, leftMarginSpacing_, NSMinXEdge);
-
-  // The title frame origin isn't aware of the left margin spacing added
+  NSDivideRect(frame, &marginRect, &frame, leadingMarginSpacing_,
+               cocoa_l10n_util::LeadingEdge());
+  // The title frame origin isn't aware of the leading margin spacing added
   // in -drawImage, so it must be added when drawing the title as well.
-  if ([self imagePosition] == NSImageLeft)
-    NSDivideRect(frame, &marginRect, &frame, imageTitleSpacing_, NSMinXEdge);
-
-  NSDivideRect(frame, &marginRect, &frame, rightMarginSpacing_, NSMaxXEdge);
+  NSDivideRect(frame, &marginRect, &frame, imageTitleSpacing_,
+               cocoa_l10n_util::LeadingEdge());
+  NSDivideRect(frame, &marginRect, &frame, trailingMarginSpacing_,
+               cocoa_l10n_util::TrailingEdge());
 
   return [super drawTitle:title withFrame:frame inView:controlView];
 }
@@ -470,16 +470,17 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)drawImage:(NSImage*)image
         withFrame:(NSRect)frame
            inView:(NSView*)controlView {
-  if ([self imagePosition] == NSImageLeft)
-    frame.origin.x = leftMarginSpacing_;
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    frame.origin.x -= leadingMarginSpacing_;
+  else
+    frame.origin.x = leadingMarginSpacing_;
   [super drawImage:image withFrame:frame inView:controlView];
 }
 
 - (NSSize)cellSize {
   NSSize buttonSize = [super cellSize];
-  buttonSize.width += leftMarginSpacing_;
-  if ([self imagePosition] == NSImageLeft)
-    buttonSize.width += imageTitleSpacing_;
+  buttonSize.width += leadingMarginSpacing_;
+  buttonSize.width += imageTitleSpacing_;
   return buttonSize;
 }
 
@@ -562,7 +563,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSColor> hoverColor_;
 }
 
-- (void)setRightMarginSpacing:(int)rightMarginSpacing;
+- (void)setTrailingMarginSpacing:(int)trailingMarginSpacing;
 @end
 
 @implementation BackgroundColorHoverButton
@@ -581,8 +582,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
     base::scoped_nsobject<CustomPaddingImageButtonCell> cell(
         [[CustomPaddingImageButtonCell alloc]
-            initWithLeftMarginSpacing:kHorizontalSpacing
-                    imageTitleSpacing:imageTitleSpacing]);
+            initWithLeadingMarginSpacing:kHorizontalSpacing
+                       imageTitleSpacing:imageTitleSpacing]);
     [cell setLineBreakMode:NSLineBreakByTruncatingTail];
     [cell setHighlightsBy:NSNoCellMask];
     [self setCell:cell.get()];
@@ -590,8 +591,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return self;
 }
 
-- (void)setRightMarginSpacing:(int)rightMarginSpacing {
-  [[self cell] setRightMarginSpacing:rightMarginSpacing];
+- (void)setTrailingMarginSpacing:(int)trailingMarginSpacing {
+  [[self cell] setTrailingMarginSpacing:trailingMarginSpacing];
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -1586,6 +1587,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSView> container(
       [[NSView alloc] initWithFrame:NSZeroRect]);
 
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   CGFloat xOffset = kHorizontalSpacing;
   CGFloat yOffset = 0.0;
   CGFloat cardYOffset = kRelatedControllVerticalSpacing;
@@ -1650,6 +1652,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         NSMakeRect(xOffset + kMdImageSide - badgeSize + badgeSpacing,
                    cardYOffset + kMdImageSide - badgeSize + badgeSpacing,
                    badgeSize, badgeSize);
+    if (isRTL) {
+      badgeIconCircleFrame.origin.x = NSWidth([profileCard frame]) -
+                                      NSWidth(badgeIconCircleFrame) -
+                                      NSMinX(badgeIconCircleFrame);
+    }
     base::scoped_nsobject<BackgroundCircleView> badgeIconWithCircle([
         [BackgroundCircleView alloc] initWithFrame:badgeIconCircleFrame
                                      withFillColor:GetDialogBackgroundColor()]);
@@ -1669,9 +1676,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
     [profileCard addSubview:badgeIconWithCircle];
   }
-
-  // Profile name, left-aligned to the right of profile icon.
-  xOffset += kMdImageSide + kHorizontalSpacing;
+  if (!isRTL)
+    xOffset += kMdImageSide + kHorizontalSpacing;
   CGFloat fontSize = kTextFontSize + 1.0;
   NSString* profileNameNSString = base::SysUTF16ToNSString(profileNameString);
   NSTextField* profileName = BuildLabel(profileNameNSString, NSZeroPoint, nil);
@@ -1692,8 +1698,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                           NSHeight([profileName frame]))];
   [profileCard addSubview:profileName];
 
-  // Username, left-aligned to the right of profile icon and below the profile
-  // name.
+  // Username, aligned to the leading edge of the  profile icon and
+  // below the profile name.
   if (item.signed_in && !switches::IsEnableAccountConsistency()) {
     // Adjust the y-position of profile name to leave space for username.
     cardYOffset += kMdImageSide / 2 - [profileName frame].size.height;
@@ -1703,7 +1709,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         ElideEmail(base::UTF16ToUTF8(item.username), availableTextWidth);
     NSTextField* username = BuildLabel(
         elidedEmail, NSZeroPoint, skia::SkColorToSRGBNSColor(SK_ColorGRAY));
-    [username setFrameOrigin:NSMakePoint(xOffset, NSMaxY([profileName frame]))];
+    CGFloat usernameOffset =
+        isRTL ? NSMaxX([profileName frame]) - NSWidth([username frame])
+              : xOffset;
+    [username setFrameOrigin:NSMakePoint(usernameOffset,
+                                         NSMaxY([profileName frame]))];
     NSString* usernameNSString = base::SysUTF16ToNSString(item.username);
     if (![elidedEmail isEqualToString:usernameNSString]) {
       // Add the tooltip only if the user name is truncated.
@@ -1779,6 +1789,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [signinButton sizeToFit];
     [signinButton setTarget:self];
     [signinButton setAction:@selector(showInlineSigninPage:)];
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+      NSRect buttonFrame = [signinButton frame];
+      buttonFrame.origin.x = NSWidth(rect) - NSWidth(buttonFrame);
+      [signinButton setFrame:buttonFrame];
+    }
     [container addSubview:signinButton];
 
     // Sign-in promo text.
@@ -1786,8 +1801,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         l10n_util::GetNSString(IDS_PROFILES_SIGNIN_PROMO),
         NSMakePoint(0, NSMaxY([signinButton frame]) + kVerticalSpacing),
         nil);
-    if (kRightPadding >= 8)
+    if (kRightPadding >= 8 &&
+        !cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
       rect.size.width += 8;  // Re-stretch a little bit to fit promo text.
+    }
     DCHECK(kRightPadding >= 8);
     [promo setFrameSize:NSMakeSize(rect.size.width, 0)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:promo];
@@ -1847,7 +1864,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
               initWithFrame:rect
           imageTitleSpacing:imageTitleSpacing
             backgroundColor:GetDialogBackgroundColor()]);
-  [profileButton setRightMarginSpacing:kHorizontalSpacing];
+  [profileButton setTrailingMarginSpacing:kHorizontalSpacing];
 
   NSString* title = base::SysUTF16ToNSString(
       profiles::GetProfileSwitcherTextForItem(item));
@@ -1859,8 +1876,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   availableWidth = rect.size.width - kIconImageSide - imageTitleSpacing -
                    2 * kHorizontalSpacing;
 
-  [profileButton setImagePosition:NSImageLeft];
-  [profileButton setAlignment:NSLeftTextAlignment];
+  [profileButton setImagePosition:cocoa_l10n_util::LeadingCellImagePosition()];
+  [profileButton setAlignment:NSNaturalTextAlignment];
   [profileButton setBordered:NO];
   [profileButton setTag:itemIndex];
   [profileButton setTarget:self];
@@ -1897,6 +1914,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                       frameOrigin:NSMakePoint(
             kHorizontalSpacing, kSmallVerticalSpacing)
                            action:@selector(addAccount:)];
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+      CGRect addAccountsButtonFrame = [addAccountsButton frame];
+      addAccountsButtonFrame.origin.x = NSMaxX(rect) -
+                                        NSWidth(addAccountsButtonFrame) -
+                                        NSMinX(addAccountsButtonFrame);
+      [addAccountsButton setFrame:addAccountsButtonFrame];
+    }
+
     [container addSubview:addAccountsButton];
     rect.origin.y += kAccountButtonHeight;
   }
@@ -2250,7 +2275,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [button setDefaultImage:image];
   [button setHoverImage:image];
   [button setPressedImage:image];
-  [button setImagePosition:NSImageLeft];
+  [button setImagePosition:cocoa_l10n_util::LeadingCellImagePosition()];
 
   return button;
 }
@@ -2271,7 +2296,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             backgroundColor:GetDialogBackgroundColor()]);
 
   [button setTitle:text];
-  [button setAlignment:NSLeftTextAlignment];
+  [button setAlignment:NSNaturalTextAlignment];
   [button setBordered:NO];
   [button setTarget:self];
   [button setAction:action];
@@ -2325,11 +2350,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                       imageTitleSpacing:0
                                         backgroundColor:backgroundColor]);
   [button setTitle:ElideEmail(email, availableTextWidth)];
-  [button setAlignment:NSLeftTextAlignment];
+  [button setAlignment:NSNaturalTextAlignment];
   [button setBordered:NO];
   if (reauthRequired) {
     [button setDefaultImage:warningImage];
-    [button setImagePosition:NSImageLeft];
+    [button setImagePosition:cocoa_l10n_util::LeadingCellImagePosition()];
     [button setTarget:self];
     [button setAction:@selector(showAccountReauthenticationView:)];
     [button setTag:tag];
@@ -2339,7 +2364,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (!browser_->profile()->IsSupervised()) {
     NSRect buttonRect;
     NSDivideRect(rect, &buttonRect, &rect,
-        deleteImageWidth + kHorizontalSpacing, NSMaxXEdge);
+                 deleteImageWidth + kHorizontalSpacing,
+                 cocoa_l10n_util::TrailingEdge());
     buttonRect.origin.y = 0;
 
     base::scoped_nsobject<HoverImageButton> deleteButton(
