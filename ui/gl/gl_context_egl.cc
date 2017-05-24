@@ -42,6 +42,13 @@ extern "C" {
 #define EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE 0x3452
 #endif /* EGL_ANGLE_create_context_client_arrays */
 
+#ifndef EGL_CONTEXT_PRIORITY_LEVEL_IMG
+#define EGL_CONTEXT_PRIORITY_LEVEL_IMG 0x3100
+#define EGL_CONTEXT_PRIORITY_HIGH_IMG 0x3101
+#define EGL_CONTEXT_PRIORITY_MEDIUM_IMG 0x3102
+#define EGL_CONTEXT_PRIORITY_LOW_IMG 0x3103
+#endif /* EGL_CONTEXT_PRIORITY_LEVEL */
+
 using ui::GetLastEGLErrorString;
 
 namespace gl {
@@ -131,6 +138,20 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.webgl_compatibility_context ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.webgl_compatibility_context);
+  }
+
+  if (GLSurfaceEGL::IsEGLContextPrioritySupported()) {
+    // Medium priority is the default, only set the attribute if
+    // a different priority is requested.
+    if (attribs.context_priority == ContextPriorityLow) {
+      DVLOG(1) << __FUNCTION__ << ": setting ContextPriorityLow";
+      context_attributes.push_back(EGL_CONTEXT_PRIORITY_LEVEL_IMG);
+      context_attributes.push_back(EGL_CONTEXT_PRIORITY_LOW_IMG);
+    } else if (attribs.context_priority == ContextPriorityHigh) {
+      DVLOG(1) << __FUNCTION__ << ": setting ContextPriorityHigh";
+      context_attributes.push_back(EGL_CONTEXT_PRIORITY_LEVEL_IMG);
+      context_attributes.push_back(EGL_CONTEXT_PRIORITY_HIGH_IMG);
+    }
   }
 
   if (GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_display_texture_share_group")) {

@@ -39,6 +39,12 @@ struct GLVersionInfo;
 class RealGLApi;
 class TraceGLApi;
 
+enum ContextPriority {
+  ContextPriorityLow,
+  ContextPriorityMedium,
+  ContextPriorityHigh
+};
+
 struct GLContextAttribs {
   GpuPreference gpu_preference = PreferIntegratedGpu;
   bool bind_generates_resource = true;
@@ -46,6 +52,7 @@ struct GLContextAttribs {
   bool global_texture_share_group = false;
   int client_major_es_version = 3;
   int client_minor_es_version = 0;
+  ContextPriority context_priority = ContextPriorityMedium;
 };
 
 // Encapsulates an OpenGL context, hiding platform specific management.
