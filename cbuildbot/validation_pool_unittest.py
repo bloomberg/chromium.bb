@@ -359,6 +359,7 @@ class TestCoreLogic(MoxBase):
   def setUp(self):
     self.mox.StubOutWithMock(patch_series.PatchSeries, 'Apply')
     self.mox.StubOutWithMock(patch_series.PatchSeries, 'ApplyChange')
+    self.mox.StubOutWithMock(patch_series.PatchSeries, 'FetchChanges')
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     funcs = ['SendNotification', '_SubmitChangeUsingGerrit']
     for func in funcs:
@@ -416,8 +417,9 @@ class TestCoreLogic(MoxBase):
     slave_pool = self.MakePool(is_master=False)
     patches = self.GetPatches(3)
     slave_pool.candidates = patches
+    # pylint: disable=E1120, E1123
+    patch_series.PatchSeries.FetchChanges(patches, manifest=mox.IgnoreArg())
     for patch in patches:
-      # pylint: disable=E1120, E1123
       patch_series.PatchSeries.ApplyChange(patch, manifest=mox.IgnoreArg())
 
     self.mox.ReplayAll()

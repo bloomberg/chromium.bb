@@ -836,6 +836,7 @@ class ValidationPool(object):
       # Slaves do not need to create transactions and should simply
       # apply the changes serially, based on the order that the
       # changes were listed on the manifest.
+      self.applied_patches.FetchChanges(self.candidates, manifest=manifest)
       for change in self.candidates:
         try:
           # pylint: disable=E1123
