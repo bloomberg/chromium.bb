@@ -57,10 +57,8 @@ class WebPushEncryptionDraft03
       const base::StringPiece& auth_secret) override {
     const char kInfo[] = "Content-Encoding: auth";
 
-    std::string info;
-    info.reserve(sizeof(kInfo) + 1);
-    info.append(kInfo);
-    info.append(1, '\0');
+    // This deliberately copies over the NUL terminus.
+    base::StringPiece info(kInfo, sizeof(kInfo));
 
     crypto::HKDF hkdf(ecdh_shared_secret, auth_secret, info,
                       32, /* key_bytes_to_generate */
@@ -197,9 +195,10 @@ class WebPushEncryptionDraft08
     const char kInfo[] = "WebPush: info";
 
     std::string info;
-    info.reserve(sizeof(kInfo) + 1 + 65 + 65);
-    info.append(kInfo);
-    info.append(1, '\0');
+    info.reserve(sizeof(kInfo) + 65 + 65);
+
+    // This deliberately copies over the NUL terminus.
+    info.append(kInfo, sizeof(kInfo));
 
     recipient_public_key.AppendToString(&info);
     sender_public_key.AppendToString(&info);
