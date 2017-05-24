@@ -217,6 +217,7 @@ bool SynchronizedMinidumpManager::AcquireLockFile() {
     LOG(ERROR) << "Lockfile did not parse correctly. ";
     if (!InitializeFiles() || !ParseFiles()) {
       LOG(ERROR) << "Failed to create a new lock file!";
+      ReleaseLockFile();
       return false;
     }
   }
@@ -317,7 +318,7 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
   // flock is associated with the fd entry in the open fd table, so closing
   // all fd's will release the lock. To be safe, we explicitly unlock.
   if (lockfile_fd_ >= 0) {
-    if (dumps_)
+    if (dumps_ && metadata_)
       WriteFiles(dumps_.get(), metadata_.get());
 
     UnlockAndCloseFile(lockfile_fd_);
