@@ -799,16 +799,16 @@ void RootWindowController::InitLayoutManagers() {
   DCHECK(lock_container);
   lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
 
-  WmWindow* always_on_top_container =
-      GetWmContainer(kShellWindowId_AlwaysOnTopContainer);
+  aura::Window* always_on_top_container =
+      GetContainer(kShellWindowId_AlwaysOnTopContainer);
   DCHECK(always_on_top_container);
   always_on_top_controller_ =
       base::MakeUnique<AlwaysOnTopController>(always_on_top_container);
 
   // Create Panel layout manager
-  WmWindow* wm_panel_container = GetWmContainer(kShellWindowId_PanelContainer);
-  panel_layout_manager_ = new PanelLayoutManager(wm_panel_container);
-  wm_panel_container->aura_window()->SetLayoutManager(panel_layout_manager_);
+  aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
+  panel_layout_manager_ = new PanelLayoutManager(panel_container);
+  panel_container->SetLayoutManager(panel_layout_manager_);
 
   wm::WmSnapToPixelLayoutManager::InstallOnContainers(root);
 
@@ -834,7 +834,6 @@ void RootWindowController::InitLayoutManagers() {
                            -kResizeOutsideBoundsSize);
   gfx::Insets touch_extend =
       mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
-  aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
   panel_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new AttachedPanelWindowTargeter(panel_container, mouse_extend,
                                       touch_extend, panel_layout_manager())));

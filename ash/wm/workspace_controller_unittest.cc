@@ -117,8 +117,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
                                 const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    WmWindow* wm_window = WmWindow::Get(window);
-    PanelLayoutManager::Get(wm_window)->Relayout();
+    PanelLayoutManager::Get(window)->Relayout();
     return window;
   }
 

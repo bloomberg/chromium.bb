@@ -60,26 +60,26 @@ class ASH_EXPORT PanelLayoutManager
       public keyboard::KeyboardControllerObserver,
       public WmShelfObserver {
  public:
-  explicit PanelLayoutManager(WmWindow* panel_container);
+  explicit PanelLayoutManager(aura::Window* panel_container);
   ~PanelLayoutManager() override;
 
   // Returns the PanelLayoutManager in the specified hierarchy. This searches
   // from the root of |window|.
-  static PanelLayoutManager* Get(WmWindow* window);
+  static PanelLayoutManager* Get(aura::Window* window);
 
   // Call Shutdown() before deleting children of panel_container.
   void Shutdown();
 
-  void StartDragging(WmWindow* panel);
+  void StartDragging(aura::Window* panel);
   void FinishDragging();
 
-  void ToggleMinimize(WmWindow* panel);
+  void ToggleMinimize(aura::Window* panel);
 
   // Hide / Show the panel callout widgets.
   void SetShowCalloutWidgets(bool show);
 
   // Returns the callout widget (arrow) for |panel|.
-  views::Widget* GetCalloutWidgetForPanel(WmWindow* panel);
+  views::Widget* GetCalloutWidgetForPanel(aura::Window* panel);
 
   WmShelf* shelf() { return shelf_; }
   void SetShelf(WmShelf* shelf);
@@ -132,7 +132,7 @@ class ASH_EXPORT PanelLayoutManager
   struct ASH_EXPORT PanelInfo {
     PanelInfo() : window(NULL), callout_widget(NULL), slide_in(false) {}
 
-    bool operator==(const WmWindow* other_window) const {
+    bool operator==(const aura::Window* other_window) const {
       return window == other_window;
     }
 
@@ -140,7 +140,7 @@ class ASH_EXPORT PanelLayoutManager
     views::Widget* CalloutWidget();
 
     // A weak pointer to the panel window.
-    WmWindow* window;
+    aura::Window* window;
 
     // The callout widget for this panel. This pointer must be managed
     // manually as this structure is used in a std::list. See
@@ -163,7 +163,7 @@ class ASH_EXPORT PanelLayoutManager
 
   // Called whenever the panel stacking order needs to be updated (e.g. focus
   // changes or a panel is moved).
-  void UpdateStacking(WmWindow* active_panel);
+  void UpdateStacking(aura::Window* active_panel);
 
   // Update the callout arrows for all managed panels.
   void UpdateCallouts();
@@ -173,7 +173,7 @@ class ASH_EXPORT PanelLayoutManager
   void OnKeyboardClosed() override;
 
   // Parent window associated with this layout manager.
-  WmWindow* panel_container_;
+  aura::Window* panel_container_;
 
   RootWindowController* root_window_controller_;
 
@@ -186,7 +186,7 @@ class ASH_EXPORT PanelLayoutManager
   // Ordered list of unowned pointers to panel windows.
   PanelList panel_windows_;
   // The panel being dragged.
-  WmWindow* dragged_panel_;
+  aura::Window* dragged_panel_;
   // The shelf we are observing for shelf icon changes.
   WmShelf* shelf_;
 
@@ -197,7 +197,7 @@ class ASH_EXPORT PanelLayoutManager
 
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.
-  WmWindow* last_active_panel_;
+  aura::Window* last_active_panel_;
 
   ScopedObserver<keyboard::KeyboardController,
                  keyboard::KeyboardControllerObserver>

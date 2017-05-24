@@ -60,10 +60,9 @@ aura::Window* GetSystemModalContainer(aura::Window* root,
 
 aura::Window* GetContainerFromAlwaysOnTopController(aura::Window* root,
                                                     aura::Window* window) {
-  WmWindow* result = RootWindowController::ForWindow(root)
-                         ->always_on_top_controller()
-                         ->GetContainer(WmWindow::Get(window));
-  return result ? result->aura_window() : nullptr;
+  return RootWindowController::ForWindow(root)
+      ->always_on_top_controller()
+      ->GetContainer(window);
 }
 
 }  // namespace

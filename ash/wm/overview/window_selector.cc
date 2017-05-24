@@ -268,7 +268,7 @@ void WindowSelector::Init(const WindowList& windows) {
 
     // Hide the callout widgets for panels. It is safe to call this for
     // root windows that don't contain any panel windows.
-    PanelLayoutManager::Get(WmWindow::Get(root))->SetShowCalloutWidgets(false);
+    PanelLayoutManager::Get(root)->SetShowCalloutWidgets(false);
 
     std::unique_ptr<WindowGrid> grid(new WindowGrid(root, windows, this));
     if (grid->empty())
@@ -337,8 +337,7 @@ void WindowSelector::Shutdown() {
   ResetFocusRestoreWindow(true);
   RemoveAllObservers();
 
-  std::vector<WmWindow*> root_windows = ShellPort::Get()->GetAllRootWindows();
-  for (WmWindow* window : root_windows) {
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
     // Un-hide the callout widgets for panels. It is safe to call this for
     // root_windows that don't contain any panel windows.
     PanelLayoutManager::Get(window)->SetShowCalloutWidgets(true);

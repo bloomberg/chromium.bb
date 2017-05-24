@@ -33,6 +33,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -114,7 +115,7 @@ struct VisiblePanelPositionInfo {
   int max_major;
   int major_pos;
   int major_length;
-  WmWindow* window;
+  Window* window;
   bool slide_in;
 };
 
@@ -183,14 +184,14 @@ gfx::Vector2d GetSlideInAnimationOffset(ShelfAlignment alignment) {
 
 class PanelCalloutWidget : public views::Widget {
  public:
-  explicit PanelCalloutWidget(WmWindow* container) : background_(nullptr) {
+  explicit PanelCalloutWidget(Window* container) : background_(nullptr) {
     InitWidget(container);
   }
 
   // Updates the bounds based on the shelf alignment.
   void UpdateBounds(WmShelf* shelf) {
-    WmWindow* window = WmWindow::Get(this->GetNativeWindow());
-    gfx::Rect callout_bounds = window->GetBounds();
+    Window* window = this->GetNativeWindow();
+    gfx::Rect callout_bounds = window->bounds();
     if (shelf->IsHorizontalAlignment()) {
       callout_bounds.set_width(kArrowWidth);
       callout_bounds.set_height(kArrowHeight);
@@ -198,12 +199,12 @@ class PanelCalloutWidget : public views::Widget {
       callout_bounds.set_width(kArrowHeight);
       callout_bounds.set_height(kArrowWidth);
     }
-    WmWindow* parent = window->GetParent();
+    Window* parent = window->parent();
     // It's important this go through WmWindow and not Widget. Going through
     // Widget means it may move do a different screen, we don't want that.
     window->SetBounds(callout_bounds);
     // Setting the bounds should not trigger changing the parent.
-    DCHECK_EQ(parent, window->GetParent());
+    DCHECK_EQ(parent, window->parent());
     if (background_->alignment() != shelf->alignment()) {
       background_->set_alignment(shelf->alignment());
       SchedulePaintInRect(gfx::Rect(callout_bounds.size()));
@@ -211,27 +212,27 @@ class PanelCalloutWidget : public views::Widget {
   }
 
  private:
-  void InitWidget(WmWindow* parent) {
+  void InitWidget(Window* parent) {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.keep_on_top = true;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = parent->ConvertRectToScreen(gfx::Rect());
+    ::wm::ConvertRectToScreen(parent, &params.bounds);
     params.bounds.set_width(kArrowWidth);
     params.bounds.set_height(kArrowHeight);
     params.accept_events = false;
-    parent->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-        this, parent->aura_window()->id(), &params);
+    RootWindowController::ForWindow(parent)
+        ->ConfigureWidgetInitParamsForContainer(this, parent->id(), &params);
     set_focus_on_creation(false);
     Init(params);
-    WmWindow* widget_window = WmWindow::Get(this->GetNativeWindow());
+    Window* widget_window = this->GetNativeWindow();
     DCHECK_EQ(widget_window->GetRootWindow(), parent->GetRootWindow());
     views::View* content_view = new views::View;
     background_ = new CalloutWidgetBackground;
     content_view->set_background(background_);
     SetContentsView(content_view);
-    widget_window->GetLayer()->SetOpacity(0);
+    widget_window->layer()->SetOpacity(0);
   }
 
   // Weak pointer owned by this widget's content view.
@@ -246,9 +247,9 @@ views::Widget* PanelLayoutManager::PanelInfo::CalloutWidget() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager public implementation:
-PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
+PanelLayoutManager::PanelLayoutManager(Window* panel_container)
     : panel_container_(panel_container),
-      root_window_controller_(panel_container->GetRootWindowController()),
+      root_window_controller_(RootWindowController::ForWindow(panel_container)),
       in_add_window_(false),
       in_layout_(false),
       show_callout_widgets_(true),
@@ -268,13 +269,12 @@ PanelLayoutManager::~PanelLayoutManager() {
 }
 
 // static
-PanelLayoutManager* PanelLayoutManager::Get(WmWindow* window) {
+PanelLayoutManager* PanelLayoutManager::Get(Window* window) {
   if (!window)
     return nullptr;
 
   return static_cast<PanelLayoutManager*>(
       window->GetRootWindow()
-          ->aura_window()
           ->GetChildById(kShellWindowId_PanelContainer)
           ->layout_manager());
 }
@@ -294,7 +294,7 @@ void PanelLayoutManager::Shutdown() {
   Shell::Get()->RemoveShellObserver(this);
 }
 
-void PanelLayoutManager::StartDragging(WmWindow* panel) {
+void PanelLayoutManager::StartDragging(Window* panel) {
   DCHECK(!dragged_panel_);
   dragged_panel_ = panel;
   Relayout();
@@ -312,9 +312,9 @@ void PanelLayoutManager::SetShelf(WmShelf* shelf) {
   WillChangeVisibilityState(shelf_->GetVisibilityState());
 }
 
-void PanelLayoutManager::ToggleMinimize(WmWindow* panel) {
-  DCHECK(panel->GetParent() == panel_container_);
-  wm::WindowState* window_state = panel->GetWindowState();
+void PanelLayoutManager::ToggleMinimize(Window* panel) {
+  DCHECK(panel->parent() == panel_container_);
+  wm::WindowState* window_state = wm::GetWindowState(panel);
   if (window_state->IsMinimized())
     window_state->Restore();
   else
@@ -328,8 +328,8 @@ void PanelLayoutManager::SetShowCalloutWidgets(bool show) {
   UpdateCallouts();
 }
 
-views::Widget* PanelLayoutManager::GetCalloutWidgetForPanel(WmWindow* panel) {
-  DCHECK(panel->GetParent() == panel_container_);
+views::Widget* PanelLayoutManager::GetCalloutWidgetForPanel(Window* panel) {
+  DCHECK(panel->parent() == panel_container_);
   PanelList::iterator found =
       std::find(panel_windows_.begin(), panel_windows_.end(), panel);
   DCHECK(found != panel_windows_.end());
@@ -363,9 +363,9 @@ void PanelLayoutManager::OnWindowAddedToLayout(Window* child) {
     return;
   }
   PanelInfo panel_info;
-  panel_info.window = WmWindow::Get(child);
+  panel_info.window = child;
   panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
-  panel_info.slide_in = WmWindow::Get(child) != dragged_panel_;
+  panel_info.slide_in = child != dragged_panel_;
   panel_windows_.push_back(panel_info);
   child->AddObserver(this);
   wm::GetWindowState(child)->AddObserver(this);
@@ -378,8 +378,8 @@ void PanelLayoutManager::OnWindowRemovedFromLayout(Window* child) {
   if (child->type() == ui::wm::WINDOW_TYPE_POPUP)
     return;
 
-  PanelList::iterator found = std::find(
-      panel_windows_.begin(), panel_windows_.end(), WmWindow::Get(child));
+  PanelList::iterator found =
+      std::find(panel_windows_.begin(), panel_windows_.end(), child);
   if (found != panel_windows_.end()) {
     delete found->callout_widget;
     panel_windows_.erase(found);
@@ -389,10 +389,10 @@ void PanelLayoutManager::OnWindowRemovedFromLayout(Window* child) {
   child->RemoveObserver(this);
   wm::GetWindowState(child)->RemoveObserver(this);
 
-  if (dragged_panel_ == WmWindow::Get(child))
+  if (dragged_panel_ == child)
     dragged_panel_ = nullptr;
 
-  if (last_active_panel_ == WmWindow::Get(child))
+  if (last_active_panel_ == child)
     last_active_panel_ = nullptr;
 
   Relayout();
@@ -408,7 +408,7 @@ void PanelLayoutManager::OnChildWindowVisibilityChanged(Window* child,
 void PanelLayoutManager::SetChildBounds(Window* child,
                                         const gfx::Rect& requested_bounds) {
   gfx::Rect bounds(requested_bounds);
-  const gfx::Rect& max_bounds = panel_container_->GetRootWindow()->GetBounds();
+  const gfx::Rect& max_bounds = panel_container_->GetRootWindow()->bounds();
   const int max_width = max_bounds.width() * kMaxWidthFactor;
   const int max_height = max_bounds.height() * kMaxHeightFactor;
   if (bounds.width() > max_width)
@@ -417,14 +417,14 @@ void PanelLayoutManager::SetChildBounds(Window* child,
     bounds.set_height(max_height);
 
   // Reposition dragged panel in the panel order.
-  if (dragged_panel_ == WmWindow::Get(child)) {
+  if (dragged_panel_ == child) {
     PanelList::iterator dragged_panel_iter =
         std::find(panel_windows_.begin(), panel_windows_.end(), dragged_panel_);
     DCHECK(dragged_panel_iter != panel_windows_.end());
     PanelList::iterator new_position;
     for (new_position = panel_windows_.begin();
          new_position != panel_windows_.end(); ++new_position) {
-      const gfx::Rect& bounds = (*new_position).window->GetBounds();
+      const gfx::Rect& bounds = (*new_position).window->bounds();
       if (bounds.x() + bounds.width() / 2 <= requested_bounds.x())
         break;
     }
@@ -458,18 +458,17 @@ void PanelLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
     Relayout();
 }
 
-void PanelLayoutManager::OnVirtualKeyboardStateChanged(
-    bool activated,
-    aura::Window* root_window) {
-  UpdateKeyboardObserverFromStateChanged(
-      activated, root_window, panel_container_->GetRootWindow()->aura_window(),
-      &keyboard_observer_);
+void PanelLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
+                                                       Window* root_window) {
+  UpdateKeyboardObserverFromStateChanged(activated, root_window,
+                                         panel_container_->GetRootWindow(),
+                                         &keyboard_observer_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, WindowObserver implementation:
 
-void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+void PanelLayoutManager::OnWindowPropertyChanged(Window* window,
                                                  const void* key,
                                                  intptr_t old) {
   // Trigger a relayout to position the panels whenever the panel icon is set
@@ -506,14 +505,12 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
 // PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
 
 void PanelLayoutManager::OnWindowActivated(ActivationReason reason,
-                                           aura::Window* gained_active,
-                                           aura::Window* lost_active) {
-  WmWindow* wm_gained_active = WmWindow::Get(gained_active);
+                                           Window* gained_active,
+                                           Window* lost_active) {
   // Ignore if the panel that is not managed by this was activated.
-  if (wm_gained_active &&
-      wm_gained_active->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
-      wm_gained_active->GetParent() == panel_container_) {
-    UpdateStacking(wm_gained_active);
+  if (gained_active && gained_active->type() == ui::wm::WINDOW_TYPE_PANEL &&
+      gained_active->parent() == panel_container_) {
+    UpdateStacking(gained_active);
     UpdateCallouts();
   }
 }
@@ -538,7 +535,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
     if (restore_windows_on_shelf_visible_) {
       std::unique_ptr<aura::WindowTracker> restore_windows(
           std::move(restore_windows_on_shelf_visible_));
-      for (aura::Window* window : restore_windows->windows())
+      for (Window* window : restore_windows->windows())
         RestorePanel(window);
     }
     return;
@@ -550,13 +547,13 @@ void PanelLayoutManager::WillChangeVisibilityState(
       new aura::WindowTracker);
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end();) {
-    WmWindow* window = iter->window;
+    Window* window = iter->window;
     // Minimizing a panel window may remove it from the panel_windows_ list.
     // Advance the iterator before minimizing it: http://crbug.com/393047.
     ++iter;
     if (window != dragged_panel_ && window->IsVisible()) {
-      minimized_windows->Add(window->aura_window());
-      window->GetWindowState()->Minimize();
+      minimized_windows->Add(window);
+      wm::GetWindowState(window)->Minimize();
     }
   }
   restore_windows_on_shelf_visible_ = std::move(minimized_windows);
@@ -572,7 +569,7 @@ void PanelLayoutManager::OnShelfIconPositionsChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager private implementation:
 
-void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
+void PanelLayoutManager::MinimizePanel(Window* panel) {
   // Clusterfuzz can trigger panel accelerators before the shelf is created.
   // TODO(jamescook): Revert this after http://crbug.com/648964 is fixed.
   if (!shelf_)
@@ -596,9 +593,9 @@ void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
   Relayout();
 }
 
-void PanelLayoutManager::RestorePanel(aura::Window* panel) {
-  PanelList::iterator found = std::find(
-      panel_windows_.begin(), panel_windows_.end(), WmWindow::Get(panel));
+void PanelLayoutManager::RestorePanel(Window* panel) {
+  PanelList::iterator found =
+      std::find(panel_windows_.begin(), panel_windows_.end(), panel);
   DCHECK(found != panel_windows_.end());
   found->slide_in = true;
   Relayout();
@@ -623,24 +620,24 @@ void PanelLayoutManager::Relayout() {
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
   const bool horizontal = shelf_->IsHorizontalAlignment();
-  gfx::Rect shelf_bounds = panel_container_->ConvertRectFromScreen(
-      shelf_->GetWindow()->GetBoundsInScreen());
+  gfx::Rect shelf_bounds = shelf_->GetWindow()->GetBoundsInScreen();
+  ::wm::ConvertRectFromScreen(panel_container_, &shelf_bounds);
   int panel_start_bounds = kPanelIdealSpacing;
   int panel_end_bounds =
-      horizontal ? panel_container_->GetBounds().width() - kPanelIdealSpacing
-                 : panel_container_->GetBounds().height() - kPanelIdealSpacing;
-  WmWindow* active_panel = nullptr;
+      horizontal ? panel_container_->bounds().width() - kPanelIdealSpacing
+                 : panel_container_->bounds().height() - kPanelIdealSpacing;
+  Window* active_panel = nullptr;
   std::vector<VisiblePanelPositionInfo> visible_panels;
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
-    WmWindow* panel = iter->window;
+    Window* panel = iter->window;
     iter->callout_widget->UpdateBounds(shelf_);
 
     // Consider the dragged panel as part of the layout as long as it is
     // touching the shelf.
     if ((!panel->IsVisible() && !iter->slide_in) ||
         (panel == dragged_panel_ &&
-         !BoundsAdjacent(panel->GetBounds(), shelf_bounds))) {
+         !BoundsAdjacent(panel->bounds(), shelf_bounds))) {
       continue;
     }
 
@@ -649,12 +646,13 @@ void PanelLayoutManager::Relayout() {
     // the shelf state does not update before the panel is added so we exclude
     // the dragged panel.
     if (panel != dragged_panel_ && restore_windows_on_shelf_visible_) {
-      panel->GetWindowState()->Minimize();
-      restore_windows_on_shelf_visible_->Add(panel->aura_window());
+      wm::GetWindowState(panel)->Minimize();
+      restore_windows_on_shelf_visible_->Add(panel);
       continue;
     }
 
-    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
+    gfx::Rect icon_bounds =
+        shelf_->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(panel));
 
     // If both the icon width and height are 0 then there is no icon in the
     // shelf. If the shelf is hidden, one of the height or width will be
@@ -663,19 +661,18 @@ void PanelLayoutManager::Relayout() {
     if (icon_bounds.width() == 0 && icon_bounds.height() == 0)
       continue;
 
-    if (panel->IsFocused() ||
-        panel->Contains(WmWindow::Get(wm::GetFocusedWindow()))) {
+    if (panel->HasFocus() || panel->Contains(wm::GetFocusedWindow())) {
       DCHECK(!active_panel);
       active_panel = panel;
     }
-    icon_bounds = panel_container_->ConvertRectFromScreen(icon_bounds);
+    ::wm::ConvertRectFromScreen(panel_container_, &icon_bounds);
     gfx::Point icon_origin = icon_bounds.origin();
     VisiblePanelPositionInfo position_info;
     int icon_start = horizontal ? icon_origin.x() : icon_origin.y();
     int icon_end =
         icon_start + (horizontal ? icon_bounds.width() : icon_bounds.height());
     position_info.major_length =
-        horizontal ? panel->GetBounds().width() : panel->GetBounds().height();
+        horizontal ? panel->bounds().width() : panel->bounds().height();
     position_info.min_major =
         std::max(panel_start_bounds + position_info.major_length / 2,
                  icon_end - position_info.major_length / 2);
@@ -729,14 +726,13 @@ void PanelLayoutManager::Relayout() {
                    visible_panels[i].major_length / 2);
     }
 
-    ui::Layer* layer = visible_panels[i].window->GetLayer();
+    ui::Layer* layer = visible_panels[i].window->layer();
     if (slide_in) {
       // New windows shift up from the shelf into position and fade in.
       layer->SetOpacity(0);
       gfx::Rect initial_bounds(bounds);
       initial_bounds.Offset(GetSlideInAnimationOffset(shelf_->alignment()));
-      SetChildBoundsDirect(visible_panels[i].window->aura_window(),
-                           initial_bounds);
+      SetChildBoundsDirect(visible_panels[i].window, initial_bounds);
       // Set on shelf so that the panel animates into its target position.
       on_shelf = true;
     }
@@ -748,7 +744,7 @@ void PanelLayoutManager::Relayout() {
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       panel_slide_settings.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
-      SetChildBoundsDirect(visible_panels[i].window->aura_window(), bounds);
+      SetChildBoundsDirect(visible_panels[i].window, bounds);
       if (slide_in) {
         layer->SetOpacity(1);
         visible_panels[i].window->Show();
@@ -756,7 +752,7 @@ void PanelLayoutManager::Relayout() {
     } else {
       // If the shelf moved don't animate, move immediately to the new
       // target location.
-      SetChildBoundsDirect(visible_panels[i].window->aura_window(), bounds);
+      SetChildBoundsDirect(visible_panels[i].window, bounds);
     }
   }
 
@@ -764,7 +760,7 @@ void PanelLayoutManager::Relayout() {
   UpdateCallouts();
 }
 
-void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
+void PanelLayoutManager::UpdateStacking(Window* active_panel) {
   // Clusterfuzz can trigger panel accelerators before the shelf is created.
   // TODO(jamescook): Revert this after http://crbug.com/648964 is fixed.
   if (!shelf_)
@@ -785,19 +781,19 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
   // allows us to update the stacking when a panel is being dragged around by
   // the titlebar--even though it doesn't update the shelf icon positions, we
   // still want the visual effect.
-  std::map<int, WmWindow*> window_ordering;
+  std::map<int, Window*> window_ordering;
   const bool horizontal = shelf_->IsHorizontalAlignment();
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
-    gfx::Rect bounds = it->window->GetBounds();
+    const gfx::Rect& bounds = it->window->bounds();
     window_ordering.insert(
         std::make_pair(horizontal ? bounds.x() + bounds.width() / 2
                                   : bounds.y() + bounds.height() / 2,
                        it->window));
   }
 
-  WmWindow* previous_panel = nullptr;
-  for (std::map<int, WmWindow*>::const_iterator it = window_ordering.begin();
+  Window* previous_panel = nullptr;
+  for (std::map<int, Window*>::const_iterator it = window_ordering.begin();
        it != window_ordering.end() && it->second != active_panel; ++it) {
     if (previous_panel)
       panel_container_->StackChildAbove(it->second, previous_panel);
@@ -805,7 +801,7 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
   }
 
   previous_panel = nullptr;
-  for (std::map<int, WmWindow*>::const_reverse_iterator it =
+  for (std::map<int, Window*>::const_reverse_iterator it =
            window_ordering.rbegin();
        it != window_ordering.rend() && it->second != active_panel; ++it) {
     if (previous_panel)
@@ -814,7 +810,7 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
   }
 
   panel_container_->StackChildAtTop(active_panel);
-  if (dragged_panel_ && dragged_panel_->GetParent() == panel_container_)
+  if (dragged_panel_ && dragged_panel_->parent() == panel_container_)
     panel_container_->StackChildAtTop(dragged_panel_);
   last_active_panel_ = active_panel;
 }
@@ -828,19 +824,19 @@ void PanelLayoutManager::UpdateCallouts() {
   const bool horizontal = shelf_->IsHorizontalAlignment();
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
-    WmWindow* panel = iter->window;
+    Window* panel = iter->window;
     views::Widget* callout_widget = iter->callout_widget;
-    WmWindow* callout_widget_window =
-        WmWindow::Get(callout_widget->GetNativeWindow());
+    Window* callout_widget_window = callout_widget->GetNativeWindow();
 
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
-    gfx::Rect bounds =
-        panel->GetParent()->ConvertRectToScreen(panel->GetTargetBounds());
-    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
-    if (icon_bounds.IsEmpty() || !panel->GetLayer()->GetTargetVisibility() ||
+    gfx::Rect bounds = panel->GetTargetBounds();
+    ::wm::ConvertRectToScreen(panel->parent(), &bounds);
+    gfx::Rect icon_bounds =
+        shelf_->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(panel));
+    if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
         panel == dragged_panel_ || !show_callout_widgets_) {
       callout_widget->Hide();
-      callout_widget_window->GetLayer()->SetOpacity(0);
+      callout_widget_window->layer()->SetOpacity(0);
       continue;
     }
 
@@ -868,15 +864,15 @@ void PanelLayoutManager::UpdateCallouts() {
       callout_bounds.set_x(bounds.right());
     else
       callout_bounds.set_y(bounds.bottom());
-    callout_bounds = callout_widget_window->GetParent()->ConvertRectFromScreen(
-        callout_bounds);
+    ::wm::ConvertRectFromScreen(callout_widget_window->parent(),
+                                &callout_bounds);
 
-    SetChildBoundsDirect(callout_widget_window->aura_window(), callout_bounds);
-    DCHECK_EQ(panel_container_, callout_widget_window->GetParent());
-    DCHECK_EQ(panel_container_, panel->GetParent());
+    SetChildBoundsDirect(callout_widget_window, callout_bounds);
+    DCHECK_EQ(panel_container_, callout_widget_window->parent());
+    DCHECK_EQ(panel_container_, panel->parent());
     panel_container_->StackChildAbove(callout_widget_window, panel);
 
-    ui::Layer* layer = callout_widget_window->GetLayer();
+    ui::Layer* layer = callout_widget_window->layer();
     // If the panel is not over the callout position or has just become visible
     // then fade in the callout.
     if ((distance_until_over_panel > 0 || layer->GetTargetOpacity() < 1)) {
@@ -911,32 +907,31 @@ void PanelLayoutManager::UpdateCallouts() {
 
 void PanelLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& keyboard_bounds) {
-  gfx::Rect parent_bounds = panel_container_->GetBounds();
+  const gfx::Rect& parent_bounds = panel_container_->bounds();
   int available_space = parent_bounds.height() - keyboard_bounds.height();
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
-    WmWindow* panel = iter->window;
-    wm::WindowState* panel_state = panel->GetWindowState();
+    Window* panel = iter->window;
+    wm::WindowState* panel_state = wm::GetWindowState(panel);
     if (keyboard_bounds.height() > 0) {
       // Save existing bounds, so that we can restore them when the keyboard
       // hides.
       panel_state->SaveCurrentBoundsForRestore();
 
-      gfx::Rect panel_bounds =
-          panel->GetParent()->ConvertRectToScreen(panel->GetTargetBounds());
+      gfx::Rect panel_bounds = panel->GetTargetBounds();
+      ::wm::ConvertRectToScreen(panel->parent(), &panel_bounds);
       int delta = panel_bounds.height() - available_space;
       // Ensure panels are not pushed above the parent boundaries, shrink any
       // panels that violate this constraint.
       if (delta > 0) {
         SetChildBoundsDirect(
-            panel->aura_window(),
+            panel,
             gfx::Rect(panel_bounds.x(), panel_bounds.y() + delta,
                       panel_bounds.width(), panel_bounds.height() - delta));
       }
     } else if (panel_state->HasRestoreBounds()) {
       // Keyboard hidden, restore original bounds if they exist.
-      SetChildBoundsDirect(panel->aura_window(),
-                           panel_state->GetRestoreBoundsInScreen());
+      SetChildBoundsDirect(panel, panel_state->GetRestoreBoundsInScreen());
     }
   }
   // This bounds change will have caused a change to the Shelf which does not
