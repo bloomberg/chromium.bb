@@ -220,6 +220,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   short RawButton() const { return button_; }
 
+  void ReceivedTarget() override;
+
  private:
   friend class MouseEventDispatchMediator;
   void InitMouseEventInternal(const AtomicString& type,
@@ -239,7 +241,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   void InitCoordinates(const double client_x, const double client_y);
   void InitCoordinatesFromRootFrame(int window_x, int window_y);
-  void ReceivedTarget() final;
 
   void ComputePageLocation();
   void ComputeRelativePosition();

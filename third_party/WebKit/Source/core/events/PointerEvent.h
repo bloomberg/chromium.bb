@@ -40,8 +40,9 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   bool IsPointerEvent() const override;
 
   EventDispatchMediator* CreateMediator() override;
+  void ReceivedTarget() override;
 
-  HeapVector<Member<PointerEvent>> getCoalescedEvents() const;
+  HeapVector<Member<PointerEvent>> getCoalescedEvents();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -60,6 +61,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   long twist_;
   String pointer_type_;
   bool is_primary_;
+
+  bool coalesced_events_targets_dirty_;
 
   HeapVector<Member<PointerEvent>> coalesced_events_;
 };
