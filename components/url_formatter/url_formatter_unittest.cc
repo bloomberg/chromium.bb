@@ -204,6 +204,11 @@ const IDNTestCase idn_cases[] = {
   {"xn--ab1-p6q.com", L"ab1\x14BF.com", false},
   {"xn--1ab-m6qd.com", L"\x14BF" L"1ab.com", false},
   {"xn--ab-jymc.com", L"\x14BF" L"ab.com", false},
+  // Tifinagh + Latin
+  {"xn--liy-go4a.com", L"li\u24dfy.com", false},
+  {"xn--rol-ho4a.com", L"rol\u24df.com", false},
+  {"xn--ily-eo4a.com", L"\u24dfily.com", false},
+  {"xn--1ly-eo4a.com", L"\u24df1ly.com", false},
 
   // Invisibility check
   // Thai tone mark malek(U+0E48) repeated

@@ -236,6 +236,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     //   Letter Co) to be next to Latin.
     // - Disallow Latin 'o' and 'g' next to Armenian.
     // - Disalow mixing of Latin and Canadian Syllabary.
+    // - Disalow mixing of Latin and Tifinagh.
     // - Disallow combining diacritical mark (U+0300-U+0339) after a non-LGC
     //   character. Other combining diacritical marks are not in the allowed
     //   character set.
@@ -254,6 +255,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             R"(^[og]+[\p{scx=armn}]|[\p{scx=armn}][og]+$|)"
             R"([\p{scx=armn}][og]+[\p{scx=armn}]|)"
             R"([\p{sc=cans}].*[a-z]|[a-z].*[\p{sc=cans}]|)"
+            R"([\p{sc=tfng}].*[a-z]|[a-z].*[\p{sc=tfng}]|)"
             R"([^\p{scx=latn}\p{scx=grek}\p{scx=cyrl}][\u0300-\u0339])",
             -1, US_INV),
         0, status);
