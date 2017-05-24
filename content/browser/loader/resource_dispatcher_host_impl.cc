@@ -26,6 +26,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -1483,11 +1484,19 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   if (!sync_result_handler &&
       (start_detached ||
        IsDetachableResourceType(request_data.resource_type))) {
+    auto timeout =
+        base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs);
+    int timeout_set_by_finch_in_sec = base::GetFieldTrialParamByFeatureAsInt(
+        features::kFetchKeepaliveTimeoutSetting, "timeout_in_sec", 0);
+    // Adopt only "reasonable" values.
+    if (timeout_set_by_finch_in_sec > 0 &&
+        timeout_set_by_finch_in_sec < 60 * 60) {
+      timeout = base::TimeDelta::FromSeconds(timeout_set_by_finch_in_sec);
+    }
+
     std::unique_ptr<DetachableResourceHandler> detachable_handler =
-        base::MakeUnique<DetachableResourceHandler>(
-            request,
-            base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
-            std::move(handler));
+        base::MakeUnique<DetachableResourceHandler>(request, timeout,
+                                                    std::move(handler));
     if (start_detached)
       detachable_handler->Detach();
     handler = std::move(detachable_handler);

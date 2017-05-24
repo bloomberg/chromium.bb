@@ -21545,6 +21545,7 @@ from previous Chrome versions.
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1099142083" label="V8Ignition:disabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
+  <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
@@ -21610,6 +21611,7 @@ from previous Chrome versions.
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
   <int value="-881854123" label="enable-heap-profiling"/>
   <int value="-881054479" label="WebAssemblyStreaming:disabled"/>
+  <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-864266073" label="cros-regions-mode"/>
