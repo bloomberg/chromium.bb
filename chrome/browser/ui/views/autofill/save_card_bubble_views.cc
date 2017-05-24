@@ -54,9 +54,7 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          content::WebContents* web_contents,
                                          SaveCardBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      controller_(controller),
-      cvc_textfield_(nullptr),
-      learn_more_link_(nullptr) {
+      controller_(controller) {
   DCHECK(controller);
   views::BubbleDialogDelegateView::CreateBubble(this);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
@@ -98,6 +96,23 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 }
 
 bool SaveCardBubbleViews::Accept() {
+  // The main content ViewStack for local save and happy-path upload save should
+  // only ever have 1 View on it. Upload save can have a second View if CVC
+  // needs to be requested. Assert that the ViewStack has no more than 2 Views
+  // and that if it *does* have 2, it's because CVC is being requested.
+  DCHECK_LE(view_stack_->size(), 2U);
+  DCHECK(view_stack_->size() == 1 || controller_->ShouldRequestCvcFromUser());
+  if (controller_->ShouldRequestCvcFromUser() && view_stack_->size() == 1) {
+    // If user accepted upload but more info is needed, push the next view onto
+    // the stack.
+    view_stack_->Push(CreateRequestCvcView(), /*animate=*/true);
+    // Disable the Save button until a valid CVC is entered:
+    GetDialogClientView()->UpdateDialogButtons();
+    // Resize the bubble if it's grown larger:
+    SizeToContents();
+    return false;
+  }
+  // Otherwise, close the bubble as normal.
   if (controller_)
     controller_->OnSaveButton(cvc_textfield_ ? cvc_textfield_->text()
                                              : base::string16());
@@ -181,7 +196,7 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
 
 // Create view containing everything except for the footnote.
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
-  std::unique_ptr<View> view(new View());
+  auto view = base::MakeUnique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   view->SetLayoutManager(new views::BoxLayout(
@@ -211,10 +226,6 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   description_view->AddChildView(
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
 
-  // Optionally add CVC request field if CVC was missing.
-  if (controller_->ShouldRequestCvcFromUser())
-    view->AddChildView(CreateRequestCvcView().release());
-
   // Optionally add label that will contain an explanation for upload.
   base::string16 explanation = controller_->GetExplanatoryMessage();
   if (!explanation.empty()) {
@@ -228,11 +239,17 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 }
 
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
-  std::unique_ptr<View> request_cvc_view = base::MakeUnique<views::View>();
-  request_cvc_view->SetLayoutManager(
+  auto request_cvc_view = base::MakeUnique<views::View>();
+  request_cvc_view->set_background(
+      views::Background::CreateThemedSolidBackground(
+          request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
+  views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  request_cvc_view->SetLayoutManager(layout);
 
   DCHECK(!cvc_textfield_);
   cvc_textfield_ = CreateCvcTextfield();
@@ -247,6 +264,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
 
   request_cvc_view->AddChildView(new views::Label(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC)));
+
   return request_cvc_view;
 }
 
@@ -267,7 +285,11 @@ void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
 
 void SaveCardBubbleViews::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  AddChildView(CreateMainContentView().release());
+  view_stack_ = new ViewStack();
+  view_stack_->set_background(views::Background::CreateThemedSolidBackground(
+      view_stack_, ui::NativeTheme::kColorId_BubbleBackground));
+  view_stack_->Push(CreateMainContentView(), /*animate=*/false);
+  AddChildView(view_stack_);
 }
 
 }  // namespace autofill

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/payments/view_stack.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -85,9 +86,11 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   SaveCardBubbleController* controller_;  // Weak reference.
 
-  views::Textfield* cvc_textfield_;
+  ViewStack* view_stack_ = nullptr;
 
-  views::Link* learn_more_link_;
+  views::Textfield* cvc_textfield_ = nullptr;
+
+  views::Link* learn_more_link_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };
