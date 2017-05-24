@@ -6,6 +6,12 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/signin/core/browser/signin_metrics.h"
+#include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -52,7 +58,7 @@ const CGFloat kTitleMinimumLineHeight = 32.0;
 const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
-@interface TabSwitcherPanelOverlayView ()
+@interface TabSwitcherPanelOverlayView ()<SigninPromoViewConsumer>
 
 // Updates the texts of labels and button according to the current
 // |overlayType|.
@@ -73,6 +79,8 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   MDCButton* _floatingButton;
   MDCActivityIndicator* _activityIndicator;
   std::string _recordedMetricString;
+  SigninPromoViewMediator* _signinPromoViewMediator;
+  SigninPromoView* _signinPromoView;
 }
 
 @synthesize overlayType = _overlayType;
@@ -167,7 +175,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
           @"H:|-(>=0)-[container(==containerWidth@999)]-(>=0)-|",
         ],
         @{ @"container" : _container },
-        @{ @"containerWidth" : @(kContainerWidth) }, self);
+        @{ @"containerWidth" : @(kContainerWidth) });
   }
   return self;
 }
@@ -185,13 +193,59 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 - (void)setOverlayType:(TabSwitcherPanelOverlayType)overlayType {
   _overlayType = overlayType;
-  [self updateText];
-  [self updateButtonTarget];
+  if (experimental_flags::IsSigninPromoEnabled() &&
+      _overlayType ==
+          TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT) {
+    [self createSigninPromoviewIfNeeded];
+    _container.hidden = YES;
+  } else {
+    _container.hidden = NO;
+    [_signinPromoView removeFromSuperview];
+    _signinPromoView = nil;
+    _signinPromoViewMediator.consumer = nil;
+    _signinPromoViewMediator = nil;
+    [self updateText];
+    [self updateButtonTarget];
+  }
 }
 
 #pragma mark - Private
 
+// Creates the sign-in view and its mediator if it doesn't exist.
+- (void)createSigninPromoviewIfNeeded {
+  if (_signinPromoView) {
+    DCHECK(_signinPromoViewMediator);
+    return;
+  }
+  _signinPromoView = [[SigninPromoView alloc] initWithFrame:CGRectZero];
+  _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
+  _signinPromoView.textLabel.text =
+      l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
+  _signinPromoView.textLabel.textColor = [UIColor whiteColor];
+  _signinPromoView.textLabel.font = [MDCTypography headlineFont];
+  _signinPromoView.textLabel.preferredMaxLayoutWidth =
+      kContainerWidth - (2 * _signinPromoView.horizontalPadding);
+  [self addSubview:_signinPromoView];
+  ApplyVisualConstraintsWithMetrics(
+      @[ @"H:[signinPromoView(containerWidth)]" ],
+      @{ @"signinPromoView" : _signinPromoView },
+      @{ @"containerWidth" : @(kContainerWidth) });
+  AddSameCenterXConstraint(_signinPromoView, self);
+  [_signinPromoView.centerYAnchor
+      constraintEqualToAnchor:self.centerYAnchor
+                     constant:kContainerOriginYOffset]
+      .active = YES;
+  _signinPromoViewMediator = [[SigninPromoViewMediator alloc] init];
+  _signinPromoViewMediator.accessPoint =
+      signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS;
+  _signinPromoView.delegate = _signinPromoViewMediator;
+  _signinPromoViewMediator.consumer = self;
+  [[_signinPromoViewMediator createConfigurator]
+      configureSigninPromoView:_signinPromoView];
+}
+
 - (void)updateText {
+  DCHECK(_signinPromoView == nil && _signinPromoViewMediator == nil);
   NSMutableAttributedString* titleString = nil;
   NSMutableAttributedString* subtitleString = nil;
 
@@ -206,6 +260,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_EMPTY:
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT:
+      DCHECK(!experimental_flags::IsSigninPromoEnabled());
       titleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
                              IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_TITLE)];
@@ -325,6 +380,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
 - (void)updateButtonTarget {
+  DCHECK(_signinPromoView == nil && _signinPromoViewMediator == nil);
   NSInteger tag = 0;
   SEL selector = nil;
   _recordedMetricString = "";
@@ -336,6 +392,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       shouldShowTextButton = NO;
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT:
+      DCHECK(!experimental_flags::IsSigninPromoEnabled());
       selector = @selector(showSignIn);
       _recordedMetricString = "MobileTabSwitcherSignIn";
       break;
@@ -406,6 +463,16 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   if (!_recordedMetricString.length())
     return;
   base::RecordAction(base::UserMetricsAction(_recordedMetricString.c_str()));
+}
+
+#pragma mark - SigninPromoViewConsumer
+
+- (void)configureSigninPromoViewWithNewIdentity:(BOOL)newIdentity
+                                   configurator:(SigninPromoViewConfigurator*)
+                                                    configurator {
+  DCHECK(_signinPromoView);
+  DCHECK(_signinPromoViewMediator);
+  [configurator configureSigninPromoView:_signinPromoView];
 }
 
 @end
