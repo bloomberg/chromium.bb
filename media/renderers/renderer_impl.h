@@ -229,7 +229,14 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // runs out of data but the audio renderer still has enough.
   base::TimeDelta video_underflow_threshold_;
 
+  // Lock used to protect access to the |restarting_audio_| flag and
+  // |restarting_audio_time_|.
+  // TODO(servolk): Get rid of the lock and replace restarting_audio_ with
+  // std::atomic<bool> when atomics are unbanned in Chromium.
+  base::Lock restarting_audio_lock_;
   bool restarting_audio_ = false;
+  base::TimeDelta restarting_audio_time_ = kNoTimestamp;
+
   bool restarting_video_ = false;
 
   // Flush operations and media track status changes must be serialized to avoid
