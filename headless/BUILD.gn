@@ -357,6 +357,7 @@ component("headless") {
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
       "lib/headless_content_main_delegate.h",
+      "lib/renderer/devtools_isolated_world_ids.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]
@@ -411,6 +412,7 @@ if (!is_component_build) {
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
       "lib/headless_content_main_delegate.h",
+      "lib/renderer/devtools_isolated_world_ids.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]
@@ -421,7 +423,10 @@ if (!is_component_build) {
       "//ui/base",
     ]
     if (enable_basic_printing) {
-      deps += [ "//components/printing/renderer" ]
+      deps += [
+        "//components/printing/renderer",
+        "//third_party/WebKit/public:blink",
+      ]
     }
 
     configs += [ ":headless_implementation" ]

@@ -115,8 +115,6 @@ std::string GetModulePrefixForBindingsType(MojoBindingsType bindings_type,
       return frame->GetSecurityOrigin().ToString().Utf8() + "/";
     case MojoBindingsType::FOR_LAYOUT_TESTS:
       return "layout-test-mojom://";
-    case MojoBindingsType::FOR_HEADLESS:
-      return "headless-mojom://";
   }
   NOTREACHED();
   return "";

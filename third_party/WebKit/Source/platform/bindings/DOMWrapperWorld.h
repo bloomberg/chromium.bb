@@ -39,6 +39,7 @@
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/WebIsolatedWorldIds.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -56,12 +57,8 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     kInvalidWorldId = -1,
     kMainWorldId = 0,
 
-    // Embedder isolated worlds can use IDs in [1, 1<<29).
-    kEmbedderWorldIdLimit = (1 << 29),
-    kDocumentXMLTreeViewerWorldId,
-    kDevToolsFirstIsolatedWorldId,
-    kDevToolsLastIsolatedWorldId = kDevToolsFirstIsolatedWorldId + 100,
-    kIsolatedWorldIdLimit,
+    kEmbedderWorldIdLimit = IsolatedWorldId::kEmbedderWorldIdLimit,
+    kIsolatedWorldIdLimit = IsolatedWorldId::kIsolatedWorldIdLimit,
 
     // Other worlds can use IDs after this. Don't manually pick up an ID from
     // this range. generateWorldIdForType() picks it up on behalf of you.
