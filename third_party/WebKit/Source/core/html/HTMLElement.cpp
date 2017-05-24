@@ -463,8 +463,6 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
     DirAttributeChanged(params.new_value);
   } else if (params.name == langAttr) {
     PseudoStateChanged(CSSSelector::kPseudoLang);
-  } else if (params.name == inertAttr) {
-    UseCounter::Count(GetDocument(), UseCounter::kInertAttribute);
   } else {
     const AtomicString& event_name = EventNameForAttributeName(params.name);
     if (!event_name.IsNull()) {

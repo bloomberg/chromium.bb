@@ -144,12 +144,11 @@ enum AXIgnoredReason {
   kAXActiveModalDialog,
   kAXAncestorDisallowsChild,
   kAXAncestorIsLeafNode,
-  kAXAriaHiddenElement,
-  kAXAriaHiddenSubtree,
+  kAXAriaHidden,
+  kAXAriaHiddenRoot,
   kAXEmptyAlt,
   kAXEmptyText,
-  kAXInertElement,
-  kAXInertSubtree,
+  kAXInert,
   kAXInheritsPresentation,
   kAXLabelContainer,
   kAXLabelFor,
@@ -466,7 +465,7 @@ class MODULES_EXPORT AXObjectImpl
   virtual bool CanSetSelectedAttribute() const { return false; }
 
   // Whether objects are ignored, i.e. not included in the tree.
-  bool AccessibilityIsIgnored();
+  bool AccessibilityIsIgnored() const;
   typedef HeapVector<IgnoredReason> IgnoredReasons;
   virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
     return true;
@@ -856,8 +855,6 @@ class MODULES_EXPORT AXObjectImpl
   virtual LayoutObject* LayoutObjectForRelativeBounds() const {
     return nullptr;
   }
-
-  const AXObjectImpl* InertRoot() const;
 
   mutable Member<AXObjectImpl> parent_;
 
