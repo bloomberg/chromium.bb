@@ -1,4 +1,5 @@
 include_rules = [
     "+components/link_header_util",  # for LinkHeader.cpp
     "+net/base/net_errors.h",  # for fetch/ResourceError.h
+    "+net/http/http_util.h",  # for CrossOriginAccessControl.cpp
 ]
