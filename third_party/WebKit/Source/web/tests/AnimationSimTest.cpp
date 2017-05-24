@@ -69,7 +69,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframes.push_back(keyframe.Release());
   Timing timing;
   timing.iteration_duration = 1;  // Seconds.
-  ElementAnimation::animate(
+  ElementAnimation::animateInternal(
       *target, StringKeyframeEffectModel::Create(keyframes), timing);
 
   // This sets the baseComputedStyle on the animation exit frame.
@@ -89,7 +89,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframes.push_back(keyframe.Release());
   timing = Timing::Defaults();
   timing.iteration_duration = 1;  // Seconds.
-  ElementAnimation::animate(
+  ElementAnimation::animateInternal(
       *target, StringKeyframeEffectModel::Create(keyframes), timing);
 
   // This (previously) would not clear the existing baseComputedStyle and would
