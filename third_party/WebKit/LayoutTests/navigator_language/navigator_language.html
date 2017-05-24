@@ -8,6 +8,8 @@
 test(function() {
     assert_true('language' in window.navigator);
     assert_true('languages' in window.navigator);
+    assert_true(Array.isArray(window.navigator.languages));
+    assert_true(Object.isFrozen(window.navigator.languages));
     assert_true('onlanguagechange' in window);
 }, "Test that NavigatorLanguage API is present in window");
 
@@ -126,12 +128,12 @@ test(function() {
 
     window.testRunner.setAcceptLanguages('fr-FR');
     assert_not_equals(navigator.languages, previous);
-}, "Test that navigator.languages caching behaviour.");
+}, "Test navigator.languages' caching behaviour.");
 
 test(function() {
     // The region code should be uppercase.
     assert_equals(navigator.language, 'en-US');
-}, 'Test that the default navigator.language in the test environment.');
+}, 'Test the default navigator.language in the test environment.');
 
 </script>
 </body>
