@@ -985,6 +985,17 @@ int LayoutBox::HorizontalScrollbarHeight() const {
   return GetScrollableArea()->HorizontalScrollbarHeight();
 }
 
+LayoutUnit LayoutBox::VerticalScrollbarWidthClampedToContentBox() const {
+  LayoutUnit width(VerticalScrollbarWidth());
+  DCHECK_GE(width, LayoutUnit());
+  if (width) {
+    LayoutUnit minimum_width = LogicalWidth() - BorderAndPaddingLogicalWidth();
+    DCHECK_GE(minimum_width, LayoutUnit());
+    width = std::min(width, minimum_width);
+  }
+  return width;
+}
+
 ScrollResult LayoutBox::Scroll(ScrollGranularity granularity,
                                const FloatSize& delta) {
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.

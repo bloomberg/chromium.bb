@@ -1012,6 +1012,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return Style()->IsHorizontalWritingMode() ? HorizontalScrollbarHeight()
                                               : VerticalScrollbarWidth();
   }
+
+  // Return the width of the vertical scrollbar, unless it's larger than the
+  // logical width of the content box, in which case we'll return that instead.
+  // Scrollbar handling is quite bad in such situations, and this method here
+  // is just to make sure that left-hand scrollbars don't mess up
+  // scrollWidth. For the full story, visit crbug.com/724255
+  LayoutUnit VerticalScrollbarWidthClampedToContentBox() const;
+
   virtual ScrollResult Scroll(ScrollGranularity, const FloatSize&);
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
