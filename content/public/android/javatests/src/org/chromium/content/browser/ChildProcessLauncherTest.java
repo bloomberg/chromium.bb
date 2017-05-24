@@ -38,6 +38,7 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -493,6 +494,51 @@ public class ChildProcessLauncherTest {
                 ChildProcessLauncher.stop(ChildProcessLauncherTestUtils.getConnectionPid(conn));
             }
         });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testSandboxedAllocatorFreed() {
+        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        ChildProcessLauncherHelper launcherHelper = ChildProcessLauncherTestUtils.startForTesting(
+                context, true /* sandboxed */, false /* alwaysInForeground */, new String[0],
+                new FileDescriptorInfo[0], null);
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Map<String, ChildConnectionAllocator> allocatorMap =
+                        ChildProcessLauncher.getSandboxedAllocatorMapForTesting();
+                Assert.assertTrue(allocatorMap.containsKey(context.getPackageName()));
+            }
+        });
+
+        final ChildProcessConnection conn = retrieveConnection(launcherHelper);
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ChildProcessLauncher.stop(ChildProcessLauncherTestUtils.getConnectionPid(conn));
+            }
+        });
+
+        // Poll until allocator is removed. Need to poll here because actually freeing a connection
+        // from allocator is a posted task, rather than a direct call from stop.
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(Boolean.FALSE, new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() {
+                        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                                new Callable<Boolean>() {
+                                    @Override
+                                    public Boolean call() {
+                                        Map<String, ChildConnectionAllocator> allocatorMap =
+                                                ChildProcessLauncher
+                                                        .getSandboxedAllocatorMapForTesting();
+                                        return allocatorMap.containsKey(context.getPackageName());
+                                    }
+                                });
+                    }
+                }));
     }
 
     @Test
