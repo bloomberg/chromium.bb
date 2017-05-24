@@ -65645,6 +65645,50 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.PartnershipSearchPerformed" enum="SearchEntryPoint">
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    The entry point used for all searches performed under partnership after the
+    Android search engine promo dialog was shown. This is a dialog prompting the
+    user to pick a default search engine. This metric is collected for every
+    search query performed.
+  </summary>
+</histogram>
+
+<histogram name="Search.SearchEngineListedInPromoDialog"
+    enum="OmniboxSearchEngineType">
+<!-- Name completed by histogram_suffixes name="SearchEnginePromoOrdering" and name="SearchEnginePromoDeviceType" -->
+
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    The search engines listed in the options for search engine promo. This is an
+    Android specific dialog prompting the user to pick a default search engine.
+    The dialog was shown on a device that had Chrome before it was first
+    introduced.
+  </summary>
+</histogram>
+
+<histogram name="Search.SearchEngineSelectionInPromoDialog"
+    enum="OmniboxSearchEngineType">
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    The search engine selected by the user from the search engine promo. This is
+    an Android specific dialog prompting the user to pick a default search
+    engine. The dialog was shown on a device that had Chrome before it was first
+    introduced.
+  </summary>
+</histogram>
+
+<histogram name="Search.SearchWidgetUseAndDeviceInfo"
+    enum="SearchWidgetUseInfo">
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    The current state for search widget use and whether the device is a
+    partnership device related with the Android Search Widget. Collected on
+    every cold start.
+  </summary>
+</histogram>
+
 <histogram name="SearchAnswer.AnswerVisibleTime" units="ms">
   <owner>vadimt@chromium.org</owner>
   <summary>Time between showing and hiding the answer card.</summary>
@@ -92161,6 +92205,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="Event.Latency.ScrollUpdate.Wheel.HandledToRendererSwap2"/>
   <affected-histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToHandled2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SearchEnginePromoDeviceType" separator=".">
+  <suffix name="ExistingDevice"/>
+  <suffix name="NewDevice"/>
+  <affected-histogram name="Search.SearchEngineListedInPromoDialog"/>
+  <affected-histogram name="Search.SearchEngineSelectionInPromoDialog"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SearchEnginePromoOrdering" separator="."
+    ordering="prefix,2">
+  <suffix name="First"/>
+  <suffix name="Second"/>
+  <suffix name="Third"/>
+  <affected-histogram
+      name="Search.SearchEngineListedInPromoDialog.ExistingDevice"/>
+  <affected-histogram name="Search.SearchEngineListedInPromoDialog.NewDevice"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SecurityInterstitialSBType" separator="."

@@ -263,6 +263,7 @@ android_library("chrome_java") {
     "//components/offline_pages/core:offline_page_model_enums_java",
     "//components/omnibox/browser:autocomplete_match_javagen",
     "//components/omnibox/browser:autocomplete_match_type_javagen",
+    "//components/search_engines:search_engine_type_java",
     "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser:investigated_scenario_java",
     "//components/supervised_user_error_page:enums_srcjar",

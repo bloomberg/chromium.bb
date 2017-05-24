@@ -19,4 +19,6 @@ class LocaleManager {
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocaleManager);
 };
 
+bool RegisterLocaleManager(JNIEnv* env);
+
 #endif  // CHROME_BROWSER_ANDROID_LOCALE_LOCALE_MANAGER_H_
