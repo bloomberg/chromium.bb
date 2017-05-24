@@ -290,20 +290,16 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   }
 
   // Check for mixed content. We do this second-to-last so that when folks block
-  // mixed content with a CSP policy, they don't get a warning. They'll still
-  // get a warning in the console about CSP blocking the load.
+  // mixed content via CSP, they don't get a mixed content warning, but a CSP
+  // warning instead.
   if (ShouldBlockFetchByMixedContentCheck(resource_request, url,
                                           reporting_policy))
     return ResourceRequestBlockedReason::kMixedContent;
 
-  if (url.WhitespaceRemoved()) {
+  if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
     CountDeprecation(UseCounter::kCanRequestURLHTTPContainingNewline);
-    if (url.ProtocolIsInHTTPFamily()) {
-      if (RuntimeEnabledFeatures::restrictCanRequestURLCharacterSetEnabled())
-        return ResourceRequestBlockedReason::kOther;
-    } else {
-      CountUsage(UseCounter::kCanRequestURLNonHTTPContainingNewline);
-    }
+    if (RuntimeEnabledFeatures::restrictCanRequestURLCharacterSetEnabled())
+      return ResourceRequestBlockedReason::kOther;
   }
 
   // Let the client have the final say into whether or not the load should

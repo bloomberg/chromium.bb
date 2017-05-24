@@ -5209,24 +5209,7 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
 }
 
 KURL Document::CompleteURL(const String& url) const {
-  KURL completed = CompleteURLWithOverride(url, base_url_);
-
-  if (completed.WhitespaceRemoved()) {
-    if (completed.ProtocolIsInHTTPFamily()) {
-      UseCounter::Count(*this,
-                        UseCounter::kDocumentCompleteURLHTTPContainingNewline);
-      bool less_than = url.Contains('<');
-      if (less_than) {
-        UseCounter::Count(
-            *this,
-            UseCounter::kDocumentCompleteURLHTTPContainingNewlineAndLessThan);
-      }
-    } else {
-      UseCounter::Count(
-          *this, UseCounter::kDocumentCompleteURLNonHTTPContainingNewline);
-    }
-  }
-  return completed;
+  return CompleteURLWithOverride(url, base_url_);
 }
 
 KURL Document::CompleteURLWithOverride(const String& url,

@@ -1,7 +1,5 @@
 CONSOLE WARNING: line 10: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE WARNING: line 11: Resource requests whose URLs contain raw newline characters are deprecated, and may be blocked in M60, around August 2017. Please remove newlines from places like element attribute values in order to continue loading those resources. See https://www.chromestatus.com/features/5735596811091968 for more details.
-CONSOLE ERROR: line 11: Uncaught NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/xmlhttprequest/resources/print-headers.cgi'.
 Test for bug 22731: Newline in XMLHttpRequest URL can be used to remove HTTP headers (e.g. Host:).
 
-LF FAIL: test did not run
-CR FAIL: test did not run
+LF SUCCESS
+CR SUCCESS
