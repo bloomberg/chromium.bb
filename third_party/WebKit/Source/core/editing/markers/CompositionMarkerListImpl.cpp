@@ -45,8 +45,8 @@ bool CompositionMarkerListImpl::RemoveMarkers(unsigned start_offset,
 bool CompositionMarkerListImpl::ShiftMarkers(unsigned offset,
                                              unsigned old_length,
                                              unsigned new_length) {
-  return DocumentMarkerListEditor::ShiftMarkers(&markers_, offset, old_length,
-                                                new_length);
+  return DocumentMarkerListEditor::ShiftMarkersContentIndependent(
+      &markers_, offset, old_length, new_length);
 }
 
 DEFINE_TRACE(CompositionMarkerListImpl) {

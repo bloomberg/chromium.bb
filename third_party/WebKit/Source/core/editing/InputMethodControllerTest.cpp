@@ -1519,133 +1519,7 @@ TEST_F(InputMethodControllerTest, CommitEmptyTextDeletesSelection) {
   EXPECT_STREQ("Abc 1", input->value().Utf8().data());
 }
 
-static String GetMarkedText(
-    DocumentMarkerController& document_marker_controller,
-    Node* node,
-    int marker_index) {
-  DocumentMarker* marker = document_marker_controller.Markers()[marker_index];
-  return node->textContent().Substring(
-      marker->StartOffset(), marker->EndOffset() - marker->StartOffset());
-}
-
-TEST_F(InputMethodControllerTest,
-       Marker_WhitespaceFixupAroundMarkerNotContainingSpace) {
-  Element* div = InsertHTMLElement(
-      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
-
-  // Add marker under "text" (use TextMatch since Composition markers don't
-  // persist across editing operations)
-  EphemeralRange marker_range = PlainTextRange(8, 12).CreateRange(*div);
-  GetDocument().Markers().AddMarker(marker_range.StartPosition(),
-                                    marker_range.EndPosition(),
-                                    DocumentMarker::kTextMatch);
-  // Delete "Initial"
-  Vector<CompositionUnderline> empty_underlines;
-  Controller().SetCompositionFromExistingText(empty_underlines, 0, 7);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Delete "blah"
-  Controller().SetCompositionFromExistingText(empty_underlines, 6, 10);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Check that the marker is still attached to "text" and doesn't include
-  // either space around it
-  EXPECT_EQ(1u, GetDocument().Markers().MarkersFor(div->firstChild()).size());
-  EXPECT_STREQ("text",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
-}
-
-TEST_F(InputMethodControllerTest,
-       Marker_WhitespaceFixupAroundMarkerBeginningWithSpace) {
-  Element* div = InsertHTMLElement(
-      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
-
-  // Add marker under " text" (use TextMatch since Composition markers don't
-  // persist across editing operations)
-  EphemeralRange marker_range = PlainTextRange(7, 12).CreateRange(*div);
-  GetDocument().Markers().AddMarker(marker_range.StartPosition(),
-                                    marker_range.EndPosition(),
-                                    DocumentMarker::kTextMatch);
-  // Delete "Initial"
-  Vector<CompositionUnderline> empty_underlines;
-  Controller().SetCompositionFromExistingText(empty_underlines, 0, 7);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Delete "blah"
-  Controller().SetCompositionFromExistingText(empty_underlines, 6, 10);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Check that the marker is still attached to " text" and includes the space
-  // before "text" but not the space after
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  ASSERT_STREQ("\xC2\xA0text",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
-}
-
-TEST_F(InputMethodControllerTest,
-       Marker_WhitespaceFixupAroundMarkerEndingWithSpace) {
-  Element* div = InsertHTMLElement(
-      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
-
-  // Add marker under "text " (use TextMatch since Composition markers don't
-  // persist across editing operations)
-  EphemeralRange marker_range = PlainTextRange(8, 13).CreateRange(*div);
-  GetDocument().Markers().AddMarker(marker_range.StartPosition(),
-                                    marker_range.EndPosition(),
-                                    DocumentMarker::kTextMatch);
-  // Delete "Initial"
-  Vector<CompositionUnderline> empty_underlines;
-  Controller().SetCompositionFromExistingText(empty_underlines, 0, 7);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Delete "blah"
-  Controller().SetCompositionFromExistingText(empty_underlines, 6, 10);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Check that the marker is still attached to "text " and includes the space
-  // after "text" but not the space before
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  ASSERT_STREQ("text\xC2\xA0",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
-}
-
-TEST_F(InputMethodControllerTest,
-       Marker_WhitespaceFixupAroundMarkerBeginningAndEndingWithSpaces) {
-  Element* div = InsertHTMLElement(
-      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
-
-  // Add marker under " text " (use TextMatch since Composition markers don't
-  // persist across editing operations)
-  EphemeralRange marker_range = PlainTextRange(7, 13).CreateRange(*div);
-  GetDocument().Markers().AddMarker(marker_range.StartPosition(),
-                                    marker_range.EndPosition(),
-                                    DocumentMarker::kTextMatch);
-
-  // Delete "Initial"
-  Vector<CompositionUnderline> empty_underlines;
-  Controller().SetCompositionFromExistingText(empty_underlines, 0, 7);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Delete "blah"
-  Controller().SetCompositionFromExistingText(empty_underlines, 6, 10);
-  Controller().CommitText(String(""), empty_underlines, 0);
-
-  // Check that the marker is still attached to " text " and includes both the
-  // space before "text" and the space after
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  ASSERT_STREQ("\xC2\xA0text\xC2\xA0",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
-}
-
-TEST_F(InputMethodControllerTest, Marker_ReplaceStartOfMarker) {
+TEST_F(InputMethodControllerTest, ContentDependentMarker_ReplaceStartOfMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>Initial text</div>", "sample");
 
@@ -1660,15 +1534,12 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceStartOfMarker) {
   Controller().SetCompositionFromExistingText(empty_underlines, 0, 7);
   Controller().CommitText(String("Original"), empty_underlines, 0);
 
-  // Verify marker is under "Original text"
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  ASSERT_STREQ("Original text",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
+  // Verify marker was removed
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsStartOfMarker) {
+TEST_F(InputMethodControllerTest,
+       ContentDependentMarker_ReplaceTextContainsStartOfMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>This is some initial text</div>",
       "sample");
@@ -1684,15 +1555,11 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsStartOfMarker) {
   Controller().SetCompositionFromExistingText(empty_underlines, 8, 20);
   Controller().CommitText(String("boring"), empty_underlines, 0);
 
-  // Verify marker is under " text"
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  EXPECT_STREQ(" text",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
+  // Verify marker was removed
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_ReplaceEndOfMarker) {
+TEST_F(InputMethodControllerTest, ContentDependentMarker_ReplaceEndOfMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>Initial text</div>", "sample");
 
@@ -1707,15 +1574,12 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceEndOfMarker) {
   Controller().SetCompositionFromExistingText(empty_underlines, 8, 12);
   Controller().CommitText(String("string"), empty_underlines, 0);
 
-  // Verify marker is under "Initial string"
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  ASSERT_STREQ("Initial string",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
+  // Verify marker was removed
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsEndOfMarker) {
+TEST_F(InputMethodControllerTest,
+       ContentDependentMarker_ReplaceTextContainsEndOfMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>This is some initial text</div>",
       "sample");
@@ -1733,15 +1597,11 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsEndOfMarker) {
 
   EXPECT_STREQ("This is some content", div->innerHTML().Utf8().data());
 
-  // Verify marker is under "some "
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  EXPECT_STREQ("some ",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
+  // Verify marker was removed
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_ReplaceEntireMarker) {
+TEST_F(InputMethodControllerTest, ContentDependentMarker_ReplaceEntireMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>Initial text</div>", "sample");
 
@@ -1756,15 +1616,12 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceEntireMarker) {
   Controller().SetCompositionFromExistingText(empty_underlines, 8, 12);
   Controller().CommitText(String("string"), empty_underlines, 0);
 
-  // Verify marker is under "string"
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-  ASSERT_STREQ("string",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
+  // Verify marker was removed
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_ReplaceTextWithMarkerAtBeginning) {
+TEST_F(InputMethodControllerTest,
+       ContentDependentMarker_ReplaceTextWithMarkerAtBeginning) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>Initial text</div>", "sample");
 
@@ -1785,7 +1642,8 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceTextWithMarkerAtBeginning) {
   EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_ReplaceTextWithMarkerAtEnd) {
+TEST_F(InputMethodControllerTest,
+       ContentDependentMarker_ReplaceTextWithMarkerAtEnd) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>Initial text</div>", "sample");
 
@@ -1806,7 +1664,7 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceTextWithMarkerAtEnd) {
   EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_Deletions) {
+TEST_F(InputMethodControllerTest, ContentDependentMarker_Deletions) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>1111122222333334444455555</div>",
       "sample");
@@ -1844,22 +1702,17 @@ TEST_F(InputMethodControllerTest, Marker_Deletions) {
   Controller().CommitText(String(""), empty_underlines, 0);
 
   // Verify markers were updated correctly
-  EXPECT_EQ(4u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 
   EXPECT_EQ(0u, GetDocument().Markers().Markers()[0]->StartOffset());
   EXPECT_EQ(5u, GetDocument().Markers().Markers()[0]->EndOffset());
 
-  EXPECT_EQ(5u, GetDocument().Markers().Markers()[1]->StartOffset());
-  EXPECT_EQ(8u, GetDocument().Markers().Markers()[1]->EndOffset());
-
-  EXPECT_EQ(8u, GetDocument().Markers().Markers()[2]->StartOffset());
-  EXPECT_EQ(11u, GetDocument().Markers().Markers()[2]->EndOffset());
-
-  EXPECT_EQ(11u, GetDocument().Markers().Markers()[3]->StartOffset());
-  EXPECT_EQ(16u, GetDocument().Markers().Markers()[3]->EndOffset());
+  EXPECT_EQ(11u, GetDocument().Markers().Markers()[1]->StartOffset());
+  EXPECT_EQ(16u, GetDocument().Markers().Markers()[1]->EndOffset());
 }
 
-TEST_F(InputMethodControllerTest, Marker_DeleteExactlyOnMarker) {
+TEST_F(InputMethodControllerTest,
+       ContentDependentMarker_DeleteExactlyOnMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>1111122222333334444455555</div>",
       "sample");
@@ -1878,7 +1731,7 @@ TEST_F(InputMethodControllerTest, Marker_DeleteExactlyOnMarker) {
   EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_DeleteMiddleOfMarker) {
+TEST_F(InputMethodControllerTest, ContentDependentMarker_DeleteMiddleOfMarker) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>1111122222333334444455555</div>",
       "sample");
@@ -1893,13 +1746,12 @@ TEST_F(InputMethodControllerTest, Marker_DeleteMiddleOfMarker) {
   Controller().SetCompositionFromExistingText(empty_underlines, 6, 9);
   Controller().CommitText(String(""), empty_underlines, 0);
 
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-
-  EXPECT_EQ(5u, GetDocument().Markers().Markers()[0]->StartOffset());
-  EXPECT_EQ(7u, GetDocument().Markers().Markers()[0]->EndOffset());
+  // Verify marker was removed
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
-TEST_F(InputMethodControllerTest, Marker_InsertInMarkerInterior) {
+TEST_F(InputMethodControllerTest,
+       ContentDependentMarker_InsertInMarkerInterior) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>1111122222333334444455555</div>",
       "sample");
@@ -1926,19 +1778,16 @@ TEST_F(InputMethodControllerTest, Marker_InsertInMarkerInterior) {
   Controller().SetComposition("", empty_underlines, 7, 7);
   Controller().CommitText(String("66666"), empty_underlines, -7);
 
-  EXPECT_EQ(3u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 
   EXPECT_EQ(0u, GetDocument().Markers().Markers()[0]->StartOffset());
   EXPECT_EQ(5u, GetDocument().Markers().Markers()[0]->EndOffset());
 
-  EXPECT_EQ(5u, GetDocument().Markers().Markers()[1]->StartOffset());
-  EXPECT_EQ(15u, GetDocument().Markers().Markers()[1]->EndOffset());
-
-  EXPECT_EQ(15u, GetDocument().Markers().Markers()[2]->StartOffset());
-  EXPECT_EQ(20u, GetDocument().Markers().Markers()[2]->EndOffset());
+  EXPECT_EQ(15u, GetDocument().Markers().Markers()[1]->StartOffset());
+  EXPECT_EQ(20u, GetDocument().Markers().Markers()[1]->EndOffset());
 }
 
-TEST_F(InputMethodControllerTest, Marker_InsertBetweenMarkers) {
+TEST_F(InputMethodControllerTest, ContentDependentMarker_InsertBetweenMarkers) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable>1111122222333334444455555</div>",
       "sample");
