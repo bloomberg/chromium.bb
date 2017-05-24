@@ -47,7 +47,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
                                 AXNode&,
                                 std::unique_ptr<protocol::Array<AXNode>>& nodes,
                                 AXObjectCacheImpl&) const;
-  std::unique_ptr<AXNode> BuildProtocolAXObjectImpl(
+  std::unique_ptr<AXNode> BuildProtocolAXObject(
       AXObjectImpl&,
       AXObjectImpl* inspected_ax_object,
       bool fetch_relatives,
@@ -74,11 +74,6 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       AXObjectImpl* inspected_ax_object,
       std::unique_ptr<protocol::Array<AXNode>>& nodes,
       AXObjectCacheImpl&) const;
-  void addChild(std::unique_ptr<protocol::Array<AXNodeId>>& child_ids,
-                AXObjectImpl& child_ax_object,
-                AXObjectImpl* inspected_ax_object,
-                std::unique_ptr<protocol::Array<AXNode>>& nodes,
-                AXObjectCacheImpl&) const;
   void AddChildren(AXObjectImpl&,
                    AXObjectImpl* inspected_ax_object,
                    std::unique_ptr<protocol::Array<AXNodeId>>& child_ids,

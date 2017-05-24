@@ -2363,7 +2363,6 @@ interface HTMLElement : Element
     getter dir
     getter draggable
     getter hidden
-    getter inert
     getter innerText
     getter inputMode
     getter isContentEditable
@@ -2464,7 +2463,6 @@ interface HTMLElement : Element
     setter dir
     setter draggable
     setter hidden
-    setter inert
     setter innerText
     setter inputMode
     setter lang

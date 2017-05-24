@@ -5,7 +5,7 @@ hidden non-treeitem
 Descendant of aria-hidden node
 List item also presentational
 Div in list isn't presentational
-Content within label refers to label container     
+Content within label refers to label container      
 
 WebArea
   tree

@@ -27,7 +27,6 @@
 
 #include "SkMatrix44.h"
 #include "core/dom/AccessibleNode.h"
-#include "core/html/HTMLSelectElement.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
@@ -62,26 +61,6 @@ AccessibilityRole AXMenuListOption::RoleValue() const {
 
 Element* AXMenuListOption::ActionElement() const {
   return element_;
-}
-
-AXObjectImpl* AXMenuListOption::ComputeParent() const {
-  Node* node = GetNode();
-  if (!node)
-    return nullptr;
-  HTMLSelectElement* select = toHTMLOptionElement(node)->OwnerSelectElement();
-  if (!select)
-    return nullptr;
-  AXObjectImpl* select_ax_object = AxObjectCache().GetOrCreate(select);
-  if (select_ax_object->HasChildren()) {
-    const auto& child_objects = select_ax_object->Children();
-    DCHECK(!child_objects.IsEmpty());
-    DCHECK_EQ(child_objects.size(), 1UL);
-    DCHECK(child_objects[0]->IsMenuListPopup());
-    ToAXMenuListPopup(child_objects[0].Get())->UpdateChildrenIfNecessary();
-  } else {
-    select_ax_object->UpdateChildrenIfNecessary();
-  }
-  return parent_.Get();
 }
 
 bool AXMenuListOption::IsEnabled() const {
