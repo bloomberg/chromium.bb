@@ -17,9 +17,12 @@
         assert_equals(PushManager.supportedContentEncodings, PushManager.supportedContentEncodings);
         assert_true(Array.isArray(PushManager.supportedContentEncodings));
 
-        // TODO(crbug.com/679789): The `aes128gcm` Content-Encoding must be supported as well.
-        assert_equals(PushManager.supportedContentEncodings.length, 1);
-        assert_equals(PushManager.supportedContentEncodings[0], 'aesgcm');
+        assert_equals(PushManager.supportedContentEncodings.length, 2);
+
+        const encodings = Array.from(PushManager.supportedContentEncodings).sort();
+
+        assert_equals(encodings[0], 'aes128gcm');
+        assert_equals(encodings[1], 'aesgcm');
       });
     </script>
   </body>

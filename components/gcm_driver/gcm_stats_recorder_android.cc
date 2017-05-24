@@ -127,7 +127,10 @@ void GCMStatsRecorderAndroid::RecordDecryptionFailure(
     const std::string& app_id,
     GCMEncryptionProvider::DecryptionResult result) {
   DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED);
-  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED);
+  DCHECK_NE(result,
+            GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_03);
+  DCHECK_NE(result,
+            GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_08);
   if (!is_recording_)
     return;
 
