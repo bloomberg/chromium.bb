@@ -866,7 +866,7 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   const int aligned_width = ALIGN_POWER_OF_TWO(width, cm->mib_size_log2);
 
   const int offset_y = mi_col_start << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
-  const int width_y = width << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+  const int width_y = aligned_width << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
   const int offset_uv = offset_y >> cm->subsampling_x;
   const int width_uv = width_y >> cm->subsampling_x;
 
