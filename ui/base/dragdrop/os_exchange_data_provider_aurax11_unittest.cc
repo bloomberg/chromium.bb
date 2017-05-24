@@ -8,9 +8,9 @@
 #undef None
 #undef Bool
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/events/platform/x11/x11_event_source_glib.h"
@@ -25,10 +25,7 @@ namespace ui {
 
 class OSExchangeDataProviderAuraX11Test : public testing::Test {
  public:
-  OSExchangeDataProviderAuraX11Test()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        event_source(gfx::GetXDisplay()) {}
+  OSExchangeDataProviderAuraX11Test() : event_source(gfx::GetXDisplay()) {}
 
   void AddURLList(const std::string& list_contents) {
     std::string contents_copy = list_contents;
@@ -41,7 +38,7 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::MessageLoopForUI message_loop;
   X11EventSourceGlib event_source;
   ui::OSExchangeDataProviderAuraX11 provider;
 };
