@@ -6765,18 +6765,22 @@ media::mojom::RemoterFactory* RenderFrameImpl::GetRemoterFactory() {
 #endif
 
 media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
+  DCHECK(frame_);
+
   if (cdm_factory_)
     return cdm_factory_.get();
 
-#if BUILDFLAG(ENABLE_MOJO_CDM)
-  cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
-  return cdm_factory_.get();
-#endif  //  BUILDFLAG(ENABLE_MOJO_CDM)
-
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
-  DCHECK(frame_);
-  cdm_factory_.reset(
-      new RenderCdmFactory(base::Bind(&PepperCdmWrapperImpl::Create, frame_)));
+  static_assert(BUILDFLAG(ENABLE_MOJO_CDM),
+                "Mojo CDM should always be enabled when PPAPI CDM is enabled");
+  if (base::FeatureList::IsEnabled(media::kMojoCdm)) {
+    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
+  } else {
+    cdm_factory_.reset(new RenderCdmFactory(
+        base::Bind(&PepperCdmWrapperImpl::Create, frame_)));
+  }
+#elif BUILDFLAG(ENABLE_MOJO_CDM)
+  cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)

@@ -12,7 +12,6 @@
 
 MojoResult ServiceMain(MojoHandle mojo_handle) {
   // Enable logging.
-  base::AtExitManager at_exit;
   service_manager::ServiceRunner::InitBaseCommandLine();
 
   logging::LoggingSettings settings;
