@@ -175,8 +175,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
   const dequant_val_type_nuq *dequant_val = pd->dequant_val_nuq[dq];
-#elif !CONFIG_AOM_QM
-  const int dq_step[2] = { dequant_ptr[0] >> shift, dequant_ptr[1] >> shift };
 #endif  // CONFIG_NEW_QUANT
   int sz = 0;
   const int64_t rddiv = mb->rddiv;
@@ -388,22 +386,10 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           dqc_a = shift ? ROUND_POWER_OF_TWO(dqc_a, shift) : dqc_a;
           if (sz) dqc_a = -dqc_a;
 #else
-// The 32x32 transform coefficient uses half quantization step size.
-// Account for the rounding difference in the dequantized coefficeint
-// value when the quantization index is dropped from an even number
-// to an odd number.
-
-#if CONFIG_AOM_QM
-          tran_low_t offset = dqv >> shift;
-#else
-          tran_low_t offset = dq_step[rc != 0];
-#endif
-          if (shift & x_a) offset += (dqv & 0x01);
-
-          if (sz == 0)
-            dqc_a = dqcoeff[rc] - offset;
+          if (x_a < 0)
+            dqc_a = -((-x_a * dqv) >> shift);
           else
-            dqc_a = dqcoeff[rc] + offset;
+            dqc_a = (x_a * dqv) >> shift;
 #endif  // CONFIG_NEW_QUANT
         } else {
           dqc_a = 0;
@@ -513,8 +499,6 @@ static int optimize_b_org(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
   const dequant_val_type_nuq *dequant_val = pd->dequant_val_nuq[dq];
-#elif !CONFIG_AOM_QM
-  const int dq_step[2] = { dequant_ptr[0] >> shift, dequant_ptr[1] >> shift };
 #endif  // CONFIG_NEW_QUANT
   int next = eob, sz = 0;
   const int64_t rdmult = (mb->rdmult * plane_rd_mult[ref][plane_type]) >> 1;
@@ -749,22 +733,10 @@ static int optimize_b_org(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
                                  : tokens[i][1].dqc;
         if (sz) tokens[i][1].dqc = -tokens[i][1].dqc;
 #else
-// The 32x32 transform coefficient uses half quantization step size.
-// Account for the rounding difference in the dequantized coefficeint
-// value when the quantization index is dropped from an even number
-// to an odd number.
-
-#if CONFIG_AOM_QM
-        tran_low_t offset = dqv >> shift;
-#else
-        tran_low_t offset = dq_step[rc != 0];
-#endif
-        if (shift & x) offset += (dqv & 0x01);
-
-        if (sz == 0)
-          tokens[i][1].dqc = dqcoeff[rc] - offset;
+        if (x < 0)
+          tokens[i][1].dqc = -((-x * dqv) >> shift);
         else
-          tokens[i][1].dqc = dqcoeff[rc] + offset;
+          tokens[i][1].dqc = (x * dqv) >> shift;
 #endif  // CONFIG_NEW_QUANT
       } else {
         tokens[i][1].dqc = 0;
