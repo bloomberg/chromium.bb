@@ -54,6 +54,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NavigationURLLoaderImplCore::Start, core_, resource_context,
                  storage_partition->GetURLRequestContext(),
+                 base::Unretained(storage_partition->GetFileSystemContext()),
                  service_worker_handle_core, appcache_handle_core,
                  base::Passed(&request_info),
                  base::Passed(&navigation_ui_data)));

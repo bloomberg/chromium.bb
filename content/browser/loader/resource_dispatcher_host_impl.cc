@@ -1971,6 +1971,7 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
     net::URLRequestContext* request_context,
+    storage::FileSystemContext* upload_file_system_context,
     const NavigationRequestInfo& info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     NavigationURLLoaderImplCore* loader,
@@ -2052,12 +2053,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   ResourceRequestBodyImpl* body = info.common_params.post_data.get();
   if (body) {
     AttachRequestBodyBlobDataHandles(body, resource_context);
-    // TODO(davidben): The FileSystemContext is null here. In the case where
-    // another renderer requested this navigation, this should be the same
-    // FileSystemContext passed into ShouldServiceRequest.
     new_request->set_upload(UploadDataStreamBuilder::Build(
-        body, blob_context,
-        nullptr,  // file_system_context
+        body, blob_context, upload_file_system_context,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
   }
 
