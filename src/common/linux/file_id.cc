@@ -61,10 +61,11 @@ FileID::FileID(const char* path) : path_(path) {}
 // These functions are also used inside the crashed process, so be safe
 // and use the syscall/libc wrappers instead of direct syscalls or libc.
 
-template<typename ElfClass>
 static bool ElfClassBuildIDNoteIdentifier(const void *section, size_t length,
                                           wasteful_vector<uint8_t>& identifier) {
-  typedef typename ElfClass::Nhdr Nhdr;
+  static_assert(sizeof(ElfClass32::Nhdr) == sizeof(ElfClass64::Nhdr),
+                "Elf32_Nhdr and Elf64_Nhdr should be the same");
+  typedef typename ElfClass32::Nhdr Nhdr;
 
   const void* section_end = reinterpret_cast<const char*>(section) + length;
   const Nhdr* note_header = reinterpret_cast<const Nhdr*>(section);
@@ -96,25 +97,16 @@ static bool FindElfBuildIDNote(const void* elf_mapped_base,
                                wasteful_vector<uint8_t>& identifier) {
   void* note_section;
   size_t note_size;
-  int elfclass;
   if ((!FindElfSegment(elf_mapped_base, PT_NOTE,
-                       (const void**)&note_section, &note_size, &elfclass) ||
+                       (const void**)&note_section, &note_size) ||
       note_size == 0)  &&
       (!FindElfSection(elf_mapped_base, ".note.gnu.build-id", SHT_NOTE,
-                       (const void**)&note_section, &note_size, &elfclass) ||
+                       (const void**)&note_section, &note_size) ||
       note_size == 0)) {
     return false;
   }
 
-  if (elfclass == ELFCLASS32) {
-    return ElfClassBuildIDNoteIdentifier<ElfClass32>(note_section, note_size,
-                                                     identifier);
-  } else if (elfclass == ELFCLASS64) {
-    return ElfClassBuildIDNoteIdentifier<ElfClass64>(note_section, note_size,
-                                                     identifier);
-  }
-
-  return false;
+  return ElfClassBuildIDNoteIdentifier(note_section, note_size, identifier);
 }
 
 // Attempt to locate the .text section of an ELF binary and generate
@@ -126,7 +118,7 @@ static bool HashElfTextSection(const void* elf_mapped_base,
   void* text_section;
   size_t text_size;
   if (!FindElfSection(elf_mapped_base, ".text", SHT_PROGBITS,
-                      (const void**)&text_section, &text_size, NULL) ||
+                      (const void**)&text_section, &text_size) ||
       text_size == 0) {
     return false;
   }

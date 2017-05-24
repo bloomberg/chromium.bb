@@ -352,17 +352,16 @@ bool ElfFileSoNameFromMappedFile(
 
   const void* segment_start;
   size_t segment_size;
-  int elf_class;
-  if (!FindElfSection(elf_base, ".dynamic", SHT_DYNAMIC,
-                      &segment_start, &segment_size, &elf_class)) {
+  if (!FindElfSection(elf_base, ".dynamic", SHT_DYNAMIC, &segment_start,
+                      &segment_size)) {
     // No dynamic section
     return false;
   }
 
   const void* dynstr_start;
   size_t dynstr_size;
-  if (!FindElfSection(elf_base, ".dynstr", SHT_STRTAB,
-                      &dynstr_start, &dynstr_size, &elf_class)) {
+  if (!FindElfSection(elf_base, ".dynstr", SHT_STRTAB, &dynstr_start,
+                      &dynstr_size)) {
     // No dynstr section
     return false;
   }

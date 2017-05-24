@@ -122,8 +122,7 @@ bool FindElfSection(const void *elf_mapped_base,
                     const char *section_name,
                     uint32_t section_type,
                     const void **section_start,
-                    size_t *section_size,
-                    int *elfclass) {
+                    size_t *section_size) {
   assert(elf_mapped_base);
   assert(section_start);
   assert(section_size);
@@ -135,10 +134,6 @@ bool FindElfSection(const void *elf_mapped_base,
     return false;
 
   int cls = ElfClass(elf_mapped_base);
-  if (elfclass) {
-    *elfclass = cls;
-  }
-
   const char* elf_base =
     static_cast<const char*>(elf_mapped_base);
 
@@ -158,8 +153,7 @@ bool FindElfSection(const void *elf_mapped_base,
 bool FindElfSegment(const void *elf_mapped_base,
                     uint32_t segment_type,
                     const void **segment_start,
-                    size_t *segment_size,
-                    int *elfclass) {
+                    size_t *segment_size) {
   assert(elf_mapped_base);
   assert(segment_start);
   assert(segment_size);
@@ -171,10 +165,6 @@ bool FindElfSegment(const void *elf_mapped_base,
     return false;
 
   int cls = ElfClass(elf_mapped_base);
-  if (elfclass) {
-    *elfclass = cls;
-  }
-
   const char* elf_base =
     static_cast<const char*>(elf_mapped_base);
 

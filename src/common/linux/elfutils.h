@@ -81,14 +81,12 @@ int ElfClass(const void* elf_base);
 // Attempt to find a section named |section_name| of type |section_type|
 // in the ELF binary data at |elf_mapped_base|. On success, returns true
 // and sets |*section_start| to point to the start of the section data,
-// and |*section_size| to the size of the section's data. If |elfclass|
-// is not NULL, set |*elfclass| to the ELF file class.
+// and |*section_size| to the size of the section's data.
 bool FindElfSection(const void *elf_mapped_base,
                     const char *section_name,
                     uint32_t section_type,
                     const void **section_start,
-                    size_t *section_size,
-                    int *elfclass);
+                    size_t *section_size);
 
 // Internal helper method, exposed for convenience for callers
 // that already have more info.
@@ -104,13 +102,11 @@ FindElfSectionByName(const char* name,
 // Attempt to find the first segment of type |segment_type| in the ELF
 // binary data at |elf_mapped_base|. On success, returns true and sets
 // |*segment_start| to point to the start of the segment data, and
-// and |*segment_size| to the size of the segment's data. If |elfclass|
-// is not NULL, set |*elfclass| to the ELF file class.
+// and |*segment_size| to the size of the segment's data.
 bool FindElfSegment(const void *elf_mapped_base,
                     uint32_t segment_type,
                     const void **segment_start,
-                    size_t *segment_size,
-                    int *elfclass);
+                    size_t *segment_size);
 
 // Convert an offset from an Elf header into a pointer to the mapped
 // address in the current process. Takes an extra template parameter
