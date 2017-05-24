@@ -318,6 +318,7 @@ EXPERIMENT_LIST="
     aom_qm
     lowdelay_compound
     smooth_hv
+    var_refs
 "
 CONFIG_LIST="
     dependency_tracking
