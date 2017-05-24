@@ -168,9 +168,11 @@ void BrowserActionsContainer::AddViewForAction(
 
 void BrowserActionsContainer::RemoveViewForAction(
     ToolbarActionViewController* action) {
+  std::unique_ptr<ToolbarActionView> view;
   for (ToolbarActionViews::iterator iter = toolbar_action_views_.begin();
        iter != toolbar_action_views_.end(); ++iter) {
     if ((*iter)->view_controller() == action) {
+      std::swap(view, *iter);
       toolbar_action_views_.erase(iter);
       break;
     }
