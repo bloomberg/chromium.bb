@@ -42,8 +42,7 @@ class CommandExecutorTest : public testing::Test {
   // Creates an executor, with a buffer of the specified size (in entries).
   void MakeExecutor(unsigned int entry_count) {
     command_buffer_ = base::MakeUnique<FakeCommandBufferServiceBase>();
-    executor_.reset(
-        new CommandExecutor(command_buffer_.get(), api_mock(), nullptr));
+    executor_.reset(new CommandExecutor(command_buffer_.get(), api_mock()));
     SetNewGetBuffer(entry_count * sizeof(CommandBufferEntry));
   }
 

@@ -15,22 +15,20 @@
 #include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/service/async_api_interface.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 
+union CommandBufferEntry;
+
 // This class schedules commands that have been flushed. They are received via
-// a command buffer and forwarded to a command handler. TODO(apatrick): This
-// class should not know about the decoder. Do not add additional dependencies
-// on it.
+// a command buffer and forwarded to a command handler.
 class GPU_EXPORT CommandExecutor {
  public:
   static const int kParseCommandsSlice = 20;
 
   CommandExecutor(CommandBufferServiceBase* command_buffer,
-                  AsyncAPIInterface* handler,
-                  gles2::GLES2Decoder* decoder);
+                  AsyncAPIInterface* handler);
 
   ~CommandExecutor();
 
@@ -43,30 +41,10 @@ class GPU_EXPORT CommandExecutor {
 
   bool scheduled() const { return scheduled_; }
 
-  // Returns whether the scheduler needs to be polled again in the future to
-  // process pending queries.
-  bool HasPendingQueries() const;
-
-  // Process pending queries and return. HasPendingQueries() can be used to
-  // determine if there's more pending queries after this has been called.
-  void ProcessPendingQueries();
-
   void SetCommandProcessedCallback(const base::Closure& callback);
 
   using PauseExecutionCallback = base::Callback<bool(void)>;
   void SetPauseExecutionCallback(const PauseExecutionCallback& callback);
-
-  // Returns whether the scheduler needs to be polled again in the future to
-  // process idle work.
-  bool HasMoreIdleWork() const;
-
-  // Perform some idle work and return. HasMoreIdleWork() can be used to
-  // determine if there's more idle work do be done after this has been called.
-  void PerformIdleWork();
-
-  // Whether there is state that needs to be regularly polled.
-  bool HasPollingWork() const;
-  void PerformPollingWork();
 
  private:
   bool PauseExecution();
@@ -79,10 +57,6 @@ class GPU_EXPORT CommandExecutor {
 
   // This is used to execute commands.
   AsyncAPIInterface* handler_;
-
-  // Does not own decoder. TODO(apatrick): The CommandExecutor shouldn't need a
-  // pointer to the decoder.
-  gles2::GLES2Decoder* decoder_;
 
   CommandBufferOffset get_;
   CommandBufferOffset put_;

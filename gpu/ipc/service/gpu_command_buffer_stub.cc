@@ -320,8 +320,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 
   // Ensure that any delayed work that was created will be handled.
   if (have_context) {
-    if (executor_)
-      executor_->ProcessPendingQueries();
+    if (decoder_)
+      decoder_->ProcessPendingQueries(false);
     ScheduleDelayedWork(
         base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
   }
@@ -412,7 +412,7 @@ void GpuCommandBufferStub::PerformWork() {
   if (decoder_.get() && !MakeCurrent())
     return;
 
-  if (executor_) {
+  if (decoder_) {
     uint32_t current_unprocessed_num =
         channel()->sync_point_manager()->GetUnprocessedOrderNum();
     // We're idle when no messages were processed or scheduled.
@@ -430,11 +430,11 @@ void GpuCommandBufferStub::PerformWork() {
 
     if (is_idle) {
       last_idle_time_ = base::TimeTicks::Now();
-      executor_->PerformIdleWork();
+      decoder_->PerformIdleWork();
     }
 
-    executor_->ProcessPendingQueries();
-    executor_->PerformPollingWork();
+    decoder_->ProcessPendingQueries(false);
+    decoder_->PerformPollingWork();
   }
 
   ScheduleDelayedWork(
@@ -451,9 +451,9 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
 }
 
 void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
-  bool has_more_work = executor_.get() && (executor_->HasPendingQueries() ||
-                                           executor_->HasMoreIdleWork() ||
-                                           executor_->HasPollingWork());
+  bool has_more_work = decoder_.get() && (decoder_->HasPendingQueries() ||
+                                          decoder_->HasMoreIdleWork() ||
+                                          decoder_->HasPollingWork());
   if (!has_more_work) {
     last_idle_time_ = base::TimeTicks();
     return;
@@ -480,8 +480,7 @@ void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   // for more work at the rate idle work is performed. This also ensures
   // that idle work is done as efficiently as possible without any
   // unnecessary delays.
-  if (executor_.get() && executor_->scheduled() &&
-      executor_->HasMoreIdleWork()) {
+  if (executor_->scheduled() && decoder_->HasMoreIdleWork()) {
     delay = base::TimeDelta();
   }
 
@@ -646,8 +645,7 @@ bool GpuCommandBufferStub::Initialize(
       new CommandBufferService(context_group_->transfer_buffer_manager()));
 
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
-  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
-                                      decoder_.get()));
+  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
@@ -1084,7 +1082,7 @@ void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
 
 void GpuCommandBufferStub::OnDescheduleUntilFinished() {
   DCHECK(executor_->scheduled());
-  DCHECK(executor_->HasPollingWork());
+  DCHECK(decoder_->HasPollingWork());
 
   executor_->SetScheduled(false);
   channel_->OnCommandBufferDescheduled(this);

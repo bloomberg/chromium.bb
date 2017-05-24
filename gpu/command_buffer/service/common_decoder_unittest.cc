@@ -55,17 +55,21 @@ TEST(CommonDecoderBucket, SetData) {
 
 class TestCommonDecoder : public CommonDecoder {
  public:
-  // Overridden from AsyncAPIInterface
+  // AsyncAPIInterface implementation
+  void BeginDecoding() override {}
+  void EndDecoding() override {}
+
   const char* GetCommandName(unsigned int command_id) const override {
     return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
   }
 
-  // Overridden from AsyncAPIInterface
   error::Error DoCommand(unsigned int command,
                          unsigned int arg_count,
                          const volatile void* cmd_data) override {
     return DoCommonCommand(command, arg_count, cmd_data);
   }
+
+  base::StringPiece GetLogPrefix() override { return "None"; }
 
   CommonDecoder::Bucket* GetBucket(uint32_t id) const {
     return CommonDecoder::GetBucket(id);

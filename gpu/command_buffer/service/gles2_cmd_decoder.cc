@@ -498,6 +498,10 @@ error::Error GLES2Decoder::DoCommand(unsigned int command,
   return DoCommands(1, cmd_data, arg_count + 1, 0);
 }
 
+base::StringPiece GLES2Decoder::GetLogPrefix() {
+  return GetLogger()->GetLogPrefix();
+}
+
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
