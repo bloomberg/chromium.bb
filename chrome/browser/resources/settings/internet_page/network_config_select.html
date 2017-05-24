@@ -1,0 +1,24 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="network-config-select">
+  <template>
+    <style include="settings-shared md-select">
+    </style>
+
+    <div class="settings-box">
+      <div id="label" class="start">[[label]]</div>
+      <select class="md-select" disabled="[[disabled]]"
+          value="{{value::change}}" aria-labelledby="label">
+        <template is="dom-repeat" items="[[items]]">
+          <option value="[[item]]">
+            [[getOncLabel_(item, oncPrefix)]]
+          </option>
+        </template>
+      </select>
+    </div>
+
+  </template>
+  <script src="network_config_select.js"></script>
+</dom-module>

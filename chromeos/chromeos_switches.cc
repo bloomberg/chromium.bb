@@ -409,6 +409,9 @@ const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
+// Enables Settings based network config in MD Settings.
+const char kNetworkSettingsConfig[] = "network-settings-config";
+
 // An optional comma-separated list of IDs of apps that can be used to take
 // notes. If unset, a hardcoded list is used instead.
 const char kNoteTakingAppIds[] = "note-taking-app-ids";

@@ -302,7 +302,10 @@ Polymer({
   /** @private */
   onAddButtonTap_: function() {
     assert(this.deviceState);
-    chrome.send('addNetwork', [this.deviceState.Type]);
+    if (loadTimeData.getBoolean('networkSettingsConfig'))
+      this.fire('show-config', {GUID: '', Type: this.deviceState.Type});
+    else
+      chrome.send('addNetwork', [this.deviceState.Type]);
   },
 
   /**
@@ -330,7 +333,8 @@ Polymer({
    * @private
    */
   onKnownNetworksTap_: function() {
-    this.fire('show-known-networks', {Type: CrOnc.Type.WI_FI});
+    assert(this.deviceState.Type == CrOnc.Type.WI_FI);
+    this.fire('show-known-networks', {Type: this.deviceState.Type});
   },
 
   /**

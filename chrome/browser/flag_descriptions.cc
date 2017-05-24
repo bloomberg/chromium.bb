@@ -2998,6 +2998,13 @@ const char kNetworkPortalNotificationDescription[] =
     "If enabled, notification is displayed when device is connected to a "
     "network behind captive portal.";
 
+const char kNetworkSettingsConfigName[] =
+    "Settings based Network Configuration";
+
+const char kNetworkSettingsConfigDescription[] =
+    "Enables the Settings based network configuration UI instead of the Views "
+    "based configuration dialog.";
+
 const char kMtpWriteSupportName[] = "MTP write support";
 
 const char kMtpWriteSupportDescription[] =

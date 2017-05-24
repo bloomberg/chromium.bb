@@ -22006,6 +22006,7 @@ from previous Chrome versions.
   <int value="628570445" label="AndroidAutofillAccessibility:enabled"/>
   <int value="630244477" label="ServiceWorkerPaymentApps:enabled"/>
   <int value="630947363" label="touch-events"/>
+  <int value="632340413" label="network-settings-config"/>
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
   <int value="637396292" label="AllBookmarks:enabled"/>

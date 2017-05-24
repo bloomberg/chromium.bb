@@ -1303,6 +1303,9 @@ extern const char kMtpWriteSupportDescription[];
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 
+extern const char kNetworkSettingsConfigName[];
+extern const char kNetworkSettingsConfigDescription[];
+
 extern const char kNewKoreanImeName[];
 extern const char kNewKoreanImeDescription[];
 
