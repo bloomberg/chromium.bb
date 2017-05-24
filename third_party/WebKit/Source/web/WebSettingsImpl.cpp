@@ -194,11 +194,6 @@ void WebSettingsImpl::SetWebSecurityEnabled(bool enabled) {
   settings_->SetWebSecurityEnabled(enabled);
 }
 
-void WebSettingsImpl::SetJavaScriptCanOpenWindowsAutomatically(
-    bool can_open_windows) {
-  settings_->SetJavaScriptCanOpenWindowsAutomatically(can_open_windows);
-}
-
 void WebSettingsImpl::SetSupportDeprecatedTargetDensityDPI(
     bool support_deprecated_target_density_dpi) {
   support_deprecated_target_density_dpi_ =

@@ -123,10 +123,6 @@
       initial: true,
     },
     {
-      name: "javaScriptCanOpenWindowsAutomatically",
-      initial: false,
-    },
-    {
       name: "supportsMultipleWindows",
       initial: true,
     },

@@ -106,6 +106,7 @@ class WebTestDelegate {
   // Manages the settings to used for layout tests.
   virtual TestPreferences* Preferences() = 0;
   virtual void ApplyPreferences() = 0;
+  virtual void SetPopupBlockingEnabled(bool block_popups) = 0;
 
   // Enables or disables synchronous resize mode. When enabled, all
   // window-sizing machinery is

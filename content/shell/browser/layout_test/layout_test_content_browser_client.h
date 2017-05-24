@@ -21,6 +21,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   ~LayoutTestContentBrowserClient() override;
 
   LayoutTestBrowserContext* GetLayoutTestBrowserContext();
+  void SetPopupBlockingEnabled(bool block_popups_);
 
   // Implements the PlatformNotificationService interface.
   LayoutTestNotificationManager* GetLayoutTestNotificationManager();
@@ -45,9 +46,24 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
 
   PlatformNotificationService* GetPlatformNotificationService() override;
 
+  bool CanCreateWindow(content::RenderFrameHost* opener,
+                       const GURL& opener_url,
+                       const GURL& opener_top_level_frame_url,
+                       const GURL& source_origin,
+                       content::mojom::WindowContainerType container_type,
+                       const GURL& target_url,
+                       const content::Referrer& referrer,
+                       const std::string& frame_name,
+                       WindowOpenDisposition disposition,
+                       const blink::mojom::WindowFeatures& features,
+                       bool user_gesture,
+                       bool opener_suppressed,
+                       bool* no_javascript_access) override;
+
  private:
   std::unique_ptr<LayoutTestNotificationManager>
       layout_test_notification_manager_;
+  bool block_popups_ = false;
 };
 
 }  // content

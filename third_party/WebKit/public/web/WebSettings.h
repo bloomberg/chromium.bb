@@ -195,7 +195,6 @@ class WebSettings {
   virtual void SetInlineTextBoxAccessibilityEnabled(bool) = 0;
   virtual void SetInertVisualViewport(bool) = 0;
   virtual void SetJavaScriptCanAccessClipboard(bool) = 0;
-  virtual void SetJavaScriptCanOpenWindowsAutomatically(bool) = 0;
   virtual void SetJavaScriptEnabled(bool) = 0;
   virtual void SetLoadsImagesAutomatically(bool) = 0;
   virtual void SetLoadWithOverviewMode(bool) = 0;

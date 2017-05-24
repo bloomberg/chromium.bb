@@ -80,6 +80,7 @@ AwSettings::AwSettings(JNIEnv* env,
                        content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       renderer_prefs_initialized_(false),
+      javascript_can_open_windows_automatically_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             base::MakeUnique<AwSettingsUserData>(this));
@@ -96,6 +97,10 @@ AwSettings::~AwSettings() {
     return;
   Java_AwSettings_nativeAwSettingsGone(env, scoped_obj,
                                        reinterpret_cast<intptr_t>(this));
+}
+
+bool AwSettings::GetJavaScriptCanOpenWindowsAutomatically() {
+  return javascript_can_open_windows_automatically_;
 }
 
 void AwSettings::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -348,7 +353,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->allow_file_access_from_file_urls =
       Java_AwSettings_getAllowFileAccessFromFileURLsLocked(env, obj);
 
-  web_prefs->javascript_can_open_windows_automatically =
+  javascript_can_open_windows_automatically_ =
       Java_AwSettings_getJavaScriptCanOpenWindowsAutomaticallyLocked(env, obj);
 
   web_prefs->supports_multiple_windows =
