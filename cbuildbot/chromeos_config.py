@@ -2208,10 +2208,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_speedy',
       'winky',
       'wolf',
-      'x86-alex',
       'x86-generic',
-      'x86-mario',
-      'x86-zgb',
   ])
 
   _paladin_experimental_boards = frozenset([
@@ -2234,6 +2231,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_jerry',
       'whirlwind',
       'wooten',
+      'x86-alex',
+      'x86-mario',
+      'x86-zgb',
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
