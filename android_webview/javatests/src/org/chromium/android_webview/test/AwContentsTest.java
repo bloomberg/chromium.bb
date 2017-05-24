@@ -29,7 +29,6 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
@@ -91,9 +90,8 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
-    //@LargeTest
-    //@Feature({"AndroidWebView"})
-    @DisabledTest // Flaky, crbug.com/725838.
+    @LargeTest
+    @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyAtOnce() throws Throwable {
         AwTestContainerView views[] = new AwTestContainerView[10];
 
