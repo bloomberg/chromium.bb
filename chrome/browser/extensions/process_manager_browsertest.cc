@@ -26,6 +26,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -1230,6 +1231,37 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     content::RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
     EXPECT_EQ(subframe->GetProcess(), main_frame->GetProcess());
     EXPECT_EQ(subframe->GetSiteInstance(), main_frame->GetSiteInstance());
+  }
+}
+
+// Test to verify that loading a resource other than an icon file is
+// disallowed for hosted apps, while icons are allowed.
+// See https://crbug.com/717626.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppFilesAccess) {
+  // Load an extension with a background page.
+  scoped_refptr<const Extension> extension =
+      LoadExtension(test_data_dir_.AppendASCII("hosted_app"));
+  ASSERT_TRUE(extension);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigating to the manifest should be blocked with an error page.
+  {
+    content::TestNavigationObserver observer(tab);
+    NavigateToURL(extension->GetResourceURL("/manifest.json"));
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+    EXPECT_EQ(tab->GetController().GetLastCommittedEntry()->GetPageType(),
+              content::PAGE_TYPE_ERROR);
+  }
+
+  // Navigation to the icon file should succeed.
+  {
+    content::TestNavigationObserver observer(tab);
+    NavigateToURL(extension->GetResourceURL("/icon.png"));
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(tab->GetController().GetLastCommittedEntry()->GetPageType(),
+              content::PAGE_TYPE_NORMAL);
   }
 }
 
