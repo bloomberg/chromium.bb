@@ -21,6 +21,10 @@ class TextMatchMarkerListImplTest : public EditingTestBase {
   Persistent<TextMatchMarkerListImpl> marker_list_;
 };
 
+TEST_F(TextMatchMarkerListImplTest, MarkerType) {
+  EXPECT_EQ(DocumentMarker::kTextMatch, marker_list_->MarkerType());
+}
+
 TEST_F(TextMatchMarkerListImplTest, Add) {
   EXPECT_EQ(0u, marker_list_->GetMarkers().size());
 
