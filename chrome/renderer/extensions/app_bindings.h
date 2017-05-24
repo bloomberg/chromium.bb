@@ -12,12 +12,8 @@
 #define CHROME_RENDERER_EXTENSIONS_APP_BINDINGS_H_
 
 #include "base/macros.h"
-#include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
+#include "chrome/renderer/extensions/app_bindings_core.h"
 #include "extensions/renderer/object_backed_native_handler.h"
-
-namespace blink {
-class WebLocalFrame;
-}
 
 namespace extensions {
 class Dispatcher;
@@ -25,27 +21,20 @@ class Dispatcher;
 // Implements the chrome.app JavaScript object.
 //
 // TODO(aa): Add unit testing for this class.
-class AppBindings : public ObjectBackedNativeHandler,
-                    public ChromeV8ExtensionHandler {
+class AppBindings : public ObjectBackedNativeHandler {
  public:
   AppBindings(Dispatcher* dispatcher, ScriptContext* context);
   ~AppBindings() override;
 
  private:
-  // IPC::Listener
-  bool OnMessageReceived(const IPC::Message& message) override;
-
   void GetIsInstalled(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetDetails(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetInstallState(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetRunningState(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  v8::Local<v8::Value> GetDetailsImpl(blink::WebLocalFrame* frame);
+  void OnAppInstallStateResponse(int callback_id, const std::string& state);
 
-  void OnAppInstallStateResponse(const std::string& state, int callback_id);
-
-  // Dispatcher handle. Not owned.
-  Dispatcher* dispatcher_;
+  AppBindingsCore app_core_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBindings);
 };

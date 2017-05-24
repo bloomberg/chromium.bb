@@ -434,4 +434,45 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
   }
 }
 
+TEST_F(APIRequestHandlerTest, AddPendingRequest) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  bool dispatched_request = false;
+  auto handle_request = [](bool* dispatched_request,
+                           std::unique_ptr<APIRequestHandler::Request> request,
+                           v8::Local<v8::Context> context) {
+    *dispatched_request = true;
+  };
+
+  APIRequestHandler request_handler(
+      base::Bind(handle_request, &dispatched_request),
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
+
+  EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
+  v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
+  ASSERT_FALSE(function.IsEmpty());
+
+  int request_id = request_handler.AddPendingRequest(context, function);
+  EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
+              testing::UnorderedElementsAre(request_id));
+  // Even though we add a pending request, we shouldn't have dispatched anything
+  // because AddPendingRequest() is intended for renderer-side implementations.
+  EXPECT_FALSE(dispatched_request);
+
+  const char kArguments[] = "['foo',1,{'prop1':'bar'}]";
+  std::unique_ptr<base::ListValue> response_arguments =
+      ListValueFromString(kArguments);
+  ASSERT_TRUE(response_arguments);
+  request_handler.CompleteRequest(request_id, *response_arguments,
+                                  std::string());
+
+  EXPECT_EQ(ReplaceSingleQuotes(kArguments),
+            GetStringPropertyFromObject(context->Global(), context, "result"));
+
+  EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
+  EXPECT_FALSE(dispatched_request);
+}
+
 }  // namespace extensions

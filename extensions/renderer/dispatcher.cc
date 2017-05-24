@@ -267,8 +267,10 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       *(base::CommandLine::ForCurrentProcess());
 
   if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
-    bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
+    auto system = base::MakeUnique<NativeExtensionBindingsSystem>(
         base::Bind(&SendRequestIPC), base::Bind(&SendEventListenersIPC));
+    delegate_->InitializeBindingsSystem(this, system->api_system());
+    bindings_system_ = std::move(system);
   } else {
     bindings_system_ = base::MakeUnique<JsExtensionBindingsSystem>(
         &source_map_, base::MakeUnique<RequestSender>());

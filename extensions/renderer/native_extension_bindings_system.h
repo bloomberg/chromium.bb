@@ -59,6 +59,8 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                       const std::string& error) override;
   RequestSender* GetRequestSender() override;
 
+  APIBindingsSystem* api_system() { return &api_system_; }
+
  private:
   // Handles sending a given |request|, forwarding it on to the send_ipc_ after
   // adding additional info.

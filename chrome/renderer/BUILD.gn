@@ -241,6 +241,10 @@ static_library("renderer") {
     sources += [
       "extensions/app_bindings.cc",
       "extensions/app_bindings.h",
+      "extensions/app_bindings_core.cc",
+      "extensions/app_bindings_core.h",
+      "extensions/app_hooks_delegate.cc",
+      "extensions/app_hooks_delegate.h",
       "extensions/automation_internal_custom_bindings.cc",
       "extensions/automation_internal_custom_bindings.h",
       "extensions/chrome_extensions_dispatcher_delegate.cc",
