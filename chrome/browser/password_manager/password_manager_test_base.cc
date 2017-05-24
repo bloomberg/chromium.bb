@@ -65,6 +65,9 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
 
  private:
   // PasswordsClientUIDelegate:
+  void OnPasswordSubmitted(
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const GURL& origin,
@@ -104,6 +107,17 @@ void CustomManagePasswordsUIController::WaitForState(
   target_state_ = target_state;
   run_loop_ = &run_loop;
   run_loop_->Run();
+}
+
+void CustomManagePasswordsUIController::OnPasswordSubmitted(
+    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
+  if (target_state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
+    run_loop_->Quit();
+    run_loop_ = nullptr;
+    target_state_ = password_manager::ui::INACTIVE_STATE;
+  }
+  return ManagePasswordsUIController::OnPasswordSubmitted(
+      std::move(form_manager));
 }
 
 bool CustomManagePasswordsUIController::OnChooseCredentials(
@@ -232,6 +246,15 @@ void BubbleObserver::WaitForManagementState() const {
   CustomManagePasswordsUIController* controller =
       static_cast<CustomManagePasswordsUIController*>(passwords_ui_controller_);
   controller->WaitForState(password_manager::ui::MANAGE_STATE);
+}
+
+void BubbleObserver::WaitForSavePrompt() const {
+  if (passwords_ui_controller_->GetState() ==
+      password_manager::ui::PENDING_PASSWORD_STATE)
+    return;
+  CustomManagePasswordsUIController* controller =
+      static_cast<CustomManagePasswordsUIController*>(passwords_ui_controller_);
+  controller->WaitForState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
 PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase()

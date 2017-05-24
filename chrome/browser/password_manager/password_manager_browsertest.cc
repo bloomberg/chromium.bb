@@ -40,6 +40,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -371,21 +372,24 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, PromptForDynamicForm) {
-  // Adding a form is a workaround explained later.
+  // Adding a PSL matching form is a workaround explained later.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
   autofill::PasswordForm signin_form;
-  signin_form.signon_realm = embedded_test_server()->base_url().spec();
-  signin_form.origin = embedded_test_server()->base_url();
+  GURL psl_orogin = embedded_test_server()->GetURL("psl.example.com", "/");
+  signin_form.signon_realm = psl_orogin.spec();
+  signin_form.origin = psl_orogin;
   signin_form.username_value = base::ASCIIToUTF16("unused_username");
   signin_form.password_value = base::ASCIIToUTF16("unused_password");
   password_store->AddLogin(signin_form);
 
   // Show the dynamic form.
-  NavigateToFile("/password/dynamic_password_form.html");
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/password/dynamic_password_form.html"));
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
       "document.getElementById('create_form_button').click();"));
@@ -2369,6 +2373,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   signin_form.password_value = base::ASCIIToUTF16("pw");
   password_store->AddLogin(signin_form);
 
+  // Disable autofill. If a password is autofilled then all the Javacript
+  // changes are discarded. The test would not be able to feed the new password
+  // below.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kFillOnAccountSelect);
+
   // Check that password update bubble is shown.
   NavigateToFile("/password/password_form.html");
   NavigationObserver observer(WebContents());
@@ -2387,10 +2397,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   const autofill::PasswordForm stored_form =
       password_store->stored_passwords().begin()->second[0];
   prompt_observer->AcceptUpdatePrompt(stored_form);
-  // Spin the message loop to make sure the password store had a chance to
-  // update the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
                              base::ASCIIToUTF16("new_pw"));
 }

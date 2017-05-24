@@ -621,19 +621,12 @@ void PasswordFormManager::ProcessFrameInternal(
 
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
-  // (1) we are in Incognito mode, (2) the ACTION paths don't match,
-  // (3) if it matched using public suffix domain matching, or
-  // (4) the form is change password form.
-  // However, 2 and 3 should not apply to Android-based credentials found
-  // via affiliation-based matching (we want to autofill them).
-  // TODO(engedy): Clean this up. See: https://crbug.com/476519.
-  bool wait_for_username =
-      client_->IsIncognito() ||
-      (!IsValidAndroidFacetURI(preferred_match_->signon_realm) &&
-       (observed_form_.action.GetWithEmptyPath() !=
-            preferred_match_->action.GetWithEmptyPath() ||
-        preferred_match_->is_public_suffix_match ||
-        observed_form_.IsPossibleChangePasswordForm()));
+  // (1) we are in Incognito mode, or
+  // (2) if it matched using public suffix domain matching, or
+  // (3) the form is change password form.
+  bool wait_for_username = client_->IsIncognito() ||
+                           preferred_match_->is_public_suffix_match ||
+                           observed_form_.IsPossibleChangePasswordForm();
   if (wait_for_username) {
     manager_action_ = kManagerActionNone;
   } else {
