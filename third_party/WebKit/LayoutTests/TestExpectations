@@ -3109,17 +3109,6 @@ crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flexbox_flex-natural-mix
 
 crbug.com/723086 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
 
-crbug.com/716569 [ Android ] fast/block/float/centered-float-avoidance-complexity.html [ Failure ]
-crbug.com/716569 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Failure ]
-crbug.com/716569 [ Android ] fast/events/reveal-link-when-focused.html [ Failure ]
-crbug.com/716569 [ Android ] fast/overflow/position-fixed-transform-clipping.html [ Failure ]
-crbug.com/716569 [ Android ] fast/table/border-collapsing/004.html [ Failure ]
-crbug.com/716569 [ Android ] tables/mozilla/bugs/bug2479-3.html [ Failure ]
-crbug.com/716569 [ Android ] tables/mozilla/bugs/bug2479-4.html [ Failure ]
-crbug.com/716569 [ Android ] tables/mozilla/core/bloomberg.html [ Failure ]
-crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
-crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
-
 # Feature Policy changes same-origin allowpaymentrequest behaviour, tests need updating
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
