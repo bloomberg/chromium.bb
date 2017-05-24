@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -317,11 +316,6 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                         .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 break;
         }
-    }
-
-    @Override
-    public Map<String, Long> getFilesForTesting() {
-        return null;
     }
 
     private class GetCameraIntentTask extends AsyncTask<Void, Void, Uri> {

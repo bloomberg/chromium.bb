@@ -16,11 +16,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.PhotoPickerListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -89,6 +91,9 @@ public class PickerCategoryView extends RelativeLayout
 
     // Whether the connection to the service has been established.
     private boolean mServiceReady;
+
+    // A list of files to use for testing (instead of reading files on disk).
+    private static List<PickerBitmap> sTestFiles;
 
     public PickerCategoryView(Context context) {
         super(context);
@@ -285,6 +290,11 @@ public class PickerCategoryView extends RelativeLayout
      * Asynchronously enumerates bitmaps on disk.
      */
     private void enumerateBitmaps() {
+        if (sTestFiles != null) {
+            filesEnumeratedCallback(sTestFiles);
+            return;
+        }
+
         if (mWorkerTask != null) {
             mWorkerTask.cancel(true);
         }
@@ -343,5 +353,16 @@ public class PickerCategoryView extends RelativeLayout
 
             outRect.set(left, top, right, bottom);
         }
+    }
+
+    /** Sets a list of files to use as data for the dialog. For testing use only. */
+    @VisibleForTesting
+    public static void setTestFiles(List<PickerBitmap> testFiles) {
+        sTestFiles = new ArrayList<>(testFiles);
+    }
+
+    @VisibleForTesting
+    public SelectionDelegate<PickerBitmap> getSelectionDelegateForTesting() {
+        return mSelectionDelegate;
     }
 }
