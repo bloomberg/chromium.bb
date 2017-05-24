@@ -4,17 +4,24 @@
 
 #include "gin/public/v8_platform.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/location.h"
 #include "base/sys_info.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/trace_event/trace_event.h"
 #include "gin/per_isolate_data.h"
 
 namespace gin {
 
 namespace {
+
+constexpr base::TaskTraits kBackgroundThreadTaskTraits = {
+    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 
 base::LazyInstance<V8Platform>::Leaky g_v8_platform = LAZY_INSTANCE_INITIALIZER;
 
@@ -58,25 +65,16 @@ V8Platform::V8Platform() {}
 V8Platform::~V8Platform() {}
 
 size_t V8Platform::NumberOfAvailableBackgroundThreads() {
-  // WorkerPool will currently always create additional threads for posted
-  // background tasks, unless there are threads sitting idle (on posix).
-  // Indicate that V8 should create no more than the number of cores available,
-  // reserving one core for the main thread.
-  const size_t available_cores =
-    static_cast<size_t>(base::SysInfo::NumberOfProcessors());
-  if (available_cores > 1) {
-    return available_cores - 1;
-  }
-  return 1;
+  return std::max(1, base::TaskScheduler::GetInstance()
+                         ->GetMaxConcurrentTasksWithTraitsDeprecated(
+                             kBackgroundThreadTaskTraits));
 }
 
 void V8Platform::CallOnBackgroundThread(
     v8::Task* task,
     v8::Platform::ExpectedRuntime expected_runtime) {
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&v8::Task::Run, base::Owned(task)),
-      expected_runtime == v8::Platform::kLongRunningTask);
+  base::PostTaskWithTraits(FROM_HERE, kBackgroundThreadTaskTraits,
+                           base::Bind(&v8::Task::Run, base::Owned(task)));
 }
 
 void V8Platform::CallOnForegroundThread(v8::Isolate* isolate, v8::Task* task) {
