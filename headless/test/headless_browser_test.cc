@@ -220,7 +220,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   HeadlessBrowserContext::Builder builder =
       browser()->CreateBrowserContextBuilder();
   builder.SetProtocolHandlers(GetProtocolHandlers());
-  if (GetCreateTabSocket()) {
+  if (GetTabSocketType() != HeadlessWebContents::Builder::TabSocketType::NONE) {
     builder.EnableUnsafeNetworkAccessWithMojoBindings(true);
     builder.AddTabSocketMojoBindings();
   }
@@ -229,7 +229,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser()->SetDefaultBrowserContext(browser_context_);
 
   web_contents_ = browser_context_->CreateWebContentsBuilder()
-                      .CreateTabSocket(GetCreateTabSocket())
+                      .SetTabSocketType(GetTabSocketType())
                       .Build();
   web_contents_->AddObserver(this);
 
@@ -248,7 +248,13 @@ ProtocolHandlerMap HeadlessAsyncDevTooledBrowserTest::GetProtocolHandlers() {
   return ProtocolHandlerMap();
 }
 
-bool HeadlessAsyncDevTooledBrowserTest::GetCreateTabSocket() {
+HeadlessWebContents::Builder::TabSocketType
+HeadlessAsyncDevTooledBrowserTest::GetTabSocketType() {
+  return HeadlessWebContents::Builder::TabSocketType::NONE;
+}
+
+bool HeadlessAsyncDevTooledBrowserTest::
+    GetCreateTabSocketOnlyForIsolatedWorld() {
   return false;
 }
 

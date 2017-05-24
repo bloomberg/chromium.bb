@@ -112,9 +112,15 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   // Specify the initial window size (default is configured in browser options).
   Builder& SetWindowSize(const gfx::Size& size);
 
-  // Whether or not a headless tab socket should be created, to allow JS -> C++
-  // embedder communications.
-  Builder& CreateTabSocket(bool create_tab_socket);
+  enum class TabSocketType {
+    NONE,           // No TabSocket binds created (default).
+    MAIN_WORLD,     // TabSocket bindings available only to the main world.
+    ISOLATED_WORLD  // TabSocket bindings available only to isolated worlds
+                    // created via DevTools protocol.
+  };
+
+  // Sets the type of TabSocket to be created, if any.
+  Builder& SetTabSocketType(TabSocketType type);
 
   // The returned object is owned by HeadlessBrowser. Call
   // HeadlessWebContents::Close() to dispose it.
@@ -154,7 +160,7 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   GURL initial_url_ = GURL("about:blank");
   gfx::Size window_size_;
   std::list<MojoService> mojo_services_;
-  bool create_tab_socket_ = false;
+  TabSocketType tab_socket_type_ = TabSocketType::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };
