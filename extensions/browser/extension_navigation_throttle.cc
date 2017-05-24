@@ -17,6 +17,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -63,6 +64,18 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     // TODO(nick): This yields an unsatisfying error page; use a different error
     // code once that's supported. https://crbug.com/649869
     return content::NavigationThrottle::BLOCK_REQUEST;
+  }
+
+  // Hosted apps don't have any associated resources outside of icons, so
+  // block any requests to URLs in their extension origin.
+  if (target_extension->is_hosted_app()) {
+    base::StringPiece resource_root_relative_path =
+        url.path_piece().empty() ? base::StringPiece()
+                                 : url.path_piece().substr(1);
+    if (!IconsInfo::GetIcons(target_extension)
+             .ContainsPath(resource_root_relative_path)) {
+      return content::NavigationThrottle::BLOCK_REQUEST;
+    }
   }
 
   if (navigation_handle()->IsInMainFrame()) {
