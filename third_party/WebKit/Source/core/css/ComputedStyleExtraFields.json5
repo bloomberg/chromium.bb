@@ -484,7 +484,7 @@
     {
       name: "SubtreeIsSticky",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       default_value: "false",
       field_size: 1,

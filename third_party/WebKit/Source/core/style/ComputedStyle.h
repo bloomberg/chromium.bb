@@ -1392,14 +1392,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_non_inherited_data_, page_size_type_, t);
   }
 
-  // sticky subtrees
-  bool SubtreeIsSticky() const {
-    return rare_inherited_data_->subtree_is_sticky_;
-  }
-  void SetSubtreeIsSticky(bool b) {
-    SET_VAR(rare_inherited_data_, subtree_is_sticky_, b);
-  }
-
   // Text decoration properties.
   // text-decoration-line
   static TextDecoration InitialTextDecoration() {
