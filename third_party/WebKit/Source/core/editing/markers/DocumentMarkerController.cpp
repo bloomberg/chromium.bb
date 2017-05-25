@@ -410,7 +410,11 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
 }
 
 Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
+  DCHECK(!document_->View()->NeedsLayout());
+  DCHECK(!document_->NeedsLayoutTreeUpdate());
+
   Vector<IntRect> result;
+
   if (!PossiblyHasMarkers(DocumentMarker::kTextMatch))
     return result;
   DCHECK(!(markers_.IsEmpty()));
@@ -426,17 +430,26 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
     MarkerLists* markers = node_iterator->value.Get();
     DocumentMarkerList* const list =
         ListForType(markers, DocumentMarker::kTextMatch);
-    if (!list || list->IsEmpty())
+    if (!list)
       continue;
+    result.AppendVector(ToTextMatchMarkerListImpl(list)->RenderedRects(node));
+  }
 
-    for (DocumentMarker* marker : list->GetMarkers()) {
-      RenderedDocumentMarker* const rendered_marker =
-          ToRenderedDocumentMarker(marker);
-      UpdateMarkerRenderedRectIfNeeded(node, *rendered_marker);
-      if (!rendered_marker->IsRendered())
-        continue;
-      result.push_back(rendered_marker->RenderedRect());
-    }
+  return result;
+}
+
+// TODO(rlanday): move this to TextMatchMarkerListImpl.cpp
+Vector<IntRect> TextMatchMarkerListImpl::RenderedRects(const Node& node) const {
+  Vector<IntRect> result;
+
+  for (DocumentMarker* marker : markers_) {
+    RenderedDocumentMarker* const rendered_marker =
+        ToRenderedDocumentMarker(marker);
+    if (!rendered_marker->IsValid())
+      UpdateMarkerRenderedRect(node, *rendered_marker);
+    if (!rendered_marker->IsRendered())
+      continue;
+    result.push_back(rendered_marker->RenderedRect());
   }
 
   return result;
@@ -445,15 +458,6 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
 static void InvalidatePaintForTickmarks(const Node& node) {
   if (FrameView* frame_view = node.GetDocument().View())
     frame_view->InvalidatePaintForTickmarks();
-}
-
-void DocumentMarkerController::UpdateMarkerRenderedRectIfNeeded(
-    const Node& node,
-    RenderedDocumentMarker& marker) {
-  DCHECK(!document_->View() || !document_->View()->NeedsLayout());
-  DCHECK(!document_->NeedsLayoutTreeUpdate());
-  if (!marker.IsValid())
-    UpdateMarkerRenderedRect(node, marker);
 }
 
 void DocumentMarkerController::InvalidateRectsForTextMatchMarkersInNode(
