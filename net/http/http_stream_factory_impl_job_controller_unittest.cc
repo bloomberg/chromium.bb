@@ -4,7 +4,8 @@
 
 #include "net/http/http_stream_factory_impl_job_controller.h"
 
-#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -157,8 +158,7 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
 
   void Initialize(const HttpRequestInfo& request_info) {
     ASSERT_FALSE(test_proxy_delegate_);
-    std::unique_ptr<TestProxyDelegate> test_proxy_delegate(
-        new TestProxyDelegate());
+    auto test_proxy_delegate = base::MakeUnique<TestProxyDelegate>();
     test_proxy_delegate_ = test_proxy_delegate.get();
 
     test_proxy_delegate->set_alternative_proxy_server(
@@ -1104,8 +1104,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 // scheme is HTTPS.
 TEST_F(HttpStreamFactoryImplJobControllerTest, HttpsURL) {
   // Using hanging resolver will cause the alternative job to hang indefinitely.
-  HangingResolver* resolver = new HangingResolver();
-  session_deps_.host_resolver.reset(resolver);
+  session_deps_.host_resolver = base::MakeUnique<HangingResolver>();
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1130,8 +1129,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, HttpsURL) {
 // does not fetch the resource through a proxy.
 TEST_F(HttpStreamFactoryImplJobControllerTest, HttpURLWithNoProxy) {
   // Using hanging resolver will cause the alternative job to hang indefinitely.
-  HangingResolver* resolver = new HangingResolver();
-  session_deps_.host_resolver.reset(resolver);
+  session_deps_.host_resolver = base::MakeUnique<HangingResolver>();
 
   HttpRequestInfo request_info;
   request_info.method = "GET";

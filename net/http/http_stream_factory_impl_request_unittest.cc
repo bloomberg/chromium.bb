@@ -5,6 +5,7 @@
 #include "net/http/http_stream_factory_impl_request.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
