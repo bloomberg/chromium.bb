@@ -104,12 +104,13 @@ config("skia_library_config") {
     "//third_party/skia/include/client/android",
     "//third_party/skia/src/codec",
     "//third_party/skia/src/core",
-    "//third_party/skia/src/effects/gradients",
     "//third_party/skia/src/image",
     "//third_party/skia/src/images",
     "//third_party/skia/src/opts",
     "//third_party/skia/src/pdf",
     "//third_party/skia/src/ports",
+    "//third_party/skia/src/shaders",
+    "//third_party/skia/src/shaders/gradients",
     "//third_party/skia/src/sfnt",
     "//third_party/skia/src/utils",
     "//third_party/skia/src/lazy",
@@ -120,6 +121,9 @@ config("skia_library_config") {
   if (is_mac) {
     include_dirs += [ "//third_party/skia/include/utils/ios" ]
   }
+
+  # TODO: remove after Skia shader relocation (https://skia-review.googlesource.com/c/17927)
+  include_dirs += [ "//third_party/skia/src/effects/gradients" ]
 
   defines = []
 
