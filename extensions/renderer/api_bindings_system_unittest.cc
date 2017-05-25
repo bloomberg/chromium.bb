@@ -91,7 +91,7 @@ const char kGammaAPISpec[] =
     "  }]"
     "}";
 
-bool AllowAllAPIs(const std::string& name) {
+bool AllowAllAPIs(v8::Local<v8::Context> context, const std::string& name) {
   return true;
 }
 
@@ -115,6 +115,7 @@ void APIBindingsSystemTest::SetUp() {
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
       base::Bind(&RunFunctionOnGlobalAndReturnHandle),
       base::Bind(&APIBindingsSystemTest::GetAPISchema, base::Unretained(this)),
+      base::Bind(&AllowAllAPIs),
       base::Bind(&APIBindingsSystemTest::OnAPIRequest, base::Unretained(this)),
       base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
                  base::Unretained(this)),
@@ -205,11 +206,11 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
+  v8::Local<v8::Object> alpha_api =
+      bindings_system()->CreateAPIInstance(kAlphaAPIName, context, nullptr);
   ASSERT_FALSE(alpha_api.IsEmpty());
-  v8::Local<v8::Object> beta_api = bindings_system()->CreateAPIInstance(
-      kBetaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
+  v8::Local<v8::Object> beta_api =
+      bindings_system()->CreateAPIInstance(kBetaAPIName, context, nullptr);
   ASSERT_FALSE(beta_api.IsEmpty());
 
   {
@@ -339,8 +340,8 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
       bindings_system()->GetHooksForAPI(kAlphaAPIName);
   binding_hooks->SetDelegate(std::move(test_hooks));
 
-  v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
+  v8::Local<v8::Object> alpha_api =
+      bindings_system()->CreateAPIInstance(kAlphaAPIName, context, nullptr);
   ASSERT_FALSE(alpha_api.IsEmpty());
 
   {
@@ -377,8 +378,8 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
       "})";
 
   APIBindingHooks* hooks = nullptr;
-  v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), &hooks);
+  v8::Local<v8::Object> alpha_api =
+      bindings_system()->CreateAPIInstance(kAlphaAPIName, context, &hooks);
   ASSERT_FALSE(alpha_api.IsEmpty());
   ASSERT_TRUE(hooks);
   v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
@@ -420,8 +421,8 @@ TEST_F(APIBindingsSystemTest, CrossAPIReferences) {
   // Instantiate gamma API. Note: It's important that we haven't instantiated
   // alpha API yet, since this tests that we can lazily populate the type
   // information.
-  v8::Local<v8::Object> gamma_api = bindings_system()->CreateAPIInstance(
-      kGammaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
+  v8::Local<v8::Object> gamma_api =
+      bindings_system()->CreateAPIInstance(kGammaAPIName, context, nullptr);
   ASSERT_FALSE(gamma_api.IsEmpty());
 
   {
@@ -454,8 +455,8 @@ TEST_F(APIBindingsSystemTest, TestCustomEvent) {
       bindings_system()->GetHooksForAPI(kAlphaAPIName);
   binding_hooks->SetDelegate(std::move(test_hooks));
 
-  v8::Local<v8::Object> api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
+  v8::Local<v8::Object> api =
+      bindings_system()->CreateAPIInstance(kAlphaAPIName, context, nullptr);
 
   v8::Local<v8::Value> event =
       GetPropertyFromObject(api, context, "alphaEvent");

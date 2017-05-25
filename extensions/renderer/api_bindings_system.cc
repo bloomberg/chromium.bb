@@ -15,6 +15,7 @@ APIBindingsSystem::APIBindingsSystem(
     const binding::RunJSFunction& call_js,
     const binding::RunJSFunctionSync& call_js_sync,
     const GetAPISchemaMethod& get_api_schema,
+    const APIBinding::AvailabilityCallback& is_available,
     const APIRequestHandler::SendRequestMethod& send_request,
     const APIEventHandler::EventListenersChangedMethod& event_listeners_changed,
     APILastError last_error)
@@ -24,21 +25,21 @@ APIBindingsSystem::APIBindingsSystem(
       event_handler_(call_js, event_listeners_changed),
       call_js_(call_js),
       call_js_sync_(call_js_sync),
-      get_api_schema_(get_api_schema) {}
+      get_api_schema_(get_api_schema),
+      is_available_(is_available) {}
 
 APIBindingsSystem::~APIBindingsSystem() {}
 
 v8::Local<v8::Object> APIBindingsSystem::CreateAPIInstance(
     const std::string& api_name,
     v8::Local<v8::Context> context,
-    const APIBinding::AvailabilityCallback& is_available,
     APIBindingHooks** hooks_out) {
   std::unique_ptr<APIBinding>& binding = api_bindings_[api_name];
   if (!binding)
     binding = CreateNewAPIBinding(api_name);
   if (hooks_out)
     *hooks_out = binding->hooks();
-  return binding->CreateInstance(context, is_available);
+  return binding->CreateInstance(context);
 }
 
 std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
@@ -71,7 +72,7 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
       api_name, function_definitions, type_definitions, event_definitions,
       property_definitions,
       base::Bind(&APIBindingsSystem::CreateCustomType, base::Unretained(this)),
-      std::move(hooks), &type_reference_map_, &request_handler_,
+      is_available_, std::move(hooks), &type_reference_map_, &request_handler_,
       &event_handler_);
 }
 
