@@ -109,6 +109,7 @@ static_library("common") {
     "multi_process_lock_win.cc",
     "origin_trials/chrome_origin_trial_policy.cc",
     "origin_trials/chrome_origin_trial_policy.h",
+    "page_load_metrics/page_load_metrics_constants.h",
     "page_load_metrics/page_load_metrics_messages.h",
     "page_load_metrics/page_load_metrics_param_traits.cc",
     "page_load_metrics/page_load_metrics_param_traits.h",

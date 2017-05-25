@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/browser/page_load_metrics/user_input_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
@@ -26,7 +27,6 @@ class WebInputEvent;
 
 namespace content {
 class NavigationHandle;
-class RenderFrameHost;
 }  // namespace content
 
 namespace page_load_metrics {
@@ -43,49 +43,6 @@ extern const char kAbortChainSizeNewNavigation[];
 extern const char kAbortChainSizeNoCommit[];
 extern const char kAbortChainSizeSameURL[];
 extern const char kPageLoadCompletedAfterAppBackground[];
-extern const char kPageLoadTimingStatus[];
-
-// Used to track the status of PageLoadTimings received from the render process.
-//
-// If you add elements to this enum, make sure you update the enum value in
-// histograms.xml. Only add elements to the end to prevent inconsistencies
-// between versions.
-enum PageLoadTimingStatus {
-  // The PageLoadTiming is valid (all data within the PageLoadTiming is
-  // consistent with expectations).
-  VALID,
-
-  // All remaining status codes are for invalid PageLoadTimings.
-
-  // The PageLoadTiming was empty.
-  INVALID_EMPTY_TIMING,
-
-  // The PageLoadTiming had a null navigation_start.
-  INVALID_NULL_NAVIGATION_START,
-
-  // Script load or execution durations in the PageLoadTiming were too long.
-  INVALID_SCRIPT_LOAD_LONGER_THAN_PARSE,
-  INVALID_SCRIPT_EXEC_LONGER_THAN_PARSE,
-  INVALID_SCRIPT_LOAD_DOC_WRITE_LONGER_THAN_SCRIPT_LOAD,
-  INVALID_SCRIPT_EXEC_DOC_WRITE_LONGER_THAN_SCRIPT_EXEC,
-
-  // The order of two events in the PageLoadTiming was invalid. Either the first
-  // wasn't present when the second was present, or the second was reported as
-  // happening before the first.
-  INVALID_ORDER_RESPONSE_START_PARSE_START,
-  INVALID_ORDER_PARSE_START_PARSE_STOP,
-  INVALID_ORDER_PARSE_STOP_DOM_CONTENT_LOADED,
-  INVALID_ORDER_DOM_CONTENT_LOADED_LOAD,
-  INVALID_ORDER_PARSE_START_FIRST_LAYOUT,
-  INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT,
-  INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT,
-  INVALID_ORDER_FIRST_PAINT_FIRST_IMAGE_PAINT,
-  INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT,
-  INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT,
-
-  // New values should be added before this final entry.
-  LAST_PAGE_LOAD_TIMING_STATUS
-};
 
 }  // namespace internal
 
@@ -189,7 +146,7 @@ bool IsNavigationUserInitiated(content::NavigationHandle* handle);
 // provisional load, until a new navigation commits or the navigation fails.
 // MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
 // well as a committed PageLoadTracker.
-class PageLoadTracker {
+class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
  public:
   // Caller must guarantee that the embedder_interface pointer outlives this
   // class. The PageLoadTracker must not hold on to
@@ -202,7 +159,13 @@ class PageLoadTracker {
                   UserInitiatedInfo user_initiated_info,
                   int aborted_chain_size,
                   int aborted_chain_size_same_url);
-  ~PageLoadTracker();
+  ~PageLoadTracker() override;
+
+  // PageLoadMetricsUpdateDispatcher::Client implementation:
+  void OnTimingChanged() override;
+  void OnMainFrameMetadataChanged() override;
+  void OnSubframeMetadataChanged() override;
+
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
       content::NavigationHandle* navigation_handle);
@@ -225,18 +188,6 @@ class PageLoadTracker {
   void FlushMetricsOnAppEnterBackground();
 
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
-
-  void UpdateTiming(const mojom::PageLoadTiming& timing,
-                    const mojom::PageLoadMetadata& metadata);
-
-  void UpdateSubFrameTiming(content::RenderFrameHost* render_frame_host,
-                            const mojom::PageLoadTiming& new_timing,
-                            const mojom::PageLoadMetadata& new_metadata);
-
-  // Update metadata for child frames. Updates for child frames arrive
-  // separately from updates for the main frame, so aren't included in
-  // UpdateTiming.
-  void UpdateSubFrameMetadata(const mojom::PageLoadMetadata& subframe_metadata);
 
   void OnStartedResource(
       const ExtraRequestStartInfo& extra_request_started_info);
@@ -289,13 +240,17 @@ class PageLoadTracker {
 
   base::TimeTicks navigation_start() const { return navigation_start_; }
 
-  PageLoadExtraInfo ComputePageLoadExtraInfo();
+  PageLoadExtraInfo ComputePageLoadExtraInfo() const;
 
   ui::PageTransition page_transition() const { return page_transition_; }
 
   UserInitiatedInfo user_initiated_info() const { return user_initiated_info_; }
 
   UserInputTracker* input_tracker() { return &input_tracker_; }
+
+  PageLoadMetricsUpdateDispatcher* metrics_update_dispatcher() {
+    return &metrics_update_dispatcher_;
+  }
 
   // Whether this PageLoadTracker has a navigation GlobalRequestID that matches
   // the given request_id. This method will return false before
@@ -317,8 +272,6 @@ class PageLoadTracker {
                                  base::TimeDelta actual_delay);
 
  private:
-  using FrameTreeNodeId = int;
-
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:
   // - base::TimeTicks is not comparable across processes because the clock
@@ -338,14 +291,6 @@ class PageLoadTracker {
   void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
 
   void MaybeUpdateURL(content::NavigationHandle* navigation_handle);
-
-  // Merge values from |new_paint_timing| into |merged_page_timing_|, offsetting
-  // any new timings by the |navigation_start_offset|.
-  void MergePaintTiming(base::TimeDelta navigation_start_offset,
-                        const mojom::PaintTiming& new_paint_timing,
-                        bool is_main_frame);
-
-  void DispatchTimingUpdates();
 
   UserInputTracker input_tracker_;
 
@@ -396,16 +341,7 @@ class PageLoadTracker {
   base::TimeTicks foreground_time_;
   bool started_in_foreground_;
 
-  // PageLoadTiming for the currently tracked page. The fields in |paint_timing|
-  // are merged across all frames in the document. All other fields are for the
-  // main frame document.
-  mojom::PageLoadTimingPtr merged_page_timing_;
   mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;
-
-  mojom::PageLoadMetadata main_frame_metadata_;
-  mojom::PageLoadMetadataPtr last_dispatched_main_frame_metadata_;
-
-  mojom::PageLoadMetadata subframe_metadata_;
 
   ui::PageTransition page_transition_;
 
@@ -431,9 +367,7 @@ class PageLoadTracker {
 
   std::vector<std::unique_ptr<PageLoadMetricsObserver>> observers_;
 
-  // Navigation start offsets for the most recently committed document in each
-  // frame.
-  std::map<FrameTreeNodeId, base::TimeDelta> subframe_navigation_start_offset_;
+  PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
