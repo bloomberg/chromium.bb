@@ -13,7 +13,7 @@ namespace feature_engagement_tracker {
 namespace {
 // Corresponds to a UMA suffix "LevelDBOpenResults" in histograms.xml.
 // Please do not change.
-const char kDatabaseUMAName[] = "FeatureEngagementTrackerStore";
+const char kDatabaseUMAName[] = "FeatureEngagementTrackerEventStore";
 
 using KeyEventPair = std::pair<std::string, Event>;
 using KeyEventList = std::vector<KeyEventPair>;

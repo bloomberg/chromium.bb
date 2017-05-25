@@ -87727,8 +87727,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              backend database."/>
   <suffix name="BudgetManager"
       label="Database for storing budget information for origins."/>
-  <suffix name="FeatureEngagementTrackerStore"
-      label="Databases for FeatureEngagementTracker"/>
+  <suffix name="FeatureEngagementTrackerEventStore"
+      label="Database for FeatureEngagementTracker events."/>
+  <suffix name="FeatureEngagementTrackerAvailabilityStore"
+      label="Database for FeatureEngagementTracker feature availability."/>
   <affected-histogram name="LevelDB.Open"/>
 </histogram_suffixes>
 
