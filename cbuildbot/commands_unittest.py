@@ -358,7 +358,7 @@ The suite job has another 2:39:39.789250 till timeout.
                 '--tags=build:test-build',
                 '--tags=task_name:test-build-test-suite',
                 '--tags=board:test-board',
-                '--', commands._RUN_SUITE_PATH,
+                '--', commands.RUN_SUITE_PATH,
                 '--build', 'test-build', '--board', 'test-board']
     args = list(args)
     if '--subsystems' in args:

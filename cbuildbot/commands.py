@@ -59,7 +59,7 @@ _TEST_FAILED = 'FAILED'
 _SWARMING_ADDITIONAL_TIMEOUT = 60 * 60
 _DEFAULT_HWTEST_TIMEOUT_MINS = 1440
 _SWARMING_EXPIRATION = 20 * 60
-_RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
+RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
 _ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
 _MAX_HWTEST_CMD_RETRY = 10
 # Be very careful about retrying suite creation command as
@@ -950,7 +950,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     if json_dump cmd is not called, None will be returned.
   """
   try:
-    cmd = [_RUN_SUITE_PATH]
+    cmd = [RUN_SUITE_PATH]
     cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
                             priority, timeout_mins, retry, max_retries,
                             minimum_duts, suite_min_duts, offload_failures_only,

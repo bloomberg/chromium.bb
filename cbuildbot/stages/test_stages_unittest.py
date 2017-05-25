@@ -521,7 +521,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertCommandContains(cmd)
     # pylint: disable=W0212
     self.assertCommandContains([swarming_lib._SWARMING_PROXY_CLIENT,
-                                commands._RUN_SUITE_PATH, self.suite])
+                                commands.RUN_SUITE_PATH, self.suite])
 
   def testPayloadsNotGenerated(self):
     """Test that we exit early if payloads are not generated."""
