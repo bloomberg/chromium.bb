@@ -12,24 +12,16 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 
-namespace {
-
-// Arbitrary number > 1 so that tasks don't run sequentially.
-constexpr int kWorkerThreadCount = 3;
-
-}  // namespace
-
-FakeAutocompleteProviderClient::FakeAutocompleteProviderClient()
-    : pool_owner_(kWorkerThreadCount, "Background Pool") {
+FakeAutocompleteProviderClient::FakeAutocompleteProviderClient() {
   bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
 
   CHECK(history_dir_.CreateUniqueTempDir());
   history_service_ =
       history::CreateHistoryService(history_dir_.GetPath(), true);
 
-  in_memory_url_index_.reset(new InMemoryURLIndex(
-      bookmark_model_.get(), history_service_.get(), nullptr,
-      pool_owner_.pool().get(), history_dir_.GetPath(), SchemeSet()));
+  in_memory_url_index_.reset(
+      new InMemoryURLIndex(bookmark_model_.get(), history_service_.get(),
+                           nullptr, history_dir_.GetPath(), SchemeSet()));
   in_memory_url_index_->Init();
 }
 

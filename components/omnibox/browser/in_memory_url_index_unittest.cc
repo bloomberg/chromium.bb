@@ -16,7 +16,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -24,7 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
@@ -124,7 +123,7 @@ void CacheFileSaverObserver::OnCacheSaveFinished(bool succeeded) {
 
 class InMemoryURLIndexTest : public testing::Test {
  public:
-  InMemoryURLIndexTest();
+  InMemoryURLIndexTest() = default;
 
  protected:
   // Test setup.
@@ -169,17 +168,13 @@ class InMemoryURLIndexTest : public testing::Test {
   void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
                               const URLIndexPrivateData& actual);
 
-  base::MessageLoop message_loop_;
-  base::SequencedWorkerPoolOwner pool_owner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir history_dir_;
   std::unique_ptr<history::HistoryService> history_service_;
-  history::HistoryDatabase* history_database_;
+  history::HistoryDatabase* history_database_ = nullptr;
   std::unique_ptr<TemplateURLService> template_url_service_;
   std::unique_ptr<InMemoryURLIndex> url_index_;
 };
-
-InMemoryURLIndexTest::InMemoryURLIndexTest()
-    : pool_owner_(3, "Background Pool"), history_database_(nullptr) {}
 
 sql::Connection& InMemoryURLIndexTest::GetDB() {
   return history_database_->GetDB();
@@ -296,6 +291,7 @@ void InMemoryURLIndexTest::TearDown() {
   // it is destroyed in order to prevent HistoryService calling dead observer.
   if (url_index_)
     url_index_->Shutdown();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
@@ -313,7 +309,7 @@ void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   client_schemes_to_whitelist.insert(kClientWhitelistedScheme);
   url_index_.reset(new InMemoryURLIndex(
       nullptr, history_service_.get(), template_url_service_.get(),
-      pool_owner_.pool().get(), base::FilePath(), client_schemes_to_whitelist));
+      base::FilePath(), client_schemes_to_whitelist));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
 }
@@ -1251,6 +1247,7 @@ TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
     PostSaveToCacheFileTask();
     run_loop.Run();
     EXPECT_TRUE(save_observer.succeeded());
+    url_index_->set_save_cache_observer(nullptr);
   }
 
   // Clear and then prove it's clear before restoring.
@@ -1271,6 +1268,7 @@ TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
     PostRestoreFromCacheFileTask();
     run_loop.Run();
     EXPECT_TRUE(restore_observer.succeeded());
+    url_index_->set_restore_cache_observer(nullptr);
   }
 
   URLIndexPrivateData& new_data(*GetPrivateData());
@@ -1366,7 +1364,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
 
 class InMemoryURLIndexCacheTest : public testing::Test {
  public:
-  InMemoryURLIndexCacheTest();
+  InMemoryURLIndexCacheTest() = default;
 
  protected:
   void SetUp() override;
@@ -1376,21 +1374,16 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   void set_history_dir(const base::FilePath& dir_path);
   bool GetCacheFilePath(base::FilePath* file_path) const;
 
-  base::MessageLoop message_loop_;
-  base::SequencedWorkerPoolOwner pool_owner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<InMemoryURLIndex> url_index_;
 };
 
-InMemoryURLIndexCacheTest::InMemoryURLIndexCacheTest()
-    : pool_owner_(3, "Background Pool") {}
-
 void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path(temp_dir_.GetPath());
-  url_index_.reset(new InMemoryURLIndex(nullptr, nullptr, nullptr,
-                                        pool_owner_.pool().get(), path,
-                                        SchemeSet()));
+  url_index_.reset(
+      new InMemoryURLIndex(nullptr, nullptr, nullptr, path, SchemeSet()));
 }
 
 void InMemoryURLIndexCacheTest::TearDown() {
