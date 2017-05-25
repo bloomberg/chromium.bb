@@ -61,6 +61,9 @@ self.synthesizeNotificationClick = function() {
 
         var handler = function(e) {
             resolve(e);
+            // To allow waitUntil to be called inside execution of the microtask
+            // enqueued by above resolve function.
+            e.waitUntil(Promise.resolve());
             e.notification.close();
             self.removeEventListener('notificationclick', handler);
         };

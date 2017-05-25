@@ -61,7 +61,7 @@ class MODULES_EXPORT RespondWithObserver
  private:
   class ThenFunction;
 
-  void ResponseWasRejected(WebServiceWorkerResponseError);
+  void ResponseWasRejected(WebServiceWorkerResponseError, const ScriptValue&);
   void ResponseWasFulfilled(const ScriptValue&);
 
   enum State { kInitial, kPending, kDone };

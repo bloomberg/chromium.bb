@@ -4,7 +4,13 @@ function match_query(query_string) {
 
 function receive_event(event_name) {
   return new Promise(function(resolve) {
-        self.addEventListener(event_name, resolve, false);
+        var handler = function(e) {
+            resolve(e);
+            // To allow waitUntil to be called inside execution of the microtask
+            // enqueued by above resolve function.
+            e.waitUntil(Promise.resolve());
+        };
+        self.addEventListener(event_name, handler, false);
       });
 }
 

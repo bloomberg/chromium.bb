@@ -12,6 +12,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
@@ -41,10 +42,13 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
     kRejected,
   };
 
-  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
-                                                WaitUntilObserver* observer,
-                                                ResolveType type) {
-    ThenFunction* self = new ThenFunction(script_state, observer, type);
+  static v8::Local<v8::Function> CreateFunction(
+      ScriptState* script_state,
+      WaitUntilObserver* observer,
+      ResolveType type,
+      std::unique_ptr<PromiseSettledCallback> callback) {
+    ThenFunction* self =
+        new ThenFunction(script_state, observer, type, std::move(callback));
     return self->BindToV8Function();
   }
 
@@ -56,20 +60,40 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
  private:
   ThenFunction(ScriptState* script_state,
                WaitUntilObserver* observer,
-               ResolveType type)
+               ResolveType type,
+               std::unique_ptr<PromiseSettledCallback> callback)
       : ScriptFunction(script_state),
         observer_(observer),
-        resolve_type_(type) {}
+        resolve_type_(type),
+        callback_(std::move(callback)) {}
 
   ScriptValue Call(ScriptValue value) override {
     DCHECK(observer_);
     DCHECK(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
+    if (callback_)
+      (*callback_)(value);
+    // According from step 4 of ExtendableEvent::waitUntil() in spec:
+    // https://w3c.github.io/ServiceWorker/#dom-extendableevent-waituntil
+    // "Upon fulfillment or rejection of f, queue a microtask to run these
+    // substeps: Decrement the pending promises count by one."
+
+    // At this time point the microtask A running resolve/reject function of
+    // this promise has already been queued, in order to allow microtask A to
+    // call waitUntil, we enqueue another microtask B to delay the promise
+    // settled notification to |observer_|, thus A will run before B so A can
+    // call waitUntil well, but any other microtask C possibly enqueued by A
+    // will run after B so C maybe can't call waitUntil if there has no any
+    // extend lifetime promise at that time.
     if (resolve_type_ == kRejected) {
-      observer_->OnPromiseRejected();
+      Microtask::EnqueueMicrotask(
+          WTF::Bind(&WaitUntilObserver::OnPromiseRejected,
+                    WrapPersistent(observer_.Get())));
       value =
           ScriptPromise::Reject(value.GetScriptState(), value).GetScriptValue();
     } else {
-      observer_->OnPromiseFulfilled();
+      Microtask::EnqueueMicrotask(
+          WTF::Bind(&WaitUntilObserver::OnPromiseFulfilled,
+                    WrapPersistent(observer_.Get())));
     }
     observer_ = nullptr;
     return value;
@@ -77,6 +101,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
 
   Member<WaitUntilObserver> observer_;
   ResolveType resolve_type_;
+  std::unique_ptr<PromiseSettledCallback> callback_;
 };
 
 WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
@@ -90,28 +115,56 @@ void WaitUntilObserver::WillDispatchEvent() {
   // When handling a notificationclick or paymentrequest event, we want to
   // allow one window to be focused or opened. These calls are allowed between
   // the call to willDispatchEvent() and the last call to
-  // decrementPendingActivity(). If waitUntil() isn't called, that means
+  // DecrementPendingPromiseCount(). If waitUntil() isn't called, that means
   // between willDispatchEvent() and didDispatchEvent().
   if (type_ == kNotificationClick || type_ == kPaymentRequest)
     execution_context_->AllowWindowInteraction();
 
-  IncrementPendingActivity();
+  DCHECK_EQ(EventDispatchState::kInitial, event_dispatch_state_);
+  event_dispatch_state_ = EventDispatchState::kDispatching;
 }
 
 void WaitUntilObserver::DidDispatchEvent(bool event_dispatch_failed) {
   event_dispatch_state_ = event_dispatch_failed
                               ? EventDispatchState::kFailed
-                              : EventDispatchState::kCompleted;
-  DecrementPendingActivity();
+                              : EventDispatchState::kDispatched;
+  MaybeCompleteEvent();
 }
 
-void WaitUntilObserver::WaitUntil(ScriptState* script_state,
-                                  ScriptPromise script_promise,
-                                  ExceptionState& exception_state) {
-  if (event_dispatch_state_ != EventDispatchState::kInitial) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "The event handler is already finished.");
-    return;
+void WaitUntilObserver::WaitUntil(
+    ScriptState* script_state,
+    ScriptPromise script_promise,
+    ExceptionState& exception_state,
+    std::unique_ptr<PromiseSettledCallback> on_promise_fulfilled,
+    std::unique_ptr<PromiseSettledCallback> on_promise_rejected) {
+  if (pending_promises_ == 0) {
+    switch (event_dispatch_state_) {
+      case EventDispatchState::kInitial:
+        NOTREACHED();
+        return;
+      case EventDispatchState::kDispatching:
+        if (!v8::MicrotasksScope::IsRunningMicrotasks(
+                script_state->GetIsolate())) {
+          break;
+        }
+      // Fall through:
+      // didDispatchEvent() is called after both the event handler
+      // execution finished and microtasks queued by the event handler execution
+      // finished, it's hard to get the precise time point between the 2
+      // execution phases.
+      // So even in EventDispatchState::kDispatching state at this time point,
+      // running microtask indicates that event handler execution has actually
+      // finished, in such case if there aren't any outstanding extend lifetime
+      // promises, we should throw here.
+      case EventDispatchState::kDispatched:
+      case EventDispatchState::kFailed:
+        exception_state.ThrowDOMException(
+            kInvalidStateError,
+            "The event handler is already finished "
+            "and no extend lifetime promises are "
+            "outstanding.");
+        return;
+    }
   }
 
   if (!execution_context_)
@@ -126,11 +179,12 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
     consume_window_interaction_timer_.StartOneShot(WindowInteractionTimeout(),
                                                    BLINK_FROM_HERE);
 
-  IncrementPendingActivity();
-  script_promise.Then(ThenFunction::CreateFunction(script_state, this,
-                                                   ThenFunction::kFulfilled),
-                      ThenFunction::CreateFunction(script_state, this,
-                                                   ThenFunction::kRejected));
+  IncrementPendingPromiseCount();
+  script_promise.Then(
+      ThenFunction::CreateFunction(script_state, this, ThenFunction::kFulfilled,
+                                   std::move(on_promise_fulfilled)),
+      ThenFunction::CreateFunction(script_state, this, ThenFunction::kRejected,
+                                   std::move(on_promise_rejected)));
 }
 
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
@@ -145,24 +199,46 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
           &WaitUntilObserver::ConsumeWindowInteraction) {}
 
 void WaitUntilObserver::OnPromiseFulfilled() {
-  DecrementPendingActivity();
+  DecrementPendingPromiseCount();
 }
 
 void WaitUntilObserver::OnPromiseRejected() {
   has_rejected_promise_ = true;
-  DecrementPendingActivity();
+  DecrementPendingPromiseCount();
 }
 
-void WaitUntilObserver::IncrementPendingActivity() {
-  ++pending_activity_;
+void WaitUntilObserver::IncrementPendingPromiseCount() {
+  ++pending_promises_;
 }
 
-void WaitUntilObserver::DecrementPendingActivity() {
-  DCHECK_GT(pending_activity_, 0);
-  if (!execution_context_ ||
-      (event_dispatch_state_ != EventDispatchState::kFailed &&
-       --pending_activity_))
+void WaitUntilObserver::DecrementPendingPromiseCount() {
+  DCHECK_GT(pending_promises_, 0);
+  --pending_promises_;
+  MaybeCompleteEvent();
+}
+
+void WaitUntilObserver::MaybeCompleteEvent() {
+  if (!execution_context_)
     return;
+
+  switch (event_dispatch_state_) {
+    case EventDispatchState::kInitial:
+      NOTREACHED();
+      return;
+    case EventDispatchState::kDispatching:
+      // Still dispatching, do not complete the event.
+      return;
+    case EventDispatchState::kDispatched:
+      // Still waiting for a promise, do not complete the event.
+      if (pending_promises_ != 0)
+        return;
+      // Dispatch finished and there are no pending promises, complete the
+      // event.
+      break;
+    case EventDispatchState::kFailed:
+      // Dispatch had some error, complete the event immediatelly.
+      break;
+  }
 
   ServiceWorkerGlobalScopeClient* client =
       ServiceWorkerGlobalScopeClient::From(execution_context_);

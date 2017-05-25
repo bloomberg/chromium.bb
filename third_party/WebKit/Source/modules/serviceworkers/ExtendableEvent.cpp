@@ -52,8 +52,14 @@ ExtendableEvent::~ExtendableEvent() {}
 void ExtendableEvent::waitUntil(ScriptState* script_state,
                                 ScriptPromise script_promise,
                                 ExceptionState& exception_state) {
-  if (observer_)
-    observer_->WaitUntil(script_state, script_promise, exception_state);
+  if (!observer_) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "Can not call waitUntil on a script constructed ExtendableEvent.");
+    return;
+  }
+
+  observer_->WaitUntil(script_state, script_promise, exception_state);
 }
 
 ExtendableEvent::ExtendableEvent(const AtomicString& type,
