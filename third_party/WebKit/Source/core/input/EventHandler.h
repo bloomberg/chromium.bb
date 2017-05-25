@@ -193,7 +193,7 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult SendContextMenuEvent(
       const WebMouseEvent&,
       Node* override_target_node = nullptr);
-  WebInputEventResult SendContextMenuEventForKey(
+  WebInputEventResult ShowNonLocatedContextMenu(
       Element* override_target_element = nullptr);
 
   // Returns whether pointerId is active or not
