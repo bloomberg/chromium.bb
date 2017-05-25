@@ -692,8 +692,7 @@ BENCHMARK_SWARMING_TIMEOUTS = {
 # Devices which are broken right now. Tests will not be scheduled on them.
 # Please add a comment with a bug for replacing the device.
 BLACKLISTED_DEVICES = [
-    'build8-b1',  # https://crbug.com/724998
-    'build25-b1',  # https://crbug.com/726292
+    'build8-b1', # https://crbug.com/724998
 ]
 
 
