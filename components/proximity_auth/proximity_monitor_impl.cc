@@ -27,8 +27,9 @@ const int kPollingTimeoutMs = 250;
 
 // The RSSI threshold below which we consider the remote device to not be in
 // proximity.
-// Tentative value, tested between a cave and Nexus 6 device.
-const int kRssiThreshold = -50;
+// Note: Because this threshold is unconfigurable right now, it is set quite
+// conservatively in order to avoid blocking users.
+const int kRssiThreshold = -70;
 
 // The weight of the most recent RSSI sample.
 const double kRssiSampleWeight = 0.3;
