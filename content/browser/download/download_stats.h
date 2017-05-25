@@ -188,6 +188,9 @@ enum class ParallelDownloadCreationEvent {
   // The remaining time does not meet the requirement.
   FALLBACK_REASON_REMAINING_TIME,
 
+  // The http method or url scheme does not meet the requirement.
+  FALLBACK_REASON_HTTP_METHOD,
+
   // Last entry of the enum.
   COUNT,
 };

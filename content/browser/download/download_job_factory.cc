@@ -28,6 +28,7 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
   // 4. Content-Length header.
   // 5. Content-Length is no less than the minimum slice size configuration.
   // 6. HTTP/1.1 protocol, not QUIC nor HTTP/1.0.
+  // 7. HTTP or HTTPS scheme with GET method in the initial request.
 
   // Etag and last modified are stored into DownloadCreateInfo in
   // DownloadRequestCore only if the response header complies to the strong
@@ -39,10 +40,12 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
       create_info.total_bytes >= GetMinSliceSizeConfig();
   bool satisfy_connection_type = create_info.connection_info ==
                                  net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+  bool http_get_method =
+      create_info.method == "GET" && create_info.url().SchemeIsHTTPOrHTTPS();
 
   bool is_parallelizable = has_strong_validator && create_info.accept_range &&
                            has_content_length && satisfy_min_file_size &&
-                           satisfy_connection_type;
+                           satisfy_connection_type && http_get_method;
 
   if (!IsParallelDownloadEnabled())
     return is_parallelizable;
@@ -71,6 +74,10 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
   if (!satisfy_connection_type) {
     RecordParallelDownloadCreationEvent(
         ParallelDownloadCreationEvent::FALLBACK_REASON_CONNECTION_TYPE);
+  }
+  if (!http_get_method) {
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_HTTP_METHOD);
   }
 
   return is_parallelizable;

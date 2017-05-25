@@ -27029,6 +27029,8 @@ from previous Chrome versions.
   <int value="6" label="HTTP connection type mismatch."/>
   <int value="7"
       label="Remaining download time does not meet the requirement."/>
+  <int value="8"
+      label="HTTP method or url scheme does not meet the requirement."/>
 </enum>
 
 <enum name="ParentFrameKnown" type="int">
