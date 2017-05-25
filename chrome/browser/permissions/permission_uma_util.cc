@@ -60,6 +60,8 @@ using content::PermissionType;
 
 namespace {
 
+static bool gIsFakeOfficialBuildForTest = false;
+
 const std::string GetRapporMetric(ContentSettingsType permission,
                                   PermissionAction action) {
   std::string action_str;
@@ -577,11 +579,23 @@ void PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
   }
 }
 
+void PermissionUmaUtil::FakeOfficialBuildForTest() {
+  gIsFakeOfficialBuildForTest = true;
+}
+
 bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePermissionActionReporting)) {
     return false;
   }
+
+  bool official_build = gIsFakeOfficialBuildForTest;
+#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+  official_build = true;
+#endif
+
+  if (!official_build)
+    return false;
 
   DCHECK(profile);
   if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE)

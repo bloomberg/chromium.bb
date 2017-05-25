@@ -11,6 +11,7 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/mock_permission_report_sender.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
@@ -40,6 +41,7 @@ class PermissionReporterBrowserTest : public SyncTest {
   void SetUpOnMainThread() override {
     SyncTest::SetUpOnMainThread();
 
+    PermissionUmaUtil::FakeOfficialBuildForTest();
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
