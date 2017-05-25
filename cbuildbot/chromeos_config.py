@@ -717,7 +717,6 @@ _waterfall_config_map = {
 
         # ASAN
         'amd64-generic-asan',
-        'x86-generic-asan',
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
@@ -2872,18 +2871,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       _telemetry_boards,
       internal_board_configs,
       site_config.templates.telemetry,
-  )
-
-  site_config.Add(
-      'x86-generic-asan',
-      site_config.templates.asan,
-      site_config.templates.incremental,
-      boards=['x86-generic'],
-      chroot_replace=True,
-      hw_tests=hw_test_list.AsanTest(),
-      hw_tests_override=hw_test_list.AsanTest(),
-      description='Build with Address Sanitizer (Clang)',
-      trybot_list=True,
   )
 
 
