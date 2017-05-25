@@ -15064,13 +15064,11 @@
             "relm-release",
             "rikku-release",
             "rowan-release",
-            "samus-cheets-release",
             "samus-release",
             "sand-release",
             "scarlet-release",
             "sentry-release",
             "setzer-release",
-            "smaug-cheets-release",
             "smaug-release",
             "snappy-release",
             "soraka-release",
@@ -15088,7 +15086,6 @@
             "veyron_jerry-release",
             "veyron_mickey-release",
             "veyron_mighty-release",
-            "veyron_minnie-cheets-release",
             "veyron_minnie-release",
             "veyron_rialto-release",
             "veyron_speedy-release",
@@ -20789,12 +20786,10 @@
     },
     "samus-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "samus-cheets"
         ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "buildslave_type": "baremetal"
     },
     "samus-cheets-release-afdo": {
         "_template": "release_afdo_generate",
@@ -22147,7 +22142,6 @@
     },
     "smaug-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "smaug-cheets"
         ],
@@ -26399,11 +26393,9 @@
     },
     "veyron_minnie-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie-cheets"
         ],
-        "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
