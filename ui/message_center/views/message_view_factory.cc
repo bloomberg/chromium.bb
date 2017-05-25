@@ -5,7 +5,6 @@
 #include "ui/message_center/views/message_view_factory.h"
 
 #include "ui/message_center/notification_types.h"
-#include "ui/message_center/views/custom_notification_view.h"
 #include "ui/message_center/views/notification_view.h"
 
 #if defined(OS_WIN)
@@ -28,18 +27,23 @@ MessageView* MessageViewFactory::Create(MessageCenterController* controller,
       // All above roads lead to the generic NotificationView.
       notification_view = new NotificationView(controller, notification);
       break;
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
     case NOTIFICATION_TYPE_CUSTOM:
-      notification_view = new CustomNotificationView(controller, notification);
+      notification_view =
+          notification.delegate()
+              ->CreateCustomMessageView(controller, notification)
+              .release();
       break;
+#endif
     default:
       // If the caller asks for an unrecognized kind of view (entirely possible
       // if an application is running on an older version of this code that
       // doesn't have the requested kind of notification template), we'll fall
       // back to a notification instance that will provide at least basic
       // functionality.
-      LOG(WARNING) << "Unable to fulfill request for unrecognized "
-                   << "notification type " << notification.type() << ". "
-                   << "Falling back to simple notification type.";
+      LOG(WARNING) << "Unable to fulfill request for unrecognized or"
+                   << "unsupported notification type " << notification.type()
+                   << ". Falling back to simple notification type.";
       notification_view = new NotificationView(controller, notification);
   }
 

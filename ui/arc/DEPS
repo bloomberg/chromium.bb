@@ -1,5 +1,6 @@
 include_rules = [
   "+ash",
   "+components/arc",
+  "+ui/gl/test",
   "+mojo",
 ]

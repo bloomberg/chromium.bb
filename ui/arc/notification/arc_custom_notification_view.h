@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/message_center/views/custom_notification_content_view_delegate.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -37,6 +37,9 @@ class Widget;
 
 namespace arc {
 
+// ArcCustomNotificationView is a view to host NotificationSurface and show the
+// content in itself. This is implemented as a child of ArcNotificationView.
+// TODO(yoshiki): Rename this class to ArcNotificationContentsView.
 class ArcCustomNotificationView
     : public views::NativeViewHost,
       public views::ButtonListener,
@@ -48,7 +51,7 @@ class ArcCustomNotificationView
   explicit ArcCustomNotificationView(ArcNotificationItem* item);
   ~ArcCustomNotificationView() override;
 
-  std::unique_ptr<message_center::CustomNotificationContentViewDelegate>
+  std::unique_ptr<ArcNotificationContentViewDelegate>
   CreateContentViewDelegate();
 
  private:

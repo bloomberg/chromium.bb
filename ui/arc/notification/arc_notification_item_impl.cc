@@ -191,4 +191,8 @@ const std::string& ArcNotificationItemImpl::GetNotificationKey() const {
   return notification_key_;
 }
 
+const std::string& ArcNotificationItemImpl::GetNotificationId() const {
+  return notification_id_;
+}
+
 }  // namespace arc

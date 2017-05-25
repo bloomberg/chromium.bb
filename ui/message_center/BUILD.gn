@@ -113,10 +113,6 @@ component("message_center") {
         "views/bounded_label.cc",
         "views/bounded_label.h",
         "views/constants.h",
-        "views/custom_notification_content_view_delegate.cc",
-        "views/custom_notification_content_view_delegate.h",
-        "views/custom_notification_view.cc",
-        "views/custom_notification_view.h",
         "views/desktop_popup_alignment_delegate.cc",
         "views/desktop_popup_alignment_delegate.h",
         "views/message_bubble_base.cc",
@@ -256,7 +252,6 @@ test("message_center_unittests") {
     if (toolkit_views && !is_mac) {
       sources += [
         "views/bounded_label_unittest.cc",
-        "views/custom_notification_view_unittest.cc",
         "views/message_center_view_unittest.cc",
         "views/message_list_view_unittest.cc",
         "views/message_popup_collection_unittest.cc",

@@ -1011,8 +1011,7 @@
   },
   "ui_arc_unittests": {
     "label": "//ui/arc:ui_arc_unittests",
-    "type": "raw",
-    "args": [],
+    "type": "windowed_test_launcher",
   },
   "ui_junit_tests": {
     "label": "//ui/android:ui_junit_tests",
