@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -30,7 +31,11 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Integration tests for ClearBrowsingDataPreferencesBasic.
@@ -44,7 +49,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private static final String GOOGLE_ACCOUNT = "Google Account";
-    private static final String OTHER_ACTIVITY = "other activity";
+    private static final String OTHER_ACTIVITY = "other forms of browsing history";
     private static final String SIGNED_IN_DEVICES = "signed-in devices";
 
     @Before
@@ -59,12 +64,23 @@ public class ClearBrowsingDataPreferencesBasicTest {
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
-        StubProfileSyncService() {
+        private final boolean mSyncable;
+
+        StubProfileSyncService(boolean syncable) {
             super();
+            mSyncable = syncable;
+        }
+
+        public Set<Integer> getActiveDataTypes() {
+            if (mSyncable) {
+                return CollectionUtil.newHashSet(ModelType.HISTORY_DELETE_DIRECTIVES);
+            } else {
+                return new HashSet<Integer>();
+            }
         }
     }
 
-    private void setSyncable(boolean syncable) {
+    private void setSyncable(final boolean syncable) {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         delegate.setMasterSyncAutomatically(syncable);
@@ -78,7 +94,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ProfileSyncService.overrideForTests(new StubProfileSyncService());
+                ProfileSyncService.overrideForTests(new StubProfileSyncService(syncable));
             }
         });
     }
