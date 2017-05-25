@@ -24,7 +24,8 @@
 static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;
 
-@interface HostViewController ()<ClientKeyboardDelegate> {
+@interface HostViewController ()<ClientKeyboardDelegate,
+                                 ClientGesturesDelegate> {
   RemotingClient* _client;
   MDCFloatingButton* _floatingButton;
   ClientGestures* _clientGestures;
@@ -100,6 +101,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
   _clientGestures =
       [[ClientGestures alloc] initWithView:self.view client:_client];
+  _clientGestures.delegate = self;
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(keyboardWillShow:)
@@ -198,6 +200,16 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)clientKeyboardShouldDelete {
   _client.keyboardInterpreter->HandleDeleteEvent(0);
+}
+
+#pragma mark - ClientGesturesDelegate
+
+- (void)keyboardShouldShow {
+  [self showKeyboard];
+}
+
+- (void)keyboardShouldHide {
+  [self hideKeyboard];
 }
 
 #pragma mark - Private

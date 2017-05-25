@@ -28,6 +28,11 @@ typedef NS_ENUM(NSInteger, MouseButton) {
   RIGHT_BUTTON = 3,
 };
 
+@protocol ClientGesturesDelegate<NSObject>
+- (void)keyboardShouldShow;
+- (void)keyboardShouldHide;
+@end
+
 @interface ClientGestures : NSObject<UIGestureRecognizerDelegate> {
  @private
   UILongPressGestureRecognizer* _longPressRecognizer;
@@ -68,6 +73,8 @@ typedef NS_ENUM(NSInteger, MouseButton) {
 - (IBAction)threeFingerTapGestureTriggered:(UITapGestureRecognizer*)sender;
 // Show hidden menus.  Swipe up for keyboard, swipe down for navigation menu
 - (IBAction)threeFingerPanGestureTriggered:(UIPanGestureRecognizer*)sender;
+
+@property(weak, nonatomic) id<ClientGesturesDelegate> delegate;
 
 @end
 

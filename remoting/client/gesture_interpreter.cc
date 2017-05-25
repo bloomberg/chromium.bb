@@ -76,25 +76,19 @@ void GestureInterpreter::Pan(float translation_x, float translation_y) {
 void GestureInterpreter::Tap(float x, float y) {
   AbortAnimations();
 
-  if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
-    return;
-  }
-  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
-  StartInputFeedback(cursor_position.x, cursor_position.y,
-                     InputStrategy::TAP_FEEDBACK);
-  InjectMouseClick(cursor_position.x, cursor_position.y,
-                   protocol::MouseEvent_MouseButton_BUTTON_LEFT);
+  InjectMouseClick(x, y, protocol::MouseEvent_MouseButton_BUTTON_LEFT);
 }
 
 void GestureInterpreter::TwoFingerTap(float x, float y) {
   AbortAnimations();
 
-  if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
-    return;
-  }
-  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
-  InjectMouseClick(cursor_position.x, cursor_position.y,
-                   protocol::MouseEvent_MouseButton_BUTTON_RIGHT);
+  InjectMouseClick(x, y, protocol::MouseEvent_MouseButton_BUTTON_RIGHT);
+}
+
+void GestureInterpreter::ThreeFingerTap(float x, float y) {
+  AbortAnimations();
+
+  InjectMouseClick(x, y, protocol::MouseEvent_MouseButton_BUTTON_MIDDLE);
 }
 
 void GestureInterpreter::Drag(float x, float y, GestureState state) {
@@ -193,11 +187,20 @@ void GestureInterpreter::AbortAnimations() {
 }
 
 void GestureInterpreter::InjectMouseClick(
-    float x,
-    float y,
+    float touch_x,
+    float touch_y,
     protocol::MouseEvent_MouseButton button) {
-  input_stub_->SendMouseEvent(x, y, button, true);
-  input_stub_->SendMouseEvent(x, y, button, false);
+  if (!input_strategy_->TrackTouchInput({touch_x, touch_y}, viewport_)) {
+    return;
+  }
+  ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
+  StartInputFeedback(cursor_position.x, cursor_position.y,
+                     InputStrategy::TAP_FEEDBACK);
+
+  input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y, button,
+                              true);
+  input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y, button,
+                              false);
 }
 
 void GestureInterpreter::SetGestureInProgress(InputStrategy::Gesture gesture,
