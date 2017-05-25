@@ -152,7 +152,7 @@ class StageFailureMessage(object):
     """Extract stage prefix name given a full stage name.
 
     Format examples in our current CIDB buildStageTable:
-      HWTest [arc-bvt-cq] -> HWTest
+      HWTest [bvt-arc] -> HWTest
       HWTest -> HWTest
       ImageTest -> ImageTest
       ImageTest [amd64-generic] -> ImageTest

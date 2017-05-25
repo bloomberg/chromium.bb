@@ -417,7 +417,7 @@ def GetHandler(stage):
   return {
       'HWTest [sanity]': ClassifyTestFailure,
       'HWTest [bvt-inline]': ClassifyTestFailure,
-      'HWTest [arc-bvt-cq]': ClassifyTestFailure,
+      'HWTest [bvt-arc]': ClassifyTestFailure,
       'AUTest [au]': ClassifyTestFailure,
       'HWTest [jetstream_cq]': ClassifyTestFailure,
       'Paygen': ClassifyTestFailure,

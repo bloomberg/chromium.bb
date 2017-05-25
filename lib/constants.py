@@ -703,7 +703,7 @@ HWTEST_MAX_RETRIES = 5
 #   CANARY:  Non-blocking suite run only against the canaries.
 #   AFDO:  Non-blocking suite run only AFDO builders.
 #   MOBLAB: Blocking Suite run only on *_moblab builders.
-HWTEST_ARC_COMMIT_SUITE = 'arc-bvt-cq'
+HWTEST_ARC_COMMIT_SUITE = 'bvt-arc'
 HWTEST_ARC_CANARY_SUITE = 'arc-bvt-perbuild'
 HWTEST_AU_SUITE = 'au'
 HWTEST_BVT_SUITE = 'bvt-inline'

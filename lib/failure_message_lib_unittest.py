@@ -211,7 +211,7 @@ class StageFailureMessageTests(cros_test_lib.TestCase):
   def testExtractStagePrefixName(self):
     """Test _ExtractStagePrefixName."""
     prefix_name_map = {
-        'HWTest [arc-bvt-cq]': 'HWTest',
+        'HWTest [bvt-arc]': 'HWTest',
         'HWTest': 'HWTest',
         'ImageTest': 'ImageTest',
         'ImageTest [amd64-generic]': 'ImageTest',
