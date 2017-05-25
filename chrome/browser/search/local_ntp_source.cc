@@ -72,7 +72,6 @@ const struct Resource{
     {kThemeCSSFilename, kLocalResource, "text/css"},
     {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
-    {"images/close_4_button.png", IDR_CLOSE_4_BUTTON, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarInHeadStyleFilename, kLocalResource, "text/css"},
