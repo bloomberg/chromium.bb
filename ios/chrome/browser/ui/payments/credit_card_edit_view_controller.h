@@ -41,11 +41,6 @@
 @property(nonatomic, weak) id<CreditCardEditViewControllerDataSource>
     dataSource;
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
-    NS_UNAVAILABLE;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_CREDIT_CARD_EDIT_VIEW_CONTROLLER_H_

@@ -124,6 +124,40 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize options = _options;
 @synthesize pickerViews = _pickerViews;
 
+- (instancetype)init {
+  self = [self initWithStyle:CollectionViewControllerStyleAppBar];
+  if (self) {
+    // Set up leading (cancel) button.
+    UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                style:UIBarButtonItemStylePlain
+               target:nil
+               action:@selector(onCancel)];
+    [cancelButton setTitleTextAttributes:@{
+      NSForegroundColorAttributeName : [UIColor lightGrayColor]
+    }
+                                forState:UIControlStateDisabled];
+    [cancelButton
+        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
+    [self navigationItem].leftBarButtonItem = cancelButton;
+
+    // Set up trailing (done) button.
+    UIBarButtonItem* doneButton =
+        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_DONE)
+                                         style:UIBarButtonItemStylePlain
+                                        target:nil
+                                        action:@selector(onDone)];
+    [doneButton setTitleTextAttributes:@{
+      NSForegroundColorAttributeName : [UIColor lightGrayColor]
+    }
+                              forState:UIControlStateDisabled];
+    [doneButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_DONE)];
+    [self navigationItem].rightBarButtonItem = doneButton;
+  }
+
+  return self;
+}
+
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
   self = [super initWithStyle:style];
   if (self) {
@@ -566,22 +600,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)validateForm {
   for (EditorField* field in self.fields) {
-    switch (field.fieldType) {
-      case EditorFieldTypeTextField: {
-        AutofillEditItem* item =
-            base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
-        // Update the EditorField with the value of the text field.
-        field.value = item.textFieldValue;
-        break;
-      }
-      case EditorFieldTypeSelector: {
-        // No need to update the EditorField. It should already be up-to-date.
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
-
     NSString* errorMessage =
         [_validatorDelegate paymentRequestEditViewController:self
                                                validateField:field];
@@ -609,6 +627,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[self collectionView] indexPathForCell:_currentEditingCell];
   DCHECK(indexPath);
   return indexPath;
+}
+
+#pragma mark - PaymentRequestEditViewControllerActions methods
+
+- (void)onCancel {
+}
+
+- (void)onDone {
+  [_currentEditingCell.textField resignFirstResponder];
 }
 
 @end

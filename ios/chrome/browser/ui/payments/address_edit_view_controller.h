@@ -34,11 +34,6 @@
 // address editor fields.
 @property(nonatomic, weak) id<AddressEditViewControllerDelegate> delegate;
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
-    NS_UNAVAILABLE;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_ADDRESS_EDIT_VIEW_CONTROLLER_H_
