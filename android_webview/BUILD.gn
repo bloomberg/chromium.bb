@@ -278,8 +278,8 @@ grit("generate_webui_resources") {
   ]
   outputs = [
     "grit/webui_resources.h",
-    "grit/webui_resources_map.h",
     "grit/webui_resources_map.cc",
+    "grit/webui_resources_map.h",
     "webui_resources.pak",
   ]
 }
@@ -374,7 +374,7 @@ source_set("webview_entry_point") {
     ":common",
   ]
   sources = [
-    "lib/main/webview_entry_point.cc",
+    "lib/webview_entry_point.cc",
   ]
 }
 
@@ -643,10 +643,10 @@ source_set("common") {
     "common/url_constants.h",
     "gpu/aw_content_gpu_client.cc",
     "gpu/aw_content_gpu_client.h",
-    "lib/main/aw_main_delegate.cc",
-    "lib/main/aw_main_delegate.h",
-    "lib/main/webview_jni_onload.cc",
-    "lib/main/webview_jni_onload.h",
+    "lib/aw_main_delegate.cc",
+    "lib/aw_main_delegate.h",
+    "lib/webview_jni_onload.cc",
+    "lib/webview_jni_onload.h",
     "public/browser/draw_gl.h",
     "public/browser/draw_sw.h",
     "renderer/aw_content_renderer_client.cc",

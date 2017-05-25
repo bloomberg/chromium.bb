@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/lib/main/webview_jni_onload.h"
+#include "android_webview/lib/webview_jni_onload.h"
 
 #include "android_webview/browser/android_webview_jni_registrar.h"
 #include "android_webview/common/aw_version_info_values.h"
-#include "android_webview/lib/main/aw_main_delegate.h"
+#include "android_webview/lib/aw_main_delegate.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
@@ -20,10 +20,10 @@ namespace android_webview {
 
 namespace {
 
-static base::android::RegistrationMethod
-    kWebViewDependencyRegisteredMethods[] = {
-    { "WebContentsDelegateAndroid",
-        web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni },
+static base::android::RegistrationMethod kWebViewDependencyRegisteredMethods[] =
+    {
+        {"WebContentsDelegateAndroid",
+         web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni},
 };
 
 }  // namespace
@@ -33,10 +33,8 @@ bool OnJNIOnLoadRegisterJNI(JNIEnv* env) {
     return false;
 
   // Register JNI for components we depend on.
-  if (!RegisterNativeMethods(
-          env,
-          kWebViewDependencyRegisteredMethods,
-          arraysize(kWebViewDependencyRegisteredMethods)) ||
+  if (!RegisterNativeMethods(env, kWebViewDependencyRegisteredMethods,
+                             arraysize(kWebViewDependencyRegisteredMethods)) ||
       !android_webview::RegisterJni(env)) {
     return false;
   }

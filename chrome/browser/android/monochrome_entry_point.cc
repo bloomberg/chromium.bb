@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/lib/main/webview_jni_onload.h"
+#include "android_webview/lib/webview_jni_onload.h"
 #include "base/android/jni_android.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
