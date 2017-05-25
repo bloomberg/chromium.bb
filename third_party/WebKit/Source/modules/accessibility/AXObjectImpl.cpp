@@ -2051,9 +2051,13 @@ bool AXObjectImpl::NameFromContents(bool recursive) const {
     case kRowRole:
     case kRubyRole:
     case kRulerRole:
+      result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
+      break;
+
     case kUnknownRole:
     case kNumRoles:
-      result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
+      LOG(ERROR) << "kUnknownRole for " << GetNode();
+      NOTREACHED();
       break;
   }
 
