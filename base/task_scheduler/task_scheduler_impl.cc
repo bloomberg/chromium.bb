@@ -109,12 +109,8 @@ scoped_refptr<SingleThreadTaskRunner>
 TaskSchedulerImpl::CreateSingleThreadTaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  const auto& environment_params =
-      kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          name_ + environment_params.name_suffix,
-          environment_params.priority_hint, traits);
+      .CreateSingleThreadTaskRunnerWithTraits(name_, traits, thread_mode);
 }
 
 #if defined(OS_WIN)
@@ -122,10 +118,8 @@ scoped_refptr<SingleThreadTaskRunner>
 TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  const auto& environment_params =
-      kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_.CreateCOMSTATaskRunnerWithTraits(
-      environment_params.name_suffix, environment_params.priority_hint, traits);
+      name_, traits, thread_mode);
 }
 #endif  // defined(OS_WIN)
 

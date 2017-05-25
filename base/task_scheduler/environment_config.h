@@ -37,7 +37,7 @@ constexpr struct {
     {"ForegroundBlocking", base::ThreadPriority::NORMAL},
 };
 
-size_t GetEnvironmentIndexForTraits(const TaskTraits& traits);
+size_t BASE_EXPORT GetEnvironmentIndexForTraits(const TaskTraits& traits);
 
 }  // namespace internal
 }  // namespace base
