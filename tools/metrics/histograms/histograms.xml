@@ -50193,6 +50193,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.QueryingSuppressedAccountsFinished"
+    enum="Boolean">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Records, for each password form seen by the password manager, whether the
+    PasswordStore responded quickly enough so that
+    PasswordManager.SuppressedAccount histogram samples could be computed.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SavePasswordPromptDisappearedQuickly"
     enum="Boolean">
   <obsolete>
@@ -50397,6 +50407,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The type of event that the Password Manager used for detecting a password
     form submission. Recorded for each successful password form submission.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.SuppressedAccount"
+    enum="PasswordManagerSuppressedAccountCrossActionsTaken">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Records, for each password form seen by the password manager, whether there
+    were `suppressed` credentials, meaning stored credentials that were not
+    filled because they were for an origin that was similar to, but not exactly
+    (or PSL) matching the origin of the observed form (see the suffix
+    description for the possible classes of such near-matches).  If there were
+    such credentials, the histogram also records whether the username and
+    password of such suppressed credentials matched those submitted.
   </summary>
 </histogram>
 
@@ -90965,6 +90989,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordManagerSuppressedAccountReason" separator=".">
+  <affected-histogram name="PasswordManager.SuppressedAccount.Generated"/>
+  <suffix name="HTTPSNotHTTP"
+      label="The credential was suppressed because it was for an HTTPS origin
+             whereas the observed form was for an HTTP origin."/>
+  <affected-histogram name="PasswordManager.SuppressedAccount.Manual"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordManagerSuppressedAccountType" separator=".">
+  <suffix name="Generated" label="The password was originally auto-generated."/>
+  <suffix name="Manual"
+      label="The password was originally typed in by the user."/>
+  <affected-histogram name="PasswordManager.SuppressedAccount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PasswordProtectionTrigger" separator=".">

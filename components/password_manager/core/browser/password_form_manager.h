@@ -273,6 +273,13 @@ class PasswordFormManager : public FormFetcher::Consumer {
     kManagerActionMax
   };
 
+  // Same as above, without the obsoleted 'Blacklisted' action.
+  enum ManagerActionNew {
+    kManagerActionNewNone,
+    kManagerActionNewAutofilled,
+    kManagerActionNewMax
+  };
+
   // UserAction - What does the user do with this form? If they do nothing
   // (either by accepting what the password manager did, or by simply (not
   // typing anything at all), you get None. If there were multiple choices and
@@ -324,6 +331,32 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // This is used when recording the actions taken by the form in UMA.
   static const int kMaxNumActionsTaken =
       kManagerActionMax * kUserActionMax * kSubmitResultMax;
+
+  // Enumerates whether there was a `suppressed` stored credential, meaning that
+  // it was not filled because it was for an origin that was similar to, but not
+  // exactly (or PSL) matching the origin of |observed_form_|. Currently, the
+  // only class of suppressed credentials considered are HTTPS credentials not
+  // filled on the HTTP version of the origin.
+  //
+  // If a suppressed credential exists, it is also recorded whether its username
+  // and password matched those entered or filled into the observed form.
+  enum SuppressedAccountExistence {
+    kSuppressedAccountNone,
+    // Recorded when there exists a suppressed credential, but there was no
+    // submitted form to compare the username and password to.
+    kSuppressedAccountExists,
+    // Recorded when there was a submitted form.
+    kSuppressedAccountExistsDifferentUsername,
+    kSuppressedAccountExistsSameUsername,
+    kSuppressedAccountExistsSameUsernameAndPassword,
+    kSuppressedAccountExistenceMax,
+  };
+
+  // The maximum number of combinations recorded into histograms in the
+  // PasswordManager.SuppressedAccount.* family.
+  static constexpr int kMaxSuppressedAccountStats =
+      kSuppressedAccountExistenceMax * kManagerActionNewMax * kUserActionMax *
+      kSubmitResultMax;
 
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.).
@@ -399,6 +432,13 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // UMA.
   int GetActionsTaken() const;
 
+  // Computes statistics on whether there was a stored credential with the
+  // specified |type| that could not be filled into the |observed_form_| because
+  // the scheme of its origin was HTTPS rather than HTTP; and encodes this
+  // information into an integer so it can be recorded as a UMA histogram.
+  int GetStatsForSuppressedHTTPSAccount(
+      autofill::PasswordForm::Type type) const;
+
   // Tries to set all votes (e.g. autofill field types, generation vote) to
   // a |FormStructure| and upload it to the server. Returns true on success.
   bool UploadPasswordVote(const autofill::PasswordForm& form_to_upload,
@@ -469,7 +509,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form. They are owned by |form_fetcher_|, with the exception that if
   // |new_blacklisted_| is not null, the address of that form is also inside
-  // |blacklisted_matches_|..
+  // |blacklisted_matches_|.
   std::vector<const autofill::PasswordForm*> blacklisted_matches_;
 
   // If the observed form gets blacklisted through |this|, the blacklist entry

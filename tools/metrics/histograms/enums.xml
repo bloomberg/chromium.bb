@@ -27421,6 +27421,259 @@ from previous Chrome versions.
   <int value="1" label="Empty username"/>
 </enum>
 
+<enum name="PasswordManagerSuppressedAccountCrossActionsTaken" type="int">
+  <summary>
+    The value is a mixed-base encoding of the combination of four attributes:
+    whether there were suppressed stored credentials (and the kind if there
+    were); whether the form got ultimately submitted; what action the password
+    manager performed; and what action the user performed; in this order.
+  </summary>
+  <int value="0" label="(None, NotSubmitted, None, None)"/>
+  <int value="1" label="(None, NotSubmitted, None, Choose)"/>
+  <int value="2" label="(None, NotSubmitted, None, ChoosePSL)"/>
+  <int value="3" label="(None, NotSubmitted, None, OverridePassword)"/>
+  <int value="4"
+      label="(None, NotSubmitted, None, OverrideUsernameAndPassword)"/>
+  <int value="5" label="(None, NotSubmitted, Autofilled, None)"/>
+  <int value="6" label="(None, NotSubmitted, Autofilled, Choose)"/>
+  <int value="7" label="(None, NotSubmitted, Autofilled, ChoosePSL)"/>
+  <int value="8" label="(None, NotSubmitted, Autofilled, OverridePassword)"/>
+  <int value="9"
+      label="(None, NotSubmitted, Autofilled, OverrideUsernameAndPassword)"/>
+  <int value="10" label="(None, Failed, None, None)"/>
+  <int value="11" label="(None, Failed, None, Choose)"/>
+  <int value="12" label="(None, Failed, None, ChoosePSL)"/>
+  <int value="13" label="(None, Failed, None, OverridePassword)"/>
+  <int value="14" label="(None, Failed, None, OverrideUsernameAndPassword)"/>
+  <int value="15" label="(None, Failed, Autofilled, None)"/>
+  <int value="16" label="(None, Failed, Autofilled, Choose)"/>
+  <int value="17" label="(None, Failed, Autofilled, ChoosePSL)"/>
+  <int value="18" label="(None, Failed, Autofilled, OverridePassword)"/>
+  <int value="19"
+      label="(None, Failed, Autofilled, OverrideUsernameAndPassword)"/>
+  <int value="20" label="(None, Passed, None, None)"/>
+  <int value="21" label="(None, Passed, None, Choose)"/>
+  <int value="22" label="(None, Passed, None, ChoosePSL)"/>
+  <int value="23" label="(None, Passed, None, OverridePassword)"/>
+  <int value="24" label="(None, Passed, None, OverrideUsernameAndPassword)"/>
+  <int value="25" label="(None, Passed, Autofilled, None)"/>
+  <int value="26" label="(None, Passed, Autofilled, Choose)"/>
+  <int value="27" label="(None, Passed, Autofilled, ChoosePSL)"/>
+  <int value="28" label="(None, Passed, Autofilled, OverridePassword)"/>
+  <int value="29"
+      label="(None, Passed, Autofilled, OverrideUsernameAndPassword)"/>
+  <int value="30" label="(Exists, NotSubmitted, None, None)"/>
+  <int value="31" label="(Exists, NotSubmitted, None, Choose)"/>
+  <int value="32" label="(Exists, NotSubmitted, None, ChoosePSL)"/>
+  <int value="33" label="(Exists, NotSubmitted, None, OverridePassword)"/>
+  <int value="34"
+      label="(Exists, NotSubmitted, None, OverrideUsernameAndPassword)"/>
+  <int value="35" label="(Exists, NotSubmitted, Autofilled, None)"/>
+  <int value="36" label="(Exists, NotSubmitted, Autofilled, Choose)"/>
+  <int value="37" label="(Exists, NotSubmitted, Autofilled, ChoosePSL)"/>
+  <int value="38" label="(Exists, NotSubmitted, Autofilled, OverridePassword)"/>
+  <int value="39"
+      label="(Exists, NotSubmitted, Autofilled, OverrideUsernameAndPassword)"/>
+  <int value="40" label="(Exists, Failed, None, None)"/>
+  <int value="41" label="(Exists, Failed, None, Choose)"/>
+  <int value="42" label="(Exists, Failed, None, ChoosePSL)"/>
+  <int value="43" label="(Exists, Failed, None, OverridePassword)"/>
+  <int value="44" label="(Exists, Failed, None, OverrideUsernameAndPassword)"/>
+  <int value="45" label="(Exists, Failed, Autofilled, None)"/>
+  <int value="46" label="(Exists, Failed, Autofilled, Choose)"/>
+  <int value="47" label="(Exists, Failed, Autofilled, ChoosePSL)"/>
+  <int value="48" label="(Exists, Failed, Autofilled, OverridePassword)"/>
+  <int value="49"
+      label="(Exists, Failed, Autofilled, OverrideUsernameAndPassword)"/>
+  <int value="50" label="(Exists, Passed, None, None)"/>
+  <int value="51" label="(Exists, Passed, None, Choose)"/>
+  <int value="52" label="(Exists, Passed, None, ChoosePSL)"/>
+  <int value="53" label="(Exists, Passed, None, OverridePassword)"/>
+  <int value="54" label="(Exists, Passed, None, OverrideUsernameAndPassword)"/>
+  <int value="55" label="(Exists, Passed, Autofilled, None)"/>
+  <int value="56" label="(Exists, Passed, Autofilled, Choose)"/>
+  <int value="57" label="(Exists, Passed, Autofilled, ChoosePSL)"/>
+  <int value="58" label="(Exists, Passed, Autofilled, OverridePassword)"/>
+  <int value="59"
+      label="(Exists, Passed, Autofilled, OverrideUsernameAndPassword)"/>
+  <int value="60" label="(ExistsDifferentUsername, NotSubmitted, None, None)"/>
+  <int value="61"
+      label="(ExistsDifferentUsername, NotSubmitted, None, Choose)"/>
+  <int value="62"
+      label="(ExistsDifferentUsername, NotSubmitted, None, ChoosePSL)"/>
+  <int value="63"
+      label="(ExistsDifferentUsername, NotSubmitted, None, OverridePassword)"/>
+  <int value="64"
+      label="(ExistsDifferentUsername, NotSubmitted, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="65"
+      label="(ExistsDifferentUsername, NotSubmitted, Autofilled, None)"/>
+  <int value="66"
+      label="(ExistsDifferentUsername, NotSubmitted, Autofilled, Choose)"/>
+  <int value="67"
+      label="(ExistsDifferentUsername, NotSubmitted, Autofilled, ChoosePSL)"/>
+  <int value="68"
+      label="(ExistsDifferentUsername, NotSubmitted, Autofilled,
+             OverridePassword)"/>
+  <int value="69"
+      label="(ExistsDifferentUsername, NotSubmitted, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="70" label="(ExistsDifferentUsername, Failed, None, None)"/>
+  <int value="71" label="(ExistsDifferentUsername, Failed, None, Choose)"/>
+  <int value="72" label="(ExistsDifferentUsername, Failed, None, ChoosePSL)"/>
+  <int value="73"
+      label="(ExistsDifferentUsername, Failed, None, OverridePassword)"/>
+  <int value="74"
+      label="(ExistsDifferentUsername, Failed, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="75" label="(ExistsDifferentUsername, Failed, Autofilled, None)"/>
+  <int value="76"
+      label="(ExistsDifferentUsername, Failed, Autofilled, Choose)"/>
+  <int value="77"
+      label="(ExistsDifferentUsername, Failed, Autofilled, ChoosePSL)"/>
+  <int value="78"
+      label="(ExistsDifferentUsername, Failed, Autofilled, OverridePassword)"/>
+  <int value="79"
+      label="(ExistsDifferentUsername, Failed, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="80" label="(ExistsDifferentUsername, Passed, None, None)"/>
+  <int value="81" label="(ExistsDifferentUsername, Passed, None, Choose)"/>
+  <int value="82" label="(ExistsDifferentUsername, Passed, None, ChoosePSL)"/>
+  <int value="83"
+      label="(ExistsDifferentUsername, Passed, None, OverridePassword)"/>
+  <int value="84"
+      label="(ExistsDifferentUsername, Passed, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="85" label="(ExistsDifferentUsername, Passed, Autofilled, None)"/>
+  <int value="86"
+      label="(ExistsDifferentUsername, Passed, Autofilled, Choose)"/>
+  <int value="87"
+      label="(ExistsDifferentUsername, Passed, Autofilled, ChoosePSL)"/>
+  <int value="88"
+      label="(ExistsDifferentUsername, Passed, Autofilled, OverridePassword)"/>
+  <int value="89"
+      label="(ExistsDifferentUsername, Passed, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="90" label="(ExistsSameUsername, NotSubmitted, None, None)"/>
+  <int value="91" label="(ExistsSameUsername, NotSubmitted, None, Choose)"/>
+  <int value="92" label="(ExistsSameUsername, NotSubmitted, None, ChoosePSL)"/>
+  <int value="93"
+      label="(ExistsSameUsername, NotSubmitted, None, OverridePassword)"/>
+  <int value="94"
+      label="(ExistsSameUsername, NotSubmitted, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="95" label="(ExistsSameUsername, NotSubmitted, Autofilled, None)"/>
+  <int value="96"
+      label="(ExistsSameUsername, NotSubmitted, Autofilled, Choose)"/>
+  <int value="97"
+      label="(ExistsSameUsername, NotSubmitted, Autofilled, ChoosePSL)"/>
+  <int value="98"
+      label="(ExistsSameUsername, NotSubmitted, Autofilled, OverridePassword)"/>
+  <int value="99"
+      label="(ExistsSameUsername, NotSubmitted, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="100" label="(ExistsSameUsername, Failed, None, None)"/>
+  <int value="101" label="(ExistsSameUsername, Failed, None, Choose)"/>
+  <int value="102" label="(ExistsSameUsername, Failed, None, ChoosePSL)"/>
+  <int value="103"
+      label="(ExistsSameUsername, Failed, None, OverridePassword)"/>
+  <int value="104"
+      label="(ExistsSameUsername, Failed, None, OverrideUsernameAndPassword)"/>
+  <int value="105" label="(ExistsSameUsername, Failed, Autofilled, None)"/>
+  <int value="106" label="(ExistsSameUsername, Failed, Autofilled, Choose)"/>
+  <int value="107" label="(ExistsSameUsername, Failed, Autofilled, ChoosePSL)"/>
+  <int value="108"
+      label="(ExistsSameUsername, Failed, Autofilled, OverridePassword)"/>
+  <int value="109"
+      label="(ExistsSameUsername, Failed, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="110" label="(ExistsSameUsername, Passed, None, None)"/>
+  <int value="111" label="(ExistsSameUsername, Passed, None, Choose)"/>
+  <int value="112" label="(ExistsSameUsername, Passed, None, ChoosePSL)"/>
+  <int value="113"
+      label="(ExistsSameUsername, Passed, None, OverridePassword)"/>
+  <int value="114"
+      label="(ExistsSameUsername, Passed, None, OverrideUsernameAndPassword)"/>
+  <int value="115" label="(ExistsSameUsername, Passed, Autofilled, None)"/>
+  <int value="116" label="(ExistsSameUsername, Passed, Autofilled, Choose)"/>
+  <int value="117" label="(ExistsSameUsername, Passed, Autofilled, ChoosePSL)"/>
+  <int value="118"
+      label="(ExistsSameUsername, Passed, Autofilled, OverridePassword)"/>
+  <int value="119"
+      label="(ExistsSameUsername, Passed, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="120"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, None, None)"/>
+  <int value="121"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, None, Choose)"/>
+  <int value="122"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, None, ChoosePSL)"/>
+  <int value="123"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, None,
+             OverridePassword)"/>
+  <int value="124"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="125"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, Autofilled, None)"/>
+  <int value="126"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, Autofilled,
+             Choose)"/>
+  <int value="127"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, Autofilled,
+             ChoosePSL)"/>
+  <int value="128"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, Autofilled,
+             OverridePassword)"/>
+  <int value="129"
+      label="(ExistsSameUsernameAndPassword, NotSubmitted, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="130" label="(ExistsSameUsernameAndPassword, Failed, None, None)"/>
+  <int value="131"
+      label="(ExistsSameUsernameAndPassword, Failed, None, Choose)"/>
+  <int value="132"
+      label="(ExistsSameUsernameAndPassword, Failed, None, ChoosePSL)"/>
+  <int value="133"
+      label="(ExistsSameUsernameAndPassword, Failed, None, OverridePassword)"/>
+  <int value="134"
+      label="(ExistsSameUsernameAndPassword, Failed, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="135"
+      label="(ExistsSameUsernameAndPassword, Failed, Autofilled, None)"/>
+  <int value="136"
+      label="(ExistsSameUsernameAndPassword, Failed, Autofilled, Choose)"/>
+  <int value="137"
+      label="(ExistsSameUsernameAndPassword, Failed, Autofilled, ChoosePSL)"/>
+  <int value="138"
+      label="(ExistsSameUsernameAndPassword, Failed, Autofilled,
+             OverridePassword)"/>
+  <int value="139"
+      label="(ExistsSameUsernameAndPassword, Failed, Autofilled,
+             OverrideUsernameAndPassword)"/>
+  <int value="140" label="(ExistsSameUsernameAndPassword, Passed, None, None)"/>
+  <int value="141"
+      label="(ExistsSameUsernameAndPassword, Passed, None, Choose)"/>
+  <int value="142"
+      label="(ExistsSameUsernameAndPassword, Passed, None, ChoosePSL)"/>
+  <int value="143"
+      label="(ExistsSameUsernameAndPassword, Passed, None, OverridePassword)"/>
+  <int value="144"
+      label="(ExistsSameUsernameAndPassword, Passed, None,
+             OverrideUsernameAndPassword)"/>
+  <int value="145"
+      label="(ExistsSameUsernameAndPassword, Passed, Autofilled, None)"/>
+  <int value="146"
+      label="(ExistsSameUsernameAndPassword, Passed, Autofilled, Choose)"/>
+  <int value="147"
+      label="(ExistsSameUsernameAndPassword, Passed, Autofilled, ChoosePSL)"/>
+  <int value="148"
+      label="(ExistsSameUsernameAndPassword, Passed, Autofilled,
+             OverridePassword)"/>
+  <int value="149"
+      label="(ExistsSameUsernameAndPassword, Passed, Autofilled,
+             OverrideUsernameAndPassword)"/>
+</enum>
+
 <enum name="PasswordManagerSyncingAccountState" type="int">
   <summary>
     The value is a combination of the current sync state and if the user has

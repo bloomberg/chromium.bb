@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -237,7 +238,7 @@ PasswordFormManager::PasswordFormManager(
                              PasswordStore::FormDigest(observed_form),
                              client,
                              true /* should_migrate_http_passwords */,
-                             false /* should_query_suppressed_https_forms */)),
+                             true /* should_query_suppressed_https_forms */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       is_main_frame_secure_(client->IsMainFrameSecure()) {
   if (owned_form_fetcher_)
@@ -254,6 +255,7 @@ PasswordFormManager::~PasswordFormManager() {
 
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
                             kMaxNumActionsTaken);
+
   // Use the visible main frame URL at the time the PasswordFormManager
   // is created, in case a navigation has already started and the
   // visible URL has changed.
@@ -261,6 +263,23 @@ PasswordFormManager::~PasswordFormManager() {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenOnNonSecureForm",
                               GetActionsTaken(), kMaxNumActionsTaken);
   }
+
+  if (!observed_form_.origin.SchemeIsCryptographic()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PasswordManager.QueryingSuppressedAccountsFinished",
+        form_fetcher_->DidCompleteQueryingSuppressedHTTPSForms());
+    if (form_fetcher_->DidCompleteQueryingSuppressedHTTPSForms()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP",
+          GetStatsForSuppressedHTTPSAccount(PasswordForm::TYPE_GENERATED),
+          kMaxSuppressedAccountStats);
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP",
+          GetStatsForSuppressedHTTPSAccount(PasswordForm::TYPE_MANUAL),
+          kMaxSuppressedAccountStats);
+    }
+  }
+
   if (submit_result_ == kSubmitResultNotSubmitted) {
     if (has_generated_password_)
       metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -269,6 +288,7 @@ PasswordFormManager::~PasswordFormManager() {
       metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
           metrics_util::PASSWORD_NOT_SUBMITTED);
   }
+
   if (form_type_ != kFormTypeUnspecified) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
                               kFormTypeMax);
@@ -283,6 +303,46 @@ int PasswordFormManager::GetActionsTaken() const {
   return user_action_ +
          kUserActionMax *
              (manager_action_ + kManagerActionMax * submit_result_);
+}
+
+int PasswordFormManager::GetStatsForSuppressedHTTPSAccount(
+    PasswordForm::Type type) const {
+  DCHECK(form_fetcher_->DidCompleteQueryingSuppressedHTTPSForms());
+
+  SuppressedAccountExistence best_matching_account = kSuppressedAccountNone;
+  for (const autofill::PasswordForm* form :
+       form_fetcher_->GetSuppressedHTTPSForms()) {
+    if (form->type != type)
+      continue;
+
+    SuppressedAccountExistence current_account;
+    if (pending_credentials_.password_value.empty())
+      current_account = kSuppressedAccountExists;
+    else if (form->username_value != pending_credentials_.username_value)
+      current_account = kSuppressedAccountExistsDifferentUsername;
+    else if (form->password_value != pending_credentials_.password_value)
+      current_account = kSuppressedAccountExistsSameUsername;
+    else
+      current_account = kSuppressedAccountExistsSameUsernameAndPassword;
+
+    best_matching_account = std::max(best_matching_account, current_account);
+  }
+
+  // Merge kManagerActionNone and kManagerActionBlacklisted_Obsolete. This
+  // lowers the number of histogram buckets used by 33%.
+  ManagerActionNew manager_action_new =
+      (manager_action_ == kManagerActionAutofilled)
+          ? kManagerActionNewAutofilled
+          : kManagerActionNewNone;
+
+  // Encoding: most significant digit is the |best_matching_account|.
+  int mixed_base_encoding = 0;
+  mixed_base_encoding += best_matching_account;
+  (mixed_base_encoding *= kSubmitResultMax) += submit_result_;
+  (mixed_base_encoding *= kManagerActionNewMax) += manager_action_new;
+  (mixed_base_encoding *= kUserActionMax) += user_action_;
+  DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
+  return mixed_base_encoding;
 }
 
 // static
