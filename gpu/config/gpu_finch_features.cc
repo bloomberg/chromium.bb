@@ -18,4 +18,9 @@ const base::Feature kDefaultEnableGpuRasterization{
     "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables the GPU scheduler. This can still be overridden by
+// --enable-gpu-scheduler or --disable-gpu-scheduler.
+const base::Feature kGpuScheduler{"GpuScheduler",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

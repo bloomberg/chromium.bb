@@ -1933,9 +1933,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
       switches::kNumRasterThreads,
       base::IntToString(NumberOfRendererRasterThreads()));
 
-  if (IsAsyncWorkerContextEnabled())
-    command_line->AppendSwitch(switches::kEnableGpuAsyncWorkerContext);
-
   int msaa_sample_count = GpuRasterizationMSAASampleCount();
   if (msaa_sample_count >= 0) {
     command_line->AppendSwitchASCII(switches::kGpuRasterizationMSAASampleCount,
