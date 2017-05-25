@@ -14,7 +14,12 @@
 #include "media/base/key_systems.h"
 #include "media/cdm/cdm_adapter.h"
 #include "media/cdm/cdm_paths.h"
-#include "third_party/widevine/cdm/widevine_cdm_common.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/bundle_locations.h"
+#endif
+
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace media {
 
@@ -54,11 +59,19 @@ void CdmAdapterFactory::Create(
     // TODO(xhwang): We should have the CDM path forwarded from the browser
     // already. See http://crbug.com/510604
     base::FilePath cdm_base_path;
+
+#if defined(OS_MACOSX)
+    base::FilePath framework_bundle_path = base::mac::FrameworkBundlePath();
+    cdm_base_path = framework_bundle_path.Append("Libraries");
+#else
     base::PathService::Get(base::DIR_MODULE, &cdm_base_path);
+#endif
+
     cdm_base_path = cdm_base_path.Append(
         GetPlatformSpecificDirectory(kWidevineCdmBaseDirectory));
     cdm_path = cdm_base_path.AppendASCII(
         base::GetNativeLibraryName(kWidevineCdmLibraryName));
+    DVLOG(1) << "CDM path: " << cdm_path.value();
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
