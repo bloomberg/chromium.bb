@@ -46,7 +46,7 @@ enum BubbleCreationType {
 class ASH_EXPORT SystemTray : public TrayBackgroundView,
                               public views::TrayBubbleView::Delegate {
  public:
-  explicit SystemTray(WmShelf* wm_shelf);
+  explicit SystemTray(Shelf* shelf);
   ~SystemTray() override;
 
   TrayUpdate* tray_update() { return tray_update_; }

@@ -32,7 +32,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
                                public keyboard::KeyboardControllerObserver,
                                public VirtualKeyboardObserver {
  public:
-  explicit ImeMenuTray(WmShelf* wm_shelf);
+  explicit ImeMenuTray(Shelf* shelf);
   ~ImeMenuTray() override;
 
   // Shows the IME menu bubble and highlights the button.

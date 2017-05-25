@@ -7,8 +7,8 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
@@ -32,7 +32,7 @@ const int kNoToastMarginBorderAndShadowOffset = 2;
 
 }  // namespace
 
-AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(WmShelf* shelf)
+AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(Shelf* shelf)
     : screen_(NULL), shelf_(shelf), tray_bubble_height_(0) {
   shelf_->AddObserver(this);
 }
@@ -128,7 +128,7 @@ bool AshPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {
 }
 
 ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
-  return shelf_->GetAlignment();
+  return shelf_->alignment();
 }
 
 display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
@@ -141,7 +141,7 @@ void AshPopupAlignmentDelegate::UpdateWorkArea() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WmShelfObserver:
+// ShelfObserver:
 
 void AshPopupAlignmentDelegate::WillChangeVisibilityState(
     ShelfVisibilityState new_state) {

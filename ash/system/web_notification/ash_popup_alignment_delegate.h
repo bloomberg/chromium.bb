@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/wm_shelf_observer.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
@@ -23,18 +23,18 @@ class Screen;
 namespace ash {
 
 class AshPopupAlignmentDelegateTest;
+class Shelf;
 class WebNotificationTrayTest;
-class WmShelf;
 
 // The PopupAlignmentDelegate subclass for Ash. It needs to handle alignment of
 // the shelf and its autohide state.
 class ASH_EXPORT AshPopupAlignmentDelegate
     : public message_center::PopupAlignmentDelegate,
-      public WmShelfObserver,
+      public ShelfObserver,
       public ShellObserver,
       public display::DisplayObserver {
  public:
-  explicit AshPopupAlignmentDelegate(WmShelf* shelf);
+  explicit AshPopupAlignmentDelegate(Shelf* shelf);
   ~AshPopupAlignmentDelegate() override;
 
   // Start observing the system.
@@ -72,7 +72,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   // Compute the new work area.
   void UpdateWorkArea();
 
-  // WmShelfObserver:
+  // ShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
@@ -84,7 +84,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
   display::Screen* screen_;
   gfx::Rect work_area_;
-  WmShelf* shelf_;
+  Shelf* shelf_;
   int tray_bubble_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPopupAlignmentDelegate);

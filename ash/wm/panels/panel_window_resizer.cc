@@ -7,7 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_parenting_utils.h"
@@ -124,7 +124,7 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
     gfx::Rect launcher_bounds =
         panel_layout_manager->shelf()->GetWindow()->GetBoundsInScreen();
     ::wm::ConvertRectFromScreen(GetTarget()->parent(), &launcher_bounds);
-    switch (panel_layout_manager->shelf()->GetAlignment()) {
+    switch (panel_layout_manager->shelf()->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
       case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         if (bounds.bottom() >=

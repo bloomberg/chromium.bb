@@ -189,7 +189,7 @@ void AshTestBase::TearDown() {
 }
 
 // static
-WmShelf* AshTestBase::GetPrimaryShelf() {
+Shelf* AshTestBase::GetPrimaryShelf() {
   return Shell::GetPrimaryRootWindowController()->GetShelf();
 }
 

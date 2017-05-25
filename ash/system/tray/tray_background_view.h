@@ -16,10 +16,10 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
+class Shelf;
 class TrayBackground;
 class TrayContainer;
 class TrayEventFilter;
-class WmShelf;
 
 // Base class for some children of StatusAreaWidget. This class handles setting
 // and animating the background when the Launcher is shown/hidden. It also
@@ -31,7 +31,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
  public:
   static const char kViewClassName[];
 
-  explicit TrayBackgroundView(WmShelf* wm_shelf);
+  explicit TrayBackgroundView(Shelf* shelf);
   ~TrayBackgroundView() override;
 
   // Called after the tray has been added to the widget containing it.
@@ -81,7 +81,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   TrayContainer* tray_container() const { return tray_container_; }
   TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
-  WmShelf* shelf() { return wm_shelf_; }
+  Shelf* shelf() { return shelf_; }
 
   // Updates the arrow visibility based on the launcher visibility.
   void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
@@ -127,7 +127,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   gfx::Rect GetBackgroundBounds() const;
 
   // The shelf containing the system tray for this view.
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   // Convenience pointer to the contents view.
   TrayContainer* tray_container_;

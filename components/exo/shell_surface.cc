@@ -7,10 +7,10 @@
 #include <algorithm>
 
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell_port.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"

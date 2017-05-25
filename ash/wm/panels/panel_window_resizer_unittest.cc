@@ -9,10 +9,10 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
@@ -129,7 +129,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   // - |first| should be right of |second| in an RTL bottom-aligned shelf.
   // - |first| should be above |second| in a left- or right-aligned shelf.
   void CheckWindowAndItemPlacement(aura::Window* first, aura::Window* second) {
-    WmShelf* shelf = GetPrimaryShelf();
+    Shelf* shelf = GetPrimaryShelf();
     const gfx::Rect first_item_bounds =
         shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(first));
     const gfx::Rect second_item_bounds =
@@ -265,7 +265,7 @@ TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
 
   // Hide the shelf. This minimizes all attached windows but should ignore
   // the dragged window.
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   shelf->shelf_layout_manager()->UpdateVisibilityState();
   RunAllPendingInMessageLoop();

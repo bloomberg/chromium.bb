@@ -149,9 +149,9 @@ std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
   return base::MakeUnique<PaletteDelegateImpl>();
 }
 
-ui::MenuModel* ShellDelegateImpl::CreateContextMenu(WmShelf* wm_shelf,
+ui::MenuModel* ShellDelegateImpl::CreateContextMenu(Shelf* shelf,
                                                     const ShelfItem* item) {
-  return new ContextMenu(wm_shelf);
+  return new ContextMenu(shelf);
 }
 
 GPUSupport* ShellDelegateImpl::CreateGPUSupport() {

@@ -6,8 +6,8 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell_port.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm_window.h"
@@ -124,14 +124,14 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
       shelf_view_(shelf_view),
       bubble_(nullptr),
       weak_factory_(this) {
-  shelf_view_->wm_shelf()->AddObserver(this);
+  shelf_view_->shelf()->AddObserver(this);
   ShellPort::Get()->AddPointerWatcher(this,
                                       views::PointerWatcherEventTypes::BASIC);
 }
 
 ShelfTooltipManager::~ShelfTooltipManager() {
   ShellPort::Get()->RemovePointerWatcher(this);
-  shelf_view_->wm_shelf()->RemoveObserver(this);
+  shelf_view_->shelf()->RemoveObserver(this);
   WmWindow* window = nullptr;
   if (shelf_view_->GetWidget())
     window = WmWindow::Get(shelf_view_->GetWidget()->GetNativeWindow());
@@ -172,7 +172,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
     return;
 
   views::BubbleBorder::Arrow arrow = views::BubbleBorder::Arrow::NONE;
-  switch (shelf_view_->wm_shelf()->GetAlignment()) {
+  switch (shelf_view_->shelf()->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       arrow = views::BubbleBorder::BOTTOM_CENTER;
@@ -253,7 +253,7 @@ void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
 }
 
 bool ShelfTooltipManager::ShouldShowTooltipForView(views::View* view) {
-  WmShelf* shelf = shelf_view_ ? shelf_view_->wm_shelf() : nullptr;
+  Shelf* shelf = shelf_view_ ? shelf_view_->shelf() : nullptr;
   return shelf && shelf_view_->ShouldShowTooltipForView(view) &&
          (shelf->GetVisibilityState() == SHELF_VISIBLE ||
           (shelf->GetVisibilityState() == SHELF_AUTO_HIDE &&

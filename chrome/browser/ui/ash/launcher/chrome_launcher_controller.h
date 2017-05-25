@@ -41,9 +41,9 @@ class Profile;
 class LauncherControllerHelper;
 
 namespace ash {
+class Shelf;
 struct ShelfItem;
 class ShelfModel;
-class WmShelf;
 }  // namespace ash
 
 namespace content {
@@ -211,7 +211,7 @@ class ChromeLauncherController
   // user profile or not. However, since the full visibility calculation of the
   // shelf cannot be performed here, this is only a probability used for
   // animation predictions.
-  bool ShelfBoundsChangesProbablyWithUser(ash::WmShelf* shelf,
+  bool ShelfBoundsChangesProbablyWithUser(ash::Shelf* shelf,
                                           const AccountId& account_id) const;
 
   // Called when the user profile is fully loaded and ready to switch to.

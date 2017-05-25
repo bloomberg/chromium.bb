@@ -53,6 +53,7 @@ class AshWindowTreeHost;
 class BootSplashScreen;
 enum class LoginStatus;
 class PanelLayoutManager;
+class Shelf;
 class ShelfLayoutManager;
 class StackingController;
 class StatusAreaWidget;
@@ -62,7 +63,6 @@ class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WallpaperWidgetController;
-class WmShelf;
 class WorkspaceController;
 
 namespace mus {
@@ -137,9 +137,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   wm::WorkspaceWindowState GetWorkspaceWindowState();
 
-  WmShelf* wm_shelf() const { return wm_shelf_.get(); }
-  // TODO(jamescook): Eliminate in favor of wm_shelf().
-  WmShelf* GetShelf() const { return wm_shelf_.get(); }
+  Shelf* shelf() const { return shelf_.get(); }
+  // TODO(jamescook): Eliminate in favor of shelf().
+  Shelf* GetShelf() const { return shelf_.get(); }
 
   // Initializes the shelf for this root window and notifies observers.
   void InitializeShelf();
@@ -348,7 +348,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // The shelf controller for this root window. Exists for the entire lifetime
   // of the RootWindowController so that it is safe for observers to be added
   // to it during construction of the shelf widget and status tray.
-  std::unique_ptr<WmShelf> wm_shelf_;
+  std::unique_ptr<Shelf> shelf_;
 
   // TODO(jamescook): Eliminate this. It is left over from legacy shelf code and
   // doesn't mean anything in particular.

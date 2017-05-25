@@ -5,7 +5,7 @@
 #include "ash/system/user/tray_user.h"
 
 #include "ash/session/session_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"

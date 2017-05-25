@@ -8,8 +8,8 @@
 
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"

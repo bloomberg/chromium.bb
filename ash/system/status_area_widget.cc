@@ -8,7 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/lock_screen_action/lock_screen_action_tray.h"
@@ -28,9 +28,8 @@
 
 namespace ash {
 
-StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
-                                   WmShelf* wm_shelf)
-    : status_area_widget_delegate_(new StatusAreaWidgetDelegate(wm_shelf)),
+StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
+    : status_area_widget_delegate_(new StatusAreaWidgetDelegate(shelf)),
       overview_button_tray_(nullptr),
       system_tray_(nullptr),
       web_notification_tray_(nullptr),
@@ -40,9 +39,9 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
       virtual_keyboard_tray_(nullptr),
       ime_menu_tray_(nullptr),
       login_status_(LoginStatus::NOT_LOGGED_IN),
-      wm_shelf_(wm_shelf) {
+      shelf_(shelf) {
   DCHECK(status_container);
-  DCHECK(wm_shelf);
+  DCHECK(shelf);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
@@ -196,45 +195,45 @@ void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
 }
 
 void StatusAreaWidget::AddSystemTray() {
-  system_tray_ = new SystemTray(wm_shelf_);
+  system_tray_ = new SystemTray(shelf_);
   status_area_widget_delegate_->AddTray(system_tray_);
 }
 
 void StatusAreaWidget::AddWebNotificationTray() {
   DCHECK(system_tray_);
   web_notification_tray_ =
-      new WebNotificationTray(wm_shelf_, GetNativeWindow(), system_tray_);
+      new WebNotificationTray(shelf_, GetNativeWindow(), system_tray_);
   status_area_widget_delegate_->AddTray(web_notification_tray_);
 }
 
 void StatusAreaWidget::AddLockScreenActionTray() {
   DCHECK(system_tray_);
-  lock_screen_action_tray_ = new LockScreenActionTray(wm_shelf_);
+  lock_screen_action_tray_ = new LockScreenActionTray(shelf_);
   status_area_widget_delegate_->AddTray(lock_screen_action_tray_);
 }
 
 void StatusAreaWidget::AddLogoutButtonTray() {
-  logout_button_tray_ = new LogoutButtonTray(wm_shelf_);
+  logout_button_tray_ = new LogoutButtonTray(shelf_);
   status_area_widget_delegate_->AddTray(logout_button_tray_);
 }
 
 void StatusAreaWidget::AddPaletteTray() {
-  palette_tray_ = new PaletteTray(wm_shelf_);
+  palette_tray_ = new PaletteTray(shelf_);
   status_area_widget_delegate_->AddTray(palette_tray_);
 }
 
 void StatusAreaWidget::AddVirtualKeyboardTray() {
-  virtual_keyboard_tray_ = new VirtualKeyboardTray(wm_shelf_);
+  virtual_keyboard_tray_ = new VirtualKeyboardTray(shelf_);
   status_area_widget_delegate_->AddTray(virtual_keyboard_tray_);
 }
 
 void StatusAreaWidget::AddImeMenuTray() {
-  ime_menu_tray_ = new ImeMenuTray(wm_shelf_);
+  ime_menu_tray_ = new ImeMenuTray(shelf_);
   status_area_widget_delegate_->AddTray(ime_menu_tray_);
 }
 
 void StatusAreaWidget::AddOverviewButtonTray() {
-  overview_button_tray_ = new OverviewButtonTray(wm_shelf_);
+  overview_button_tray_ = new OverviewButtonTray(shelf_);
   status_area_widget_delegate_->AddTray(overview_button_tray_);
 }
 

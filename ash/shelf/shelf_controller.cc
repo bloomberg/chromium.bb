@@ -8,7 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,8 +20,8 @@ namespace ash {
 
 namespace {
 
-// Returns the WmShelf instance for the display with the given |display_id|.
-WmShelf* GetShelfForDisplay(int64_t display_id) {
+// Returns the Shelf instance for the display with the given |display_id|.
+Shelf* GetShelfForDisplay(int64_t display_id) {
   // The controller may be null for invalid ids or for displays being removed.
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display_id);
@@ -41,7 +41,7 @@ void ShelfController::BindRequest(mojom::ShelfControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void ShelfController::NotifyShelfInitialized(WmShelf* shelf) {
+void ShelfController::NotifyShelfInitialized(Shelf* shelf) {
   // Notify observers, Chrome will set alignment and auto-hide from prefs.
   int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
   observers_.ForAllPtrs([display_id](mojom::ShelfObserver* observer) {
@@ -49,7 +49,7 @@ void ShelfController::NotifyShelfInitialized(WmShelf* shelf) {
   });
 }
 
-void ShelfController::NotifyShelfAlignmentChanged(WmShelf* shelf) {
+void ShelfController::NotifyShelfAlignmentChanged(Shelf* shelf) {
   ShelfAlignment alignment = shelf->alignment();
   int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
   observers_.ForAllPtrs(
@@ -58,7 +58,7 @@ void ShelfController::NotifyShelfAlignmentChanged(WmShelf* shelf) {
       });
 }
 
-void ShelfController::NotifyShelfAutoHideBehaviorChanged(WmShelf* shelf) {
+void ShelfController::NotifyShelfAutoHideBehaviorChanged(Shelf* shelf) {
   ShelfAutoHideBehavior behavior = shelf->auto_hide_behavior();
   int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
   observers_.ForAllPtrs([behavior, display_id](mojom::ShelfObserver* observer) {
@@ -75,7 +75,7 @@ void ShelfController::AddObserver(
 
 void ShelfController::SetAlignment(ShelfAlignment alignment,
                                    int64_t display_id) {
-  WmShelf* shelf = GetShelfForDisplay(display_id);
+  Shelf* shelf = GetShelfForDisplay(display_id);
   // TODO(jamescook): The session state check should not be necessary, but
   // otherwise this wrongly tries to set the alignment on a secondary display
   // during login before the ShelfLockingManager is created.
@@ -85,7 +85,7 @@ void ShelfController::SetAlignment(ShelfAlignment alignment,
 
 void ShelfController::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide,
                                           int64_t display_id) {
-  WmShelf* shelf = GetShelfForDisplay(display_id);
+  Shelf* shelf = GetShelfForDisplay(display_id);
   // TODO(jamescook): The session state check should not be necessary, but
   // otherwise this wrongly tries to set auto-hide state on a secondary display
   // during login.

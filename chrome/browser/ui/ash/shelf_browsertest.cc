@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +20,7 @@ using ShelfBrowserTest = InProcessBrowserTest;
 // Confirm that a status bubble doesn't cause the shelf to darken.
 IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
   ash::ShelfLayoutManager* shelf_layout_manager =
-      ash::WmShelf::ForWindow(browser()->window()->GetNativeWindow())
+      ash::Shelf::ForWindow(browser()->window()->GetNativeWindow())
           ->shelf_layout_manager();
   EXPECT_TRUE(shelf_layout_manager->IsVisible());
 
@@ -59,7 +59,7 @@ class ShelfGuestSessionBrowserTest : public InProcessBrowserTest {
 // Tests that in guest session, shelf alignment could be initialized to bottom
 // aligned, instead of bottom locked (crbug.com/699661).
 IN_PROC_BROWSER_TEST_F(ShelfGuestSessionBrowserTest, ShelfAlignment) {
-  ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(browser()->window()->GetNativeWindow());
+  ash::Shelf* shelf =
+      ash::Shelf::ForWindow(browser()->window()->GetNativeWindow());
   EXPECT_EQ(ash::SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 }

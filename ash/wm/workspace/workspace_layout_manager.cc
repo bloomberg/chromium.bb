@@ -11,7 +11,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/fullscreen_window_finder.h"
@@ -370,7 +370,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
 }
 
 void WorkspaceLayoutManager::UpdateShelfVisibility() {
-  root_window_controller_->wm_shelf()->UpdateVisibilityState();
+  root_window_controller_->shelf()->UpdateVisibilityState();
 }
 
 void WorkspaceLayoutManager::UpdateFullscreenState() {

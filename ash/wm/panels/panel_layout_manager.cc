@@ -12,7 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -189,7 +189,7 @@ class PanelCalloutWidget : public views::Widget {
   }
 
   // Updates the bounds based on the shelf alignment.
-  void UpdateBounds(WmShelf* shelf) {
+  void UpdateBounds(Shelf* shelf) {
     Window* window = this->GetNativeWindow();
     gfx::Rect callout_bounds = window->bounds();
     if (shelf->IsHorizontalAlignment()) {
@@ -305,7 +305,7 @@ void PanelLayoutManager::FinishDragging() {
   Relayout();
 }
 
-void PanelLayoutManager::SetShelf(WmShelf* shelf) {
+void PanelLayoutManager::SetShelf(Shelf* shelf) {
   DCHECK(!shelf_);
   shelf_ = shelf;
   shelf_->AddObserver(this);
@@ -584,7 +584,7 @@ void PanelLayoutManager::MinimizePanel(Window* panel) {
   panel_slide_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
   gfx::Rect bounds(panel->bounds());
-  bounds.Offset(GetSlideInAnimationOffset(shelf_->GetAlignment()));
+  bounds.Offset(GetSlideInAnimationOffset(shelf_->alignment()));
   SetChildBoundsDirect(panel, bounds);
   panel->Hide();
   layer->SetOpacity(0);
@@ -858,9 +858,9 @@ void PanelLayoutManager::UpdateCallouts() {
           std::max(current_bounds.y() - callout_bounds.y(),
                    callout_bounds.bottom() - current_bounds.bottom());
     }
-    if (shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT)
+    if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
       callout_bounds.set_x(bounds.x() - callout_bounds.width());
-    else if (shelf_->GetAlignment() == SHELF_ALIGNMENT_RIGHT)
+    else if (shelf_->alignment() == SHELF_ALIGNMENT_RIGHT)
       callout_bounds.set_x(bounds.right());
     else
       callout_bounds.set_y(bounds.bottom());

@@ -6,9 +6,9 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"

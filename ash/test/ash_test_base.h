@@ -49,8 +49,8 @@ class WidgetDelegate;
 }
 
 namespace ash {
+class Shelf;
 class SystemTray;
-class WmShelf;
 
 namespace test {
 
@@ -69,8 +69,8 @@ class AshTestBase : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  // Returns the WmShelf for the primary display.
-  static WmShelf* GetPrimaryShelf();
+  // Returns the Shelf for the primary display.
+  static Shelf* GetPrimaryShelf();
 
   // Returns the system tray on the primary display.
   static SystemTray* GetPrimarySystemTray();

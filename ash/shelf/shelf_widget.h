@@ -24,10 +24,10 @@ namespace ash {
 enum class AnimationChangeType;
 class AppListButton;
 class FocusCycler;
+class Shelf;
 class ShelfLayoutManager;
 class ShelfView;
 class StatusAreaWidget;
-class WmShelf;
 class WmWindow;
 
 // The ShelfWidget manages the shelf view (which contains the shelf icons) and
@@ -38,7 +38,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfBackgroundAnimatorObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf);
+  ShelfWidget(WmWindow* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
 
   void CreateStatusAreaWidget(WmWindow* status_container);
@@ -75,10 +75,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Clean up prior to deletion.
   void Shutdown();
 
-  // See WmShelf::UpdateIconPositionForPanel().
+  // See Shelf::UpdateIconPositionForPanel().
   void UpdateIconPositionForPanel(WmWindow* panel);
 
-  // See WmShelf::GetScreenBoundsOfItemIconForWindow().
+  // See Shelf::GetScreenBoundsOfItemIconForWindow().
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
 
   // Returns the button that opens the app launcher.
@@ -103,7 +103,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   class DelegateView;
   friend class DelegateView;
 
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;

@@ -6,8 +6,8 @@
 
 #include "ash/content/shell_content_state.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_environment_content.h"
@@ -1038,7 +1038,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   EXPECT_FALSE(CoversScreen(window(1)));
   EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
   EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
   ShelfWidget* shelf_widget = shelf->shelf_widget();
@@ -1321,7 +1321,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(

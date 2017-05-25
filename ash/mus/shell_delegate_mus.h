@@ -40,7 +40,7 @@ class ShellDelegateMus : public ShellDelegate {
   SessionStateDelegate* CreateSessionStateDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
-  ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
+  ui::MenuModel* CreateContextMenu(Shelf* shelf,
                                    const ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;

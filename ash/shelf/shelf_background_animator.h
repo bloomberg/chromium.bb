@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/wm_shelf_observer.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -24,14 +24,14 @@ class SlideAnimation;
 namespace ash {
 
 enum class AnimationChangeType;
+class Shelf;
 class ShelfBackgroundAnimatorObserver;
 class ShelfBackgroundAnimatorTestApi;
 class WallpaperController;
-class WmShelf;
 
 // Central controller for the Shelf and Dock opacity animations.
 //
-// The ShelfBackgroundAnimator is capable of observing a WmShelf instance for
+// The ShelfBackgroundAnimator is capable of observing a Shelf instance for
 // background type changes or clients can call PaintBackground() directly.
 //
 // The Shelf uses 2 surfaces for the animations:
@@ -40,7 +40,7 @@ class WmShelf;
 //    1. Shelf button backgrounds
 //    2. Overlay for the SHELF_BACKGROUND_OVERLAP and SHELF_BACKGROUND_MAXIMIZED
 //       states.
-class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
+class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
                                            public gfx::AnimationDelegate,
                                            public WallpaperControllerObserver {
  public:
@@ -48,10 +48,10 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   static const int kMaxAlpha = SK_AlphaOPAQUE;
 
   // Initializes this with the given |background_type|. This will observe the
-  // |wm_shelf| for background type changes and the |wallpaper_controller| for
+  // |shelf| for background type changes and the |wallpaper_controller| for
   // wallpaper changes if not null.
   ShelfBackgroundAnimator(ShelfBackgroundType background_type,
-                          WmShelf* wm_shelf,
+                          Shelf* shelf,
                           WallpaperController* wallpaper_controller);
   ~ShelfBackgroundAnimator() override;
 
@@ -84,7 +84,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   void AnimationEnded(const gfx::Animation* animation) override;
 
  protected:
-  // WmShelfObserver:
+  // ShelfObserver:
   void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
                                AnimationChangeType change_type) override;
 
@@ -156,7 +156,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   void NotifyObservers();
 
   // The shelf to observe for changes to the shelf background type, can be null.
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   // The wallpaper controller to observe for changes and to extract colors from.
   WallpaperController* wallpaper_controller_;

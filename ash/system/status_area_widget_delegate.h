@@ -14,13 +14,13 @@
 
 namespace ash {
 class FocusCycler;
-class WmShelf;
+class Shelf;
 
 // The View for the status area widget.
 class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
                                             public views::WidgetDelegate {
  public:
-  explicit StatusAreaWidgetDelegate(WmShelf* wm_shelf);
+  explicit StatusAreaWidgetDelegate(Shelf* shelf);
   ~StatusAreaWidgetDelegate() override;
 
   // Returns status area widget delegate from primary system tray if exists,
@@ -72,7 +72,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   // screen.
   void SetBorderOnChild(views::View* child, bool extend_border_to_edge);
 
-  WmShelf* const wm_shelf_;
+  Shelf* const shelf_;
   const FocusCycler* focus_cycler_for_testing_;
 
   // When true, the default focus of the status area widget is the last

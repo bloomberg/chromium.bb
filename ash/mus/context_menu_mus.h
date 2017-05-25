@@ -11,14 +11,14 @@
 
 namespace ash {
 
-class WmShelf;
+class Shelf;
 
 // Context menu for mash.
 // TODO: Mimic logic in LauncherContextMenu. http://crbug.com/640693
 class ContextMenuMus : public ui::SimpleMenuModel,
                        public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ContextMenuMus(WmShelf* wm_shelf);
+  explicit ContextMenuMus(Shelf* shelf);
   ~ContextMenuMus() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -33,7 +33,7 @@ class ContextMenuMus : public ui::SimpleMenuModel,
     MENU_CHANGE_WALLPAPER,
   };
 
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
   ShelfAlignmentMenu alignment_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuMus);

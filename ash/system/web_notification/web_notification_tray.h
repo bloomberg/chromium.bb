@@ -50,7 +50,7 @@ class ASH_EXPORT WebNotificationTray
       public base::SupportsWeakPtr<WebNotificationTray>,
       public ui::SimpleMenuModel::Delegate {
  public:
-  WebNotificationTray(WmShelf* shelf,
+  WebNotificationTray(Shelf* shelf,
                       aura::Window* status_area_window,
                       SystemTray* system_tray);
   ~WebNotificationTray() override;

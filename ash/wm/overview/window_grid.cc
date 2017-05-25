@@ -15,7 +15,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector.h"
@@ -627,7 +627,7 @@ void WindowGrid::InitShieldWidget() {
   // synonymous with a black shelf background. Update this code if that
   // assumption is no longer valid.
   const float initial_opacity =
-      (WmShelf::ForWindow(root_window_)->GetBackgroundType() ==
+      (Shelf::ForWindow(root_window_)->GetBackgroundType() ==
        SHELF_BACKGROUND_MAXIMIZED)
           ? 1.f
           : 0.f;

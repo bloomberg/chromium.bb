@@ -11,7 +11,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm_window.h"
@@ -145,7 +145,7 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   // Create a window, otherwise autohide doesn't work.
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 50, 50));
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
@@ -210,7 +210,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
       base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
   display::Display second_display = GetSecondaryDisplay();
-  WmShelf* second_shelf =
+  Shelf* second_shelf =
       Shell::GetRootWindowControllerWithDisplayId(second_display.id())
           ->GetShelf();
   AshPopupAlignmentDelegate for_2nd_display(second_shelf);
@@ -249,7 +249,7 @@ TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
   UpdateDisplay("600x600");
   int baseline = alignment_delegate()->GetBaseLine();
 
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   gfx::Rect keyboard_bounds(0, 300, 600, 300);
   shelf->SetVirtualKeyboardBoundsForTesting(keyboard_bounds);
   int keyboard_baseline = alignment_delegate()->GetBaseLine();

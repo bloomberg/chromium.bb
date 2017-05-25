@@ -6,8 +6,8 @@
 
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell_port.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ui/gfx/geometry/rect.h"
@@ -15,12 +15,12 @@
 
 namespace ash {
 
-OverflowBubble::OverflowBubble(WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf),
+OverflowBubble::OverflowBubble(Shelf* shelf)
+    : shelf_(shelf),
       bubble_(nullptr),
       overflow_button_(nullptr),
       shelf_view_(nullptr) {
-  DCHECK(wm_shelf_);
+  DCHECK(shelf_);
   ShellPort::Get()->AddPointerWatcher(this,
                                       views::PointerWatcherEventTypes::BASIC);
 }
@@ -37,7 +37,7 @@ void OverflowBubble::Show(OverflowButton* overflow_button,
 
   Hide();
 
-  bubble_ = new OverflowBubbleView(wm_shelf_);
+  bubble_ = new OverflowBubbleView(shelf_);
   bubble_->InitOverflowBubble(overflow_button, shelf_view);
   shelf_view_ = shelf_view;
   overflow_button_ = overflow_button;

@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf_observer.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm_display_observer.h"
@@ -35,7 +35,7 @@ class Widget;
 
 namespace ash {
 class PanelCalloutWidget;
-class WmShelf;
+class Shelf;
 
 namespace wm {
 class RootWindowController;
@@ -58,7 +58,7 @@ class ASH_EXPORT PanelLayoutManager
       public ShellObserver,
       public aura::WindowObserver,
       public keyboard::KeyboardControllerObserver,
-      public WmShelfObserver {
+      public ShelfObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   ~PanelLayoutManager() override;
@@ -81,8 +81,8 @@ class ASH_EXPORT PanelLayoutManager
   // Returns the callout widget (arrow) for |panel|.
   views::Widget* GetCalloutWidgetForPanel(aura::Window* panel);
 
-  WmShelf* shelf() { return shelf_; }
-  void SetShelf(WmShelf* shelf);
+  Shelf* shelf() { return shelf_; }
+  void SetShelf(Shelf* shelf);
 
   // aura::LayoutManager:
   void OnWindowResized() override;
@@ -117,7 +117,7 @@ class ASH_EXPORT PanelLayoutManager
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
-  // WmShelfObserver:
+  // ShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnShelfIconPositionsChanged() override;
 
@@ -188,7 +188,7 @@ class ASH_EXPORT PanelLayoutManager
   // The panel being dragged.
   aura::Window* dragged_panel_;
   // The shelf we are observing for shelf icon changes.
-  WmShelf* shelf_;
+  Shelf* shelf_;
 
   // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
   // set of panel windows which have been temporarily hidden and need to be

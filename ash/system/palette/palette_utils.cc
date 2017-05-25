@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/palette_delegate.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/status_area_widget.h"
@@ -55,7 +55,7 @@ bool ShouldShowPalette() {
 bool PaletteContainsPointInScreen(const gfx::Point& point) {
   for (aura::Window* window : Shell::GetAllRootWindows()) {
     PaletteTray* palette_tray =
-        WmShelf::ForWindow(window)->GetStatusAreaWidget()->palette_tray();
+        Shelf::ForWindow(window)->GetStatusAreaWidget()->palette_tray();
     if (palette_tray && palette_tray->ContainsPointInScreen(point))
       return true;
   }

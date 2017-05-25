@@ -10,7 +10,7 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"

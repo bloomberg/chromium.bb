@@ -13,9 +13,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -438,7 +438,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 

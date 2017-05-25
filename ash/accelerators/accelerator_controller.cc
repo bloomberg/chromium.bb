@@ -20,8 +20,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
@@ -211,18 +211,18 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
   // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
-  WmShelf* shelf = WmShelf::ForWindow(Shell::GetPrimaryRootWindow());
+  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
   Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
 }
 
 void HandleLaunchAppN(int n) {
   base::RecordAction(UserMetricsAction("Accel_Launch_App"));
-  WmShelf::LaunchShelfItem(n);
+  Shelf::LaunchShelfItem(n);
 }
 
 void HandleLaunchLastApp() {
   base::RecordAction(UserMetricsAction("Accel_Launch_Last_App"));
-  WmShelf::LaunchShelfItem(-1);
+  Shelf::LaunchShelfItem(-1);
 }
 
 void HandleMediaNextTrack() {
@@ -332,7 +332,7 @@ void HandleShowKeyboardOverlay() {
 bool CanHandleShowMessageCenterBubble() {
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
-      WmShelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
+      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   return status_area_widget &&
          status_area_widget->web_notification_tray()->visible();
 }
@@ -341,7 +341,7 @@ void HandleShowMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
-      WmShelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
+      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   if (status_area_widget) {
     WebNotificationTray* notification_tray =
         status_area_widget->web_notification_tray();
@@ -464,7 +464,7 @@ void HandleShowImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
   StatusAreaWidget* status_area_widget =
-      WmShelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
     if (ime_menu_tray && ime_menu_tray->visible() &&

@@ -16,7 +16,7 @@ class View;
 }
 
 namespace ash {
-class WmShelf;
+class Shelf;
 
 namespace test {
 class OverflowBubbleViewTestAPI;
@@ -27,7 +27,7 @@ class OverflowBubbleViewTestAPI;
 class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
                                       public ShelfBackgroundAnimatorObserver {
  public:
-  explicit OverflowBubbleView(WmShelf* wm_shelf);
+  explicit OverflowBubbleView(Shelf* shelf);
   ~OverflowBubbleView() override;
 
   // |anchor| is the overflow button on the main shelf. |shelf_view| is the
@@ -58,7 +58,7 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfBackground(SkColor color) override;
 
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
   views::View* shelf_view_;  // Owned by views hierarchy.
   gfx::Vector2d scroll_offset_;
 

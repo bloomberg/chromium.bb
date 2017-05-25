@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -66,8 +66,7 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "accessibleTitle",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_STEP_ACCESSIBLE_TITLE));
-  ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
+  ash::Shelf* shelf = ash::Shelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
   std::string shelf_alignment;
   switch (shelf->alignment()) {
     case ash::SHELF_ALIGNMENT_BOTTOM:

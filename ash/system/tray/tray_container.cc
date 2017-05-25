@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
@@ -14,8 +14,8 @@
 
 namespace ash {
 
-TrayContainer::TrayContainer(WmShelf* wm_shelf) : wm_shelf_(wm_shelf) {
-  DCHECK(wm_shelf_);
+TrayContainer::TrayContainer(Shelf* shelf) : shelf_(shelf) {
+  DCHECK(shelf_);
 
   UpdateLayout();
 }
@@ -47,7 +47,7 @@ void TrayContainer::ViewHierarchyChanged(
 }
 
 void TrayContainer::UpdateLayout() {
-  const bool is_horizontal = wm_shelf_->IsHorizontalAlignment();
+  const bool is_horizontal = shelf_->IsHorizontalAlignment();
 
   // Adjust the size of status tray dark background by adding additional
   // empty border.

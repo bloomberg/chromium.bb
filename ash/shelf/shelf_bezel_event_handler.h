@@ -14,12 +14,12 @@ class Rect;
 }
 
 namespace ash {
-class WmShelf;
+class Shelf;
 
 // Forwards touch gestures on a bezel sensor to the shelf.
 class ShelfBezelEventHandler : public ui::EventHandler {
  public:
-  explicit ShelfBezelEventHandler(WmShelf* shelf);
+  explicit ShelfBezelEventHandler(Shelf* shelf);
   ~ShelfBezelEventHandler() override;
 
   // Overridden from ui::EventHandler:
@@ -28,7 +28,7 @@ class ShelfBezelEventHandler : public ui::EventHandler {
  private:
   bool IsShelfOnBezel(const gfx::Rect& screen, const gfx::Point& point) const;
 
-  WmShelf* shelf_;
+  Shelf* shelf_;
   bool in_touch_drag_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfBezelEventHandler);

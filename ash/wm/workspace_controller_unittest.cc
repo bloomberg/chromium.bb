@@ -9,9 +9,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
@@ -360,7 +360,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   const gfx::Rect w1_bounds(0, 1, 101, 102);
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   const gfx::Rect touches_shelf_bounds(
       0, shelf_layout_manager()->GetIdealBounds().y() - 10, 101, 102);
@@ -660,7 +660,7 @@ class DontCrashOnChangeAndActivateDelegate
 // . show the window and during the bounds change activate it.
 TEST_F(WorkspaceControllerTest, DontCrashOnChangeAndActivate) {
   // Force the shelf
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   DontCrashOnChangeAndActivateDelegate delegate;
@@ -1390,7 +1390,7 @@ TEST_F(WorkspaceControllerTest, DragWindowKeepsShelfAutohidden) {
       &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(w1.get());
 
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 

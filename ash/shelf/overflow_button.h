@@ -16,14 +16,14 @@ namespace test {
 class OverflowButtonTestApi;
 }  // namespace test
 
+class Shelf;
 class ShelfView;
-class WmShelf;
 
 // Shelf overflow chevron button.
 class ASH_EXPORT OverflowButton : public views::CustomButton {
  public:
   // |shelf_view| is the view containing this button.
-  OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf);
+  OverflowButton(ShelfView* shelf_view, Shelf* shelf);
   ~OverflowButton() override;
 
   void OnShelfAlignmentChanged();
@@ -75,7 +75,7 @@ class ASH_EXPORT OverflowButton : public views::CustomButton {
   const gfx::ImageSkia* chevron_image_;
 
   ShelfView* shelf_view_;
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   // Color used to paint the background.
   SkColor background_color_;

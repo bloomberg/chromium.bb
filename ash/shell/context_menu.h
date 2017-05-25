@@ -11,7 +11,7 @@
 
 namespace ash {
 
-class WmShelf;
+class Shelf;
 
 namespace shell {
 
@@ -19,7 +19,7 @@ namespace shell {
 class ContextMenu : public ui::SimpleMenuModel,
                     public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ContextMenu(WmShelf* wm_shelf);
+  explicit ContextMenu(Shelf* shelf);
   ~ContextMenu() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -33,7 +33,7 @@ class ContextMenu : public ui::SimpleMenuModel,
     MENU_ALIGNMENT_MENU,
   };
 
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
   ShelfAlignmentMenu alignment_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenu);

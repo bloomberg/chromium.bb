@@ -8,7 +8,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/window_properties.h"
@@ -97,7 +97,7 @@ void SetAutoHideShelf(aura::Window* window, bool autohide) {
   wm::GetWindowState(window)->set_autohide_shelf_when_maximized_or_fullscreen(
       autohide);
   for (aura::Window* root_window : Shell::GetAllRootWindows())
-    WmShelf::ForWindow(root_window)->UpdateVisibilityState();
+    Shelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 
 bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {

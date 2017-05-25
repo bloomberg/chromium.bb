@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_WM_SHELF_H_
-#define ASH_SHELF_WM_SHELF_H_
+#ifndef ASH_SHELF_SHELF_H_
+#define ASH_SHELF_SHELF_H_
 
 #include <memory>
 
@@ -35,20 +35,20 @@ class ShelfLockingManager;
 class ShelfView;
 class ShelfWidget;
 class StatusAreaWidget;
-class WmShelfObserver;
+class ShelfObserver;
 class WmWindow;
 
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
 // root window controller.
-class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
+class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
  public:
-  WmShelf();
-  ~WmShelf() override;
+  Shelf();
+  ~Shelf() override;
 
   // Returns the shelf for the display that |window| is on. Note that the shelf
   // widget may not exist, or the shelf may not be visible.
-  static WmShelf* ForWindow(aura::Window* window);
+  static Shelf* ForWindow(aura::Window* window);
 
   // Returns if shelf alignment options are enabled, and the user is able to
   // adjust the alignment (eg. not allowed in guest and supervised user modes).
@@ -71,8 +71,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   WmWindow* GetWindow();
 
   ShelfAlignment alignment() const { return alignment_; }
-  // TODO(jamescook): Replace with alignment().
-  ShelfAlignment GetAlignment() const { return alignment_; }
   void SetAlignment(ShelfAlignment alignment);
 
   // Returns true if the shelf alignment is horizontal (i.e. at the bottom).
@@ -127,8 +125,8 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Returns true if the event was handled.
   bool ProcessGestureEvent(const ui::GestureEvent& event);
 
-  void AddObserver(WmShelfObserver* observer);
-  void RemoveObserver(WmShelfObserver* observer);
+  void AddObserver(ShelfObserver* observer);
+  void RemoveObserver(ShelfObserver* observer);
 
   void NotifyShelfIconPositionsChanged();
   StatusAreaWidget* GetStatusAreaWidget() const;
@@ -162,7 +160,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Sets shelf alignment to bottom during login and screen lock.
   ShelfLockingManager shelf_locking_manager_;
 
-  base::ObserverList<WmShelfObserver> observers_;
+  base::ObserverList<ShelfObserver> observers_;
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
   // TODO(mash): Facilitate simliar functionality in mash: crbug.com/631216
@@ -172,9 +170,9 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // TODO(mash): Facilitate simliar functionality in mash: crbug.com/636647
   std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(WmShelf);
+  DISALLOW_COPY_AND_ASSIGN(Shelf);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_WM_SHELF_H_
+#endif  // ASH_SHELF_SHELF_H_

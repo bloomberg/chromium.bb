@@ -9,8 +9,8 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/system/status_area_widget.h"
@@ -309,7 +309,7 @@ TEST_F(WebNotificationTrayTest, PopupAndAutoHideShelf) {
 
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
@@ -342,7 +342,7 @@ TEST_F(WebNotificationTrayTest, PopupAndFullscreen) {
 
   // Checks the work area for normal auto-hidden state.
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_auto_hidden = GetPopupWorkAreaBottom();

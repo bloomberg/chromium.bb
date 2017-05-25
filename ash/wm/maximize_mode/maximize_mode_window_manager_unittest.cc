@@ -10,7 +10,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
@@ -865,7 +865,7 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1060,7 +1060,7 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide and enter full screen.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1087,7 +1087,7 @@ TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

@@ -6,15 +6,15 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 
 namespace ash {
 
-ShelfAlignmentMenu::ShelfAlignmentMenu(WmShelf* wm_shelf)
-    : ui::SimpleMenuModel(nullptr), wm_shelf_(wm_shelf) {
-  DCHECK(wm_shelf_);
+ShelfAlignmentMenu::ShelfAlignmentMenu(Shelf* shelf)
+    : ui::SimpleMenuModel(nullptr), shelf_(shelf) {
+  DCHECK(shelf_);
   const int align_group_id = 1;
   set_delegate(this);
   AddRadioItemWithStringId(
@@ -29,7 +29,7 @@ ShelfAlignmentMenu::ShelfAlignmentMenu(WmShelf* wm_shelf)
 ShelfAlignmentMenu::~ShelfAlignmentMenu() {}
 
 bool ShelfAlignmentMenu::IsCommandIdChecked(int command_id) const {
-  switch (wm_shelf_->GetAlignment()) {
+  switch (shelf_->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return command_id == MENU_ALIGN_BOTTOM;
@@ -49,15 +49,15 @@ void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
       ShellPort::Get()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_LEFT);
-      wm_shelf_->SetAlignment(SHELF_ALIGNMENT_LEFT);
+      shelf_->SetAlignment(SHELF_ALIGNMENT_LEFT);
       break;
     case MENU_ALIGN_BOTTOM:
       ShellPort::Get()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_BOTTOM);
-      wm_shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+      shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
       break;
     case MENU_ALIGN_RIGHT:
       ShellPort::Get()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_RIGHT);
-      wm_shelf_->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+      shelf_->SetAlignment(SHELF_ALIGNMENT_RIGHT);
       break;
   }
 }
