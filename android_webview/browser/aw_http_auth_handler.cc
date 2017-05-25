@@ -66,13 +66,6 @@ bool AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
                                                 realm_);
 }
 
-// static
-AwHttpAuthHandler* AwHttpAuthHandler::Create(AwLoginDelegate* login_delegate,
-                                             net::AuthChallengeInfo* auth_info,
-                                             bool first_auth_attempt) {
-  return new AwHttpAuthHandler(login_delegate, auth_info, first_auth_attempt);
-}
-
 bool RegisterAwHttpAuthHandler(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
