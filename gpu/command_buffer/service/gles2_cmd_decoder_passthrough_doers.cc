@@ -3322,6 +3322,17 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
     GLint y,
     GLint width,
     GLint height) {
+  if (!surface_->SupportsPostSubBuffer()) {
+    InsertError(GL_INVALID_OPERATION,
+                "glPostSubBufferCHROMIUM is not supported for this surface.");
+    return error::kNoError;
+  }
+
+  gfx::SwapResult result = surface_->PostSubBuffer(x, y, width, height);
+  if (result == gfx::SwapResult::SWAP_FAILED) {
+    LOG(ERROR) << "Context lost because PostSubBuffer failed.";
+  }
+  // TODO(geofflang): force the context loss?
   return error::kNoError;
 }
 
