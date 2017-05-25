@@ -31,9 +31,11 @@
 namespace crash_reporter {
 namespace internal {
 
-base::FilePath PlatformCrashpadInitialization(bool initial_client,
-                                              bool browser_process,
-                                              bool embedded_handler) {
+base::FilePath PlatformCrashpadInitialization(
+    bool initial_client,
+    bool browser_process,
+    bool embedded_handler,
+    const std::string& user_data_dir) {
   base::FilePath database_path;  // Only valid in the browser process.
   base::FilePath metrics_path;  // Only valid in the browser process.
   DCHECK(!embedded_handler);  // This is not used on Mac.

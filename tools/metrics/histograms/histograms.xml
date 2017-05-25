@@ -449,6 +449,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ActivityTracker.CollectCrash.OpenForDeleteSuccess"
+    enum="BooleanSuccess">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Success of the attempt to open the debug file for deletion. Logged each time
+    a debug file is opened for deletion during collection from the crash
+    handler.
+  </summary>
+</histogram>
+
+<histogram name="ActivityTracker.CollectCrash.Status"
+    enum="ActivityTrackerCollectStatus">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Status for the collection of a stability debug file. Logged each time a
+    debug file collection attempt is made from the crash handler.
+  </summary>
+</histogram>
+
 <histogram name="ActivityTracker.Record.InitStatus"
     enum="ActivityTrackerRecordInitStatus">
   <owner>manzagop@chromium.org</owner>

@@ -16,9 +16,6 @@ namespace install_static {
 
 namespace {
 
-std::wstring* g_user_data_dir;
-std::wstring* g_invalid_user_data_dir;
-
 // Retrieves a registry policy for the user data directory from the registry, if
 // one is set. If there's none set in either HKLM or HKCU, |user_data_dir| will
 // be unmodified.
@@ -55,14 +52,15 @@ std::wstring MakeAbsoluteFilePath(const std::wstring& input) {
   return file_path;
 }
 
-// The same as GetUserDataDirectory(), but directly queries the global command
-// line object for the --user-data-dir flag. This is the more commonly used
-// function, where GetUserDataDirectory() is used primiarily for testing.
+// The same as DeriveUserDataDirectoryImpl(), but directly queries the global
+// command line object for the --user-data-dir flag. This is the more commonly
+// used function, where DeriveUserDataDirectoryImpl() is used primiarily for
+// testing.
 bool GetUserDataDirectoryUsingProcessCommandLine(
     const InstallConstants& mode,
     std::wstring* result,
     std::wstring* invalid_supplied_directory) {
-  return GetUserDataDirectoryImpl(
+  return DeriveUserDataDirectoryImpl(
       GetSwitchValueFromCommandLine(::GetCommandLine(), kUserDataDirSwitch),
       mode, result, invalid_supplied_directory);
 }
@@ -101,7 +99,7 @@ bool GetDefaultUserDataDirectory(const InstallConstants& mode,
 
 }  // namespace
 
-bool GetUserDataDirectoryImpl(
+bool DeriveUserDataDirectoryImpl(
     const std::wstring& user_data_dir_from_command_line,
     const InstallConstants& mode,
     std::wstring* result,
@@ -135,22 +133,11 @@ bool GetUserDataDirectoryImpl(
   return true;
 }
 
-bool GetUserDataDirectory(std::wstring* user_data_dir,
-                          std::wstring* invalid_user_data_dir) {
-  if (!g_user_data_dir) {
-    g_user_data_dir = new std::wstring();
-    g_invalid_user_data_dir = new std::wstring();
-    if (!GetUserDataDirectoryUsingProcessCommandLine(
-            InstallDetails::Get().mode(), g_user_data_dir,
-            g_invalid_user_data_dir)) {
-      return false;
-    }
-    assert(!g_user_data_dir->empty());
-  }
-  *user_data_dir = *g_user_data_dir;
-  if (invalid_user_data_dir)
-    *invalid_user_data_dir = *g_invalid_user_data_dir;
-  return true;
+bool DeriveUserDataDirectory(const InstallConstants& mode,
+                             std::wstring* user_data_dir,
+                             std::wstring* invalid_user_data_dir) {
+  return GetUserDataDirectoryUsingProcessCommandLine(mode, user_data_dir,
+                                                     invalid_user_data_dir);
 }
 
 }  // namespace install_static
