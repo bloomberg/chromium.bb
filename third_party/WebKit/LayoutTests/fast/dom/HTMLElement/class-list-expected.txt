@@ -8,15 +8,15 @@ PASS String(element.classList) is "y"
 PASS String(element.className) is "y"
 PASS element.classList.length is 0
 PASS element.classList.length is 1
-PASS element.classList.length is 2
+PASS element.classList.length is 1
 PASS element.classList.length is 2
 PASS element.className is "x"
 PASS element.className is "x"
-PASS element.className is "x x"
+PASS element.className is "x"
 PASS element.className is "y x"
 PASS element.className is ""
 PASS element.className is ""
-PASS element.className is "y y"
+PASS element.className is "y"
 PASS element.className is "y"
 Ensure that we can handle empty class name correctly
 PASS element.classList.toggle('x') is true
@@ -53,8 +53,8 @@ PASS element.classList.toggle() threw exception TypeError: Failed to execute 'to
 Indexing
 PASS element.classList[0] is "x"
 PASS element.classList.item(0) is "x"
-PASS element.classList[1] is "x"
-PASS element.classList.item(1) is "x"
+PASS element.classList[1] is undefined.
+PASS element.classList.item(1) is null
 PASS element.classList[1] is "y"
 PASS element.classList.item(1) is "y"
 PASS element.classList[0] is undefined.
