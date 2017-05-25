@@ -85,10 +85,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
                           blink::WebPluginAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
                           blink::WebPopupType::kWebPopupTypeLast)
-// TODO(dcheng): Update WebScreenOrientationType to have a "Last" enum member.
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
                               blink::kWebScreenOrientationUndefined,
-                              blink::kWebScreenOrientationLandscapeSecondary)
+                              blink::WebScreenOrientationTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebWorkerCreationError,
                           blink::kWebWorkerCreationErrorLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
