@@ -13,10 +13,8 @@ import argparse
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 from multiprocessing import Process, Queue
 
 
@@ -68,22 +66,12 @@ def ParseNinjaDepsOutput(ninja_out):
 
 def GetHeadersFromGN(out_dir, q):
   """Return all the header files from GN"""
-
-  tmp = None
-  try:
-    tmp = tempfile.mkdtemp()
-    shutil.copy2(os.path.join(out_dir, 'args.gn'),
-                 os.path.join(tmp, 'args.gn'))
-    # Do "gn gen" in a temp dir to prevent dirtying |out_dir|.
-    subprocess.check_call(['gn', 'gen', tmp, '--ide=json', '-q'])
-    gn_json = json.load(open(os.path.join(tmp, 'project.json')))
-  finally:
-    if tmp:
-      shutil.rmtree(tmp)
-  q.put(ParseGNProjectJSON(gn_json, out_dir, tmp))
+  subprocess.check_call(['gn', 'gen', out_dir, '--ide=json', '-q'])
+  gn_json = json.load(open(os.path.join(out_dir, 'project.json')))
+  q.put(ParseGNProjectJSON(gn_json))
 
 
-def ParseGNProjectJSON(gn, out_dir, tmp_out):
+def ParseGNProjectJSON(gn):
   """Parse GN output and get the header files"""
   all_headers = set()
 
@@ -97,8 +85,6 @@ def ParseGNProjectJSON(gn, out_dir, tmp_out):
       if f.endswith('.h') or f.endswith('.hh'):
         if f.startswith('//'):
           f = f[2:]  # Strip the '//' prefix.
-          if f.startswith(tmp_out):
-            f = out_dir + f[len(tmp_out):]
           all_headers.add(f)
 
   return all_headers
@@ -139,19 +125,13 @@ def GetNonExistingFiles(lst):
 
 
 def main():
-  parser = argparse.ArgumentParser(description='''
-      NOTE: Use ninja to build all targets in OUT_DIR before running
-      this script.''')
-  parser.add_argument('--out-dir', metavar='OUT_DIR', default='out/Release',
-                      help='output directory of the build')
-  parser.add_argument('--json',
-                      help='JSON output filename for missing headers')
-  parser.add_argument('--whitelist', help='file containing whitelist')
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--out-dir', default='out/Release')
+  parser.add_argument('--json')
+  parser.add_argument('--whitelist')
+  parser.add_argument('args', nargs=argparse.REMAINDER)
 
   args, _extras = parser.parse_known_args()
-
-  if not os.path.isdir(args.out_dir):
-    parser.error('OUT_DIR "%s" does not exist.' % args.out_dir)
 
   d_q = Queue()
   d_p = Process(target=GetHeadersFromNinja, args=(args.out_dir, d_q,))
@@ -166,6 +146,8 @@ def main():
   deps_p.start()
 
   d = d_q.get()
+  assert len(GetNonExistingFiles(d)) == 0, \
+      'Found non-existing files in ninja deps'
   gn = gn_q.get()
   missing = d - gn
   nonexisting = GetNonExistingFiles(gn)
@@ -177,14 +159,6 @@ def main():
   d_p.join()
   gn_p.join()
   deps_p.join()
-
-  if len(GetNonExistingFiles(d)) > 0:
-    parser.error('''Found non-existing files in ninja deps. You should
-        build all in OUT_DIR.''')
-  if len(d) == 0:
-    parser.error('OUT_DIR looks empty. You should build all there.')
-  if any((('/gen/' in i) for i in nonexisting)):
-    parser.error('OUT_DIR looks wrong. You should build all there.')
 
   if args.whitelist:
     whitelist = ParseWhiteList(open(args.whitelist).read())
