@@ -109,7 +109,6 @@ void DisplayConfigurationController::SetDisplayRotation(
         GetScreenRotationAnimatorForDisplay(display_id);
     screen_rotation_animator->Rotate(rotation, source);
   } else {
-    DCHECK(!rotation_animator_map_.count(display_id));
     display_manager_->SetDisplayRotation(display_id, rotation, source);
   }
 }
