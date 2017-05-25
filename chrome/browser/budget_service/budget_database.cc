@@ -185,8 +185,7 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
   }
 
   // Get the current SES score, to generate UMA.
-  SiteEngagementService* service = SiteEngagementService::Get(profile_);
-  double score = service->GetScore(origin.GetURL());
+  double score = GetSiteEngagementScoreForOrigin(origin);
 
   // Walk the list of budget chunks to see if the origin has enough budget.
   double total = 0;
@@ -324,10 +323,9 @@ void BudgetDatabase::AddEngagementBudget(const url::Origin& origin) {
   }
 
   // Get the current SES score, and calculate the hourly budget for that score.
-  SiteEngagementService* service = SiteEngagementService::Get(profile_);
   double hourly_budget = kMaximumHourlyBudget *
-                         service->GetScore(origin.GetURL()) /
-                         service->GetMaxPoints();
+                         GetSiteEngagementScoreForOrigin(origin) /
+                         SiteEngagementService::GetMaxPoints();
 
   // Update the last_engagement_award to the current time. If the origin wasn't
   // already in the map, this adds a new entry for it.
@@ -372,4 +370,12 @@ bool BudgetDatabase::CleanupExpiredBudget(const url::Origin& origin) {
   // Don't write to the DB now, write either when all chunks expire or when the
   // origin spends some budget.
   return false;
+}
+
+double BudgetDatabase::GetSiteEngagementScoreForOrigin(
+    const url::Origin& origin) const {
+  if (profile_->IsOffTheRecord())
+    return 0;
+
+  return SiteEngagementService::Get(profile_)->GetScore(origin.GetURL());
 }
