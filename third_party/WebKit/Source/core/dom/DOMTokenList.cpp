@@ -224,7 +224,7 @@ void DOMTokenList::setValue(const AtomicString& value) {
   bool value_changed = value_ != value;
   value_ = value;
   if (value_changed)
-    tokens_.Set(value, SpaceSplitString::kShouldNotFoldCase);
+    tokens_.Set(value);
   if (observer_)
     observer_->ValueWasSet();
 }

@@ -32,7 +32,7 @@ bool RelList::ContainsInternal(const AtomicString& token) const {
 }
 
 void RelList::SetRelValues(const AtomicString& value) {
-  rel_values_.Set(value, SpaceSplitString::kShouldNotFoldCase);
+  rel_values_.Set(value);
 }
 
 static HashSet<AtomicString>& SupportedTokens() {

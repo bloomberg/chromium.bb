@@ -52,9 +52,10 @@ bool ClassList::ContainsInternal(const AtomicString& token) const {
 const SpaceSplitString& ClassList::ClassNames() const {
   DCHECK(element_->HasClass());
   if (element_->GetDocument().InQuirksMode()) {
-    if (!class_names_for_quirks_mode_)
-      class_names_for_quirks_mode_ = WTF::WrapUnique(
-          new SpaceSplitString(value(), SpaceSplitString::kShouldNotFoldCase));
+    if (!class_names_for_quirks_mode_) {
+      class_names_for_quirks_mode_ =
+          WTF::WrapUnique(new SpaceSplitString(value()));
+    }
     return *class_names_for_quirks_mode_.get();
   }
   return element_->ClassNames();

@@ -1152,8 +1152,8 @@ void CSPDirectiveList::ApplySandboxPolicy(const String& name,
   }
   has_sandbox_policy_ = true;
   String invalid_tokens;
-  SpaceSplitString policy_tokens(AtomicString(sandbox_policy),
-                                 SpaceSplitString::kShouldNotFoldCase);
+  SpaceSplitString policy_tokens =
+      SpaceSplitString(AtomicString(sandbox_policy));
   policy_->EnforceSandboxFlags(
       ParseSandboxPolicy(policy_tokens, invalid_tokens));
   if (!invalid_tokens.IsNull())

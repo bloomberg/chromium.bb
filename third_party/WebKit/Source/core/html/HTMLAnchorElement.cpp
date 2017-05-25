@@ -279,7 +279,7 @@ bool HTMLAnchorElement::HasRel(uint32_t relation) const {
 
 void HTMLAnchorElement::SetRel(const AtomicString& value) {
   link_relations_ = 0;
-  SpaceSplitString new_link_relations(value, SpaceSplitString::kShouldFoldCase);
+  SpaceSplitString new_link_relations(value.LowerASCII());
   // FIXME: Add link relations as they are implemented
   if (new_link_relations.Contains("noreferrer"))
     link_relations_ |= kRelationNoReferrer;
@@ -312,7 +312,7 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
 
   UseCounter::Count(GetDocument(), UseCounter::kHTMLAnchorElementPingAttribute);
 
-  SpaceSplitString ping_urls(ping_value, SpaceSplitString::kShouldNotFoldCase);
+  SpaceSplitString ping_urls(ping_value);
   for (unsigned i = 0; i < ping_urls.size(); i++)
     PingLoader::SendLinkAuditPing(GetDocument().GetFrame(),
                                   GetDocument().CompleteURL(ping_urls[i]),
