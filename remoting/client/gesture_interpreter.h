@@ -54,6 +54,8 @@ class GestureInterpreter {
 
   void TwoFingerTap(float x, float y);
 
+  void ThreeFingerTap(float x, float y);
+
   // Caller is expected to call both Pan() and Drag() when dragging is in
   // progress.
   void Drag(float x, float y, GestureState state);
@@ -82,8 +84,9 @@ class GestureInterpreter {
 
   void AbortAnimations();
 
-  void InjectMouseClick(float x,
-                        float y,
+  // Injects the mouse click event and shows the touch feedback.
+  void InjectMouseClick(float touch_x,
+                        float touch_y,
                         protocol::MouseEvent_MouseButton button);
 
   void InjectCursorPosition(float x, float y);

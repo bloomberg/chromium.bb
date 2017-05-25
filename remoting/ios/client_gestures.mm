@@ -27,6 +27,8 @@ remoting::GestureInterpreter::GestureState toGestureState(
 
 @implementation ClientGestures
 
+@synthesize delegate = _delegate;
+
 - (instancetype)initWithView:(UIView*)view client:(RemotingClient*)client {
   _view = view;
   _client = client;
@@ -94,7 +96,7 @@ remoting::GestureInterpreter::GestureState toGestureState(
       initWithTarget:self
               action:@selector(threeFingerTapGestureTriggered:)];
   _threeFingerTapRecognizer.numberOfTouchesRequired = 3;
-  _threeFingerPanRecognizer.delegate = self;
+  _threeFingerTapRecognizer.delegate = self;
   [view addGestureRecognizer:_threeFingerTapRecognizer];
 
   _inputScheme = HostInputSchemeTouch;
@@ -103,6 +105,7 @@ remoting::GestureInterpreter::GestureState toGestureState(
   [_twoFingerTapRecognizer
       requireGestureRecognizerToFail:_threeFingerTapRecognizer];
   [_pinchRecognizer requireGestureRecognizerToFail:_singleTapRecognizer];
+  [_pinchRecognizer requireGestureRecognizerToFail:_threeFingerPanRecognizer];
   [_panRecognizer requireGestureRecognizerToFail:_singleTapRecognizer];
   [_threeFingerPanRecognizer
       requireGestureRecognizerToFail:_threeFingerTapRecognizer];
@@ -325,29 +328,24 @@ remoting::GestureInterpreter::GestureState toGestureState(
 }
 
 - (IBAction)threeFingerTapGestureTriggered:(UITapGestureRecognizer*)sender {
-  // LOG_TRACE(INFO) << "threeFingerTapGestureTriggered";
-  if (_inputScheme == HostInputSchemeTouch) {
-    // disabled
-    return;
-  }
-
-  // if ([_scene containsTouchPoint:[sender locationInView:self.view]]) {
-  //   [Utility middleClickOn:_clientToHostProxy at:_scene.mousePosition];
-  // }
+  CGPoint touchPoint = [sender locationInView:_view];
+  _client.gestureInterpreter->ThreeFingerTap(touchPoint.x, touchPoint.y);
 }
 
 - (IBAction)threeFingerPanGestureTriggered:(UIPanGestureRecognizer*)sender {
   // LOG_TRACE(INFO) << "threeFingerPanGestureTriggered";
-  // if ([sender state] == UIGestureRecognizerStateChanged) {
-  //   CGPoint translation = [sender translationInView:self.view];
-  //   if (translation.y > 0) {
-  //     // Swiped down - do nothing
-  //   } else if (translation.y < 0) {
-  //     // Swiped up
-  //     [_keyEntryView becomeFirstResponder];
-  //   }
-  //   [sender setTranslation:CGPointZero inView:self.view];
-  // }
+  if ([sender state] != UIGestureRecognizerStateEnded) {
+    return;
+  }
+
+  CGPoint translation = [sender translationInView:_view];
+  if (translation.y > 0) {
+    // Swiped down - hide keyboard (for now)
+    [_delegate keyboardShouldHide];
+  } else if (translation.y < 0) {
+    // Swiped up - show keyboard
+    [_delegate keyboardShouldShow];
+  }
 }
 
 - (IBAction)edgeGestureTriggered:(UIScreenEdgePanGestureRecognizer*)sender {
