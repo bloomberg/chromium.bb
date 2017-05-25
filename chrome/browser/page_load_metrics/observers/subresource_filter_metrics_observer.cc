@@ -6,11 +6,12 @@
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 using subresource_filter::ContentSubresourceFilterDriverFactory;
-
+using subresource_filter::SubresourceFilterSafeBrowsingActivationThrottle;
 using ActivationDecision = subresource_filter::ActivationDecision;
 
 namespace internal {
@@ -123,9 +124,8 @@ void LogActivationDecisionMetrics(content::NavigationHandle* navigation_handle,
       static_cast<int>(decision),
       static_cast<int>(ActivationDecision::ACTIVATION_DECISION_MAX));
 
-  if (ContentSubresourceFilterDriverFactory::NavigationIsPageReload(
-          navigation_handle->GetURL(), navigation_handle->GetReferrer(),
-          navigation_handle->GetPageTransition())) {
+  if (SubresourceFilterSafeBrowsingActivationThrottle::NavigationIsPageReload(
+          navigation_handle)) {
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramSubresourceFilterActivationDecisionReload,
         static_cast<int>(decision),
