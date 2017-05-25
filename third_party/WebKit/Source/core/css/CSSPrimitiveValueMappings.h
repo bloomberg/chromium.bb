@@ -1520,34 +1520,6 @@ inline EWordBreak CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EOverflowWrap e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EOverflowWrap::kNormal:
-      value_id_ = CSSValueNormal;
-      break;
-    case EOverflowWrap::kBreakWord:
-      value_id_ = CSSValueBreakWord;
-      break;
-  }
-}
-
-template <>
-inline EOverflowWrap CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueBreakWord:
-      return EOverflowWrap::kBreakWord;
-    case CSSValueNormal:
-      return EOverflowWrap::kNormal;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EOverflowWrap::kNormal;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextCombine e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
