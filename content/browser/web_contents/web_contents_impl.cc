@@ -35,6 +35,7 @@
 #include "build/build_config.h"
 #include "components/mime_util/mime_util.h"
 #include "components/rappor/public/rappor_utils.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -5590,10 +5591,18 @@ void WebContentsImpl::RemoveBindingSet(const std::string& interface_name) {
 }
 
 bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
+  // Here we associate this metric to the main frame URL regardless of what
+  // caused it.
   sample->SetStringField("Domain", ::rappor::GetDomainAndRegistrySampleFromGURL(
                                        GetLastCommittedURL()));
-
   return true;
+}
+
+void WebContentsImpl::UpdateUrlForUkmSource(ukm::UkmRecorder* service,
+                                            ukm::SourceId ukm_source_id) {
+  // Here we associate this metric to the main frame URL regardless of what
+  // caused it.
+  service->UpdateSourceURL(ukm_source_id, GetLastCommittedURL());
 }
 
 void WebContentsImpl::FocusedNodeTouched(bool editable) {

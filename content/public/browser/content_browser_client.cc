@@ -450,6 +450,10 @@ ContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return nullptr;
 }
 
+::ukm::UkmRecorder* ContentBrowserClient::GetUkmRecorder() {
+  return nullptr;
+}
+
 std::unique_ptr<base::TaskScheduler::InitParams>
 ContentBrowserClient::GetTaskSchedulerInitParams() {
   return nullptr;

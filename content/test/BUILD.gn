@@ -1468,6 +1468,7 @@ test("content_unittests") {
     "//cc/ipc",
     "//cc/surfaces",
     "//components/leveldb/public/cpp",
+    "//components/metrics/proto",
     "//components/payments/mojom",
     "//components/payments/mojom:mojom_payment_app",
     "//components/rappor:test_support",
