@@ -200,9 +200,6 @@ class GPU_EXPORT GpuCommandBufferStub
 
   void ReportState();
 
-  // Wrapper for CommandExecutor::PutChanged that sets the crash report URL.
-  void PutChanged();
-
   // Poll the command buffer to execute work.
   void PollWork();
   void PerformWork();

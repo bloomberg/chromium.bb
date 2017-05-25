@@ -233,16 +233,6 @@ bool InProcessCommandBuffer::MakeCurrent() {
   return true;
 }
 
-void InProcessCommandBuffer::PumpCommandsOnGpuThread() {
-  CheckSequencedThread();
-  command_buffer_lock_.AssertAcquired();
-
-  if (!MakeCurrent())
-    return;
-
-  executor_->PutChanged();
-}
-
 bool InProcessCommandBuffer::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
@@ -301,8 +291,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
   std::unique_ptr<CommandBufferService> command_buffer(
       new CommandBufferService(transfer_buffer_manager_.get()));
-  command_buffer->SetPutOffsetChangeCallback(base::Bind(
-      &InProcessCommandBuffer::PumpCommandsOnGpuThread, gpu_thread_weak_ptr_));
   command_buffer->SetParseErrorCallback(base::Bind(
       &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
 
@@ -327,6 +315,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_->set_command_buffer_service(command_buffer.get());
 
   executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get()));
+  command_buffer->SetPutOffsetChangeCallback(base::Bind(
+      &CommandExecutor::PutChanged, base::Unretained(executor_.get())));
   command_buffer->SetGetBufferChangeCallback(base::Bind(
       &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_ = std::move(command_buffer);
@@ -581,6 +571,9 @@ void InProcessCommandBuffer::FlushOnGpuThread(
       latency_info->clear();
     }
   }
+
+  if (!MakeCurrent())
+    return;
 
   command_buffer_->Flush(put_offset);
   // Update state before signaling the flush event.

@@ -807,8 +807,8 @@ bool GpuCommandBufferStub::Initialize(
       base::Bind(&GpuCommandBufferStub::OnRescheduleAfterFinished,
                  base::Unretained(this)));
 
-  command_buffer_->SetPutOffsetChangeCallback(
-      base::Bind(&GpuCommandBufferStub::PutChanged, base::Unretained(this)));
+  command_buffer_->SetPutOffsetChangeCallback(base::Bind(
+      &CommandExecutor::PutChanged, base::Unretained(executor_.get())));
   command_buffer_->SetGetBufferChangeCallback(base::Bind(
       &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_->SetParseErrorCallback(
@@ -982,6 +982,7 @@ void GpuCommandBufferStub::OnAsyncFlush(
 
   last_flush_count_ = flush_count;
   CommandBuffer::State pre_state = command_buffer_->GetState();
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
   command_buffer_->Flush(put_offset);
   CommandBuffer::State post_state = command_buffer_->GetState();
 
@@ -1029,11 +1030,6 @@ void GpuCommandBufferStub::OnCommandProcessed() {
 
 void GpuCommandBufferStub::ReportState() {
   command_buffer_->UpdateState();
-}
-
-void GpuCommandBufferStub::PutChanged() {
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
-  executor_->PutChanged();
 }
 
 void GpuCommandBufferStub::OnSignalSyncToken(const SyncToken& sync_token,
