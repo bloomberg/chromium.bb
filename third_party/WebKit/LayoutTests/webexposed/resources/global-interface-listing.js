@@ -1,9 +1,34 @@
-// * |globalObject| should be the global (usually |this|).
-// * |propertyNamesInGlobal| should be a list of properties captured before
-//   other scripts are loaded, using: Object.getOwnPropertyNames(this);
-// * |outputFunc| is called back with each line of output.
+// Run all the code in a local scope.
+(function(globalObject) {
 
-function globalInterfaceListing(globalObject, propertyNamesInGlobal, outputFunc) {
+// Save the list of property names of the global object before loading other scripts.
+var propertyNamesInGlobal = globalObject.propertyNamesInGlobal || Object.getOwnPropertyNames(globalObject);
+
+if (self.importScripts) {
+    importScripts('../../resources/js-test.js');
+
+    if (!self.postMessage) {
+        // Shared worker.  Make postMessage send to the newest client, which in
+        // our tests is the only client.
+
+        // Store messages for sending until we have somewhere to send them.
+        self.postMessage = function(message) {
+            if (typeof self.pendingMessages === "undefined")
+                self.pendingMessages = [];
+            self.pendingMessages.push(message);
+        };
+        self.onconnect = function(event) {
+            self.postMessage = function(message) {
+                event.ports[0].postMessage(message);
+            };
+            // Offload any stored messages now that someone has connected to us.
+            if (typeof self.pendingMessages === "undefined")
+                return;
+            while (self.pendingMessages.length)
+                event.ports[0].postMessage(self.pendingMessages.shift());
+        };
+    }
+}
 
 // List of builtin JS constructors; Blink is not controlling what properties these
 // objects have, so exercising them in a Blink test doesn't make sense.
@@ -117,7 +142,7 @@ function collectPropertyKeys(object) {
                                      Object.keys(object.__proto__),
                                      ownEnumerableSymbols(object.prototype),
                                      ownEnumerableSymbols(object.__proto__)));
-       return Object.keys(object).
+       return propertyKeys = Object.keys(object).
            concat(ownEnumerableSymbols(object)).
            filter(function(name) {
                return !protoProperties.has(name);
@@ -127,15 +152,15 @@ function collectPropertyKeys(object) {
 }
 
 // FIXME: List interfaces with NoInterfaceObject specified in their IDL file.
-outputFunc('[INTERFACES]');
+debug('[INTERFACES]');
 var interfaceNames = Object.getOwnPropertyNames(this).filter(isWebIDLConstructor);
 interfaceNames.sort();
 interfaceNames.forEach(function(interfaceName) {
     var inheritsFrom = this[interfaceName].__proto__.name;
     if (inheritsFrom)
-        outputFunc('interface ' + interfaceName + ' : ' + inheritsFrom);
+        debug('interface ' + interfaceName + ' : ' + inheritsFrom);
     else
-        outputFunc('interface ' + interfaceName);
+        debug('interface ' + interfaceName);
     // List static properties then prototype properties.
     [this[interfaceName], this[interfaceName].prototype].forEach(function(object) {
         var propertyKeys = collectPropertyKeys(object);
@@ -143,11 +168,11 @@ interfaceNames.forEach(function(interfaceName) {
         propertyKeys.forEach(function(propertyKey) {
             collectPropertyInfo(object, propertyKey, propertyStrings);
         });
-        propertyStrings.sort().forEach(outputFunc);
+        propertyStrings.sort().forEach(debug);
     });
 });
 
-outputFunc('[GLOBAL OBJECT]');
+debug('[GLOBAL OBJECT]');
 var propertyStrings = [];
 var memberNames = propertyNamesInGlobal.filter(function(propertyKey) {
     return !jsBuiltins.has(propertyKey) && !isWebIDLConstructor(propertyKey);
@@ -155,6 +180,9 @@ var memberNames = propertyNamesInGlobal.filter(function(propertyKey) {
 memberNames.forEach(function(propertyKey) {
     collectPropertyInfo(globalObject, propertyKey, propertyStrings);
 });
-propertyStrings.sort().forEach(outputFunc);
+propertyStrings.sort().forEach(debug);
 
-}
+if (isWorker())
+    finishJSTest();
+
+})(this); // Run all the code in a local scope.
