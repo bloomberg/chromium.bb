@@ -234,20 +234,54 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
   EXPECT_EQ("unionpay", payment_request.supported_card_networks()[1]);
 }
 
-// Tests that credit cards can be added to the list of cached credit cards.
+// Tests that a credit card can be added to the list of available credit cards.
 TEST_F(PaymentRequestTest, AddCreditCard) {
   web::PaymentRequest web_payment_request;
+  payments::PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("visa");
+  method_datum.supported_networks.push_back("amex");
+  web_payment_request.method_data.push_back(method_datum);
+
   autofill::TestPersonalDataManager personal_data_manager;
 
+  autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card_1);
+
   PaymentRequest payment_request(web_payment_request, &personal_data_manager);
-  EXPECT_EQ(0U, payment_request.credit_cards().size());
+  EXPECT_EQ(1U, payment_request.credit_cards().size());
 
-  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  autofill::CreditCard credit_card_2 = autofill::test::GetCreditCard2();
   autofill::CreditCard* added_credit_card =
-      payment_request.AddCreditCard(credit_card);
+      payment_request.AddCreditCard(credit_card_2);
 
-  ASSERT_EQ(1U, payment_request.credit_cards().size());
-  EXPECT_EQ(credit_card, *added_credit_card);
+  EXPECT_EQ(2U, payment_request.credit_cards().size());
+  EXPECT_EQ(credit_card_2, *added_credit_card);
+}
+
+// Tests that a profile can be added to the list of available profiles.
+TEST_F(PaymentRequestTest, AddAutofillProfile) {
+  web::PaymentRequest web_payment_request;
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  autofill::TestPersonalDataManager personal_data_manager;
+
+  autofill::AutofillProfile profile_1 = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&profile_1);
+
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(1U, payment_request.shipping_profiles().size());
+  EXPECT_EQ(1U, payment_request.contact_profiles().size());
+
+  autofill::AutofillProfile profile_2 = autofill::test::GetFullProfile2();
+  autofill::AutofillProfile* added_profile =
+      payment_request.AddAutofillProfile(profile_2);
+
+  EXPECT_EQ(2U, payment_request.shipping_profiles().size());
+  EXPECT_EQ(2U, payment_request.contact_profiles().size());
+  EXPECT_EQ(profile_2, *added_profile);
 }
 
 // Test that parsing shipping options works as expected.
