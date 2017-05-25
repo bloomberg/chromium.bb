@@ -151,16 +151,13 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
-    public void commitAllTabClosures() {
-    }
+    public void commitAllTabClosures() {}
 
     @Override
-    public void commitTabClosure(int tabId) {
-    }
+    public void commitTabClosure(int tabId) {}
 
     @Override
-    public void cancelTabClosure(int tabId) {
-    }
+    public void cancelTabClosure(int tabId) {}
 
     @Override
     public boolean supportsPendingClosures() {
@@ -168,8 +165,7 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
-    public void addTab(Tab tab, int index, TabLaunchType type) {
-    }
+    public void addTab(Tab tab, int index, TabLaunchType type) {}
 
     @Override
     public void removeTab(Tab tab) {
@@ -190,7 +186,13 @@ public class SingleTabModel implements TabModel {
     private static native void nativePermanentlyBlockAllNewWindows(Tab nativeTabAndroid);
 
     @Override
-    public void openMostRecentlyClosedTab() {
-    }
+    public void openMostRecentlyClosedTab() {}
 
+    @Override
+    public void setIsPendingTabAdd(boolean isPendingTabAdd) {}
+
+    @Override
+    public boolean isPendingTabAdd() {
+        return false;
+    }
 }

@@ -74,7 +74,7 @@ public class BottomSheetNewTabControllerTest extends BottomSheetTestCaseBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBottomSheet.loadUrl(new LoadUrlParams("about:blank"), false);
+                mBottomSheet.loadUrlInNewTab(new LoadUrlParams("about:blank"));
             }
         });
 
@@ -96,7 +96,6 @@ public class BottomSheetNewTabControllerTest extends BottomSheetTestCaseBase {
         // Select "New incognito tab" from the menu.
         MenuUtils.invokeCustomMenuActionSync(
                 getInstrumentation(), getActivity(), R.id.new_incognito_tab_menu_id);
-
         // The sheet should be opened at half height over the tab switcher and the tab count should
         // remain unchanged. The incognito model should now be selected.
         validateState(false, BottomSheet.SHEET_STATE_HALF);
@@ -116,7 +115,7 @@ public class BottomSheetNewTabControllerTest extends BottomSheetTestCaseBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBottomSheet.loadUrl(new LoadUrlParams("about:blank"), true);
+                mBottomSheet.loadUrlInNewTab(new LoadUrlParams("about:blank"));
             }
         });
 

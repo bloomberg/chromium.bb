@@ -435,8 +435,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             // Check for incognito tabs to handle the case where Chrome was swiped away in the
             // background.
-            int incognitoCount = TabWindowManager.getInstance().getIncognitoTabCount();
-            if (incognitoCount == 0) IncognitoNotificationManager.dismissIncognitoNotification();
+            if (TabWindowManager.getInstance().canDestroyIncognitoProfile()) {
+                IncognitoNotificationManager.dismissIncognitoNotification();
+            }
 
             // LocaleManager can only function after the native library is loaded.
             mLocaleManager = LocaleManager.getInstance();
@@ -508,7 +509,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // any have incognito tabs exist.  If all are alive and no tabs exist, we should ensure that
         // we delete the incognito profile if one is around still.
         if (tabbedModeTaskIds.size() == 0) {
-            return TabWindowManager.getInstance().getIncognitoTabCount() == 0
+            return TabWindowManager.getInstance().canDestroyIncognitoProfile()
                     && Profile.getLastUsedProfile().hasOffTheRecordProfile();
         }
 
@@ -1036,11 +1037,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             if (getBottomSheet() != null) {
-                if (getBottomSheet().isShowingNewTab()) {
+                // If the bottom sheet new tab UI is showing and the tab open type is not
+                // already OPEN_NEW_TAB or OPEN_NEW_INCOGNITO_TAB, set the open type so that a real
+                // new tab will be created and added to the appropriate model.
+                if (getBottomSheet().isShowingNewTab() && tabOpenType != TabOpenType.OPEN_NEW_TAB
+                        && tabOpenType != TabOpenType.OPEN_NEW_INCOGNITO_TAB) {
                     tabOpenType = mTabModelSelectorImpl.isIncognitoSelected()
                             ? TabOpenType.OPEN_NEW_INCOGNITO_TAB
                             : TabOpenType.OPEN_NEW_TAB;
-                    getBottomSheet().onProcessUrlViewIntent();
                 }
 
                 // Either a new tab is opening, a tab is being clobbered, or a tab is being brought
