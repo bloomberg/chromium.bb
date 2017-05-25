@@ -24,6 +24,7 @@ import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
+import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
@@ -551,6 +552,26 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     public Uri[] parseFileChooserResult(int resultCode, Intent intent) {
                         return AwContentsClient.parseFileChooserResult(resultCode, intent);
                     }
+
+                    /**
+                     * Starts Safe Browsing initialization. This should only be called once.
+                     * @param context is the activity context the WebView will be used in.
+                     * @param callback will be called with the value true if initialization is
+                     * successful. The callback will be run on the UI thread.
+                     */
+                    // TODO(ntfschr): add @Override once O MR1 SDK rolls
+                    public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
+                        AwContentsStatics.initSafeBrowsing(context, callback);
+                    }
+
+                    /**
+                     * Shuts down Safe Browsing. This should only be called once.
+                     */
+                    // TODO(ntfschr): add @Override once O MR1 SDK rolls
+                    public void shutdownSafeBrowsing() {
+                        AwContentsStatics.shutdownSafeBrowsing();
+                    }
+
                 };
             }
         }
