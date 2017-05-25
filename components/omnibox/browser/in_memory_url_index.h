@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -104,7 +103,6 @@ class InMemoryURLIndex : public KeyedService,
   InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
                    history::HistoryService* history_service,
                    TemplateURLService* template_url_service,
-                   base::SequencedWorkerPool* worker_pool,
                    const base::FilePath& history_dir,
                    const SchemeSet& client_schemes_to_whitelist);
   ~InMemoryURLIndex() override;
@@ -291,9 +289,8 @@ class InMemoryURLIndex : public KeyedService,
   RestoreCacheObserver* restore_cache_observer_;
   SaveCacheObserver* save_cache_observer_;
 
-  // Task runner from the worker pool, used for operations which require disk
-  // access.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // Task runner used for operations which require disk access.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::CancelableTaskTracker private_data_tracker_;
   base::CancelableTaskTracker cache_reader_tracker_;

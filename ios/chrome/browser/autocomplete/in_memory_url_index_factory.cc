@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/web/public/web_thread.h"
 
 namespace ios {
 
@@ -36,8 +35,7 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS),
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
-      web::WebThread::GetBlockingPool(), browser_state->GetStatePath(),
-      schemes_to_whilelist));
+      browser_state->GetStatePath(), schemes_to_whilelist));
   in_memory_url_index->Init();
   // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(in_memory_url_index);

@@ -218,7 +218,6 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
                            HistoryServiceFactory::GetForProfile(
                                profile, ServiceAccessType::IMPLICIT_ACCESS),
                            TemplateURLServiceFactory::GetForProfile(profile),
-                           content::BrowserThread::GetBlockingPool(),
                            profile->GetPath(), SchemeSet()));
   in_memory_url_index->Init();
   return std::move(in_memory_url_index);

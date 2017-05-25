@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
@@ -73,13 +74,11 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 // InMemoryURLIndex ------------------------------------------------------------
 
-InMemoryURLIndex::InMemoryURLIndex(
-    bookmarks::BookmarkModel* bookmark_model,
-    history::HistoryService* history_service,
-    TemplateURLService* template_url_service,
-    base::SequencedWorkerPool* worker_pool,
-    const base::FilePath& history_dir,
-    const SchemeSet& client_schemes_to_whitelist)
+InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
+                                   history::HistoryService* history_service,
+                                   TemplateURLService* template_url_service,
+                                   const base::FilePath& history_dir,
+                                   const SchemeSet& client_schemes_to_whitelist)
     : bookmark_model_(bookmark_model),
       history_service_(history_service),
       template_url_service_(template_url_service),
@@ -87,8 +86,8 @@ InMemoryURLIndex::InMemoryURLIndex(
       private_data_(new URLIndexPrivateData),
       restore_cache_observer_(NULL),
       save_cache_observer_(NULL),
-      task_runner_(
-          worker_pool->GetSequencedTaskRunner(worker_pool->GetSequenceToken())),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
       shutdown_(false),
       restored_(false),
       needs_to_be_cached_(false),

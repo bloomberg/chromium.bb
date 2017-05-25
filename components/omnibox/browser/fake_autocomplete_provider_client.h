@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 
@@ -36,7 +35,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   }
 
  private:
-  base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir history_dir_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   TestSchemeClassifier scheme_classifier_;
