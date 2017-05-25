@@ -172,6 +172,7 @@ class PLATFORM_EXPORT Font {
   float TabWidth(const TabSize& tab_size, float position) const {
     return TabWidth(PrimaryFont(), tab_size, position);
   }
+  LayoutUnit TabWidth(const TabSize&, LayoutUnit position) const;
 
   int EmphasisMarkAscent(const AtomicString&) const;
   int EmphasisMarkDescent(const AtomicString&) const;

@@ -497,6 +497,26 @@ Vector<CharacterRange> Font::IndividualCharacterRanges(
   return ranges;
 }
 
+LayoutUnit Font::TabWidth(const TabSize& tab_size, LayoutUnit position) const {
+  const SimpleFontData* font_data = PrimaryFont();
+  if (!font_data)
+    return LayoutUnit::FromFloatCeil(GetFontDescription().LetterSpacing());
+  float base_tab_width = tab_size.GetPixelSize(font_data->SpaceWidth());
+  if (!base_tab_width)
+    return LayoutUnit::FromFloatCeil(GetFontDescription().LetterSpacing());
+
+  LayoutUnit distance_to_tab_stop = LayoutUnit::FromFloatFloor(
+      base_tab_width - fmodf(position, base_tab_width));
+
+  // Let the minimum width be the half of the space width so that it's always
+  // recognizable.  if the distance to the next tab stop is less than that,
+  // advance an additional tab stop.
+  if (distance_to_tab_stop < font_data->SpaceWidth() / 2)
+    distance_to_tab_stop += base_tab_width;
+
+  return distance_to_tab_stop;
+}
+
 bool Font::LoadingCustomFonts() const {
   return font_fallback_list_ && font_fallback_list_->LoadingCustomFonts();
 }
