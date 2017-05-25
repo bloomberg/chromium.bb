@@ -101,6 +101,8 @@ class HWTestList(object):
     # BVT + AU suite.
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                     **bvt_inline_kwargs),
+            config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                    **bvt_inline_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                     blocking=True, **au_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
@@ -144,8 +146,15 @@ class HWTestList(object):
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE, **kwargs)]
+    # N.B.  The ordering here is coupled with the column order of
+    # entries in _paladin_hwtest_assignments, below.  If you change the
+    # ordering here you must also change the ordering there.
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    **kwargs),
+            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                    **kwargs),
+            config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                    **kwargs)]
 
   def DefaultListCQ(self, **kwargs):
     """Return a default list of HWTestConfigs for a CQ build.
@@ -2428,6 +2437,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     if config.active_waterfall:
       master_config.AddSlave(config)
 
+  # N.B. The ordering of columns here is coupled to the ordering of
+  # suites returned by DefaultListNonCanary().  If you change the
+  # ordering here, you must also change the ordering there.
+  #
   # pylint: disable=bad-continuation
   # pylint: disable=bad-whitespace
   _paladin_hwtest_assignments = frozenset([
@@ -2446,9 +2459,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
-  sharded_hw_tests.append(
-    config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                            pool=constants.HWTEST_PALADIN_POOL))
   for board_assignments in _paladin_hwtest_assignments:
     assert len(board_assignments) == len(sharded_hw_tests)
     for board, suite in zip(board_assignments, sharded_hw_tests):
@@ -2456,10 +2466,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
         continue
       config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
       site_config[config_name]['hw_tests'] = [suite]
-    arc_board = board_assignments[-1]
-    if arc_board is not None:
-      config_name = '%s-%s' % (arc_board, constants.PALADIN_TYPE)
-      site_config[config_name]['hw_tests_override'] = None
 
   #
   # Paladins with alternative configs.
