@@ -323,7 +323,7 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
                                    : nullptr);
 }
 
-void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
+void WorkspaceLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   const bool is_pinned = Shell::Get()->screen_pinning_controller()->IsPinned();
   if (!is_pinned && is_fullscreen_) {
     // On exiting from pinned mode, if the workspace is still in fullscreen
@@ -333,7 +333,7 @@ void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
     return;
   }
 
-  UpdateAlwaysOnTop(is_pinned ? pinned_window->aura_window() : nullptr);
+  UpdateAlwaysOnTop(is_pinned ? pinned_window : nullptr);
 }
 
 void WorkspaceLayoutManager::OnVirtualKeyboardStateChanged(

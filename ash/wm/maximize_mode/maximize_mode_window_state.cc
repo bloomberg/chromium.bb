@@ -307,7 +307,7 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
       old_state_type == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED ||
       target_state == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
-        WmWindow::Get(window_state->window()));
+        window_state->window());
   }
 
   if ((window_state->window()->layer()->GetTargetVisibility() ||

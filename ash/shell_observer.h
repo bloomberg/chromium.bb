@@ -41,7 +41,7 @@ class ASH_EXPORT ShellObserver {
                                         WmWindow* root_window) {}
 
   // Invoked when |pinned_window| enter or exit pinned mode.
-  virtual void OnPinnedStateChanged(WmWindow* pinned_window) {}
+  virtual void OnPinnedStateChanged(aura::Window* pinned_window) {}
 
   // Called when the overview mode is about to be started (before the windows
   // get re-arranged).

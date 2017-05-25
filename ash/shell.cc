@@ -518,7 +518,7 @@ void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
     observer.OnFullscreenStateChanged(is_fullscreen, root_window);
 }
 
-void Shell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
+void Shell::NotifyPinnedStateChanged(aura::Window* pinned_window) {
   for (auto& observer : shell_observers_)
     observer.OnPinnedStateChanged(pinned_window);
 }

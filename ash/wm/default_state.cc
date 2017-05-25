@@ -545,7 +545,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
       next_state_type == WINDOW_STATE_TYPE_TRUSTED_PINNED ||
       previous_state_type == WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
-        WmWindow::Get(window_state->window()));
+        window_state->window());
   }
 }
 
