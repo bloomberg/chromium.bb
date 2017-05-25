@@ -71,7 +71,7 @@ ExtensionViewImpl.prototype.loadNextSrc = function() {
   // If extensionview isn't currently loading a src, load the next src
   // in |loadQueue|. Otherwise, do nothing.
   if (!this.pendingLoad && this.loadQueue.length) {
-    this.pendingLoad = this.loadQueue.shift();
+    this.pendingLoad = $Array.shift(this.loadQueue);
     var src = this.pendingLoad.src;
     var resolve = this.pendingLoad.resolve;
     var reject = this.pendingLoad.reject;
