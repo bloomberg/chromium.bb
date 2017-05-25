@@ -23,8 +23,6 @@ class CancelModeEvent;
 
 namespace ash {
 
-class WmWindow;
-
 namespace mus {
 
 class WorkspaceEventHandlerMus;
@@ -40,8 +38,8 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
                    aura::Window* window);
   ~MoveEventHandler() override;
 
-  // Retrieves the MoveEventHandler for an existing WmWindow.
-  static MoveEventHandler* GetForWindow(WmWindow* wm_window);
+  // Retrieves the MoveEventHandler for an existing aura::Window.
+  static MoveEventHandler* GetForWindow(aura::Window* window);
 
   // Attempts to start a drag if one is not already in progress. This passes
   // the call to the underlying WmToplevelWindowEventHandler. After the drag
@@ -75,7 +73,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  WmWindow* wm_window_;
+  aura::Window* window_;
   aura::WindowManagerClient* window_manager_client_;
   wm::WmToplevelWindowEventHandler toplevel_window_event_handler_;
 

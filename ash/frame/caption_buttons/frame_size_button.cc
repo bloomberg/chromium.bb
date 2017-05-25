@@ -213,7 +213,8 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
     aura::Window* window = frame_->GetNativeWindow();
     if (!phantom_window_controller_.get()) {
-      phantom_window_controller_.reset(new PhantomWindowController(window));
+      phantom_window_controller_ =
+          base::MakeUnique<PhantomWindowController>(window);
     }
     gfx::Rect phantom_bounds_in_screen =
         (snap_type_ == SNAP_LEFT)

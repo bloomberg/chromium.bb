@@ -268,11 +268,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
 
   std::vector<WmWindow*> GetChildren();
 
-  // Shows/hides the resize shadow. |component| is the component to show the
-  // shadow for (one of the constants in ui/base/hit_test.h).
-  void ShowResizeShadow(int component);
-  void HideResizeShadow();
-
   // Installs a resize handler on the window that makes it easier to resize
   // the window. See ResizeHandleWindowTargeter for the specifics.
   void InstallResizeHandleWindowTargeter(
@@ -322,12 +317,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
   // If true child windows should get a slightly larger hit region to make
   // resizing easier.
   bool children_use_extended_hit_region_ = false;
-
-  // Default value for |use_empty_minimum_size_for_testing_|.
-  static bool default_use_empty_minimum_size_for_testing_;
-
-  // If true the minimum size is 0x0, default is minimum size comes from widget.
-  bool use_empty_minimum_size_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindow);
 };

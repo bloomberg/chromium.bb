@@ -15,6 +15,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ui {
 class KeyEvent;
 class LocatedEvent;
@@ -23,9 +27,6 @@ class GestureEvent;
 }
 
 namespace ash {
-
-class WmWindow;
-
 namespace wm {
 
 // WmToplevelWindowEventHandler handles dragging and resizing of top level
@@ -49,13 +50,13 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   ~WmToplevelWindowEventHandler() override;
 
   void OnKeyEvent(ui::KeyEvent* event);
-  void OnMouseEvent(ui::MouseEvent* event, WmWindow* target);
-  void OnGestureEvent(ui::GestureEvent* event, WmWindow* target);
+  void OnMouseEvent(ui::MouseEvent* event, aura::Window* target);
+  void OnGestureEvent(ui::GestureEvent* event, aura::Window* target);
 
   // Attempts to start a drag if one is not already in progress. Returns true if
   // successful. |end_closure| is run when the drag completes. |end_closure| is
   // not run if the drag does not start.
-  bool AttemptToStartDrag(WmWindow* window,
+  bool AttemptToStartDrag(aura::Window* window,
                           const gfx::Point& point_in_parent,
                           int window_component,
                           aura::client::WindowMoveSource source,
@@ -74,24 +75,24 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   // drag was completed or reverted.
   bool CompleteDrag(DragResult result);
 
-  void HandleMousePressed(WmWindow* target, ui::MouseEvent* event);
-  void HandleMouseReleased(WmWindow* target, ui::MouseEvent* event);
+  void HandleMousePressed(aura::Window* target, ui::MouseEvent* event);
+  void HandleMouseReleased(aura::Window* target, ui::MouseEvent* event);
 
   // Called during a drag to resize/position the window.
-  void HandleDrag(WmWindow* target, ui::LocatedEvent* event);
+  void HandleDrag(aura::Window* target, ui::LocatedEvent* event);
 
   // Called during mouse moves to update window resize shadows.
-  void HandleMouseMoved(WmWindow* target, ui::LocatedEvent* event);
+  void HandleMouseMoved(aura::Window* target, ui::LocatedEvent* event);
 
   // Called for mouse exits to hide window resize shadows.
-  void HandleMouseExited(WmWindow* target, ui::LocatedEvent* event);
+  void HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
 
   // Called when mouse capture is lost.
   void HandleCaptureLost(ui::LocatedEvent* event);
 
   // Sets |window|'s state type to |new_state_type|. Called after the drag has
   // been completed for fling gestures.
-  void SetWindowStateTypeFromGesture(WmWindow* window,
+  void SetWindowStateTypeFromGesture(aura::Window* window,
                                      wm::WindowStateType new_state_type);
 
   // Invoked from ScopedWindowResizer if the window is destroyed.

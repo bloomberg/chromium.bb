@@ -21,12 +21,12 @@ WorkspaceEventHandlerAura::~WorkspaceEventHandlerAura() {
 
 void WorkspaceEventHandlerAura::OnMouseEvent(ui::MouseEvent* event) {
   WorkspaceEventHandler::OnMouseEvent(
-      event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
+      event, static_cast<aura::Window*>(event->target()));
 }
 
 void WorkspaceEventHandlerAura::OnGestureEvent(ui::GestureEvent* event) {
   WorkspaceEventHandler::OnGestureEvent(
-      event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
+      event, static_cast<aura::Window*>(event->target()));
 }
 
 }  // namespace ash
