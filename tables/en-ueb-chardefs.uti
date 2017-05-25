@@ -272,7 +272,7 @@ uplow \x039f\x03bf 46-135 Οο Omicron
 uplow \x03a0\x03c0 46-1234 Ππ Pi
 uplow \x03a1\x03c1 46-1235 Ρρ Rho
 uplow \x03a3\x03c3 46-234 Σσ Sigma
-lowercase \x03c2 46-234 ς Small Letter Sigma
+noback lowercase \x03c2 46-234 ς Small Letter Sigma
 uplow \x03a4\x03c4 46-2345 Ττ Tau
 uplow \x03a5\x03c5 46-136 Υυ Upsilon
 uplow \x03a6\x03c6 46-124 Φφ Phi
@@ -341,7 +341,7 @@ space \x200b 0
 punctuation \x2010 36 ‐
 punctuation \x2011 36 ‑
 punctuation \x2013 6-36 –
-punctuation \x2014 6-36 —
+punctuation \x2014 5-6-36 —
 punctuation \x2015 5-6-36 ―
 noback punctuation \x2018 6-236 ‘
 noback punctuation \x2019 6-356 ’
@@ -433,9 +433,9 @@ sign \x2229 46-236 ∩ set intersection
 sign \x222a 46-235 ∪ set union
 sign \x222b 2346 ∫ integral
 sign \x222e 4-2346 contour integral
-noback sign \x2234 6-16 ∴ therefore #using noback to avoid conflict with Child
+noback sign \x2234 6-16 ∴ therefore # using noback to avoid conflict with Child
 sign \x2235 4-34 ∵ because
-sign \x2236 25 ∶ ratio
+noback sign \x2236 25 ∶ ratio # using noback to avoid conflict with :
 sign \x2237 25-25 ∷ proportion
 sign \x2243 456-35 ≃ asymptotically equal to
 sign \x2245 5-456-35 ≅ approximately equal to
@@ -483,12 +483,10 @@ punctuation \x0096 36
 noback sign \X2502 456 │ tally mark - vertical single solid line segment
 noback sign \X250a 45 ┊ first variant vertical line segment
 noback sign \X2551 6-456 ║ second variant vertical line segment
-noback sign \X2571 345 ╱ right-leaning single solid diagonal line segment
-noback sign \X2572 126 ╲ left-leaning single solid diagonal line segment
+noback sign \X2571 345 ╱ right-leaning single solid diagonal line segment # using noback to avoid conflict with "ar" contraction
+noback sign \X2572 126 ╲ left-leaning single solid diagonal line segment # using noback to avoid conflict with "gh" contraction
 
 # Shape Symbols
-# 456-1246 filled (solid) shape indicator
-# 46-1246 shaded shape indicator
 sign \X25a0 456-1246-3456-145 ■ filled (solid) square
 sign \X25a7 46-1246-3456-145 ▧ shaded square
 noback sign \X25cf 5-35 ● black circle

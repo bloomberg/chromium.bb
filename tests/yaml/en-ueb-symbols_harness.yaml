@@ -286,7 +286,7 @@ tests:
   - [¡, ⠘⠰⠖] # inverted exclamation mark [\x00a1]
   - [¿, ⠘⠰⠦] # inverted question mark [\x00bf]
   - [–, ⠠⠤] # en dash [\x2013]
-  - [—, ⠠⠤] # em dash [\x2014]
+  - [—, ⠐⠠⠤] # em dash [\x2014]
   - [‘, ⠠⠦] # left single quotation mark [\x2018]
   - [’, ⠠⠴] # right single quotation mark [\x2019]
   - [Ȝȝ, ⠠⠼⠽⠼⠽] # yogh [\x021c\x021d]
