@@ -5,7 +5,9 @@
 #ifndef BoxPainterBase_h
 #define BoxPainterBase_h
 
+#include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/style/ShadowData.h"
+#include "core/style/StyleImage.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
 
@@ -16,6 +18,7 @@ class Document;
 class FloatRoundedRect;
 class LayoutPoint;
 class LayoutRect;
+class FillLayer;
 struct PaintInfo;
 
 // Base class for box painting. Has no dependencies on the layout tree and thus
@@ -56,6 +59,61 @@ class BoxPainterBase {
 
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& adjusted_paint_offset);
+
+  typedef Vector<const FillLayer*, 8> FillLayerOcclusionOutputList;
+  // Returns true if the result fill layers have non-associative blending or
+  // compositing mode.  (i.e. The rendering will be different without creating
+  // isolation group by context.saveLayer().) Note that the output list will be
+  // in top-bottom order.
+  bool CalculateFillLayerOcclusionCulling(
+      FillLayerOcclusionOutputList& reversed_paint_list,
+      const FillLayer&,
+      const Document&,
+      const ComputedStyle&);
+
+  struct FillLayerInfo {
+    STACK_ALLOCATED();
+
+    FillLayerInfo(const Document&,
+                  const ComputedStyle&,
+                  bool has_overflow_clip,
+                  Color bg_color,
+                  const FillLayer&,
+                  BackgroundBleedAvoidance,
+                  bool include_left_edge,
+                  bool include_right_edge);
+
+    // FillLayerInfo is a temporary, stack-allocated container which cannot
+    // outlive the StyleImage.  This would normally be a raw pointer, if not for
+    // the Oilpan tooling complaints.
+    Member<StyleImage> image;
+    Color color;
+
+    bool include_left_edge;
+    bool include_right_edge;
+    bool is_bottom_layer;
+    bool is_border_fill;
+    bool is_clipped_with_local_scrolling;
+    bool is_rounded_fill;
+    bool should_paint_image;
+    bool should_paint_color;
+  };
+
+  static FloatRoundedRect GetBackgroundRoundedRect(
+      const ComputedStyle&,
+      const LayoutRect& border_rect,
+      bool has_line_box_sibling,
+      const LayoutSize& inline_box_size,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge);
+  static FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
+      const ComputedStyle&,
+      const LayoutRect& border_rect,
+      BackgroundBleedAvoidance,
+      bool has_line_box_sibling,
+      const LayoutSize& box_size,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge);
 };
 
 }  // namespace blink

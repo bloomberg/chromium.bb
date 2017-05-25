@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 #include "core/paint/PaintInfo.h"
+#include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
@@ -200,6 +201,157 @@ bool BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(
          style.PrintColorAdjust() == EPrintColorAdjust::kEconomy &&
          (!document.GetSettings() ||
           !document.GetSettings()->GetShouldPrintBackgrounds());
+}
+
+bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
+    FillLayerOcclusionOutputList& reversed_paint_list,
+    const FillLayer& fill_layer,
+    const Document& document,
+    const ComputedStyle& style) {
+  bool is_non_associative = false;
+  for (auto current_layer = &fill_layer; current_layer;
+       current_layer = current_layer->Next()) {
+    reversed_paint_list.push_back(current_layer);
+    // Stop traversal when an opaque layer is encountered.
+    // FIXME : It would be possible for the following occlusion culling test to
+    // be more aggressive on layers with no repeat by testing whether the image
+    // covers the layout rect.  Testing that here would imply duplicating a lot
+    // of calculations that are currently done in
+    // LayoutBoxModelObject::paintFillLayer. A more efficient solution might be
+    // to move the layer recursion into paintFillLayer, or to compute the layer
+    // geometry here and pass it down.
+
+    // TODO(trchen): Need to check compositing mode as well.
+    if (current_layer->BlendMode() != kWebBlendModeNormal)
+      is_non_associative = true;
+
+    // TODO(trchen): A fill layer cannot paint if the calculated tile size is
+    // empty.  This occlusion check can be wrong.
+    if (current_layer->ClipOccludesNextLayers() &&
+        current_layer->ImageOccludesNextLayers(document, style)) {
+      if (current_layer->Clip() == kBorderFillBox)
+        is_non_associative = false;
+      break;
+    }
+  }
+  return is_non_associative;
+}
+
+FloatRoundedRect BoxPainterBase::GetBackgroundRoundedRect(
+    const ComputedStyle& style,
+    const LayoutRect& border_rect,
+    bool has_line_box_sibling,
+    const LayoutSize& inline_box_size,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) {
+  FloatRoundedRect border = style.GetRoundedBorderFor(
+      border_rect, include_logical_left_edge, include_logical_right_edge);
+  if (has_line_box_sibling) {
+    FloatRoundedRect segment_border = style.GetRoundedBorderFor(
+        LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(inline_box_size))),
+        include_logical_left_edge, include_logical_right_edge);
+    border.SetRadii(segment_border.GetRadii());
+  }
+  return border;
+}
+
+FloatRoundedRect BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
+    const ComputedStyle& style,
+    const LayoutRect& border_rect,
+    BackgroundBleedAvoidance bleed_avoidance,
+    bool has_line_box_sibling,
+    const LayoutSize& box_size,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) {
+  if (bleed_avoidance == kBackgroundBleedShrinkBackground) {
+    // Inset the background rect by a "safe" amount: 1/2 border-width for opaque
+    // border styles, 1/6 border-width for double borders.
+
+    // TODO(fmalita): we should be able to fold these parameters into
+    // BoxBorderInfo or BoxDecorationData and avoid calling getBorderEdgeInfo
+    // redundantly here.
+    BorderEdge edges[4];
+    style.GetBorderEdgeInfo(edges, include_logical_left_edge,
+                            include_logical_right_edge);
+
+    // Use the most conservative inset to avoid mixed-style corner issues.
+    float fractional_inset = 1.0f / 2;
+    for (auto& edge : edges) {
+      if (edge.BorderStyle() == EBorderStyle::kDouble) {
+        fractional_inset = 1.0f / 6;
+        break;
+      }
+    }
+
+    FloatRectOutsets insets(-fractional_inset * edges[kBSTop].Width(),
+                            -fractional_inset * edges[kBSRight].Width(),
+                            -fractional_inset * edges[kBSBottom].Width(),
+                            -fractional_inset * edges[kBSLeft].Width());
+
+    FloatRoundedRect background_rounded_rect = GetBackgroundRoundedRect(
+        style, border_rect, has_line_box_sibling, box_size,
+        include_logical_left_edge, include_logical_right_edge);
+    FloatRect inset_rect(background_rounded_rect.Rect());
+    inset_rect.Expand(insets);
+    FloatRoundedRect::Radii inset_radii(background_rounded_rect.GetRadii());
+    inset_radii.Shrink(-insets.Top(), -insets.Bottom(), -insets.Left(),
+                       -insets.Right());
+    return FloatRoundedRect(inset_rect, inset_radii);
+  }
+
+  return GetBackgroundRoundedRect(style, border_rect, has_line_box_sibling,
+                                  box_size, include_logical_left_edge,
+                                  include_logical_right_edge);
+}
+
+BoxPainterBase::FillLayerInfo::FillLayerInfo(
+    const Document& doc,
+    const ComputedStyle& style,
+    bool has_overflow_clip,
+    Color bg_color,
+    const FillLayer& layer,
+    BackgroundBleedAvoidance bleed_avoidance,
+    bool include_left,
+    bool include_right)
+    : image(layer.GetImage()),
+      color(bg_color),
+      include_left_edge(include_left),
+      include_right_edge(include_right),
+      is_bottom_layer(!layer.Next()),
+      is_border_fill(layer.Clip() == kBorderFillBox),
+      is_clipped_with_local_scrolling(has_overflow_clip &&
+                                      layer.Attachment() ==
+                                          kLocalBackgroundAttachment) {
+  // When printing backgrounds is disabled or using economy mode,
+  // change existing background colors and images to a solid white background.
+  // If there's no bg color or image, leave it untouched to avoid affecting
+  // transparency.  We don't try to avoid loading the background images,
+  // because this style flag is only set when printing, and at that point
+  // we've already loaded the background images anyway. (To avoid loading the
+  // background images we'd have to do this check when applying styles rather
+  // than while layout.)
+  if (BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(doc, style)) {
+    // Note that we can't reuse this variable below because the bgColor might
+    // be changed.
+    bool should_paint_background_color = is_bottom_layer && color.Alpha();
+    if (image || should_paint_background_color) {
+      color = Color::kWhite;
+      image = nullptr;
+    }
+  }
+
+  const bool has_rounded_border =
+      style.HasBorderRadius() && (include_left_edge || include_right_edge);
+  // BorderFillBox radius clipping is taken care of by
+  // BackgroundBleedClip{Only,Layer}
+  is_rounded_fill =
+      has_rounded_border &&
+      !(is_border_fill && BleedAvoidanceIsClipping(bleed_avoidance));
+
+  should_paint_image = image && image->CanRender();
+  should_paint_color =
+      is_bottom_layer && color.Alpha() &&
+      (!should_paint_image || !layer.ImageOccludesNextLayers(doc, style));
 }
 
 }  // namespace blink
