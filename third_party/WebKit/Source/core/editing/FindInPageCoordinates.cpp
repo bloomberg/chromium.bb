@@ -146,13 +146,17 @@ FloatRect FindInPageRectFromAbsoluteRect(
   return normalized_rect;
 }
 
-FloatRect FindInPageRectFromRange(Range* range) {
-  if (!range || !range->FirstNode())
+FloatRect FindInPageRectFromRange(const EphemeralRange& range) {
+  if (range.IsNull() || !range.StartPosition().NodeAsRangeFirstNode())
+    return FloatRect();
+
+  const LayoutObject* const baseLayoutObject =
+      range.StartPosition().NodeAsRangeFirstNode()->GetLayoutObject();
+  if (!baseLayoutObject)
     return FloatRect();
 
   return FindInPageRectFromAbsoluteRect(
-      LayoutObject::AbsoluteBoundingBoxRectForRange(range),
-      range->FirstNode()->GetLayoutObject());
+      LayoutObject::AbsoluteBoundingBoxRectForRange(range), baseLayoutObject);
 }
 
 }  // namespace blink

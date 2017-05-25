@@ -32,10 +32,10 @@
 #define FindInPageCoordinates_h
 
 #include "core/CoreExport.h"
+#include "core/editing/EphemeralRange.h"
 #include "platform/geometry/FloatRect.h"
 
 namespace blink {
-class Range;
 class LayoutObject;
 
 // Find-in-page coordinate conversion methods.
@@ -56,7 +56,7 @@ class LayoutObject;
 
 CORE_EXPORT FloatRect FindInPageRectFromAbsoluteRect(const FloatRect&,
                                                      const LayoutObject*);
-CORE_EXPORT FloatRect FindInPageRectFromRange(Range*);
+CORE_EXPORT FloatRect FindInPageRectFromRange(const EphemeralRange&);
 
 }  // namespace blink
 
