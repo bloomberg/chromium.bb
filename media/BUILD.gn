@@ -500,21 +500,6 @@ source_set("unit_tests") {
     "filters/vp8_parser_unittest.cc",
     "filters/vp9_parser_unittest.cc",
     "filters/vp9_raw_bits_reader_unittest.cc",
-    "formats/ac3/ac3_util_unittest.cc",
-    "formats/common/offset_byte_queue_unittest.cc",
-    "formats/webm/cluster_builder.cc",
-    "formats/webm/cluster_builder.h",
-    "formats/webm/opus_packet_builder.cc",
-    "formats/webm/opus_packet_builder.h",
-    "formats/webm/tracks_builder.cc",
-    "formats/webm/tracks_builder.h",
-    "formats/webm/webm_cluster_parser_unittest.cc",
-    "formats/webm/webm_content_encodings_client_unittest.cc",
-    "formats/webm/webm_crypto_helpers_unittest.cc",
-    "formats/webm/webm_parser_unittest.cc",
-    "formats/webm/webm_stream_parser_unittest.cc",
-    "formats/webm/webm_tracks_parser_unittest.cc",
-    "formats/webm/webm_webvtt_parser_unittest.cc",
     "muxers/webm_muxer_unittest.cc",
     "renderers/audio_renderer_impl_unittest.cc",
     "renderers/renderer_impl_unittest.cc",
@@ -544,6 +529,7 @@ source_set("unit_tests") {
     "//gpu/command_buffer/common",
     "//media/audio:test_support",
     "//media/base:test_support",
+    "//media/formats:unit_tests",
     "//ppapi/features",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
@@ -601,33 +587,6 @@ source_set("unit_tests") {
   }
 
   if (proprietary_codecs) {
-    sources += [
-      "cdm/cenc_utils_unittest.cc",
-      "filters/h264_to_annex_b_bitstream_converter_unittest.cc",
-      "formats/common/stream_parser_test_base.cc",
-      "formats/common/stream_parser_test_base.h",
-      "formats/mp4/aac_unittest.cc",
-      "formats/mp4/avc_unittest.cc",
-      "formats/mp4/box_reader_unittest.cc",
-      "formats/mp4/es_descriptor_unittest.cc",
-      "formats/mp4/mp4_stream_parser_unittest.cc",
-      "formats/mp4/sample_to_group_iterator_unittest.cc",
-      "formats/mp4/track_run_iterator_unittest.cc",
-      "formats/mpeg/adts_stream_parser_unittest.cc",
-      "formats/mpeg/mpeg1_audio_stream_parser_unittest.cc",
-    ]
-    if (enable_mse_mpeg2ts_stream_parser) {
-      sources += [
-        "formats/mp2t/es_adapter_video_unittest.cc",
-        "formats/mp2t/es_parser_adts_unittest.cc",
-        "formats/mp2t/es_parser_h264_unittest.cc",
-        "formats/mp2t/es_parser_mpeg1audio_unittest.cc",
-        "formats/mp2t/es_parser_test_base.cc",
-        "formats/mp2t/es_parser_test_base.h",
-        "formats/mp2t/mp2t_stream_parser_unittest.cc",
-        "formats/mp2t/timestamp_unroller_unittest.cc",
-      ]
-    }
     if (media_use_ffmpeg) {
       sources += [
         "filters/ffmpeg_aac_bitstream_converter_unittest.cc",
@@ -639,9 +598,6 @@ source_set("unit_tests") {
     }
     if (enable_hls_sample_aes) {
       deps += [ "//third_party/boringssl" ]
-    }
-    if (enable_dolby_vision_demuxing) {
-      sources += [ "formats/mp4/dolby_vision_unittest.cc" ]
     }
   }
 
