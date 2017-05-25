@@ -9,7 +9,6 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -61,7 +60,6 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer {
 
  private:
   CommandBufferService service_;
-  CommandExecutor executor_;
   MakeCurrentCallback make_current_callback_;
   SyncPointManager* sync_point_manager_;
 

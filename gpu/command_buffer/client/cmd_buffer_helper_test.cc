@@ -82,6 +82,8 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
                                                         start, end);
   }
 
+  int GetServicePutOffset() { return previous_put_offset_; }
+
  private:
   bool flush_locked_;
   int last_flush_;
@@ -237,7 +239,7 @@ class CommandBufferHelperTest : public testing::Test {
     return command_buffer_->service()->GetState().get_offset;
   }
 
-  int32_t GetPutOffset() { return command_buffer_->service()->GetPutOffset(); }
+  int32_t GetPutOffset() { return command_buffer_->GetServicePutOffset(); }
 
   int32_t GetHelperGetOffset() { return helper_->cached_get_offset_; }
 

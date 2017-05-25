@@ -6,7 +6,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/command_executor.h"
 
 using testing::Invoke;
 using testing::_;

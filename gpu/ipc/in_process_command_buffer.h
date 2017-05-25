@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -67,8 +66,8 @@ class ProgramCache;
 class ShaderTranslatorCache;
 }
 
+class CommandBufferService;
 class GpuMemoryBufferManager;
-class CommandExecutor;
 class ImageFactory;
 class TransferBufferManager;
 
@@ -285,7 +284,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
-  std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;

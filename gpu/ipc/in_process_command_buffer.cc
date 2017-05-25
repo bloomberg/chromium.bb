@@ -28,7 +28,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -289,10 +288,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
 
   transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
-  std::unique_ptr<CommandBufferService> command_buffer(
-      new CommandBufferService(transfer_buffer_manager_.get()));
-  command_buffer->SetParseErrorCallback(base::Bind(
-      &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
 
   gl_share_group_ = params.context_group ? params.context_group->gl_share_group_
                                          : service_->share_group();
@@ -312,15 +307,13 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                 service_->discardable_manager());
 
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
-  decoder_->set_command_buffer_service(command_buffer.get());
 
-  executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get()));
-  command_buffer->SetPutOffsetChangeCallback(base::Bind(
-      &CommandExecutor::PutChanged, base::Unretained(executor_.get())));
-  command_buffer->SetGetBufferChangeCallback(base::Bind(
-      &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
-  command_buffer_ = std::move(command_buffer);
+  command_buffer_ = base::MakeUnique<CommandBufferService>(
+      transfer_buffer_manager_.get(), decoder_.get());
+  command_buffer_->SetParseErrorCallback(base::Bind(
+      &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
 
+  decoder_->set_command_buffer_service(command_buffer_.get());
 
   if (!surface_.get()) {
     if (params.is_offscreen) {
@@ -518,14 +511,15 @@ void InProcessCommandBuffer::QueueTask(bool out_of_order,
 }
 
 void InProcessCommandBuffer::ProcessTasksOnGpuThread() {
-  while (executor_->scheduled()) {
+  while (command_buffer_->scheduled()) {
     base::AutoLock lock(task_queue_lock_);
     if (task_queue_.empty())
       break;
     GpuTask* task = task_queue_.front().get();
     sync_point_order_data_->BeginProcessingOrderNumber(task->order_number);
     task->callback.Run();
-    if (!executor_->scheduled() && !service_->BlockThreadOnWaitSyncToken()) {
+    if (!command_buffer_->scheduled() &&
+        !service_->BlockThreadOnWaitSyncToken()) {
       sync_point_order_data_->PauseProcessingOrderNumber(task->order_number);
       // Don't pop the task if it was preempted - it may have been preempted, so
       // we need to execute it again later.
@@ -893,7 +887,7 @@ bool InProcessCommandBuffer::WaitSyncTokenOnGpuThread(
     return false;
   }
 
-  executor_->SetScheduled(false);
+  command_buffer_->SetScheduled(false);
   return true;
 }
 
@@ -904,25 +898,25 @@ void InProcessCommandBuffer::OnWaitSyncTokenCompleted(
       decoder_->GetContextGroup()->mailbox_manager();
   mailbox_manager->PullTextureUpdates(sync_token);
   waiting_for_sync_point_ = false;
-  executor_->SetScheduled(true);
+  command_buffer_->SetScheduled(true);
   service_->ScheduleTask(base::Bind(
       &InProcessCommandBuffer::ProcessTasksOnGpuThread, gpu_thread_weak_ptr_));
 }
 
 void InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread() {
   if (!service_->BlockThreadOnWaitSyncToken()) {
-    DCHECK(executor_->scheduled());
+    DCHECK(command_buffer_->scheduled());
     DCHECK(decoder_->HasPollingWork());
 
-    executor_->SetScheduled(false);
+    command_buffer_->SetScheduled(false);
   }
 }
 
 void InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread() {
   if (!service_->BlockThreadOnWaitSyncToken()) {
-    DCHECK(!executor_->scheduled());
+    DCHECK(!command_buffer_->scheduled());
 
-    executor_->SetScheduled(true);
+    command_buffer_->SetScheduled(true);
     ProcessTasksOnGpuThread();
   }
 }
