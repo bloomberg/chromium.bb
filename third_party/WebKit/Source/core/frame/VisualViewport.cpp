@@ -78,7 +78,7 @@ DEFINE_TRACE(VisualViewport) {
   ScrollableArea::Trace(visitor);
 }
 
-void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() {
+void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() const {
   if (!MainFrame())
     return;
 
@@ -190,7 +190,7 @@ void VisualViewport::SetScale(float scale) {
   SetScaleAndLocation(scale, FloatPoint(offset_));
 }
 
-double VisualViewport::ScrollLeft() {
+double VisualViewport::OffsetLeft() const {
   if (!MainFrame())
     return 0;
 
@@ -200,7 +200,7 @@ double VisualViewport::ScrollLeft() {
                                      MainFrame()->PageZoomFactor());
 }
 
-double VisualViewport::ScrollTop() {
+double VisualViewport::OffsetTop() const {
   if (!MainFrame())
     return 0;
 
@@ -210,7 +210,7 @@ double VisualViewport::ScrollTop() {
                                      MainFrame()->PageZoomFactor());
 }
 
-double VisualViewport::ClientWidth() {
+double VisualViewport::Width() const {
   if (!MainFrame())
     return 0;
 
@@ -221,7 +221,7 @@ double VisualViewport::ClientWidth() {
   return width - MainFrame()->View()->VerticalScrollbarWidth() / scale_;
 }
 
-double VisualViewport::ClientHeight() {
+double VisualViewport::Height() const {
   if (!MainFrame())
     return 0;
 
@@ -232,10 +232,8 @@ double VisualViewport::ClientHeight() {
   return height - MainFrame()->View()->HorizontalScrollbarHeight() / scale_;
 }
 
-double VisualViewport::PageScale() {
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  return scale_;
+double VisualViewport::ScaleForVisualViewport() const {
+  return Scale();
 }
 
 void VisualViewport::SetScaleAndLocation(float scale,

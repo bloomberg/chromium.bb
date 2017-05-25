@@ -27,7 +27,7 @@
   var scrollbaHeightCSSPixels = 20 / pageScaleFactor;
 
   function viewport() {
-    return window.visualViewport;
+    return window.view;
   }
 
   async_test(function(t) {
@@ -37,16 +37,16 @@
       internals.setPageScaleFactor(pageScaleFactor);
 
       // Verify viewport dimensions exclude scrollbar.
-      assert_equals(viewport().clientWidth, 800 / pageScaleFactor - scrollbarWidthCSSPixels);
-      assert_equals(viewport().clientHeight, 600 / pageScaleFactor - scrollbaHeightCSSPixels);
+      assert_equals(viewport().width, 800 / pageScaleFactor - scrollbarWidthCSSPixels);
+      assert_equals(viewport().height, 600 / pageScaleFactor - scrollbaHeightCSSPixels);
 
       // Apply browser zoom.
       window.internals.setZoomFactor(browserZoomFactor);
 
       // Verify scrollbar exclusion with browser zoom. Custom scrollbars are
       // scaled with browser zoom but remain unchanged with pinch zoom.
-      assert_equals(viewport().clientWidth, 800 / browserZoomFactor / pageScaleFactor - scrollbarWidthCSSPixels * browserZoomFactor);
-      assert_equals(viewport().clientHeight, 600 / browserZoomFactor / pageScaleFactor - scrollbaHeightCSSPixels * browserZoomFactor);
+      assert_equals(viewport().width, 800 / browserZoomFactor / pageScaleFactor - scrollbarWidthCSSPixels * browserZoomFactor);
+      assert_equals(viewport().height, 600 / browserZoomFactor / pageScaleFactor - scrollbaHeightCSSPixels * browserZoomFactor);
       t.done();
     });
   }, 'Verify viewport dimensions exclude custom scrollbars.');

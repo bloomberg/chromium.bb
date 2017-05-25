@@ -7215,13 +7215,13 @@ interface VideoTrackList : EventTarget
     setter onremovetrack
 interface VisualViewport : EventTarget
     attribute @@toStringTag
-    getter clientHeight
-    getter clientWidth
-    getter pageX
-    getter pageY
+    getter height
+    getter offsetLeft
+    getter offsetTop
+    getter pageLeft
+    getter pageTop
     getter scale
-    getter scrollLeft
-    getter scrollTop
+    getter width
     method constructor
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
@@ -9082,7 +9082,7 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
-    getter visualViewport
+    getter view
     getter webkitStorageInfo
     method NodeFilter
     method alert
@@ -9259,7 +9259,7 @@ interface webkitURL
     setter status
     setter statusbar
     setter toolbar
-    setter visualViewport
+    setter view
 PASS successfullyParsed is true
 
 TEST COMPLETE

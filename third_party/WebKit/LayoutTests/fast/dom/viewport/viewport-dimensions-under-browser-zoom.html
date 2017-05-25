@@ -15,7 +15,7 @@
   var browserZoomFactor = 1.25;
 
   function viewport() {
-    return window.visualViewport;
+    return window.view;
   }
 
   var numCallsResize = 0;
@@ -23,7 +23,7 @@
   async_test(function(t) {
     window.onload = t.step_func(function() {
 
-      window.visualViewport.addEventListener('resize', function(e) {
+      window.view.addEventListener('resize', function(e) {
         numCallsResize++;
       });
 
@@ -36,10 +36,10 @@
       // Offset visual viewport by 10px.
       internals.setVisualViewportOffset(10, 10);
 
-      assert_equals(viewport().scrollTop, 10);
-      assert_equals(viewport().scrollLeft, 10);
-      assert_equals(viewport().clientWidth, 400);
-      assert_equals(viewport().clientHeight, 300);
+      assert_equals(viewport().offsetTop, 10);
+      assert_equals(viewport().offsetLeft, 10);
+      assert_equals(viewport().width, 400);
+      assert_equals(viewport().height, 300);
       assert_equals(viewport().scale, 2);
 
       // Apply browser zoom.
@@ -49,10 +49,10 @@
         t.step(function() {
           assert_equals(numCallsResize, 1, "resize listener called for browzer zoom");
           // Visual viewport dimensions should be scaled by the browser zoom factor.
-          assert_equals(viewport().scrollTop, 10 / browserZoomFactor);
-          assert_equals(viewport().scrollLeft, 10 / browserZoomFactor);
-          assert_equals(viewport().clientWidth, 400 / browserZoomFactor);
-          assert_equals(viewport().clientHeight, 300 / browserZoomFactor);
+          assert_equals(viewport().offsetTop, 10 / browserZoomFactor);
+          assert_equals(viewport().offsetLeft, 10 / browserZoomFactor);
+          assert_equals(viewport().width, 400 / browserZoomFactor);
+          assert_equals(viewport().height, 300 / browserZoomFactor);
           assert_equals(viewport().scale, 2);
 
           t.done();

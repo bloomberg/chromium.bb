@@ -13,21 +13,17 @@
   var numCallsResize = 0;
   var pageScaleFactor = 2;
 
-  function viewport() {
-    return window.visualViewport;
-  }
-
-  var t = async_test('verify that the scroll and resize events get fired on window.visualViewport');
+  var t = async_test('verify that the scroll and resize events get fired on window.view');
 
   window.onload = t.step_func(function() {
     // Turn off smooth scrolling.
     internals.settings.setScrollAnimatorEnabled(false);
 
-    window.visualViewport.addEventListener('scroll', function(e) {
+    window.view.addEventListener('scroll', function(e) {
       numCallsScroll++;
     });
 
-    window.visualViewport.addEventListener('resize', function(e) {
+    window.view.addEventListener('resize', function(e) {
       numCallsResize++;
     });
 
