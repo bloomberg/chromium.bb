@@ -213,6 +213,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Try to switch to SwiftShader rendering, if possible and necessary.
   void EnableSwiftShaderIfNecessary();
 
+  bool IsGpuSchedulerEnabled() const;
+
   // Helper to extract the domain from a given URL.
   std::string GetDomainFromURL(const GURL& url) const;
 

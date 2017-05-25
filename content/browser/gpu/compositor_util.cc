@@ -233,19 +233,6 @@ bool IsGpuRasterizationEnabled() {
   return manager->IsFeatureEnabled(gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
 }
 
-bool IsAsyncWorkerContextEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableGpuAsyncWorkerContext))
-    return false;
-
-  if (command_line.HasSwitch(switches::kDisableGpuScheduler))
-    return false;
-
-  return command_line.HasSwitch(switches::kEnableGpuScheduler);
-}
-
 bool IsForceGpuRasterizationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
