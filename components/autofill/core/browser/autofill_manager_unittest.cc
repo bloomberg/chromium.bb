@@ -4749,6 +4749,10 @@ TEST_F(AutofillManagerTest, UploadCreditCardAndSaveCopy) {
 
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
   EXPECT_TRUE(autofill_manager_->GetLocalCreditCards().empty());
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // See |OfferStoreUnmaskedCards|
+  EXPECT_TRUE(autofill_manager_->GetCreditCards().empty());
+#else
   ASSERT_EQ(1U, autofill_manager_->GetCreditCards().size());
   const CreditCard* const saved_card = autofill_manager_->GetCreditCards()[0];
   EXPECT_EQ(CreditCard::OK, saved_card->GetServerStatus());
@@ -4759,6 +4763,7 @@ TEST_F(AutofillManagerTest, UploadCreditCardAndSaveCopy) {
   EXPECT_EQ(server_id, saved_card->server_id());
   EXPECT_EQ(CreditCard::FULL_SERVER_CARD, saved_card->record_type());
   EXPECT_EQ(base::ASCIIToUTF16(card_number), saved_card->number());
+#endif
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_FeatureNotEnabled) {

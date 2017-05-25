@@ -1097,10 +1097,11 @@ void AutofillManager::OnDidGetUploadDetails(
 
 void AutofillManager::OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
                                       const std::string& server_id) {
-  // We don't do anything user-visible if the upload attempt fails.
-  // If the upload succeeds, we will keep a copy of the card as a full server
-  // card on the device.
-  if (result == AutofillClient::SUCCESS && !server_id.empty()) {
+  // We don't do anything user-visible if the upload attempt fails. If the
+  // upload succeeds and we can store unmasked cards on this OS, we will keep a
+  // copy of the card as a full server card on the device.
+  if (result == AutofillClient::SUCCESS && !server_id.empty() &&
+      OfferStoreUnmaskedCards()) {
     upload_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
     upload_request_.card.SetServerStatus(CreditCard::OK);
     upload_request_.card.set_server_id(server_id);
@@ -1356,9 +1357,8 @@ int AutofillManager::SetProfilesForCreditCardUpload(
       has_modified_profile);
 
   // If there are no recently used or modified profiles and experiment to use
-  // profiles that were not recently is enabled, collect the profiles that were
-  // not recently used but used within the maximum time specified in the
-  // experiment.
+  // profiles that were not recently used is enabled, collect the profiles that
+  // used within the maximum time specified in the experiment.
   if (candidate_profiles.empty()) {
     const base::TimeDelta max_time_since_use =
         GetMaxTimeSinceAutofillProfileUseForCardUpload();
@@ -1398,8 +1398,7 @@ int AutofillManager::SetProfilesForCreditCardUpload(
     verified_name = card_name;
   } else {
     bool found_conflicting_names = false;
-    if (base::FeatureList::IsEnabled(
-            kAutofillUpstreamUseAutofillProfileComparator)) {
+    if (comparator) {
       upload_request->active_experiments.push_back(
           kAutofillUpstreamUseAutofillProfileComparator.name);
       verified_name = comparator->NormalizeForComparison(card_name);
@@ -1450,26 +1449,22 @@ int AutofillManager::SetProfilesForCreditCardUpload(
 
   // If any of the candidate addresses have a non-empty zip that doesn't match
   // any other non-empty zip, then the candidate set is invalid.
-  const bool use_autofill_profile_comparator_for_zip =
-      base::FeatureList::IsEnabled(
-          kAutofillUpstreamUseAutofillProfileComparator);
   base::string16 verified_zip;
   base::string16 normalized_verified_zip;
   const AutofillType kZipCode(ADDRESS_HOME_ZIP);
   for (const AutofillProfile& profile : candidate_profiles) {
-    const base::string16 zip = use_autofill_profile_comparator_for_zip
+    const base::string16 zip = comparator
                                    ? profile.GetInfo(kZipCode, app_locale_)
                                    : profile.GetRawInfo(ADDRESS_HOME_ZIP);
     const base::string16 normalized_zip =
-        use_autofill_profile_comparator_for_zip
-            ? comparator->NormalizeForComparison(
-                  zip, AutofillProfileComparator::DISCARD_WHITESPACE)
-            : base::string16();
+        comparator ? comparator->NormalizeForComparison(
+                         zip, AutofillProfileComparator::DISCARD_WHITESPACE)
+                   : base::string16();
     if (!zip.empty()) {
       if (verified_zip.empty()) {
         verified_zip = zip;
         normalized_verified_zip = normalized_zip;
-      } else if (use_autofill_profile_comparator_for_zip) {
+      } else if (comparator) {
         if (normalized_zip.find(normalized_verified_zip) ==
                 base::string16::npos &&
             normalized_verified_zip.find(normalized_zip) ==
