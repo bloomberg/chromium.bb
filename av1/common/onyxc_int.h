@@ -505,6 +505,24 @@ static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
   bufs[new_idx].ref_count++;
 }
 
+#if CONFIG_VAR_REFS
+#define LAST_IS_VALID(cm) ((cm)->frame_refs[LAST_FRAME - 1].is_valid)
+#define LAST2_IS_VALID(cm) ((cm)->frame_refs[LAST2_FRAME - 1].is_valid)
+#define LAST3_IS_VALID(cm) ((cm)->frame_refs[LAST3_FRAME - 1].is_valid)
+#define GOLDEN_IS_VALID(cm) ((cm)->frame_refs[GOLDEN_FRAME - 1].is_valid)
+#define BWDREF_IS_VALID(cm) ((cm)->frame_refs[BWDREF_FRAME - 1].is_valid)
+#define ALTREF_IS_VALID(cm) ((cm)->frame_refs[ALTREF_FRAME - 1].is_valid)
+
+#define L_OR_L2(cm) (LAST_IS_VALID(cm) || LAST2_IS_VALID(cm))
+#define L_AND_L2(cm) (LAST_IS_VALID(cm) && LAST2_IS_VALID(cm))
+
+#define L3_OR_G(cm) (LAST3_IS_VALID(cm) || GOLDEN_IS_VALID(cm))
+#define L3_AND_G(cm) (LAST3_IS_VALID(cm) && GOLDEN_IS_VALID(cm))
+
+#define BWD_OR_ALT(cm) (BWDREF_IS_VALID(cm) || ALTREF_IS_VALID(cm))
+#define BWD_AND_ALT(cm) (BWDREF_IS_VALID(cm) && ALTREF_IS_VALID(cm))
+#endif  // CONFIG_VAR_REFS
+
 static INLINE int mi_cols_aligned_to_sb(const AV1_COMMON *cm) {
   return ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
 }

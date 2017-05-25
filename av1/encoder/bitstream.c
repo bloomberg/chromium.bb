@@ -1165,46 +1165,101 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_EXT_REFS
       const int bit = (mbmi->ref_frame[0] == GOLDEN_FRAME ||
                        mbmi->ref_frame[0] == LAST3_FRAME);
-      const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
-#else  // CONFIG_EXT_REFS
-      const int bit = mbmi->ref_frame[0] == GOLDEN_FRAME;
-#endif  // CONFIG_EXT_REFS
+#if CONFIG_VAR_REFS
+      // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
+      if (L_OR_L2(cm) && L3_OR_G(cm))
+#endif  // CONFIG_VAR_REFS
+        aom_write(w, bit, av1_get_pred_prob_comp_ref_p(cm, xd));
 
-      aom_write(w, bit, av1_get_pred_prob_comp_ref_p(cm, xd));
-
-#if CONFIG_EXT_REFS
       if (!bit) {
-        const int bit1 = mbmi->ref_frame[0] == LAST_FRAME;
-        aom_write(w, bit1, av1_get_pred_prob_comp_ref_p1(cm, xd));
+#if CONFIG_VAR_REFS
+        // Test need to explicitly code (L) vs (L2) branch node in tree
+        if (L_AND_L2(cm)) {
+#endif  // CONFIG_VAR_REFS
+          const int bit1 = mbmi->ref_frame[0] == LAST_FRAME;
+          aom_write(w, bit1, av1_get_pred_prob_comp_ref_p1(cm, xd));
+#if CONFIG_VAR_REFS
+        }
+#endif  // CONFIG_VAR_REFS
       } else {
-        const int bit2 = mbmi->ref_frame[0] == GOLDEN_FRAME;
-        aom_write(w, bit2, av1_get_pred_prob_comp_ref_p2(cm, xd));
+#if CONFIG_VAR_REFS
+        // Test need to explicitly code (L3) vs (G) branch node in tree
+        if (L3_AND_G(cm)) {
+#endif  // CONFIG_VAR_REFS
+          const int bit2 = mbmi->ref_frame[0] == GOLDEN_FRAME;
+          aom_write(w, bit2, av1_get_pred_prob_comp_ref_p2(cm, xd));
+#if CONFIG_VAR_REFS
+        }
+#endif  // CONFIG_VAR_REFS
       }
-      aom_write(w, bit_bwd, av1_get_pred_prob_comp_bwdref_p(cm, xd));
+
+#if CONFIG_VAR_REFS
+      // Test need to explicitly code (BWD) vs (ALT) branch node in tree
+      if (BWD_AND_ALT(cm)) {
+#endif  // CONFIG_VAR_REFS
+        const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
+        aom_write(w, bit_bwd, av1_get_pred_prob_comp_bwdref_p(cm, xd));
+#if CONFIG_VAR_REFS
+      }
+#endif  // CONFIG_VAR_REFS
+
+#else   // !CONFIG_EXT_REFS
+      const int bit = mbmi->ref_frame[0] == GOLDEN_FRAME;
+      aom_write(w, bit, av1_get_pred_prob_comp_ref_p(cm, xd));
 #endif  // CONFIG_EXT_REFS
     } else {
 #if CONFIG_EXT_REFS
       const int bit0 = (mbmi->ref_frame[0] == ALTREF_FRAME ||
                         mbmi->ref_frame[0] == BWDREF_FRAME);
-      aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
+#if CONFIG_VAR_REFS
+      // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT) branch node in
+      // tree
+      if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
+#endif  // CONFIG_VAR_REFS
+        aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
 
       if (bit0) {
-        const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
-        aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
+#if CONFIG_VAR_REFS
+        // Test need to explicitly code (BWD) vs (ALT) branch node in tree
+        if (BWD_AND_ALT(cm)) {
+#endif  // CONFIG_VAR_REFS
+          const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
+          aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
+#if CONFIG_VAR_REFS
+        }
+#endif  // CONFIG_VAR_REFS
       } else {
         const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
                           mbmi->ref_frame[0] == GOLDEN_FRAME);
-        aom_write(w, bit2, av1_get_pred_prob_single_ref_p3(cm, xd));
+#if CONFIG_VAR_REFS
+        // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
+        if (L_OR_L2(cm) && L3_OR_G(cm))
+#endif  // CONFIG_VAR_REFS
+          aom_write(w, bit2, av1_get_pred_prob_single_ref_p3(cm, xd));
 
         if (!bit2) {
-          const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
-          aom_write(w, bit3, av1_get_pred_prob_single_ref_p4(cm, xd));
+#if CONFIG_VAR_REFS
+          // Test need to explicitly code (L) vs (L2) branch node in tree
+          if (L_AND_L2(cm)) {
+#endif  // CONFIG_VAR_REFS
+            const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
+            aom_write(w, bit3, av1_get_pred_prob_single_ref_p4(cm, xd));
+#if CONFIG_VAR_REFS
+          }
+#endif  // CONFIG_VAR_REFS
         } else {
-          const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
-          aom_write(w, bit4, av1_get_pred_prob_single_ref_p5(cm, xd));
+#if CONFIG_VAR_REFS
+          // Test need to explicitly code (L3) vs (G) branch node in tree
+          if (L3_AND_G(cm)) {
+#endif  // CONFIG_VAR_REFS
+            const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
+            aom_write(w, bit4, av1_get_pred_prob_single_ref_p5(cm, xd));
+#if CONFIG_VAR_REFS
+          }
+#endif  // CONFIG_VAR_REFS
         }
       }
-#else   // CONFIG_EXT_REFS
+#else   // !CONFIG_EXT_REFS
       const int bit0 = mbmi->ref_frame[0] != LAST_FRAME;
       aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
 

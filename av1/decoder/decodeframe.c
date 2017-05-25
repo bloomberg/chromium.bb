@@ -4103,6 +4103,38 @@ static void read_compound_tools(AV1_COMMON *cm,
 }
 #endif  // CONFIG_EXT_INTER
 
+#if CONFIG_VAR_REFS
+static void check_valid_ref_frames(AV1_COMMON *cm) {
+  MV_REFERENCE_FRAME ref_frame;
+  // TODO(zoeliu): To handle ALTREF_FRAME the same way as do with other
+  //               reference frames: Current encoder invalid ALTREF when ALTREF
+  //               is the same as LAST, but invalid all the other references
+  //               when they are the same as ALTREF.
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    RefBuffer *const ref_buf = &cm->frame_refs[ref_frame - LAST_FRAME];
+
+    if (ref_buf->idx != INVALID_IDX) {
+      ref_buf->is_valid = 1;
+
+      MV_REFERENCE_FRAME ref;
+      for (ref = LAST_FRAME; ref < ref_frame; ++ref) {
+        RefBuffer *const buf = &cm->frame_refs[ref - LAST_FRAME];
+        if (buf->is_valid && buf->idx == ref_buf->idx) {
+          if (ref_frame != ALTREF_FRAME || ref == LAST_FRAME) {
+            ref_buf->is_valid = 0;
+            break;
+          } else {
+            buf->is_valid = 0;
+          }
+        }
+      }
+    } else {
+      ref_buf->is_valid = 0;
+    }
+  }
+}
+#endif  // CONFIG_VAR_REFS
+
 static size_t read_uncompressed_header(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
@@ -4234,6 +4266,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
       cm->frame_refs[i].idx = INVALID_IDX;
       cm->frame_refs[i].buf = NULL;
+#if CONFIG_VAR_REFS
+      cm->frame_refs[i].is_valid = 0;
+#endif  // CONFIG_VAR_REFS
     }
 
     setup_frame_size(cm, rb);
@@ -4328,6 +4363,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         }
 #endif
       }
+
+#if CONFIG_VAR_REFS
+      check_valid_ref_frames(cm);
+#endif  // CONFIG_VAR_REFS
 
 #if CONFIG_FRAME_SIZE
       if (cm->error_resilient_mode == 0) {

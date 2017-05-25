@@ -567,6 +567,11 @@ typedef struct RefBuffer {
   int idx;
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
+#if CONFIG_VAR_REFS
+  // TODO(zoeliu): To evaluate whether "is_valid" is needed or the use of it can
+  // be simply replaced by checking the "idx".
+  int is_valid;
+#endif  // CONFIG_VAR_REFS
 } RefBuffer;
 
 #if CONFIG_ADAPT_SCAN

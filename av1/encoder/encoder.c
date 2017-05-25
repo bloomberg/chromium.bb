@@ -3068,6 +3068,42 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
 }
 #endif  // CONFIG_EXT_REFS
 
+#if CONFIG_VAR_REFS
+static void enc_check_valid_ref_frames(AV1_COMP *const cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  MV_REFERENCE_FRAME ref_frame;
+
+  // TODO(zoeliu): To handle ALTREF_FRAME the same way as do with other
+  //               reference frames. Current encoder invalid ALTREF when ALTREF
+  //               is the same as LAST, but invalid all the other references
+  //               when they are the same as ALTREF.
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    int ref_buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
+    RefBuffer *const ref_buf = &cm->frame_refs[ref_frame - LAST_FRAME];
+
+    if (ref_buf_idx != INVALID_IDX) {
+      ref_buf->is_valid = 1;
+
+      MV_REFERENCE_FRAME ref;
+      for (ref = LAST_FRAME; ref < ref_frame; ++ref) {
+        int buf_idx = get_ref_frame_buf_idx(cpi, ref);
+        RefBuffer *const buf = &cm->frame_refs[ref - LAST_FRAME];
+        if (buf->is_valid && buf_idx == ref_buf_idx) {
+          if (ref_frame != ALTREF_FRAME || ref == LAST_FRAME) {
+            ref_buf->is_valid = 0;
+            break;
+          } else {
+            buf->is_valid = 0;
+          }
+        }
+      }
+    } else {
+      ref_buf->is_valid = 0;
+    }
+  }
+}
+#endif  // CONFIG_VAR_REFS
+
 void av1_update_reference_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   BufferPool *const pool = cm->buffer_pool;
@@ -3858,6 +3894,12 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
       ref_buf->buf = NULL;
     }
   }
+
+#if CONFIG_VAR_REFS
+  // Check duplicate reference frames
+  enc_check_valid_ref_frames(cpi);
+#endif  // CONFIG_VAR_REFS
+
 #if CONFIG_INTRABC
 #if CONFIG_HIGHBITDEPTH
   av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
