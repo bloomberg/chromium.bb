@@ -291,7 +291,7 @@ bool Validator::ValidateRecommendedField(
 bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
                                          base::DictionaryValue* result) {
   using namespace ::onc::client_cert;
-  const char* const kValidCertTypes[] = {kRef, kPattern};
+  const char* const kValidCertTypes[] = {kRef, kPattern, kPKCS11Id};
   std::vector<const char*> valid_cert_types(toVector(kValidCertTypes));
   if (allow_cert_type_none)
     valid_cert_types.push_back(kClientCertTypeNone);
@@ -307,6 +307,8 @@ bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
     all_required_exist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
     all_required_exist &= RequireField(*result, kClientCertRef);
+  else if (cert_type == kPKCS11Id)
+    all_required_exist &= RequireField(*result, kClientCertPKCS11Id);
 
   return !error_on_missing_field_ || all_required_exist;
 }
@@ -951,10 +953,8 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
     return false;
   }
 
-  if (!ValidateClientCertFields(false,  // don't allow ClientCertType None
-                                result)) {
+  if (!ValidateClientCertFields(true /* allow ClientCertType None */, result))
     return false;
-  }
 
   bool all_required_exist = RequireField(*result, kOuter);
 

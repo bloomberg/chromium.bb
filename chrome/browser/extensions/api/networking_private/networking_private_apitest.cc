@@ -192,6 +192,10 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
     return base::MakeUnique<base::DictionaryValue>();
   }
 
+  std::unique_ptr<base::DictionaryValue> GetCertificateLists() override {
+    return base::MakeUnique<base::DictionaryValue>();
+  }
+
   bool EnableNetworkType(const std::string& type) override {
     enabled_[type] = true;
     return !fail_;

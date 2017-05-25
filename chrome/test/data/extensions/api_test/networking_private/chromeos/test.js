@@ -799,6 +799,11 @@ var availableTests = [
     chrome.networkingPrivate.onDeviceStateListChanged.addListener(listener);
     chrome.networkingPrivate.disableNetworkType('WiFi');
   },
+  function onCertificateListsChangedEvent() {
+    chrome.test.listenOnce(
+        chrome.networkingPrivate.onCertificateListsChanged, function() {});
+    chrome.test.sendMessage('eventListenerReady');
+  },
   function verifyDestination() {
     chrome.networkingPrivate.verifyDestination(
       verificationProperties,
@@ -969,6 +974,13 @@ var availableTests = [
         callbackPass(function(tetherNetwork) {
           privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
               'tetherName1', 50, 'tetherCarrier1', 75, true);
+        }));
+  },
+  function getCertificateLists() {
+    chrome.networkingPrivate.getCertificateLists(
+        callbackPass(function(certificateLists) {
+          assertEq(1, certificateLists.serverCaCertificates.length);
+          assertEq(0, certificateLists.userCertificates.length);
         }));
   },
 ];

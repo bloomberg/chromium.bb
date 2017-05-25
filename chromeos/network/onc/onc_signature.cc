@@ -48,6 +48,7 @@ const OncFieldSignature eap_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
     {::onc::eap::kAnonymousIdentity, &kStringSignature},
     {::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
+    {::onc::client_cert::kClientCertPKCS11Id, &kStringSignature},
     {::onc::client_cert::kClientCertRef, &kStringSignature},
     {::onc::client_cert::kClientCertType, &kStringSignature},
     {::onc::eap::kIdentity, &kStringSignature},

@@ -259,6 +259,7 @@ namespace networking.onc {
   dictionary EAPProperties {
     DOMString? AnonymousIdentity;
     CertificatePattern? ClientCertPattern;
+    DOMString? ClientCertPKCS11Id;
     DOMString? ClientCertRef;
     ClientCertificateType ClientCertType;
     DOMString? Identity;

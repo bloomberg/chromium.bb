@@ -336,6 +336,8 @@ component("chromeos") {
     "network/network_activation_handler.h",
     "network/network_cert_migrator.cc",
     "network/network_cert_migrator.h",
+    "network/network_certificate_handler.cc",
+    "network/network_certificate_handler.h",
     "network/network_change_notifier_chromeos.cc",
     "network/network_change_notifier_chromeos.h",
     "network/network_change_notifier_factory_chromeos.cc",

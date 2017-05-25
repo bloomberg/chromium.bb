@@ -141,6 +141,9 @@ class NetworkingPrivateDelegate : public KeyedService {
   // ignored.
   virtual std::unique_ptr<base::DictionaryValue> GetGlobalPolicy() = 0;
 
+  // Returns a dictionary of certificate lists.
+  virtual std::unique_ptr<base::DictionaryValue> GetCertificateLists() = 0;
+
   // Returns true if the ONC network type |type| is enabled.
   virtual bool EnableNetworkType(const std::string& type) = 0;
 
