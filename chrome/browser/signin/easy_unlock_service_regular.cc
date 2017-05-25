@@ -524,22 +524,33 @@ void EasyUnlockServiceRegular::OnScreenDidLock(
 
 void EasyUnlockServiceRegular::OnScreenDidUnlock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  bool is_lock_screen =
+      screen_type == proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN;
+
+  if (!will_unlock_using_easy_unlock_ && GetProximityAuthPrefManager() &&
+      (is_lock_screen || !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             proximity_auth::switches::kEnableChromeOSLogin))) {
+    // If a password was used, then record the current timestamp. This timestamp
+    // is used to enforce password reauths after a certain time has elapsed.
+    GetProximityAuthPrefManager()->SetLastPasswordEntryTimestampMs(
+        base::Time::Now().ToJavaTime());
+  }
+
   // Notifications of signin screen unlock events can also reach this code path;
   // disregard them.
-  if (screen_type != proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN)
+  if (!is_lock_screen)
     return;
 
   // Only record metrics for users who have enabled the feature.
   if (IsEnabled()) {
-    EasyUnlockAuthEvent event =
-        will_unlock_using_easy_unlock_
-            ? EASY_UNLOCK_SUCCESS
-            : GetPasswordAuthEvent();
+    EasyUnlockAuthEvent event = will_unlock_using_easy_unlock_
+                                    ? EASY_UNLOCK_SUCCESS
+                                    : GetPasswordAuthEvent();
     RecordEasyUnlockScreenUnlockEvent(event);
 
     if (will_unlock_using_easy_unlock_) {
-      RecordEasyUnlockScreenUnlockDuration(
-          base::TimeTicks::Now() - lock_screen_last_shown_timestamp_);
+      RecordEasyUnlockScreenUnlockDuration(base::TimeTicks::Now() -
+                                           lock_screen_last_shown_timestamp_);
     }
   }
 

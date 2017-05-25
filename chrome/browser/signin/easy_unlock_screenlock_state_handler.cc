@@ -45,6 +45,8 @@ proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED;
     case ScreenlockState::INACTIVE:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
+    case ScreenlockState::PASSWORD_REAUTH:
+      return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED;
   }
 
   NOTREACHED();
@@ -78,6 +80,8 @@ size_t GetTooltipResourceId(ScreenlockState state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_RSSI_TOO_LOW;
     case ScreenlockState::AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
+    case ScreenlockState::PASSWORD_REAUTH:
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH;
   }
 
   NOTREACHED();

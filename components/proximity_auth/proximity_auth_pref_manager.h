@@ -59,6 +59,12 @@ class ProximityAuthPrefManager {
   virtual std::string GetDeviceAddress(const std::string& public_key) const;
   virtual std::vector<std::string> GetPublicKeys() const;
 
+  // Setter and getter for the timestamp of the last password entry. This
+  // preference is used to enforce reauthing with the password after a given
+  // time period has elapsed.
+  virtual void SetLastPasswordEntryTimestampMs(int64_t timestamp_ms);
+  virtual int64_t GetLastPasswordEntryTimestampMs() const;
+
  private:
   const base::DictionaryValue* GetRemoteBleDevices() const;
 
