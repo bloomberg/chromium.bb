@@ -13,6 +13,8 @@
 @synthesize createdTime = _createdTime;
 @synthesize hostId = _hostId;
 @synthesize hostName = _hostName;
+@synthesize hostOs = _hostOs;
+@synthesize hostOsVersion = _hostOsVersion;
 @synthesize hostVersion = _hostVersion;
 @synthesize jabberId = _jabberId;
 @synthesize kind = _kind;
@@ -46,7 +48,9 @@
     host.createdTime = [svr objectForKey:@"createdTime"];
     host.hostId = [svr objectForKey:@"hostId"];
     host.hostName = [svr objectForKey:@"hostName"];
+    host.hostOs = [svr objectForKey:@"hostOs"];
     host.hostVersion = [svr objectForKey:@"hostVersion"];
+    host.hostOsVersion = [svr objectForKey:@"hostOsVersion"];
     host.jabberId = [svr objectForKey:@"jabberId"];
     host.kind = [svr objectForKey:@"kind"];
     host.publicKey = [svr objectForKey:@"publicKey"];

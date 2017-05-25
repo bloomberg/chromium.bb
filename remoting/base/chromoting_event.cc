@@ -107,14 +107,16 @@ void ChromotingEvent::AddSystemInfo() {
   Os os = Os::CHROMOTING_LINUX;
 #elif defined(OS_CHROMEOS)
   Os os = Os::CHROMOTING_CHROMEOS;
+#elif defined(OS_IOS)
+  // This needs to precede the OS_MACOSX check since iOS will also define the
+  // OS_MACOSX macro.
+  Os os = Os::CHROMOTING_IOS;
 #elif defined(OS_MACOSX)
   Os os = Os::CHROMOTING_MAC;
 #elif defined(OS_WIN)
   Os os = Os::CHROMOTING_WINDOWS;
 #elif defined(OS_ANDROID)
   Os os = Os::CHROMOTING_ANDROID;
-#elif defined(OS_IOS)
-  Os os = Os::CHROMOTING_IOS;
 #else
   Os os = Os::OTHER;
 #endif
