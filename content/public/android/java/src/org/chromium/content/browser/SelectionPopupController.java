@@ -233,7 +233,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     public void showActionModeOrClearOnFailure() {
         mPendingShowActionMode = false;
 
-        if (!isActionModeSupported() || !mHasSelection) return;
+        if (!isActionModeSupported() || !hasSelection()) return;
 
         // Just refresh the view if action mode already exists.
         if (isActionModeValid()) {
@@ -909,7 +909,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (mWebContents == null || resultCode != Activity.RESULT_OK || data == null) return;
 
         // Do not handle the result if no text is selected or current selection is not editable.
-        if (!mHasSelection || !isSelectionEditable()) return;
+        if (!hasSelection() || !isSelectionEditable()) return;
 
         CharSequence result = data.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
         if (result != null) {
@@ -920,7 +920,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     void restoreSelectionPopupsIfNecessary() {
-        if (mHasSelection && !isActionModeValid()) {
+        if (hasSelection() && !isActionModeValid()) {
             showActionModeOrClearOnFailure();
         }
     }
@@ -1100,7 +1100,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @Override
     public String getSelectedText() {
-        return mHasSelection ? mLastSelectedText : "";
+        return hasSelection() ? mLastSelectedText : "";
     }
 
     private boolean isShareAvailable() {
@@ -1141,7 +1141,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         @Override
         public void onClassified(SmartSelectionProvider.Result result) {
             // If the selection does not exist any more, discard |result|.
-            if (!mHasSelection) {
+            if (!hasSelection()) {
                 assert !mHidden;
                 assert mClassificationResult == null;
                 mPendingShowActionMode = false;
