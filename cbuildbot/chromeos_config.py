@@ -2424,13 +2424,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('wolf',           'peppy',          None),            # slippy
     ('peach_pit',      None,             None),            # peach
     ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (N)
-    (None,             None,             'cyan'),          # strago
+    ('hana',           None,             'cyan'),          # strago
     (None,             None,             'kevin'),         # gru
     ('lumpy',          'stumpy',         None),            # sandybridge
     ('nyan_big',       'nyan_kitty',     None),            # nyan
     ('winky',          'kip',            None),            # rambi
     ('elm',            None,             None),            # oak
-    ('cave',           'caroline',       None),            # glados
+    ('cave',           None,             'caroline'),      # glados
     ('link',           None,             None),            # ivybridge
   ])
 
