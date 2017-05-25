@@ -4114,6 +4114,7 @@ static Vector<FloatQuad> ComputeTextBounds(
   DCHECK(start_container);
   Node* const end_container = end_position.ComputeContainerNode();
   DCHECK(end_container);
+  DCHECK(!start_container->GetDocument().NeedsLayoutTreeUpdate());
 
   Vector<FloatQuad> result;
   for (const Node& node : range.Nodes()) {
