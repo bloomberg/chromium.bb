@@ -54,9 +54,6 @@ class TestExpectationsChecker(object):
         log = logging.getLogger('webkitpy.layout_tests.layout_package.test_expectations')
         log.setLevel(logging.CRITICAL)
 
-    def _handle_error_message(self, lineno, message, confidence):
-        pass
-
     def check_test_expectations(self, expectations_str, tests=None):
         parser = TestExpectationParser(self._port_obj, tests, is_lint_mode=True)
         expectations = parser.parse('expectations', expectations_str)

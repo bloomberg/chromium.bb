@@ -161,9 +161,6 @@ class MockExecutive(object):
     def cpu_count(self):
         return 2
 
-    def kill_all(self, process_name):
-        pass
-
     def kill_process(self, pid):
         pass
 
