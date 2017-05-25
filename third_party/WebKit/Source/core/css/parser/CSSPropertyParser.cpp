@@ -647,7 +647,8 @@ static CSSFunctionValue* ConsumeFilterFunction(
       if (!parsed_value)
         parsed_value = ConsumeNumber(args, kValueRangeAll);
     } else if (filter_type == CSSValueHueRotate) {
-      parsed_value = ConsumeAngle(args);
+      parsed_value =
+          ConsumeAngle(args, *context, UseCounter::kUnitlessZeroAngleFilter);
     } else if (filter_type == CSSValueBlur) {
       parsed_value =
           ConsumeLength(args, kHTMLStandardMode, kValueRangeNonNegative);
@@ -715,14 +716,18 @@ static CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range) {
-  CSSValue* angle = ConsumeAngle(range);
+static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
+                                     const CSSParserContext& context) {
+  CSSValue* angle =
+      ConsumeAngle(range, context, UseCounter::kUnitlessZeroAngleOffsetRotate);
   CSSValue* keyword = ConsumeIdent<CSSValueAuto, CSSValueReverse>(range);
   if (!angle && !keyword)
     return nullptr;
 
-  if (!angle)
-    angle = ConsumeAngle(range);
+  if (!angle) {
+    angle = ConsumeAngle(range, context,
+                         UseCounter::kUnitlessZeroAngleOffsetRotate);
+  }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (keyword)
@@ -738,7 +743,7 @@ bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
       CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_);
   const CSSValue* offset_distance =
       ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
-  const CSSValue* offset_rotate = ConsumeOffsetRotate(range_);
+  const CSSValue* offset_rotate = ConsumeOffsetRotate(range_, *context_);
   if (!offset_path || !offset_distance || !offset_rotate || !range_.AtEnd())
     return false;
 
@@ -1743,7 +1748,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:
-      return ConsumeOffsetRotate(range_);
+      return ConsumeOffsetRotate(range_, *context_);
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitPerspectiveOriginX:
       return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,

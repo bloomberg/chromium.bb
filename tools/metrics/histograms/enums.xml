@@ -15032,6 +15032,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2003" label="ThreeValuedPositionGradient"/>
   <int value="2004" label="ThreeValuedPositionObjectPosition"/>
   <int value="2005" label="ThreeValuedPositionPerspectiveOrigin"/>
+  <int value="2006" label="UnitlessZeroAngleCustomProperty"/>
+  <int value="2007" label="UnitlessZeroAngleFilter"/>
+  <int value="2008" label="UnitlessZeroAngleGradient"/>
+  <int value="2009" label="UnitlessZeroAngleOffsetRotate"/>
+  <int value="2010" label="UnitlessZeroAngleTransform"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">

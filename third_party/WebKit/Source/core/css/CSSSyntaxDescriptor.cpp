@@ -163,7 +163,8 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::kInteger:
       return ConsumeInteger(range);
     case CSSSyntaxType::kAngle:
-      return ConsumeAngle(range);
+      return ConsumeAngle(range, *context,
+                          UseCounter::kUnitlessZeroAngleCustomProperty);
     case CSSSyntaxType::kTime:
       return ConsumeTime(range, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kResolution:

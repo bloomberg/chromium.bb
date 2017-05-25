@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+test(() => {
+    let UnitlessZeroAngleCustomProperty = 2006; // From UseCounter.h
+
+    let isCounted = () => internals.isUseCounted(document, UnitlessZeroAngleCustomProperty);
+    var div = document.createElement('div');
+
+    // These values are invalid.
+    div.style = 'image-orientation: 0;';
+    div.style = 'rotate: 0;';
+    div.style = 'offset-path: ray(0 closest-side);';
+    // These properties have their own counters.
+    div.style = 'filter: hue-rotate(0);';
+    div.style = 'background-image: linear-gradient(0, red, black);';
+    div.style = 'offset-rotate: 0;';
+    div.style = 'transform: skewX(0);';
+    assert_false(isCounted(),
+                 'non custom property should not be counted');
+
+    CSS.registerProperty({
+      name: '--degrees',
+      syntax: '<angle>',
+      initialValue: '0deg',
+    });
+    assert_false(isCounted(),
+                 '0deg should not be counted');
+
+    CSS.registerProperty({
+      name: '--unitless',
+      syntax: '<angle>',
+      initialValue: '0',
+    });
+    assert_true(isCounted(),
+                '0 should be counted');
+}, 'angle 0 is use counted for custom property registration');
+</script>
