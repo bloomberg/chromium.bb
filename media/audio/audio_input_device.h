@@ -59,6 +59,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/scoped_task_runner_observer.h"
@@ -128,6 +130,19 @@ class MEDIA_EXPORT AudioInputDevice
   // If the IO loop dies before we do, we shut down the audio thread from here.
   void WillDestroyCurrentMessageLoop() override;
 
+  // Checks if we have gotten callbacks within a certain time period. If no
+  // callbacks have been received, we report a capture error to the capture
+  // callback. Must be called on IO thread.
+  void CheckIfInputStreamIsAlive();
+
+  // Sets the last callback time |last_callback_time_ms_| to the current time.
+  // SetLastCallbackTimeToNow() posts a task on the IO thread to run
+  // SetLastCallbackTimeToNowOnIOThread() which actually sets the variable. We
+  // don't need high precision so we don't have to care about the delay added
+  // with posting the task.
+  void SetLastCallbackTimeToNow();
+  void SetLastCallbackTimeToNowOnIOThread();
+
   AudioParameters audio_parameters_;
 
   CaptureCallback* callback_;
@@ -165,6 +180,22 @@ class MEDIA_EXPORT AudioInputDevice
   // TODO(miu): Replace this by changing AudioCapturerSource to accept the
   // callback via Start(). See http://crbug.com/151051 for details.
   bool stopping_hack_;
+
+  // Mechanism for detecting if we don't get callbacks for some period of time.
+  // |check_alive_timer_| runs the check regularly.
+  // |last_callback_time_| stores the time for the last callback.
+  // Both must only be accessed on the IO thread.
+  // TODO(grunell): Change from TimeTicks to Atomic32 and remove the task
+  // posting in SetLastCallbackTimeToNow(). The Atomic32 variable would have to
+  // represent some time in seconds or tenths of seconds to be able to span over
+  // enough time. Atomic64 cannot be used since it's not supported on 32-bit
+  // platforms.
+  std::unique_ptr<base::RepeatingTimer> check_alive_timer_;
+  base::TimeTicks last_callback_time_;
+
+  // Flags that missing callbacks has been detected. Used for statistics,
+  // reported when stopping. Must only be accessed on the IO thread.
+  bool missing_callbacks_detected_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);
 };

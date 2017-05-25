@@ -3347,10 +3347,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="AuthPolicy.TimeToRunKlist" units="ms">
   <owner>ljusten@chromium.org</owner>
   <summary>
-    Time in milliseconds to call 'klist' (print Kerberos ticket-granting-
-    ticket information). The command reveals a TGT's lifetime, which is used to
-    determine TGT status in GetUserStatus() called periodically by Chrome.
-    The value is recorded no matter if the operation was successful or not.
+    Time in milliseconds to call 'klist' (print Kerberos ticket-granting-ticket
+    information). The command reveals a TGT's lifetime, which is used to
+    determine TGT status in GetUserStatus() called periodically by Chrome. The
+    value is recorded no matter if the operation was successful or not.
   </summary>
 </histogram>
 
@@ -26718,6 +26718,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     A boolean that reflects whether or not an error was reported during audio
     capture.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Capture.DetectedMissingCallbacks"
+    enum="BooleanMissingCallbacks">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    Whether missing callbacks where detected during audio capture. Logged when
+    AudioInputDevice is stopped.
   </summary>
 </histogram>
 
