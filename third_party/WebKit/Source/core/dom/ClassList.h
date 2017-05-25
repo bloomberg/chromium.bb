@@ -23,57 +23,51 @@
  * DAMAGE.
  */
 
-#include "core/html/ClassList.h"
+#ifndef ClassList_h
+#define ClassList_h
 
-#include "core/dom/Document.h"
-#include "platform/wtf/PtrUtil.h"
+#include <memory>
+#include "core/HTMLNames.h"
+#include "core/dom/DOMTokenList.h"
+#include "core/dom/Element.h"
+#include "core/dom/SpaceSplitString.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+class Element;
 
-ClassList::ClassList(Element* element)
-    : DOMTokenList(nullptr), element_(element) {}
+class ClassList final : public DOMTokenList {
+ public:
+  static ClassList* Create(Element* element) { return new ClassList(element); }
 
-unsigned ClassList::length() const {
-  return element_->HasClass() ? ClassNames().size() : 0;
-}
+  unsigned length() const override;
+  const AtomicString item(unsigned index) const override;
 
-const AtomicString ClassList::item(unsigned index) const {
-  if (index >= length())
-    return AtomicString();
-  return ClassNames()[index];
-}
+  void ClearValueForQuirksMode() { class_names_for_quirks_mode_ = nullptr; }
 
-bool ClassList::ContainsInternal(const AtomicString& token) const {
-  return element_->HasClass() && ClassNames().Contains(token);
-}
+  DECLARE_VIRTUAL_TRACE();
 
-const SpaceSplitString& ClassList::ClassNames() const {
-  DCHECK(element_->HasClass());
-  if (element_->GetDocument().InQuirksMode()) {
-    if (!class_names_for_quirks_mode_) {
-      class_names_for_quirks_mode_ =
-          WTF::WrapUnique(new SpaceSplitString(value()));
-    }
-    return *class_names_for_quirks_mode_.get();
+ private:
+  explicit ClassList(Element*);
+
+  bool ContainsInternal(const AtomicString&) const override;
+
+  const SpaceSplitString& ClassNames() const;
+  SpaceSplitString& MutableSet() override;
+
+  const AtomicString& value() const override {
+    return element_->getAttribute(HTMLNames::classAttr);
   }
-  return element_->ClassNames();
-}
+  void setValue(const AtomicString& value) override {
+    element_->setAttribute(HTMLNames::classAttr, value);
+    mutable_set_.Clear();
+  }
 
-SpaceSplitString& ClassList::MutableSet() {
-  // We can't mutate element_->ClassNames() because it is used to compare class
-  // names before/after class attribute change.
-  if (element_->HasClass())
-    mutable_set_ = ClassNames();
-  else
-    mutable_set_ = SpaceSplitString();
-  return mutable_set_;
-}
-
-DEFINE_TRACE(ClassList) {
-  visitor->Trace(element_);
-  DOMTokenList::Trace(visitor);
-}
+  Member<Element> element_;
+  mutable std::unique_ptr<SpaceSplitString> class_names_for_quirks_mode_;
+  SpaceSplitString mutable_set_;
+};
 
 }  // namespace blink
+
+#endif  // ClassList_h
