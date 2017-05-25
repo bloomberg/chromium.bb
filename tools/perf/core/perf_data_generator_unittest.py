@@ -193,4 +193,26 @@ class PerfDataGeneratorTest(unittest.TestCase):
         perf_data_generator.ShouldBenchmarkBeScheduled(bench(), 'android'),
         False)
 
+  def testRemoveBlacklistedTestsNoop(self):
+    tests = [{
+        'swarming': {
+            'dimension_sets': [{
+                'id': 'build1-b1',
+            }]
+        }
+    }]
+    self.assertEqual(
+        perf_data_generator.RemoveBlacklistedTests(tests, []), tests)
+
+  def testRemoveBlacklistedTestsShouldRemove(self):
+    tests = [{
+        'swarming': {
+            'dimension_sets': [{
+                'id': 'build1-b1',
+            }]
+        }
+    }]
+    self.assertEqual(
+        perf_data_generator.RemoveBlacklistedTests(tests, ['build1-b1']), [])
+
 
