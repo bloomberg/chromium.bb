@@ -120,6 +120,7 @@ float
 floodColor
 floodOpacity
 font
+fontDisplay
 fontFamily
 fontFeatureSettings
 fontKerning
