@@ -5,7 +5,6 @@
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
 #include "core/editing/markers/DocumentMarkerListEditor.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
 
 namespace blink {
 
@@ -14,23 +13,21 @@ bool SpellCheckMarkerListImpl::IsEmpty() const {
 }
 
 void SpellCheckMarkerListImpl::Add(DocumentMarker* marker) {
-  RenderedDocumentMarker* rendered_marker =
-      RenderedDocumentMarker::Create(*marker);
   if (markers_.IsEmpty() ||
       markers_.back()->EndOffset() < marker->StartOffset()) {
-    markers_.push_back(rendered_marker);
+    markers_.push_back(marker);
     return;
   }
 
   auto first_overlapping = std::lower_bound(
-      markers_.begin(), markers_.end(), rendered_marker,
+      markers_.begin(), markers_.end(), marker,
       [](const Member<DocumentMarker>& marker_in_list,
          const DocumentMarker* marker_to_insert) {
         return marker_in_list->EndOffset() < marker_to_insert->StartOffset();
       });
 
   size_t index = first_overlapping - markers_.begin();
-  markers_.insert(index, rendered_marker);
+  markers_.insert(index, marker);
   const auto inserted = markers_.begin() + index;
   first_overlapping = inserted + 1;
   // TODO(rlanday): optimize this loop so it runs in O(N) time and not O(N^2)
