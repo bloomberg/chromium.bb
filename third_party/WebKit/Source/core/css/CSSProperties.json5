@@ -1359,7 +1359,7 @@
       converter: "ConvertComputedLength<uint8_t>",
       inherited: true,
       runtime_flag: "CSSSnapSize",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "uint8_t",
       default_value: "0",
       field_group: "rare-inherited",

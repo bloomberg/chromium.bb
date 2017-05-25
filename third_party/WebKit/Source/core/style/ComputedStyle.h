@@ -1653,15 +1653,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
-  // line-height-step
-  static uint8_t InitialLineHeightStep() { return 0; }
-  uint8_t LineHeightStep() const {
-    return rare_inherited_data_->line_height_step_;
-  }
-  void SetLineHeightStep(uint8_t unit) {
-    SET_VAR(rare_inherited_data_, line_height_step_, unit);
-  }
-
   // speak
   static ESpeak InitialSpeak() { return ESpeak::kNormal; }
   ESpeak Speak() const {
