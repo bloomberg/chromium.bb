@@ -18,6 +18,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "android_ui_gesture_target.h",
       "animation.cc",
       "animation.h",
+      "color_scheme.cc",
+      "color_scheme.h",
       "easing.cc",
       "easing.h",
       "elbow_model.cc",

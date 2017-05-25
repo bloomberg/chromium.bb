@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/textures/close_button_texture.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
@@ -60,10 +61,6 @@ static constexpr float kLoadingIndicatorOffset =
 static constexpr float kSceneSize = 25.0;
 static constexpr float kSceneHeight = 4.0;
 static constexpr int kFloorGridlineCount = 40;
-static constexpr vr::Colorf kBackgroundHorizonColor = {0.57, 0.57, 0.57, 1.0};
-static constexpr vr::Colorf kBackgroundCenterColor = {0.48, 0.48, 0.48, 1.0};
-static constexpr vr::Colorf kFullscreenHorizonColor = {0.1, 0.1, 0.1, 1.0};
-static constexpr vr::Colorf kFullscreenCenterColor = {0.2, 0.2, 0.2, 1.0};
 
 static constexpr float kFullscreenDistance = 3;
 static constexpr float kFullscreenHeight = 0.64 * kFullscreenDistance;
@@ -235,8 +232,6 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, -kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2.0});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
-  element->set_edge_color(kBackgroundHorizonColor);
-  element->set_center_color(kBackgroundCenterColor);
   element->set_draw_phase(0);
   floor_ = element.get();
   content_elements_.push_back(element.get());
@@ -251,8 +246,6 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, M_PI / 2});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
-  element->set_edge_color(kBackgroundHorizonColor);
-  element->set_center_color(kBackgroundCenterColor);
   element->set_draw_phase(0);
   ceiling_ = element.get();
   content_elements_.push_back(element.get());
@@ -267,17 +260,13 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, -kSceneHeight / 2 + kTextureOffset, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2});
   element->set_fill(vr_shell::Fill::GRID_GRADIENT);
-  element->set_center_color(kBackgroundHorizonColor);
-  vr::Colorf edge_color = kBackgroundHorizonColor;
-  edge_color.a = 0.0;
-  element->set_edge_color(edge_color);
   element->set_gridline_count(kFloorGridlineCount);
   element->set_draw_phase(0);
   floor_grid_ = element.get();
   content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
-  scene_->SetBackgroundColor(kBackgroundHorizonColor);
+  UpdateBackgroundColor();
 }
 
 void UiSceneManager::CreateUrlBar() {
@@ -353,32 +342,28 @@ void UiSceneManager::ConfigureScene() {
     main_content_->set_translation(
         {0, kFullscreenVerticalOffset, -kFullscreenDistance});
     main_content_->set_size({kFullscreenWidth, kFullscreenHeight, 1});
-
-    ConfigureBackgroundColor(kFullscreenCenterColor, kFullscreenHorizonColor);
   } else {
     // Note that main_content_ is already visible in this case.
     main_content_->set_translation(
         {0, kContentVerticalOffset, -kContentDistance});
     main_content_->set_size({kContentWidth, kContentHeight, 1});
-
-    ConfigureBackgroundColor(kBackgroundCenterColor, kBackgroundHorizonColor);
   }
 
+  UpdateBackgroundColor();
   scene_->SetBackgroundDistance(main_content_->translation().z() *
                                 -kBackgroundDistanceMultiplier);
 }
 
-void UiSceneManager::ConfigureBackgroundColor(vr::Colorf center_color,
-                                              vr::Colorf horizon_color) {
-  scene_->SetBackgroundColor(horizon_color);
-  floor_->set_edge_color(horizon_color);
-  floor_->set_center_color(center_color);
-  ceiling_->set_edge_color(horizon_color);
-  ceiling_->set_center_color(center_color);
-  floor_grid_->set_center_color(horizon_color);
-  vr::Colorf edge_color = horizon_color;
-  edge_color.a = 0.0;
-  floor_grid_->set_edge_color(edge_color);
+void UiSceneManager::UpdateBackgroundColor() {
+  scene_->SetBackgroundColor(color_scheme().horizon);
+  ceiling_->set_center_color(color_scheme().ceiling);
+  ceiling_->set_edge_color(color_scheme().horizon);
+  floor_->set_center_color(color_scheme().floor);
+  floor_->set_edge_color(color_scheme().horizon);
+  floor_grid_->set_center_color(color_scheme().floor_grid);
+  vr::Colorf floor_grid_edge_color = color_scheme().floor_grid;
+  floor_grid_edge_color.a = 0.0;
+  floor_grid_->set_edge_color(floor_grid_edge_color);
 }
 
 void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
@@ -467,6 +452,11 @@ void UiSceneManager::OnCloseButtonClicked() {
 
 int UiSceneManager::AllocateId() {
   return next_available_id_++;
+}
+
+const ColorScheme& UiSceneManager::color_scheme() const {
+  return ColorScheme::GetColorScheme(fullscreen_ ? ColorScheme::kModeFullscreen
+                                                 : ColorScheme::kModeNormal);
 }
 
 }  // namespace vr_shell
