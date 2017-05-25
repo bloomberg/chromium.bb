@@ -56692,6 +56692,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.JobResult" enum="PrintJobResult">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    The final status of every print job that was succesfully queued.  Only used
+    on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.PrintJobsQueued" units="count">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    The size of the print queue when a print job is initially queued.  When the
+    first job is started, a zero is recorded.  Only used on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="PrintPreview.DestinationAction"
     enum="PrintPreviewPrintDestinationBuckets">
   <owner>vitalybuka@chromium.org</owner>
