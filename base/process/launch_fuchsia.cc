@@ -6,10 +6,70 @@
 
 #include <launchpad/launchpad.h>
 #include <magenta/process.h>
+#include <unistd.h>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 
 namespace base {
+
+namespace {
+
+bool GetAppOutputInternal(const std::vector<std::string>& argv,
+                          bool include_stderr,
+                          std::string* output,
+                          int* exit_code) {
+  DCHECK(exit_code);
+
+  std::vector<const char*> argv_cstr;
+  argv_cstr.reserve(argv.size() + 1);
+  for (const auto& arg : argv)
+    argv_cstr.push_back(arg.c_str());
+  argv_cstr.push_back(nullptr);
+
+  launchpad_t* lp;
+  launchpad_create(MX_HANDLE_INVALID, argv_cstr[0], &lp);
+  launchpad_load_from_file(lp, argv_cstr[0]);
+  launchpad_set_args(lp, argv.size(), argv_cstr.data());
+  launchpad_clone(lp, LP_CLONE_MXIO_ROOT | LP_CLONE_MXIO_CWD |
+                          LP_CLONE_DEFAULT_JOB | LP_CLONE_ENVIRON);
+  launchpad_clone_fd(lp, STDIN_FILENO, STDIN_FILENO);
+  int pipe_fd;
+  mx_status_t status = launchpad_add_pipe(lp, &pipe_fd, STDOUT_FILENO);
+  if (status != NO_ERROR) {
+    LOG(ERROR) << "launchpad_add_pipe failed: " << status;
+    launchpad_destroy(lp);
+    return false;
+  }
+
+  if (include_stderr)
+    launchpad_clone_fd(lp, pipe_fd, STDERR_FILENO);
+  else
+    launchpad_clone_fd(lp, STDERR_FILENO, STDERR_FILENO);
+
+  mx_handle_t proc;
+  const char* errmsg;
+  status = launchpad_go(lp, &proc, &errmsg);
+  if (status != NO_ERROR) {
+    LOG(ERROR) << "launchpad_go failed: " << errmsg << ", status=" << status;
+    return false;
+  }
+
+  output->clear();
+  for (;;) {
+    char buffer[256];
+    ssize_t bytes_read = read(pipe_fd, buffer, sizeof(buffer));
+    if (bytes_read <= 0)
+      break;
+    output->append(buffer, bytes_read);
+  }
+  close(pipe_fd);
+
+  Process process(proc);
+  return process.WaitForExit(exit_code);
+}
+
+}  // namespace
 
 Process LaunchProcess(const CommandLine& cmdline,
                       const LaunchOptions& options) {
@@ -20,9 +80,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                       const LaunchOptions& options) {
   std::vector<const char*> argv_cstr;
   argv_cstr.reserve(argv.size() + 1);
-  for (size_t i = 0; i < argv.size(); i++) {
-    argv_cstr.push_back(argv[i].c_str());
-  }
+  for (const auto& arg : argv)
+    argv_cstr.push_back(arg.c_str());
   argv_cstr.push_back(nullptr);
 
   // Note that per launchpad.h, the intention is that launchpad_ functions are
@@ -68,6 +127,34 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   }
 
   return Process(proc);
+}
+
+bool GetAppOutput(const CommandLine& cl, std::string* output) {
+  return GetAppOutput(cl.argv(), output);
+}
+
+bool GetAppOutput(const std::vector<std::string>& argv, std::string* output) {
+  int exit_code;
+  bool result = GetAppOutputInternal(argv, false, output, &exit_code);
+  return result && exit_code == EXIT_SUCCESS;
+}
+
+bool GetAppOutputAndError(const CommandLine& cl, std::string* output) {
+  return GetAppOutputAndError(cl.argv(), output);
+}
+
+bool GetAppOutputAndError(const std::vector<std::string>& argv,
+                          std::string* output) {
+  int exit_code;
+  bool result = GetAppOutputInternal(argv, true, output, &exit_code);
+  return result && exit_code == EXIT_SUCCESS;
+}
+
+bool GetAppOutputWithExitCode(const CommandLine& cl,
+                              std::string* output,
+                              int* exit_code) {
+  bool result = GetAppOutputInternal(cl.argv(), false, output, exit_code);
+  return result && *exit_code == EXIT_SUCCESS;
 }
 
 }  // namespace base
