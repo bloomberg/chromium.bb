@@ -13,12 +13,9 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller+internal.h"
-#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_actions.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -56,43 +53,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize dataSource = _dataSource;
 @synthesize fields = _fields;
 
-#pragma mark - Initialization
-
-- (instancetype)init {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
-  if (self) {
-    _saveCreditCard = YES;
-
-    // Set up leading (cancel) button.
-    UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                style:UIBarButtonItemStylePlain
-               target:nil
-               action:@selector(onCancel)];
-    [cancelButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
-    }
-                                forState:UIControlStateDisabled];
-    [cancelButton
-        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
-    [self navigationItem].leftBarButtonItem = cancelButton;
-
-    // Set up trailing (done) button.
-    UIBarButtonItem* doneButton =
-        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_DONE)
-                                         style:UIBarButtonItemStylePlain
-                                        target:nil
-                                        action:@selector(onDone)];
-    [doneButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
-    }
-                              forState:UIControlStateDisabled];
-    [doneButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_DONE)];
-    [self navigationItem].rightBarButtonItem = doneButton;
-  }
-
-  return self;
-}
+#pragma mark - Setters
 
 - (void)setDelegate:(id<CreditCardEditViewControllerDelegate>)delegate {
   [super setDelegate:delegate];
@@ -107,10 +68,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - PaymentRequestEditViewControllerActions methods
 
 - (void)onCancel {
+  [super onCancel];
+
   [_delegate creditCardEditViewControllerDidCancel:self];
 }
 
 - (void)onDone {
+  [super onDone];
+
   if (![self validateForm])
     return;
 
@@ -147,7 +112,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSaveCard];
     saveCardItem.text =
         l10n_util::GetNSString(IDS_PAYMENTS_SAVE_CARD_TO_DEVICE_CHECKBOX);
-    saveCardItem.on = _saveCreditCard;
+    saveCardItem.on = YES;
     [model addItem:saveCardItem
         toSectionWithIdentifier:SectionIdentifierSaveCard];
   }

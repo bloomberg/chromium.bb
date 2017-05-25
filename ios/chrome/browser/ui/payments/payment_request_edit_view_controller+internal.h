@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDIT_VIEW_CONTROLLER_INTERNAL_H_
 
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_actions.h"
 
 // Use these as the starting values for section identifier and item type enums
 // in subclasses. These values are chosen to prevent overlapping with the
@@ -14,7 +15,8 @@ const NSInteger kSectionIdentifierEnumStart = kSectionIdentifierEnumZero + 20;
 const NSInteger kItemTypeEnumStart = kItemTypeEnumZero + 100;
 
 // Internal API for subclasses of PaymentRequestEditViewController.
-@interface PaymentRequestEditViewController (Internal)
+@interface PaymentRequestEditViewController (
+    Internal)<PaymentRequestEditViewControllerActions>
 
 // Validates each field. If there is a validation error, displays an error
 // message item in the same section as the field and returns NO. Otherwise

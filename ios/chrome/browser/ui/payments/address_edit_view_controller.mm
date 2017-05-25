@@ -5,8 +5,7 @@
 #import "ios/chrome/browser/ui/payments/address_edit_view_controller.h"
 
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_actions.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller+internal.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,41 +32,7 @@ NSString* const kAddressEditCollectionViewAccessibilityID =
 @synthesize delegate = _delegate;
 @synthesize fields = _fields;
 
-#pragma mark - Initialization
-
-- (instancetype)init {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
-  if (self) {
-    // Set up leading (cancel) button.
-    UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                style:UIBarButtonItemStylePlain
-               target:nil
-               action:@selector(onCancel)];
-    [cancelButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
-    }
-                                forState:UIControlStateDisabled];
-    [cancelButton
-        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
-    [self navigationItem].leftBarButtonItem = cancelButton;
-
-    // Set up trailing (done) button.
-    UIBarButtonItem* doneButton =
-        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_DONE)
-                                         style:UIBarButtonItemStylePlain
-                                        target:nil
-                                        action:@selector(onDone)];
-    [doneButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
-    }
-                              forState:UIControlStateDisabled];
-    [doneButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_DONE)];
-    [self navigationItem].rightBarButtonItem = doneButton;
-  }
-
-  return self;
-}
+#pragma mark - Setters
 
 - (void)setDelegate:(id<AddressEditViewControllerDelegate>)delegate {
   [super setDelegate:delegate];
@@ -86,10 +51,17 @@ NSString* const kAddressEditCollectionViewAccessibilityID =
 #pragma mark - PaymentRequestEditViewControllerActions methods
 
 - (void)onCancel {
+  [super onCancel];
+
   [self.delegate addressEditViewControllerDidCancel:self];
 }
 
 - (void)onDone {
+  [super onDone];
+
+  if (![self validateForm])
+    return;
+
   [self.delegate addressEditViewController:self
                     didFinishEditingFields:self.fields];
 }

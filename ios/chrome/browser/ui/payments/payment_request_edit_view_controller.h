@@ -59,6 +59,11 @@ extern NSString* const kWarningMessageAccessibilityID;
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerValidator>
     validatorDelegate;
 
+// Convenience initializer. Initializes this view controller with the
+// CollectionViewControllerStyleAppBar style and sets up the leading (cancel)
+// and the trailing (done) buttons.
+- (instancetype)init;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDIT_VIEW_CONTROLLER_H_
