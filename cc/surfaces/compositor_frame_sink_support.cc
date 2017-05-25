@@ -158,8 +158,10 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
       base::BindRepeating(&CompositorFrameSinkSupport::WillDrawSurface,
                           weak_factory_.GetWeakPtr()));
 
-  if (!result)
+  if (!result) {
+    surface_manager_->DestroySurface(std::move(surface));
     return false;
+  }
 
   if (current_surface_) {
     surface->SetPreviousFrameSurface(current_surface_.get());
