@@ -62,26 +62,13 @@ static constexpr float kSceneHeight = 4.0;
 static constexpr int kFloorGridlineCount = 40;
 static constexpr vr::Colorf kBackgroundHorizonColor = {0.57, 0.57, 0.57, 1.0};
 static constexpr vr::Colorf kBackgroundCenterColor = {0.48, 0.48, 0.48, 1.0};
-
-static constexpr float kFullscreenWidthDms = 1.138;
-static constexpr float kFullscreenHeightDms = 0.64;
-static constexpr float kFullscreenVerticalOffsetDms = 0.1;
-// Fullscreen distance calculated as value needed to make the content quad
-// extend down to the floor (with small pullback used to prevent actual
-// intersection). Note this assumes the vertical offset will always be offest
-// below the origin (ie negative).
-static constexpr float kFullscreenDistance =
-    (kSceneHeight / 2.0) /
-    ((kFullscreenVerticalOffsetDms + (kFullscreenHeightDms / 2.0)) + 0.01);
-
-static constexpr float kFullscreenHeight =
-    kFullscreenHeightDms * kFullscreenDistance;
-static constexpr float kFullscreenWidth =
-    kFullscreenWidthDms * kFullscreenDistance;
-static constexpr float kFullscreenVerticalOffset =
-    -kFullscreenVerticalOffsetDms * kFullscreenDistance;
 static constexpr vr::Colorf kFullscreenHorizonColor = {0.1, 0.1, 0.1, 1.0};
 static constexpr vr::Colorf kFullscreenCenterColor = {0.2, 0.2, 0.2, 1.0};
+
+static constexpr float kFullscreenDistance = 3;
+static constexpr float kFullscreenHeight = 0.64 * kFullscreenDistance;
+static constexpr float kFullscreenWidth = 1.138 * kFullscreenDistance;
+static constexpr float kFullscreenVerticalOffset = -0.1 * kFullscreenDistance;
 
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01;
