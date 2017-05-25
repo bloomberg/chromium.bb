@@ -293,7 +293,7 @@ enum class ESpeak {
   kNoPunctuation
 };
 
-enum TextEmphasisFill { kTextEmphasisFillFilled, kTextEmphasisFillOpen };
+enum class TextEmphasisFill { kFilled, kOpen };
 
 enum TextEmphasisMark {
   kTextEmphasisMarkNone,

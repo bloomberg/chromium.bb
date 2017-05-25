@@ -1778,7 +1778,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Text emphasis properties.
   static TextEmphasisFill InitialTextEmphasisFill() {
-    return kTextEmphasisFillFilled;
+    return TextEmphasisFill::kFilled;
   }
   static TextEmphasisMark InitialTextEmphasisMark() {
     return kTextEmphasisMarkNone;
@@ -1796,7 +1796,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   const AtomicString& TextEmphasisMarkString() const;
   void SetTextEmphasisFill(TextEmphasisFill fill) {
-    SET_VAR(rare_inherited_data_, text_emphasis_fill_, fill);
+    SET_VAR(rare_inherited_data_, text_emphasis_fill_,
+            static_cast<unsigned>(fill));
   }
   void SetTextEmphasisMark(TextEmphasisMark mark) {
     SET_VAR(rare_inherited_data_, text_emphasis_mark_, mark);

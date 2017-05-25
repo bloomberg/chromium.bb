@@ -410,7 +410,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "TextEmphasisFill",
-      default_value: "kTextEmphasisFillFilled",
+      default_value: "TextEmphasisFill::kFilled",
       field_size: 1,
       field_group: "rare-inherited",
     },
