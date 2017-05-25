@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

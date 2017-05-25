@@ -22,7 +22,6 @@
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/events/event.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
