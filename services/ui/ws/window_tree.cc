@@ -2233,11 +2233,11 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
       ProcessSetDisplayRoot(display, *viewport_metrics, is_primary_display,
                             ClientWindowId(window_id));
   if (!display_root) {
-    callback.Run(false);
+    callback.Run(base::nullopt);
     return;
   }
   display_root->parent()->SetVisible(true);
-  callback.Run(true);
+  callback.Run(display_root->current_local_surface_id());
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

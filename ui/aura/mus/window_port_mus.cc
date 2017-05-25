@@ -502,8 +502,10 @@ cc::SurfaceId WindowPortMus::GetSurfaceId() const {
 }
 
 void WindowPortMus::UpdatePrimarySurfaceInfo() {
-  bool embeds_surface = window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
-                        window_mus_type() == WindowMusType::EMBED_IN_OWNER;
+  bool embeds_surface =
+      window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
+      window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
+      window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED;
   if (!embeds_surface || !window_tree_client_->enable_surface_synchronization_)
     return;
 

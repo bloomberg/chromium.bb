@@ -595,9 +595,20 @@ void WindowTreeClient::OnEmbedImpl(
   delegate_->OnEmbed(std::move(window_tree_host));
 }
 
-void WindowTreeClient::OnSetDisplayRootDone(bool success) {
+void WindowTreeClient::OnSetDisplayRootDone(
+    Id window_id,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+  if (!enable_surface_synchronization_)
+    return;
+
   // The only way SetDisplayRoot() should fail is if we've done something wrong.
-  CHECK(success);
+  CHECK(local_surface_id.has_value());
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;  // Display was already deleted.
+
+  ui::Compositor* compositor = window->GetWindow()->GetHost()->compositor();
+  compositor->SetLocalSurfaceId(*local_surface_id);
 }
 
 WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
@@ -679,8 +690,9 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
       ScheduleInFlightChange(base::MakeUnique<InFlightBoundsChange>(
           this, window, old_bounds, window->GetLocalSurfaceId()));
   base::Optional<cc::LocalSurfaceId> local_surface_id;
-  if ((window->window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
-       window->window_mus_type() == WindowMusType::EMBED_IN_OWNER)) {
+  if (window->window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
+      window->window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
+      window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED) {
     local_surface_id = window->GetOrAllocateLocalSurfaceId(new_bounds.size());
     synchronizing_with_child_on_next_frame_ = true;
   }
@@ -745,7 +757,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
           base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
-                     base::Unretained(this)));
+                     base::Unretained(this), window->server_id()));
     }
   }
 }

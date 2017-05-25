@@ -269,7 +269,9 @@ class AURA_EXPORT WindowTreeClient
                    const base::Optional<cc::LocalSurfaceId>& local_surface_id);
 
   // Called once mus acks the call to SetDisplayRoot().
-  void OnSetDisplayRootDone(bool success);
+  void OnSetDisplayRootDone(
+      Id window_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
 
   // Called by WmNewDisplayAdded().
   WindowTreeHostMus* WmNewDisplayAddedImpl(
