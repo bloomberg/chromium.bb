@@ -39,15 +39,6 @@ class BoxPainter : public BoxPainterBase {
   void PaintMask(const PaintInfo&, const LayoutPoint&);
   void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
 
-  typedef Vector<const FillLayer*, 8> FillLayerOcclusionOutputList;
-  // Returns true if the result fill layers have non-associative blending or
-  // compositing mode.  (i.e. The rendering will be different without creating
-  // isolation group by context.saveLayer().) Note that the output list will be
-  // in top-bottom order.
-  bool CalculateFillLayerOcclusionCulling(
-      FillLayerOcclusionOutputList& reversed_paint_list,
-      const FillLayer&);
-
   // Returns true if the fill layer will certainly occlude anything painted
   // behind it.
   static bool IsFillLayerOpaque(const FillLayer&, const LayoutObject&);
