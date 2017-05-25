@@ -132,11 +132,11 @@ void HistoryDataStore::Init(base::DictionaryValue* cached_dict) {
 }
 
 void HistoryDataStore::Flush(
-    const DictionaryDataStore::OnFlushedCallback& on_flushed) {
-  if (data_store_.get())
-    data_store_->Flush(on_flushed);
+    DictionaryDataStore::OnFlushedCallback on_flushed) {
+  if (data_store_)
+    data_store_->Flush(std::move(on_flushed));
   else
-    on_flushed.Run();
+    std::move(on_flushed).Run();
 }
 
 void HistoryDataStore::Load(

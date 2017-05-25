@@ -41,7 +41,7 @@ class APP_LIST_EXPORT HistoryDataStore
 
   // Flushes pending writes. |on_flushed| is invoked when disk write is
   // finished.
-  void Flush(const DictionaryDataStore::OnFlushedCallback& on_flushed);
+  void Flush(DictionaryDataStore::OnFlushedCallback on_flushed);
 
   // Reads the persisted data from disk asynchronously. |on_read| is called
   // with the loaded and parsed data. If there is an error, |on_read| is called
