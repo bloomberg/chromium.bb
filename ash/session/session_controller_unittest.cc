@@ -182,7 +182,7 @@ TEST_F(SessionControllerTest, SessionState) {
   } kTestCases[] = {
       {SessionState::OOBE, false, true},
       {SessionState::LOGIN_PRIMARY, false, true},
-      {SessionState::LOGGED_IN_NOT_ACTIVE, false, true},
+      {SessionState::LOGGED_IN_NOT_ACTIVE, false, false},
       {SessionState::ACTIVE, false, false},
       {SessionState::LOCKED, true, true},
       {SessionState::LOGIN_SECONDARY, false, true},
@@ -329,7 +329,7 @@ TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
   } kTestCases[] = {
       {SessionState::OOBE, true},
       {SessionState::LOGIN_PRIMARY, true},
-      {SessionState::LOGGED_IN_NOT_ACTIVE, true},
+      {SessionState::LOGGED_IN_NOT_ACTIVE, false},
       {SessionState::ACTIVE, false},
       {SessionState::LOGIN_SECONDARY, true},
   };

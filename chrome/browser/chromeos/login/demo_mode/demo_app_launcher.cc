@@ -102,7 +102,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 
   session_manager::SessionManager::Get()->SessionStarted();
 
-  LoginDisplayHost::default_host()->Finalize();
+  LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
 }
 
 void DemoAppLauncher::OnProfileLoadFailed(KioskAppLaunchError::Error error) {

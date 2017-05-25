@@ -12,6 +12,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -1750,11 +1751,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   BootTimesRecorder::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
-  // Mark user session as started before creating browser window. Otherwise,
-  // ash would not activate the created browser window because it thinks
-  // user session is blocked.
-  session_manager::SessionManager::Get()->SessionStarted();
-
   VLOG(1) << "Launching browser...";
   TRACE_EVENT0("login", "LaunchBrowser");
 
@@ -1807,11 +1803,18 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
         std::make_pair(profile, fingerprint_feature_notification_controller));
   }
 
+  base::OnceClosure login_host_finalized_callback = base::BindOnce(
+      [] { session_manager::SessionManager::Get()->SessionStarted(); });
+
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the
   // browser before it is dereferenced by the login host.
-  if (login_host)
-    login_host->Finalize();
+  if (login_host) {
+    login_host->Finalize(std::move(login_host_finalized_callback));
+  } else {
+    base::ResetAndReturn(&login_host_finalized_callback).Run();
+  }
+
   chromeos::BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
 

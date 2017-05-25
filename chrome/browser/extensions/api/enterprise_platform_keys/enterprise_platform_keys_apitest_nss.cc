@@ -325,7 +325,7 @@ class EnterprisePlatformKeysTest
     ExtensionApiTest::TearDownOnMainThread();
 
     if (chromeos::LoginDisplayHost::default_host())
-      chromeos::LoginDisplayHost::default_host()->Finalize();
+      chromeos::LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
     base::RunLoop().RunUntilIdle();
 
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {

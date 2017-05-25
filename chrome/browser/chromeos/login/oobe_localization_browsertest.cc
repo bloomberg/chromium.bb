@@ -415,7 +415,7 @@ void OobeLocalizationTest::RunLocalizationTest() {
   EXPECT_EQ(expected_keyboard_select, DumpOptions(kKeyboardSelect));
 
   // Shut down the display host.
-  LoginDisplayHost::default_host()->Finalize();
+  LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
   base::RunLoop().RunUntilIdle();
 
   // Clear the locale pref so the statistics provider is pinged next time.
