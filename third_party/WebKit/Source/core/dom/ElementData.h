@@ -188,7 +188,7 @@ DEFINE_ELEMENT_DATA_TYPE_CASTS(UniqueElementData,
 
 inline const StylePropertySet* ElementData::PresentationAttributeStyle() const {
   if (!is_unique_)
-    return 0;
+    return nullptr;
   return ToUniqueElementData(this)->presentation_attribute_style_.Get();
 }
 

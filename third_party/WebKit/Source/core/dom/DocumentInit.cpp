@@ -43,10 +43,10 @@ namespace blink {
 // FIXME: Broken with OOPI.
 static Document* ParentDocument(LocalFrame* frame) {
   if (!frame)
-    return 0;
+    return nullptr;
   Element* owner_element = frame->DeprecatedLocalOwner();
   if (!owner_element)
-    return 0;
+    return nullptr;
   return &owner_element->GetDocument();
 }
 
@@ -88,7 +88,7 @@ LocalFrame* DocumentInit::FrameForSecurityContext() const {
     return frame_;
   if (imports_controller_)
     return imports_controller_->Master()->GetFrame();
-  return 0;
+  return nullptr;
 }
 
 SandboxFlags DocumentInit::GetSandboxFlags() const {

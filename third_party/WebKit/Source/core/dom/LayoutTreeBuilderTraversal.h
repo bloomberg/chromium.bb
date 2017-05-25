@@ -27,10 +27,10 @@
 #ifndef LayoutTreeBuilderTraversal_h
 #define LayoutTreeBuilderTraversal_h
 
+#include <cstdint>
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include <cstdint>
 
 namespace blink {
 
@@ -84,7 +84,7 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
 
   static inline Element* ParentElement(const Node& node) {
     ContainerNode* found = Parent(node);
-    return found && found->IsElementNode() ? ToElement(found) : 0;
+    return found && found->IsElementNode() ? ToElement(found) : nullptr;
   }
 
  private:

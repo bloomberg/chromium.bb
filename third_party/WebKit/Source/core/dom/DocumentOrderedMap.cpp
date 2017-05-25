@@ -123,7 +123,7 @@ inline Element* DocumentOrderedMap::Get(const AtomicString& key,
 
   MapEntry* entry = map_.at(key);
   if (!entry)
-    return 0;
+    return nullptr;
 
   DCHECK(entry->count);
   if (entry->element)
@@ -144,7 +144,7 @@ inline Element* DocumentOrderedMap::Get(const AtomicString& key,
 #if DCHECK_IS_ON()
   DCHECK(g_remove_scope_level);
 #endif
-  return 0;
+  return nullptr;
 }
 
 Element* DocumentOrderedMap::GetElementById(const AtomicString& key,

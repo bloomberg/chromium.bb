@@ -93,7 +93,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   const KURL& Url() const;
   KURL CompleteURL(const String& url) const;
   virtual void DisableEval(const String& error_message) = 0;
-  virtual LocalDOMWindow* ExecutingWindow() const { return 0; }
+  virtual LocalDOMWindow* ExecutingWindow() const { return nullptr; }
   virtual String UserAgent() const = 0;
   // Executes the task on context's thread asynchronously.
   virtual void PostTask(
