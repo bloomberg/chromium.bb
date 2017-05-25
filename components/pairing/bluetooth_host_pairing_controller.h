@@ -76,8 +76,7 @@ class BluetoothHostPairingController
   void SendHostStatus();
 
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
-  void SetName();
-  void OnSetName();
+  void SetPowered();
   void OnSetPowered();
   void OnCreateService(scoped_refptr<device::BluetoothSocket> socket);
   void OnSetDiscoverable(bool change_stage);
@@ -140,7 +139,6 @@ class BluetoothHostPairingController
   void AuthorizePairing(device::BluetoothDevice* device) override;
 
   Stage current_stage_;
-  std::string device_name_;
   std::string confirmation_code_;
   std::string enrollment_domain_;
   Connectivity connectivity_status_;

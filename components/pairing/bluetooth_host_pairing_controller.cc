@@ -23,21 +23,6 @@ namespace pairing_chromeos {
 namespace {
 const int kReceiveSize = 16384;
 
-std::string GetChromeOSDeviceType() {
-  switch (chromeos::GetDeviceType()) {
-    case chromeos::DeviceType::kChromebox:
-      return std::string(kDeviceNamePrefix) + "box";
-    case chromeos::DeviceType::kChromebase:
-      return std::string(kDeviceNamePrefix) + "base";
-    case chromeos::DeviceType::kChromebit:
-      return std::string(kDeviceNamePrefix) + "bit";
-    case chromeos::DeviceType::kChromebook:
-      return std::string(kDeviceNamePrefix) + "book";
-    default:
-      return std::string(kDeviceNamePrefix) + "device";
-  }
-}
-
 pairing_api::HostStatusParameters::Connectivity PairingApiConnectivityStatus(
     HostPairingController::Connectivity connectivity_status) {
   switch (connectivity_status) {
@@ -187,29 +172,14 @@ void BluetoothHostPairingController::OnGetAdapter(
   adapter_ = adapter;
 
   if (adapter_->IsPresent()) {
-    SetName();
+    SetPowered();
   } else {
     // Set the name once the adapter is present.
     adapter_->AddObserver(this);
   }
 }
 
-void BluetoothHostPairingController::SetName() {
-  // Hash the bluetooth address and take the lower 2 bytes to create a human
-  // readable device name.
-  const uint32_t device_id = base::Hash(adapter_->GetAddress()) & 0xFFFF;
-  device_name_ =
-      base::StringPrintf("%s_%04X", GetChromeOSDeviceType().c_str(), device_id);
-
-  adapter_->SetName(
-      device_name_,
-      base::Bind(&BluetoothHostPairingController::OnSetName,
-                 ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothHostPairingController::OnSetError,
-                 ptr_factory_.GetWeakPtr()));
-}
-
-void BluetoothHostPairingController::OnSetName() {
+void BluetoothHostPairingController::SetPowered() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (adapter_->IsPowered()) {
     was_powered_ = true;
@@ -460,7 +430,7 @@ void BluetoothHostPairingController::AdapterPresentChanged(
   DCHECK_EQ(adapter, adapter_.get());
   if (present) {
     adapter_->RemoveObserver(this);
-    SetName();
+    SetPowered();
   }
 }
 
@@ -491,7 +461,7 @@ void BluetoothHostPairingController::StartPairing() {
 }
 
 std::string BluetoothHostPairingController::GetDeviceName() {
-  return device_name_;
+  return adapter_.get() ? adapter_->GetName() : std::string();
 }
 
 std::string BluetoothHostPairingController::GetConfirmationCode() {
