@@ -17,8 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/command_executor.h"
+#include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,26 +37,27 @@ const int32_t kCommandBufferSizeBytes =
     kTotalNumCommandEntries * sizeof(CommandBufferEntry);
 const int32_t kUnusedCommandId = 5;  // we use 0 and 2 currently.
 
-// Override CommandBufferService::Flush() to lock flushing and simulate
+// Override CommandBufferDirect::Flush() to lock flushing and simulate
 // the buffer becoming full in asynchronous mode.
-class CommandBufferServiceLocked : public CommandBufferService {
+class CommandBufferDirectLocked : public CommandBufferDirect {
  public:
-  explicit CommandBufferServiceLocked(
-      TransferBufferManager* transfer_buffer_manager)
-      : CommandBufferService(transfer_buffer_manager),
+  explicit CommandBufferDirectLocked(
+      TransferBufferManager* transfer_buffer_manager,
+      AsyncAPIInterface* handler)
+      : CommandBufferDirect(transfer_buffer_manager, handler),
         flush_locked_(false),
         last_flush_(-1),
         previous_put_offset_(0),
         flush_count_(0) {}
-  ~CommandBufferServiceLocked() override {}
+  ~CommandBufferDirectLocked() override {}
 
-  // Overridden from CommandBufferService
+  // Overridden from CommandBufferDirect
   void Flush(int32_t put_offset) override {
     flush_count_++;
     if (!flush_locked_) {
       last_flush_ = -1;
       previous_put_offset_ = put_offset;
-      CommandBufferService::Flush(put_offset);
+      CommandBufferDirect::Flush(put_offset);
     } else {
       last_flush_ = put_offset;
     }
@@ -73,14 +73,13 @@ class CommandBufferServiceLocked : public CommandBufferService {
                                 int32_t start,
                                 int32_t end) override {
     // Flush only if it's required to unblock this Wait.
-    if (last_flush_ != -1 &&
-        !CommandBuffer::InRange(start, end, previous_put_offset_)) {
+    if (last_flush_ != -1 && !InRange(start, end, previous_put_offset_)) {
       previous_put_offset_ = last_flush_;
-      CommandBufferService::Flush(last_flush_);
+      CommandBufferDirect::Flush(last_flush_);
       last_flush_ = -1;
     }
-    return CommandBufferService::WaitForGetOffsetInRange(set_get_buffer_count,
-                                                         start, end);
+    return CommandBufferDirect::WaitForGetOffsetInRange(set_get_buffer_count,
+                                                        start, end);
   }
 
  private:
@@ -88,7 +87,7 @@ class CommandBufferServiceLocked : public CommandBufferService {
   int last_flush_;
   int previous_put_offset_;
   int flush_count_;
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferServiceLocked);
+  DISALLOW_COPY_AND_ASSIGN(CommandBufferDirectLocked);
 };
 
 // Test fixture for CommandBufferHelper test - Creates a CommandBufferHelper,
@@ -105,17 +104,10 @@ class CommandBufferHelperTest : public testing::Test {
         .WillRepeatedly(Return(error::kNoError));
 
     transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
-    command_buffer_.reset(
-        new CommandBufferServiceLocked(transfer_buffer_manager_.get()));
+    command_buffer_.reset(new CommandBufferDirectLocked(
+        transfer_buffer_manager_.get(), api_mock_.get()));
 
-    executor_.reset(
-        new CommandExecutor(command_buffer_.get(), api_mock_.get()));
-    command_buffer_->SetPutOffsetChangeCallback(base::Bind(
-        &CommandExecutor::PutChanged, base::Unretained(executor_.get())));
-    command_buffer_->SetGetBufferChangeCallback(base::Bind(
-        &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
-
-    api_mock_->set_command_buffer_service(command_buffer_.get());
+    api_mock_->set_command_buffer_service(command_buffer_->service());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
@@ -241,9 +233,11 @@ class CommandBufferHelperTest : public testing::Test {
     }
   }
 
-  int32_t GetGetOffset() { return command_buffer_->GetLastState().get_offset; }
+  int32_t GetGetOffset() {
+    return command_buffer_->service()->GetState().get_offset;
+  }
 
-  int32_t GetPutOffset() { return command_buffer_->GetPutOffset(); }
+  int32_t GetPutOffset() { return command_buffer_->service()->GetPutOffset(); }
 
   int32_t GetHelperGetOffset() { return helper_->cached_get_offset_; }
 
@@ -259,8 +253,7 @@ class CommandBufferHelperTest : public testing::Test {
 
   std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
-  std::unique_ptr<CommandBufferServiceLocked> command_buffer_;
-  std::unique_ptr<CommandExecutor> executor_;
+  std::unique_ptr<CommandBufferDirectLocked> command_buffer_;
   std::unique_ptr<CommandBufferHelper> helper_;
   std::vector<std::unique_ptr<CommandBufferEntry[]>> test_command_args_;
   unsigned int test_command_next_id_;
@@ -668,7 +661,7 @@ TEST_F(CommandBufferHelperTest, Noop) {
 
 TEST_F(CommandBufferHelperTest, IsContextLost) {
   EXPECT_FALSE(helper_->IsContextLost());
-  command_buffer_->SetParseError(error::kGenericError);
+  command_buffer_->service()->SetParseError(error::kGenericError);
   EXPECT_TRUE(helper_->IsContextLost());
 }
 

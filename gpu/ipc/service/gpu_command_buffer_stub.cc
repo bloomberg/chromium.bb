@@ -443,7 +443,7 @@ void GpuCommandBufferStub::PerformWork() {
 
 bool GpuCommandBufferStub::HasUnprocessedCommands() {
   if (command_buffer_) {
-    CommandBuffer::State state = command_buffer_->GetLastState();
+    CommandBuffer::State state = command_buffer_->GetState();
     return command_buffer_->GetPutOffset() != state.get_offset &&
            !error::IsError(state.error);
   }
@@ -883,7 +883,7 @@ void GpuCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
 void GpuCommandBufferStub::OnParseError() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnParseError");
   DCHECK(command_buffer_.get());
-  CommandBuffer::State state = command_buffer_->GetLastState();
+  CommandBuffer::State state = command_buffer_->GetState();
   IPC::Message* msg = new GpuCommandBufferMsg_Destroyed(
       route_id_, state.context_lost_reason, state.error);
   msg->set_unblock(true);
@@ -933,7 +933,7 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
 
 void GpuCommandBufferStub::CheckCompleteWaits() {
   if (wait_for_token_ || wait_for_get_offset_) {
-    CommandBuffer::State state = command_buffer_->GetLastState();
+    CommandBuffer::State state = command_buffer_->GetState();
     if (wait_for_token_ &&
         (CommandBuffer::InRange(wait_for_token_->start, wait_for_token_->end,
                                 state.token) ||
@@ -981,9 +981,9 @@ void GpuCommandBufferStub::OnAsyncFlush(
   }
 
   last_flush_count_ = flush_count;
-  CommandBuffer::State pre_state = command_buffer_->GetLastState();
+  CommandBuffer::State pre_state = command_buffer_->GetState();
   command_buffer_->Flush(put_offset);
-  CommandBuffer::State post_state = command_buffer_->GetLastState();
+  CommandBuffer::State post_state = command_buffer_->GetState();
 
   if (pre_state.get_offset != post_state.get_offset)
     ReportState();
@@ -1223,7 +1223,7 @@ gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
 
 bool GpuCommandBufferStub::CheckContextLost() {
   DCHECK(command_buffer_);
-  CommandBuffer::State state = command_buffer_->GetLastState();
+  CommandBuffer::State state = command_buffer_->GetState();
   bool was_lost = state.error == error::kLostContext;
 
   if (was_lost) {
@@ -1251,7 +1251,7 @@ bool GpuCommandBufferStub::CheckContextLost() {
 
 void GpuCommandBufferStub::MarkContextLost() {
   if (!command_buffer_ ||
-      command_buffer_->GetLastState().error == error::kLostContext)
+      command_buffer_->GetState().error == error::kLostContext)
     return;
 
   command_buffer_->SetContextLostReason(error::kUnknown);

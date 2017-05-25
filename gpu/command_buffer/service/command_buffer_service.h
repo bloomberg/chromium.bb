@@ -53,27 +53,14 @@ class GPU_EXPORT CommandBufferServiceBase {
 
 // An object that implements a shared memory command buffer and a synchronous
 // API to manage the put and get pointers.
-class GPU_EXPORT CommandBufferService : public CommandBuffer,
-                                        public CommandBufferServiceBase {
+class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
  public:
   typedef base::Callback<bool(int32_t)> GetBufferChangedCallback;
   explicit CommandBufferService(TransferBufferManager* transfer_buffer_manager);
   ~CommandBufferService() override;
 
-  // CommandBuffer implementation:
-  State GetLastState() override;
-  void Flush(int32_t put_offset) override;
-  void OrderingBarrier(int32_t put_offset) override;
-  State WaitForTokenInRange(int32_t start, int32_t end) override;
-  State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
-                                int32_t start,
-                                int32_t end) override;
-  void SetGetBuffer(int32_t transfer_buffer_id) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
-  void DestroyTransferBuffer(int32_t id) override;
-
   // CommandBufferServiceBase implementation:
-  State GetState() override;
+  CommandBuffer::State GetState() override;
   void SetGetOffset(int32_t get_offset) override;
   void SetReleaseCount(uint64_t release_count) override;
   scoped_refptr<Buffer> GetTransferBuffer(int32_t id) override;
@@ -99,13 +86,30 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer,
   // Setup the shared memory that shared state should be copied into.
   void SetSharedStateBuffer(std::unique_ptr<BufferBacking> shared_state_buffer);
 
-  // Copy the current state into the shared state transfer buffer.
+  // Increments the generation and copies the current state into the shared
+  // state transfer buffer.
   void UpdateState();
 
-  // Registers an existing shared memory object and get an ID that can be used
+  // Flushes up to the put_offset and calls the PutOffsetChangeCallback to
+  // execute commands.
+  void Flush(int32_t put_offset);
+
+  // Sets the get buffer and call the GetBufferChangeCallback.
+  void SetGetBuffer(int32_t transfer_buffer_id);
+
+  // Registers an existing shared memory object with a given ID that can be used
   // to identify it in the command buffer.
   bool RegisterTransferBuffer(int32_t id,
                               std::unique_ptr<BufferBacking> buffer);
+
+  // Unregisters and destroys the transfer buffer associated with the given id.
+  void DestroyTransferBuffer(int32_t id);
+
+  // Creates an in-process transfer buffer and register it with a newly created
+  // id.
+  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id);
+
+  // Creates an in-process transfer buffer and register it with a given id.
   scoped_refptr<Buffer> CreateTransferBufferWithId(size_t size, int32_t id);
 
  private:
