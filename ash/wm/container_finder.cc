@@ -12,7 +12,6 @@
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,8 +24,7 @@ namespace {
 aura::Window* FindContainerRoot(const gfx::Rect& bounds) {
   if (bounds == gfx::Rect())
     return Shell::GetRootWindowForNewWindows();
-  WmWindow* root = GetRootWindowMatching(bounds);
-  return root ? root->aura_window() : nullptr;
+  return GetRootWindowMatching(bounds);
 }
 
 bool HasTransientParentWindow(const aura::Window* window) {

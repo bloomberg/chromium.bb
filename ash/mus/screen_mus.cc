@@ -5,7 +5,6 @@
 #include "ash/mus/screen_mus.h"
 
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_window.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -57,8 +56,7 @@ bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
 }
 
 gfx::NativeWindow ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
-  aura::Window* root_window =
-      WmWindow::GetAuraWindow(wm::GetRootWindowAt(point));
+  aura::Window* root_window = wm::GetRootWindowAt(point);
   aura::client::ScreenPositionClient* position_client =
       aura::client::GetScreenPositionClient(root_window);
 

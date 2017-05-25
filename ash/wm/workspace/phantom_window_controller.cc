@@ -9,7 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
@@ -41,7 +41,7 @@ constexpr int kMinHeightWithShadow = 4 * static_cast<int>(kShadowElevation);
 
 // PhantomWindowController ----------------------------------------------------
 
-PhantomWindowController::PhantomWindowController(WmWindow* window)
+PhantomWindowController::PhantomWindowController(aura::Window* window)
     : window_(window) {}
 
 PhantomWindowController::~PhantomWindowController() {}
@@ -67,7 +67,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
 }
 
 std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
-    WmWindow* root_window,
+    aura::Window* root_window,
     const gfx::Rect& bounds_in_screen) {
   std::unique_ptr<views::Widget> phantom_widget(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
@@ -81,21 +81,21 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
   params.shadow_elevation = ::wm::ShadowElevation::LARGE;
-  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      phantom_widget.get(), kShellWindowId_ShelfContainer, &params);
+  RootWindowController::ForWindow(root_window)
+      ->ConfigureWidgetInitParamsForContainer(
+          phantom_widget.get(), kShellWindowId_ShelfContainer, &params);
   phantom_widget->set_focus_on_creation(false);
   phantom_widget->Init(params);
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
-  WmWindow* phantom_widget_window =
-      WmWindow::Get(phantom_widget->GetNativeWindow());
-  phantom_widget_window->aura_window()->set_id(kShellWindowId_PhantomWindow);
+  aura::Window* phantom_widget_window = phantom_widget->GetNativeWindow();
+  phantom_widget_window->set_id(kShellWindowId_PhantomWindow);
   phantom_widget->SetBounds(bounds_in_screen);
   // TODO(sky): I suspect this is never true, verify that.
-  if (phantom_widget_window->GetParent() == window_->GetParent()) {
-    phantom_widget_window->GetParent()->StackChildAbove(phantom_widget_window,
-                                                        window_);
+  if (phantom_widget_window->parent() == window_->parent()) {
+    phantom_widget_window->parent()->StackChildAbove(phantom_widget_window,
+                                                     window_);
   }
-  ui::Layer* widget_layer = phantom_widget_window->GetLayer();
+  ui::Layer* widget_layer = phantom_widget_window->layer();
   widget_layer->SetColor(SkColorSetA(SK_ColorWHITE, 0.4 * 255));
 
   phantom_widget->Show();

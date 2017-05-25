@@ -47,9 +47,9 @@ void ShellPort::ShowContextMenu(const gfx::Point& location_in_screen,
     return;
   }
 
-  WmWindow* root = wm::GetRootWindowAt(location_in_screen);
-  root->GetRootWindowController()->ShowContextMenu(location_in_screen,
-                                                   source_type);
+  aura::Window* root = wm::GetRootWindowAt(location_in_screen);
+  RootWindowController::ForWindow(root)->ShowContextMenu(location_in_screen,
+                                                         source_type);
 }
 
 void ShellPort::OnLockStateEvent(LockStateObserver::EventType event) {

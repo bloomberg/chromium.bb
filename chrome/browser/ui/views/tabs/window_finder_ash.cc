@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_window.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -57,6 +56,5 @@ gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore,
-      ash::WmWindow::GetAuraWindow(ash::wm::GetRootWindowAt(screen_point)));
+      screen_point, ignore, ash::wm::GetRootWindowAt(screen_point));
 }
