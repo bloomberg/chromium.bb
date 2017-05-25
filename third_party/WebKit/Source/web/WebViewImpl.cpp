@@ -1649,7 +1649,7 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent(
       focused_element->scrollIntoViewIfNeeded();
     return ToLocalFrame(focused_frame)
         ->GetEventHandler()
-        .SendContextMenuEventForKey(nullptr);
+        .ShowNonLocatedContextMenu(nullptr);
   }
 }
 #else
@@ -1681,7 +1681,7 @@ void WebViewImpl::ShowContextMenuForElement(WebElement element) {
     ContextMenuAllowedScope scope;
     if (LocalFrame* focused_frame =
             ToLocalFrame(GetPage()->GetFocusController().FocusedOrMainFrame()))
-      focused_frame->GetEventHandler().SendContextMenuEventForKey(
+      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(
           element.Unwrap<Element>());
   }
 }
@@ -3504,7 +3504,7 @@ void WebViewImpl::ShowContextMenu() {
     ContextMenuAllowedScope scope;
     if (LocalFrame* focused_frame =
             ToLocalFrame(GetPage()->GetFocusController().FocusedOrMainFrame()))
-      focused_frame->GetEventHandler().SendContextMenuEventForKey(nullptr);
+      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(nullptr);
   }
 }
 

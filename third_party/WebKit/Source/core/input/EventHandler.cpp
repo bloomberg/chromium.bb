@@ -1810,7 +1810,7 @@ static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
   return selection.SelectionHasFocus();
 }
 
-WebInputEventResult EventHandler::SendContextMenuEventForKey(
+WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     Element* override_target_element) {
   FrameView* view = frame_->View();
   if (!view)
@@ -1881,7 +1881,7 @@ WebInputEventResult EventHandler::SendContextMenuEventForKey(
   doc->UpdateHoverActiveState(request, result.InnerElement());
 
   // The contextmenu event is a mouse event even when invoked using the
-  // keyboard.  This is required for web compatibility.
+  // keyboard or other methods.  This is required for web compatibility.
   WebInputEvent::Type event_type = WebInputEvent::kMouseDown;
   if (frame_->GetSettings() &&
       frame_->GetSettings()->GetShowContextMenuOnMouseUp())
