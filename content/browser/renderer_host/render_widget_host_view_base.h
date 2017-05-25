@@ -74,6 +74,7 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostViewBaseObserver;
 class SyntheticGestureTarget;
 class TextInputManager;
+class TouchSelectionControllerClientManager;
 class WebCursor;
 struct NativeWebKeyboardEvent;
 struct TextInputState;
@@ -419,6 +420,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   bool wheel_scroll_latching_enabled() {
     return wheel_scroll_latching_enabled_;
   }
+
+  // This only returns non-null on platforms that implement touch
+  // selection editing (TSE), currently Aura and (soon) Android.
+  // TODO(wjmaclean): update this comment when OOPIF TSE is implemented on
+  // Android.
+  virtual TouchSelectionControllerClientManager*
+  touch_selection_controller_client_manager();
 
   // Exposed for testing.
   virtual bool IsChildFrameForTesting() const;

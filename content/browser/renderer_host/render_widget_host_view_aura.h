@@ -326,6 +326,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     return event_handler_.get();
   }
 
+  TouchSelectionControllerClientManager*
+  touch_selection_controller_client_manager() override;
+
  protected:
   ~RenderWidgetHostViewAura() override;
 
@@ -574,6 +577,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
+
+  // The last selection bounds reported to the view.
+  gfx::SelectionBound selection_start_;
+  gfx::SelectionBound selection_end_;
 
   gfx::Insets insets_;
 

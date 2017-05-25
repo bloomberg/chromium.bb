@@ -481,6 +481,11 @@ void RenderWidgetHostViewBase::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+TouchSelectionControllerClientManager*
+RenderWidgetHostViewBase::touch_selection_controller_client_manager() {
+  return nullptr;
+}
+
 bool RenderWidgetHostViewBase::IsChildFrameForTesting() const {
   return false;
 }

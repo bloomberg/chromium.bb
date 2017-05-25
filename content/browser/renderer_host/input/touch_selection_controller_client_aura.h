@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "content/browser/renderer_host/input/touch_selection_controller_client_manager.h"
 #include "content/common/content_export.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
@@ -21,7 +23,8 @@ class RenderWidgetHostViewAura;
 // implementation of touch selection for contents.
 class CONTENT_EXPORT TouchSelectionControllerClientAura
     : public ui::TouchSelectionControllerClient,
-      public ui::TouchSelectionMenuClient {
+      public ui::TouchSelectionMenuClient,
+      public TouchSelectionControllerClientManager {
  public:
   explicit TouchSelectionControllerClientAura(RenderWidgetHostViewAura* rwhva);
   ~TouchSelectionControllerClientAura() override;
@@ -48,6 +51,22 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   // selection events. (http://crbug.com/548245)
   bool HandleContextMenu(const ContextMenuParams& params);
 
+  void UpdateClientSelectionBounds(const gfx::SelectionBound& start,
+                                   const gfx::SelectionBound& end);
+
+  // TouchSelectionControllerClientManager.
+  void UpdateClientSelectionBounds(
+      const gfx::SelectionBound& start,
+      const gfx::SelectionBound& end,
+      ui::TouchSelectionControllerClient* client,
+      ui::TouchSelectionMenuClient* menu_client) override;
+  void InvalidateClient(ui::TouchSelectionControllerClient* client) override;
+  ui::TouchSelectionController* GetTouchSelectionController() override;
+  void AddObserver(
+      TouchSelectionControllerClientManager::Observer* observer) override;
+  void RemoveObserver(
+      TouchSelectionControllerClientManager::Observer* observer) override;
+
  private:
   friend class TestTouchSelectionControllerClientAura;
   class EnvPreTargetHandler;
@@ -73,6 +92,33 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
 
   // Not owned, non-null for the lifetime of this object.
   RenderWidgetHostViewAura* rwhva_;
+
+  class InternalClient : public TouchSelectionControllerClient {
+   public:
+    InternalClient(RenderWidgetHostViewAura* rwhva) : rwhva_(rwhva) {}
+    ~InternalClient() final {}
+
+    bool SupportsAnimation() const final;
+    void SetNeedsAnimate() final;
+    void MoveCaret(const gfx::PointF& position) final;
+    void MoveRangeSelectionExtent(const gfx::PointF& extent) final;
+    void SelectBetweenCoordinates(const gfx::PointF& base,
+                                  const gfx::PointF& extent) final;
+    void OnSelectionEvent(ui::SelectionEventType event) final;
+    std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() final;
+
+   private:
+    RenderWidgetHostViewAura* rwhva_;
+  } internal_client_;
+
+  // Keep track of which client interface to use.
+  TouchSelectionControllerClient* active_client_;
+  TouchSelectionMenuClient* active_menu_client_;
+  gfx::SelectionBound manager_selection_start_;
+  gfx::SelectionBound manager_selection_end_;
+
+  base::ObserverList<TouchSelectionControllerClientManager::Observer>
+      observers_;
 
   base::Timer quick_menu_timer_;
   bool quick_menu_requested_;

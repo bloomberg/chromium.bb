@@ -1533,9 +1533,8 @@ void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
 
 void RenderWidgetHostImpl::OnSelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
-  if (view_) {
+  if (view_)
     view_->SelectionBoundsChanged(params);
-  }
 }
 
 void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {

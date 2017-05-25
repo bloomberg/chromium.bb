@@ -55,4 +55,7 @@ specific_include_rules = {
     "+content/browser/frame_host/render_widget_host_view_child_frame.h",
     "+content/browser/frame_host/render_widget_host_view_guest.h",
   ],
+  "touch_selection_controller_client_child_frame\.cc": [
+    "+content/browser/frame_host/render_widget_host_view_child_frame.h",
+  ],
 }
