@@ -6439,6 +6439,19 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Has enough SCTs"/>
 </enum>
 
+<enum name="D3D11FeatureLevel" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="No D3D11 DLL"/>
+  <int value="2" label="No D3D11CreateDevice entry point"/>
+  <int value="3" label="D3D11CreateDevice failed"/>
+  <int value="4" label="9.1"/>
+  <int value="5" label="9.2"/>
+  <int value="6" label="9.3"/>
+  <int value="7" label="10.0"/>
+  <int value="8" label="10.1"/>
+  <int value="9" label="11.0"/>
+</enum>
+
 <enum name="D3D11InitializeResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Error initializing compiler"/>
@@ -7398,6 +7411,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="10" label="AddLocalFile: get reference key failed"/>
   <int value="11" label="AddLocalFile: get path length failed"/>
   <int value="12" label="AddLocalFile: get path failed"/>
+</enum>
+
+<enum name="DisplayLinkInstallationStatus" type="int">
+  <int value="0" label="DisplayLink not installed"/>
+  <int value="1" label="7.1 or earlier"/>
+  <int value="2" label="7.2 or later"/>
 </enum>
 
 <enum name="DistillableType" type="int">
@@ -17467,6 +17486,136 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="UPGRADE_ERROR"/>
 </enum>
 
+<enum name="GPUBlacklistFeatureTestResults" type="int">
+  <summary>
+    Results of testing against a GPU feature being allowed/blacklisted/disabled.
+  </summary>
+  <int value="0" label="Allowed"/>
+  <int value="1" label="Blacklisted"/>
+  <int value="2" label="User-disabled"/>
+</enum>
+
+<enum name="GPUBlacklistFeatureTestResultsWin" type="int">
+  <summary>
+    Results of testing against a GPU feature being blacklisted or not in various
+    Windows sub-versions.
+  </summary>
+  <int value="0" label="Allowed Others"/>
+  <int value="1" label="Blacklisted Others"/>
+  <int value="2" label="Allowed XP"/>
+  <int value="3" label="Blacklisted XP"/>
+  <int value="4" label="Allowed Vista"/>
+  <int value="5" label="Blacklisted Vista"/>
+  <int value="6" label="Allowed Win7"/>
+  <int value="7" label="Blacklisted Win7"/>
+</enum>
+
+<enum name="GPUBlacklistFeatureTestResultsWindows" type="int">
+  <summary>
+    Results of testing against a GPU feature being allowed/blacklisted/disabled
+    in various Windows sub-versions.
+  </summary>
+  <int value="0" label="Allowed Others"/>
+  <int value="1" label="Blacklisted Others"/>
+  <int value="2" label="User-disabled Others"/>
+  <int value="3" label="Allowed XP"/>
+  <int value="4" label="Blacklisted XP"/>
+  <int value="5" label="User-disabled XP"/>
+  <int value="6" label="Allowed Vista"/>
+  <int value="7" label="Blacklisted Vista"/>
+  <int value="8" label="User-disabled Vista"/>
+  <int value="9" label="Allowed Win7"/>
+  <int value="10" label="Blacklisted Win7"/>
+  <int value="11" label="User-disabled Win7"/>
+  <int value="12" label="Allowed Win8"/>
+  <int value="13" label="Blacklisted Win8"/>
+  <int value="14" label="User-disabled Win8"/>
+</enum>
+
+<enum name="GPUBlacklistTestResultPerEntry" type="int">
+  <summary>Results of testing against the GPU blacklist entries.</summary>
+  <int value="0" label="TotalCount"/>
+  <int value="1" label="Mac/ATI/Radeon X1900"/>
+  <int value="2" label="Linux/Intel/Before Mesa 7.9"/>
+  <int value="3" label="Linux/Intel/Software Renderer"/>
+  <int value="4" label="All/Intel/GMA 945"/>
+  <int value="5" label="Linux/ATI/Before 8.98"/>
+  <int value="6" label="Mac/ATI/Radeon HD2600"/>
+  <int value="7" label="Mac/ATI/Radeon HD2400"/>
+  <int value="8" label="All/NVIDIA/GeForce FX Go5200"/>
+  <int value="9" label="WinXP"/>
+  <int value="10" label="Mac/NVIDIA/GeForce 7300 GT"/>
+  <int value="11" label="Mac/ATI/Radeon HD2600 XT"/>
+  <int value="12" label="Win/All/Drivers older than 01/2009"/>
+  <int value="13" label="WinXP/ATI/Drivers older than 10.6"/>
+  <int value="14" label="WinXP/NVIDIA/Drivers older than 257.21"/>
+  <int value="15" label="WinXP/Intel/Drivers older than 14.42.7.5294"/>
+  <int value="16" label="Mac/ATI/multisampling"/>
+  <int value="17" label="Linux/Intel/older mesa drivers"/>
+  <int value="18" label="Linux/NVIDIA/Quadro FX 1500"/>
+  <int value="19" label="Mac 10.5/accelerated 2d-canvas and compositing"/>
+  <int value="20" label="Linux/NVIDIA/Driver 260.19.06"/>
+  <int value="21"
+      label="Linux/NVIDIA/Quadro FX 3450/4000, FX 1400/Driver 195.36.24"/>
+  <int value="22" label="Linux/NVIDIA/Drivers older than 195.36.24"/>
+  <int value="23" label="Linux/Mesa/Drivers older than 7.11"/>
+  <int value="24" label="Linux/accelrated 2d-canvas"/>
+  <int value="25"
+      label="Win7/GMA X4500/HD (2a42, 2a43)/Driver older than 15.17.11.2202"/>
+  <int value="26"
+      label="Win7/GMA X4500/HD (0042, 0046)/Driver 15.17.11.2202 or older"/>
+  <int value="27" label="Linux/ATI/Older drivers with 'ATI' in vendor"/>
+  <int value="28" label="Linux/ATI/Third party drivers with 'AMD' in renderer"/>
+  <int value="29" label="Linux/ATI/Third party drivers with 'ATI' in renderer"/>
+  <int value="30" label="Linux/NVIDIA/Nouveau drivers"/>
+  <int value="31" label=""/>
+  <int value="32" label="Win/perf_overall less than 3.5/2d-canvas"/>
+  <int value="33" label="Linux/Intel/IvyBridge/multisampling"/>
+  <int value="34" label="Win/S3 Trio/all"/>
+  <int value="35" label="Linux/Stage3D"/>
+  <int value="36" label=""/>
+  <int value="37" label="Linux/Optimus/all"/>
+  <int value="38" label="MacLion/NVIDIA GeForce 9400M/2d-canvas"/>
+  <int value="39" label=""/>
+  <int value="40" label=""/>
+  <int value="41" label="WinXP/Flash3D"/>
+  <int value="42" label="Mac10.6/AMD/Radeon HD 6490M/WebGL"/>
+  <int value="43" label="Win/Intel/8.15.10.1749/Texture_sharing"/>
+  <int value="44" label="Mac10.7.0-10.7.4/Intel/HD 4000/all"/>
+  <int value="45" label="Win/Parallells drivers older than 7/all"/>
+  <int value="46" label="Win/ATI/FireMV 2400/all"/>
+  <int value="47" label="Linux/NVIDIA/drivers older than 295/all"/>
+  <int value="48" label="Mac+Linux/video_decode"/>
+  <int value="49" label="Mac10.8.0-10.8.1/NVIDIA/GeForce GT 650M/Flash3D"/>
+  <int value="50" label="Linux/VMware software renderer/all"/>
+  <int value="51" label="WinXP/NVIDIA/6.14.11.9621/all"/>
+  <int value="52" label="WinXP/NVIDIA/6.14.11.8267/all"/>
+  <int value="53" label="Intel/GMA500/Stage3D"/>
+  <int value="54"
+      label="Mac10.7 or above/older MacBookPro models/discrete GPU only"/>
+  <int value="55" label="Win/Drivers older than 2007-01/all"/>
+  <int value="56" label="Linux/NVIDIA/video,video_decode,Flash3D"/>
+  <int value="57" label="ChromeOS/panel_fitting"/>
+  <int value="58" label="Win/Optimus Intel 8.15.10.*/texture_sharing"/>
+  <int value="59" label="Win/NVIDIA/8.15.11.8593/video_decode"/>
+  <int value="60" label="Mac/NVIDIA/multisampling"/>
+  <int value="61" label="Mac/Intel/multisampling"/>
+  <int value="62" label="Android/Qualcomm Adreno older drivers/2d-canvas"/>
+  <int value="63" label="Mac/AMD/multisampling"/>
+  <int value="64" label="WinVista+XP/video_decode"/>
+  <int value="65" label="WinVista/force_compositing_mode"/>
+  <int value="66" label="Mac10.7-/force_compositing_mode"/>
+  <int value="67" label="WinXP/2d-canvas"/>
+  <int value="68" label="WinVista+/VMWare/all"/>
+  <int value="69" label="Win/NVIDIA/8.17.11.9621/Flash3D_baseline"/>
+  <int value="70" label="Win/NVIDIA/8.17.11.8267/Flash3D_baseline"/>
+  <int value="71" label="Win/Intel/8.15.10.2021-/Flash3D_baseline"/>
+  <int value="72" label="Win/NVIDIA/GeForce6200LE/WebGL"/>
+  <int value="73" label="Mac10.7-/NVIDIA-GT330M-9400-9400M/WebGL"/>
+  <int value="74" label="Win/Microsoft/all"/>
+  <int value="75" label="Win/AMD_switchable/Texture_sharing"/>
+</enum>
+
 <enum name="GpuDriverBugWorkaroundEntry" type="int">
 <!-- Generated from gpu/config/gpu_driver_bug_list.json -->
 
@@ -17972,6 +18121,62 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="21" label="Media worker context">
     CAUSE_FOR_GPU_LAUNCH_MEDIA_CONTEXT
   </int>
+</enum>
+
+<enum name="GPUProcessLifetimeEvent" type="int">
+  <summary>
+    Lifetime events of the GPU Process, as defined in
+    chrome/browser/gpu_process_host.cc. DiedFourth should never happen as it is
+    beyond the threshold number of launches enforced in
+    chrome/browser/gpu_process_host.cc.
+  </summary>
+  <int value="0" label="Launched"/>
+  <int value="1" label="DiedFirst"/>
+  <int value="2" label="DiedSecond"/>
+  <int value="3" label="DiedThird"/>
+  <int value="4" label="DiedFourth"/>
+</enum>
+
+<enum name="GPUProcessType" type="int">
+  <int value="0" label="Hardware"/>
+  <int value="1" label="Software"/>
+</enum>
+
+<enum name="GPUsetIsAcceleratedCompositingActive" type="int">
+  <summary>
+    Combinations of input parameter active and previous active state set in
+    third_party/WebKit/WebKit/chromium/src/ChromiumBridge.cpp
+  </summary>
+  <int value="0" label="inactive, was inactive"/>
+  <int value="1" label="inactive, was active"/>
+  <int value="2" label="active, was inactive"/>
+  <int value="3" label="active, was active"/>
+</enum>
+
+<enum name="GPUThreeDAPIInfoBarDismissal" type="int">
+  <summary>Results of user actions when a 3D API info bar is raised.</summary>
+  <int value="0" label="Ignored"/>
+  <int value="1" label="Reloaded"/>
+  <int value="2" label="Closed without action"/>
+</enum>
+
+<enum name="GPUWebGraphicsContext3D_Init_CanLoseContext" type="int">
+  <summary>
+    Combinations of context loss variables from
+    chrome/renderer/webgraphicscontext3d_command_buffer_impl.cc
+  </summary>
+  <int value="0"
+      label="InitOK attributes.canRecoverFromContextLoss=False
+             gpu_info.can_lose_context=False"/>
+  <int value="1"
+      label="InitFAILS attributes.canRecoverFromContextLoss=False
+             gpu_info.can_lose_context=True"/>
+  <int value="2"
+      label="InitOK attributes.canRecoverFromContextLoss=True
+             gpu_info.can_lose_context=False"/>
+  <int value="3"
+      label="InitOK attributes.canRecoverFromContextLoss=True
+             gpu_info.can_lose_context=True"/>
 </enum>
 
 <enum name="GsaAccountChangeNotificationSource" type="int">
@@ -34968,6 +35173,31 @@ from previous Chrome versions.
   <int value="3" label="Writing"/>
   <int value="4" label="Renaming"/>
   <int value="5" label="Flushing"/>
+</enum>
+
+<enum name="TerminationStatus" type="int">
+  <summary>
+    Return status values from GetTerminationStatus as defined in
+    base/process/kill.h enum TerminationStatus. The last couple enums are
+    different depending on the platform.
+  </summary>
+  <int value="0" label="Normal">TERMINATION_STATUS_NORMAL_TERMINATION</int>
+  <int value="1" label="Abnormal">TERMINATION_STATUS_ABNORMAL_TERMINATION</int>
+  <int value="2" label="Killed">TERMINATION_STATUS_PROCESS_WAS_KILLED</int>
+  <int value="3" label="Crashed">TERMINATION_STATUS_PROCESS_CRASHED</int>
+  <int value="4" label="Still Running">TERMINATION_STATUS_STILL_RUNNING</int>
+  <int value="5" label="OOM/OOM Protected/Launch Failed">
+    TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM on ChromeOS,
+    TERMINATION_STATUS_OOM_PROTECTED on Android,
+    TERMINATION_STATUS_LAUNCH_FAILED everywhere else
+  </int>
+  <int value="6" label="Launch Failed/OOM">
+    TERMINATION_STATUS_LAUNCH_FAILED on ChromeOS and Android,
+    TERMINATION_STATUS_OOM everywhere else
+  </int>
+  <int value="7" label="OOM">
+    TERMINATION_STATUS_OOM on ChromeOS and Android
+  </int>
 </enum>
 
 <enum name="ThreadType" type="int">
