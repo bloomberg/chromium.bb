@@ -20,8 +20,7 @@ namespace gin {
 namespace {
 
 constexpr base::TaskTraits kBackgroundThreadTaskTraits = {
-    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-    base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+    base::TaskPriority::USER_VISIBLE};
 
 base::LazyInstance<V8Platform>::Leaky g_v8_platform = LAZY_INSTANCE_INITIALIZER;
 
