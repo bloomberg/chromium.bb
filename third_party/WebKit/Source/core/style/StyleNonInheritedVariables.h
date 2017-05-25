@@ -19,7 +19,7 @@ class StyleNonInheritedVariables {
     return WTF::WrapUnique(new StyleNonInheritedVariables);
   }
 
-  std::unique_ptr<StyleNonInheritedVariables> Copy() {
+  std::unique_ptr<StyleNonInheritedVariables> Clone() {
     return WTF::WrapUnique(new StyleNonInheritedVariables(*this));
   }
 

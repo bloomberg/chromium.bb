@@ -176,7 +176,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       visited_link_border_right_color_(o.visited_link_border_right_color_),
       visited_link_border_top_color_(o.visited_link_border_top_color_),
       visited_link_border_bottom_color_(o.visited_link_border_bottom_color_),
-      variables_(o.variables_ ? o.variables_->Copy() : nullptr),
+      variables_(o.variables_ ? o.variables_->Clone() : nullptr),
       align_content_(o.align_content_),
       align_items_(o.align_items_),
       align_self_(o.align_self_),
