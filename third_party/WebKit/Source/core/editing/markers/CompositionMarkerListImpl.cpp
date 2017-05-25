@@ -5,7 +5,6 @@
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 
 #include "core/editing/markers/DocumentMarkerListEditor.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
 
 namespace blink {
 
