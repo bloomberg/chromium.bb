@@ -404,7 +404,9 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       std::unique_ptr<views::Label> label =
           base::MakeUnique<views::Label>(GetInitialValueForType(field.type));
       label->set_id(GetInputFieldViewId(field.type));
-      layout->AddView(label.release());
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      layout->AddView(label.release(), 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0, kInputFieldHeight);
       break;
     }
   }

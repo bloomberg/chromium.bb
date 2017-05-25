@@ -12,12 +12,14 @@
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
+#include "components/autofill/core/browser/address_combobox_model.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/core/autofill_payment_instrument.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -207,6 +209,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
 
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
   AddAutofillProfile(billing_profile);
+  // Add a second address profile to the DB.
+  autofill::AutofillProfile additional_profile =
+      autofill::test::GetFullProfile2();
+  AddAutofillProfile(additional_profile);
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   card.set_billing_address_id(billing_profile.guid());
   AddCreditCard(card);
@@ -226,14 +232,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
   ClickOnDialogViewAndWait(edit_button);
 
-  // Billing address combobox must be enabled.
-  views::View* billing_address_combobox =
-      dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
-          autofill::ADDRESS_BILLING_LINE1));
-  ASSERT_NE(nullptr, billing_address_combobox);
-  EXPECT_TRUE(billing_address_combobox->enabled());
-
-  // Name and number are readonly labels.
+  // Name, number and expiration are readonly labels.
   EXPECT_EQ(card.NetworkAndLastFourDigits(),
             GetLabelText(static_cast<payments::DialogViewID>(
                 EditorViewController::GetInputFieldViewId(
@@ -242,6 +241,45 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
             GetLabelText(static_cast<payments::DialogViewID>(
                 EditorViewController::GetInputFieldViewId(
                     autofill::CREDIT_CARD_NAME_FULL))));
+  EXPECT_EQ(base::ASCIIToUTF16("12/2020"),
+            GetLabelText(static_cast<payments::DialogViewID>(
+                EditorViewController::GetInputFieldViewId(
+                    autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR))));
+
+  // Billing address combobox must be enabled.
+  views::Combobox* billing_address_combobox = static_cast<views::Combobox*>(
+      dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
+          autofill::ADDRESS_BILLING_LINE1)));
+  ASSERT_NE(nullptr, billing_address_combobox);
+  EXPECT_TRUE(billing_address_combobox->enabled());
+  autofill::AddressComboboxModel* model =
+      static_cast<autofill::AddressComboboxModel*>(
+          billing_address_combobox->model());
+  EXPECT_EQ(
+      billing_profile.guid(),
+      model->GetItemIdentifierAt(billing_address_combobox->selected_index()));
+
+  // Select a different billing address.
+  SelectBillingAddress(additional_profile.guid());
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  data_loop.Run();
+
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  autofill::CreditCard* selected = static_cast<AutofillPaymentInstrument*>(
+                                       request->state()->selected_instrument())
+                                       ->credit_card();
+  EXPECT_EQ(additional_profile.guid(), selected->billing_address_id());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,

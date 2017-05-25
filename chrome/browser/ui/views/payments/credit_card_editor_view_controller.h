@@ -117,6 +117,9 @@ class CreditCardEditorViewController : public EditorViewController {
   // simply propagated to the address combobox model.
   void AddAndSelectNewBillingAddress(const autofill::AutofillProfile& profile);
 
+  // Whether the editor is editing a server card (masked).
+  bool IsEditingServerCard() const;
+
   // Called when |credit_card_to_edit_| was successfully edited.
   base::OnceClosure on_edited_;
   // Called when a new card was added. The const reference is short-lived, and
