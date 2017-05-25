@@ -933,10 +933,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  int sub8x8_inter =
-      bsize < BLOCK_8X8 && (pd->subsampling_x || pd->subsampling_y);
-  const int row_start = (block_size_high[bsize] == 4) ? -1 : 0;
-  const int col_start = (block_size_wide[bsize] == 4) ? -1 : 0;
+  const int ss_x = pd->subsampling_x;
+  const int ss_y = pd->subsampling_y;
+  int sub8x8_inter = bsize < BLOCK_8X8 && (ss_x || ss_y);
+  const int row_start = (block_size_high[bsize] == 4) && ss_y ? -1 : 0;
+  const int col_start = (block_size_wide[bsize] == 4) && ss_x ? -1 : 0;
 
 #if CONFIG_MOTION_VAR
   if (!build_for_obmc && sub8x8_inter) {
@@ -955,10 +956,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
   if (sub8x8_inter) {
 #endif  // CONFIG_MOTION_VAR
     // block size
-    const int b4_w = block_size_wide[bsize] >> pd->subsampling_x;
-    const int b4_h = block_size_high[bsize] >> pd->subsampling_y;
-    const int b8_w = block_size_wide[BLOCK_8X8] >> pd->subsampling_x;
-    const int b8_h = block_size_high[BLOCK_8X8] >> pd->subsampling_y;
+    const int b4_w = block_size_wide[bsize] >> ss_x;
+    const int b4_h = block_size_high[bsize] >> ss_y;
+    const BLOCK_SIZE plane_bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
+    const int b8_w = block_size_wide[plane_bsize] >> ss_x;
+    const int b8_h = block_size_high[plane_bsize] >> ss_y;
     int idx, idy;
 
     const int x_base = x;
@@ -979,10 +981,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           const RefBuffer *ref_buf =
               &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
 
-          const int c_offset =
-              (mi_x + MI_SIZE * col_start) >> pd->subsampling_x;
-          const int r_offset =
-              (mi_y + MI_SIZE * row_start) >> pd->subsampling_y;
+          const int c_offset = (mi_x + MI_SIZE * col_start) >> ss_x;
+          const int r_offset = (mi_y + MI_SIZE * row_start) >> ss_y;
           pd->pre[ref].buf0 =
               (plane == 1) ? ref_buf->buf->u_buffer : ref_buf->buf->v_buffer;
           pd->pre[ref].buf =
