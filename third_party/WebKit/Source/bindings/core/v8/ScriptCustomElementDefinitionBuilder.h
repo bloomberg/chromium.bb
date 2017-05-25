@@ -35,7 +35,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
       CustomElementRegistry*,
       const ScriptValue& constructor_script_value,
       ExceptionState&);
-  ~ScriptCustomElementDefinitionBuilder();
+  ~ScriptCustomElementDefinitionBuilder() = default;
 
   bool CheckConstructorIntrinsics() override;
   bool CheckConstructorNotRegistered() override;
@@ -46,7 +46,6 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
  private:
   static ScriptCustomElementDefinitionBuilder* stack_;
 
-  ScriptCustomElementDefinitionBuilder* prev_;
   RefPtr<ScriptState> script_state_;
   Member<CustomElementRegistry> registry_;
   v8::Local<v8::Value> constructor_value_;
