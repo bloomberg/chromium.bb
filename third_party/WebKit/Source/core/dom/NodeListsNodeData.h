@@ -225,7 +225,7 @@ inline Collection* ContainerNode::EnsureCachedCollection(
 template <typename Collection>
 inline Collection* ContainerNode::CachedCollection(CollectionType type) {
   NodeListsNodeData* node_lists = this->NodeLists();
-  return node_lists ? node_lists->Cached<Collection>(type) : 0;
+  return node_lists ? node_lists->Cached<Collection>(type) : nullptr;
 }
 
 }  // namespace blink

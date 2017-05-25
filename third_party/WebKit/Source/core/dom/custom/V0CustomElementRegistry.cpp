@@ -54,25 +54,25 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
     V0CustomElementException::ThrowException(
         V0CustomElementException::kCannotRegisterFromExtension, type,
         exception_state);
-    return 0;
+    return nullptr;
   }
 
   if (!V0CustomElement::IsValidName(type, valid_names)) {
     V0CustomElementException::ThrowException(
         V0CustomElementException::kInvalidName, type, exception_state);
-    return 0;
+    return nullptr;
   }
 
   if (registered_type_names_.Contains(type) || V1NameIsDefined(type)) {
     V0CustomElementException::ThrowException(
         V0CustomElementException::kTypeAlreadyRegistered, type,
         exception_state);
-    return 0;
+    return nullptr;
   }
 
   QualifiedName tag_name = QualifiedName::Null();
   if (!constructor_builder->ValidateOptions(type, tag_name, exception_state))
-    return 0;
+    return nullptr;
 
   DCHECK(tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI ||
          tag_name.NamespaceURI() == SVGNames::svgNamespaceURI);
@@ -88,7 +88,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
     V0CustomElementException::ThrowException(
         V0CustomElementException::kContextDestroyedCreatingCallbacks, type,
         exception_state);
-    return 0;
+    return nullptr;
   }
 
   const V0CustomElementDescriptor descriptor(type, tag_name.NamespaceURI(),
@@ -98,7 +98,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
 
   if (!constructor_builder->CreateConstructor(document, definition,
                                               exception_state))
-    return 0;
+    return nullptr;
 
   definitions_.insert(descriptor, definition);
   registered_type_names_.insert(descriptor.GetType());
@@ -107,7 +107,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
     V0CustomElementException::ThrowException(
         V0CustomElementException::kContextDestroyedRegisteringDefinition, type,
         exception_state);
-    return 0;
+    return nullptr;
   }
 
   if (valid_names & V0CustomElement::kEmbedderNames) {

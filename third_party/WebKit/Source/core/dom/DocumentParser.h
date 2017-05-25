@@ -43,7 +43,9 @@ class CORE_EXPORT DocumentParser
   virtual ~DocumentParser();
   DECLARE_VIRTUAL_TRACE();
 
-  virtual ScriptableDocumentParser* AsScriptableDocumentParser() { return 0; }
+  virtual ScriptableDocumentParser* AsScriptableDocumentParser() {
+    return nullptr;
+  }
 
   // http://www.whatwg.org/specs/web-apps/current-work/#insertion-point
   virtual bool HasInsertionPoint() { return true; }

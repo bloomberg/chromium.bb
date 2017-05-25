@@ -69,8 +69,8 @@ class MutationRecord : public GarbageCollectedFinalized<MutationRecord>,
 
   virtual StaticNodeList* addedNodes() = 0;
   virtual StaticNodeList* removedNodes() = 0;
-  virtual Node* previousSibling() { return 0; }
-  virtual Node* nextSibling() { return 0; }
+  virtual Node* previousSibling() { return nullptr; }
+  virtual Node* nextSibling() { return nullptr; }
 
   virtual const AtomicString& attributeName() { return g_null_atom; }
   virtual const AtomicString& attributeNamespace() { return g_null_atom; }
