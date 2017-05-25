@@ -167,7 +167,7 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
 
   SimpleOrientation video_orientation = ComputeVideoOrientation();
 
-  // Ignore videos that are square/small/etc.
+  // Ignore videos that are too small or of unknown size.
   if (video_orientation == SimpleOrientation::kUnknown)
     return;
 

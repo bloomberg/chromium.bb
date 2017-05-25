@@ -55,4 +55,10 @@ blink_modules_sources("media_controls") {
     "elements/MediaControlVolumeSliderElement.cpp",
     "elements/MediaControlVolumeSliderElement.h",
   ]
+
+  deps = [
+    "//device/screen_orientation/public/interfaces:interfaces_blink",
+    "//services/device/public/interfaces:constants_blink",
+    "//services/service_manager/public/cpp",
+  ]
 }
