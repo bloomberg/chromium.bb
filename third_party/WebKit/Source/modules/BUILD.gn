@@ -13,10 +13,11 @@ import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
 
 visibility = [ "//third_party/WebKit/Source/*" ]
 
-if (!is_component_build && is_win && is_official_build) {
+if (!is_component_build && is_win) {
   # This target as a static library (for non-component builds) is >2GB for
-  # official builds on Windows. This causes linking fail. As a workaround,
-  # force using a split static library for this configuration.
+  # official builds and some goma builds on Windows. This causes linking to
+  # fail. As a workaround, force using a split static library for these
+  # configurations.
   modules_target_type = "split_static_library"
 } else {
   modules_target_type = "component"
