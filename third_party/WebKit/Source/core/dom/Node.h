@@ -161,14 +161,6 @@ class Node;
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
 
 // A Node is a base class for all objects in the DOM tree.
-
-// The following interfaces all inherit from Node:
-// 1. ContainerNode (which Document, Element, DocumentFragment inherit from) -
-//    can have node children,
-// 2. CharacterData (which Text (which CDATASection inherits), Comment, and
-//    ProcessingInstruction inherit from) - contains text,
-// 3. DocumentType
-
 // The spec governing this interface can be found here:
 // https://dom.spec.whatwg.org/#interface-node
 class CORE_EXPORT Node : public EventTarget {
