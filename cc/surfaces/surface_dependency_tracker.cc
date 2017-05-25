@@ -49,8 +49,7 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
           surface->surface_id());
   }
 
-  if (!blocked_surfaces_by_id_.count(surface->surface_id()))
-    blocked_surfaces_by_id_.insert(surface->surface_id());
+  blocked_surfaces_by_id_.insert(surface->surface_id());
 
   if (needs_deadline && !frames_since_deadline_set_)
     frames_since_deadline_set_ = 0;

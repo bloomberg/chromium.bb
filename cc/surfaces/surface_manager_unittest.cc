@@ -7,6 +7,8 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/begin_frame_source_test.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -111,6 +113,65 @@ TEST_F(SurfaceManagerTest, SingleClients) {
   EXPECT_EQ(&source, client.source());
   manager_.UnregisterBeginFrameSource(&source);
   EXPECT_EQ(nullptr, client.source());
+}
+
+// This test verifies that a PrimaryBeginFrameSource will receive BeginFrames
+// from the first BeginFrameSource registered. If that BeginFrameSource goes
+// away then it will receive BeginFrames from the second BeginFrameSource.
+TEST_F(SurfaceManagerTest, PrimaryBeginFrameSource) {
+  // This PrimaryBeginFrameSource should track the first BeginFrameSource
+  // registered with the SurfaceManager.
+  testing::NiceMock<MockBeginFrameObserver> obs;
+  BeginFrameSource* begin_frame_source = manager_.GetPrimaryBeginFrameSource();
+  begin_frame_source->AddObserver(&obs);
+
+  FakeFrameSinkManagerClient root1(FrameSinkId(1, 1), &manager_);
+  std::unique_ptr<FakeExternalBeginFrameSource> external_source1 =
+      base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
+  manager_.RegisterBeginFrameSource(external_source1.get(),
+                                    root1.frame_sink_id());
+
+  FakeFrameSinkManagerClient root2(FrameSinkId(2, 2), &manager_);
+  std::unique_ptr<FakeExternalBeginFrameSource> external_source2 =
+      base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
+  manager_.RegisterBeginFrameSource(external_source2.get(),
+                                    root2.frame_sink_id());
+
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  // Ticking |external_source2| does not propagate to |begin_frame_source|.
+  {
+    EXPECT_CALL(obs, OnBeginFrame(args)).Times(0);
+    external_source2->TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&obs);
+  }
+
+  // Ticking |external_source1| does propagate to |begin_frame_source| and
+  // |obs|.
+  {
+    EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(1);
+    external_source1->TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&obs);
+  }
+
+  // Getting rid of |external_source1| means those BeginFrames will not
+  // propagate. Instead, |external_source2|'s BeginFrames will propagate
+  // to |begin_frame_source|.
+  {
+    manager_.UnregisterBeginFrameSource(external_source1.get());
+    EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(0);
+    external_source1->TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&obs);
+
+    EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(1);
+    external_source2->TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&obs);
+  }
+
+  // Tear down
+  manager_.UnregisterBeginFrameSource(external_source2.get());
+  begin_frame_source->RemoveObserver(&obs);
 }
 
 TEST_F(SurfaceManagerTest, MultipleDisplays) {

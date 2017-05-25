@@ -107,9 +107,9 @@ class SurfaceSynchronizationTest : public testing::Test,
 
     begin_frame_source_ =
         base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
-    surface_manager_.SetDependencyTracker(
-        base::MakeUnique<SurfaceDependencyTracker>(&surface_manager_,
-                                                   begin_frame_source_.get()));
+    dependency_tracker_ = base::MakeUnique<SurfaceDependencyTracker>(
+        &surface_manager_, begin_frame_source_.get());
+    surface_manager_.SetDependencyTracker(dependency_tracker_.get());
     surface_manager_.AddObserver(this);
     supports_.push_back(CompositorFrameSinkSupport::Create(
         &support_client_, &surface_manager_, kDisplayFrameSink, kIsRoot,
@@ -136,6 +136,8 @@ class SurfaceSynchronizationTest : public testing::Test,
     surface_manager_.RemoveObserver(this);
     surface_manager_.SetDependencyTracker(nullptr);
     surface_manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
+
+    dependency_tracker_.reset();
 
     // SurfaceDependencyTracker depends on this BeginFrameSource and so it must
     // be destroyed AFTER the dependency tracker is destroyed.
@@ -164,6 +166,7 @@ class SurfaceSynchronizationTest : public testing::Test,
   base::flat_set<SurfaceId> damaged_surfaces_;
   SurfaceManager surface_manager_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<SurfaceDependencyTracker> dependency_tracker_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSynchronizationTest);

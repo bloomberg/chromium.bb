@@ -147,6 +147,8 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   const LocalSurfaceId kArbitraryLocalSurfaceId(
       9, base::UnguessableToken::Create());
+  const LocalSurfaceId kArbitraryLocalSurfaceId2(
+      10, base::UnguessableToken::Create());
 
   // Given condition: layer and surface have different size and different
   // aspect ratios.
@@ -162,8 +164,11 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
+  SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
   surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, surface_scale, surface_size));
+  surface_layer_impl->SetFallbackSurfaceInfo(
+      SurfaceInfo(surface_id2, surface_scale, surface_size));
   surface_layer_impl->SetStretchContentToFillBounds(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -174,7 +179,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   EXPECT_THAT(data.activation_dependencies, UnorderedElementsAre(surface_id));
 
   const QuadList& quads = render_pass->quad_list;
-  ASSERT_EQ(1u, quads.size());
+  ASSERT_EQ(2u, quads.size());
   const SharedQuadState* shared_quad_state = quads.front()->shared_quad_state;
 
   // We expect that the transform for the quad stretches the quad to cover the

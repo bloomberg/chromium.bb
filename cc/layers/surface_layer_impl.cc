@@ -72,7 +72,8 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   // Emitting a fallback SurfaceDrawQuad is unnecessary if the primary and
   // fallback surface Ids match.
   bool needs_fallback =
-      fallback_surface_info_.id() != primary_surface_info_.id();
+      fallback_surface_info_.is_valid() &&
+      (fallback_surface_info_.id() != primary_surface_info_.id());
   if (primary && needs_fallback) {
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(
