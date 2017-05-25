@@ -61,7 +61,7 @@ typedef BOOL (WINAPI* HeapQueryFn)  \
 // will fail.
 
 TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InitializeAllocatorShim();
 #endif
   // Assert that freeing an unallocated pointer will crash the process.
@@ -80,7 +80,7 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
   ADD_FAILURE() << "This test is not supported in this build configuration.";
 #endif
 
-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::UninterceptMallocZonesForTesting();
 #endif
 }
@@ -89,7 +89,7 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 
 TEST(MemoryTest, AllocatorShimWorking) {
 #if defined(OS_MACOSX)
-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InitializeAllocatorShim();
 #endif
   base::allocator::InterceptAllocationsMac();
@@ -143,7 +143,7 @@ class OutOfMemoryTest : public testing::Test {
 class OutOfMemoryDeathTest : public OutOfMemoryTest {
  public:
   void SetUpInDeathAssert() {
-#if defined(OS_MACOSX) && BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if defined(OS_MACOSX) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     base::allocator::InitializeAllocatorShim();
 #endif
 

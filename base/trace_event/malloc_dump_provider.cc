@@ -32,7 +32,7 @@ namespace base {
 namespace trace_event {
 
 namespace {
-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 using allocator::AllocatorDispatch;
 
@@ -139,7 +139,7 @@ AllocatorDispatch g_allocator_hooks = {
     &HookFreeDefiniteSize, /* free_definite_size_function */
     nullptr,               /* next */
 };
-#endif  // BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 #if defined(OS_WIN)
 // A structure containing some information about a given heap.
@@ -322,7 +322,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
 }
 
 void MallocDumpProvider::OnHeapProfilingEnabled(bool enabled) {
-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   if (enabled) {
     allocation_register_.SetEnabled();
     allocator::InsertAllocatorDispatch(&g_allocator_hooks);
