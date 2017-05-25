@@ -6,12 +6,29 @@
 
 #include <utility>
 
+#include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
+
+namespace {
+
+String GetErrorStringForDisallowedLoad(const KURL& url) {
+  // TODO(shivanisha): Update the string when finalized.
+  StringBuilder builder;
+  builder.Append("Subresource filtering disallowed loading this resource, ");
+  builder.Append(url.GetString());
+  builder.Append(".");
+  return builder.ToString();
+}
+
+}  // namespace
 
 // static
 SubresourceFilter* SubresourceFilter::Create(
@@ -36,8 +53,9 @@ bool SubresourceFilter::AllowLoad(
   // Pair<url string, context> -> LoadPolicy.
   WebDocumentSubresourceFilter::LoadPolicy load_policy =
       subresource_filter_->GetLoadPolicy(resource_url, request_context);
+
   if (reporting_policy == SecurityViolationReportingPolicy::kReport)
-    ReportLoad(load_policy);
+    ReportLoad(resource_url, load_policy);
   return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
@@ -54,21 +72,34 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
   DCHECK(task_runner->RunsTasksOnCurrentThread());
   task_runner->PostTask(BLINK_FROM_HERE,
                         WTF::Bind(&SubresourceFilter::ReportLoad,
-                                  WrapPersistent(this), load_policy));
+                                  WrapPersistent(this), url, load_policy));
   return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
 void SubresourceFilter::ReportLoad(
+    const KURL& resource_url,
     WebDocumentSubresourceFilter::LoadPolicy load_policy) {
+  Document* document = document_loader_->GetFrame()
+                           ? document_loader_->GetFrame()->GetDocument()
+                           : nullptr;
   switch (load_policy) {
     case WebDocumentSubresourceFilter::kAllow:
       break;
     case WebDocumentSubresourceFilter::kDisallow:
       subresource_filter_->ReportDisallowedLoad();
+
+      // Display console message for actually blocked resource. For a
+      // resource with |load_policy| as kWouldDisallow, we will be logging a
+      // document wide console message, so no need to log it here.
+      // TODO: Consider logging this as a kInterventionMessageSource for showing
+      // warning in Lighthouse.
+      if (document && subresource_filter_->ShouldLogToConsole()) {
+        document->AddConsoleMessage(ConsoleMessage::Create(
+            kOtherMessageSource, kErrorMessageLevel,
+            GetErrorStringForDisallowedLoad(resource_url)));
+      }
     // fall through
     case WebDocumentSubresourceFilter::kWouldDisallow:
-      // TODO(csharrison): log console errors here based on
-      // subresource_filter_->ShouldLogToConsole().
       document_loader_->DidObserveLoadingBehavior(
           kWebLoadingBehaviorSubresourceFilterMatch);
       break;
