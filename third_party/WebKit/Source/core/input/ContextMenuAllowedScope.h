@@ -5,11 +5,12 @@
 #ifndef ContextMenuAllowedScope_h
 #define ContextMenuAllowedScope_h
 
+#include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
 
-class ContextMenuAllowedScope {
+class CORE_EXPORT ContextMenuAllowedScope {
   STACK_ALLOCATED();
 
  public:

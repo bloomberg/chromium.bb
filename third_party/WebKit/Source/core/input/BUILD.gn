@@ -8,6 +8,8 @@ blink_core_sources("input") {
   sources = [
     "BoundaryEventDispatcher.cpp",
     "BoundaryEventDispatcher.h",
+    "ContextMenuAllowedScope.cpp",
+    "ContextMenuAllowedScope.h",
     "EventHandler.cpp",
     "EventHandler.h",
     "EventHandlingUtil.cpp",
