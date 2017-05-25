@@ -77,8 +77,10 @@ BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
 // processes.
 BASE_EXPORT ProcessId GetProcId(ProcessHandle process);
 
-// Returns the ID for the parent of the given process.
+#if !defined(OS_FUCHSIA)
+// Returns the ID for the parent of the given process. Not available on Fuchsia.
 BASE_EXPORT ProcessId GetParentProcessId(ProcessHandle process);
+#endif  // !defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)
 // Returns the path to the executable of the given process.
