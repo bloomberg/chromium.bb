@@ -104,8 +104,12 @@ void IntersectionGeometry::InitializeGeometry() {
 }
 
 void IntersectionGeometry::InitializeTargetRect() {
-  target_rect_ =
-      LayoutRect(ToLayoutBoxModelObject(Target())->BorderBoundingBox());
+  if (target_->IsBoxModelObject()) {
+    target_rect_ =
+        LayoutRect(ToLayoutBoxModelObject(target_)->BorderBoundingBox());
+  } else {
+    target_rect_ = ToLayoutText(target_)->LinesBoundingBox();
+  }
 }
 
 void IntersectionGeometry::InitializeRootRect() {
