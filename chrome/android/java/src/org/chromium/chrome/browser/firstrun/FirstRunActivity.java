@@ -12,7 +12,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
@@ -463,15 +465,27 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
             }
         }
 
-        Intent resultData = new Intent();
-        resultData.putExtras(mFreProperties);
-        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
-
         // Update the search engine name cached by the widget.
         SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
-        sendPendingIntentIfNecessary(true);
+        if (!sendPendingIntentIfNecessary(true)) {
+            Intent resultData = new Intent();
+            resultData.putExtras(mFreProperties);
+            finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
+        } else {
+            ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
+                @Override
+                public void onActivityStateChange(Activity activity, int newState) {
+                    if (newState == ActivityState.STOPPED || newState == ActivityState.DESTROYED) {
+                        Intent resultData = new Intent();
+                        resultData.putExtras(mFreProperties);
+                        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
+                        ApplicationStatus.unregisterActivityStateListener(this);
+                    }
+                }
+            }, this);
+        }
     }
 
     @Override
@@ -539,11 +553,12 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     /**
      * Sends the PendingIntent included with the CHROME_LAUNCH_INTENT extra if it exists.
      * @param complete Whether first run completed successfully.
+     * @return Whether a pending intent was sent.
      */
-    protected void sendPendingIntentIfNecessary(final boolean complete) {
+    protected final boolean sendPendingIntentIfNecessary(final boolean complete) {
         PendingIntent pendingIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
                 EXTRA_CHROME_LAUNCH_INTENT);
-        if (pendingIntent == null) return;
+        if (pendingIntent == null) return false;
 
         Intent extraDataIntent = new Intent();
         extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, true);
@@ -567,9 +582,11 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
             // will go back to the ChromeLauncherActivity, which will route it accordingly.
             pendingIntent.send(this, complete ? Activity.RESULT_OK : Activity.RESULT_CANCELED,
                     extraDataIntent, onFinished, null);
+            return true;
         } catch (CanceledException e) {
             Log.e(TAG, "Unable to send PendingIntent.", e);
         }
+        return false;
     }
 
     /**
