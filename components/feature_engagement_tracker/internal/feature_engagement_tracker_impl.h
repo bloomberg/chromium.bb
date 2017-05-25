@@ -42,7 +42,19 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
 
  private:
   // Invoked by the Model when it has been initialized.
-  void OnModelInitializationFinished(bool success);
+  void OnEventModelInitializationFinished(bool success);
+
+  // Invoked by the AvailabilityModel when it has been initialized.
+  void OnAvailabilityModelInitializationFinished(bool success);
+
+  // Returns whether both underlying models have finished initializing.
+  // This returning true does not mean the initialization was a success, just
+  // that it is finished.
+  bool IsInitializationFinished() const;
+
+  // Posts the results to the OnInitializedCallbacks if
+  // IsInitializationFinished() returns true.
+  void MaybePostInitializedCallbacks();
 
   // The current model.
   std::unique_ptr<Model> model_;
@@ -60,8 +72,12 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
   // A utility for retriving time-related information.
   std::unique_ptr<TimeProvider> time_provider_;
 
-  // Whether the initialization of the underlying model has finished.
-  bool initialization_finished_;
+  // Whether the initialization of the underlying event model has finished.
+  bool event_model_initialization_finished_;
+
+  // Whether the initialization of the underlying availability model has
+  // finished.
+  bool availability_model_initialization_finished_;
 
   // The list of callbacks to invoke when initialization has finished. This
   // is cleared after the initialization has happened.
