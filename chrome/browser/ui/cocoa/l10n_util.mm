@@ -158,13 +158,15 @@ void FlipAllSubviewsIfNecessary(NSView* view) {
     subviewFrame.origin.x =
         width - NSWidth(subviewFrame) - NSMinX(subviewFrame);
     [subview setFrame:subviewFrame];
-    if (subview.autoresizingMask & (NSViewMinXMargin | NSViewMaxXMargin)) {
+    BOOL hasMinXMargin = subview.autoresizingMask & NSViewMinXMargin;
+    BOOL hasMaxXMargin = subview.autoresizingMask & NSViewMaxXMargin;
+    if (hasMinXMargin && hasMaxXMargin) {
       // No-op. Skip reversing autoresizing mask if both horizontal margins
       // are flexible.
-    } else if (subview.autoresizingMask & NSViewMinXMargin) {
+    } else if (hasMinXMargin) {
       subview.autoresizingMask &= ~NSViewMinXMargin;
       subview.autoresizingMask |= NSViewMaxXMargin;
-    } else if (subview.autoresizingMask & NSViewMaxXMargin) {
+    } else if (hasMaxXMargin) {
       subview.autoresizingMask &= ~NSViewMaxXMargin;
       subview.autoresizingMask |= NSViewMinXMargin;
     }
