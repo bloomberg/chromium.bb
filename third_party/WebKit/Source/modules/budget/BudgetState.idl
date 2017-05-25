@@ -5,7 +5,7 @@
 // https://wicg.github.io/budget-api/#budget-state-interface
 
 [
-    RuntimeEnabled=Budget,
+    OriginTrialEnabled=BudgetQuery,
     Exposed=(Window,Worker)
 ] interface BudgetState {
     readonly attribute double budgetAt;

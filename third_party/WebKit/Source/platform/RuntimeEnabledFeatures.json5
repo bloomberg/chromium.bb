@@ -123,6 +123,11 @@
     },
     {
       name: "Budget",
+      status: "stable",
+    },
+    {
+      name: "BudgetQuery",
+      origin_trial_feature_name: "BudgetQuery",
       status: "experimental",
     },
     {

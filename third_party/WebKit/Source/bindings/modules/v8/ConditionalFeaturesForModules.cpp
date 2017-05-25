@@ -10,6 +10,7 @@
 #include "bindings/core/v8/V8SharedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerNavigator.h"
+#include "bindings/modules/v8/V8BudgetService.h"
 #include "bindings/modules/v8/V8DedicatedWorkerGlobalScopePartial.h"
 #include "bindings/modules/v8/V8Gamepad.h"
 #include "bindings/modules/v8/V8GamepadButton.h"
@@ -86,6 +87,25 @@ void InstallConditionalFeaturesForModules(
       V8WindowPartial::installGamepadExtensions(
           isolate, world, instance_object, prototype_object, interface_object);
     }
+    if (OriginTrials::budgetQueryEnabled(execution_context)) {
+      V8WindowPartial::installBudgetQuery(isolate, world, instance_object,
+                                          prototype_object, interface_object);
+    }
+  } else if (wrapper_type_info ==
+             &V8DedicatedWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    if (OriginTrials::budgetQueryEnabled(execution_context)) {
+      V8DedicatedWorkerGlobalScopePartial::installBudgetQuery(
+          isolate, world, instance_object, prototype_object, interface_object);
+    }
+  } else if (wrapper_type_info == &V8SharedWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    if (OriginTrials::budgetQueryEnabled(execution_context)) {
+      V8SharedWorkerGlobalScopePartial::installBudgetQuery(
+          isolate, world, instance_object, prototype_object, interface_object);
+    }
   } else if (wrapper_type_info ==
              &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
     v8::Local<v8::Object> instance_object =
@@ -94,9 +114,19 @@ void InstallConditionalFeaturesForModules(
       V8ServiceWorkerGlobalScope::installForeignFetch(
           isolate, world, instance_object, prototype_object, interface_object);
     }
+    if (OriginTrials::budgetQueryEnabled(execution_context)) {
+      V8ServiceWorkerGlobalScope::installBudgetQuery(
+          isolate, world, instance_object, prototype_object, interface_object);
+    }
   } else if (wrapper_type_info == &V8InstallEvent::wrapperTypeInfo) {
     if (OriginTrials::foreignFetchEnabled(execution_context)) {
       V8InstallEvent::installForeignFetch(isolate, world,
+                                          v8::Local<v8::Object>(),
+                                          prototype_object, interface_object);
+    }
+  } else if (wrapper_type_info == &V8BudgetService::wrapperTypeInfo) {
+    if (OriginTrials::budgetQueryEnabled(execution_context)) {
+      V8BudgetService::installBudgetQuery(isolate, world,
                                           v8::Local<v8::Object>(),
                                           prototype_object, interface_object);
     }
@@ -199,6 +229,37 @@ void InstallPendingConditionalFeatureForModules(
             &interface_object)) {
       V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
                                        prototype_object, interface_object);
+    }
+    return;
+  }
+  if (feature == "BudgetQuery") {
+    global_instance_object = script_state->GetContext()->Global();
+
+    ExecutionContext* execution_context = ExecutionContext::From(script_state);
+    if (execution_context->IsDocument()) {
+      V8WindowPartial::installBudgetQuery(
+          isolate, world, global_instance_object, v8::Local<v8::Object>(),
+          v8::Local<v8::Function>());
+    } else if (execution_context->IsDedicatedWorkerGlobalScope()) {
+      V8DedicatedWorkerGlobalScopePartial::installBudgetQuery(
+          isolate, world, global_instance_object, v8::Local<v8::Object>(),
+          v8::Local<v8::Function>());
+    } else if (execution_context->IsSharedWorkerGlobalScope()) {
+      V8SharedWorkerGlobalScopePartial::installBudgetQuery(
+          isolate, world, global_instance_object, v8::Local<v8::Object>(),
+          v8::Local<v8::Function>());
+    } else if (execution_context->IsServiceWorkerGlobalScope()) {
+      V8ServiceWorkerGlobalScope::installBudgetQuery(
+          isolate, world, global_instance_object, v8::Local<v8::Object>(),
+          v8::Local<v8::Function>());
+    }
+
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8BudgetService::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
+      V8BudgetService::installBudgetQuery(isolate, world,
+                                          v8::Local<v8::Object>(),
+                                          prototype_object, interface_object);
     }
     return;
   }
