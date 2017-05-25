@@ -243,10 +243,6 @@ public class BottomSheetContentController extends BottomNavigationView
             if (mSelectedItemId > 0) getMenu().findItem(mSelectedItemId).setChecked(false);
             mSelectedItemId = PLACEHOLDER_ID;
         }
-
-        if (!hasFocus && mBottomSheet.getCurrentSheetContent() == mPlaceholderContent) {
-            showBottomSheetContent(R.id.action_home);
-        }
     }
 
     @Override
