@@ -106,24 +106,23 @@ class TabManager::WebContentsData
     bool operator==(const Data& right) const;
     bool operator!=(const Data& right) const;
 
-    // TODO(georgesak): fix naming (no underscore).
     // Is the tab currently discarded?
-    bool is_discarded_;
+    bool is_discarded;
     // Number of times the tab has been discarded.
-    int discard_count_;
+    int discard_count;
     // Is the tab playing audio?
-    bool is_recently_audible_;
+    bool is_recently_audible;
     // Last time the tab started or stopped playing audio (we record the
     // transition time).
-    base::TimeTicks last_audio_change_time_;
+    base::TimeTicks last_audio_change_time;
     // The last time the tab was discarded.
-    base::TimeTicks last_discard_time_;
+    base::TimeTicks last_discard_time;
     // The last time the tab was reloaded after being discarded.
-    base::TimeTicks last_reload_time_;
+    base::TimeTicks last_reload_time;
     // The last time the tab switched from being active to inactive.
-    base::TimeTicks last_inactive_time_;
+    base::TimeTicks last_inactive_time;
     // Site Engagement score (set to -1 if not available).
-    double engagement_score_;
+    double engagement_score;
     // Is tab eligible for auto discarding? Defaults to true.
     bool is_auto_discardable;
   };
