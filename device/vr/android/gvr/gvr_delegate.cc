@@ -118,9 +118,10 @@ mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(const vr::Mat4f& head_mat) {
 
 /* static */
 void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
-                                          vr::Mat4f* out) {
+                                          vr::Mat4f* out,
+                                          int64_t prediction_time) {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+  target_time.monotonic_system_time_nanos += prediction_time;
 
   gvr::Mat4f head_mat = gvr_api->ApplyNeckModel(
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
@@ -129,11 +130,18 @@ void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
 }
 
 /* static */
+void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
+                                          vr::Mat4f* out) {
+  GetGvrPoseWithNeckModel(gvr_api, out, kPredictionTimeWithoutVsyncNanos);
+}
+
+/* static */
 mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     gvr::GvrApi* gvr_api,
-    vr::Mat4f* head_mat_out) {
+    vr::Mat4f* head_mat_out,
+    int64_t prediction_time) {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+  target_time.monotonic_system_time_nanos += prediction_time;
 
   gvr::Mat4f gvr_head_mat = gvr_api->ApplyNeckModel(
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
@@ -163,6 +171,14 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   pose->angularVelocity.value()[2] = angular_velocity.z();
 
   return pose;
+}
+
+/* static */
+mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
+    gvr::GvrApi* gvr_api,
+    vr::Mat4f* head_mat_out) {
+  return GetVRPosePtrWithNeckModel(gvr_api, head_mat_out,
+                                   kPredictionTimeWithoutVsyncNanos);
 }
 
 /* static */
