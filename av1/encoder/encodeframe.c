@@ -563,7 +563,7 @@ static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q) {
   const int is_key_frame = (cm->frame_type == KEY_FRAME);
   const int threshold_multiplier = is_key_frame ? 20 : 1;
   const int64_t threshold_base =
-      (int64_t)(threshold_multiplier * cpi->y_dequant[q][1]);
+      (int64_t)(threshold_multiplier * cpi->dequants.y_dequant[q][1]);
   if (is_key_frame) {
     thresholds[1] = threshold_base;
     thresholds[2] = threshold_base >> 2;
@@ -602,8 +602,8 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q) {
       if (cm->width <= 352 && cm->height <= 288)
         cpi->vbp_threshold_sad = 100;
       else
-        cpi->vbp_threshold_sad = (cpi->y_dequant[q][1] << 1) > 1000
-                                     ? (cpi->y_dequant[q][1] << 1)
+        cpi->vbp_threshold_sad = (cpi->dequants.y_dequant[q][1] << 1) > 1000
+                                     ? (cpi->dequants.y_dequant[q][1] << 1)
                                      : 1000;
       cpi->vbp_bsize_min = BLOCK_16X16;
     }
