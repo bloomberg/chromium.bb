@@ -106,7 +106,7 @@ class MediaPipelineBackend {
     // delay measurement was taken. Both times in microseconds.
     struct RenderingDelay {
       RenderingDelay()
-          : delay_microseconds(INT64_MIN), timestamp_microseconds(INT64_MIN) {}
+          : delay_microseconds(0), timestamp_microseconds(INT64_MIN) {}
       RenderingDelay(int64_t delay_microseconds_in,
                      int64_t timestamp_microseconds_in)
           : delay_microseconds(delay_microseconds_in),
