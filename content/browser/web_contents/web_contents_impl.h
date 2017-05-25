@@ -20,6 +20,7 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
@@ -713,6 +714,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool OnUpdateDragCursor() override;
   bool IsWidgetForMainFrame(RenderWidgetHostImpl* render_widget_host) override;
   bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;
+  void UpdateUrlForUkmSource(ukm::UkmRecorder* service,
+                             ukm::SourceId ukm_source_id) override;
   void FocusedNodeTouched(bool editable) override;
   void DidReceiveCompositorFrame() override;
 

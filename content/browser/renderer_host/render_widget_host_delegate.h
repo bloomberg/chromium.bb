@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
@@ -30,6 +31,10 @@ class Size;
 
 namespace rappor {
 class Sample;
+}
+
+namespace ukm {
+class UkmRecorder;
 }
 
 namespace content {
@@ -243,6 +248,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // responsible for logging the sample to the RapporService. Returns false
   // if the eTLD+1 is not known for |render_widget_host|.
   virtual bool AddDomainInfoToRapporSample(rappor::Sample* sample);
+
+  // Update UkmRecorder for the given source with the URL. This is used for
+  // URL-keyed metrics to set the url for a report.
+  virtual void UpdateUrlForUkmSource(ukm::UkmRecorder* service,
+                                     ukm::SourceId ukm_source_id);
 
   // Notifies the delegate that a focused editable element has been touched
   // inside this RenderWidgetHost. If |editable| is true then the focused

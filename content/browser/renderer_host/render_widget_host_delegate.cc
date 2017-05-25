@@ -107,6 +107,10 @@ bool RenderWidgetHostDelegate::AddDomainInfoToRapporSample(
   return false;
 }
 
+void RenderWidgetHostDelegate::UpdateUrlForUkmSource(
+    ukm::UkmRecorder* service,
+    ukm::SourceId ukm_source_id) {}
+
 WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
   return nullptr;
 }
