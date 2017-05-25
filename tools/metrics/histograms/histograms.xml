@@ -35543,28 +35543,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.HttpAuthCacheAddEvicted" enum="BooleanDidEvict">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>asanka@chromium.org</owner>
   <summary>
     Whether adding an entry to the HTTP auth cache evicted another entry.
   </summary>
 </histogram>
 
 <histogram name="Net.HttpAuthCacheAddEvictedCreation">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>asanka@chromium.org</owner>
   <summary>
     When an HTTP auth cache entry is evicted, the time since it was created.
   </summary>
 </histogram>
 
 <histogram name="Net.HttpAuthCacheAddEvictedLastUse">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>asanka@chromium.org</owner>
   <summary>
     When an HTTP auth cache entry is evicted, the time since it was last used.
   </summary>
 </histogram>
 
 <histogram name="Net.HttpAuthCacheAddPathEvicted" enum="BooleanDidEvict">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>asanka@chromium.org</owner>
   <summary>
     Whether adding a path to an entry in the HTTP auth cache evicted another
     path.
@@ -35572,7 +35572,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.HttpAuthCacheLookupByPathPosition">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>asanka@chromium.org</owner>
   <summary>
     When looking up an HTTP auth cache entry by path, the position (1-indexed)
     of the entry on a hit, or 0 on a miss.
@@ -35580,7 +35580,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.HttpAuthCacheLookupPosition">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>asanka@chromium.org</owner>
   <summary>
     When looking up an HTTP auth cache entry by realm, the position (1-indexed)
     of the entry on a hit, or 0 on a miss.
