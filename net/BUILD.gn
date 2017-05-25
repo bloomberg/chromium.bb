@@ -3108,7 +3108,9 @@ source_set("traffic_annotation") {
   sources = [
     "traffic_annotation/network_traffic_annotation.h",
   ]
-  deps = []
+  deps = [
+    "//base",
+  ]
 }
 
 if (!is_ios) {
