@@ -351,7 +351,6 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 false,  // is_extended_reporting_enabled
                 false,  // is_scout_reporting_enabled
                 false,  // is_proceed_anyway_disabled
-                BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
                 "cpn_safe_browsing")) {  // help_center_article_link
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);

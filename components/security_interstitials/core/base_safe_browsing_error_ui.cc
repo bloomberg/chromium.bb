@@ -31,7 +31,6 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
     bool is_extended_reporting_enabled,
     bool is_scout_reporting_enabled,
     bool is_proceed_anyway_disabled,
-    bool is_resource_cancellable,
     const std::string& help_center_article_link)
     : is_main_frame_load_blocked(is_main_frame_load_blocked),
       is_extended_reporting_opt_in_allowed(
@@ -40,7 +39,6 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
       is_extended_reporting_enabled(is_extended_reporting_enabled),
       is_scout_reporting_enabled(is_scout_reporting_enabled),
       is_proceed_anyway_disabled(is_proceed_anyway_disabled),
-      is_resource_cancellable(is_resource_cancellable),
       help_center_article_link(help_center_article_link) {}
 
 BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
@@ -52,7 +50,6 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
       is_extended_reporting_enabled(other.is_extended_reporting_enabled),
       is_scout_reporting_enabled(other.is_scout_reporting_enabled),
       is_proceed_anyway_disabled(other.is_proceed_anyway_disabled),
-      is_resource_cancellable(other.is_resource_cancellable),
       help_center_article_link(other.help_center_article_link) {}
 
 }  // security_interstitials

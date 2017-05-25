@@ -79,7 +79,6 @@ BaseBlockingPage::CreateDefaultDisplayOptions(
       false,                 // is_extended_reporting
       false,                 // is_scout
       false,                 // kSafeBrowsingProceedAnywayDisabled
-      true,                  // is_resource_cancellable
       "cpn_safe_browsing");  // help_center_article_link
 }
 
