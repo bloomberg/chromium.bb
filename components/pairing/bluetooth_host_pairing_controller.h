@@ -121,6 +121,7 @@ class BluetoothHostPairingController
       const pairing_api::CompleteSetup& message) override;
   void OnErrorMessage(const pairing_api::Error& message) override;
   void OnAddNetworkMessage(const pairing_api::AddNetwork& message) override;
+  void OnRebootMessage(const pairing_api::Reboot& message) override;
 
   // BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,

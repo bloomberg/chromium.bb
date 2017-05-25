@@ -152,6 +152,11 @@ void HostPairingScreen::EnrollHostRequested(const std::string& auth_token) {
       HostPairingController::ENROLLMENT_STATUS_ENROLLING);
 }
 
+void HostPairingScreen::RebootHostRequested() {
+  if (delegate_)
+    delegate_->RebootHostRequested();
+}
+
 void HostPairingScreen::OnViewDestroyed(HostPairingScreenView* view) {
   if (view_ == view)
     view_ = NULL;

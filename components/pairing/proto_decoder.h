@@ -25,6 +25,7 @@ class ConfigureHost;
 class Error;
 class HostStatus;
 class PairDevices;
+class Reboot;
 }  // namespace pairing_api
 
 namespace pairing_chromeos {
@@ -51,6 +52,7 @@ class ProtoDecoder {
         const pairing_api::Error& message) = 0;
     virtual void OnAddNetworkMessage(
         const pairing_api::AddNetwork& message) = 0;
+    virtual void OnRebootMessage(const pairing_api::Reboot& message) = 0;
 
    protected:
     Observer() {}
@@ -78,6 +80,8 @@ class ProtoDecoder {
   static IOBufferRefPtr SendCompleteSetup(
       const pairing_api::CompleteSetup& message, int* size);
   static IOBufferRefPtr SendError(const pairing_api::Error& message, int* size);
+  static IOBufferRefPtr SendRebootHost(const pairing_api::Reboot& message,
+                                       int* size);
 
  private:
   static IOBufferRefPtr SendMessage(uint8_t message_type,

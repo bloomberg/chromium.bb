@@ -228,6 +228,7 @@ class WizardController : public BaseScreenDelegate,
                               bool send_reports,
                               const std::string& keyboard_layout) override;
   void AddNetworkRequested(const std::string& onc_spec) override;
+  void RebootHostRequested() override;
 
   // Override from NetworkScreen::Delegate:
   void OnEnableDebuggingScreenRequested() override;

@@ -440,6 +440,13 @@ void BluetoothHostPairingController::OnErrorMessage(
   NOTREACHED();
 }
 
+void BluetoothHostPairingController::OnRebootMessage(
+    const pairing_api::Reboot& message) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (Observer& observer : observers_)
+    observer.RebootHostRequested();
+}
+
 void BluetoothHostPairingController::OnAddNetworkMessage(
     const pairing_api::AddNetwork& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
