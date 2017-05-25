@@ -15,6 +15,7 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
+      <structure type="chrome_scaled_image" name="IDR_ALL_APPS_DROP_DOWN" file="common/all_apps_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_LIST_TOOLS_HOVER" file="common/app_list_tools_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_LIST_TOOLS_NORMAL" file="common/app_list_tools_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_LIST_TOOLS_PRESSED" file="common/app_list_tools_pressed.png" />

@@ -38,7 +38,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/controls/image_view.h"
