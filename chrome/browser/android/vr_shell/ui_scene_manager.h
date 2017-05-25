@@ -22,6 +22,8 @@ class UiScene;
 class UrlBar;
 class VrBrowserInterface;
 
+struct ColorScheme;
+
 class UiSceneManager {
  public:
   UiSceneManager(VrBrowserInterface* browser,
@@ -40,11 +42,12 @@ class UiSceneManager {
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
   void SetIsExiting();
-  // These methods are currently stubbed.
-  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
   void SetVideoCapturingIndicator(bool enabled);
   void SetScreenCapturingIndicator(bool enabled);
   void SetAudioCapturingIndicator(bool enabled);
+
+  // These methods are currently stubbed.
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
@@ -60,13 +63,13 @@ class UiSceneManager {
   void CreateExitWarning();
 
   void ConfigureScene();
-  void ConfigureBackgroundColor(vr::Colorf center_color,
-                                vr::Colorf horizon_color);
   void ConfigureSecurityWarnings();
+  void UpdateBackgroundColor();
   void OnSecurityWarningTimer();
   void OnBackButtonClicked();
   void OnCloseButtonClicked();
   int AllocateId();
+  const ColorScheme& color_scheme() const;
 
   VrBrowserInterface* browser_;
   UiScene* scene_;
