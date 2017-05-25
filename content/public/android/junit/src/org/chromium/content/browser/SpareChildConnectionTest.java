@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.content.ComponentName;
 import android.os.Bundle;
 
 import static org.junit.Assert.assertNotNull;
@@ -39,11 +40,13 @@ public class SpareChildConnectionTest {
         public ChildProcessConnection allocateBoundConnection(ChildSpawnData spawnData,
                 ChildProcessConnection.StartCallback startCallback, boolean queueIfNoneAvailable) {
             this.startCallback = startCallback;
-            connection = ChildProcessConnection.createUnboundConnectionForTesting(
-                    spawnData.getContext(), null /* deathCallback */,
+            ComponentName serviceName = new ComponentName(
                     spawnData.getCreationParams().getPackageNameForSandboxedService(),
-                    true /* bindAsExternalService */, "TestSpareChild" /* className */,
-                    null /* childProcessCommonParameters */, spawnData.getCreationParams());
+                    "TestSpareChild");
+            connection =
+                    ChildProcessConnection.createUnboundConnectionForTesting(spawnData.getContext(),
+                            null /* deathCallback */, serviceName, true /* bindAsExternalService */,
+                            null /* childProcessCommonParameters */, spawnData.getCreationParams());
             return connection;
         }
     }

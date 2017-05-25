@@ -73,6 +73,11 @@ public class ChildProcessLauncher {
                                              : context.getPackageName();
     }
 
+    public static boolean isServiceExternalFromCreationParams(
+            ChildProcessCreationParams params, boolean sandboxed) {
+        return sandboxed && params != null && params.getIsSandboxedServiceExternal();
+    }
+
     // Factory used by the SpareConnection to create the actual ChildProcessConnection.
     private static final SpareChildConnection.ConnectionFactory SANDBOXED_SPARE_CONNECTION_FATORY =
             new SpareChildConnection.ConnectionFactory() {
@@ -87,12 +92,13 @@ public class ChildProcessLauncher {
 
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC") // Method is single thread.
     public static ChildConnectionAllocator getConnectionAllocator(
-            Context context, String packageName, boolean sandboxed) {
+            Context context, String packageName, boolean sandboxed, boolean bindAsExternalService) {
         assert LauncherThread.runningOnLauncherThread();
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
                 sPrivilegedChildConnectionAllocator = ChildConnectionAllocator.create(context,
-                        packageName, PRIVILEGED_SERVICES_NAME_KEY, NUM_PRIVILEGED_SERVICES_KEY);
+                        packageName, PRIVILEGED_SERVICES_NAME_KEY, NUM_PRIVILEGED_SERVICES_KEY,
+                        bindAsExternalService);
             }
             return sPrivilegedChildConnectionAllocator;
         }
@@ -108,11 +114,12 @@ public class ChildProcessLauncher {
                 String serviceName = !TextUtils.isEmpty(sSandboxedServicesNameForTesting)
                         ? sSandboxedServicesNameForTesting
                         : SandboxedProcessService.class.getName();
-                connectionAllocator = ChildConnectionAllocator.createForTest(
-                        packageName, serviceName, sSandboxedServicesCountForTesting);
+                connectionAllocator = ChildConnectionAllocator.createForTest(packageName,
+                        serviceName, sSandboxedServicesCountForTesting, bindAsExternalService);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context, packageName,
-                        SANDBOXED_SERVICES_NAME_KEY, NUM_SANDBOXED_SERVICES_KEY);
+                        SANDBOXED_SERVICES_NAME_KEY, NUM_SANDBOXED_SERVICES_KEY,
+                        bindAsExternalService);
             }
             if (sSandboxedServiceFactoryForTesting != null) {
                 connectionAllocator.setConnectionFactoryForTesting(
@@ -144,12 +151,12 @@ public class ChildProcessLauncher {
         final boolean inSandbox = spawnData.isInSandbox();
 
         String packageName = getPackageNameFromCreationParams(context, creationParams, inSandbox);
-        boolean bindAsExternalService = inSandbox && creationParams != null
-                && creationParams.getIsSandboxedSerivceExternal();
+        boolean bindAsExternalService =
+                isServiceExternalFromCreationParams(creationParams, inSandbox);
         ChildConnectionAllocator allocator =
-                getConnectionAllocator(context, packageName, inSandbox);
-        ChildProcessConnection connection = allocator.allocate(
-                spawnData, bindAsExternalService, deathCallback, queueIfNoneAvailable);
+                getConnectionAllocator(context, packageName, inSandbox, bindAsExternalService);
+        ChildProcessConnection connection =
+                allocator.allocate(spawnData, deathCallback, queueIfNoneAvailable);
         sConnectionsToAllocatorMap.put(connection, allocator);
         return connection;
     }
@@ -169,8 +176,11 @@ public class ChildProcessLauncher {
 
             String packageName =
                     getPackageNameFromCreationParams(context, creationParams, inSandbox);
+            boolean bindAsExternalService =
+                    isServiceExternalFromCreationParams(creationParams, inSandbox);
             if (inSandbox
-                    && !getConnectionAllocator(context, packageName, true /* sandboxed */)
+                    && !getConnectionAllocator(
+                               context, packageName, true /* sandboxed */, bindAsExternalService)
                                 .isFreeConnectionAvailable()) {
                 // Proactively releases all the moderate bindings once all the sandboxed services
                 // are allocated, which will be very likely to have some of them killed by OOM
@@ -294,17 +304,16 @@ public class ChildProcessLauncher {
      * shared moderate binding pool is always set based on the number of sandboxes processes
      * used by Chrome.
      * @param context Android's context.
-     * @param moderateBindingTillBackgrounded true if the BindingManager should add a moderate
-     * binding to a render process when it is created and remove the moderate binding when Chrome is
-     * sent to the background.
      */
     public static void startModerateBindingManagement(final Context context) {
         assert ThreadUtils.runningOnUiThread();
         LauncherThread.post(new Runnable() {
             @Override
             public void run() {
-                ChildConnectionAllocator allocator = getConnectionAllocator(
-                        context, context.getPackageName(), true /* sandboxed */);
+                boolean bindAsExternalService = isServiceExternalFromCreationParams(
+                        ChildProcessCreationParams.getDefault(), true /* sandboxed */);
+                ChildConnectionAllocator allocator = getConnectionAllocator(context,
+                        context.getPackageName(), true /* sandboxed */, bindAsExternalService);
                 getBindingManager().startModerateBindingManagement(
                         context, allocator.getNumberOfServices());
             }
@@ -323,12 +332,13 @@ public class ChildProcessLauncher {
             public void run() {
                 if (sSpareSandboxedConnection != null) return;
                 ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
+                final boolean sandboxed = true;
                 boolean bindToCallerCheck =
-                        creationParams == null ? false : creationParams.getBindToCallerCheck();
-                sSpareSandboxedConnection = new SpareChildConnection(context,
-                        SANDBOXED_SPARE_CONNECTION_FATORY,
-                        ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck),
-                        true /* sandboxed */, false /* alwaysInForeground */, creationParams);
+                        isServiceExternalFromCreationParams(creationParams, sandboxed);
+                sSpareSandboxedConnection =
+                        new SpareChildConnection(context, SANDBOXED_SPARE_CONNECTION_FATORY,
+                                ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck),
+                                sandboxed, false /* alwaysInForeground */, creationParams);
             }
         });
     }

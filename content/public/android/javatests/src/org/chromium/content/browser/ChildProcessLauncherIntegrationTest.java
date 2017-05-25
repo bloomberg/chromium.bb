@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
@@ -42,12 +43,12 @@ public class ChildProcessLauncherIntegrationTest {
         private final List<TestChildProcessConnection> mConnections = new ArrayList<>();
 
         @Override
-        public ChildProcessConnection createConnection(ChildSpawnData spawnData, String packageName,
-                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback,
-                String serviceClassName) {
+        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
+                ComponentName serviceName, boolean bindAsExternalService,
+                ChildProcessConnection.DeathCallback deathCallback) {
             TestChildProcessConnection connection = new TestChildProcessConnection(
-                    spawnData.getContext(), deathCallback, packageName, bindAsExternalService,
-                    serviceClassName, spawnData.getServiceBundle(), spawnData.getCreationParams());
+                    spawnData.getContext(), deathCallback, serviceName, bindAsExternalService,
+                    spawnData.getServiceBundle(), spawnData.getCreationParams());
             mConnections.add(connection);
             return connection;
         }
@@ -61,10 +62,10 @@ public class ChildProcessLauncherIntegrationTest {
         private RuntimeException mRemovedBothInitialAndStrongBinding;
 
         public TestChildProcessConnection(Context context,
-                ChildProcessConnection.DeathCallback deathCallback, String packageName,
-                boolean bindAsExternalService, String serviceClassName,
-                Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-            super(context, deathCallback, packageName, bindAsExternalService, serviceClassName,
+                ChildProcessConnection.DeathCallback deathCallback, ComponentName serviceName,
+                boolean bindAsExternalService, Bundle childProcessCommonParameters,
+                ChildProcessCreationParams creationParams) {
+            super(context, deathCallback, serviceName, bindAsExternalService,
                     childProcessCommonParameters, creationParams);
         }
 

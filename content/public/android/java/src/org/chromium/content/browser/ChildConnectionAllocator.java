@@ -28,19 +28,18 @@ public class ChildConnectionAllocator {
     /** Factory interface. Used by tests to specialize created connections. */
     @VisibleForTesting
     protected interface ConnectionFactory {
-        ChildProcessConnection createConnection(ChildSpawnData spawnData, String packageName,
-                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback,
-                String serviceClassName);
+        ChildProcessConnection createConnection(ChildSpawnData spawnData, ComponentName serviceName,
+                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback);
     }
 
     /** Default implementation of the ConnectionFactory that creates actual connections. */
     private static class ConnectionFactoryImpl implements ConnectionFactory {
         @Override
-        public ChildProcessConnection createConnection(ChildSpawnData spawnData, String packageName,
-                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback,
-                String serviceClassName) {
-            return new ChildProcessConnection(spawnData.getContext(), deathCallback, packageName,
-                    bindAsExternalService, serviceClassName, spawnData.getServiceBundle(),
+        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
+                ComponentName serviceName, boolean bindAsExternalService,
+                ChildProcessConnection.DeathCallback deathCallback) {
+            return new ChildProcessConnection(spawnData.getContext(), deathCallback, serviceName,
+                    bindAsExternalService, spawnData.getServiceBundle(),
                     spawnData.getCreationParams());
         }
     }
@@ -50,6 +49,7 @@ public class ChildConnectionAllocator {
 
     private final String mPackageName;
     private final String mServiceClassName;
+    private final boolean mBindAsExternalService;
 
     // The list of free (not bound) service indices.
     private final ArrayList<Integer> mFreeConnectionIndices;
@@ -65,7 +65,8 @@ public class ChildConnectionAllocator {
      * AndroidManifest.xml.
      */
     public static ChildConnectionAllocator create(Context context, String packageName,
-            String serviceClassNameManifestKey, String numChildServicesManifestKey) {
+            String serviceClassNameManifestKey, String numChildServicesManifestKey,
+            boolean bindAsExternalService) {
         String serviceClassName = null;
         int numServices = -1;
         PackageManager packageManager = context.getPackageManager();
@@ -94,7 +95,8 @@ public class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
         }
 
-        return new ChildConnectionAllocator(packageName, serviceClassName, numServices);
+        return new ChildConnectionAllocator(
+                packageName, serviceClassName, bindAsExternalService, numServices);
     }
 
     // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
@@ -122,15 +124,17 @@ public class ChildConnectionAllocator {
      * instead of being retrieved from the AndroidManifest.xml.
      */
     @VisibleForTesting
-    public static ChildConnectionAllocator createForTest(
-            String packageName, String serviceClassName, int serviceCount) {
-        return new ChildConnectionAllocator(packageName, serviceClassName, serviceCount);
+    public static ChildConnectionAllocator createForTest(String packageName,
+            String serviceClassName, int serviceCount, boolean bindAsExternalService) {
+        return new ChildConnectionAllocator(
+                packageName, serviceClassName, bindAsExternalService, serviceCount);
     }
 
-    private ChildConnectionAllocator(
-            String packageName, String serviceClassName, int numChildServices) {
+    private ChildConnectionAllocator(String packageName, String serviceClassName,
+            boolean bindAsExternalService, int numChildServices) {
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
+        mBindAsExternalService = bindAsExternalService;
         mChildProcessConnections = new ChildProcessConnection[numChildServices];
         mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
         for (int i = 0; i < numChildServices; i++) {
@@ -139,7 +143,7 @@ public class ChildConnectionAllocator {
     }
 
     // Allocates or enqueues. If there are no free slots, returns null and enqueues the spawn data.
-    public ChildProcessConnection allocate(ChildSpawnData spawnData, boolean bindAsExternalService,
+    public ChildProcessConnection allocate(ChildSpawnData spawnData,
             ChildProcessConnection.DeathCallback deathCallback, boolean queueIfNoSlotAvailable) {
         assert LauncherThread.runningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
@@ -151,9 +155,10 @@ public class ChildConnectionAllocator {
         }
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
-        String serviceClassName = mServiceClassName + slot;
+        ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
+
         mChildProcessConnections[slot] = mConnectionFactory.createConnection(
-                spawnData, mPackageName, bindAsExternalService, deathCallback, serviceClassName);
+                spawnData, serviceName, mBindAsExternalService, deathCallback);
         Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
         return mChildProcessConnections[slot];
     }
