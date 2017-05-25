@@ -155,7 +155,7 @@ HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) {
 }
 
 HTMLSlotElement* SlotAssignment::FindSlotByName(const AtomicString& slot_name) {
-  return slot_map_->GetSlotByName(slot_name, owner_.Get());
+  return slot_map_->GetSlotByName(slot_name, *owner_);
 }
 
 void SlotAssignment::CollectSlots() {

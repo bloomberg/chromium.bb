@@ -118,9 +118,8 @@ void DocumentOrderedMap::Remove(const AtomicString& key, Element* element) {
 
 template <bool keyMatches(const AtomicString&, const Element&)>
 inline Element* DocumentOrderedMap::Get(const AtomicString& key,
-                                        const TreeScope* scope) const {
+                                        const TreeScope& scope) const {
   DCHECK(key);
-  DCHECK(scope);
 
   MapEntry* entry = map_.at(key);
   if (!entry)
@@ -134,7 +133,7 @@ inline Element* DocumentOrderedMap::Get(const AtomicString& key,
   // with children having duplicate IDs is being removed -- the tree traversal
   // will be over an updated tree not having that subtree. In all other cases,
   // a match is expected.
-  for (Element& element : ElementTraversal::StartsAfter(scope->RootNode())) {
+  for (Element& element : ElementTraversal::StartsAfter(scope.RootNode())) {
     if (!keyMatches(key, element))
       continue;
     entry->element = &element;
@@ -149,15 +148,14 @@ inline Element* DocumentOrderedMap::Get(const AtomicString& key,
 }
 
 Element* DocumentOrderedMap::GetElementById(const AtomicString& key,
-                                            const TreeScope* scope) const {
+                                            const TreeScope& scope) const {
   return Get<KeyMatchesId>(key, scope);
 }
 
 const HeapVector<Member<Element>>& DocumentOrderedMap::GetAllElementsById(
     const AtomicString& key,
-    const TreeScope* scope) const {
+    const TreeScope& scope) const {
   DCHECK(key);
-  DCHECK(scope);
   DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, empty_vector,
                       (new HeapVector<Member<Element>>));
 
@@ -172,7 +170,7 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::GetAllElementsById(
     entry->ordered_list.ReserveCapacity(entry->count);
     for (Element* element =
              entry->element ? entry->element.Get()
-                            : ElementTraversal::FirstWithin(scope->RootNode());
+                            : ElementTraversal::FirstWithin(scope.RootNode());
          entry->ordered_list.size() < entry->count;
          element = ElementTraversal::Next(*element)) {
       DCHECK(element);
@@ -188,14 +186,14 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::GetAllElementsById(
 }
 
 Element* DocumentOrderedMap::GetElementByMapName(const AtomicString& key,
-                                                 const TreeScope* scope) const {
+                                                 const TreeScope& scope) const {
   return Get<KeyMatchesMapName>(key, scope);
 }
 
 // TODO(hayato): Template get<> by return type.
 HTMLSlotElement* DocumentOrderedMap::GetSlotByName(
     const AtomicString& key,
-    const TreeScope* scope) const {
+    const TreeScope& scope) const {
   if (Element* slot = Get<KeyMatchesSlotName>(key, scope)) {
     DCHECK(isHTMLSlotElement(slot));
     return toHTMLSlotElement(slot);
