@@ -559,7 +559,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                      * @param callback will be called with the value true if initialization is
                      * successful. The callback will be run on the UI thread.
                      */
-                    // TODO(ntfschr): add @Override once O MR1 SDK rolls
+                    // TODO(ntfschr): add @Override once next android SDK rolls
                     public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
                         AwContentsStatics.initSafeBrowsing(context, callback);
                     }
@@ -567,7 +567,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     /**
                      * Shuts down Safe Browsing. This should only be called once.
                      */
-                    // TODO(ntfschr): add @Override once O MR1 SDK rolls
+                    // TODO(ntfschr): add @Override once next android SDK rolls
                     public void shutdownSafeBrowsing() {
                         AwContentsStatics.shutdownSafeBrowsing();
                     }
