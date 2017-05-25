@@ -543,8 +543,9 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
   if (isHTMLOptionElement(*GetNode())) {
     HTMLSelectElement* select_element =
         toHTMLOptionElement(GetNode())->OwnerSelectElement();
-    return select_element->IsMultiple() ? kListBoxOptionRole
-                                        : kMenuListOptionRole;
+    return !select_element || select_element->IsMultiple()
+               ? kListBoxOptionRole
+               : kMenuListOptionRole;
   }
 
   if (isHTMLTextAreaElement(*GetNode()))
