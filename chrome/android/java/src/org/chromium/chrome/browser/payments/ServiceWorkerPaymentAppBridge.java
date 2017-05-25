@@ -33,23 +33,26 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     /**
      * Invoke a payment app with a given option and matching method data.
      *
-     * @param webContents    The web contents that invoked PaymentRequest.
-     * @param registrationId The service worker registration ID of the Payment App.
-     * @param optionId       The ID of the PaymentOption that was selected by the user.
-     * @param methodData     The PaymentMethodData objects that are relevant for this payment
-     *                       app.
-     * @param total          The PaymentItem that represents the total cost of the payment.
-     * @param modifiers      Payment method specific modifiers to the payment items and the total.
-     * @param callback       Called after the payment app is finished running.
+     * @param webContents      The web contents that invoked PaymentRequest.
+     * @param registrationId   The service worker registration ID of the Payment App.
+     * @param origin           The origin of this merchant.
+     * @param iframeOrigin     The origin of the iframe that invoked PaymentRequest. Same as origin
+     *                         if PaymentRequest was not invoked from inside an iframe.
+     * @param paymentRequestId The unique identifier of the PaymentRequest.
+     * @param methodData       The PaymentMethodData objects that are relevant for this payment
+     *                         app.
+     * @param total            The PaymentItem that represents the total cost of the payment.
+     * @param modifiers        Payment method specific modifiers to the payment items and the total.
+     * @param instrumentId     The ID of the PaymentInstrument that was selected by the user.
+     * @param callback         Called after the payment app is finished running.
      */
-    public static void invokePaymentApp(WebContents webContents, long registrationId,
-            String optionId, String origin, String unusedIframeOrigin,
-            Set<PaymentMethodData> methodData, PaymentItem total, List<PaymentItem> displayItems,
-            Set<PaymentDetailsModifier> modifiers,
+    public static void invokePaymentApp(WebContents webContents, long registrationId, String origin,
+            String iframeOrigin, String paymentRequestId, Set<PaymentMethodData> methodData,
+            PaymentItem total, Set<PaymentDetailsModifier> modifiers, String instrumentId,
             PaymentInstrument.InstrumentDetailsCallback callback) {
-        nativeInvokePaymentApp(webContents, registrationId, optionId, origin,
+        nativeInvokePaymentApp(webContents, registrationId, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
-                modifiers.toArray(new PaymentDetailsModifier[0]), callback);
+                modifiers.toArray(new PaymentDetailsModifier[0]), instrumentId, callback);
     }
 
     @CalledByNative
@@ -142,6 +145,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * has been resolved.
      */
     private static native void nativeInvokePaymentApp(WebContents webContents, long registrationId,
-            String optionId, String origin, PaymentMethodData[] methodData, PaymentItem total,
-            PaymentDetailsModifier[] modifiers, Object callback);
+            String topLevelOrigin, String paymentRequestOrigin, String paymentRequestId,
+            PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
+            String instrumentKey, Object callback);
 }

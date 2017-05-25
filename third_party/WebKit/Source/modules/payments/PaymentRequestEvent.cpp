@@ -24,8 +24,33 @@ const AtomicString& PaymentRequestEvent::InterfaceName() const {
   return EventNames::PaymentRequestEvent;
 }
 
-void PaymentRequestEvent::appRequest(PaymentAppRequest& app_request) const {
-  app_request = app_request_;
+const String& PaymentRequestEvent::topLevelOrigin() const {
+  return top_level_origin_;
+}
+
+const String& PaymentRequestEvent::paymentRequestOrigin() const {
+  return payment_request_origin_;
+}
+
+const String& PaymentRequestEvent::paymentRequestId() const {
+  return payment_request_id_;
+}
+
+const HeapVector<PaymentMethodData>& PaymentRequestEvent::methodData() const {
+  return method_data_;
+}
+
+void PaymentRequestEvent::total(PaymentItem& value) const {
+  value = total_;
+}
+
+const HeapVector<PaymentDetailsModifier>& PaymentRequestEvent::modifiers()
+    const {
+  return modifiers_;
+}
+
+const String& PaymentRequestEvent::instrumentKey() const {
+  return instrument_key_;
 }
 
 void PaymentRequestEvent::respondWith(ScriptState* script_state,
@@ -38,7 +63,8 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
 }
 
 DEFINE_TRACE(PaymentRequestEvent) {
-  visitor->Trace(app_request_);
+  visitor->Trace(method_data_);
+  visitor->Trace(modifiers_);
   visitor->Trace(observer_);
   ExtendableEvent::Trace(visitor);
 }
@@ -49,7 +75,13 @@ PaymentRequestEvent::PaymentRequestEvent(
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, ExtendableEventInit(), wait_until_observer),
-      app_request_(app_request),
+      top_level_origin_(app_request.topLevelOrigin()),
+      payment_request_origin_(app_request.paymentRequestOrigin()),
+      payment_request_id_(app_request.paymentRequestId()),
+      method_data_(std::move(app_request.methodData())),
+      total_(app_request.total()),
+      modifiers_(app_request.modifiers()),
+      instrument_key_(app_request.instrumentKey()),
       observer_(respond_with_observer) {}
 
 }  // namespace blink

@@ -94,7 +94,9 @@ PaymentAppRequest PaymentAppRequestConversion::ToPaymentAppRequest(
 
   ScriptState::Scope scope(script_state);
 
-  app_request.setOrigin(web_app_request.origin);
+  app_request.setTopLevelOrigin(web_app_request.top_level_origin);
+  app_request.setPaymentRequestOrigin(web_app_request.payment_request_origin);
+  app_request.setPaymentRequestId(web_app_request.payment_request_id);
   HeapVector<PaymentMethodData> method_data;
   for (const auto& md : web_app_request.method_data) {
     method_data.push_back(ToPaymentMethodData(script_state, md));
@@ -105,7 +107,8 @@ PaymentAppRequest PaymentAppRequestConversion::ToPaymentAppRequest(
   for (const auto& modifier : web_app_request.modifiers) {
     modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));
   }
-  app_request.setOptionId(web_app_request.option_id);
+  app_request.setModifiers(modifiers);
+  app_request.setInstrumentKey(web_app_request.instrument_key);
   return app_request;
 }
 

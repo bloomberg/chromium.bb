@@ -3,6 +3,20 @@
 // found in the LICENSE file.
 
 self.addEventListener('paymentrequest', e => {
+  e.waitUntil(clients.matchAll({includeUncontrolled: true}).then(clients => {
+    clients.forEach(client => {
+      if (client.url.indexOf('payment_app_invocation.html') != -1) {
+        client.postMessage(e.topLevelOrigin);
+        client.postMessage(e.paymentRequestOrigin);
+        client.postMessage(e.paymentRequestId);
+        client.postMessage(JSON.stringify(e.methodData));
+        client.postMessage(JSON.stringify(e.total));
+        client.postMessage(JSON.stringify(e.modifiers));
+        client.postMessage(e.instrumentKey);
+      }
+    });
+  }));
+
   // SW -------------------- openWindow() ------------------> payment_app_window
   // SW <----- postMessage('payment_app_window_ready') ------ payment_app_window
   // SW -------- postMessage('payment_app_request') --------> payment_app_window

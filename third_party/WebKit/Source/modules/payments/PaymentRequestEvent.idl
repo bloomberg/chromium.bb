@@ -2,12 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentrequestevent
+// https://w3c.github.io/payment-handler/#the-paymentrequestevent
 
+// TODO(zino): Once the spec issue is resolved, we should apply the changes.
+// Please see https://github.com/w3c/payment-handler/pull/162
 [
     RuntimeEnabled=PaymentApp,
     Exposed=ServiceWorker
 ] interface PaymentRequestEvent : ExtendableEvent {
-    readonly attribute PaymentAppRequest appRequest;
+    readonly attribute DOMString topLevelOrigin;
+    readonly attribute DOMString paymentRequestOrigin;
+    readonly attribute DOMString paymentRequestId;
+    readonly attribute sequence<PaymentMethodData> methodData;
+    readonly attribute PaymentItem total;
+    readonly attribute sequence<PaymentDetailsModifier> modifiers;
+    readonly attribute DOMString instrumentKey;
+
+    // TODO(gogerald): We should implement this function.
+    // Please see: http://crbug.com/720027
+    // Promise<WindowClient> openWindow(USVString url);
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<PaymentResponse> response);
 };

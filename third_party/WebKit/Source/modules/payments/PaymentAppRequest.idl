@@ -4,10 +4,14 @@
 
 // https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentapprequest
 
+// TODO(zino): Once the spec issue is resolved, we should apply the changes.
+// Please see https://github.com/w3c/payment-handler/pull/162
 dictionary PaymentAppRequest {
-    DOMString origin;
+    DOMString topLevelOrigin;
+    DOMString paymentRequestOrigin;
+    DOMString paymentRequestId;
     sequence<PaymentMethodData> methodData;
     PaymentItem total;
     sequence<PaymentDetailsModifier> modifiers;
-    DOMString optionId;
+    DOMString instrumentKey;
 };
