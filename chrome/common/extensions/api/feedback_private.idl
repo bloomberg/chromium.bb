@@ -27,7 +27,11 @@ namespace feedbackPrivate {
 
     // Flow where a prompt to download the Chrome Cleanup Tool is displayed
     // prior to showing the feedback form.
-    showSrtPrompt
+    showSrtPrompt,
+
+    // Flow when the feedback is requested from the sad tab ("Aw, Snap!") page
+    // when the renderer crashes.
+    sadTabCrash
   };
 
   dictionary FeedbackInfo {
@@ -111,7 +115,7 @@ namespace feedbackPrivate {
     // Gets localized translated strings for feedback. It returns the
     // strings as a dictionary mapping from string identifier to the
     // translated string to use in the feedback app UI.
-    static void getStrings(GetStringsCallback callback);
+    static void getStrings(FeedbackFlow flow, GetStringsCallback callback);
 
     // Logs whether the user accepted a prompt to try the Software Removal
     // Tool.

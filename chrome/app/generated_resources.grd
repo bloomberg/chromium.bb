@@ -5736,10 +5736,16 @@ the Bookmarks menu.">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
             Tell Us What's Happening
           </message>
+          <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW" desc="Label showing the title of the feedback app window when the crash report has been requested from the 'Aw, Snap!' page">
+            Describe What You Were Doing When The Tab Crashed
+          </message>
         </if>
         <if expr="not use_titlecase">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
             Tell us what's happening
+          </message>
+          <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW" desc="Label showing the title of the feedback app window when the crash report has been requested from the 'Aw, Snap!' page">
+            Describe what you were doing when the tab crashed
           </message>
         </if>
         <message name="IDS_FEEDBACK_MINIMIZE_BUTTON_LABEL" desc="Label of the app minimize button.">
@@ -7170,7 +7176,7 @@ I don't think this site should be blocked!
         Learn more
       </message>
       <message name="IDS_CRASHED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with. The triple single quotes are needed to preserve the line break.">
-        Tab crashed feedback.
+        Help our engineers investigate and fix this crash. List exact steps if you can. No detail is too small!
 '''
       </message>
       <message name="IDS_CRASHED_TAB_FEEDBACK_LINK" desc="The text for the feedback link on the crashed tab page.">

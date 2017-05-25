@@ -260,7 +260,7 @@ function resizeAppWindow() {
       $('content-pane').scrollHeight + CONTENT_MARGIN_HEIGHT;
 
   var minHeight = FEEDBACK_MIN_HEIGHT;
-  if (feedbackInfo.flow == FeedbackFlow.LOGIN)
+  if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN)
     minHeight = FEEDBACK_MIN_HEIGHT_LOGIN;
   height = Math.max(height, minHeight);
 
@@ -303,9 +303,10 @@ function initialize() {
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.sentFromEventPage) {
       if (!feedbackInfo.flow)
-        feedbackInfo.flow = FeedbackFlow.REGULAR;
+        feedbackInfo.flow = chrome.feedbackPrivate.FeedbackFlow.REGULAR;
 
-      if (feedbackInfo.flow == FeedbackFlow.SHOW_SRT_PROMPT) {
+      if (feedbackInfo.flow ==
+          chrome.feedbackPrivate.FeedbackFlow.SHOW_SRT_PROMPT) {
         isShowingSrtPrompt = true;
         $('content-pane').hidden = true;
 
@@ -380,7 +381,7 @@ function initialize() {
       }
 
       // No URL and file attachment for login screen feedback.
-      if (feedbackInfo.flow == FeedbackFlow.LOGIN) {
+      if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
         $('page-url').hidden = true;
         $('attach-file-container').hidden = true;
         $('attach-file-note').hidden = true;
@@ -394,7 +395,7 @@ function initialize() {
         $('performance-info-link').onclick = openSlowTraceWindow;
       }
 // </if>
-      chrome.feedbackPrivate.getStrings(function(strings) {
+      chrome.feedbackPrivate.getStrings(feedbackInfo.flow, function(strings) {
         loadTimeData.data = strings;
         i18nTemplate.process(document, loadTimeData);
 

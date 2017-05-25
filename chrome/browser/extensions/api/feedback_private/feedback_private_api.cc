@@ -162,11 +162,17 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
 base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
 
 ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
+  auto params = feedback_private::GetStrings::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
-  SET_STRING("page-title", IDS_FEEDBACK_REPORT_PAGE_TITLE);
+  SET_STRING("page-title",
+             params->flow == FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
+                 ? IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW
+                 : IDS_FEEDBACK_REPORT_PAGE_TITLE);
   SET_STRING("additionalInfo", IDS_FEEDBACK_ADDITIONAL_INFO_LABEL);
   SET_STRING("minimize-btn-label", IDS_FEEDBACK_MINIMIZE_BUTTON_LABEL);
   SET_STRING("close-btn-label", IDS_FEEDBACK_CLOSE_BUTTON_LABEL);
