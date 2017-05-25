@@ -170,6 +170,7 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* event_definitions,
                        const base::DictionaryValue* property_definitions,
                        const CreateCustomType& create_custom_type,
+                       const AvailabilityCallback& is_available,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler,
@@ -177,6 +178,7 @@ APIBinding::APIBinding(const std::string& api_name,
     : api_name_(api_name),
       property_definitions_(property_definitions),
       create_custom_type_(create_custom_type),
+      is_available_(is_available),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       request_handler_(request_handler),
@@ -306,8 +308,7 @@ APIBinding::APIBinding(const std::string& api_name,
 APIBinding::~APIBinding() {}
 
 v8::Local<v8::Object> APIBinding::CreateInstance(
-    v8::Local<v8::Context> context,
-    const AvailabilityCallback& is_available) {
+    v8::Local<v8::Context> context) {
   DCHECK(IsContextValid(context));
   v8::Isolate* isolate = context->GetIsolate();
   if (object_template_.IsEmpty())
@@ -323,10 +324,8 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
   // TODO(devlin): Ideally, we'd only do this check on the methods that are
   // conditionally exposed. Or, we could have multiple templates for different
   // configurations, assuming there are a small number of possibilities.
-  // TODO(devlin): enums should always be exposed, but there may be events that
-  // are restricted. Investigate.
   for (const auto& key_value : methods_) {
-    if (!is_available.Run(key_value.second->full_name)) {
+    if (!is_available_.Run(context, key_value.second->full_name)) {
       v8::Maybe<bool> success = object->Delete(
           context, gin::StringToSymbol(isolate, key_value.first));
       CHECK(success.IsJust());
@@ -334,7 +333,7 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     }
   }
   for (const auto& event : events_) {
-    if (!is_available.Run(event->full_name)) {
+    if (!is_available_.Run(context, event->full_name)) {
       v8::Maybe<bool> success = object->Delete(
           context, gin::StringToSymbol(isolate, event->exposed_name));
       CHECK(success.IsJust());
@@ -521,6 +520,15 @@ void APIBinding::HandleCall(const std::string& name,
   // Since this is called synchronously from the JS entry point,
   // GetCurrentContext() should always be correct.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  if (!is_available_.Run(context, name)) {
+    // TODO(devlin): Do we need handle this for events as well? I'm not sure the
+    // currrent system does (though perhaps it should). Investigate.
+    isolate->ThrowException(v8::Exception::Error(gin::StringToV8(
+        isolate, base::StringPrintf("'%s' is not available in this context.",
+                                    name.c_str()))));
+    return;
+  }
 
   std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 

@@ -195,11 +195,14 @@ const base::DictionaryValue& GetAPISchema(const std::string& api_name) {
   return *schema;
 }
 
-// Returns true if the method specified by |method_name| is available to the
-// given |context|.
-bool IsAPIMethodAvailable(ScriptContext* context,
-                          const std::string& method_name) {
-  return context->GetAvailability(method_name).is_available();
+// Returns true if the feature specified by |name| is available to the given
+// |context|.
+bool IsAPIFeatureAvailable(v8::Local<v8::Context> context,
+                           const std::string& name) {
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  DCHECK(script_context);
+  return script_context->GetAvailability(name).is_available();
 }
 
 // Instantiates the binding object for the given |name|. |name| must specify a
@@ -209,8 +212,8 @@ v8::Local<v8::Object> CreateRootBinding(v8::Local<v8::Context> context,
                                         const std::string& name,
                                         APIBindingsSystem* bindings_system) {
   APIBindingHooks* hooks = nullptr;
-  v8::Local<v8::Object> binding_object = bindings_system->CreateAPIInstance(
-      name, context, base::Bind(&IsAPIMethodAvailable, script_context), &hooks);
+  v8::Local<v8::Object> binding_object =
+      bindings_system->CreateAPIInstance(name, context, &hooks);
 
   gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
       context->GetIsolate(),
@@ -353,6 +356,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::Bind(&CallJsFunction),
           base::Bind(&CallJsFunctionSync),
           base::Bind(&GetAPISchema),
+          base::Bind(&IsAPIFeatureAvailable),
           base::Bind(&NativeExtensionBindingsSystem::SendRequest,
                      base::Unretained(this)),
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,

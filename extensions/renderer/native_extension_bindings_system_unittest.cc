@@ -925,4 +925,98 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUsingOtherChromeObjects) {
   check_runtime(false);
 }
 
+// Tests updating a context's bindings after adding or removing permissions.
+TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("extension", ItemType::EXTENSION, {"idle"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // To start, chrome.idle should be available.
+  v8::Local<v8::Value> initial_idle =
+      V8ValueFromScriptSource(context, "chrome.idle");
+  ASSERT_FALSE(initial_idle.IsEmpty());
+  EXPECT_TRUE(initial_idle->IsObject());
+
+  {
+    // chrome.power should not be defined.
+    v8::Local<v8::Value> power =
+        V8ValueFromScriptSource(context, "chrome.power");
+    ASSERT_FALSE(power.IsEmpty());
+    EXPECT_TRUE(power->IsUndefined());
+  }
+
+  // Remove all permissions (`idle`).
+  extension->permissions_data()->SetPermissions(
+      base::MakeUnique<PermissionSet>(), base::MakeUnique<PermissionSet>());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+  {
+    // TODO(devlin): Neither the native nor JS bindings systems clear the
+    // property on the chrome object when an API is no longer available. This
+    // seems unexpected, but warrants further investigation before changing
+    // behavior. It can be complicated by the fact that chrome.idle may not be
+    // the same chrome.idle the system instantiated, or may have additional
+    // properties.
+    // v8::Local<v8::Value> idle =
+    //     V8ValueFromScriptSource(context, "chrome.idle");
+    // ASSERT_FALSE(idle.IsEmpty());
+    // EXPECT_TRUE(idle->IsUndefined());
+
+    // chrome.power should still be undefined.
+    v8::Local<v8::Value> power =
+        V8ValueFromScriptSource(context, "chrome.power");
+    ASSERT_FALSE(power.IsEmpty());
+    EXPECT_TRUE(power->IsUndefined());
+  }
+
+  v8::Local<v8::Function> run_idle = FunctionFromString(
+      context, "(function(idle) { idle.queryState(30, function() {}); })");
+  {
+    // Trying to run a chrome.idle function should fail.
+    v8::Local<v8::Value> args[] = {initial_idle};
+    RunFunctionAndExpectError(
+        run_idle, context, arraysize(args), args,
+        "Uncaught Error: 'idle.queryState' is not available in this context.");
+    EXPECT_TRUE(last_params().name.empty());
+  }
+
+  {
+    // Add back the `idle` permission, and also add `power`.
+    APIPermissionSet apis;
+    apis.insert(APIPermission::kPower);
+    apis.insert(APIPermission::kIdle);
+    extension->permissions_data()->SetPermissions(
+        base::MakeUnique<PermissionSet>(apis, ManifestPermissionSet(),
+                                        URLPatternSet(), URLPatternSet()),
+        base::MakeUnique<PermissionSet>());
+    bindings_system()->UpdateBindingsForContext(script_context);
+  }
+
+  {
+    // Both chrome.idle and chrome.power should be defined.
+    v8::Local<v8::Value> idle = V8ValueFromScriptSource(context, "chrome.idle");
+    ASSERT_FALSE(idle.IsEmpty());
+    EXPECT_TRUE(idle->IsObject());
+
+    v8::Local<v8::Value> power =
+        V8ValueFromScriptSource(context, "chrome.power");
+    ASSERT_FALSE(power.IsEmpty());
+    EXPECT_TRUE(power->IsObject());
+  }
+
+  {
+    // Trying to run a chrome.idle function should now succeed.
+    v8::Local<v8::Value> args[] = {initial_idle};
+    RunFunction(run_idle, context, arraysize(args), args);
+    EXPECT_EQ("idle.queryState", last_params().name);
+  }
+}
+
 }  // namespace extensions

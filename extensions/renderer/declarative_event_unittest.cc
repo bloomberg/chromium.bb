@@ -51,10 +51,6 @@ const char kDeclarativeAPISpec[] =
     "  }]"
     "}";
 
-bool AllowAllAPIs(const std::string& name) {
-  return true;
-}
-
 }  // namespace
 
 class DeclarativeEventTest : public APIBindingTest {
@@ -199,7 +195,7 @@ TEST_F(DeclarativeEventWithSchemaTest, TestAllMethods) {
   v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> api = bindings_system()->CreateAPIInstance(
-      kDeclarativeAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
+      kDeclarativeAPIName, context, nullptr);
   ASSERT_FALSE(api.IsEmpty());
 
   v8::Local<v8::Value> declarative_event =
