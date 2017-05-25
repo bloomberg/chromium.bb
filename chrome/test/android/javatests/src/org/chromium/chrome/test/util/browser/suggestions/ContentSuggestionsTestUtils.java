@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.test.util.browser.suggestions;
 
-import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -70,32 +70,6 @@ public final class ContentSuggestionsTestUtils {
         return suggestions;
     }
 
-    public static String viewTypeToString(@ItemViewType int viewType) {
-        switch (viewType) {
-            case ItemViewType.ABOVE_THE_FOLD:
-                return "ABOVE_THE_FOLD";
-            case ItemViewType.HEADER:
-                return "HEADER";
-            case ItemViewType.SNIPPET:
-                return "SNIPPET";
-            case ItemViewType.SPACING:
-                return "SPACING";
-            case ItemViewType.STATUS:
-                return "STATUS";
-            case ItemViewType.PROGRESS:
-                return "PROGRESS";
-            case ItemViewType.ACTION:
-                return "ACTION";
-            case ItemViewType.FOOTER:
-                return "FOOTER";
-            case ItemViewType.PROMO:
-                return "PROMO";
-            case ItemViewType.ALL_DISMISSED:
-                return "ALL_DISMISSED";
-        }
-        throw new AssertionError();
-    }
-
     /**
      * Uses the builder pattern to simplify constructing category info objects for tests.
      */
@@ -145,38 +119,75 @@ public final class ContentSuggestionsTestUtils {
 
     /** Helper method to print the current state of a node. */
     public static String stringify(TreeNode root) {
-        return explainFailedExpectation(root, -1, ItemViewType.ALL_DISMISSED);
-    }
+        final StringBuilder stringBuilder = new StringBuilder();
 
-    /**
-     * Helper method to print the current state of a node, highlighting something that went wrong.
-     * @param root node to print information about.
-     * @param errorIndex index where an unexpected item was found.
-     * @param expectedType item type that was expected at {@code errorIndex}.
-     */
-    public static String explainFailedExpectation(
-            TreeNode root, int errorIndex, @ItemViewType int expectedType) {
-        StringBuilder stringBuilder = new StringBuilder();
+        root.visitItems(new NodeVisitor() {
+            private int mPosition;
 
-        stringBuilder.append("explainFailedExpectation -- START -- \n");
-        for (int i = 0; i < root.getItemCount(); ++i) {
-            if (errorIndex == i) {
-                addLine(stringBuilder, "%d - %s <= expected: %s", i,
-                        viewTypeToString(root.getItemViewType(i)), viewTypeToString(expectedType));
-            } else {
-                addLine(stringBuilder, "%d - %s", i, viewTypeToString(root.getItemViewType(i)));
+            @Override
+            public void visitAboveTheFoldItem() {
+                describeItem("ABOVE_THE_FOLD");
             }
-        }
-        if (errorIndex >= root.getItemCount()) {
-            addLine(stringBuilder, "<end of list>");
-            addLine(stringBuilder, "%d - <NONE> <= expected: %s", errorIndex,
-                    viewTypeToString(expectedType));
-        }
-        addLine(stringBuilder, "explainFailedExpectation -- END --");
-        return stringBuilder.toString();
-    }
 
-    private static void addLine(StringBuilder stringBuilder, String template, Object... args) {
-        stringBuilder.append(String.format(Locale.US, template + "\n", args));
+            @Override
+            public void visitActionItem(@ContentSuggestionsAdditionalAction int currentAction) {
+                describeItem("ACTION(%d)", currentAction);
+            }
+
+            @Override
+            public void visitAllDismissedItem() {
+                describeItem("ALL_DISMISSED");
+            }
+
+            @Override
+            public void visitFooter() {
+                describeItem("FOOTER");
+            }
+
+            @Override
+            public void visitProgressItem() {
+                describeItem("PROGRESS");
+            }
+
+            @Override
+            public void visitSignInPromo() {
+                describeItem("SIGN_IN_PROMO");
+            }
+
+            @Override
+            public void visitSpacingItem() {
+                describeItem("SPACING");
+            }
+
+            @Override
+            public void visitNoSuggestionsItem() {
+                describeItem("NO_SUGGESTIONS");
+            }
+
+            @Override
+            public void visitSuggestion(SnippetArticle suggestion) {
+                describeItem("SUGGESTION(%1.42s)", suggestion.mTitle);
+            }
+
+            @Override
+            public void visitHeader() {
+                describeItem("HEADER");
+            }
+
+            @Override
+            public void visitTileGrid() {
+                describeItem("TILE_GRID");
+            }
+
+            private void describeItem(String description) {
+                stringBuilder.append(
+                        String.format(Locale.US, "%s - %s%n", mPosition++, description));
+            }
+
+            private void describeItem(String template, Object... args) {
+                describeItem(String.format(Locale.US, template, args));
+            }
+        });
+        return stringBuilder.toString();
     }
 }

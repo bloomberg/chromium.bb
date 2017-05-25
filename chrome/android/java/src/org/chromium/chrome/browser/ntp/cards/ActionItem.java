@@ -47,6 +47,11 @@ public class ActionItem extends OptionalLeaf {
         ((ViewHolder) holder).onBindViewHolder(this);
     }
 
+    @Override
+    public void visitOptionalItem(NodeVisitor visitor) {
+        visitor.visitActionItem(mCategoryInfo.getAdditionalAction());
+    }
+
     @CategoryInt
     public int getCategory() {
         return mCategoryInfo.getCategory();

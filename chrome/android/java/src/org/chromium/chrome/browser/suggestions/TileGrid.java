@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
@@ -56,6 +57,11 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof ViewHolder;
         ((ViewHolder) holder).updateTiles(mTileGroup);
+    }
+
+    @Override
+    protected void visitOptionalItem(NodeVisitor visitor) {
+        visitor.visitTileGrid();
     }
 
     @Override

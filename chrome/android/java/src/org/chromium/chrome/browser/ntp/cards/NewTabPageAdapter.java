@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
@@ -289,11 +288,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     private int getChildPositionOffset(TreeNode child) {
         return mRoot.getStartingOffsetForChild(child);
-    }
-
-    @VisibleForTesting
-    SnippetArticle getSuggestionAt(int position) {
-        return mRoot.getSuggestionAt(position);
     }
 
     @VisibleForTesting

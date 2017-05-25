@@ -26,7 +26,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -88,24 +87,6 @@ public class InnerNodeTest {
         verify(mChildren.get(2)).onBindViewHolder(holder, 2);
         verify(mChildren.get(4)).onBindViewHolder(holder, 0);
         verify(mChildren.get(6)).onBindViewHolder(holder, 0);
-    }
-
-    @Test
-    public void testGetSuggestion() {
-        SnippetArticle article1 = mock(SnippetArticle.class);
-        SnippetArticle article2 = mock(SnippetArticle.class);
-        SnippetArticle article3 = mock(SnippetArticle.class);
-        SnippetArticle article4 = mock(SnippetArticle.class);
-
-        when(mChildren.get(0).getSuggestionAt(0)).thenReturn(article1);
-        when(mChildren.get(2).getSuggestionAt(2)).thenReturn(article2);
-        when(mChildren.get(4).getSuggestionAt(0)).thenReturn(article3);
-        when(mChildren.get(6).getSuggestionAt(0)).thenReturn(article4);
-
-        assertThat(mInnerNode.getSuggestionAt(0), is(article1));
-        assertThat(mInnerNode.getSuggestionAt(5), is(article2));
-        assertThat(mInnerNode.getSuggestionAt(6), is(article3));
-        assertThat(mInnerNode.getSuggestionAt(11), is(article4));
     }
 
     @Test
