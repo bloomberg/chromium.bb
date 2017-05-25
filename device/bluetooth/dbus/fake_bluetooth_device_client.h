@@ -102,6 +102,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   void GetConnInfo(const dbus::ObjectPath& object_path,
                    const ConnInfoCallback& callback,
                    const ErrorCallback& error_callback) override;
+  void SetLEConnectionParameters(const dbus::ObjectPath& object_path,
+                                 const ConnectionParameters& conn_params,
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback) override;
   void GetServiceRecords(const dbus::ObjectPath& object_path,
                          const ServiceRecordsCallback& callback,
                          const ErrorCallback& error_callback) override;

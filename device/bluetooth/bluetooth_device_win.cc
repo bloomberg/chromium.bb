@@ -149,6 +149,13 @@ void BluetoothDeviceWin::GetConnectionInfo(
   callback.Run(ConnectionInfo());
 }
 
+void BluetoothDeviceWin::SetConnectionLatency(
+    ConnectionLatency connection_latency,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 void BluetoothDeviceWin::Connect(
     PairingDelegate* pairing_delegate,
     const base::Closure& callback,

@@ -73,6 +73,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
   void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void SetConnectionLatency(ConnectionLatency connection_latency,
+                            const base::Closure& callback,
+                            const ErrorCallback& error_callback) override;
   void Connect(device::BluetoothDevice::PairingDelegate* pairing_delegate,
                const base::Closure& callback,
                const ConnectErrorCallback& error_callback) override;
@@ -186,6 +189,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void OnGetConnInfoError(const ConnectionInfoCallback& callback,
                           const std::string& error_name,
                           const std::string& error_message);
+
+  // Called by dbus:: on completion of the D-Bus method call to set the
+  // connection parameters of the device.
+  void OnSetLEConnectionParameters(const base::Closure& callback);
+  void OnSetLEConnectionParametersError(const ErrorCallback& callback,
+                                        const std::string& error_name,
+                                        const std::string& error_message);
 
   // Called by dbus:: in case of an error during the GetServiceRecords API call.
   void OnGetServiceRecordsError(

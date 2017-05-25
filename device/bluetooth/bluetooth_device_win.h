@@ -60,6 +60,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
   void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void SetConnectionLatency(ConnectionLatency connection_latency,
+                            const base::Closure& callback,
+                            const ErrorCallback& error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
                const base::Closure& callback,
                const ConnectErrorCallback& error_callback) override;

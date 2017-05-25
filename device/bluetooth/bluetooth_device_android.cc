@@ -151,6 +151,13 @@ void BluetoothDeviceAndroid::GetConnectionInfo(
   callback.Run(ConnectionInfo());
 }
 
+void BluetoothDeviceAndroid::SetConnectionLatency(
+    ConnectionLatency connection_latency,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 void BluetoothDeviceAndroid::Connect(
     PairingDelegate* pairing_delegate,
     const base::Closure& callback,
