@@ -49,6 +49,9 @@ struct FileChooserFileInfo;
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                        public IPC::Sender {
  public:
+  // Constant used to denote that a lookup of a FrameTreeNode ID has failed.
+  static const int kNoFrameTreeNodeId = -1;
+
   // Returns the RenderFrameHost given its ID and the ID of its render process.
   // Returns nullptr if the IDs do not correspond to a live RenderFrameHost.
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
@@ -62,6 +65,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns a RenderFrameHost given its accessibility tree ID.
   static RenderFrameHost* FromAXTreeID(int ax_tree_id);
+
+  // Returns the FrameTreeNode ID corresponding to the specified |process_id|
+  // and |routing_id|. This routing ID pair may represent a placeholder for
+  // frame that is currently rendered in a different process than |process_id|.
+  static int GetFrameTreeNodeIdForRoutingId(int process_id, int routing_id);
 
   ~RenderFrameHost() override {}
 

@@ -20,7 +20,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/web_frame_utils.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -289,7 +288,7 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
     blink::WebFrame* parent_web_frame = web_frame->Parent();
     if (parent_web_frame) {
       tree_data->parent_routing_id =
-          GetRoutingIdForFrameOrProxy(parent_web_frame);
+          RenderFrame::GetRoutingIdForWebFrame(parent_web_frame);
     }
   }
 
@@ -834,9 +833,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     // Frames and iframes.
     WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
     if (frame) {
-      dst->AddContentIntAttribute(
-          AX_CONTENT_ATTR_CHILD_ROUTING_ID,
-          GetRoutingIdForFrameOrProxy(frame));
+      dst->AddContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID,
+                                  RenderFrame::GetRoutingIdForWebFrame(frame));
     }
   }
 

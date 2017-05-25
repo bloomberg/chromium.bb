@@ -11,10 +11,6 @@ class WebFrame;
 
 namespace content {
 
-// Returns the routing ID of the RenderFrameImpl or RenderFrameProxy
-// associated with |web_frame|.
-int GetRoutingIdForFrameOrProxy(blink::WebFrame* web_frame);
-
 // Returns either a WebLocalFrame or WebRemoteFrame based on |routing_id|.
 // Returns nullptr if |routing_id| doesn't properly map to a frame.
 blink::WebFrame* GetWebFrameFromRoutingIdForFrameOrProxy(int routing_id);

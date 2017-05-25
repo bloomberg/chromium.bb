@@ -314,6 +314,15 @@ void NotifyForEachFrameFromUI(
                                      base::Passed(std::move(routing_ids))));
 }
 
+void LookupRenderFrameHostOrProxy(int process_id,
+                                  int routing_id,
+                                  RenderFrameHostImpl** rfh,
+                                  RenderFrameProxyHost** rfph) {
+  *rfh = RenderFrameHostImpl::FromID(process_id, routing_id);
+  if (*rfh == nullptr)
+    *rfph = RenderFrameProxyHost::FromID(process_id, routing_id);
+}
+
 }  // namespace
 
 // static
@@ -3648,31 +3657,38 @@ bool RenderFrameHostImpl::CanExecuteJavaScript() {
          (delegate_->GetAsWebContents() == nullptr);
 }
 
+// static
+int RenderFrameHost::GetFrameTreeNodeIdForRoutingId(int process_id,
+                                                    int routing_id) {
+  RenderFrameHostImpl* rfh = nullptr;
+  RenderFrameProxyHost* rfph = nullptr;
+  LookupRenderFrameHostOrProxy(process_id, routing_id, &rfh, &rfph);
+  if (rfh) {
+    return rfh->GetFrameTreeNodeId();
+  } else if (rfph) {
+    return rfph->frame_tree_node()->frame_tree_node_id();
+  }
+  return kNoFrameTreeNodeId;
+}
+
 ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(
     int routing_id) {
   RenderFrameHostImpl* rfh = nullptr;
-  RenderFrameProxyHost* rfph = RenderFrameProxyHost::FromID(
-      GetProcess()->GetID(), routing_id);
+  RenderFrameProxyHost* rfph = nullptr;
+  LookupRenderFrameHostOrProxy(GetProcess()->GetID(), routing_id, &rfh, &rfph);
   if (rfph) {
-    FrameTree* frame_tree = rfph->frame_tree_node()->frame_tree();
-    FrameTreeNode* frame_tree_node = frame_tree->FindByRoutingID(
-        GetProcess()->GetID(), routing_id);
-    rfh = frame_tree_node->render_manager()->current_frame_host();
-  } else {
-    rfh = RenderFrameHostImpl::FromID(GetProcess()->GetID(), routing_id);
-
-    // As a sanity check, make sure we're within the same frame tree and
-    // crash the renderer if not.
-    if (rfh &&
-        rfh->frame_tree_node()->frame_tree() !=
-            frame_tree_node()->frame_tree()) {
-      AccessibilityFatalError();
-      return ui::AXTreeIDRegistry::kNoAXTreeID;
-    }
+    rfh = rfph->frame_tree_node()->current_frame_host();
   }
 
   if (!rfh)
     return ui::AXTreeIDRegistry::kNoAXTreeID;
+
+  // As a sanity check, make sure we're within the same frame tree and
+  // crash the renderer if not.
+  if (rfh->frame_tree_node()->frame_tree() != frame_tree_node()->frame_tree()) {
+    AccessibilityFatalError();
+    return ui::AXTreeIDRegistry::kNoAXTreeID;
+  }
 
   return rfh->GetAXTreeID();
 }

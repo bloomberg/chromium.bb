@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/url_utils.h"
-#include "content/renderer/web_frame_utils.h"
+#include "content/renderer/render_frame_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -71,7 +71,7 @@ void GetSavableResourceLinkForElement(
   if (web_frame && DoesFrameContainHtmlDocument(*web_frame, element)) {
     SavableSubframe subframe;
     subframe.original_url = element_url;
-    subframe.routing_id = GetRoutingIdForFrameOrProxy(web_frame);
+    subframe.routing_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
     result->subframes->push_back(subframe);
     return;
   }

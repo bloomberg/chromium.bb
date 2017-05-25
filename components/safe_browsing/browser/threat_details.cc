@@ -22,6 +22,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -287,7 +288,6 @@ ClientSafeBrowsingReportRequest::Resource* ThreatDetails::AddUrl(
 
 void ThreatDetails::AddDomElement(
     const int frame_tree_node_id,
-    const std::string& frame_url,
     const int element_node_id,
     const std::string& tagname,
     const int parent_element_node_id,
@@ -309,18 +309,9 @@ void ThreatDetails::AddDomElement(
     attribute_pb->set_name(attribute.first);
     attribute_pb->set_value(attribute.second);
   }
-  bool is_frame = tag_name_upper == "IFRAME" || tag_name_upper == "FRAME";
 
   if (resource) {
     cur_element->set_resource_id(resource->id());
-
-    // For iframes, remember that this HTML Element represents an iframe with a
-    // specific URL. Elements from a frame with this URL are children of this
-    // element.
-    if (is_frame &&
-        !base::ContainsKey(iframe_src_to_element_map_, resource->url())) {
-      iframe_src_to_element_map_[resource->url()] = cur_element;
-    }
   }
 
   // Next we try to lookup the parent of the current element and add ourselves
@@ -328,23 +319,11 @@ void ThreatDetails::AddDomElement(
   HTMLElement* parent_element = nullptr;
   if (parent_element_node_id == 0) {
     // No parent indicates that this element is at the top of the current frame.
-    // This frame could be a child of an iframe in another frame, or it could be
-    // at the root of the whole page. If we have a frame URL then we can try to
-    // map this element to its parent.
-    if (!frame_url.empty()) {
-      // First, remember that this element is at the top-level of a frame with
-      // our frame URL.
-      document_url_to_children_map_[frame_url].insert(cur_element->id());
-
-      // Now check if the frame URL matches the src URL of an iframe elsewhere.
-      // This means that we processed the parent iframe element earlier, so we
-      // can add ourselves as a child of that iframe.
-      // If no such iframe exists, it could be processed later, or this element
-      // is in the top-level frame and truly has no parent.
-      if (base::ContainsKey(iframe_src_to_element_map_, frame_url)) {
-        parent_element = iframe_src_to_element_map_[frame_url];
-      }
-    }
+    // Remember that this is a top-level element of the frame with the
+    // current |frame_tree_node_id|. If this element is inside an iframe, a
+    // second pass will insert this element as a child of its parent iframe.
+    frame_tree_id_to_children_map_[frame_tree_node_id].insert(
+        cur_element->id());
   } else {
     // We have a parent ID, so this element is just a child of something inside
     // of our current frame. We can easily lookup our parent.
@@ -367,20 +346,6 @@ void ThreatDetails::AddDomElement(
     }
     if (!duplicate_child) {
       parent_element->add_child_ids(cur_element->id());
-    }
-  }
-
-  // Finally, we need to check if the current element is the parent of some
-  // other elements that came in from another frame earlier. This only happens
-  // if we are an iframe, and our src URL exists in
-  // document_url_to_children_map_. If there is a match, then all of the
-  // children in that map belong to us.
-  if (is_frame && resource &&
-      base::ContainsKey(document_url_to_children_map_, resource->url())) {
-    const std::unordered_set<int>& child_ids =
-        document_url_to_children_map_[resource->url()];
-    for (const int child_id : child_ids) {
-      cur_element->add_child_ids(child_id);
     }
   }
 }
@@ -452,19 +417,39 @@ void ThreatDetails::StartCollection() {
 void ThreatDetails::OnReceivedThreatDOMDetails(
     content::RenderFrameHost* sender,
     const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params) {
+  // Lookup the FrameTreeNode ID of any child frames in the list of DOM nodes.
+  const int sender_process_id = sender->GetProcess()->GetID();
+  const int sender_frame_tree_node_id = sender->GetFrameTreeNodeId();
+  KeyToFrameTreeIdMap child_frame_tree_map;
+  for (const SafeBrowsingHostMsg_ThreatDOMDetails_Node& node : params) {
+    if (node.child_frame_routing_id == 0)
+      continue;
+
+    const std::string cur_element_key =
+        GetElementKey(sender_frame_tree_node_id, node.node_id);
+    int child_frame_tree_node_id =
+        content::RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
+            sender_process_id, node.child_frame_routing_id);
+    if (child_frame_tree_node_id ==
+        content::RenderFrameHost::kNoFrameTreeNodeId) {
+      ambiguous_dom_ = true;
+    } else {
+      child_frame_tree_map[cur_element_key] = child_frame_tree_node_id;
+    }
+  }
+
   // Schedule this in IO thread, so it doesn't conflict with future users
   // of our data structures (eg GetSerializedReport).
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ThreatDetails::AddDOMDetails, this,
-                     sender->GetFrameTreeNodeId(),
-                     sender->GetLastCommittedURL(), params));
+      base::Bind(&ThreatDetails::AddDOMDetails, this, sender_frame_tree_node_id,
+                 params, child_frame_tree_map));
 }
 
 void ThreatDetails::AddDOMDetails(
     const int frame_tree_node_id,
-    const GURL& frame_last_committed_url,
-    const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params) {
+    const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params,
+    const KeyToFrameTreeIdMap& child_frame_tree_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "Nodes from the DOM: " << params.size();
 
@@ -482,21 +467,9 @@ void ThreatDetails::AddDOMDetails(
   if (params.empty())
     return;
 
-  // Try to deduce the URL that the render frame was handling. First check if
-  // the summary node from the renderer has a document URL. If not, try looking
-  // at the last committed URL of the frame.
-  GURL frame_url;
-  if (IsReportableUrl(params.back().url)) {
-    frame_url = params.back().url;
-  } else if (IsReportableUrl(frame_last_committed_url)) {
-    frame_url = frame_last_committed_url;
-  }
-
-  // If we can't figure out which URL the frame was rendering then we don't know
-  // where these elements belong in the hierarchy. The DOM will be ambiguous.
-  if (frame_url.is_empty()) {
-    ambiguous_dom_ = true;
-  }
+  // Copy FrameTreeNode IDs for the child frame into the combined mapping.
+  iframe_key_to_frame_tree_id_map_.insert(child_frame_tree_map.begin(),
+                                          child_frame_tree_map.end());
 
   // Add the urls from the DOM to |resources_|. The renderer could be sending
   // bogus messages, so limit the number of nodes we accept.
@@ -510,9 +483,8 @@ void ThreatDetails::AddDOMDetails(
     }
     // Check for a tag_name to avoid adding the summary node to the DOM.
     if (!node.tag_name.empty()) {
-      AddDomElement(frame_tree_node_id, frame_url.spec(), node.node_id,
-                    node.tag_name, node.parent_node_id, node.attributes,
-                    resource);
+      AddDomElement(frame_tree_node_id, node.node_id, node.tag_name,
+                    node.parent_node_id, node.attributes, resource);
     }
   }
 }
@@ -525,6 +497,22 @@ void ThreatDetails::AddDOMDetails(
 void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // Do a second pass over the elements and update iframe elements to have
+  // references to their children. Children may have been received from a
+  // different renderer than the iframe element.
+  for (auto& element_pair : elements_) {
+    const std::string& element_key = element_pair.first;
+    HTMLElement* element = element_pair.second.get();
+    if (base::ContainsKey(iframe_key_to_frame_tree_id_map_, element_key)) {
+      int frame_tree_id_of_iframe_renderer =
+          iframe_key_to_frame_tree_id_map_[element_key];
+      const std::unordered_set<int>& child_ids =
+          frame_tree_id_to_children_map_[frame_tree_id_of_iframe_renderer];
+      for (const int child_id : child_ids) {
+        element->add_child_ids(child_id);
+      }
+    }
+  }
   did_proceed_ = did_proceed;
   num_visits_ = num_visit;
   std::vector<GURL> urls;

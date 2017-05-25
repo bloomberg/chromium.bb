@@ -146,6 +146,15 @@ void HandleElement(
   child_node.tag_name = element.TagName().Utf8();
   child_node.parent = summary_node->url;
 
+  // The body of an iframe may be in a different renderer. Look up the routing
+  // ID of the local or remote frame and store it with the iframe node. If this
+  // element is not a frame then the result of the lookup will be null.
+  blink::WebFrame* subframe = blink::WebFrame::FromFrameOwnerElement(element);
+  if (subframe) {
+    child_node.child_frame_routing_id =
+        content::RenderFrame::GetRoutingIdForWebFrame(subframe);
+  }
+
   // Populate the element's attributes, but only collect the ones that are
   // configured in the finch study.
   const auto& tag_attribute_iter = std::find_if(
