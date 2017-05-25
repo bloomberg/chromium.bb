@@ -3660,6 +3660,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         int use_activity_masking = 0;
         int64_t daala_dist;
         const int src_stride = x->plane[0].src.stride;
+#if CONFIG_PVQ
+        use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
         daala_dist = av1_daala_dist(x->plane[0].src.buf - 4 * src_stride - 4,
                                     src_stride, x->decoded_8x8, 8, 8, 8, 8, 8,
                                     1, use_activity_masking, x->qindex)
@@ -3836,6 +3839,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         int use_activity_masking = 0;
         int64_t daala_dist;
         const int src_stride = x->plane[0].src.stride;
+#if CONFIG_PVQ
+        use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
         daala_dist = av1_daala_dist(x->plane[0].src.buf - 4 * src_stride,
                                     src_stride, x->decoded_8x8, 8, 8, 8, 8, 8,
                                     1, use_activity_masking, x->qindex)
@@ -4008,6 +4014,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         int use_activity_masking = 0;
         int64_t daala_dist;
         const int src_stride = x->plane[0].src.stride;
+#if CONFIG_PVQ
+        use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
         daala_dist =
             av1_daala_dist(x->plane[0].src.buf - 4, src_stride, x->decoded_8x8,
                            8, 8, 8, 8, 8, 1, use_activity_masking, x->qindex)
