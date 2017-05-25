@@ -88,10 +88,6 @@ user_manager::UserList FakeUserManager::GetUsersAllowedForMultiProfile() const {
   return result;
 }
 
-const user_manager::UserList& FakeUserManager::GetLoggedInUsers() const {
-  return logged_in_users_;
-}
-
 void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart) {
@@ -104,9 +100,14 @@ void FakeUserManager::UserLoggedIn(const AccountId& account_id,
 
       if (!primary_user_)
         primary_user_ = *it;
+      if (!active_user_)
+        active_user_ = *it;
       break;
     }
   }
+
+  if (!active_user_ && AreEphemeralUsersEnabled())
+    RegularUserLoggedInAsEphemeral(account_id);
 }
 
 user_manager::User* FakeUserManager::GetActiveUserInternal() const {
@@ -261,7 +262,11 @@ bool FakeUserManager::AreSupervisedUsersAllowed() const {
 }
 
 bool FakeUserManager::AreEphemeralUsersEnabled() const {
-  return false;
+  return GetEphemeralUsersEnabled();
+}
+
+void FakeUserManager::SetEphemeralUsersEnabled(bool enabled) {
+  UserManagerBase::SetEphemeralUsersEnabled(enabled);
 }
 
 const std::string& FakeUserManager::GetApplicationLocale() const {

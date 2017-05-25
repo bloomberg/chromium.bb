@@ -151,15 +151,9 @@ bool ShouldCheckNeedDircryptoMigration() {
 
 // Returns true if the user can run ARC based on the user type.
 bool IsUserAllowedForARC(const AccountId& account_id) {
-  if (!user_manager::UserManager::IsInitialized())
-    return false;
-
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  if (!user)
-    return false;
-
-  return user->HasGaiaAccount() || user->IsActiveDirectoryUser();
+  return user_manager::UserManager::IsInitialized() &&
+         arc::IsArcAllowedForUser(
+             user_manager::UserManager::Get()->FindUser(account_id));
 }
 
 }  // namespace

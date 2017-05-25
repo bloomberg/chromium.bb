@@ -116,10 +116,8 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   // (e.g. in public sessions). cf) crbug.com/605545
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  const bool has_gaia_account = user && user->HasGaiaAccount();
-  const bool is_active_directory_user = user && user->IsActiveDirectoryUser();
-  if (!has_gaia_account && !is_active_directory_user && !IsArcKioskMode()) {
-    VLOG(1) << "Users without GAIA or AD accounts are not supported in ARC.";
+  if (!IsArcAllowedForUser(user)) {
+    VLOG(1) << "ARC is not allowed for the user.";
     return false;
   }
 
@@ -129,13 +127,6 @@ bool IsArcAllowedForProfile(const Profile* profile) {
       chromeos::ChromeUserManager::Get()->GetUserFlow(user->GetAccountId());
   if (!user_flow || !user_flow->CanStartArc()) {
     VLOG(1) << "ARC is not allowed in the current user flow.";
-    return false;
-  }
-
-  // Do not allow for Ephemeral data user. cf) b/26402681
-  if (user_manager::UserManager::Get()
-          ->IsCurrentUserCryptohomeDataEphemeral()) {
-    VLOG(1) << "Users with ephemeral data are not supported in ARC.";
     return false;
   }
 
