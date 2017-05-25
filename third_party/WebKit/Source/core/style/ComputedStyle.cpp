@@ -940,31 +940,17 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   }
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->filter_ !=
-        other.rare_non_inherited_data_->filter_)
+    if ((rare_non_inherited_data_->filter_ !=
+         other.rare_non_inherited_data_->filter_) ||
+        !rare_non_inherited_data_->ReflectionDataEquivalent(
+            *other.rare_non_inherited_data_.Get()))
       diff.SetFilterChanged();
   }
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
     if (!rare_non_inherited_data_->ShadowDataEquivalent(
-            *other.rare_non_inherited_data_.Get()))
-      diff.SetNeedsRecomputeOverflow();
-  }
-
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->backdrop_filter_ !=
-        other.rare_non_inherited_data_->backdrop_filter_)
-      diff.SetBackdropFilterChanged();
-  }
-
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (!rare_non_inherited_data_->ReflectionDataEquivalent(
-            *other.rare_non_inherited_data_.Get()))
-      diff.SetFilterChanged();
-  }
-
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (!rare_non_inherited_data_->outline_.VisuallyEqual(
+            *other.rare_non_inherited_data_.Get()) ||
+        !rare_non_inherited_data_->outline_.VisuallyEqual(
             other.rare_non_inherited_data_->outline_))
       diff.SetNeedsRecomputeOverflow();
   }
@@ -972,48 +958,47 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   if (!BorderVisualOverflowEqual(other))
     diff.SetNeedsRecomputeOverflow();
 
+  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
+    if (rare_non_inherited_data_->backdrop_filter_ !=
+        other.rare_non_inherited_data_->backdrop_filter_)
+      diff.SetBackdropFilterChanged();
+  }
+
   if (!diff.NeedsFullPaintInvalidation()) {
-    if (inherited_data_->color_ != other.inherited_data_->color_ ||
-        inherited_data_->visited_link_color_ !=
-            other.inherited_data_->visited_link_color_ ||
-        HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
-        visual_data_->text_decoration_ !=
-            other.visual_data_->text_decoration_) {
+    if ((inherited_data_->color_ != other.inherited_data_->color_ ||
+         inherited_data_->visited_link_color_ !=
+             other.inherited_data_->visited_link_color_ ||
+         HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
+         visual_data_->text_decoration_ !=
+             other.visual_data_->text_decoration_) ||
+        (rare_non_inherited_data_.Get() !=
+             other.rare_non_inherited_data_.Get() &&
+         (rare_non_inherited_data_->text_decoration_style_ !=
+              other.rare_non_inherited_data_->text_decoration_style_ ||
+          rare_non_inherited_data_->text_decoration_color_ !=
+              other.rare_non_inherited_data_->text_decoration_color_ ||
+          rare_non_inherited_data_->visited_link_text_decoration_color_ !=
+              other.rare_non_inherited_data_
+                  ->visited_link_text_decoration_color_)) ||
+        (rare_inherited_data_.Get() != other.rare_inherited_data_.Get() &&
+         (TextFillColor() != other.TextFillColor() ||
+          TextStrokeColor() != other.TextStrokeColor() ||
+          TextEmphasisColor() != other.TextEmphasisColor() ||
+          VisitedLinkTextFillColor() != other.VisitedLinkTextFillColor() ||
+          VisitedLinkTextStrokeColor() != other.VisitedLinkTextStrokeColor() ||
+          VisitedLinkTextEmphasisColor() !=
+              other.VisitedLinkTextEmphasisColor() ||
+          rare_inherited_data_->text_emphasis_fill_ !=
+              other.rare_inherited_data_->text_emphasis_fill_ ||
+          rare_inherited_data_->text_underline_position_ !=
+              other.rare_inherited_data_->text_underline_position_ ||
+          rare_inherited_data_->text_decoration_skip_ !=
+              other.rare_inherited_data_->text_decoration_skip_ ||
+          rare_inherited_data_->applied_text_decorations_ !=
+              other.rare_inherited_data_->applied_text_decorations_ ||
+          CaretColor() != CaretColor() ||
+          VisitedLinkCaretColor() != other.VisitedLinkCaretColor()))) {
       diff.SetTextDecorationOrColorChanged();
-    } else {
-      if (rare_non_inherited_data_.Get() !=
-              other.rare_non_inherited_data_.Get() &&
-          (rare_non_inherited_data_->text_decoration_style_ !=
-               other.rare_non_inherited_data_->text_decoration_style_ ||
-           rare_non_inherited_data_->text_decoration_color_ !=
-               other.rare_non_inherited_data_->text_decoration_color_ ||
-           rare_non_inherited_data_->visited_link_text_decoration_color_ !=
-               other.rare_non_inherited_data_
-                   ->visited_link_text_decoration_color_)) {
-        diff.SetTextDecorationOrColorChanged();
-      } else {
-        if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get() &&
-            (TextFillColor() != other.TextFillColor() ||
-             TextStrokeColor() != other.TextStrokeColor() ||
-             TextEmphasisColor() != other.TextEmphasisColor() ||
-             VisitedLinkTextFillColor() != other.VisitedLinkTextFillColor() ||
-             VisitedLinkTextStrokeColor() !=
-                 other.VisitedLinkTextStrokeColor() ||
-             VisitedLinkTextEmphasisColor() !=
-                 other.VisitedLinkTextEmphasisColor() ||
-             rare_inherited_data_->text_emphasis_fill_ !=
-                 other.rare_inherited_data_->text_emphasis_fill_ ||
-             rare_inherited_data_->text_underline_position_ !=
-                 other.rare_inherited_data_->text_underline_position_ ||
-             rare_inherited_data_->text_decoration_skip_ !=
-                 other.rare_inherited_data_->text_decoration_skip_ ||
-             rare_inherited_data_->applied_text_decorations_ !=
-                 other.rare_inherited_data_->applied_text_decorations_ ||
-             CaretColor() != CaretColor() ||
-             VisitedLinkCaretColor() != other.VisitedLinkCaretColor())) {
-          diff.SetTextDecorationOrColorChanged();
-        }
-      }
     }
   }
 
