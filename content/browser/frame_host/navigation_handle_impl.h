@@ -367,10 +367,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     complete_callback_for_testing_ = callback;
   }
 
-  void set_base_url_for_data_url(const GURL& url) {
-    base_url_for_data_url_ = url;
-  }
-
   CSPDisposition should_check_main_world_csp() const {
     return should_check_main_world_csp_;
   }
