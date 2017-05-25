@@ -128,6 +128,12 @@ void FakePeripheral::GetConnectionInfo(const ConnectionInfoCallback& callback) {
   NOTREACHED();
 }
 
+void FakePeripheral::SetConnectionLatency(ConnectionLatency connection_latency,
+                                          const base::Closure& callback,
+                                          const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 void FakePeripheral::Connect(PairingDelegate* pairing_delegate,
                              const base::Closure& callback,
                              const ConnectErrorCallback& error_callback) {

@@ -58,6 +58,10 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(ExpectingPasskey, bool());
   MOCK_CONST_METHOD0(ExpectingConfirmation, bool());
   MOCK_METHOD1(GetConnectionInfo, void(const ConnectionInfoCallback& callback));
+  MOCK_METHOD3(SetConnectionLatency,
+               void(ConnectionLatency connection_latency,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD3(Connect,
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
                     const base::Closure& callback,

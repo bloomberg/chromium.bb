@@ -131,6 +131,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     ~Properties() override;
   };
 
+  // Connection parameters that can be passed to SetLEConnectionParameters().
+  struct ConnectionParameters {
+    // The lower bound to request for the connection interval.
+    // In units of 1.25ms.
+    uint16_t min_connection_interval;
+
+    // The upper bound to request for the connection interval.
+    // In units of 1.25ms.
+    uint16_t max_connection_interval;
+  };
+
   // Interface for observing changes from a remote bluetooth device.
   class Observer {
    public:
@@ -215,6 +226,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
   virtual void GetConnInfo(const dbus::ObjectPath& object_path,
                            const ConnInfoCallback& callback,
                            const ErrorCallback& error_callback) = 0;
+
+  // Sets the connection parameters (e.g. connection interval) for the device.
+  virtual void SetLEConnectionParameters(
+      const dbus::ObjectPath& object_path,
+      const ConnectionParameters& conn_params,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Returns the currently discovered service records for the device with
   // object path |object_path|. If the device is not connected, then an error

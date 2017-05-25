@@ -40,6 +40,14 @@ using device::BluetoothUUID;
 
 namespace {
 
+// The unit for connection interval values are in multiples of 1.25ms.
+const uint16_t MIN_CONNECTION_INTERVAL_LOW = 6;
+const uint16_t MAX_CONNECTION_INTERVAL_LOW = 6;
+const uint16_t MIN_CONNECTION_INTERVAL_MEDIUM = 40;
+const uint16_t MAX_CONNECTION_INTERVAL_MEDIUM = 56;
+const uint16_t MIN_CONNECTION_INTERVAL_HIGH = 80;
+const uint16_t MAX_CONNECTION_INTERVAL_HIGH = 100;
+
 // Histogram enumerations for pairing results.
 enum UMAPairingResult {
   UMA_PAIRING_RESULT_SUCCESS,
@@ -443,6 +451,47 @@ void BluetoothDeviceBlueZ::GetConnectionInfo(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void BluetoothDeviceBlueZ::SetConnectionLatency(
+    ConnectionLatency connection_latency,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  uint16_t min_connection_interval = MIN_CONNECTION_INTERVAL_MEDIUM;
+  uint16_t max_connection_interval = MAX_CONNECTION_INTERVAL_MEDIUM;
+  switch (connection_latency) {
+    case ConnectionLatency::CONNECTION_LATENCY_LOW:
+      min_connection_interval = MIN_CONNECTION_INTERVAL_LOW;
+      max_connection_interval = MAX_CONNECTION_INTERVAL_LOW;
+      break;
+    case ConnectionLatency::CONNECTION_LATENCY_MEDIUM:
+      min_connection_interval = MIN_CONNECTION_INTERVAL_MEDIUM;
+      max_connection_interval = MAX_CONNECTION_INTERVAL_MEDIUM;
+      break;
+    case ConnectionLatency::CONNECTION_LATENCY_HIGH:
+      min_connection_interval = MIN_CONNECTION_INTERVAL_HIGH;
+      max_connection_interval = MAX_CONNECTION_INTERVAL_HIGH;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  BLUETOOTH_LOG(EVENT) << "Setting LE connection parameters: min="
+                       << min_connection_interval
+                       << ", max=" << max_connection_interval;
+  bluez::BluetoothDeviceClient::ConnectionParameters connection_parameters;
+  connection_parameters.min_connection_interval = min_connection_interval;
+  connection_parameters.max_connection_interval = max_connection_interval;
+
+  bluez::BluetoothDeviceClient* client =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient();
+  client->SetLEConnectionParameters(
+      object_path_, connection_parameters,
+      base::Bind(&BluetoothDeviceBlueZ::OnSetLEConnectionParameters,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&BluetoothDeviceBlueZ::OnSetLEConnectionParametersError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+}
+
 void BluetoothDeviceBlueZ::Connect(
     BluetoothDevice::PairingDelegate* pairing_delegate,
     const base::Closure& callback,
@@ -782,6 +831,21 @@ void BluetoothDeviceBlueZ::OnGetConnInfoError(
                        << ": Failed to get connection info: " << error_name
                        << ": " << error_message;
   callback.Run(ConnectionInfo());
+}
+
+void BluetoothDeviceBlueZ::OnSetLEConnectionParameters(
+    const base::Closure& callback) {
+  callback.Run();
+}
+
+void BluetoothDeviceBlueZ::OnSetLEConnectionParametersError(
+    const ErrorCallback& callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  BLUETOOTH_LOG(ERROR) << object_path_.value()
+                       << ": Failed to set connection parameters: "
+                       << error_name << ": " << error_message;
+  callback.Run();
 }
 
 void BluetoothDeviceBlueZ::OnGetServiceRecordsError(
