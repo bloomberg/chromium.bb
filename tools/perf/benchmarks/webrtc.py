@@ -42,3 +42,6 @@ class WebrtcPerfBenchmark(perf_benchmark.PerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--use-fake-device-for-media-stream')
     options.AppendExtraBrowserArgs('--use-fake-ui-for-media-stream')
+
+  def GetExpectations(self):
+    return page_sets.WebrtcExpectations()
