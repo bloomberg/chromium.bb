@@ -38,7 +38,7 @@ extern "C" {
 
 #if CONFIG_AV1 && CONFIG_LOOP_RESTORATION
 #define EXTRAPREC_BITS 2
-#define EXTRAPREC_CLAMP_LIMIT (512 << EXTRAPREC_BITS)
+#define EXTRAPREC_CLAMP_LIMIT(bd) (1 << ((bd) + 1 + EXTRAPREC_BITS))
 #endif
 
 typedef void (*convolve_fn_t)(const uint8_t *src, ptrdiff_t src_stride,

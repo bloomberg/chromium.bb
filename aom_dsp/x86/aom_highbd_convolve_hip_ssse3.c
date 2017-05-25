@@ -64,7 +64,8 @@ void aom_highbd_convolve8_add_src_hip_ssse3(
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
     const __m128i round_const =
-        _mm_set1_epi32((1 << (FILTER_BITS - EXTRAPREC_BITS)) >> 1);
+        _mm_set1_epi32((1 << (FILTER_BITS - EXTRAPREC_BITS - 1)) +
+                       (1 << (bd + FILTER_BITS - 1)));
 
     for (i = 0; i < intermediate_height; ++i) {
       for (j = 0; j < w; j += 8) {
@@ -103,8 +104,7 @@ void aom_highbd_convolve8_add_src_hip_ssse3(
                                  FILTER_BITS - EXTRAPREC_BITS);
 
         // Pack in the column order 0, 2, 4, 6, 1, 3, 5, 7
-        const __m128i maxval =
-            _mm_set1_epi16((EXTRAPREC_CLAMP_LIMIT << (bd - 8)) - 1);
+        const __m128i maxval = _mm_set1_epi16((EXTRAPREC_CLAMP_LIMIT(bd)) - 1);
         __m128i res = _mm_packs_epi32(res_even, res_odd);
         res = _mm_min_epi16(_mm_max_epi16(res, zero), maxval);
         _mm_storeu_si128((__m128i *)&temp[i * MAX_SB_SIZE + j], res);
@@ -132,7 +132,8 @@ void aom_highbd_convolve8_add_src_hip_ssse3(
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
     const __m128i round_const =
-        _mm_set1_epi32((1 << (FILTER_BITS + EXTRAPREC_BITS)) >> 1);
+        _mm_set1_epi32((1 << (FILTER_BITS + EXTRAPREC_BITS - 1)) -
+                       (1 << (bd + FILTER_BITS + EXTRAPREC_BITS - 1)));
 
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; j += 8) {

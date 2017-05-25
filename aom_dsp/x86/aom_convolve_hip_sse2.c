@@ -22,6 +22,7 @@ void aom_convolve8_add_src_hip_sse2(const uint8_t *src, ptrdiff_t src_stride,
                                     const int16_t *filter_x, int x_step_q4,
                                     const int16_t *filter_y, int y_step_q4,
                                     int w, int h) {
+  const int bd = 8;
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w & 7));
   (void)x_step_q4;
@@ -57,7 +58,8 @@ void aom_convolve8_add_src_hip_sse2(const uint8_t *src, ptrdiff_t src_stride,
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
     const __m128i round_const =
-        _mm_set1_epi32((1 << (FILTER_BITS - EXTRAPREC_BITS)) >> 1);
+        _mm_set1_epi32((1 << (FILTER_BITS - EXTRAPREC_BITS - 1)) +
+                       (1 << (bd + FILTER_BITS - 1)));
 
     for (i = 0; i < intermediate_height; ++i) {
       for (j = 0; j < w; j += 8) {
@@ -97,7 +99,7 @@ void aom_convolve8_add_src_hip_sse2(const uint8_t *src, ptrdiff_t src_stride,
         // Pack in the column order 0, 2, 4, 6, 1, 3, 5, 7
         __m128i res = _mm_packs_epi32(res_even, res_odd);
         res = _mm_min_epi16(_mm_max_epi16(res, zero),
-                            _mm_set1_epi16(EXTRAPREC_CLAMP_LIMIT - 1));
+                            _mm_set1_epi16(EXTRAPREC_CLAMP_LIMIT(bd) - 1));
         _mm_storeu_si128((__m128i *)&temp[i * MAX_SB_SIZE + j], res);
       }
     }
@@ -123,7 +125,8 @@ void aom_convolve8_add_src_hip_sse2(const uint8_t *src, ptrdiff_t src_stride,
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
     const __m128i round_const =
-        _mm_set1_epi32((1 << (FILTER_BITS + EXTRAPREC_BITS)) >> 1);
+        _mm_set1_epi32((1 << (FILTER_BITS + EXTRAPREC_BITS - 1)) -
+                       (1 << (bd + FILTER_BITS + EXTRAPREC_BITS - 1)));
 
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; j += 8) {

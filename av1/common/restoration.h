@@ -82,7 +82,7 @@ extern "C" {
 #define WIENER_FILT_STEP (1 << WIENER_FILT_PREC_BITS)
 
 // Whether to use high intermediate precision filtering
-#define USE_WIENER_HIGH_INTERMEDIATE_PRECISION 0
+#define USE_WIENER_HIGH_INTERMEDIATE_PRECISION 1
 
 // Central values for the taps
 #define WIENER_FILT_TAP0_MIDV (3)
