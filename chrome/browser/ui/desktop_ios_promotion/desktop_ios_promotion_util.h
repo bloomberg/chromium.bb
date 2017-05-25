@@ -32,8 +32,9 @@ enum class PromotionDismissalReason {
   NO_THANKS = 1,
   CLOSE_BUTTON = 2,
   SEND_SMS = 3,
+  LEARN_MORE = 4,
   // Used for histograms logging.
-  DISMISSAL_REASON_MAX_VALUE = 4
+  DISMISSAL_REASON_MAX_VALUE = 5
 };
 
 enum class EntryPointLocalPrefType { IMPRESSIONS = 0, DISMISSED = 1 };
@@ -48,8 +49,9 @@ enum class PromotionEntryPoint {
   BOOKMARKS_BUBBLE = 2,
   BOOKMARKS_FOOTNOTE = 3,
   HISTORY_PAGE = 4,
+  FOOTNOTE_FOLLOWUP_BUBBLE = 5,
   // Used for histograms logging.
-  ENTRY_POINT_MAX_VALUE = 5
+  ENTRY_POINT_MAX_VALUE = 6
 };
 
 // Entry points local prefs, each entry point has a preference for impressions

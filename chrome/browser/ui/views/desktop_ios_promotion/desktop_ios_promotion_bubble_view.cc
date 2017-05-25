@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,9 +37,9 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
     : promotion_text_label_(
           new views::Label(desktop_ios_promotion::GetPromoText(entry_point))),
       promotion_controller_(
-          base::MakeUnique<DesktopIOSPromotionController>(profile,
-                                                          this,
-                                                          entry_point)) {
+          base::MakeUnique<DesktopIOSPromotionBubbleController>(profile,
+                                                                this,
+                                                                entry_point)) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();

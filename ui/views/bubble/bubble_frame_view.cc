@@ -363,6 +363,19 @@ void BubbleFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   }
 }
 
+void BubbleFrameView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!details.is_add && details.parent == footnote_container_ &&
+      footnote_container_->child_count() == 1 &&
+      details.child == footnote_container_->child_at(0)) {
+    // Setting the footnote_container_ to be hidden and null it. This will
+    // remove update the bubble to have no placeholder for the footnote and
+    // enable the destructor to delete the footnote_container_ later.
+    footnote_container_->SetVisible(false);
+    footnote_container_ = nullptr;
+  }
+}
+
 void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
   // Border comes after children.

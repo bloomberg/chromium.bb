@@ -1210,6 +1210,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER_V2" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved, this one mentioning explicitly that the SMS will be sent to the recovery phone number.">
         Install Chrome on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER">$1<ex>(650) 123-4567</ex></ph>
       </message>
+      <message name="IDS_FOOTNOTE_DESKTOP_TO_IOS_PROMO_LINK" desc="Text of the link to get Chrome on the iPhone from the Chrome iOS promotion displayed on the bottom of bubbles.">
+        get Chrome on your iPhone
+      </message>
 
       <!-- Runtime permission strings -->
       <if expr="is_android">

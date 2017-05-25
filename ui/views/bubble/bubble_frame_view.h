@@ -63,6 +63,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void PaintChildren(const ui::PaintContext& context) override;
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
   // ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
@@ -95,6 +97,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateTest, CloseMethods);
 

@@ -15,6 +15,10 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
+#endif
+
 namespace {
 
 const char kTestBookmarkURL[] = "http://www.google.com";
@@ -71,7 +75,8 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
           browser_view->toolbar()->location_bar()->star_view(), gfx::Rect(),
           nullptr, nullptr, nullptr, profile_.get(), GURL(kTestBookmarkURL),
           true);
-      BookmarkBubbleView::bookmark_bubble()->ShowIOSPromotion();
+      BookmarkBubbleView::bookmark_bubble()->ShowIOSPromotion(
+          desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_BUBBLE);
 #endif
     }
   }
