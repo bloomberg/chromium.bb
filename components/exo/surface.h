@@ -200,6 +200,12 @@ class Surface : public ui::ContextFactoryObserver,
   // Returns the active contents size.
   gfx::Size content_size() const { return content_size_; }
 
+  // Returns true if the associated window is in 'stylus-only' mode.
+  bool IsStylusOnly();
+
+  // Enables 'stylus-only' mode for the associated window.
+  void SetStylusOnly();
+
   // Overridden from ui::ContextFactoryObserver:
   void OnLostResources() override;
 

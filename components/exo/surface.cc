@@ -26,6 +26,7 @@
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_targeter.h"
@@ -51,6 +52,10 @@ namespace {
 // A property key containing the surface that is associated with
 // window. If unset, no surface is associated with window.
 DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
+
+// A property key to store whether the surface should only consume
+// stylus input events.
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false);
 
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.
@@ -632,6 +637,14 @@ bool Surface::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) {
 void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
   if (HasLayerHierarchyChanged())
     SetSurfaceHierarchyNeedsCommitToNewSurfaces();
+}
+
+bool Surface::IsStylusOnly() {
+  return window_->GetProperty(kStylusOnlyKey);
+}
+
+void Surface::SetStylusOnly() {
+  window_->SetProperty(kStylusOnlyKey, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
