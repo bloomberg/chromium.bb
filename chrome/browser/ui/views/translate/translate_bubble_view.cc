@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -36,7 +37,6 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -67,7 +67,7 @@ views::Link* CreateLink(views::LinkListener* listener,
 void AddIconToLayout(views::GridLayout* layout) {
   views::ImageView* icon = new views::ImageView();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  icon->SetImage(bundle.GetImageNamed(IDR_TRANSLATE_ICON_BUBBLE).ToImageSkia());
+  icon->SetImage(bundle.GetImageNamed(IDR_TRANSLATE_BUBBLE_ICON).ToImageSkia());
   layout->AddView(icon);
 }
 
