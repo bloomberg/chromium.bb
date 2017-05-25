@@ -24,6 +24,8 @@ ProximityAuthPrefManager::~ProximityAuthPrefManager() {}
 
 // static
 void ProximityAuthPrefManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
+                              0L);
   registry->RegisterDictionaryPref(prefs::kProximityAuthRemoteBleDevices);
 }
 
@@ -102,6 +104,16 @@ bool ProximityAuthPrefManager::RemoveDeviceWithAddress(
 bool ProximityAuthPrefManager::RemoveDeviceWithPublicKey(
     const std::string& public_key) {
   return RemoveDeviceWithAddress(GetDeviceAddress(public_key));
+}
+void ProximityAuthPrefManager::SetLastPasswordEntryTimestampMs(
+    int64_t timestamp_ms) {
+  pref_service_->SetInt64(prefs::kProximityAuthLastPasswordEntryTimestampMs,
+                          timestamp_ms);
+}
+
+int64_t ProximityAuthPrefManager::GetLastPasswordEntryTimestampMs() const {
+  return pref_service_->GetInt64(
+      prefs::kProximityAuthLastPasswordEntryTimestampMs);
 }
 
 const base::DictionaryValue* ProximityAuthPrefManager::GetRemoteBleDevices()

@@ -62,6 +62,10 @@ enum EasyUnlockAuthEvent {
   // the Chromebook.
   PASSWORD_ENTRY_PHONE_LOCKED_AND_RSSI_TOO_LOW = 19,
 
+  // Password entry was forced due to the reauth policy (e.g. the user must type
+  // their password every 20 hours).
+  PASSWORD_ENTRY_FORCED_REAUTH = 20,
+
   EASY_UNLOCK_AUTH_EVENT_COUNT  // Must be the last entry.
 };
 

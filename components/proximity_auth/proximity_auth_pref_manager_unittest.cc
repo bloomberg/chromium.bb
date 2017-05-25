@@ -24,6 +24,9 @@ const char kPublicKey1[] = "public key 1";
 const char kBluetoothAddress2[] = "22:33:44:55:66:77";
 const char kPublicKey2[] = "public key 2";
 
+const int64_t kPasswordEntryTimestampMs1 = 123456789L;
+const int64_t kPasswordEntryTimestampMs2 = 987654321L;
+
 }  //  namespace
 
 class ProximityAuthProximityAuthPrefManagerTest : public testing::Test {
@@ -154,6 +157,17 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, GetPublicKeys) {
               public_keys.end());
   EXPECT_TRUE(std::find(public_keys.begin(), public_keys.end(), kPublicKey2) !=
               public_keys.end());
+}
+
+TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPasswordEntryTimestamp) {
+  ProximityAuthPrefManager pref_manager(&pref_service_);
+  EXPECT_EQ(0L, pref_manager.GetLastPasswordEntryTimestampMs());
+  pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs1);
+  EXPECT_EQ(kPasswordEntryTimestampMs1,
+            pref_manager.GetLastPasswordEntryTimestampMs());
+  pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs2);
+  EXPECT_EQ(kPasswordEntryTimestampMs2,
+            pref_manager.GetLastPasswordEntryTimestampMs());
 }
 
 }  // namespace proximity_auth

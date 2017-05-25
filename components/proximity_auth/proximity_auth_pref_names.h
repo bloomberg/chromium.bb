@@ -8,6 +8,7 @@
 namespace proximity_auth {
 namespace prefs {
 
+extern const char kProximityAuthLastPasswordEntryTimestampMs[];
 extern const char kProximityAuthRemoteBleDevices[];
 
 }  // namespace prefs
