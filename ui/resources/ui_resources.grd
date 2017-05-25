@@ -78,11 +78,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRAB" file="common/pointers/fleur.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRABBING" file="common/pointers/hand3.png" />
       </if>
-      <if expr="use_aura">
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE" file="common/window_shadow_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE" file="common/window_shadow_inactive.png" />
-        <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL" file="common/window_bubble_shadow_small.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_CLOSE_2" file="close_2.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_2_H" file="close_2_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_2_MASK" file="close_2_mask.png" />
