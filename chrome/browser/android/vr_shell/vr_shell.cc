@@ -38,6 +38,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -68,7 +69,7 @@ namespace {
 vr_shell::VrShell* g_instance;
 
 constexpr base::TimeDelta poll_media_access_interval_ =
-    base::TimeDelta::FromSecondsD(0.01);
+    base::TimeDelta::FromSecondsD(0.1);
 
 constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
     base::TimeDelta::FromSeconds(5);
@@ -615,23 +616,38 @@ void VrShell::PollMediaAccessFlag() {
       FROM_HERE, poll_capturing_media_task_.callback(),
       poll_media_access_interval_);
 
+  int num_tabs_capturing_audio = 0;
+  int num_tabs_capturing_video = 0;
+  int num_tabs_capturing_screen = 0;
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
-  bool is_capturing_audio = indicator->IsCapturingAudio(web_contents_);
-  if (is_capturing_audio != is_capturing_audio_)
-    ui_->SetAudioCapturingIndicator(is_capturing_audio);
-  is_capturing_audio_ = is_capturing_audio;
 
-  bool is_capturing_video = indicator->IsCapturingVideo(web_contents_);
-  if (is_capturing_video != is_capturing_video_)
-    ui_->SetVideoCapturingIndicator(is_capturing_video);
-  is_capturing_video_ = is_capturing_video;
+  std::unique_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* rwh = widgets->GetNextHost()) {
+    content::RenderViewHost* rvh = content::RenderViewHost::From(rwh);
+    if (!rvh)
+      continue;
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderViewHost(rvh);
+    if (!web_contents)
+      continue;
+    if (web_contents->GetRenderViewHost() != rvh)
+      continue;
+    // Because a WebContents can only have one current RVH at a time, there will
+    // be no duplicate WebContents here.
+    if (indicator->IsCapturingAudio(web_contents))
+      num_tabs_capturing_audio++;
+    if (indicator->IsCapturingVideo(web_contents))
+      num_tabs_capturing_video++;
+    if (indicator->IsBeingMirrored(web_contents))
+      num_tabs_capturing_screen++;
+  }
 
-  bool is_capturing_screen = indicator->IsBeingMirrored(web_contents_);
-  if (is_capturing_screen != is_capturing_screen_)
-    ui_->SetScreenCapturingIndicator(is_capturing_screen);
-  is_capturing_screen_ = is_capturing_screen;
+  ui_->SetAudioCapturingIndicator(num_tabs_capturing_audio > 0);
+  ui_->SetVideoCapturingIndicator(num_tabs_capturing_video > 0);
+  ui_->SetScreenCapturingIndicator(num_tabs_capturing_screen > 0);
 }
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {
