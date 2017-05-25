@@ -122,8 +122,8 @@ BluetoothLowEnergyWeaveClientConnection::
 
 void BluetoothLowEnergyWeaveClientConnection::Connect() {
   DCHECK(sub_status() == SubStatus::DISCONNECTED);
+  SetSubStatus(SubStatus::WAITING_CONNECTION_LATENCY);
 
-  SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
   base::TimeDelta throttler_delay = bluetooth_throttler_->GetDelay();
   PA_LOG(INFO) << "Connecting in  " << throttler_delay;
 
@@ -137,17 +137,40 @@ void BluetoothLowEnergyWeaveClientConnection::Connect() {
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(
-            &BluetoothLowEnergyWeaveClientConnection::CreateGattConnection,
+            &BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency,
             weak_ptr_factory_.GetWeakPtr()),
         throttler_delay);
     return;
   }
 
-  CreateGattConnection();
+  SetConnectionLatency();
+}
+
+void BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency() {
+  DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_LATENCY);
+
+  PA_LOG(INFO) << "Setting connection latency for " << device_address_;
+
+  device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
+  if (!bluetooth_device) {
+    PA_LOG(WARNING) << "Could not create GATT connection with "
+                    << device_address_ << " because the device could not be "
+                    << "found.";
+    return;
+  }
+
+  bluetooth_device->SetConnectionLatency(
+      device::BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_LOW,
+      base::Bind(&BluetoothLowEnergyWeaveClientConnection::CreateGattConnection,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(
+          &BluetoothLowEnergyWeaveClientConnection::OnSetConnectionLatencyError,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
-  DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
+  DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_LATENCY);
+  SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
 
   PA_LOG(INFO) << "Creating GATT connection with " << device_address_;
 
@@ -250,7 +273,8 @@ void BluetoothLowEnergyWeaveClientConnection::DeviceChanged(
       device->GetAddress() != GetDeviceAddress())
     return;
 
-  if (sub_status() != SubStatus::WAITING_GATT_CONNECTION &&
+  if (sub_status() != SubStatus::WAITING_CONNECTION_LATENCY &&
+      sub_status() != SubStatus::WAITING_GATT_CONNECTION &&
       !device->IsConnected()) {
     PA_LOG(INFO) << "GATT connection dropped " << GetDeviceAddress()
                  << "\ndevice connected: " << device->IsConnected()
@@ -323,6 +347,14 @@ void BluetoothLowEnergyWeaveClientConnection::CompleteConnection() {
   PA_LOG(INFO) << "Connection completed. Time elapsed: "
                << base::TimeTicks::Now() - start_time_;
   SetSubStatus(SubStatus::CONNECTED);
+}
+
+void BluetoothLowEnergyWeaveClientConnection::OnSetConnectionLatencyError() {
+  DCHECK(sub_status_ == SubStatus::WAITING_CONNECTION_LATENCY);
+  PA_LOG(WARNING) << "Error setting connection latency.";
+  // Even if setting the connection latency fails, we should continue with the
+  // connection anyways.
+  CreateGattConnection();
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnCreateGattConnectionError(
