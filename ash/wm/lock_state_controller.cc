@@ -42,35 +42,39 @@ namespace ash {
 
 namespace {
 
-const int kMaxShutdownSoundDurationMs = 1500;
-
-}  // namespace
-
 // ASan/TSan/MSan instrument each memory access. This may slow the execution
 // down significantly.
 #if defined(MEMORY_SANITIZER)
 // For MSan the slowdown depends heavily on the value of msan_track_origins GYP
 // flag. The multiplier below corresponds to msan_track_origins=1.
-static const int kTimeoutMultiplier = 6;
+constexpr int kTimeoutMultiplier = 6;
 #elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN)
-static const int kTimeoutMultiplier = 2;
+constexpr int kTimeoutMultiplier = 2;
 #else
-static const int kTimeoutMultiplier = 1;
+constexpr int kTimeoutMultiplier = 1;
 #endif
 
-const int LockStateController::kLockFailTimeoutMs = 8000 * kTimeoutMultiplier;
-const int LockStateController::kLockToShutdownTimeoutMs = 150;
-const int LockStateController::kShutdownRequestDelayMs = 50;
+constexpr int kMaxShutdownSoundDurationMs = 1500;
+
+// Amount of time to wait for our lock requests to be honored before giving up.
+constexpr int kLockFailTimeoutMs = 8000 * kTimeoutMultiplier;
+
+// When the button has been held continuously from the unlocked state, amount of
+// time that we wait after the screen locker window is shown before starting the
+// pre-shutdown animation.
+constexpr int kLockToShutdownTimeoutMs = 150;
+
+// Additional time (beyond kFastCloseAnimMs) to wait after starting the
+// fast-close shutdown animation before actually requesting shutdown, to give
+// the animation time to finish.
+constexpr int kShutdownRequestDelayMs = 50;
+
+}  // namespace
 
 LockStateController::LockStateController(
     ShutdownController* shutdown_controller)
     : animator_(new SessionStateAnimatorImpl()),
-      system_is_locked_(false),
-      shutting_down_(false),
-      shutdown_after_lock_(false),
-      animating_lock_(false),
-      can_cancel_lock_animation_(false),
       shutdown_controller_(shutdown_controller),
       scoped_session_observer_(this),
       weak_ptr_factory_(this) {
