@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -108,6 +109,10 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     user_session_mgr->InitializeCertificateTransparencyComponents(user);
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
+
+    TetherService* tether_service = TetherService::Get(user_profile);
+    if (tether_service)
+      tether_service->StartTetherIfEnabled();
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.

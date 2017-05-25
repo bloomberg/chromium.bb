@@ -4,10 +4,14 @@
 
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/tether/fake_tether_service.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -39,6 +43,25 @@ TetherServiceFactory::~TetherServiceFactory() {}
 KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   DCHECK(chromeos::NetworkHandler::IsInitialized());
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kTetherStub)) {
+    FakeTetherService* fake_tether_service = new FakeTetherService(
+        Profile::FromBrowserContext(context),
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+        chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+        ChromeCryptAuthServiceFactory::GetForBrowserContext(
+            Profile::FromBrowserContext(context)),
+        chromeos::NetworkHandler::Get()->network_state_handler());
+
+    int num_tether_networks = 0;
+    base::StringToInt(
+        command_line->GetSwitchValueASCII(chromeos::switches::kTetherStub),
+        &num_tether_networks);
+    fake_tether_service->set_num_tether_networks(num_tether_networks);
+
+    return fake_tether_service;
+  }
 
   return new TetherService(
       Profile::FromBrowserContext(context),
