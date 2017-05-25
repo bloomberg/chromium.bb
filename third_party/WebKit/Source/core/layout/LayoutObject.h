@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/MapCoordinatesFlags.h"
@@ -1305,7 +1306,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void AbsoluteQuads(Vector<FloatQuad>&,
                              MapCoordinatesFlags mode = 0) const {}
 
-  static FloatRect AbsoluteBoundingBoxRectForRange(const Range*);
+  static FloatRect AbsoluteBoundingBoxRectForRange(const EphemeralRange&);
 
   // The bounding box (see: absoluteBoundingBoxRect) including all descendant
   // bounding boxes.

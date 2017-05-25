@@ -65,8 +65,9 @@ WebFloatRect TextFinderTest::FindInPageRect(Node* start_container,
                                             int start_offset,
                                             Node* end_container,
                                             int end_offset) {
-  Range* range = Range::Create(start_container->GetDocument(), start_container,
-                               start_offset, end_container, end_offset);
+  const Position start_position(start_container, start_offset);
+  const Position end_position(end_container, end_offset);
+  const EphemeralRange range(start_position, end_position);
   return WebFloatRect(FindInPageRectFromRange(range));
 }
 

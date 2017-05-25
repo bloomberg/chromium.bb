@@ -170,7 +170,7 @@ bool TextFinder::Find(int identifier,
     OwnerFrame().ViewImpl()->ZoomToFindInPageRect(
         OwnerFrame().GetFrameView()->ContentsToRootFrame(
             EnclosingIntRect(LayoutObject::AbsoluteBoundingBoxRectForRange(
-                active_match_.Get()))));
+                EphemeralRange(active_match_.Get())))));
   }
 
   bool was_active_frame = current_active_match_frame_;
@@ -540,7 +540,7 @@ void TextFinder::UpdateFindMatchRects() {
         !match.range_->startContainer()->isConnected())
       match.rect_ = FloatRect();
     else if (!find_match_rects_are_valid_)
-      match.rect_ = FindInPageRectFromRange(match.range_.Get());
+      match.rect_ = FindInPageRectFromRange(EphemeralRange(match.range_.Get()));
 
     if (match.rect_.IsEmpty())
       ++dead_matches;
@@ -575,7 +575,7 @@ WebFloatRect TextFinder::ActiveFindMatchRect() {
   if (!current_active_match_frame_ || !active_match_)
     return WebFloatRect();
 
-  return WebFloatRect(FindInPageRectFromRange(ActiveMatch()));
+  return WebFloatRect(FindInPageRectFromRange(EphemeralRange(ActiveMatch())));
 }
 
 void TextFinder::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
@@ -654,8 +654,9 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
   }
 
   IntRect active_match_rect;
-  IntRect active_match_bounding_box = EnclosingIntRect(
-      LayoutObject::AbsoluteBoundingBoxRectForRange(active_match_.Get()));
+  IntRect active_match_bounding_box =
+      EnclosingIntRect(LayoutObject::AbsoluteBoundingBoxRectForRange(
+          EphemeralRange(active_match_.Get())));
 
   if (!active_match_bounding_box.IsEmpty()) {
     if (active_match_->FirstNode() &&

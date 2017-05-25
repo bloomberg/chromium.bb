@@ -994,13 +994,14 @@ IntRect LayoutObject::AbsoluteElementBoundingBoxRect() const {
       .EnclosingBoundingBox();
 }
 
-FloatRect LayoutObject::AbsoluteBoundingBoxRectForRange(const Range* range) {
-  if (!range || !range->startContainer())
+FloatRect LayoutObject::AbsoluteBoundingBoxRectForRange(
+    const EphemeralRange& range) {
+  if (range.IsNull() || !range.StartPosition().ComputeContainerNode())
     return FloatRect();
 
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range.GetDocument().UpdateStyleAndLayout();
 
-  return ComputeTextFloatRect(EphemeralRange(range));
+  return ComputeTextFloatRect(range);
 }
 
 void LayoutObject::AddAbsoluteRectForLayer(IntRect& result) {
