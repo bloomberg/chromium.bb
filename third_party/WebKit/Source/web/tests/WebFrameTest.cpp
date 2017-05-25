@@ -6874,10 +6874,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
 
   EXPECT_FALSE(exception_state.HadException());
   auto range = EphemeralRange::RangeOfContents(*element);
-  document->Markers().AddMarker(range.StartPosition(), range.EndPosition(),
-                                DocumentMarker::kSpelling);
-  document->Markers().AddMarker(range.StartPosition(), range.EndPosition(),
-                                DocumentMarker::kGrammar);
+  document->Markers().AddSpellingMarker(range.StartPosition(),
+                                        range.EndPosition());
+  document->Markers().AddGrammarMarker(range.StartPosition(),
+                                       range.EndPosition());
   EXPECT_EQ(2U, document->Markers().Markers().size());
 
   textcheck.KickNoResults();
