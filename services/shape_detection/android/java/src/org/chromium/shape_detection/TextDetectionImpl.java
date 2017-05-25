@@ -4,7 +4,6 @@
 
 package org.chromium.shape_detection;
 
-import android.content.Context;
 import android.graphics.Rect;
 import android.util.SparseArray;
 
@@ -14,6 +13,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
@@ -29,18 +29,17 @@ import org.chromium.shape_detection.mojom.TextDetectionResult;
 public class TextDetectionImpl implements TextDetection {
     private static final String TAG = "TextDetectionImpl";
 
-    private final Context mContext;
     private TextRecognizer mTextRecognizer;
 
-    public TextDetectionImpl(Context context) {
-        mContext = context;
-        mTextRecognizer = new TextRecognizer.Builder(mContext).build();
+    public TextDetectionImpl() {
+        mTextRecognizer = new TextRecognizer.Builder(ContextUtils.getApplicationContext()).build();
     }
 
     @Override
     public void detect(
             SharedBufferHandle frameData, int width, int height, DetectResponse callback) {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(mContext)
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                    ContextUtils.getApplicationContext())
                 != ConnectionResult.SUCCESS) {
             Log.e(TAG, "Google Play Services not available");
             callback.call(new TextDetectionResult[0]);
@@ -93,15 +92,11 @@ public class TextDetectionImpl implements TextDetection {
      * A factory class to register TextDetection interface.
      */
     public static class Factory implements InterfaceFactory<TextDetection> {
-        private final Context mContext;
-
-        public Factory(Context context) {
-            mContext = context;
-        }
+        public Factory() {}
 
         @Override
         public TextDetection createImpl() {
-            return new TextDetectionImpl(mContext);
+            return new TextDetectionImpl();
         }
     }
 }

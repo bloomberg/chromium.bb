@@ -4,9 +4,6 @@
 
 package org.chromium.services.device;
 
-import android.content.Context;
-
-import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.device.battery.BatteryMonitorFactory;
@@ -26,15 +23,10 @@ class InterfaceRegistrar {
             int nativeHandle, NfcDelegate nfcDelegate) {
         // Note: The bindings code manages the lifetime of this object, so it
         // is not necessary to hold on to a reference to it explicitly.
-        // TODO(wnwen): Move calls to ContextUtils down to the individual factories.
-        Context applicationContext = ContextUtils.getApplicationContext();
         InterfaceRegistry registry = InterfaceRegistry.create(
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
-        registry.addInterface(
-                BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
-        registry.addInterface(
-                NfcProvider.MANAGER, new NfcProviderImpl.Factory(applicationContext, nfcDelegate));
-        registry.addInterface(
-                VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
+        registry.addInterface(BatteryMonitor.MANAGER, new BatteryMonitorFactory());
+        registry.addInterface(NfcProvider.MANAGER, new NfcProviderImpl.Factory(nfcDelegate));
+        registry.addInterface(VibrationManager.MANAGER, new VibrationManagerImpl.Factory());
     }
 }

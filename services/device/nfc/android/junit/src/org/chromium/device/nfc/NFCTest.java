@@ -41,6 +41,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.device.mojom.Nfc.CancelAllWatchesResponse;
 import org.chromium.device.mojom.Nfc.CancelPushResponse;
@@ -106,7 +107,7 @@ public class NFCTest {
      */
     private static class TestNfcImpl extends NfcImpl {
         public TestNfcImpl(Context context, NfcDelegate delegate) {
-            super(context, 0, delegate);
+            super(0, delegate);
         }
 
         public void processPendingOperationsForTesting(NfcTagHandler handler) {
@@ -157,6 +158,7 @@ public class NFCTest {
             doNothing().when(mNfcTagHandler).close();
         } catch (IOException | FormatException e) {
         }
+        ContextUtils.initApplicationContextForTests(mContext);
     }
 
     /**

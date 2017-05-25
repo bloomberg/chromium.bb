@@ -28,12 +28,6 @@ public class DeviceFormFactor {
     private static Integer sMinimumTabletWidthPx;
     private static Float sDensity;
 
-    /**  TODO(wnwen): Remove when downstream is migrated. */
-    @Deprecated
-    public static boolean isTablet(Context context) {
-        return isTablet();
-    }
-
     /**
      * @return Whether the app should treat the device as a tablet for layout. This method is not
      *         affected by Android N multi-window.
