@@ -51,22 +51,15 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
   return event;
 }
 
-MessagePortArray ExtendableMessageEvent::ports(bool& is_null) const {
+MessagePortArray ExtendableMessageEvent::ports() const {
   // TODO(bashi): Currently we return a copied array because the binding
   // layer could modify the content of the array while executing JS callbacks.
   // Avoid copying once we can make sure that the binding layer won't
   // modify the content.
   if (ports_) {
-    is_null = false;
     return *ports_;
   }
-  is_null = true;
   return MessagePortArray();
-}
-
-MessagePortArray ExtendableMessageEvent::ports() const {
-  bool unused;
-  return ports(unused);
 }
 
 void ExtendableMessageEvent::source(
