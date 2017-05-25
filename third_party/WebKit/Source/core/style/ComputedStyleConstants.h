@@ -200,8 +200,6 @@ enum ObjectFit {
 
 enum class EWordBreak { kNormal, kBreakAll, kKeepAll, kBreakWord };
 
-enum class EOverflowWrap { kNormal, kBreakWord };
-
 enum class LineBreak { kAuto, kLoose, kNormal, kStrict, kAfterWhiteSpace };
 
 enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };

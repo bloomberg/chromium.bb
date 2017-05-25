@@ -1632,9 +1632,9 @@
     {
       name: "overflow-wrap",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "EOverflowWrap",
-      default_value: "EOverflowWrap::kNormal",
+      field_template: "keyword",
+      keywords: ["normal", "break-word"],
+      default_value: "normal",
       field_size: 1,
       field_group: "rare-inherited",
     },
