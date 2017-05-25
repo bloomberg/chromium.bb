@@ -15,11 +15,13 @@ namespace blink {
 
 // https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentapprequest
 struct WebPaymentAppRequest {
-  WebString origin;
+  WebString top_level_origin;
+  WebString payment_request_origin;
+  WebString payment_request_id;
   WebVector<WebPaymentMethodData> method_data;
   WebPaymentItem total;
   WebVector<WebPaymentDetailsModifier> modifiers;
-  WebString option_id;
+  WebString instrument_key;
 };
 
 }  // namespace blink

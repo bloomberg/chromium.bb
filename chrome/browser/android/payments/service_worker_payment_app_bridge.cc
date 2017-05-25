@@ -85,23 +85,30 @@ static void GetAllPaymentApps(JNIEnv* env,
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
-static void InvokePaymentApp(JNIEnv* env,
-                             const JavaParamRef<jclass>& jcaller,
-                             const JavaParamRef<jobject>& jweb_contents,
-                             jlong registration_id,
-                             const JavaParamRef<jstring>& joption_id,
-                             const JavaParamRef<jstring>& jorigin,
-                             const JavaParamRef<jobjectArray>& jmethod_data,
-                             const JavaParamRef<jobject>& jtotal,
-                             const JavaParamRef<jobjectArray>& jmodifiers,
-                             const JavaParamRef<jobject>& jcallback) {
+static void InvokePaymentApp(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents,
+    jlong registration_id,
+    const JavaParamRef<jstring>& jtop_level_origin,
+    const JavaParamRef<jstring>& jpayment_request_origin,
+    const JavaParamRef<jstring>& jpayment_request_id,
+    const JavaParamRef<jobjectArray>& jmethod_data,
+    const JavaParamRef<jobject>& jtotal,
+    const JavaParamRef<jobjectArray>& jmodifiers,
+    const JavaParamRef<jstring>& jinstrument_key,
+    const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
   PaymentAppRequestPtr app_request = PaymentAppRequest::New();
 
-  app_request->option_id = ConvertJavaStringToUTF8(env, joption_id);
-  app_request->origin = GURL(ConvertJavaStringToUTF8(env, jorigin));
+  app_request->top_level_origin =
+      GURL(ConvertJavaStringToUTF8(env, jtop_level_origin));
+  app_request->payment_request_origin =
+      GURL(ConvertJavaStringToUTF8(env, jpayment_request_origin));
+  app_request->payment_request_id =
+      ConvertJavaStringToUTF8(env, jpayment_request_id);
 
   for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
     ScopedJavaLocalRef<jobject> element(
@@ -168,6 +175,8 @@ static void InvokePaymentApp(JNIEnv* env,
 
     app_request->modifiers.push_back(std::move(modifier));
   }
+
+  app_request->instrument_key = ConvertJavaStringToUTF8(env, jinstrument_key);
 
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
       web_contents->GetBrowserContext(), registration_id,

@@ -768,7 +768,13 @@ interface PaymentInstruments
     method keys
     method set
 interface PaymentRequestEvent : ExtendableEvent
-    getter appRequest
+    getter instrumentKey
+    getter methodData
+    getter modifiers
+    getter paymentRequestId
+    getter paymentRequestOrigin
+    getter topLevelOrigin
+    getter total
     method constructor
     method respondWith
 interface PerformanceObserverEntryList

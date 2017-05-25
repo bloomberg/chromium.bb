@@ -60,9 +60,9 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
             byte[][] unusedCertificateChain, Map<String, PaymentMethodData> methodData,
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
-        ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mSWRegistrationId,
-                mInstrumentId, origin, iframeOrigin, new HashSet<>(methodData.values()), total,
-                displayItems, new HashSet<>(modifiers.values()), callback);
+        ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mSWRegistrationId, origin,
+                iframeOrigin, id, new HashSet<>(methodData.values()), total,
+                new HashSet<>(modifiers.values()), mInstrumentId, callback);
     }
 
     @Override

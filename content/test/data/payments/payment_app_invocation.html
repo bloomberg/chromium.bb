@@ -11,7 +11,7 @@ function registerPaymentApp() {
     .then(registration => {
         return registration.paymentManager.instruments.set('payment-app-id', {
             name: 'Visa ****',
-            enabledMethods: ['visa']
+            enabledMethods: ['basic-card']
           });
       })
     .then(result => {
