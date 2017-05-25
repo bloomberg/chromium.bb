@@ -162,7 +162,6 @@ class CORE_EXPORT CanvasRenderingContext
     return HitTestCanvasResult::Create(String(), nullptr);
   }
   virtual String GetIdFromControl(const Element* element) { return String(); }
-  virtual bool IsAccelerationOptimalForCanvasContent() const { return true; }
   virtual void ResetUsageTracking(){};
 
   // WebGL-specific interface

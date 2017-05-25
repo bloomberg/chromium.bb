@@ -34,8 +34,8 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
-#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
@@ -1044,7 +1044,7 @@ void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
     recording_pixel_count_ += pixel_bounds.Width() * pixel_bounds.Height();
     if (recording_pixel_count_ >=
         (size_.Width() * size_.Height() *
-         ExpensiveCanvasHeuristicParameters::kExpensiveOverdrawThreshold)) {
+         CanvasHeuristicParameters::kExpensiveOverdrawThreshold)) {
       DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
     }
   }

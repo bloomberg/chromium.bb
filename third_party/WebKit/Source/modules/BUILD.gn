@@ -246,7 +246,6 @@ source_set("unit_tests") {
     "canvas/HTMLCanvasElementModuleTest.cpp",
     "canvas2d/CanvasRenderingContext2DAPITest.cpp",
     "canvas2d/CanvasRenderingContext2DTest.cpp",
-    "canvas2d/CanvasRenderingContext2DUsageTrackingTest.cpp",
     "compositorworker/AnimationWorkletThreadTest.cpp",
     "compositorworker/CompositorWorkerThreadTest.cpp",
     "credentialmanager/CredentialsContainerTest.cpp",

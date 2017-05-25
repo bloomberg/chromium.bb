@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "platform/Histogram.h"
+#include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
-#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
@@ -331,7 +331,7 @@ bool RecordingImageBufferSurface::FinalizeFrameInternal(
 
   if (allow_fallback_ == kAllowFallback &&
       current_frame_->getRecordingCanvas()->getSaveCount() - 1 >
-          ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth) {
+          CanvasHeuristicParameters::kExpensiveRecordingStackDepth) {
     // (getSaveCount() decremented to account  for the intial recording canvas
     // save frame.)
     *fallback_reason = kFallbackReasonRunawayStateStack;
@@ -374,7 +374,7 @@ bool RecordingImageBufferSurface::IsExpensiveToPaint() {
 
     if (current_frame_pixel_count_ >=
         (size().Width() * size().Height() *
-         ExpensiveCanvasHeuristicParameters::kExpensiveOverdrawThreshold))
+         CanvasHeuristicParameters::kExpensiveOverdrawThreshold))
       return true;
 
     if (frame_was_cleared_)
@@ -387,7 +387,7 @@ bool RecordingImageBufferSurface::IsExpensiveToPaint() {
 
     if (previous_frame_pixel_count_ >=
         (size().Width() * size().Height() *
-         ExpensiveCanvasHeuristicParameters::kExpensiveOverdrawThreshold))
+         CanvasHeuristicParameters::kExpensiveOverdrawThreshold))
       return true;
   }
 

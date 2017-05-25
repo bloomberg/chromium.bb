@@ -138,10 +138,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kForceDisplayList2dCanvas))
     WebRuntimeFeatures::ForceDisplayList2dCanvas(true);
 
-  if (command_line.HasSwitch(
-      switches::kEnableCanvas2dDynamicRenderingModeSwitching))
-    WebRuntimeFeatures::EnableCanvas2dDynamicRenderingModeSwitching(true);
-
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::EnableWebGLDraftExtensions(true);
 

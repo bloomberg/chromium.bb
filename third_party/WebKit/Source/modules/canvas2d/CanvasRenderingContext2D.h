@@ -194,10 +194,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   PassRefPtr<Image> GetImage(AccelerationHint, SnapshotReason) const final;
 
-  bool IsAccelerationOptimalForCanvasContent() const;
-
-  void ResetUsageTracking();
-
   void FinalizeFrame() override { usage_counters_.num_frames_since_reset++; }
 
   bool IsPaintable() const final { return HasImageBuffer(); }

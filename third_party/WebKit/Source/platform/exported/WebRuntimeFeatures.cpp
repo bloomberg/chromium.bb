@@ -112,12 +112,6 @@ void WebRuntimeFeatures::EnableDisplayList2dCanvas(bool enable) {
   RuntimeEnabledFeatures::setDisplayList2dCanvasEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableCanvas2dDynamicRenderingModeSwitching(
-    bool enable) {
-  RuntimeEnabledFeatures::setEnableCanvas2dDynamicRenderingModeSwitchingEnabled(
-      enable);
-}
-
 void WebRuntimeFeatures::EnableDocumentWriteEvaluator(bool enable) {
   RuntimeEnabledFeatures::setDocumentWriteEvaluatorEnabled(enable);
 }

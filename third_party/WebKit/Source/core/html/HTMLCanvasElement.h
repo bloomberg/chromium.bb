@@ -335,8 +335,6 @@ class CORE_EXPORT HTMLCanvasElement final
   // Used for OffscreenCanvas that controls this HTML canvas element
   std::unique_ptr<CanvasSurfaceLayerBridge> surface_layer_bridge_;
 
-  int num_frames_since_last_rendering_mode_switch_;
-  bool pending_rendering_mode_switch_;
   bool did_notify_listeners_for_current_frame_ = false;
 };
 

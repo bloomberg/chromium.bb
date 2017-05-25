@@ -165,9 +165,6 @@ extern const char kEasyUnlockProximityDetectionDescription[];
 extern const char kEmbeddedExtensionOptionsName[];
 extern const char kEmbeddedExtensionOptionsDescription[];
 
-extern const char kEnable2dCanvasDynamicRenderingModeSwitchingName[];
-extern const char kEnable2dCanvasDynamicRenderingModeSwitchingDescription[];
-
 extern const char kEnableAdjustableLargeCursorName[];
 extern const char kEnableAdjustableLargeCursorDescription[];
 

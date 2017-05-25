@@ -67,8 +67,8 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
+#include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
-#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -142,9 +142,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
       externally_allocated_memory_(0),
       origin_clean_(true),
       did_fail_to_create_image_buffer_(false),
-      image_buffer_is_clear_(false),
-      num_frames_since_last_rendering_mode_switch_(0),
-      pending_rendering_mode_switch_(false) {
+      image_buffer_is_clear_(false) {
   CanvasMetrics::CountCanvasContextUsage(CanvasMetrics::kCanvasCreated);
   UseCounter::Count(document, UseCounter::kHTMLCanvasElement);
 }
@@ -428,37 +426,6 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     ro->InvalidatePaintRectangle(mapped_dirty_rect);
   }
   dirty_rect_ = FloatRect();
-
-  num_frames_since_last_rendering_mode_switch_++;
-  if (RuntimeEnabledFeatures::
-          enableCanvas2dDynamicRenderingModeSwitchingEnabled() &&
-      !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
-    if (Is2d() && GetImageBuffer() && GetImageBuffer()->IsAccelerated() &&
-        num_frames_since_last_rendering_mode_switch_ >=
-            ExpensiveCanvasHeuristicParameters::kMinFramesBeforeSwitch &&
-        !pending_rendering_mode_switch_) {
-      if (!context_->IsAccelerationOptimalForCanvasContent()) {
-        // The switch must be done asynchronously in order to avoid switching
-        // during the paint invalidation step.
-        Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-            BLINK_FROM_HERE,
-            WTF::Bind(
-                [](WeakPtr<ImageBuffer> buffer) {
-                  if (buffer) {
-                    buffer->DisableAcceleration();
-                  }
-                },
-                image_buffer_->weak_ptr_factory_.CreateWeakPtr()));
-        num_frames_since_last_rendering_mode_switch_ = 0;
-        pending_rendering_mode_switch_ = true;
-      }
-    }
-  }
-
-  if (pending_rendering_mode_switch_ && GetOrCreateImageBuffer() &&
-      !GetOrCreateImageBuffer()->IsAccelerated()) {
-    pending_rendering_mode_switch_ = false;
-  }
 
   DCHECK(dirty_rect_.IsEmpty());
 }
@@ -858,8 +825,8 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
             return false;
 #endif
     // If the GPU resources would be very expensive, prefer a display list.
-    if (canvas_pixel_count > ExpensiveCanvasHeuristicParameters::
-                                 kPreferDisplayListOverGpuSizeThreshold)
+    if (canvas_pixel_count >
+        CanvasHeuristicParameters::kPreferDisplayListOverGpuSizeThreshold)
       return false;
   }
 
@@ -1225,7 +1192,7 @@ void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
 }
 
 void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
-  if (ExpensiveCanvasHeuristicParameters::kEnableAccelerationToAvoidReadbacks &&
+  if (CanvasHeuristicParameters::kEnableAccelerationToAvoidReadbacks &&
       SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() &&
       source->IsAccelerated() && !GetOrCreateImageBuffer()->IsAccelerated() &&
       ShouldAccelerate(kIgnoreResourceLimitCriteria)) {
@@ -1287,8 +1254,7 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
       sk_image = CreateTransparentSkImage(Size());
     }
   } else {
-    if (ExpensiveCanvasHeuristicParameters::
-            kDisableAccelerationToAvoidReadbacks &&
+    if (CanvasHeuristicParameters::kDisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled() &&
         hint == kPreferNoAcceleration && GetImageBuffer() &&
         GetImageBuffer()->IsAccelerated()) {

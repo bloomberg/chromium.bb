@@ -22074,8 +22074,6 @@ from previous Chrome versions.
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
-  <int value="805567148"
-      label="enable-canvas-2d-dynamic-rendering-mode-switching"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
