@@ -168,8 +168,10 @@ var SiteSettingsBehaviorImpl = {
     }
 
     var enforcement = '';
-    if (exception.source == 'policy' || exception.source == 'extension')
+    if (exception.source == 'extension' || exception.source == 'HostedApp' ||
+        exception.source == 'platform_app' || exception.source == 'policy') {
       enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+    }
 
     var controlledBy = kControlledByLookup[exception.source] || '';
 
