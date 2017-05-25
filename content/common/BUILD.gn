@@ -338,6 +338,8 @@ source_set("common") {
     "text_input_client_messages.h",
     "text_input_state.cc",
     "text_input_state.h",
+    "unique_name_helper.cc",
+    "unique_name_helper.h",
     "url_request_struct_traits.cc",
     "url_request_struct_traits.h",
     "url_schemes.cc",

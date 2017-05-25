@@ -2,21 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_UNIQUE_NAME_HELPER_H_
-#define CONTENT_RENDERER_UNIQUE_NAME_HELPER_H_
+#ifndef CONTENT_COMMON_UNIQUE_NAME_HELPER_H_
+#define CONTENT_COMMON_UNIQUE_NAME_HELPER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-
-namespace blink {
-class WebFrame;
-class WebLocalFrame;
-}  // namespace blink
+#include "base/strings/string_piece.h"
 
 namespace content {
-
-class RenderFrameImpl;
 
 // Frame helper that manages the details of generating a quasi-stable unique
 // name for the frame. The name is unique within a page, and is used for:
@@ -71,7 +66,47 @@ class RenderFrameImpl;
 // retryNumber ::= smallest non-negative integer resulting in unique name
 class UniqueNameHelper {
  public:
-  explicit UniqueNameHelper(RenderFrameImpl* render_frame);
+  // Adapter class so UniqueNameHelper can be used with both RenderFrameImpl and
+  // ExplodedFrameState.
+  class FrameAdapter {
+   public:
+    FrameAdapter() {}
+    virtual ~FrameAdapter();
+
+    virtual bool IsMainFrame() const = 0;
+    virtual bool IsCandidateUnique(const std::string& name) const = 0;
+    // Returns the number of sibling frames of this frame. Note this should not
+    // include this frame in the count.
+    virtual int GetSiblingCount() const = 0;
+    virtual int GetChildCount() const = 0;
+    // Sets the reference point for iterations that walk up the frame tree.
+    enum class BeginPoint {
+      // This should be the default: it indicates the logical iteration
+      // operation began on this frame and the walking logic should retrieve the
+      // parent frame as normal.
+      kParentFrame,
+      // For implementing the pending child frame adapter, which delegates to
+      // its future parent's FrameAdapter. Walking up the tree should not skip
+      // this frame; instead it should treat this frame as the parent, since the
+      // logical iteration began with a pending child frame.
+      kThisFrame,
+    };
+    // Returns a vector of the strings representing the name of each frame in
+    // the chain from this frame to the root frame. |begin_point| indicates the
+    // reference point for starting the collection. |should_stop| is a
+    // boolean predicate that indicates when to stop collection of names.
+    virtual std::vector<base::StringPiece> CollectAncestorNames(
+        BeginPoint begin_point,
+        bool (*should_stop)(base::StringPiece)) const = 0;
+    // Returns a vector of ints representing the child index of each frame in
+    // the chain from this frame to the root.
+    virtual std::vector<int> GetFramePosition(BeginPoint begin_point) const = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FrameAdapter);
+  };
+
+  explicit UniqueNameHelper(FrameAdapter* frame);
   ~UniqueNameHelper();
 
   // Returns the generated unique name.
@@ -87,11 +122,11 @@ class UniqueNameHelper {
   void set_propagated_name(const std::string& name) { unique_name_ = name; }
 
   // Note: when creating a new child frame, the unique name needs to be
-  // calculated before the RenderFrameImpl is created. To avoid this chicken and
-  // egg problem, this method is static, which means that |parent| needs to be
-  // passed as a parameter.
-  static std::string GenerateNameForNewChildFrame(blink::WebFrame* parent,
-                                                  const std::string& name);
+  // calculated before the child frame is created. To avoid this chicken and
+  // egg problem, this method is designed to be called on the *parent* frame of
+  // the future new child frame and return the value the new child frame should
+  // use.
+  std::string GenerateNameForNewChildFrame(const std::string& name) const;
 
   // Called after a browsing context name change to generate a new name. Note
   // that this should not be called if the frame is no longer displaying the
@@ -100,9 +135,7 @@ class UniqueNameHelper {
   void UpdateName(const std::string& name);
 
  private:
-  blink::WebLocalFrame* GetWebFrame() const;
-
-  RenderFrameImpl* const render_frame_;
+  FrameAdapter* const frame_;
   std::string unique_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UniqueNameHelper);
@@ -110,4 +143,4 @@ class UniqueNameHelper {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_UNIQUE_NAME_HELPER_H_
+#endif  // CONTENT_COMMON_UNIQUE_NAME_HELPER_H_
