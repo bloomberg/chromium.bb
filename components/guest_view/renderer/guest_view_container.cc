@@ -186,8 +186,15 @@ void GuestViewContainer::RunDestructionCallback(bool embedder_frame_destroyed) {
 }
 
 void GuestViewContainer::OnHandleCallback(const IPC::Message& message) {
+  base::WeakPtr<content::BrowserPluginDelegate> weak_ptr(GetWeakPtr());
+
   // Handle the callback for the current request with a pending response.
   HandlePendingResponseCallback(message);
+
+  // Check that this container has not been deleted (crbug.com/718292).
+  if (!weak_ptr)
+    return;
+
   // Perform the subsequent request if one exists.
   PerformPendingRequest();
 }
