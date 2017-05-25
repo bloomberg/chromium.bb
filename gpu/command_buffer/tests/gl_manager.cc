@@ -26,7 +26,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -37,8 +37,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -55,8 +53,6 @@
 
 namespace gpu {
 namespace {
-
-uint64_t g_next_command_buffer_id = 1;
 
 void InitializeGpuPreferencesForTestingFromCommandLine(
     const base::CommandLine& command_line,
@@ -179,6 +175,34 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 };
 #endif  // defined(OS_MACOSX)
 
+class CommandBufferCheckLostContext : public CommandBufferDirect {
+ public:
+  CommandBufferCheckLostContext(TransferBufferManager* transfer_buffer_manager,
+                                AsyncAPIInterface* handler,
+                                const MakeCurrentCallback& callback,
+                                SyncPointManager* sync_point_manager,
+                                bool context_lost_allowed)
+      : CommandBufferDirect(transfer_buffer_manager,
+                            handler,
+                            callback,
+                            sync_point_manager),
+        context_lost_allowed_(context_lost_allowed) {}
+
+  ~CommandBufferCheckLostContext() override {}
+
+  void Flush(int32_t put_offset) override {
+    CommandBufferDirect::Flush(put_offset);
+
+    ::gpu::CommandBuffer::State state = GetLastState();
+    if (!context_lost_allowed_) {
+      ASSERT_EQ(::gpu::error::kNoError, state.error);
+    }
+  }
+
+ private:
+  bool context_lost_allowed_;
+};
+
 }  // namespace
 
 int GLManager::use_count_;
@@ -188,10 +212,7 @@ scoped_refptr<gl::GLContext>* GLManager::base_context_;
 
 GLManager::Options::Options() = default;
 
-GLManager::GLManager()
-    : discardable_manager_(new ServiceDiscardableManager()),
-      command_buffer_id_(
-          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)) {
+GLManager::GLManager() : discardable_manager_(new ServiceDiscardableManager()) {
   SetupBaseContext();
 }
 
@@ -239,8 +260,6 @@ void GLManager::InitializeWithCommandLine(
   const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
   const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
-
-  context_lost_allowed_ = options.context_lost_allowed;
 
   InitializeGpuPreferencesForTestingFromCommandLine(command_line,
                                                     &gpu_preferences_);
@@ -310,12 +329,13 @@ void GLManager::InitializeWithCommandLine(
   if (options.force_shader_name_hashing) {
     decoder_->SetForceShaderNameHashingForTest(true);
   }
-  command_buffer_.reset(new CommandBufferService(
-      decoder_->GetContextGroup()->transfer_buffer_manager()));
+  command_buffer_.reset(new CommandBufferCheckLostContext(
+      decoder_->GetContextGroup()->transfer_buffer_manager(), decoder_.get(),
+      base::Bind(&gles2::GLES2Decoder::MakeCurrent,
+                 base::Unretained(decoder_.get())),
+      options.sync_point_manager, options.context_lost_allowed));
 
-  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get()));
-
-  decoder_->set_command_buffer_service(command_buffer_.get());
+  decoder_->set_command_buffer_service(command_buffer_->service());
 
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
@@ -349,26 +369,13 @@ void GLManager::InitializeWithCommandLine(
   }
 
   if (options.sync_point_manager) {
-    sync_point_manager_ = options.sync_point_manager;
-    sync_point_order_data_ = sync_point_manager_->CreateSyncPointOrderData();
-    sync_point_client_state_ = sync_point_manager_->CreateSyncPointClientState(
-        GetNamespaceID(), GetCommandBufferID(),
-        sync_point_order_data_->sequence_id());
-
     decoder_->SetFenceSyncReleaseCallback(
-        base::Bind(&GLManager::OnFenceSyncRelease, base::Unretained(this)));
+        base::Bind(&CommandBufferDirect::OnFenceSyncRelease,
+                   base::Unretained(command_buffer_.get())));
     decoder_->SetWaitSyncTokenCallback(
-        base::Bind(&GLManager::OnWaitSyncToken, base::Unretained(this)));
-  } else {
-    sync_point_manager_ = nullptr;
-    sync_point_order_data_ = nullptr;
-    sync_point_client_state_ = nullptr;
+        base::Bind(&CommandBufferDirect::OnWaitSyncToken,
+                   base::Unretained(command_buffer_.get())));
   }
-
-  command_buffer_->SetPutOffsetChangeCallback(
-      base::Bind(&GLManager::PumpCommands, base::Unretained(this)));
-  command_buffer_->SetGetBufferChangeCallback(
-      base::Bind(&GLManager::GetBufferChanged, base::Unretained(this)));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gles2::GLES2CmdHelper(command_buffer_.get()));
@@ -409,20 +416,6 @@ void GLManager::SetupBaseContext() {
   ++use_count_;
 }
 
-void GLManager::OnFenceSyncRelease(uint64_t release) {
-  DCHECK(sync_point_client_state_);
-  command_buffer_->SetReleaseCount(release);
-  sync_point_client_state_->ReleaseFenceSync(release);
-}
-
-bool GLManager::OnWaitSyncToken(const SyncToken& sync_token) {
-  DCHECK(sync_point_manager_);
-  // GLManager does not support being multithreaded at this point, so the fence
-  // sync must be released by the time wait is called.
-  DCHECK(sync_point_manager_->IsSyncTokenReleased(sync_token));
-  return false;
-}
-
 void GLManager::MakeCurrent() {
   ::gles2::SetGLContext(gles2_implementation_.get());
 }
@@ -435,6 +428,10 @@ void GLManager::PerformIdleWork() {
   decoder_->PerformIdleWork();
 }
 
+void GLManager::SetCommandsPaused(bool paused) {
+  command_buffer_->SetCommandsPaused(paused);
+}
+
 void GLManager::Destroy() {
   if (gles2_implementation_.get()) {
     MakeCurrent();
@@ -445,15 +442,6 @@ void GLManager::Destroy() {
   transfer_buffer_.reset();
   gles2_helper_.reset();
   command_buffer_.reset();
-  sync_point_manager_ = nullptr;
-  if (sync_point_order_data_) {
-    sync_point_order_data_->Destroy();
-    sync_point_order_data_ = nullptr;
-  }
-  if (sync_point_client_state_) {
-    sync_point_client_state_->Destroy();
-    sync_point_client_state_ = nullptr;
-  }
   if (decoder_.get()) {
     bool have_context = decoder_->GetGLContext() &&
                         decoder_->GetGLContext()->MakeCurrent(surface_.get());
@@ -464,48 +452,6 @@ void GLManager::Destroy() {
 
 const GpuDriverBugWorkarounds& GLManager::workarounds() const {
   return decoder_->GetContextGroup()->feature_info()->workarounds();
-}
-
-void GLManager::PumpCommands() {
-  if (!decoder_->MakeCurrent()) {
-    command_buffer_->SetParseError(::gpu::error::kLostContext);
-    return;
-  }
-  uint32_t order_num = 0;
-  if (sync_point_manager_) {
-    // If sync point manager is supported, assign order numbers to commands.
-    if (paused_order_num_) {
-      // Was previous paused, continue to process the order number.
-      order_num = paused_order_num_;
-      paused_order_num_ = 0;
-    } else {
-      order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
-    }
-    sync_point_order_data_->BeginProcessingOrderNumber(order_num);
-  }
-
-  if (pause_commands_) {
-    // Do not process commands, simply store the current order number.
-    paused_order_num_ = order_num;
-
-    sync_point_order_data_->PauseProcessingOrderNumber(order_num);
-    return;
-  }
-
-  executor_->PutChanged();
-  ::gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-  if (!context_lost_allowed_) {
-    ASSERT_EQ(::gpu::error::kNoError, state.error);
-  }
-
-  if (sync_point_manager_) {
-    // Finish processing order number here.
-    sync_point_order_data_->FinishProcessingOrderNumber(order_num);
-  }
-}
-
-bool GLManager::GetBufferChanged(int32_t transfer_buffer_id) {
-  return executor_->SetGetBuffer(transfer_buffer_id);
 }
 
 void GLManager::SetGpuControlClient(GpuControlClient*) {
@@ -577,11 +523,11 @@ void GLManager::EnsureWorkVisible() {
 }
 
 gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
-  return gpu::CommandBufferNamespace::IN_PROCESS;
+  return command_buffer_->GetNamespaceID();
 }
 
 CommandBufferId GLManager::GetCommandBufferID() const {
-  return command_buffer_id_;
+  return command_buffer_->GetCommandBufferID();
 }
 
 int32_t GLManager::GetStreamId() const {
@@ -614,17 +560,7 @@ bool GLManager::IsFenceSyncReleased(uint64_t release) {
 
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
                                 const base::Closure& callback) {
-  if (sync_point_manager_) {
-    DCHECK(!paused_order_num_);
-    uint32_t order_num =
-        sync_point_order_data_->GenerateUnprocessedOrderNumber();
-    sync_point_order_data_->BeginProcessingOrderNumber(order_num);
-    if (!sync_point_client_state_->Wait(sync_token, callback))
-      callback.Run();
-    sync_point_order_data_->FinishProcessingOrderNumber(order_num);
-  } else {
-    callback.Run();
-  }
+  command_buffer_->SignalSyncToken(sync_token, callback);
 }
 
 void GLManager::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}

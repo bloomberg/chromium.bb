@@ -18,7 +18,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -91,10 +91,8 @@ class CommandBufferSetup {
   CommandBufferSetup()
       : atexit_manager_(),
         sync_point_manager_(new SyncPointManager()),
-        sync_point_order_data_(sync_point_manager_->CreateSyncPointOrderData()),
         mailbox_manager_(new gles2::MailboxManagerImpl),
-        share_group_(new gl::GLShareGroup),
-        command_buffer_id_(CommandBufferId::FromUnsafeValue(1)) {
+        share_group_(new gl::GLShareGroup) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     base::CommandLine::Init(0, NULL);
 
@@ -126,10 +124,6 @@ class CommandBufferSetup {
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 #endif
 
-    sync_point_client_state_ = sync_point_manager_->CreateSyncPointClientState(
-        CommandBufferNamespace::IN_PROCESS, command_buffer_id_,
-        sync_point_order_data_->sequence_id());
-
     translator_cache_ = new gles2::ShaderTranslatorCache(gpu_preferences_);
     completeness_cache_ = new gles2::FramebufferCompletenessCache;
   }
@@ -147,21 +141,21 @@ class CommandBufferSetup {
         completeness_cache_, feature_info, true /* bind_generates_resource */,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         GpuFeatureInfo(), &discardable_manager_);
-    command_buffer_.reset(
-        new CommandBufferService(context_group->transfer_buffer_manager()));
-    command_buffer_->SetPutOffsetChangeCallback(
-        base::Bind(&CommandBufferSetup::PumpCommands, base::Unretained(this)));
-    command_buffer_->SetGetBufferChangeCallback(base::Bind(
-        &CommandBufferSetup::GetBufferChanged, base::Unretained(this)));
+    decoder_.reset(gles2::GLES2Decoder::Create(context_group.get()));
+    command_buffer_.reset(new CommandBufferDirect(
+        context_group->transfer_buffer_manager(), decoder_.get(),
+        base::Bind(&gles2::GLES2Decoder::MakeCurrent,
+                   base::Unretained(decoder_.get())),
+        sync_point_manager_.get()));
     InitializeInitialCommandBuffer();
 
-    decoder_.reset(gles2::GLES2Decoder::Create(context_group.get()));
-    executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get()));
-    decoder_->set_command_buffer_service(command_buffer_.get());
-    decoder_->SetFenceSyncReleaseCallback(base::Bind(
-        &CommandBufferSetup::OnFenceSyncRelease, base::Unretained(this)));
-    decoder_->SetWaitSyncTokenCallback(base::Bind(
-        &CommandBufferSetup::OnWaitSyncToken, base::Unretained(this)));
+    decoder_->set_command_buffer_service(command_buffer_->service());
+    decoder_->SetFenceSyncReleaseCallback(
+        base::Bind(&CommandBufferDirect::OnFenceSyncRelease,
+                   base::Unretained(command_buffer_.get())));
+    decoder_->SetWaitSyncTokenCallback(
+        base::Bind(&CommandBufferDirect::OnWaitSyncToken,
+                   base::Unretained(command_buffer_.get())));
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
     gles2::ContextCreationAttribHelper attrib_helper;
@@ -199,17 +193,6 @@ class CommandBufferSetup {
     command_buffer_.reset();
   }
 
-  ~CommandBufferSetup() {
-    if (sync_point_order_data_) {
-      sync_point_order_data_->Destroy();
-      sync_point_order_data_ = nullptr;
-    }
-    if (sync_point_client_state_) {
-      sync_point_client_state_->Destroy();
-      sync_point_client_state_ = nullptr;
-    }
-  }
-
   void RunCommandBuffer(const uint8_t* data, size_t size) {
     // The commands are flushed at a uint32_t granularity. If the data is not
     // a full command, we zero-pad it.
@@ -232,38 +215,6 @@ class CommandBufferSetup {
   }
 
  private:
-  void PumpCommands() {
-    if (!decoder_->MakeCurrent()) {
-      command_buffer_->SetParseError(::gpu::error::kLostContext);
-      return;
-    }
-
-    uint32_t order_num =
-        sync_point_order_data_->GenerateUnprocessedOrderNumber();
-    sync_point_order_data_->BeginProcessingOrderNumber(order_num);
-
-    executor_->PutChanged();
-
-    sync_point_order_data_->FinishProcessingOrderNumber(order_num);
-  }
-
-  bool GetBufferChanged(int32_t transfer_buffer_id) {
-    return executor_->SetGetBuffer(transfer_buffer_id);
-  }
-
-  void OnFenceSyncRelease(uint64_t release) {
-    CHECK(sync_point_client_state_);
-    sync_point_client_state_->ReleaseFenceSync(release);
-  }
-
-  bool OnWaitSyncToken(const SyncToken& sync_token) {
-    CHECK(sync_point_manager_);
-    if (sync_point_manager_->IsSyncTokenReleased(sync_token))
-      return false;
-    executor_->SetScheduled(false);
-    return true;
-  }
-
   void CreateTransferBuffer(size_t size, int32_t id) {
     scoped_refptr<Buffer> buffer =
         command_buffer_->CreateTransferBufferWithId(size, id);
@@ -303,11 +254,8 @@ class CommandBufferSetup {
   GpuPreferences gpu_preferences_;
 
   std::unique_ptr<SyncPointManager> sync_point_manager_;
-  scoped_refptr<SyncPointOrderData> sync_point_order_data_;
-  scoped_refptr<SyncPointClientState> sync_point_client_state_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gl::GLShareGroup> share_group_;
-  const gpu::CommandBufferId command_buffer_id_;
   ServiceDiscardableManager discardable_manager_;
 
   bool recreate_context_ = false;
@@ -317,10 +265,9 @@ class CommandBufferSetup {
   scoped_refptr<gles2::ShaderTranslatorCache> translator_cache_;
   scoped_refptr<gles2::FramebufferCompletenessCache> completeness_cache_;
 
-  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<CommandBufferDirect> command_buffer_;
 
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
-  std::unique_ptr<CommandExecutor> executor_;
 
   scoped_refptr<gles2::ShaderTranslatorInterface> vertex_translator_;
   scoped_refptr<gles2::ShaderTranslatorInterface> fragment_translator_;

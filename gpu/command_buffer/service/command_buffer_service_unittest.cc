@@ -34,13 +34,13 @@ class CommandBufferServiceTest : public testing::Test {
         new CommandBufferService(transfer_buffer_manager_.get()));
   }
 
-  int32_t GetGetOffset() { return command_buffer_->GetLastState().get_offset; }
+  int32_t GetGetOffset() { return command_buffer_->GetState().get_offset; }
 
   int32_t GetPutOffset() { return command_buffer_->GetPutOffset(); }
 
-  int32_t GetToken() { return command_buffer_->GetLastState().token; }
+  int32_t GetToken() { return command_buffer_->GetState().token; }
 
-  int32_t GetError() { return command_buffer_->GetLastState().error; }
+  int32_t GetError() { return command_buffer_->GetState().error; }
 
   bool Initialize(size_t entries) {
     size_t size = entries * sizeof(CommandBufferEntry);
@@ -57,7 +57,7 @@ class CommandBufferServiceTest : public testing::Test {
 
 TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
   EXPECT_TRUE(Initialize(1024));
-  CommandBuffer::State state = command_buffer_->GetLastState();
+  CommandBuffer::State state = command_buffer_->GetState();
   EXPECT_EQ(0, state.get_offset);
   EXPECT_EQ(0, command_buffer_->GetPutOffset());
   EXPECT_EQ(0, state.token);
@@ -127,11 +127,11 @@ TEST_F(CommandBufferServiceTest, SetGetBuffer) {
       .WillOnce(Return(true));
 
   uint32_t set_get_buffer_count =
-      command_buffer_->GetLastState().set_get_buffer_count;
+      command_buffer_->GetState().set_get_buffer_count;
   command_buffer_->SetGetBuffer(ring_buffer_id);
   EXPECT_EQ(0, GetGetOffset());
   EXPECT_EQ(set_get_buffer_count + 1,
-            command_buffer_->GetLastState().set_get_buffer_count);
+            command_buffer_->GetState().set_get_buffer_count);
 }
 
 TEST_F(CommandBufferServiceTest, DefaultTokenIsZero) {

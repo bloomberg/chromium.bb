@@ -221,7 +221,7 @@ bool InProcessCommandBuffer::MakeCurrent() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();
 
-  if (error::IsError(command_buffer_->GetLastState().error)) {
+  if (error::IsError(command_buffer_->GetState().error)) {
     DLOG(ERROR) << "MakeCurrent failed because context lost.";
     return false;
   }
@@ -556,7 +556,8 @@ void InProcessCommandBuffer::UpdateLastStateOnGpuThread() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();
   base::AutoLock lock(last_state_lock_);
-  State state = command_buffer_->GetLastState();
+  command_buffer_->UpdateState();
+  State state = command_buffer_->GetState();
   if (state.generation - last_state_.generation < 0x80000000U)
     last_state_ = state;
 }
@@ -587,7 +588,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(
 
   // If we've processed all pending commands but still have pending queries,
   // pump idle work until the query is passed.
-  if (put_offset == command_buffer_->GetLastState().get_offset &&
+  if (put_offset == command_buffer_->GetState().get_offset &&
       (decoder_->HasMoreIdleWork() || decoder_->HasPendingQueries())) {
     ScheduleDelayedWorkOnGpuThread();
   }

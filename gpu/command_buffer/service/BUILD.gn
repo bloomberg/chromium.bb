@@ -32,6 +32,8 @@ target(link_target_type, "service_sources") {
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
+    "command_buffer_direct.cc",
+    "command_buffer_direct.h",
     "command_buffer_service.cc",
     "command_buffer_service.h",
     "command_executor.cc",

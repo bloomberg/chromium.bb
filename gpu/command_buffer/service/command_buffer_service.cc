@@ -56,37 +56,12 @@ CommandBufferService::CommandBufferService(
 
 CommandBufferService::~CommandBufferService() {}
 
-CommandBufferService::State CommandBufferService::GetLastState() {
-  // generation_ is not incremented for all changes, notably high-frequency ones
-  // (like get offset updates). However we want to make sure we increment the
-  // generation before sending the new state to a command buffer client (either
-  // through IPC or via the shared state), so that it can update its internal
-  // structures.
-  ++generation_;
-  return GetState();
-}
-
 void CommandBufferService::UpdateState() {
+  ++generation_;
   if (shared_state_) {
-    CommandBufferService::State state = GetLastState();
+    CommandBuffer::State state = GetState();
     shared_state_->Write(state);
   }
-}
-
-CommandBuffer::State CommandBufferService::WaitForTokenInRange(int32_t start,
-                                                               int32_t end) {
-  DCHECK(error_ != error::kNoError || InRange(start, end, token_));
-  return GetLastState();
-}
-
-CommandBuffer::State CommandBufferService::WaitForGetOffsetInRange(
-    uint32_t set_get_buffer_count,
-    int32_t start,
-    int32_t end) {
-  DCHECK(error_ != error::kNoError ||
-         (InRange(start, end, get_offset_) &&
-          (set_get_buffer_count == set_get_buffer_count_)));
-  return GetLastState();
 }
 
 void CommandBufferService::Flush(int32_t put_offset) {
@@ -99,10 +74,6 @@ void CommandBufferService::Flush(int32_t put_offset) {
 
   if (!put_offset_change_callback_.is_null())
     put_offset_change_callback_.Run();
-}
-
-void CommandBufferService::OrderingBarrier(int32_t put_offset) {
-  Flush(put_offset);
 }
 
 void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
@@ -135,8 +106,8 @@ void CommandBufferService::SetSharedStateBuffer(
   UpdateState();
 }
 
-CommandBufferService::State CommandBufferService::GetState() {
-  State state;
+CommandBuffer::State CommandBufferService::GetState() {
+  CommandBuffer::State state;
   state.get_offset = get_offset_;
   state.token = token_;
   state.release_count = release_count_;
