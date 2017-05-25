@@ -77,7 +77,15 @@ class CORE_EXPORT ScriptModule final {
   bool IsNull() const { return !module_ || module_->IsEmpty(); }
 
  private:
+  // ModuleScript instances store their record as
+  // TraceWrapperV8Reference<v8::Module>, and reconstructs ScriptModule from it.
+  friend class ModuleScript;
+
   ScriptModule(v8::Isolate*, v8::Local<v8::Module>);
+
+  v8::Local<v8::Module> NewLocal(v8::Isolate* isolate) {
+    return module_->NewLocal(isolate);
+  }
 
   static v8::MaybeLocal<v8::Module> ResolveModuleCallback(
       v8::Local<v8::Context>,

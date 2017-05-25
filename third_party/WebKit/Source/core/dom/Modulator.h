@@ -70,6 +70,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual WebTaskRunner* TaskRunner() = 0;
   virtual ReferrerPolicy GetReferrerPolicy() = 0;
   virtual SecurityOrigin* GetSecurityOrigin() = 0;
+  virtual ScriptState* GetScriptState() = 0;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   virtual void FetchTree(const ModuleScriptFetchRequest&,

@@ -64,6 +64,8 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     return security_origin_.Get();
   }
 
+  ScriptState* GetScriptState() override { return script_state_.Get(); }
+
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus access_control_status,
