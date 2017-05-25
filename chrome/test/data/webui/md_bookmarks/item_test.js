@@ -68,16 +68,4 @@ suite('<bookmarks-item>', function() {
         }),
         store.lastAction);
   });
-
-  test('anchor tag updates with item url', function() {
-    assertEquals('http://example.com/', item.$.url.href);
-
-    store.data.nodes['2'] = createItem('0', {url: 'https://mail.google.com'});
-    store.notifyObservers();
-    assertEquals('https://mail.google.com/', item.$.url.href);
-
-    // Change to a folder.
-    item.itemId = '1';
-    assertEquals('chrome://bookmarks/?id=1', item.$.url.href);
-  });
 });

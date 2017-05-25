@@ -16,11 +16,26 @@ index 78a2a9ec621c..8b776dd790ea 100644
 @@ -43,8 +43,8 @@ Polymer({
        }
      },
- 
+
 -    _ariaLabelledByChanged: function(ariaLabelledBy) {
 -      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
 +    _ariaLabelledByChanged: function() {
 +      this.$.input.textarea.setAttribute('aria-label', this.label);
      },
- 
+
      _ariaDescribedByChanged: function(ariaDescribedBy) {
+diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
+index c9e0a9fd5330..5d04e7e9db8c 100644
+--- a/components-chromium/iron-list/iron-list-extracted.js
++++ b/components-chromium/iron-list/iron-list-extracted.js
+@@ -1466,6 +1466,10 @@
+       return this._physicalIndexForKey[this._collection.getKey(this._getNormalizedItem(idx))];
+     },
+
++    focusItem: function(idx) {
++      this._focusPhysicalItem(idx);
++    },
++
+     _focusPhysicalItem: function(idx) {
+       if (idx < 0 || idx >= this._virtualCount) {
+         return;

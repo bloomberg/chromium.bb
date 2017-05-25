@@ -98,6 +98,13 @@ suite('selection state', function() {
     assertDeepEquals(['2', '3'], normalizeSet(selection.items));
   });
 
+  test('update anchor', function() {
+    action = bookmarks.actions.updateAnchor('3');
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+
+    assertEquals('3', selection.anchor);
+  });
+
   test('deselects items when they are deleted', function() {
     var nodeMap = testTree(createFolder('0', [
       createFolder(

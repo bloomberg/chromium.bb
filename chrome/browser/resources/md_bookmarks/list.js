@@ -50,6 +50,9 @@ Polymer({
       return state.search.term;
     });
     this.updateFromStore();
+
+    this.$.bookmarksCard.addEventListener(
+        'keydown', this.onItemKeydown_.bind(this), true);
   },
 
   /** @return {HTMLElement} */
@@ -99,5 +102,82 @@ Polymer({
   /** @private */
   deselectItems_: function() {
     this.dispatch(bookmarks.actions.deselectItems());
+  },
+
+  /** @private */
+  selectAllItems_: function() {
+    this.dispatch(
+        bookmarks.actions.selectAll(this.displayedIds_, this.getState()));
+  },
+
+  /**
+   * @param{HTMLElement} el
+   * @private
+   */
+  getIndexForItemElement_: function(el) {
+    return this.$.bookmarksCard.modelForElement(el).index;
+  },
+
+  /**
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onItemKeydown_: function(e) {
+    var handled = true;
+    var list = this.$.bookmarksCard;
+    var focusMoved = false;
+    var focusedIndex =
+        this.getIndexForItemElement_(/** @type {HTMLElement} */ (e.target));
+    if (e.key == 'ArrowUp') {
+      focusedIndex--;
+      focusMoved = true;
+    } else if (e.key == 'ArrowDown') {
+      focusedIndex++;
+      focusMoved = true;
+      e.preventDefault();
+    } else if (e.key == 'Home') {
+      focusedIndex = 0;
+      focusMoved = true;
+    } else if (e.key == 'End') {
+      focusedIndex = list.items.length - 1;
+      focusMoved = true;
+    } else if (e.key == ' ' && e.ctrlKey) {
+      this.dispatch(bookmarks.actions.selectItem(
+          this.displayedIds_[focusedIndex], this.getState(), {
+            clear: false,
+            range: false,
+            toggle: true,
+          }));
+    } else if (e.key == 'a' && e.ctrlKey) {
+      this.selectAllItems_();
+    } else if (e.key == 'Escape') {
+      this.deselectItems_();
+    } else {
+      handled = false;
+    }
+
+    if (focusMoved) {
+      focusedIndex = Math.min(list.items.length - 1, Math.max(0, focusedIndex));
+      list.focusItem(focusedIndex);
+
+      if (e.ctrlKey && !e.shiftKey) {
+        this.dispatch(
+            bookmarks.actions.updateAnchor(this.displayedIds_[focusedIndex]));
+      } else {
+        // If the focus moved from something other than a Ctrl + move event,
+        // update the selection.
+        var config = {
+          clear: !e.ctrlKey,
+          range: e.shiftKey,
+          toggle: false,
+        };
+
+        this.dispatch(bookmarks.actions.selectItem(
+            this.displayedIds_[focusedIndex], this.getState(), config));
+      }
+    }
+
+    if (handled)
+      e.stopPropagation();
   },
 });

@@ -1466,6 +1466,10 @@
       return this._physicalIndexForKey[this._collection.getKey(this._getNormalizedItem(idx))];
     },
 
+    focusItem: function(idx) {
+      this._focusPhysicalItem(idx);
+    },
+
     _focusPhysicalItem: function(idx) {
       if (idx < 0 || idx >= this._virtualCount) {
         return;
