@@ -82,6 +82,7 @@ class BluetoothLowEnergyWeaveClientConnection
   // extends the IN_PROGRESS state of Connection::Status.
   enum SubStatus {
     DISCONNECTED,
+    WAITING_CONNECTION_LATENCY,
     WAITING_GATT_CONNECTION,
     WAITING_CHARACTERISTICS,
     CHARACTERISTICS_FOUND,
@@ -170,12 +171,18 @@ class BluetoothLowEnergyWeaveClientConnection
 
   void SetSubStatus(SubStatus status);
 
+  // Sets the connection interval before connecting.
+  void SetConnectionLatency();
+
   // Creates the GATT connection with |remote_device|.
   void CreateGattConnection();
 
   // Called when a GATT connection is created.
   void OnGattConnectionCreated(
       std::unique_ptr<device::BluetoothGattConnection> gatt_connection);
+
+  // Callback when there is an error setting the connection interval.
+  void OnSetConnectionLatencyError();
 
   // Callback called when there is an error creating the GATT connection.
   void OnCreateGattConnectionError(
