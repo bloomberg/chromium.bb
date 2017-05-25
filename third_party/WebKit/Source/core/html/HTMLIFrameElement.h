@@ -53,6 +53,8 @@ class CORE_EXPORT HTMLIFrameElement final
  private:
   explicit HTMLIFrameElement(Document&);
 
+  void SetCollapsed(bool) override;
+
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(const QualifiedName&,
@@ -88,6 +90,7 @@ class CORE_EXPORT HTMLIFrameElement final
   bool did_load_non_empty_document_;
   bool allow_fullscreen_;
   bool allow_payment_request_;
+  bool collapsed_by_client_;
   Member<HTMLIFrameElementSandbox> sandbox_;
   Member<HTMLIFrameElementAllow> allow_;
 

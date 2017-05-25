@@ -354,7 +354,8 @@ void NavigationResourceThrottle::OnUIChecksPerformed(
     CancelAndIgnore();
   } else if (result == NavigationThrottle::CANCEL) {
     Cancel();
-  } else if (result == NavigationThrottle::BLOCK_REQUEST) {
+  } else if (result == NavigationThrottle::BLOCK_REQUEST ||
+             result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
     CancelWithError(net::ERR_BLOCKED_BY_CLIENT);
   } else if (result == NavigationThrottle::BLOCK_RESPONSE) {
     // TODO(mkwst): If we cancel the main frame request with anything other than

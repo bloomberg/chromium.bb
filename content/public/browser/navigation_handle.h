@@ -234,8 +234,10 @@ class CONTENT_EXPORT NavigationHandle {
   virtual void Resume() = 0;
 
   // Cancels a navigation that was previously deferred by a NavigationThrottle.
-  // |result| should be equal to NavigationThrottle::CANCEL or
-  // NavigationThrottle::CANCEL_AND_IGNORE.
+  // |result| should be equal to either:
+  //  - NavigationThrottle::CANCEL,
+  //  - NavigationThrottle::CANCEL_AND_IGNORE, or
+  //  - NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE.
   // Note: this may lead to the deletion of the NavigationHandle and its
   // associated NavigationThrottles.
   virtual void CancelDeferredNavigation(

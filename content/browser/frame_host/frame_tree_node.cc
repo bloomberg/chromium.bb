@@ -106,6 +106,7 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       original_opener_(nullptr),
       original_opener_observer_(nullptr),
       has_committed_real_load_(false),
+      is_collapsed_(false),
       replication_state_(
           scope,
           name,
@@ -258,6 +259,15 @@ void FrameTreeNode::SetCurrentOrigin(
   replication_state_.origin = origin;
   replication_state_.has_potentially_trustworthy_unique_origin =
       is_potentially_trustworthy_unique_origin;
+}
+
+void FrameTreeNode::SetCollapsed(bool collapsed) {
+  DCHECK(!IsMainFrame());
+  if (is_collapsed_ == collapsed)
+    return;
+
+  is_collapsed_ = collapsed;
+  render_manager_.OnDidChangeCollapsedState(collapsed);
 }
 
 void FrameTreeNode::SetFrameName(const std::string& name,

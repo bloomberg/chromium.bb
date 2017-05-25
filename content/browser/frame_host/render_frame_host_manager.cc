@@ -950,6 +950,27 @@ void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
   }
 }
 
+void RenderFrameHostManager::OnDidChangeCollapsedState(bool collapsed) {
+  DCHECK(frame_tree_node_->parent());
+  SiteInstance* parent_site_instance =
+      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+
+  // There will be no proxy to represent the pending or speculative RFHs in the
+  // parent's SiteInstance until the navigation is committed, but the old RFH is
+  // not swapped out before that happens either, so we can talk to the
+  // FrameOwner in the parent via the child's current RenderFrame at any time.
+  DCHECK(current_frame_host());
+  if (current_frame_host()->GetSiteInstance() == parent_site_instance) {
+    current_frame_host()->Send(
+        new FrameMsg_Collapse(current_frame_host()->GetRoutingID(), collapsed));
+  } else {
+    RenderFrameProxyHost* proxy_to_parent =
+        GetRenderFrameProxyHost(parent_site_instance);
+    proxy_to_parent->Send(
+        new FrameMsg_Collapse(proxy_to_parent->GetRoutingID(), collapsed));
+  }
+}
+
 void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
     const FrameOwnerProperties& properties) {
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())

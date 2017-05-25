@@ -184,6 +184,11 @@ class WebFrame {
   virtual bool HasHorizontalScrollbar() const = 0;
   virtual bool HasVerticalScrollbar() const = 0;
 
+  // Whether to collapse the frame's owner element in the embedder document,
+  // that is, to remove it from the layout as if it did not exist. Only works
+  // for <iframe> owner elements.
+  BLINK_EXPORT void Collapse(bool);
+
   // Hierarchy ----------------------------------------------------------
 
   // Returns the containing view.
