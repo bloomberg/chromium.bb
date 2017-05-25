@@ -1664,10 +1664,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisFill fill)
     : CSSValue(kIdentifierClass) {
   switch (fill) {
-    case kTextEmphasisFillFilled:
+    case TextEmphasisFill::kFilled:
       value_id_ = CSSValueFilled;
       break;
-    case kTextEmphasisFillOpen:
+    case TextEmphasisFill::kOpen:
       value_id_ = CSSValueOpen;
       break;
   }
@@ -1677,15 +1677,15 @@ template <>
 inline TextEmphasisFill CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueFilled:
-      return kTextEmphasisFillFilled;
+      return TextEmphasisFill::kFilled;
     case CSSValueOpen:
-      return kTextEmphasisFillOpen;
+      return TextEmphasisFill::kOpen;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextEmphasisFillFilled;
+  return TextEmphasisFill::kFilled;
 }
 
 template <>

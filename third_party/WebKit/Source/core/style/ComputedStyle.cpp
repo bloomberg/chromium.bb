@@ -1564,7 +1564,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                           (&kBulletCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_dot_string,
                           (&kWhiteBulletCharacter, 1));
-      return GetTextEmphasisFill() == kTextEmphasisFillFilled
+      return GetTextEmphasisFill() == TextEmphasisFill::kFilled
                  ? filled_dot_string
                  : open_dot_string;
     }
@@ -1573,7 +1573,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                           (&kBlackCircleCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_circle_string,
                           (&kWhiteCircleCharacter, 1));
-      return GetTextEmphasisFill() == kTextEmphasisFillFilled
+      return GetTextEmphasisFill() == TextEmphasisFill::kFilled
                  ? filled_circle_string
                  : open_circle_string;
     }
@@ -1582,7 +1582,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                           (&kFisheyeCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_double_circle_string,
                           (&kBullseyeCharacter, 1));
-      return GetTextEmphasisFill() == kTextEmphasisFillFilled
+      return GetTextEmphasisFill() == TextEmphasisFill::kFilled
                  ? filled_double_circle_string
                  : open_double_circle_string;
     }
@@ -1591,7 +1591,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                           (&kBlackUpPointingTriangleCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_triangle_string,
                           (&kWhiteUpPointingTriangleCharacter, 1));
-      return GetTextEmphasisFill() == kTextEmphasisFillFilled
+      return GetTextEmphasisFill() == TextEmphasisFill::kFilled
                  ? filled_triangle_string
                  : open_triangle_string;
     }
@@ -1600,7 +1600,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                           (&kSesameDotCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_sesame_string,
                           (&kWhiteSesameDotCharacter, 1));
-      return GetTextEmphasisFill() == kTextEmphasisFillFilled
+      return GetTextEmphasisFill() == TextEmphasisFill::kFilled
                  ? filled_sesame_string
                  : open_sesame_string;
     }
