@@ -54,6 +54,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
@@ -80,7 +81,6 @@
 #include "public/web/WebSearchableFormData.h"
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebViewClient.h"
-#include "web/ContextMenuAllowedScope.h"
 
 namespace blink {
 
