@@ -31,6 +31,8 @@ class GeolocationTracker {
     private static Location sNetworkLocationForTesting;
     private static Location sGpsLocationForTesting;
     private static boolean sUseLocationForTesting;
+    private static long sLocationAgeForTesting;
+    private static boolean sUseLocationAgeForTesting;
 
     private static class SelfCancelingListener implements LocationListener {
 
@@ -78,6 +80,7 @@ class GeolocationTracker {
      * created. If the apparent age is negative, Long.MAX_VALUE will be returned.
      */
     static long getLocationAge(Location location) {
+        if (sUseLocationAgeForTesting) return sLocationAgeForTesting;
         long age = System.currentTimeMillis() - location.getTime();
         return age >= 0 ? age : Long.MAX_VALUE;
     }
@@ -150,6 +153,16 @@ class GeolocationTracker {
         sNetworkLocationForTesting = networkLocationForTesting;
         sGpsLocationForTesting = gpsLocationForTesting;
         sUseLocationForTesting = true;
+    }
+
+    @VisibleForTesting
+    static void setLocationAgeForTesting(Long locationAgeForTesting) {
+        if (locationAgeForTesting == null) {
+            sUseLocationAgeForTesting = false;
+            return;
+        }
+        sLocationAgeForTesting = locationAgeForTesting;
+        sUseLocationAgeForTesting = true;
     }
 
     private static boolean hasPermission(Context context, String permission) {
