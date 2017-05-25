@@ -31,7 +31,6 @@
 #include <algorithm>
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -212,14 +211,6 @@ void DocumentMarkerController::RemoveMarkersInRange(
 
   TextIterator marked_text(range.StartPosition(), range.EndPosition());
   DocumentMarkerController::RemoveMarkers(marked_text, marker_types);
-}
-
-static void UpdateMarkerRenderedRect(const Node& node,
-                                     RenderedDocumentMarker& marker) {
-  const Position startPosition(&const_cast<Node&>(node), marker.StartOffset());
-  const Position endPostion(&const_cast<Node&>(node), marker.EndOffset());
-  EphemeralRange range(startPosition, endPostion);
-  marker.SetRenderedRect(LayoutRect(ComputeTextRect(range)));
 }
 
 // Markers are stored in order sorted by their start offset.
@@ -433,23 +424,6 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
     if (!list)
       continue;
     result.AppendVector(ToTextMatchMarkerListImpl(list)->RenderedRects(node));
-  }
-
-  return result;
-}
-
-// TODO(rlanday): move this to TextMatchMarkerListImpl.cpp
-Vector<IntRect> TextMatchMarkerListImpl::RenderedRects(const Node& node) const {
-  Vector<IntRect> result;
-
-  for (DocumentMarker* marker : markers_) {
-    RenderedDocumentMarker* const rendered_marker =
-        ToRenderedDocumentMarker(marker);
-    if (!rendered_marker->IsValid())
-      UpdateMarkerRenderedRect(node, *rendered_marker);
-    if (!rendered_marker->IsRendered())
-      continue;
-    result.push_back(rendered_marker->RenderedRect());
   }
 
   return result;
