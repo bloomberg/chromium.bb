@@ -118,6 +118,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private VrShell mVrShell;
     private NonPresentingGvrContext mNonPresentingGvrContext;
     private VrDaydreamApi mVrDaydreamApi;
+    private Boolean mIsDaydreamCurrentViewer;
     private VrCoreVersionChecker mVrCoreVersionChecker;
     private TabModelSelector mTabModelSelector;
 
@@ -703,7 +704,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVr(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
 
-        if (mVrSupportLevel == VR_CARDBOARD || !mVrDaydreamApi.isDaydreamCurrentViewer()) {
+        if (mVrSupportLevel == VR_CARDBOARD || !isDaydreamCurrentViewer()) {
             // Avoid using launchInVr which would trigger DON flow regardless current viewer type
             // due to the lack of support for unexported activities.
             enterVr(false);
@@ -723,9 +724,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @CalledByNative
     private boolean exitWebVRPresent() {
         if (!mInVr) return false;
-        if (!isVrShellEnabled(mVrSupportLevel) || !mVrDaydreamApi.isDaydreamCurrentViewer()
+        if (!isVrShellEnabled(mVrSupportLevel) || !isDaydreamCurrentViewer()
                 || !activitySupportsVrBrowsing(mActivity)) {
-            if (mVrDaydreamApi.isDaydreamCurrentViewer()
+            if (isDaydreamCurrentViewer()
                     && mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
                 mShowingDaydreamDoff = true;
                 return false;
@@ -767,7 +768,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             return;
         }
 
-        if (mVrDaydreamApi.isDaydreamCurrentViewer()
+        if (isDaydreamCurrentViewer()
                 && mLastVrExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
             mDonSucceeded = true;
         }
@@ -815,6 +816,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // home, pause instead of exiting VR here. For now, because VR Apps shouldn't show up in the
         // non-VR recents, and we don't want ChromeTabbedActivity disappearing, exit VR.
         shutdownVr(true /* disableVrMode */, true /* canReenter */, false /* stayingInChrome */);
+        mIsDaydreamCurrentViewer = null;
     }
 
     private boolean onBackPressedInternal() {
@@ -841,6 +843,13 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 !mExitingCct /* stayingInChrome */);
         if (mExitingCct) ((CustomTabActivity) mActivity).finishAndClose(false);
         mExitingCct = false;
+    }
+
+    private boolean isDaydreamCurrentViewer() {
+        if (mIsDaydreamCurrentViewer == null) {
+            mIsDaydreamCurrentViewer = mVrDaydreamApi.isDaydreamCurrentViewer();
+        }
+        return mIsDaydreamCurrentViewer;
     }
 
     @CalledByNative
