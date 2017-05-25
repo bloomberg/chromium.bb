@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_TIMEZONE_RESOLVER_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -45,11 +46,23 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
 
   int GetTimezoneManagementSetting();
 
+  // Local State initialization observer.
+  void OnLocalStateInitialized(bool initialized);
+
   // This is non-null only after user logs in.
-  PrefService* primary_user_prefs_;
+  PrefService* primary_user_prefs_ = nullptr;
 
   // This is used to subscribe to policy preference.
   PrefChangeRegistrar local_state_pref_change_registrar_;
+
+  // True if initial policy values are loaded.
+  bool local_state_initialized_ = false;
+
+  // True if TimeZoneResolverManager may start/stop on its own.
+  // Becomes true after UpdateTimezoneResolver() has been called at least once.
+  bool initialized_ = false;
+
+  base::WeakPtrFactory<TimeZoneResolverManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneResolverManager);
 };
