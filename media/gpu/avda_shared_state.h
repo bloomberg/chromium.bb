@@ -19,11 +19,11 @@
 
 namespace media {
 
-// Shared state to allow communication between the AVDA and the
-// GLImages that configure GL for drawing the frames.  This holds a reference to
-// the surface bundle that's backing the frames.  If it's an overlay, then we'll
+// State shared by AVDACodecImages.  This holds a reference to the surface
+// bundle that's backing the frames.  If it's an overlay, then we'll
 // automatically drop our reference to the bundle if the overlay's surface gets
 // an OnSurfaceDestroyed.
+// TODO(watk): This doesn't really do anything any more; we should delete it.
 class AVDASharedState : public base::RefCounted<AVDASharedState> {
  public:
   AVDASharedState(scoped_refptr<AVDASurfaceBundle> surface_bundle);
@@ -31,11 +31,6 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   GLuint surface_texture_service_id() const {
     return surface_texture() ? surface_texture()->texture_id() : 0;
   }
-
-  // Signal the "frame available" event.  This may be called from any thread.
-  void SignalFrameAvailable();
-
-  void WaitForFrameAvailable();
 
   SurfaceTextureGLOwner* surface_texture() const {
     return surface_bundle_ ? surface_bundle_->surface_texture.get() : nullptr;
@@ -75,16 +70,19 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   void RenderCodecBufferToSurfaceTexture(MediaCodecBridge* codec,
                                          int codec_buffer_index);
 
+  void WaitForFrameAvailable();
+
   // Helper methods for interacting with |surface_texture_|. See
-  // gfx::SurfaceTexture for method details.
+  // gl::SurfaceTexture for method details.
   void UpdateTexImage();
+
   // Returns a matrix that needs to be y flipped in order to match the
   // StreamTextureMatrix contract. See GLStreamTextureImage::YInvertMatrix().
   void GetTransformMatrix(float matrix[16]) const;
 
   // Resets the last time for RenderCodecBufferToSurfaceTexture(). Should be
   // called during codec changes.
-  void clear_release_time() { release_time_ = base::TimeTicks(); }
+  void ClearReleaseTime();
 
  protected:
   virtual ~AVDASharedState();
@@ -94,19 +92,8 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   void OnSurfaceDestroyed(AndroidOverlay* overlay);
 
-  // For signalling OnFrameAvailable().
-  base::WaitableEvent frame_available_event_;
-
-  // The time of the last call to RenderCodecBufferToSurfaceTexture(), null if
-  // if there has been no last call or WaitForFrameAvailable() has been called
-  // since the last call.
-  base::TimeTicks release_time_;
-
   // Texture matrix of the front buffer of the surface texture.
   float gl_matrix_[16];
-
-  class OnFrameAvailableHandler;
-  scoped_refptr<OnFrameAvailableHandler> on_frame_available_handler_;
 
   scoped_refptr<AVDASurfaceBundle> surface_bundle_;
 
