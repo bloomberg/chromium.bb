@@ -2242,6 +2242,8 @@ split_static_library("browser") {
       "safe_browsing/safe_browsing_service.cc",
       "safe_browsing/safe_browsing_service.h",
       "safe_browsing/services_delegate.h",
+      "safe_browsing/test_safe_browsing_blocking_page_quiet.cc",
+      "safe_browsing/test_safe_browsing_blocking_page_quiet.h",
       "safe_browsing/test_safe_browsing_service.cc",
       "safe_browsing/test_safe_browsing_service.h",
       "safe_browsing/ui_manager.cc",
