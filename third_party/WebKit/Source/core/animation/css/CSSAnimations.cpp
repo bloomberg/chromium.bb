@@ -645,7 +645,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     return;
   }
 
-  RefPtr<AnimatableValue> to = nullptr;
   const RunningTransition* interrupted_transition = nullptr;
   if (state.active_transitions) {
     TransitionMap::const_iterator active_transition_iter =
@@ -653,17 +652,18 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     if (active_transition_iter != state.active_transitions->end()) {
       const RunningTransition* running_transition =
           &active_transition_iter->value;
-      to = CSSAnimatableValueFactory::Create(property, state.style);
-      const AnimatableValue* active_to = running_transition->to.Get();
-      if (to->Equals(active_to))
+      if (CSSPropertyEquality::PropertiesEqual(property, state.style,
+                                               *running_transition->to)) {
         return;
+      }
       state.update.CancelTransition(property);
       DCHECK(!state.animating_element->GetElementAnimations() ||
              !state.animating_element->GetElementAnimations()
                   ->IsAnimationStyleChange());
 
-      if (to->Equals(
-              running_transition->reversing_adjusted_start_value.Get())) {
+      if (CSSPropertyEquality::PropertiesEqual(
+              property, state.style,
+              *running_transition->reversing_adjusted_start_value)) {
         interrupted_transition = running_transition;
       }
     }
@@ -671,22 +671,16 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
 
   const PropertyRegistry* registry =
       state.animating_element->GetDocument().GetPropertyRegistry();
-
   if (property.IsCSSCustomProperty()) {
-    if (!registry || !registry->Registration(property.CustomPropertyName()) ||
-        CSSPropertyEquality::RegisteredCustomPropertiesEqual(
-            property.CustomPropertyName(), state.old_style, state.style)) {
+    if (!registry || !registry->Registration(property.CustomPropertyName())) {
       return;
     }
-  } else if (CSSPropertyEquality::PropertiesEqual(
-                 property.CssProperty(), state.old_style, state.style)) {
-    return;
   }
 
-  if (!to)
-    to = CSSAnimatableValueFactory::Create(property, state.style);
-  RefPtr<AnimatableValue> from =
-      CSSAnimatableValueFactory::Create(property, state.old_style);
+  if (CSSPropertyEquality::PropertiesEqual(property, state.old_style,
+                                           state.style)) {
+    return;
+  }
 
   CSSInterpolationTypesMap map(registry);
   InterpolationEnvironment old_environment(map, state.old_style);
@@ -730,7 +724,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     return;
   }
 
-  AnimatableValue* reversing_adjusted_start_value = from.Get();
+  const ComputedStyle* reversing_adjusted_start_value = &state.old_style;
   double reversing_shortening_factor = 1;
   if (interrupted_transition) {
     const double interrupted_progress =
@@ -785,6 +779,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (CompositorAnimations::IsCompositableProperty(property.CssProperty())) {
+    RefPtr<AnimatableValue> from =
+        CSSAnimatableValueFactory::Create(property, state.old_style);
+    RefPtr<AnimatableValue> to =
+        CSSAnimatableValueFactory::Create(property, state.style);
     delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);
@@ -792,7 +790,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
 
   TransitionKeyframeEffectModel* model =
       TransitionKeyframeEffectModel::Create(keyframes);
-  state.update.StartTransition(property, from.Get(), to.Get(),
+  if (!state.cloned_style) {
+    state.cloned_style = ComputedStyle::Clone(state.style);
+  }
+  state.update.StartTransition(property, &state.old_style, state.cloned_style,
                                reversing_adjusted_start_value,
                                reversing_shortening_factor,
                                *InertEffect::Create(model, timing, false, 0));
@@ -876,9 +877,8 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
   if (!animation_style_recalc && style.Display() != EDisplay::kNone &&
       layout_object && layout_object->Style() && transition_data) {
     TransitionUpdateState state = {
-        update,          animating_element,  *layout_object->Style(),
-        style,           active_transitions, listed_properties,
-        *transition_data};
+        update,  animating_element,  *layout_object->Style(), style,
+        nullptr, active_transitions, listed_properties,       *transition_data};
 
     for (size_t transition_index = 0;
          transition_index < transition_data->PropertyList().size();

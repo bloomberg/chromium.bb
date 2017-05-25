@@ -144,9 +144,9 @@ class CSSAnimations final {
     DEFINE_INLINE_TRACE() { visitor->Trace(animation); }
 
     Member<Animation> animation;
-    RefPtr<AnimatableValue> from;
-    RefPtr<AnimatableValue> to;
-    RefPtr<AnimatableValue> reversing_adjusted_start_value;
+    RefPtr<const ComputedStyle> from;
+    RefPtr<const ComputedStyle> to;
+    RefPtr<const ComputedStyle> reversing_adjusted_start_value;
     double reversing_shortening_factor;
   };
 
@@ -165,6 +165,7 @@ class CSSAnimations final {
     Member<const Element> animating_element;
     const ComputedStyle& old_style;
     const ComputedStyle& style;
+    RefPtr<const ComputedStyle> cloned_style;
     const TransitionMap* active_transitions;
     HashSet<PropertyHandle>& listed_properties;
     const CSSTransitionData& transition_data;

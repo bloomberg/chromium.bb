@@ -167,9 +167,9 @@ class CSSAnimationUpdate final {
 
   void StartTransition(
       const PropertyHandle& property,
-      RefPtr<AnimatableValue> from,
-      RefPtr<AnimatableValue> to,
-      PassRefPtr<AnimatableValue> reversing_adjusted_start_value,
+      RefPtr<const ComputedStyle> from,
+      RefPtr<const ComputedStyle> to,
+      PassRefPtr<const ComputedStyle> reversing_adjusted_start_value,
       double reversing_shortening_factor,
       const InertEffect& effect) {
     NewTransition new_transition;
@@ -221,9 +221,9 @@ class CSSAnimationUpdate final {
     DEFINE_INLINE_TRACE() { visitor->Trace(effect); }
 
     PropertyHandle property = HashTraits<blink::PropertyHandle>::EmptyValue();
-    RefPtr<AnimatableValue> from;
-    RefPtr<AnimatableValue> to;
-    RefPtr<AnimatableValue> reversing_adjusted_start_value;
+    RefPtr<const ComputedStyle> from;
+    RefPtr<const ComputedStyle> to;
+    RefPtr<const ComputedStyle> reversing_adjusted_start_value;
     double reversing_shortening_factor;
     Member<const InertEffect> effect;
   };
