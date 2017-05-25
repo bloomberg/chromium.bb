@@ -9,20 +9,26 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/js/js_event_details.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 
@@ -34,6 +40,21 @@ using syncer::JsEventDetails;
 using syncer::ModelTypeSet;
 using syncer::SyncService;
 using syncer::WeakHandle;
+
+namespace {
+
+// Converts the string at |index| in |list| to an int, defaulting to 0 on error.
+int64_t StringAtIndexToInt64(const base::ListValue* list, int index) {
+  std::string str;
+  if (list->GetString(index, &str)) {
+    int64_t integer = 0;
+    if (base::StringToInt64(str, &integer))
+      return integer;
+  }
+  return 0;
+}
+
+}  //  namespace
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
     : SyncInternalsMessageHandler(
@@ -84,6 +105,17 @@ void SyncInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kRequestListOfTypes,
       base::Bind(&SyncInternalsMessageHandler::HandleRequestListOfTypes,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestUserEventsVisibility,
+      base::Bind(
+          &SyncInternalsMessageHandler::HandleRequestUserEventsVisibility,
+          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kWriteUserEvent,
+      base::Bind(&SyncInternalsMessageHandler::HandleWriteUserEvent,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -170,6 +202,31 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
         base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
                    weak_ptr_factory_.GetWeakPtr(), request_id));
   }
+}
+
+void SyncInternalsMessageHandler::HandleRequestUserEventsVisibility(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  AllowJavascript();
+  CallJavascriptFunction(
+      syncer::sync_ui_util::kUserEventsVisibilityCallback,
+      Value(base::FeatureList::IsEnabled(switches::kSyncUserEvents)));
+}
+
+void SyncInternalsMessageHandler::HandleWriteUserEvent(
+    const base::ListValue* args) {
+  DCHECK_EQ(2U, args->GetSize());
+  AllowJavascript();
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  syncer::UserEventService* user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(
+          profile->GetOriginalProfile());
+
+  sync_pb::UserEventSpecifics event_specifics;
+  event_specifics.set_event_time_usec(StringAtIndexToInt64(args, 0));
+  event_specifics.set_navigation_id(StringAtIndexToInt64(args, 1));
+  user_event_service->RecordUserEvent(event_specifics);
 }
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(

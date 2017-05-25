@@ -45,6 +45,7 @@ chrome/test/functional/special_tabs.py. -->
 <script src="chrome://sync-internals/sync_log.js"></script>
 <script src="chrome://sync-internals/sync_node_browser.js"></script>
 <script src="chrome://sync-internals/sync_search.js"></script>
+<script src="chrome://sync-internals/user_events.js"></script>
 <script src="chrome://sync-internals/strings.js"></script>
 </head>
 <body>
@@ -54,6 +55,10 @@ chrome/test/functional/special_tabs.py. -->
   /* TODO(akalin): Figure out a better way to make the tab box the
      same height no matter which tab is selected. */
   min-height: 650px;
+}
+[hidden] {
+  /* This allows us to hide tabs by adding and removing hidden attribute. */
+  display: none !important;
 }
 </style>
 
@@ -65,6 +70,7 @@ chrome/test/functional/special_tabs.py. -->
     <tab id="sync-events-tab">Events</tab>
     <tab id="sync-browser-tab">Sync Node Browser</tab>
     <tab id="sync-search-tab">Search</tab>
+    <tab id="sync-user-events-tab" hidden>User Events</tab>
   </tabs>
   <tabpanels>
     <tabpanel>
@@ -84,6 +90,9 @@ chrome/test/functional/special_tabs.py. -->
     </tabpanel>
     <tabpanel>
       <include src="search.html">
+    </tabpanel>
+    <tabpanel>
+      <include src="user_events.html">
     </tabpanel>
   </tabpanels>
 </tabbox>

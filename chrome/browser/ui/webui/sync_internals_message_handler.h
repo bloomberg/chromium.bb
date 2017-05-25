@@ -58,6 +58,12 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // Handler for getAllNodes message.  Needs a |request_id| argument.
   void HandleGetAllNodes(const base::ListValue* args);
 
+  // Handler for requests to get UserEvents tab visibility.
+  void HandleRequestUserEventsVisibility(const base::ListValue* args);
+
+  // Handler for writeUserEvent message.
+  void HandleWriteUserEvent(const base::ListValue* args);
+
   // syncer::JsEventHandler implementation.
   void HandleJsEvent(const std::string& name,
                      const syncer::JsEventDetails& details) override;

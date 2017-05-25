@@ -36,6 +36,7 @@ extern const char kSyncLogJS[];
 extern const char kSyncNodeBrowserJS[];
 extern const char kSyncSearchJS[];
 extern const char kTypesJS[];
+extern const char kUserEventsJS[];
 
 // Message handlers.
 // Must match the constants used in the resource files.
@@ -46,6 +47,9 @@ extern const char kRegisterForEvents[];
 extern const char kRegisterForPerTypeCounters[];
 extern const char kRequestListOfTypes[];
 extern const char kRequestUpdatedAboutInfo[];
+extern const char kRequestUserEventsVisibility[];
+extern const char kUserEventsVisibilityCallback[];
+extern const char kWriteUserEvent[];
 
 // Other strings.
 // Must match the constants used in the resource files.
