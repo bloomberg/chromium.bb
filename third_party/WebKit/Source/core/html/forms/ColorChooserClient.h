@@ -31,6 +31,7 @@
 #ifndef ColorChooserClient_h
 #define ColorChooserClient_h
 
+#include "core/CoreExport.h"
 #include "platform/ColorSuggestion.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
@@ -40,7 +41,7 @@ namespace blink {
 
 class Element;
 
-class ColorChooserClient : public GarbageCollectedMixin {
+class CORE_EXPORT ColorChooserClient : public GarbageCollectedMixin {
  public:
   virtual ~ColorChooserClient();
   DEFINE_INLINE_VIRTUAL_TRACE() {}

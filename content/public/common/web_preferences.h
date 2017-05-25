@@ -259,6 +259,7 @@ struct CONTENT_EXPORT WebPreferences {
   // If enabled, video fullscreen detection will be enabled.
   bool video_fullscreen_detection_enabled;
   bool embedded_media_experience_enabled;
+  bool page_popups_suppressed;
 #else  // defined(OS_ANDROID)
 #endif  // defined(OS_ANDROID)
 

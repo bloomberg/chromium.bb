@@ -51,6 +51,7 @@
 #include "core/html/forms/ColorChooser.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/DateTimeChooser.h"
+#include "core/html/forms/DateTimeChooserClient.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/compositing/CompositedSelection.h"
@@ -708,6 +709,10 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
     const Color&) {
   NotifyPopupOpeningObservers();
   ColorChooserUIController* controller = nullptr;
+
+  if (frame->GetDocument()->GetSettings()->GetPagePopupsSuppressed())
+    return nullptr;
+
   if (RuntimeEnabledFeatures::pagePopupEnabled())
     controller =
         ColorChooserPopupUIController::Create(frame, this, chooser_client);
@@ -720,6 +725,12 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
 DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
     DateTimeChooserClient* picker_client,
     const DateTimeChooserParameters& parameters) {
+  if (picker_client->OwnerElement()
+          .GetDocument()
+          .GetSettings()
+          ->GetPagePopupsSuppressed())
+    return nullptr;
+
   NotifyPopupOpeningObservers();
   if (RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled())
     return DateTimeChooserImpl::Create(this, picker_client, parameters);

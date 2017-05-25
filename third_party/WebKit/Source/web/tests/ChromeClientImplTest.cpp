@@ -29,9 +29,13 @@
  */
 
 #include "core/exported/WebViewBase.h"
+#include "core/html/forms/ColorChooserClient.h"
+#include "core/html/forms/DateTimeChooser.h"
+#include "core/html/forms/DateTimeChooserClient.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
 #include "core/page/ScopedPageSuspender.h"
+#include "platform/Language.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebLocalFrame.h"
@@ -274,6 +278,138 @@ TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
   EXPECT_EQ(nullptr,
             chrome_client_impl_->CreateWindow(
                 frame, request, features, kNavigationPolicyNewForegroundTab));
+}
+
+class FakeColorChooserClient
+    : public GarbageCollectedFinalized<FakeColorChooserClient>,
+      public ColorChooserClient {
+ public:
+  FakeColorChooserClient(Element* owner_element)
+      : owner_element_(owner_element) {}
+  ~FakeColorChooserClient() override {}
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(owner_element_);
+    ColorChooserClient::Trace(visitor);
+  }
+
+  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient)
+
+  // ColorChooserClient
+  void DidChooseColor(const Color& color) override {}
+  void DidEndChooser() override {}
+  Element& OwnerElement() const override { return *owner_element_; }
+  IntRect ElementRectRelativeToViewport() const override { return IntRect(); }
+  Color CurrentColor() override { return Color(); }
+  bool ShouldShowSuggestions() const override { return false; }
+  Vector<ColorSuggestion> Suggestions() const override {
+    return Vector<ColorSuggestion>();
+  }
+
+ private:
+  Member<Element> owner_element_;
+};
+
+class FakeDateTimeChooserClient
+    : public GarbageCollectedFinalized<FakeDateTimeChooserClient>,
+      public DateTimeChooserClient {
+ public:
+  FakeDateTimeChooserClient(Element* owner_element)
+      : owner_element_(owner_element) {}
+  ~FakeDateTimeChooserClient() override {}
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(owner_element_);
+    DateTimeChooserClient::Trace(visitor);
+  }
+
+  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient)
+
+  // DateTimeChooserClient
+  Element& OwnerElement() const override { return *owner_element_; }
+  void DidChooseValue(const String&) override {}
+  void DidChooseValue(double) override {}
+  void DidEndChooser() override {}
+
+ private:
+  Member<Element> owner_element_;
+};
+
+class PagePopupSuppressionTest : public testing::Test {
+ public:
+  PagePopupSuppressionTest() {}
+
+  bool CanOpenColorChooser() {
+    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    Color color;
+    return !!chrome_client_impl_->OpenColorChooser(frame, color_chooser_client_,
+                                                   color);
+  }
+
+  bool CanOpenDateTimeChooser() {
+    DateTimeChooserParameters params;
+    params.locale = DefaultLanguage();
+    return !!chrome_client_impl_->OpenDateTimeChooser(date_time_chooser_client_,
+                                                      params);
+  }
+
+  Settings* GetSettings() {
+    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    return frame->GetDocument()->GetSettings();
+  }
+
+ protected:
+  void SetUp() override {
+    web_view_ = static_cast<WebViewBase*>(
+        WebViewBase::Create(&web_view_client_, kWebPageVisibilityStateVisible));
+    main_frame_ = WebLocalFrame::Create(WebTreeScopeType::kDocument,
+                                        &web_frame_client_, nullptr, nullptr);
+    web_view_->SetMainFrame(main_frame_);
+    chrome_client_impl_ =
+        ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
+    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    color_chooser_client_ =
+        new FakeColorChooserClient(frame->GetDocument()->documentElement());
+    date_time_chooser_client_ =
+        new FakeDateTimeChooserClient(frame->GetDocument()->documentElement());
+  }
+
+  void TearDown() override { web_view_->Close(); }
+
+ protected:
+  FrameTestHelpers::TestWebViewClient web_view_client_;
+  WebViewBase* web_view_ = nullptr;
+  WebLocalFrame* main_frame_ = nullptr;
+  FrameTestHelpers::TestWebFrameClient web_frame_client_;
+  Persistent<ChromeClientImpl> chrome_client_impl_;
+  Persistent<FakeColorChooserClient> color_chooser_client_;
+  Persistent<FakeDateTimeChooserClient> date_time_chooser_client_;
+};
+
+TEST_F(PagePopupSuppressionTest, SuppressColorChooser) {
+  // By default, the popup should be shown.
+  EXPECT_TRUE(CanOpenColorChooser());
+
+  Settings* settings = GetSettings();
+  settings->SetPagePopupsSuppressed(true);
+
+  EXPECT_FALSE(CanOpenColorChooser());
+
+  settings->SetPagePopupsSuppressed(false);
+  EXPECT_TRUE(CanOpenColorChooser());
+}
+
+TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
+  // By default, the popup should be shown.
+  EXPECT_TRUE(CanOpenDateTimeChooser());
+
+  Settings* settings = GetSettings();
+  settings->SetPagePopupsSuppressed(true);
+
+  EXPECT_FALSE(CanOpenDateTimeChooser());
+
+  settings->SetPagePopupsSuppressed(false);
+  EXPECT_TRUE(CanOpenDateTimeChooser());
 }
 
 }  // namespace blink

@@ -17,20 +17,17 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   bool is_in_vr() const { return is_in_vr_; }
 
   // Called by VrShell when we enter and exit vr mode. It finds us by looking us
-  // up on the WebContents. Eventually, we will also set a number of flags here
-  // as we enter and exit vr mode (see TODO below).
+  // up on the WebContents.
   void SetIsInVr(bool is_in_vr);
 
   static bool IsInVr(content::WebContents* contents);
 
  private:
-  friend class content::WebContentsUserData<VrTabHelper>;
-
   explicit VrTabHelper(content::WebContents* contents);
 
-  // TODO(asimjour): once we have per-dialog flags for disabling specific
-  // content-related popups, we should hang onto a pointer to the web contents
-  // and set those flags as we enter and exit vr mode.
+  friend class content::WebContentsUserData<VrTabHelper>;
+
+  content::WebContents* web_contents_;
   bool is_in_vr_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VrTabHelper);
