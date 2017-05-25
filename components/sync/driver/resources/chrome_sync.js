@@ -78,6 +78,23 @@ cr.define('chrome.sync', function() {
   };
 
   /**
+   * Asks the browser if we should show the User Events tab or not.
+   */
+  var requestUserEventsVisibility = function() {
+    chrome.send('requestUserEventsVisibility');
+  };
+
+  /**
+   * Sends data to construct a user event that should be committed.
+   *
+   * @param {string} eventTimeUsec Timestamp for the new event.
+   * @param {string} navigationId Timestamp of linked sessions navigation.
+   */
+  var writeUserEvent = function(eventTimeUsec, navigationId) {
+    chrome.send('writeUserEvent', [eventTimeUsec, navigationId]);
+  };
+
+  /**
    * Counter to uniquely identify requests while they're in progress.
    * Used in the implementation of GetAllNodes.
    */
@@ -104,6 +121,7 @@ cr.define('chrome.sync', function() {
 
   /**
    * Called from C++ with the response to a getAllNodes request.
+   *
    * @param {number} id The requestId passed in with the request.
    * @param {Object} response The response to the request.
    */
@@ -122,5 +140,7 @@ cr.define('chrome.sync', function() {
     registerForPerTypeCounters: registerForPerTypeCounters,
     requestUpdatedAboutInfo: requestUpdatedAboutInfo,
     requestListOfTypes: requestListOfTypes,
+    requestUserEventsVisibility: requestUserEventsVisibility,
+    writeUserEvent: writeUserEvent,
   };
 });

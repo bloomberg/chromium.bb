@@ -185,7 +185,6 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<TestSyncService> test_sync_service_;
   std::unique_ptr<TestableSyncInternalsMessageHandler> handler_;
-
   int about_sync_data_delegate_call_count_ = 0;
   SyncService* last_delegate_sync_service_ = nullptr;
 };

@@ -42,6 +42,7 @@ const char kSyncLogJS[] = "sync_log.js";
 const char kSyncNodeBrowserJS[] = "sync_node_browser.js";
 const char kSyncSearchJS[] = "sync_search.js";
 const char kTypesJS[] = "types.js";
+const char kUserEventsJS[] = "user_events.js";
 
 // Message handlers.
 const char kDispatchEvent[] = "chrome.sync.dispatchEvent";
@@ -51,6 +52,10 @@ const char kRegisterForEvents[] = "registerForEvents";
 const char kRegisterForPerTypeCounters[] = "registerForPerTypeCounters";
 const char kRequestListOfTypes[] = "requestListOfTypes";
 const char kRequestUpdatedAboutInfo[] = "requestUpdatedAboutInfo";
+const char kRequestUserEventsVisibility[] = "requestUserEventsVisibility";
+const char kUserEventsVisibilityCallback[] =
+    "chrome.sync.userEventsVisibilityCallback";
+const char kWriteUserEvent[] = "writeUserEvent";
 
 // Other strings.
 const char kCommit[] = "commit";
