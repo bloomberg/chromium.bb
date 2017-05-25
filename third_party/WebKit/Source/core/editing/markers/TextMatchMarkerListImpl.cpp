@@ -4,8 +4,12 @@
 
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
 
+#include "core/dom/Node.h"
+#include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/RenderedDocumentMarker.h"
+#include "third_party/WebKit/Source/core/editing/VisibleUnits.h"
 
 namespace blink {
 
@@ -51,6 +55,30 @@ bool TextMatchMarkerListImpl::ShiftMarkers(unsigned offset,
 DEFINE_TRACE(TextMatchMarkerListImpl) {
   visitor->Trace(markers_);
   DocumentMarkerList::Trace(visitor);
+}
+
+static void UpdateMarkerRenderedRect(const Node& node,
+                                     RenderedDocumentMarker& marker) {
+  const Position start_position(&const_cast<Node&>(node), marker.StartOffset());
+  const Position end_position(&const_cast<Node&>(node), marker.EndOffset());
+  EphemeralRange range(start_position, end_position);
+  marker.SetRenderedRect(LayoutRect(ComputeTextRect(range)));
+}
+
+Vector<IntRect> TextMatchMarkerListImpl::RenderedRects(const Node& node) const {
+  Vector<IntRect> result;
+
+  for (DocumentMarker* marker : markers_) {
+    RenderedDocumentMarker* const rendered_marker =
+        ToRenderedDocumentMarker(marker);
+    if (!rendered_marker->IsValid())
+      UpdateMarkerRenderedRect(node, *rendered_marker);
+    if (!rendered_marker->IsRendered())
+      continue;
+    result.push_back(rendered_marker->RenderedRect());
+  }
+
+  return result;
 }
 
 }  // namespace blink
