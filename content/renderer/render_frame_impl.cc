@@ -5272,11 +5272,11 @@ void RenderFrameImpl::OnFailedNavigation(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  // If this frame isn't in the same process as the main frame, it may naively
-  // assume that this is the first navigation in the iframe, but this may not
-  // actually be the case. Inform the frame's state machine if this frame has
-  // already committed other loads.
-  if (request_params.has_committed_real_load && frame_->Parent())
+  // If this frame is navigating cross-process, it may naively assume that this
+  // is the first navigation in the frame, but this may not actually be the
+  // case. Inform the frame's state machine if this frame has already committed
+  // other loads.
+  if (request_params.has_committed_real_load)
     frame_->SetCommittedFirstRealLoad();
 
   pending_navigation_params_.reset(new NavigationParams(
@@ -6029,11 +6029,11 @@ void RenderFrameImpl::NavigateInternal(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  // If this frame isn't in the same process as the main frame, it may naively
-  // assume that this is the first navigation in the iframe, but this may not
-  // actually be the case. Inform the frame's state machine if this frame has
-  // already committed other loads.
-  if (request_params.has_committed_real_load && frame_->Parent())
+  // If this frame is navigating cross-process, it may naively assume that this
+  // is the first navigation in the frame, but this may not actually be the
+  // case. Inform the frame's state machine if this frame has already committed
+  // other loads.
+  if (request_params.has_committed_real_load)
     frame_->SetCommittedFirstRealLoad();
 
   if (is_reload && current_history_item_.IsNull()) {

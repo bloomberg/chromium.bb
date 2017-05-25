@@ -10152,4 +10152,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
   EXPECT_EQ("my_token=my_value\n", body);
 }
 
+// Verify that a remote-to-local main frame navigation doesn't overwrite
+// the previous history entry.  See https://crbug.com/725716.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CrossProcessMainFrameNavigationDoesNotOverwriteHistory) {
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Open a same-site popup to keep the www.foo.com process alive.
+  OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
+
+  // Navigate foo -> bar -> foo.
+  EXPECT_TRUE(NavigateToURL(shell(), bar_url));
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // There should be three history entries.
+  EXPECT_EQ(3, web_contents()->GetController().GetEntryCount());
+
+  // Go back: this should go to bar.com.
+  {
+    TestNavigationObserver back_observer(web_contents());
+    web_contents()->GetController().GoBack();
+    back_observer.Wait();
+  }
+  EXPECT_EQ(bar_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
+
+  // Go back again.  This should go to foo.com.
+  {
+    TestNavigationObserver back_observer(web_contents());
+    web_contents()->GetController().GoBack();
+    back_observer.Wait();
+  }
+  EXPECT_EQ(foo_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
+}
+
 }  // namespace content
