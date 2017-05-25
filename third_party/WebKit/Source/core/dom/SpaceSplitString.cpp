@@ -23,6 +23,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
@@ -48,10 +49,12 @@ static inline bool HasNonASCIIOrUpper(const String& string) {
   return HasNonASCIIOrUpper(string.Characters16(), length);
 }
 
+// https://dom.spec.whatwg.org/#concept-ordered-set-parser
 template <typename CharacterType>
 inline void SpaceSplitString::Data::CreateVector(
     const CharacterType* characters,
     unsigned length) {
+  HashSet<AtomicString> token_set;
   unsigned start = 0;
   while (true) {
     while (start < length && IsHTMLSpace<CharacterType>(characters[start]))
@@ -62,7 +65,11 @@ inline void SpaceSplitString::Data::CreateVector(
     while (end < length && IsNotHTMLSpace<CharacterType>(characters[end]))
       ++end;
 
-    vector_.push_back(AtomicString(characters + start, end - start));
+    AtomicString token(characters + start, end - start);
+    if (!token_set.Contains(token)) {
+      token_set.insert(token);
+      vector_.push_back(token);
+    }
 
     start = end + 1;
   }
@@ -110,7 +117,6 @@ void SpaceSplitString::Data::Remove(unsigned index) {
 }
 
 void SpaceSplitString::Add(const AtomicString& string) {
-  // FIXME: add() does not allow duplicates but createVector() does.
   if (Contains(string))
     return;
   EnsureUnique();

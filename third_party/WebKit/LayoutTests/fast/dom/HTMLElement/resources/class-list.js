@@ -30,7 +30,7 @@ shouldEvaluateTo('element.classList.length', 1);
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/003.htm
 createElement('x x');
-shouldEvaluateTo('element.classList.length', 2);
+shouldEvaluateTo('element.classList.length', 1);
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/004.htm
 createElement('x y');
@@ -49,7 +49,7 @@ shouldBeEqualToString('element.className', 'x');
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/007.htm
 createElement('x  x');
 element.classList.add('x');
-shouldBeEqualToString('element.className', 'x x');
+shouldBeEqualToString('element.className', 'x');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/008.htm
 createElement('y');
@@ -69,7 +69,7 @@ shouldBeEqualToString('element.className', '');
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/011.htm
 createElement(' y x  y ');
 element.classList.remove('x');
-shouldBeEqualToString('element.className', 'y y');
+shouldBeEqualToString('element.className', 'y');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/012.htm
 createElement(' x y  x ');
@@ -201,8 +201,8 @@ shouldBeEqualToString('element.classList[0]', 'x');
 shouldBeEqualToString('element.classList.item(0)', 'x');
 
 createElement('x x');
-shouldBeEqualToString('element.classList[1]', 'x');
-shouldBeEqualToString('element.classList.item(1)', 'x');
+shouldBeUndefined('element.classList[1]');
+shouldBeNull('element.classList.item(1)');
 
 createElement('x y');
 shouldBeEqualToString('element.classList[1]', 'y');
