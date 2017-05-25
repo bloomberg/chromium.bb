@@ -59,6 +59,9 @@ class CSSTransitionData final : public CSSTimingData {
   }
 
   bool TransitionsMatchForStyleRecalc(const CSSTransitionData& other) const;
+  bool operator==(const CSSTransitionData& other) const {
+    return TransitionsMatchForStyleRecalc(other);
+  }
 
   Timing ConvertToTiming(size_t index) const;
 

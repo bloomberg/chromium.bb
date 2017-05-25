@@ -316,11 +316,7 @@ bool StyleRareNonInheritedData::AnimationDataEquivalent(
 
 bool StyleRareNonInheritedData::TransitionDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  if (!transitions_ && !o.transitions_)
-    return true;
-  if (!transitions_ || !o.transitions_)
-    return false;
-  return transitions_->TransitionsMatchForStyleRecalc(*o.transitions_);
+  return DataEquivalent(transitions_, o.transitions_);
 }
 
 bool StyleRareNonInheritedData::ShapeOutsideDataEquivalent(
