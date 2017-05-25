@@ -12,6 +12,7 @@
 #include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/night_light_controller.h"
+#include "ash/system/night_light/night_light_toggle_button.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -35,12 +36,6 @@ namespace {
 // The ISO-639 code for the Hebrew locale. The help icon asset is a '?' which is
 // not mirrored in this locale.
 const char kHebrewLocale[] = "he";
-
-const gfx::VectorIcon& GetNightLightButtonIcon() {
-  return Shell::Get()->night_light_controller()->GetEnabled()
-             ? kSystemMenuNightLightOnIcon
-             : kSystemMenuNightLightOffIcon;
-}
 
 }  // namespace
 
@@ -91,9 +86,7 @@ void TilesDefaultView::Init() {
   AddChildView(help_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
-  night_light_button_ = new SystemMenuButton(
-      this, TrayPopupInkDropStyle::HOST_CENTERED, GetNightLightButtonIcon(),
-      IDS_ASH_STATUS_TRAY_NIGHT_LIGHT);
+  night_light_button_ = new NightLightToggleButton(this);
   night_light_button_->SetEnabled(can_show_web_ui);
   AddChildView(night_light_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
@@ -130,7 +123,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   } else if (sender == night_light_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
     Shell::Get()->night_light_controller()->Toggle();
-    night_light_button_->SetVectorIcon(GetNightLightButtonIcon());
+    night_light_button_->Update();
   } else if (sender == lock_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()

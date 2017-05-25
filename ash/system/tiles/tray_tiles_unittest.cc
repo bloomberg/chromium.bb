@@ -4,6 +4,7 @@
 
 #include "ash/system/tiles/tray_tiles.h"
 
+#include "ash/system/night_light/night_light_toggle_button.h"
 #include "ash/system/tiles/tiles_default_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/test/ash_test_base.h"
@@ -39,7 +40,7 @@ class TrayTilesTest : public test::NoSessionAshTestBase {
     return tray_tiles()->default_view_->help_button_;
   }
 
-  views::CustomButton* GetNightLightButton() {
+  NightLightToggleButton* GetNightLightButton() {
     return tray_tiles()->default_view_->night_light_button_;
   }
 
