@@ -614,3 +614,13 @@ base::TaskScheduler::GetInstance()->Shutdown();
 // TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN may still be
 // running.
 ```
+## TaskRunner ownership
+
+TaskRunners shouldn't be passed through several components. Instead, the
+components that uses a TaskRunner should be the one that creates it.
+
+See [this example](https://codereview.chromium.org/2885173002/) of a
+refactoring where a TaskRunner was passed through a lot of components only to be
+used in an eventual leaf. The leaf can and should now obtain its TaskRunner
+directly from
+[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h).
