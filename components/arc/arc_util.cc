@@ -31,10 +31,16 @@ constexpr char kAvailabilityNone[] = "none";
 constexpr char kAvailabilityInstalled[] = "installed";
 constexpr char kAvailabilityOfficiallySupported[] = "officially-supported";
 
-void SetArcCpuRestrictionCallback(bool success) {
-  VLOG(2) << "Finished prioritizing the instance: result=" << success;
-  if (!success)
-    LOG(ERROR) << "Failed to prioritize ARC";
+void SetArcCpuRestrictionCallback(
+    login_manager::ContainerCpuRestrictionState state,
+    bool success) {
+  if (success)
+    return;
+  const char* message =
+      (state == login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND)
+          ? "unprioritize"
+          : "prioritize";
+  LOG(ERROR) << "Failed to " << message << " ARC";
 }
 
 }  // namespace
@@ -143,13 +149,18 @@ bool IsArcAppWindow(aura::Window* window) {
          static_cast<int>(ash::AppType::ARC_APP);
 }
 
-void PrioritizeArcContainer() {
-  VLOG(2) << "Prioritizing the instance";
+void SetArcCpuRestriction(bool do_restrict) {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  if (!session_manager_client) {
+    LOG(WARNING) << "SessionManagerClient is not available";
+    return;
+  }
+  const login_manager::ContainerCpuRestrictionState state =
+      do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
+                  : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
   session_manager_client->SetArcCpuRestriction(
-      login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND,
-      base::Bind(SetArcCpuRestrictionCallback));
+      state, base::Bind(SetArcCpuRestrictionCallback, state));
 }
 
 }  // namespace arc

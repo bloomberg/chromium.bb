@@ -278,7 +278,7 @@ void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSession() {
           arc_bridge_service()->voice_interaction_framework(),
           StartVoiceInteractionSession);
   if (!framework_instance) {
-    arc::PrioritizeArcContainer();
+    arc::SetArcCpuRestriction(false);
     return;
   }
   framework_instance->StartVoiceInteractionSession();

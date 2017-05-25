@@ -327,7 +327,7 @@ bool LaunchApp(content::BrowserContext* context,
       // default to avoid slowing down Chrome's user session restoration.
       // However, the restriction should be lifted once the user explicitly
       // tries to launch an ARC app.
-      PrioritizeArcContainer();
+      SetArcCpuRestriction(false);
     }
     prefs->SetLastLaunchTime(app_id, base::Time::Now());
     return true;
