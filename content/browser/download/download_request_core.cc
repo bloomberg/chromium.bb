@@ -250,6 +250,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
 
   if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
     create_info->remote_address = request()->GetSocketAddress().host();
+  create_info->method = request()->method();
   create_info->connection_info = request()->response_info().connection_info;
   create_info->url_chain = request()->url_chain();
   create_info->referrer_url = GURL(request()->referrer());

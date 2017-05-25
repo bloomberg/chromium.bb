@@ -27,7 +27,8 @@ DownloadCreateInfo::DownloadCreateInfo(
       save_info(std::move(save_info)),
       request_net_log(net_log),
       accept_range(false),
-      connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN) {}
+      connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+      method("GET") {}
 
 DownloadCreateInfo::DownloadCreateInfo()
     : DownloadCreateInfo(base::Time(),

@@ -139,6 +139,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The HTTP connection type.
   net::HttpResponseInfo::ConnectionInfo connection_info;
 
+  // The HTTP request method.
+  std::string method;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
 };
