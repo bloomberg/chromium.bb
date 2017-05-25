@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/instance_holder.h"
 #include "components/exo/surface.h"
 #include "content/public/browser/browser_thread.h"
@@ -137,25 +138,6 @@ void EncodeAndReturnImage(
       callback);
 }
 
-void RecordShortcutAction(const ui::Accelerator& accelerator) {
-  if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
-    if (accelerator.IsShiftDown()) {
-      base::RecordAction(base::UserMetricsAction(
-          "VoiceInteraction.MetalayerStarted.Search_Shift_A"));
-      return;
-    }
-    base::RecordAction(
-        base::UserMetricsAction("VoiceInteraction.Started.Search_A"));
-    return;
-  }
-
-  if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_SPACE) {
-    base::RecordAction(
-        base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
-    return;
-  }
-}
-
 }  // namespace
 
 // static
@@ -180,17 +162,10 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
   DCHECK(framework_instance);
   framework_instance->Init(binding_.CreateInterfacePtrAndBind());
 
-  // TODO(updowndota): Move the dynamic shortcuts to accelerator_controller.cc
-  // to prevent several issues.
-  ash::Shell::Get()->accelerator_controller()->Register(
-      {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN)}, this);
   // Temporary shortcut added to enable the metalayer experiment.
   ash::Shell::Get()->accelerator_controller()->Register(
       {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)},
       this);
-  // Temporary shortcut added for UX/PM exploration.
-  ash::Shell::Get()->accelerator_controller()->Register(
-      {ui::Accelerator(ui::VKEY_SPACE, ui::EF_COMMAND_DOWN)}, this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
@@ -205,25 +180,17 @@ bool ArcVoiceInteractionFrameworkService::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  RecordShortcutAction(accelerator);
+  base::RecordAction(base::UserMetricsAction(
+      "VoiceInteraction.MetalayerStarted.Search_Shift_A"));
 
-  if (accelerator.IsShiftDown()) {
-    // Temporary, used for debugging.
-    // Does not take into account or update the palette state.
-    mojom::VoiceInteractionFrameworkInstance* framework_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(
-            arc_bridge_service()->voice_interaction_framework(),
-            SetMetalayerVisibility);
-    DCHECK(framework_instance);
-    framework_instance->SetMetalayerVisibility(true);
-  } else {
-    mojom::VoiceInteractionFrameworkInstance* framework_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(
-            arc_bridge_service()->voice_interaction_framework(),
-            StartVoiceInteractionSession);
-    DCHECK(framework_instance);
-    framework_instance->StartVoiceInteractionSession();
-  }
+  // Temporary, used for debugging.
+  // Does not take into account or update the palette state.
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service()->voice_interaction_framework(),
+          SetMetalayerVisibility);
+  DCHECK(framework_instance);
+  framework_instance->SetMetalayerVisibility(true);
 
   return true;
 }
@@ -302,6 +269,19 @@ void ArcVoiceInteractionFrameworkService::HideMetalayer() {
   }
   metalayer_closed_callback_ = base::Closure();
   SetMetalayerVisibility(false);
+}
+
+void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSession() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service()->voice_interaction_framework(),
+          StartVoiceInteractionSession);
+  if (!framework_instance) {
+    arc::PrioritizeArcContainer();
+    return;
+  }
+  framework_instance->StartVoiceInteractionSession();
 }
 
 void ArcVoiceInteractionFrameworkService::SetMetalayerVisibility(bool visible) {

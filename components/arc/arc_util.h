@@ -81,6 +81,9 @@ bool IsArcOptInVerificationDisabled();
 // |window| is nullptr, returns false.
 bool IsArcAppWindow(aura::Window* window);
 
+// Sets CPU restriction for ARC to prioritize the container.
+void PrioritizeArcContainer();
+
 }  // namespace arc
 
 #endif  // COMPONENTS_ARC_ARC_UTIL_H_

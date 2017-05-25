@@ -21,8 +21,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
@@ -68,12 +66,6 @@ constexpr char kSetInTouchModeIntent[] =
     "org.chromium.arc.intent_helper.SET_IN_TOUCH_MODE";
 constexpr char kShowTalkbackSettingsIntent[] =
     "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS";
-
-void SetArcCpuRestrictionCallback(bool success) {
-  VLOG(2) << "Finished prioritizing the instance: result=" << success;
-  if (!success)
-    LOG(ERROR) << "Failed to prioritize ARC";
-}
 
 // Find a proper size and position for a given rectangle on the screen.
 // TODO(skuhne): This needs more consideration, but it is lacking
@@ -335,12 +327,7 @@ bool LaunchApp(content::BrowserContext* context,
       // default to avoid slowing down Chrome's user session restoration.
       // However, the restriction should be lifted once the user explicitly
       // tries to launch an ARC app.
-      VLOG(2) << "Prioritizing the instance";
-      chromeos::SessionManagerClient* session_manager_client =
-          chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-      session_manager_client->SetArcCpuRestriction(
-          login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND,
-          base::Bind(SetArcCpuRestrictionCallback));
+      PrioritizeArcContainer();
     }
     prefs->SetLastLaunchTime(app_id, base::Time::Now());
     return true;
