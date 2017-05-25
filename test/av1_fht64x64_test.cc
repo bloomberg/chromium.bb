@@ -40,21 +40,6 @@ void iht64x64_ref(const tran_low_t *in, uint8_t *dest, int stride,
   av1_iht64x64_4096_add_c(in, dest, stride, tx_type);
 }
 
-#if CONFIG_HIGHBITDEPTH
-typedef void (*IHbdHtFunc)(const tran_low_t *in, uint8_t *out, int stride,
-                           int tx_type, int bd);
-typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
-                          int tx_type, int bd);
-
-// Target optimized function, tx_type, bit depth
-typedef tuple<HbdHtFunc, int, int> HighbdHt64x64Param;
-
-void highbd_fht64x64_ref(const int16_t *in, int32_t *out, int stride,
-                         int tx_type, int bd) {
-  av1_fwd_txfm2d_64x64_c(in, out, stride, tx_type, bd);
-}
-#endif  // CONFIG_HIGHBITDEPTH
-
 class AV1Trans64x64HT : public libaom_test::TransformTestBase,
                         public ::testing::TestWithParam<Ht64x64Param> {
  public:
