@@ -77,6 +77,11 @@ void WorkerOrWorkletGlobalScope::PostTask(
                                            is_instrumented));
 }
 
+bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
+    ReasonForCallingCanExecuteScripts) {
+  return !IsJSExecutionForbidden();
+}
+
 void WorkerOrWorkletGlobalScope::Dispose() {
   DCHECK(script_controller_);
   script_controller_->Dispose();
