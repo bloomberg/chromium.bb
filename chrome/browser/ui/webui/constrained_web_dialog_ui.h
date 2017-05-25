@@ -45,14 +45,14 @@ class ConstrainedWebDialogDelegate {
   virtual gfx::NativeWindow GetNativeDialog() = 0;
 
   // Returns the minimum size for the dialog.
-  virtual gfx::Size GetMinimumSize() const = 0;
+  virtual gfx::Size GetConstrainedWebDialogMinimumSize() const = 0;
 
   // Returns the maximum size for the dialog.
-  virtual gfx::Size GetMaximumSize() const = 0;
+  virtual gfx::Size GetConstrainedWebDialogMaximumSize() const = 0;
 
   // Returns the preferred size for the dialog, or an empty size if
   // the dialog has been closed.
-  virtual gfx::Size GetPreferredSize() const = 0;
+  virtual gfx::Size GetConstrainedWebDialogPreferredSize() const = 0;
 
  protected:
   virtual ~ConstrainedWebDialogDelegate() {}

@@ -43,9 +43,9 @@ class ConstrainedWebDialogDelegateBase
   std::unique_ptr<content::WebContents> ReleaseWebContents() override;
   content::WebContents* GetWebContents() override;
   gfx::NativeWindow GetNativeDialog() override;
-  gfx::Size GetMinimumSize() const override;
-  gfx::Size GetMaximumSize() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size GetConstrainedWebDialogMinimumSize() const override;
+  gfx::Size GetConstrainedWebDialogMaximumSize() const override;
+  gfx::Size GetConstrainedWebDialogPreferredSize() const override;
 
   // WebContentsObserver interface
   void WebContentsDestroyed() override;

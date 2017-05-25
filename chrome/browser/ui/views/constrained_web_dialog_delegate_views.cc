@@ -189,6 +189,15 @@ class ConstrainedWebDialogDelegateViewViews
   content::WebContents* GetWebContents() override {
     return impl_->GetWebContents();
   }
+  gfx::Size GetConstrainedWebDialogPreferredSize() const override {
+    return GetPreferredSize();
+  }
+  gfx::Size GetConstrainedWebDialogMinimumSize() const override {
+    return GetMinimumSize();
+  }
+  gfx::Size GetConstrainedWebDialogMaximumSize() const override {
+    return GetMaximumSize();
+  }
 
   // views::WidgetDelegate:
   views::View* GetInitiallyFocusedView() override { return this; }
