@@ -93,7 +93,7 @@ public class VideoRotateToFullscreenTest {
     @Feature({"VideoRotateToFullscreen"})
     public void testPortraitToLandscapeAndBack() throws Exception {
         // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet(mRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             return;
         }
 

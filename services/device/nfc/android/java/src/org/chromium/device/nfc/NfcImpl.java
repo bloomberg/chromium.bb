@@ -22,6 +22,7 @@ import android.os.Process;
 import android.util.SparseArray;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
@@ -117,11 +118,11 @@ public class NfcImpl implements Nfc {
      */
     private Runnable mPushTimeoutRunnable;
 
-    public NfcImpl(Context context, int hostId, NfcDelegate delegate) {
+    public NfcImpl(int hostId, NfcDelegate delegate) {
         mHostId = hostId;
         mDelegate = delegate;
-        int permission =
-                context.checkPermission(Manifest.permission.NFC, Process.myPid(), Process.myUid());
+        int permission = ContextUtils.getApplicationContext().checkPermission(
+                Manifest.permission.NFC, Process.myPid(), Process.myUid());
         mHasPermission = permission == PackageManager.PERMISSION_GRANTED;
         Callback<Activity> onActivityUpdatedCallback = new Callback<Activity>() {
             @Override
@@ -137,7 +138,8 @@ public class NfcImpl implements Nfc {
             mNfcAdapter = null;
             mNfcManager = null;
         } else {
-            mNfcManager = (NfcManager) context.getSystemService(Context.NFC_SERVICE);
+            mNfcManager = (NfcManager) ContextUtils.getApplicationContext().getSystemService(
+                    Context.NFC_SERVICE);
             if (mNfcManager == null) {
                 Log.w(TAG, "NFC is not supported.");
                 mNfcAdapter = null;

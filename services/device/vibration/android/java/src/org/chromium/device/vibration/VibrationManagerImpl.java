@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Vibrator;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -34,12 +35,13 @@ public class VibrationManagerImpl implements VibrationManager {
     private static long sVibrateMilliSecondsForTesting = -1;
     private static boolean sVibrateCancelledForTesting = false;
 
-    public VibrationManagerImpl(Context context) {
-        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+    public VibrationManagerImpl() {
+        Context appContext = ContextUtils.getApplicationContext();
+        mAudioManager = (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE);
+        mVibrator = (Vibrator) appContext.getSystemService(Context.VIBRATOR_SERVICE);
         // TODO(mvanouwerkerk): What happens if permission is revoked? Handle this better.
         mHasVibratePermission =
-                context.checkCallingOrSelfPermission(android.Manifest.permission.VIBRATE)
+                appContext.checkCallingOrSelfPermission(android.Manifest.permission.VIBRATE)
                 == PackageManager.PERMISSION_GRANTED;
         if (!mHasVibratePermission) {
             Log.w(TAG, "Failed to use vibrate API, requires VIBRATE permission.");
@@ -80,14 +82,11 @@ public class VibrationManagerImpl implements VibrationManager {
      * A factory for implementations of the VibrationManager interface.
      */
     public static class Factory implements InterfaceFactory<VibrationManager> {
-        private Context mContext;
-        public Factory(Context context) {
-            mContext = context;
-        }
+        public Factory() {}
 
         @Override
         public VibrationManager createImpl() {
-            return new VibrationManagerImpl(mContext);
+            return new VibrationManagerImpl();
         }
     }
 
