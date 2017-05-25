@@ -520,6 +520,9 @@ void TranslateBubbleView::UpdateChildVisibilities() {
     views::View* view = child_at(i);
     view->SetVisible(view == GetCurrentView());
   }
+  // BoxLayout only considers visible children, so ensure any newly visible
+  // child views are positioned correctly.
+  Layout();
 }
 
 views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
@@ -919,9 +922,9 @@ void TranslateBubbleView::SwitchView(
     return;
 
   model_->SetViewState(view_state);
-  UpdateChildVisibilities();
   if (view_state == TranslateBubbleModel::VIEW_STATE_ADVANCED)
     UpdateAdvancedView();
+  UpdateChildVisibilities();
   SizeToContents();
 }
 
