@@ -140,6 +140,12 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
   DVLOG(1) << __func__ << " - " << encoded_data->size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (encoded_data->size() == 0u) {
+    DLOG(WARNING) << __func__ << ": zero size encoded frame, skipping";
+    // Some encoders give sporadic zero-size data, see https://crbug.com/716451.
+    return true;
+  }
+
   if (!video_track_index_) {
     // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
     // http://www.matroska.org/technical/specs/index.html#Tracks
