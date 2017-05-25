@@ -65,6 +65,12 @@ TestExpectations = test_expectations.TestExpectations
 class Manager(object):
     """A class for managing running a series of layout tests."""
 
+    HTTP_SUBDIR = 'http'
+    INSPECTOR_SUBDIR = 'inspector'
+    PERF_SUBDIR = 'perf'
+    WEBSOCKET_SUBDIR = 'websocket'
+    ARCHIVED_RESULTS_LIMIT = 25
+
     def __init__(self, port, options, printer):
         """Initialize test runner data structures.
 
@@ -77,14 +83,8 @@ class Manager(object):
         self._filesystem = port.host.filesystem
         self._options = options
         self._printer = printer
-        self._expectations = None
 
-        self.HTTP_SUBDIR = 'http' + port.TEST_PATH_SEPARATOR
-        self.INSPECTOR_SUBDIR = 'inspector' + port.TEST_PATH_SEPARATOR
-        self.PERF_SUBDIR = 'perf'
-        self.WEBSOCKET_SUBDIR = 'websocket' + port.TEST_PATH_SEPARATOR
-        self.LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
-        self.ARCHIVED_RESULTS_LIMIT = 25
+        self._expectations = None
         self._http_server_started = False
         self._wptserve_started = False
         self._websockets_server_started = False
@@ -123,7 +123,7 @@ class Manager(object):
 
         test_names, tests_in_other_chunks = self._finder.split_into_chunks(all_test_names)
 
-        self._printer.write_update("Parsing expectations ...")
+        self._printer.write_update('Parsing expectations ...')
         self._expectations = test_expectations.TestExpectations(self._port, test_names)
 
         tests_to_run, tests_to_skip = self._prepare_lists(paths, test_names)
@@ -219,7 +219,7 @@ class Manager(object):
 
             self._upload_json_files()
 
-            results_path = self._filesystem.join(self._results_directory, "results.html")
+            results_path = self._filesystem.join(self._results_directory, 'results.html')
             self._copy_results_html_file(results_path)
             if initial_results.keyboard_interrupted:
                 exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
@@ -241,19 +241,19 @@ class Manager(object):
 
     def _is_http_test(self, test):
         return (
-            test.startswith(self.HTTP_SUBDIR) or
+            test.startswith(self.HTTP_SUBDIR + self._port.TEST_PATH_SEPARATOR) or
             self._is_websocket_test(test) or
-            self._port.TEST_PATH_SEPARATOR + self.HTTP_SUBDIR in test
+            self._port.TEST_PATH_SEPARATOR + self.HTTP_SUBDIR + self._port.TEST_PATH_SEPARATOR in test
         )
 
     def _is_inspector_test(self, test):
-        return self.INSPECTOR_SUBDIR in test
+        return self.INSPECTOR_SUBDIR + self._port.TEST_PATH_SEPARATOR in test
 
     def _is_websocket_test(self, test):
         if self._port.should_use_wptserve(test):
             return False
 
-        return self.WEBSOCKET_SUBDIR in test
+        return self.WEBSOCKET_SUBDIR + self._port.TEST_PATH_SEPARATOR in test
 
     def _http_tests(self, test_names):
         return set(test for test in test_names if self._is_http_test(test))
@@ -290,7 +290,9 @@ class Manager(object):
                 test_expectations.NEEDS_MANUAL_REBASELINE in expectations)
 
     def _test_is_slow(self, test_file):
-        return test_expectations.SLOW in self._expectations.model().get_expectations(test_file) or self._port.is_slow_wpt_test(test_file)
+        expectations = self._expectations.model().get_expectations(test_file)
+        return (test_expectations.SLOW in expectations or
+                self._port.is_slow_wpt_test(test_file))
 
     def _needs_servers(self, test_names):
         return any(self._test_requires_lock(test_name) for test_name in test_names)
@@ -299,41 +301,41 @@ class Manager(object):
         try:
             timestamp = time.strftime(
                 "%Y-%m-%d-%H-%M-%S", time.localtime(
-                    self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
+                    self._filesystem.mtime(self._filesystem.join(self._results_directory, 'results.html'))))
         except (IOError, OSError) as error:
             # It might be possible that results.html was not generated in previous run, because the test
             # run was interrupted even before testing started. In those cases, don't archive the folder.
             # Simply override the current folder contents with new results.
             import errno
             if error.errno in (errno.EEXIST, errno.ENOENT):
-                self._printer.write_update("No results.html file found in previous run, skipping it.")
+                self._printer.write_update('No results.html file found in previous run, skipping it.')
             return None
-        archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))
+        archived_name = ''.join((self._filesystem.basename(self._results_directory), '_', timestamp))
         archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
         self._filesystem.move(self._results_directory, archived_path)
 
     def _delete_dirs(self, dir_list):
-        for dir in dir_list:
-            self._filesystem.rmtree(dir)
+        for dir_path in dir_list:
+            self._filesystem.rmtree(dir_path)
 
     def _limit_archived_results_count(self):
         results_directory_path = self._filesystem.dirname(self._results_directory)
         file_list = self._filesystem.listdir(results_directory_path)
         results_directories = []
-        for dir in file_list:
-            file_path = self._filesystem.join(results_directory_path, dir)
+        for name in file_list:
+            file_path = self._filesystem.join(results_directory_path, name)
             if self._filesystem.isdir(file_path) and self._results_directory in file_path:
                 results_directories.append(file_path)
-        results_directories.sort(key=lambda x: self._filesystem.mtime(x))
-        self._printer.write_update("Clobbering excess archived results in %s" % results_directory_path)
+        results_directories.sort(key=self._filesystem.mtime)
+        self._printer.write_update('Clobbering excess archived results in %s' % results_directory_path)
         self._delete_dirs(results_directories[:-self.ARCHIVED_RESULTS_LIMIT])
 
     def _set_up_run(self, test_names):
-        self._printer.write_update("Checking build ...")
+        self._printer.write_update('Checking build ...')
         if self._options.build:
             exit_code = self._port.check_build(self._needs_servers(test_names), self._printer)
             if exit_code:
-                _log.error("Build check failed")
+                _log.error('Build check failed')
                 return exit_code
 
         if self._options.clobber_old_results:
@@ -350,7 +352,7 @@ class Manager(object):
 
         # Check that the system dependencies (themes, fonts, ...) are correct.
         if not self._options.nocheck_sys_deps:
-            self._printer.write_update("Checking system dependencies ...")
+            self._printer.write_update('Checking system dependencies ...')
             exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
             if exit_code:
                 return exit_code
@@ -400,11 +402,11 @@ class Manager(object):
             self._port.stop_websocket_server()
 
     def _clean_up_run(self):
-        _log.debug("Flushing stdout")
+        _log.debug('Flushing stdout')
         sys.stdout.flush()
-        _log.debug("Flushing stderr")
+        _log.debug('Flushing stderr')
         sys.stderr.flush()
-        _log.debug("Cleaning up port")
+        _log.debug('Cleaning up port')
         self._port.clean_up_test_run()
 
     def _force_pixel_tests_if_needed(self):
@@ -454,8 +456,8 @@ class Manager(object):
             return
         file_list = self._filesystem.listdir(dir_above_results_path)
         results_directories = []
-        for dir in file_list:
-            file_path = self._filesystem.join(dir_above_results_path, dir)
+        for name in file_list:
+            file_path = self._filesystem.join(dir_above_results_path, name)
             if self._filesystem.isdir(file_path) and self._results_directory in file_path:
                 results_directories.append(file_path)
         self._delete_dirs(results_directories)
@@ -475,7 +477,7 @@ class Manager(object):
 
         # FIXME: Upload stats.json to the server and delete times_ms.
         times_trie = json_results_generator.test_timings_trie(initial_results.results_by_name.values())
-        times_json_path = self._filesystem.join(self._results_directory, "times_ms.json")
+        times_json_path = self._filesystem.join(self._results_directory, 'times_ms.json')
         json_results_generator.write_json(self._filesystem, times_trie, times_json_path)
 
         # Save out the times data so we can use it for --fastest in the future.
@@ -485,16 +487,16 @@ class Manager(object):
             json_results_generator.write_json(self._filesystem, times_trie, bot_test_times_path)
 
         stats_trie = self._stats_trie(initial_results)
-        stats_path = self._filesystem.join(self._results_directory, "stats.json")
+        stats_path = self._filesystem.join(self._results_directory, 'stats.json')
         self._filesystem.write_text_file(stats_path, json.dumps(stats_trie))
 
-        full_results_path = self._filesystem.join(self._results_directory, "full_results.json")
+        full_results_path = self._filesystem.join(self._results_directory, 'full_results.json')
         json_results_generator.write_json(self._filesystem, summarized_full_results, full_results_path)
 
-        full_results_path = self._filesystem.join(self._results_directory, "failing_results.json")
+        full_results_path = self._filesystem.join(self._results_directory, 'failing_results.json')
         # We write failing_results.json out as jsonp because we need to load it
         # from a file url for results.html and Chromium doesn't allow that.
-        json_results_generator.write_json(self._filesystem, summarized_failing_results, full_results_path, callback="ADD_RESULTS")
+        json_results_generator.write_json(self._filesystem, summarized_failing_results, full_results_path, callback='ADD_RESULTS')
 
         # Write out the JSON files suitable for other tools to process.
         # As the output can be quite large (as there are 60k+ tests) we also
@@ -506,25 +508,25 @@ class Manager(object):
         if self._options.json_test_results:
             json_results_generator.write_json(self._filesystem, summarized_full_results, self._options.json_test_results)
 
-        _log.debug("Finished writing JSON files.")
+        _log.debug('Finished writing JSON files.')
 
     def _upload_json_files(self):
         if not self._options.test_results_server:
             return
 
         if not self._options.master_name:
-            _log.error("--test-results-server was set, but --master-name was not.  Not uploading JSON files.")
+            _log.error('--test-results-server was set, but --master-name was not.  Not uploading JSON files.')
             return
 
-        _log.debug("Uploading JSON files for builder: %s", self._options.builder_name)
-        attrs = [("builder", self._options.builder_name),
-                 ("testtype", self._options.step_name),
-                 ("master", self._options.master_name)]
+        _log.debug('Uploading JSON files for builder: %s', self._options.builder_name)
+        attrs = [('builder', self._options.builder_name),
+                 ('testtype', self._options.step_name),
+                 ('master', self._options.master_name)]
 
-        files = [(file, self._filesystem.join(self._results_directory, file))
-                 for file in ["failing_results.json", "full_results.json", "times_ms.json"]]
+        files = [(name, self._filesystem.join(self._results_directory, name))
+                 for name in ['failing_results.json', 'full_results.json', 'times_ms.json']]
 
-        url = "https://%s/testfile/upload" % self._options.test_results_server
+        url = 'https://%s/testfile/upload' % self._options.test_results_server
         # Set uploading timeout in case appengine server is having problems.
         # 120 seconds are more than enough to upload test results.
         uploader = FileUploader(url, 120)
@@ -532,13 +534,13 @@ class Manager(object):
             response = uploader.upload_as_multipart_form_data(self._filesystem, files, attrs)
             if response:
                 if response.code == 200:
-                    _log.debug("JSON uploaded.")
+                    _log.debug('JSON uploaded.')
                 else:
-                    _log.debug("JSON upload failed, %d: '%s'", response.code, response.read())
+                    _log.debug('JSON upload failed, %d: "%s"', response.code, response.read())
             else:
-                _log.error("JSON upload failed; no response returned")
-        except Exception as err:
-            _log.error("Upload failed: %s", err)
+                _log.error('JSON upload failed; no response returned')
+        except IOError as err:
+            _log.error('Upload failed: %s', err)
 
     def _copy_results_html_file(self, destination_path):
         base_dir = self._path_finder.path_from_layout_tests('fast', 'harness')
