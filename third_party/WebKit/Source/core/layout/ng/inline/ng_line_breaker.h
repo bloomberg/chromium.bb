@@ -43,10 +43,15 @@ class CORE_EXPORT NGLineBreaker {
  private:
   void BreakLine(NGInlineItemResults*, NGInlineLayoutAlgorithm*);
 
+  bool HandleControlItem(const NGInlineItem&,
+                         const String& text,
+                         NGInlineItemResult*,
+                         LayoutUnit position);
   void LayoutAtomicInline(const NGInlineItem&, NGInlineItemResult*);
 
   void HandleOverflow(NGInlineItemResults*, const LazyLineBreakIterator&);
 
+  void MoveToNextOf(const NGInlineItem&);
   void SkipCollapsibleWhitespaces();
 
   void AppendCloseTags(NGInlineItemResults*);

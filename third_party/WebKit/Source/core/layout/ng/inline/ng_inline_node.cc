@@ -338,7 +338,8 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
       const auto* text_fragment = ToNGPhysicalTextFragment(line_child.Get());
       const NGInlineItem& item = items[text_fragment->ItemIndex()];
       BidiRun* run;
-      if (item.Type() == NGInlineItem::kText) {
+      if (item.Type() == NGInlineItem::kText ||
+          item.Type() == NGInlineItem::kControl) {
         LayoutObject* layout_object = item.GetLayoutObject();
         DCHECK(layout_object->IsText());
         unsigned text_offset = text_offsets[text_fragment->ItemIndex()];

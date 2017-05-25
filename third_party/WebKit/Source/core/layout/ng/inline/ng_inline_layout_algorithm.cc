@@ -236,13 +236,14 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   for (auto& item_result : *line_items) {
     const NGInlineItem& item = items[item_result.item_index];
-    if (item.Type() == NGInlineItem::kText) {
+    if (item.Type() == NGInlineItem::kText ||
+        item.Type() == NGInlineItem::kControl) {
       DCHECK(item.GetLayoutObject()->IsText());
       DCHECK(!box->text_metrics.IsEmpty());
       text_builder.SetSize(
           {item_result.inline_size, box->text_metrics.LineHeight()});
       // Take all used fonts into account if 'line-height: normal'.
-      if (box->include_used_fonts) {
+      if (box->include_used_fonts && item.Type() == NGInlineItem::kText) {
         box->AccumulateUsedFonts(item, item_result.start_offset,
                                  item_result.end_offset, baseline_type_);
       }

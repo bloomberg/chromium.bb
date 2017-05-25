@@ -127,24 +127,26 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
         item_result->inline_size = item.InlineSize();
       } else if (item.Type() == NGInlineItem::kAtomicInline) {
         LayoutAtomicInline(item, item_result);
+      } else if (item.Type() == NGInlineItem::kControl) {
+        if (HandleControlItem(item, text, item_result, position)) {
+          MoveToNextOf(item);
+          break;
+        }
       } else if (item.Type() == NGInlineItem::kFloating) {
         algorithm->LayoutAndPositionFloat(position, item.GetLayoutObject());
         // Floats may change the available width if they fit.
         available_width = algorithm->AvailableWidth();
         // Floats are already positioned in the container_builder.
         item_results->pop_back();
-        offset_ = item.EndOffset();
-        item_index_++;
+        MoveToNextOf(item);
         continue;
       } else {
-        offset_ = item.EndOffset();
-        item_index_++;
+        MoveToNextOf(item);
         continue;
       }
       LayoutUnit next_position = position + item_result->inline_size;
       if (next_position <= available_width) {
-        offset_ = item.EndOffset();
-        item_index_++;
+        MoveToNextOf(item);
         position = next_position;
         continue;
       }
@@ -152,8 +154,7 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
       // The entire item does not fit. Handle non-text items as overflow,
       // since only text item is breakable.
       if (item.Type() != NGInlineItem::kText) {
-        offset_ = item.EndOffset();
-        item_index_++;
+        MoveToNextOf(item);
         return HandleOverflow(item_results, break_iterator);
       }
     }
@@ -194,8 +195,8 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
     } else {
       // No break opporunity in the item, or the first break opportunity is at
       // the end of the item. If it fits, continue to the next item.
-      offset_ = item_result->end_offset = item.EndOffset();
-      item_index_++;
+      item_result->end_offset = item.EndOffset();
+      MoveToNextOf(item);
       if (position <= available_width)
         continue;
     }
@@ -206,6 +207,25 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
       continue;
     return HandleOverflow(item_results, break_iterator);
   }
+}
+
+// Measure control items; new lines and tab, that are similar to text, affect
+// layout, but do not need shaping/painting.
+bool NGLineBreaker::HandleControlItem(const NGInlineItem& item,
+                                      const String& text,
+                                      NGInlineItemResult* item_result,
+                                      LayoutUnit position) {
+  DCHECK_EQ(item.Length(), 1u);
+  UChar character = text[item.StartOffset()];
+  if (character == kNewlineCharacter)
+    return true;
+
+  DCHECK_EQ(character, kTabulationCharacter);
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+  const Font& font = style.GetFont();
+  item_result->inline_size = font.TabWidth(style.GetTabSize(), position);
+  return false;
 }
 
 void NGLineBreaker::LayoutAtomicInline(const NGInlineItem& item,
@@ -290,6 +310,12 @@ void NGLineBreaker::HandleOverflow(
   item_index_ = last_item_result.item_index;
   if (items[item_index_].EndOffset() == offset_)
     item_index_++;
+}
+
+void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
+  DCHECK_EQ(&item, &node_->Items()[item_index_]);
+  offset_ = item.EndOffset();
+  item_index_++;
 }
 
 void NGLineBreaker::SkipCollapsibleWhitespaces() {
