@@ -17,25 +17,15 @@
 
 namespace blink {
 
-ScriptCustomElementDefinitionBuilder*
-    ScriptCustomElementDefinitionBuilder::stack_ = nullptr;
-
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* script_state,
     CustomElementRegistry* registry,
     const ScriptValue& constructor,
     ExceptionState& exception_state)
-    : prev_(stack_),
-      script_state_(script_state),
+    : script_state_(script_state),
       registry_(registry),
       constructor_value_(constructor.V8Value()),
-      exception_state_(exception_state) {
-  stack_ = this;
-}
-
-ScriptCustomElementDefinitionBuilder::~ScriptCustomElementDefinitionBuilder() {
-  stack_ = prev_;
-}
+      exception_state_(exception_state) {}
 
 bool ScriptCustomElementDefinitionBuilder::CheckConstructorIntrinsics() {
   DCHECK(script_state_->World().IsMainWorld());
@@ -54,26 +44,15 @@ bool ScriptCustomElementDefinitionBuilder::CheckConstructorIntrinsics() {
 }
 
 bool ScriptCustomElementDefinitionBuilder::CheckConstructorNotRegistered() {
-  if (ScriptCustomElementDefinition::ForConstructor(script_state_.Get(),
-                                                    registry_, constructor_)) {
-    // Constructor is already registered.
-    exception_state_.ThrowDOMException(
-        kNotSupportedError,
-        "this constructor has already been used with this registry");
-    return false;
-  }
-  for (auto builder = prev_; builder; builder = builder->prev_) {
-    CHECK(!builder->constructor_.IsEmpty());
-    if (registry_ != builder->registry_ ||
-        constructor_ != builder->constructor_) {
-      continue;
-    }
-    exception_state_.ThrowDOMException(
-        kNotSupportedError,
-        "this constructor is already being defined in this registry");
-    return false;
-  }
-  return true;
+  if (!ScriptCustomElementDefinition::ForConstructor(script_state_.Get(),
+                                                     registry_, constructor_))
+    return true;
+
+  // Constructor is already registered.
+  exception_state_.ThrowDOMException(
+      kNotSupportedError,
+      "this constructor has already been used with this registry");
+  return false;
 }
 
 bool ScriptCustomElementDefinitionBuilder::ValueForName(
