@@ -30,6 +30,17 @@
 
 using metrics::OmniboxEventProto;
 
+namespace {
+bool IsNTPPage(OmniboxEventProto::PageClassification page_classification) {
+  return (page_classification == OmniboxEventProto::NTP) ||
+         (page_classification == OmniboxEventProto::OBSOLETE_INSTANT_NTP) ||
+         (page_classification ==
+          OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+         (page_classification ==
+          OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
+}
+}  // namespace
+
 // SuggestionDeletionHandler -------------------------------------------------
 
 // This class handles making requests to the server in order to delete
@@ -327,34 +338,14 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
 
-  // Make sure we are sending the suggest request through a cryptographically
-  // secure channel to prevent exposing the current page URL or personalized
-  // results without encryption.
-  if (!suggest_url.SchemeIsCryptographic())
-    return false;
-
   // Don't show zero suggest on the NTP.
   // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
   // under the conditions described in crbug.com/305366.
-  if ((page_classification ==
-       OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
-      (page_classification ==
-       OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
+  if (IsNTPPage(page_classification))
     return false;
 
   // Don't run if in incognito mode.
   if (client->IsOffTheRecord())
-    return false;
-
-  // Don't run if we can't get preferences or search suggest is not enabled.
-  if (!client->SearchSuggestEnabled())
-    return false;
-
-  // Only make the request if we know that the provider supports zero suggest
-  // (currently only the prepopulated Google provider).
-  if (template_url == NULL ||
-      !template_url->SupportsReplacement(search_terms_data) ||
-      template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
     return false;
 
   return true;
@@ -368,11 +359,34 @@ bool BaseSearchProvider::CanSendURL(
     OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
     AutocompleteProviderClient* client) {
-  if (!ZeroSuggestEnabled(suggest_url, template_url, page_classification,
-                          search_terms_data, client))
+  // Make sure we are sending the suggest request through a cryptographically
+  // secure channel to prevent exposing the current page URL or personalized
+  // results without encryption.
+  if (!suggest_url.SchemeIsCryptographic())
+    return false;
+
+  // Don't run if in incognito mode.
+  if (client->IsOffTheRecord())
+    return false;
+
+  // Don't run if we can't get preferences or search suggest is not enabled.
+  if (!client->SearchSuggestEnabled())
+    return false;
+
+  // Only make the request if we know that the provider supports sending zero
+  // suggest. (currently only the prepopulated Google provider).
+  if (template_url == NULL ||
+      !template_url->SupportsReplacement(search_terms_data) ||
+      template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
     return false;
 
   if (!current_page_url.is_valid())
+    return false;
+
+  // Don't bother sending the URL of an NTP page; it's not useful.  The server
+  // already gets equivalent information in the form of the current page
+  // classification.
+  if (IsNTPPage(page_classification))
     return false;
 
   // Only allow HTTP URLs or HTTPS URLs.  For HTTPS URLs, require that either
