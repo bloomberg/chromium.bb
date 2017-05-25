@@ -205,7 +205,7 @@ public class WebApkValidatorTest {
      */
     @Test
     public void testIsValidWebApkCommentSigned() {
-        String[] filenames = {"example.apk", "java-example.apk"};
+        String[] filenames = {"example.apk", "java-example.apk", "v2-signed-ok.apk"};
         String packageName = "com.webapk.a9c419502bb98fcb7";
         Signature[] signature = new Signature[] {new Signature(SIGNATURE_1)};
 
@@ -225,11 +225,11 @@ public class WebApkValidatorTest {
     @Test
     public void testIsValidWebApkCommentSignedFailures() {
         String[] filenames = {
-                "bad-sig.apk", "bad-utf8-fname.apk", "empty.apk", "extra-len-too-large.apk",
-                "fcomment-too-large.apk", "no-cd.apk", "no-comment.apk", "no-eocd.apk",
-                "no-lfh.apk", "not-an.apk", "too-many-metainf.apk", "truncated.apk", "zeros.apk",
-                "zeros-at-end.apk", "block-before-first.apk", "block-at-end.apk",
-                "block-before-eocd.apk", "block-before-cd.apk",
+                "bad-sig.apk", "bad-utf8-fname.apk", "empty.apk", "extra-field-too-large.apk",
+                "extra-len-too-large.apk", "fcomment-too-large.apk", "no-cd.apk", "no-comment.apk",
+                "no-eocd.apk", "no-lfh.apk", "not-an.apk", "too-many-metainf.apk", "truncated.apk",
+                "zeros.apk", "zeros-at-end.apk", "block-before-first.apk", "block-at-end.apk",
+                "block-before-eocd.apk", "block-before-cd.apk", "v2-signed-too-large.apk",
         };
         String packageName = "com.webapk.a9c419502bb98fcb7";
         Signature[] signature = new Signature[] {new Signature(SIGNATURE_1)};

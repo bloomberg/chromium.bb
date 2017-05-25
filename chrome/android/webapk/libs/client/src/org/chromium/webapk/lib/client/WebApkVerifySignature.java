@@ -36,7 +36,7 @@ public class WebApkVerifySignature {
     public static final int ERROR_SIGNATURE_NOT_FOUND = 5;
     public static final int ERROR_TOO_MANY_META_INF_FILES = 6;
     public static final int ERROR_BAD_BLANK_SPACE = 7;
-    public static final int ERROR_BAD_V2_BLOCK = 8;
+    public static final int ERROR_BAD_V2_SIGNING_BLOCK = 8;
 
     private static final String TAG = "WebApkVerifySignature";
 
@@ -379,8 +379,8 @@ public class WebApkVerifySignature {
             if (V2_SIGNING_MAGIC.equals(magic)) {
                 // Only if we have a v2 signature do we allow medium sized gap between the last
                 // block and the start of the central directory.
-                if (positionOfLastByteOfLastBlock + MAX_V2_SIGNING_BLOCK_SIZE > mCentralDirOffset) {
-                    return ERROR_BAD_V2_BLOCK;
+                if (mCentralDirOffset - positionOfLastByteOfLastBlock > MAX_V2_SIGNING_BLOCK_SIZE) {
+                    return ERROR_BAD_V2_SIGNING_BLOCK;
                 }
             } else {
                 return ERROR_BAD_BLANK_SPACE;
