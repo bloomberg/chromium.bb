@@ -3127,16 +3127,6 @@ crbug.com/725542 [ Debug ] editing/selection/doubleclick-beside-cr-span.html [ P
 crbug.com/725545 [ Debug ] fast/forms/number/number-stepup-stepdown-from-renderer.html [ Pass Timeout ]
 crbug.com/725548 [ Debug ] storage/indexeddb/objectstore-keycursor.html [ Pass Timeout ]
 
-# Update paint-timing tests to use capturePixelsAsyncThen for swap-promise to resolve: crbug.com/709028
-crbug.com/709028 http/tests/performance-timing/paint-timing/first-contentful-paint.html [ Timeout ]
-crbug.com/709028 http/tests/performance-timing/paint-timing/first-contentful-image.html [ Timeout ]
-crbug.com/709028 http/tests/performance-timing/paint-timing/first-contentful-svg.html [ Timeout ]
-crbug.com/709028 http/tests/performance-timing/paint-timing/first-contentful-canvas.html [ Timeout ]
-crbug.com/709028 virtual/mojo-loading/http/tests/performance-timing/paint-timing/first-contentful-paint.html [ Timeout ]
-crbug.com/709028 virtual/mojo-loading/http/tests/performance-timing/paint-timing/first-contentful-image.html [ Timeout ]
-crbug.com/709028 virtual/mojo-loading/http/tests/performance-timing/paint-timing/first-contentful-svg.html [ Timeout ]
-crbug.com/709028 virtual/mojo-loading/http/tests/performance-timing/paint-timing/first-contentful-canvas.html [ Timeout ]
-
 # Sheriff failures 2017-05-23
 crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure Pass ]
 crbug.com/725455 [ Linux ] nfc/mock-nfc.html [ Failure Pass Timeout ]
