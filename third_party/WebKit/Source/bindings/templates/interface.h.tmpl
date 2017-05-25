@@ -62,9 +62,6 @@ class {{v8_class}} {
   static void {{method.name}}MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
   {% endif %}
   {% endfor %}
-  {% if constructors or has_custom_constructor or has_html_constructor %}
-  static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  {% endif %}
   {% if has_custom_constructor %}
   static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
@@ -151,6 +148,10 @@ class {{v8_class}} {
   {% endfor %}
 
   // Callback functions
+  {% if constructors or has_custom_constructor or has_html_constructor %}
+  {{exported}}static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+
+  {% endif %}
   {% for constant in constants | has_special_getter %}
   {{exported}}static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endfor %}
