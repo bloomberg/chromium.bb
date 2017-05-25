@@ -177,7 +177,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             if layout_test_results is None:
                 _log.info('Failed to fetch results for %s', build)
                 _log.info('Results URL: %s/results.html', results_url)
-                _log.info('Retry job by running: git cl try -b %s', build.builder_name)
                 continue
             results[build] = layout_test_results
         return results

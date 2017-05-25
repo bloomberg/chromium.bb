@@ -109,12 +109,12 @@ class BuildBot(object):
         results_file = NetworkTransaction(return_none_on_404=True).run(
             lambda: self.fetch_file(results_url, 'failing_results.json'))
         if results_file is None:
-            _log.warning('Got 404 response from:\n%s/failing_results.json', results_url)
+            _log.debug('Got 404 response from:\n%s/failing_results.json', results_url)
             return None
         revision = NetworkTransaction(return_none_on_404=True).run(
             lambda: self.fetch_file(results_url, 'LAST_CHANGE'))
         if revision is None:
-            _log.warning('Got 404 response from:\n%s/LAST_CHANGE', results_url)
+            _log.debug('Got 404 response from:\n%s/LAST_CHANGE', results_url)
             return None
         return LayoutTestResults.results_from_string(results_file, revision)
 
