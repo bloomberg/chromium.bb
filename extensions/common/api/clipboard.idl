@@ -5,12 +5,26 @@
 // The <code>chrome.clipboard</code> API is provided to allow users to
 // access data of the clipboard. This is a temporary solution for
 // chromeos platform apps until open-web alternative is available. It will be
-// deprecated once open-web solution is available, which could be in 2017 Q2.
+// deprecated once open-web solution is available, which could be in 2017 Q4.
 [platforms=("chromeos"),
  implemented_in="extensions/browser/api/clipboard/clipboard_api.h"]
 namespace clipboard {
   // Supported image types.
   enum ImageType {png, jpeg};
+  
+  enum DataItemType {textPlain, textHtml};
+  
+  // Additional data item to be added along with the |image_data| to describe
+  // the |image_data|.
+  dictionary AdditionalDataItem {
+    // Type of the additional data item.
+    DataItemType type;
+
+    // Content of the additional data item. Either the plain text string if
+    // |type| is "textPlain" or markup string if |type| is "textHtml". The
+    // data can not exceed 2MB.
+    DOMString data;
+  };
   
   interface Events {
     // Fired when clipboard data changes.
@@ -26,13 +40,15 @@ namespace clipboard {
   interface Functions {
     // Sets image data to clipboard.
     //
-    // |image_data|: The encoded image data.
+    // |imageData|: The encoded image data.
     // |type|: The type of image being passed.
+    // |additionalItems|: Additional data items for describing image data.
     // The callback is called with <code>chrome.runtime.lastError</code>
     // set to error code if there is an error.
     // Requires clipboard and clipboardWrite permissions.
-    static void setImageData(ArrayBuffer image_data,
+    static void setImageData(ArrayBuffer imageData,
                              ImageType type,
+                             optional AdditionalDataItem[] additionalItems,
                              SetImageDataCallback callback);
   };
 };
