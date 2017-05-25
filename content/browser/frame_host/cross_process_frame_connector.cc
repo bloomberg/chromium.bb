@@ -301,6 +301,10 @@ void CrossProcessFrameConnector::SetRect(const gfx::Rect& frame_rect) {
 
 RenderWidgetHostViewBase*
 CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
+  // Tests may not have frame_proxy_in_parent_renderer_ set.
+  if (!frame_proxy_in_parent_renderer_)
+    return nullptr;
+
   RenderFrameHostImpl* top_host = frame_proxy_in_parent_renderer_->
       frame_tree_node()->frame_tree()->root()->current_frame_host();
 

@@ -918,7 +918,6 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-
   cc::Selection<gfx::SelectionBound> selection = frame.metadata.selection;
   if (IsUseZoomForDSFEnabled()) {
     float viewportToDIPScale = 1.0f / current_device_scale_factor_;
@@ -940,8 +939,12 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
     delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
                                                  std::move(frame));
   }
-  selection_controller_->OnSelectionBoundsChanged(selection.start,
-                                                  selection.end);
+  if (selection.start != selection_start_ || selection.end != selection_end_) {
+    selection_start_ = selection.start;
+    selection_end_ = selection.end;
+    selection_controller_client_->UpdateClientSelectionBounds(selection_start_,
+                                                              selection_end_);
+  }
 }
 
 void RenderWidgetHostViewAura::OnDidNotProduceFrame(
@@ -1789,6 +1792,10 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 
     DetachFromInputMethod();
 
+    // TODO(wjmaclean): Do we need to let TouchSelectionControllerClientAura
+    // handle this, just in case it stomps on a new highlight in another view
+    // that has just become focused? So far it doesn't appear to be a problem,
+    // but we should keep an eye on it.
     selection_controller_->HideAndDisallowShowingAutomatically();
 
     if (overscroll_controller_)
@@ -2036,6 +2043,11 @@ void RenderWidgetHostViewAura::Shutdown() {
     in_shutdown_ = true;
     host_->ShutdownAndDestroyWidget(true);
   }
+}
+
+TouchSelectionControllerClientManager*
+RenderWidgetHostViewAura::touch_selection_controller_client_manager() {
+  return selection_controller_client_.get();
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {

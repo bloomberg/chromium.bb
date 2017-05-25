@@ -9,13 +9,20 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display_switches.h"
@@ -170,13 +177,14 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
     rwhva->event_handler()->disable_input_event_router_for_testing();
   }
 
- private:
+ protected:
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
       menu_runner_.reset(new TestTouchSelectionMenuRunner);
   }
 
+ private:
   void TearDownOnMainThread() override {
     menu_runner_ = nullptr;
     selection_controller_client_ = nullptr;
@@ -221,6 +229,207 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
             rwhva->selection_controller()->active_status());
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+}
+
+class TouchSelectionControllerClientAuraSiteIsolationTest
+    : public TouchSelectionControllerClientAuraTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    TouchSelectionControllerClientAuraTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void SelectWithLongPress(gfx::Point point) {
+    // Get main frame view for event insertion.
+    RenderWidgetHostViewAura* main_view = GetRenderWidgetHostViewAura();
+
+    SendTouch(main_view, ui::ET_TOUCH_PRESSED, point);
+    SendTouch(main_view, ui::ET_TOUCH_RELEASED, point);
+    SendGestureTap(main_view, point);
+    SendGestureLongPress(main_view, point);
+  }
+
+  void SimpleTap(gfx::Point point) {
+    // Get main frame view for event insertion.
+    RenderWidgetHostViewAura* main_view = GetRenderWidgetHostViewAura();
+
+    SendTouch(main_view, ui::ET_TOUCH_PRESSED, point);
+    SendTouch(main_view, ui::ET_TOUCH_RELEASED, point);
+    SendGestureTap(main_view, point);
+  }
+
+ private:
+  void SendTouch(RenderWidgetHostViewAura* view,
+                 ui::EventType type,
+                 gfx::Point point) {
+    DCHECK(type >= ui::ET_TOUCH_RELEASED && type << ui::ET_TOUCH_CANCELLED);
+    ui::TouchEvent touch(
+        type, point, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+    view->OnTouchEvent(&touch);
+  }
+
+  void SendGestureTap(RenderWidgetHostViewAura* view, gfx::Point point) {
+    ui::GestureEventDetails tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+    tap_down_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    ui::GestureEvent gesture_tap_down(point.x(), point.y(), 0,
+                                      ui::EventTimeForNow(), tap_down_details);
+    view->OnGestureEvent(&gesture_tap_down);
+    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
+    tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    tap_details.set_tap_count(1);
+    ui::GestureEvent gesture_tap(point.x(), point.y(), 0, ui::EventTimeForNow(),
+                                 tap_details);
+    view->OnGestureEvent(&gesture_tap);
+  }
+
+  void SendGestureLongPress(RenderWidgetHostViewAura* view, gfx::Point point) {
+    ui::GestureEventDetails long_press_details(ui::ET_GESTURE_LONG_PRESS);
+    long_press_details.set_device_type(
+        ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    ui::GestureEvent gesture_long_press(
+        point.x(), point.y(), 0, ui::EventTimeForNow(), long_press_details);
+    view->OnGestureEvent(&gesture_long_press);
+  }
+};
+
+class FrameStableObserver {
+ public:
+  FrameStableObserver(RenderWidgetHostViewBase* view, base::TimeDelta delta)
+      : view_(view), delta_(delta) {}
+  virtual ~FrameStableObserver() {}
+
+  void WaitUntilStable() {
+    uint32_t current_frame_number = view_->RendererFrameNumber();
+    uint32_t previous_frame_number;
+
+    do {
+      base::RunLoop run_loop;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), delta_);
+      run_loop.Run();
+      previous_frame_number = current_frame_number;
+      current_frame_number = view_->RendererFrameNumber();
+    } while (current_frame_number != previous_frame_number);
+  }
+
+ private:
+  RenderWidgetHostViewBase* view_;
+  base::TimeDelta delta_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameStableObserver);
+};
+
+INSTANTIATE_TEST_CASE_P(TouchSelectionForCrossProcessFramesTests,
+                        TouchSelectionControllerClientAuraSiteIsolationTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
+                       BasicSelectionIsolatedIframe) {
+  GURL test_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(
+      " Site A\n"
+      "   +--Site A\n"
+      "Where A = http://a.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+
+  RenderWidgetHostViewAura* parent_view =
+      static_cast<RenderWidgetHostViewAura*>(
+          root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  TestTouchSelectionControllerClientAura* parent_selection_controller_client =
+      new TestTouchSelectionControllerClientAura(parent_view);
+  parent_view->SetSelectionControllerClientForTest(
+      base::WrapUnique(parent_selection_controller_client));
+
+  // We need to load the desired subframe and then wait until it's stable, i.e.
+  // generates no new frames for some reasonable time period: a stray frame
+  // between touch selection's pre-handling of GestureLongPress and the
+  // expected frame containing the selected region can confuse the
+  // TouchSelectionController, causing it to fail to show selection handles.
+  // Note this is an issue with the TouchSelectionController in general, and
+  // not a property of this test.
+  GURL child_url(
+      embedded_test_server()->GetURL("b.com", "/touch_selection.html"));
+  NavigateFrameToURL(child, child_url);
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+
+  // The child will change with the cross-site navigation. It shouldn't change
+  // after this.
+  child = root->child_at(0);
+  WaitForChildFrameSurfaceReady(child->current_frame_host());
+
+  RenderWidgetHostViewChildFrame* child_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  EXPECT_EQ(child_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  FrameStableObserver child_frame_stable_observer(child_view,
+                                                  TestTimeouts::tiny_timeout());
+  child_frame_stable_observer.WaitUntilStable();
+
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            parent_view->selection_controller()->active_status());
+
+  // Find the location of some text to select.
+  gfx::PointF point_f;
+  std::string str;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(child->current_frame_host(),
+                                            "get_point_inside_text()", &str));
+  JSONToPoint(str, &point_f);
+  gfx::Point origin = child_view->GetViewOriginInRoot();
+  gfx::Vector2dF origin_vec(origin.x(), origin.y());
+  point_f += origin_vec;
+
+  // Initiate selection with a sequence of events that go through the targeting
+  // system.
+  parent_selection_controller_client->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_SHOWN);
+
+  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
+
+  parent_selection_controller_client->Wait();
+
+  // Check that selection is active and the quick menu is showing.
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            parent_view->selection_controller()->active_status());
+  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Tap inside/outside the iframe and make sure the selection handles go away.
+  parent_selection_controller_client->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_CLEARED);
+  if (GetParam()) {
+    gfx::PointF point_outside_iframe = gfx::PointF(-1.f, -1.f) + origin_vec;
+    SimpleTap(gfx::Point(point_outside_iframe.x(), point_outside_iframe.y()));
+  } else {
+    gfx::PointF point_inside_iframe = gfx::PointF(+1.f, +1.f) + origin_vec;
+    SimpleTap(gfx::Point(point_inside_iframe.x(), point_inside_iframe.y()));
+  }
+  parent_selection_controller_client->Wait();
+
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            parent_view->selection_controller()->active_status());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
 // Tests that tapping in a textfield brings up the insertion handle, but not the
