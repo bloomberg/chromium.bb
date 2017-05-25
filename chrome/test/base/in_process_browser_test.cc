@@ -220,7 +220,7 @@ void InProcessBrowserTest::SetUp() {
 
 #if defined(OS_CHROMEOS)
   // Make sure that the log directory exists.
-  base::FilePath log_dir = logging::GetSessionLogDir(*command_line);
+  base::FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   base::CreateDirectory(log_dir);
   // Disable IME extension loading to avoid many browser tests failures.
   chromeos::input_method::DisableExtensionLoading();
