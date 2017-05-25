@@ -29,9 +29,6 @@ class AwLoginDelegate;
 // One instance of this class is created per underlying AwLoginDelegate.
 class AwHttpAuthHandler {
  public:
-  static AwHttpAuthHandler* Create(AwLoginDelegate* login_delegate,
-                                   net::AuthChallengeInfo* auth_info,
-                                   bool first_auth_attempt);
   AwHttpAuthHandler(AwLoginDelegate* login_delegate,
                     net::AuthChallengeInfo* auth_info,
                     bool first_auth_attempt);
