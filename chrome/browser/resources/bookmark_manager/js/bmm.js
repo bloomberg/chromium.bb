@@ -249,7 +249,7 @@ cr.define('bmm', function() {
     chrome.bookmarks.onRemoved.addListener(handleRemoved);
     chrome.bookmarks.onImportBegan.addListener(handleImportBegan);
     chrome.bookmarks.onImportEnded.addListener(handleImportEnded);
-  };
+  }
 
   return {
     contains: contains,

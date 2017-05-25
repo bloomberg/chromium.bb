@@ -407,7 +407,7 @@ cr.define('bookmarks', function() {
             closedFolders, action.descendants);
       default:
         return closedFolders;
-    };
+    }
   };
 
   /**

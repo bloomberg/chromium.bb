@@ -1143,7 +1143,7 @@ function addPage() {
     var sm = bmm.list.selectionModel;
     sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
     scrollIntoViewAndMakeEditable(index);
-  };
+  }
 
   navigateTo(parentId, editNewBookmark);
 }

@@ -48,7 +48,7 @@ cr.define('hotword', function() {
       this.updateListeners_();
       this.updateTabState_();
     }.bind(this));
-  };
+  }
 
   var CommandToPage = hotword.constants.CommandToPage;
   var CommandFromPage = hotword.constants.CommandFromPage;

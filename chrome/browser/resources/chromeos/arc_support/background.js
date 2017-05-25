@@ -132,7 +132,7 @@ class PreferenceCheckbox {
   onLearnMoreLinkClicked() {
     showTextOverlay(this.learnMoreContent_);
   }
-};
+}
 
 /**
  * Handles the checkbox action of metrics preference.
@@ -189,7 +189,7 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
     event.preventDefault();
   }
-};
+}
 
 /**
  * Represents the page loading state.
@@ -397,7 +397,7 @@ class TermsOfServicePage {
   onLocationServicePreferenceChanged(isEnabled, isManaged) {
     this.locationServiceCheckbox_.onPreferenceChanged(isEnabled, isManaged);
   }
-};
+}
 
 /**
  * Applies localization for html content and sets terms webview.

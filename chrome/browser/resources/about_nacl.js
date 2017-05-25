@@ -16,7 +16,7 @@ var nacl = nacl || {};
     var input = new JsEvalContext(moduleListData);
     var output = $('naclInfoTemplate');
     jstProcess(input, output);
-  };
+  }
 
   /**
    * Asks the C++ NaClUIDOMHandler to get details about the NaCl and return
@@ -24,7 +24,7 @@ var nacl = nacl || {};
    */
   function requestNaClInfo() {
     chrome.send('requestNaClInfo');
-  };
+  }
 
   /**
    * Called by the WebUI to re-populate the page with data representing the

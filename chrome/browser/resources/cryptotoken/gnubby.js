@@ -307,7 +307,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
       window.setTimeout(function() { c(a, b); }, 0);
     }
     if (self.closingWhenIdle) self.idleClose_();
-  };
+  }
 
   function read_timeout() {
     if (!callback || !tid) return;  // Already done.
@@ -322,7 +322,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     tid = null;
 
     schedule_cb(-GnubbyDevice.TIMEOUT);
-  };
+  }
 
   function cont_frame() {
     if (!callback || !tid) return;  // Already done.
@@ -662,7 +662,7 @@ Gnubby.prototype.sync = function(cb) {
 
     // Done.
     callback(-GnubbyDevice.OK, f);
-  };
+  }
 
   function timeoutLoop() {
     if (done) return;
@@ -677,7 +677,7 @@ Gnubby.prototype.sync = function(cb) {
     sendSentinel();
     self.notifyFrame_(checkSentinel);
     tid = window.setTimeout(timeoutLoop, 500);
-  };
+  }
 
   var sendSentinel;
   var sentinelEquals;
