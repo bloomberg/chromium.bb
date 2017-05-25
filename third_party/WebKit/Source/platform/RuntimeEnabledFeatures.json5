@@ -143,6 +143,10 @@
       status: "experimental",
     },
     {
+      name: "ClickRetargetting",
+      status: "experimental",
+    },
+    {
       name: "ClientHints",
       status: "stable",
     },
