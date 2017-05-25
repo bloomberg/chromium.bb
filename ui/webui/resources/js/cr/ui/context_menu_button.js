@@ -76,11 +76,14 @@ cr.define('cr.ui', function() {
      * triggers command changes.
      * @param {boolean} shouldSetFocus Whether the menu should be focused after
      *     the menu is shown.
+     * @param {{x: number, y: number}=} opt_mousePos The position of the mouse
+     *     when shown (in screen coordinates).
+     * @override
      */
-    showMenu: function(shouldSetFocus) {
+    showMenu: function(shouldSetFocus, opt_mousePos) {
       var self = this;
       window.setTimeout(function() {
-        MenuButton.prototype.showMenu.call(self, shouldSetFocus);
+        MenuButton.prototype.showMenu.call(self, shouldSetFocus, opt_mousePos);
       }, 0);
     }
   };
