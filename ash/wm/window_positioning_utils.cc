@@ -10,6 +10,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -19,9 +20,11 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -43,21 +46,22 @@ int GetDefaultSnappedWindowWidth(aura::Window* window) {
 
 // Return true if the window or one of its ancestor returns true from
 // IsLockedToRoot().
-bool IsWindowOrAncestorLockedToRoot(const WmWindow* window) {
-  return window && (window->IsLockedToRoot() ||
-                    IsWindowOrAncestorLockedToRoot(window->GetParent()));
+bool IsWindowOrAncestorLockedToRoot(const aura::Window* window) {
+  return window && (window->GetProperty(kLockedToRootKey) ||
+                    IsWindowOrAncestorLockedToRoot(window->parent()));
 }
 
 // Move all transient children to |dst_root|, including the ones in
 // the child windows and transient children of the transient children.
 void MoveAllTransientChildrenToNewRoot(const display::Display& display,
-                                       WmWindow* window) {
-  WmWindow* dst_root =
-      Shell::GetRootWindowControllerWithDisplayId(display.id())->GetWindow();
-  for (WmWindow* transient_child : window->GetTransientChildren()) {
-    const int container_id = transient_child->GetParent()->aura_window()->id();
+                                       aura::Window* window) {
+  aura::Window* dst_root =
+      Shell::GetRootWindowControllerWithDisplayId(display.id())
+          ->GetRootWindow();
+  for (aura::Window* transient_child : ::wm::GetTransientChildren(window)) {
+    const int container_id = transient_child->parent()->id();
     DCHECK_GE(container_id, 0);
-    WmWindow* container = dst_root->GetChildByShellWindowId(container_id);
+    aura::Window* container = dst_root->GetChildById(container_id);
     const gfx::Rect transient_child_bounds_in_screen =
         transient_child->GetBoundsInScreen();
     container->AddChild(transient_child);
@@ -68,7 +72,7 @@ void MoveAllTransientChildrenToNewRoot(const display::Display& display,
     MoveAllTransientChildrenToNewRoot(display, transient_child);
   }
   // Move transient children of the child windows if any.
-  for (WmWindow* child : window->GetChildren())
+  for (aura::Window* child : window->children())
     MoveAllTransientChildrenToNewRoot(display, child);
 }
 
@@ -127,12 +131,12 @@ gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(aura::Window* window) {
                    width, work_area_in_parent.height());
 }
 
-void CenterWindow(WmWindow* window) {
+void CenterWindow(aura::Window* window) {
   WMEvent event(WM_EVENT_CENTER);
-  window->GetWindowState()->OnWMEvent(&event);
+  wm::GetWindowState(window)->OnWMEvent(&event);
 }
 
-void SetBoundsInScreen(WmWindow* window,
+void SetBoundsInScreen(aura::Window* window,
                        const gfx::Rect& bounds_in_screen,
                        const display::Display& display) {
   DCHECK_NE(display::kInvalidDisplayId, display.id());
@@ -142,25 +146,24 @@ void SetBoundsInScreen(WmWindow* window,
   // b) if the window or its ancestor has IsLockedToRoot(). It's intentionally
   //    kept in the same root window even if the bounds is outside of the
   //    display.
-  if (!window->GetTransientParent() &&
+  if (!::wm::GetTransientParent(window) &&
       !IsWindowOrAncestorLockedToRoot(window)) {
     RootWindowController* dst_root_window_controller =
         Shell::GetRootWindowControllerWithDisplayId(display.id());
     DCHECK(dst_root_window_controller);
-    WmWindow* dst_root = dst_root_window_controller->GetWindow();
+    aura::Window* dst_root = dst_root_window_controller->GetRootWindow();
     DCHECK(dst_root);
-    WmWindow* dst_container = nullptr;
+    aura::Window* dst_container = nullptr;
     if (dst_root != window->GetRootWindow()) {
-      int container_id = window->GetParent()->aura_window()->id();
-      // All containers that uses screen coordinates must have valid window ids.
+      int container_id = window->parent()->id();
+      // All containers that use screen coordinates must have valid window ids.
       DCHECK_GE(container_id, 0);
       // Don't move modal background.
-      if (!SystemModalContainerLayoutManager::IsModalBackground(
-              window->aura_window()))
-        dst_container = dst_root->GetChildByShellWindowId(container_id);
+      if (!SystemModalContainerLayoutManager::IsModalBackground(window))
+        dst_container = dst_root->GetChildById(container_id);
     }
 
-    if (dst_container && window->GetParent() != dst_container) {
+    if (dst_container && window->parent() != dst_container) {
       aura::Window* focused = GetFocusedWindow();
       aura::Window* active = GetActiveWindow();
 
@@ -198,8 +201,10 @@ void SetBoundsInScreen(WmWindow* window,
     }
   }
   gfx::Point origin(bounds_in_screen.origin());
-  const gfx::Point display_origin =
-      window->GetDisplayNearestWindow().bounds().origin();
+  const gfx::Point display_origin = display::Screen::GetScreen()
+                                        ->GetDisplayNearestWindow(window)
+                                        .bounds()
+                                        .origin();
   origin.Offset(-display_origin.x(), -display_origin.y());
   window->SetBounds(gfx::Rect(origin, bounds_in_screen.size()));
 }

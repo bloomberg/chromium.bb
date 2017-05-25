@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm_window.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -35,8 +34,7 @@ ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
   surface_->Attach(buffer_.get());
   surface_->Commit();
 
-  ash::wm::CenterWindow(
-      ash::WmWindow::Get(shell_surface_->GetWidget()->GetNativeWindow()));
+  ash::wm::CenterWindow(shell_surface_->GetWidget()->GetNativeWindow());
 }
 
 ExoTestWindow::ExoTestWindow(ExoTestWindow&& other) {

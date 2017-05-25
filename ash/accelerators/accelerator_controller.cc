@@ -457,7 +457,7 @@ bool CanHandlePositionCenter() {
 
 void HandlePositionCenter() {
   base::RecordAction(UserMetricsAction("Accel_Window_Position_Center"));
-  wm::CenterWindow(WmWindow::Get(wm::GetActiveWindow()));
+  wm::CenterWindow(wm::GetActiveWindow());
 }
 
 void HandleShowImeMenuBubble() {
