@@ -549,7 +549,8 @@ int HeadlessShellMain(HINSTANCE instance,
           ::switches::kProcessType);
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
     return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess(), ::switches::kProcessType);
+        *base::CommandLine::ForCurrentProcess(), base::FilePath(),
+        ::switches::kProcessType, switches::kUserDataDir);
   }
 #endif  // defined(HEADLESS_USE_CRASPHAD)
   RunChildProcessIfNeeded(instance, sandbox_info);

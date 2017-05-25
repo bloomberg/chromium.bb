@@ -8,7 +8,6 @@ EXPORTS
   AddDllToBlacklist
   GetBlacklistIndex
   GetInstallDetailsPayload
-  GetUserDataDirectoryThunk
   IsBlacklistInitialized
   SignalChromeElf
   SignalInitializeCrashReporting

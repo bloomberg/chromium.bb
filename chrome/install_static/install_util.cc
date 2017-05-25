@@ -29,6 +29,7 @@ enum class ProcessType {
   OTHER_PROCESS,
   BROWSER_PROCESS,
   CLOUD_PRINT_SERVICE_PROCESS,
+  CRASHPAD_HANDLER_PROCESS,
 #if !defined(DISABLE_NACL)
   NACL_BROKER_PROCESS,
   NACL_LOADER_PROCESS,
@@ -77,6 +78,7 @@ constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
 constexpr wchar_t kCloudPrintServiceProcess[] = L"cloud-print-service";
+constexpr wchar_t kCrashpadHandlerProcess[] = L"crashpad-handler";
 #if !defined(DISABLE_NACL)
 constexpr wchar_t kNaClBrokerProcess[] = L"nacl-broker";
 constexpr wchar_t kNaClLoaderProcess[] = L"nacl-loader";
@@ -306,12 +308,21 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   return std::wstring();
 }
 
+void EnsureProcessTypeIsInitialized() {
+  if (g_process_type == ProcessType::UNINITIALIZED) {
+    InitializeProcessType();
+    assert(g_process_type != ProcessType::UNINITIALIZED);
+  }
+}
+
 // Converts a process type specified as a string to the ProcessType enum.
 ProcessType GetProcessType(const std::wstring& process_type) {
   if (process_type.empty())
     return ProcessType::BROWSER_PROCESS;
   if (process_type == kCloudPrintServiceProcess)
     return ProcessType::CLOUD_PRINT_SERVICE_PROCESS;
+  if (process_type == kCrashpadHandlerProcess)
+    return ProcessType::CRASHPAD_HANDLER_PROCESS;
 #if !defined(DISABLE_NACL)
   if (process_type == kNaClBrokerProcess)
     return ProcessType::NACL_BROKER_PROCESS;
@@ -329,6 +340,7 @@ bool ProcessNeedsProfileDir(ProcessType process_type) {
   switch (process_type) {
     case ProcessType::BROWSER_PROCESS:
     case ProcessType::CLOUD_PRINT_SERVICE_PROCESS:
+    case ProcessType::CRASHPAD_HANDLER_PROCESS:
 #if !defined(DISABLE_NACL)
     case ProcessType::NACL_BROKER_PROCESS:
     case ProcessType::NACL_LOADER_PROCESS:
@@ -515,12 +527,8 @@ void InitializeProcessType() {
   g_process_type = GetProcessType(process_type);
 }
 
-bool IsProcessTypeInitialized() {
-  return g_process_type != ProcessType::UNINITIALIZED;
-}
-
 bool IsNonBrowserProcess() {
-  assert(g_process_type != ProcessType::UNINITIALIZED);
+  EnsureProcessTypeIsInitialized();
   return g_process_type != ProcessType::BROWSER_PROCESS;
 }
 
@@ -528,14 +536,26 @@ bool ProcessNeedsProfileDir(const std::string& process_type) {
   return ProcessNeedsProfileDir(GetProcessType(UTF8ToUTF16(process_type)));
 }
 
+bool CurrentProcessNeedsProfileDir() {
+  EnsureProcessTypeIsInitialized();
+  return ProcessNeedsProfileDir(g_process_type);
+}
+
+std::wstring GetUserDataDirectory() {
+  return install_static::InstallDetails::Get().user_data_dir();
+}
+
+std::wstring GetInvalidUserDataDirectory() {
+  return install_static::InstallDetails::Get().invalid_user_data_dir();
+}
+
 std::wstring GetCrashDumpLocation() {
   // In order to be able to start crash handling very early and in chrome_elf,
   // we cannot rely on chrome's PathService entries (for DIR_CRASH_DUMPS) being
   // available on Windows. See https://crbug.com/564398.
-  std::wstring user_data_dir;
-  bool ret = GetUserDataDirectory(&user_data_dir, nullptr);
-  assert(ret);
-  IgnoreUnused(ret);
+  std::wstring user_data_dir = GetUserDataDirectory();
+  if (user_data_dir.empty())
+    return user_data_dir;
   return user_data_dir.append(L"\\Crashpad");
 }
 
