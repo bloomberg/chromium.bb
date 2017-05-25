@@ -274,7 +274,7 @@ UsbGnubbyDevice.prototype.writeOneRequest_ = function() {
     }
 
     window.setTimeout(function() { self.readOneReply_(); }, 0);
-  };
+  }
 
   var u8 = new Uint8Array(frame);
 

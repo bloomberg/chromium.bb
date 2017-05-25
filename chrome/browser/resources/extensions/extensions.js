@@ -458,7 +458,7 @@ cr.define('extensions', function() {
         '  min-width: ' + pxWidth + 'px;' +
         '}';
     document.querySelector('head').appendChild(style);
-  };
+  }
 
   // Export
   return {

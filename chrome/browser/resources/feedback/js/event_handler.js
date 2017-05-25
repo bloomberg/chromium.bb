@@ -198,7 +198,7 @@ class FeedbackRequest {
     if (!this.reportIsBeingSent_)
       this.isRequestCanceled_ = true;
   }
-};
+}
 
 /**
  * Function to determine whether or not a given extension id is whitelisted to

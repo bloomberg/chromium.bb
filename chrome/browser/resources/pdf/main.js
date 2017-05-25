@@ -49,7 +49,7 @@ var viewer;
     window.addEventListener('message', handleScriptingMessage, false);
 
     createBrowserApi().then(initViewer);
-  };
+  }
 
   main();
 })();

@@ -93,7 +93,7 @@ cr.define('bookmarks.actions', function() {
       name: 'refresh-nodes',
       nodes: nodeMap,
     };
-  };
+  }
 
   /**
    * @param {string} id

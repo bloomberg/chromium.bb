@@ -207,7 +207,7 @@ define('main', [
         renderTable(info);
         resolvePageIsPopulated();
       });
-    };
+    }
 
     updateEngagementTable();
     enableAutoupdate();

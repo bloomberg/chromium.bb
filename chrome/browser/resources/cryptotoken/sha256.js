@@ -57,7 +57,7 @@ SHA256.prototype._compress = function(buf) {
   var W = this._W;
   var k = this._k;
 
-  function _rotr(w, r) { return ((w << (32 - r)) | (w >>> r)); };
+  function _rotr(w, r) { return ((w << (32 - r)) | (w >>> r)); }
 
   // get 16 big endian words
   for (var i = 0; i < 64; i += 4) {

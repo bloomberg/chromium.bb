@@ -403,7 +403,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
     if (self.txqueue.length != 0) {
       window.setTimeout(function() { self.writePump_(); }, 0);
     }
-  };
+  }
 
   var u8 = new Uint8Array(frame);
 

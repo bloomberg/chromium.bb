@@ -188,4 +188,4 @@ class GestureDetector {
       y: (touch1.clientY + touch2.clientY) / 2
     };
   }
-};
+}

@@ -89,7 +89,7 @@ function DragData() {
 }
 
 /** @interface */
-function StoreObserver(){};
+function StoreObserver() {}
 
 /** @param {!BookmarksPageState} newState */
 StoreObserver.prototype.onStateChanged = function(newState) {};

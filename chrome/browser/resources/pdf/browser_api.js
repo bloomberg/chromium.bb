@@ -150,7 +150,7 @@ class BrowserApi {
       listener(zoomChangeInfo.newZoomFactor);
     }.bind(this));
   }
-};
+}
 
 /**
  * Enumeration of ways to manage zoom changes.

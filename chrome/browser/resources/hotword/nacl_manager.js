@@ -82,7 +82,7 @@ cr.define('hotword', function() {
      * @private {?Object}
      */
     this.preambleLog_ = null;
-  };
+  }
 
   /**
    * States this manager can be in. Since messages to/from the plugin are

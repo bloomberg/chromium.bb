@@ -282,7 +282,7 @@ var PostMessageChannel = (function() {
     this.deferredMessages_ = [];
 
     this.onMessage = new EventTarget();
-  };
+  }
 
   PostMessagePort.prototype = {
     /**
@@ -325,7 +325,7 @@ var PostMessageChannel = (function() {
    */
   function PostMessageChannel() {
     Channel.apply(this, arguments);
-  };
+  }
 
   PostMessageChannel.prototype = {
     __proto__: Channel.prototype,

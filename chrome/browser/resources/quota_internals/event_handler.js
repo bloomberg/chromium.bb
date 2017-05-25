@@ -270,7 +270,7 @@ function handleAvailableSpace(event) {
    */
   availableSpace = event.detail;
   $('diskspace-entry').innerHTML = numBytesToText_(availableSpace);
-};
+}
 
 /**
  * Event Handler for |cr.quota.onGlobalInfoUpdated|.
@@ -304,7 +304,7 @@ function handleGlobalInfo(event) {
   if (getTreeViewObject().selectedItem == storageObject)
     updateDescription();
 
-};
+}
 
 /**
  * Event Handler for |cr.quota.onPerHostInfoUpdated|.
