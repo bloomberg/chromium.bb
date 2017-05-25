@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -64,6 +65,9 @@ NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
                              base::Bind(&NewTabUI::OnShowBookmarkBarChanged,
                                         base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kWebKitDefaultFontSize,
+      base::Bind(&NewTabUI::OnDefaultFontSizeChanged, base::Unretained(this)));
 }
 
 NewTabUI::~NewTabUI() {}
@@ -75,6 +79,10 @@ void NewTabUI::OnShowBookmarkBarChanged() {
           : "false");
   web_ui()->CallJavascriptFunctionUnsafe("ntp.setBookmarkBarAttached",
                                          attached);
+}
+
+void NewTabUI::OnDefaultFontSizeChanged() {
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.defaultFontSizeChanged");
 }
 
 // static
