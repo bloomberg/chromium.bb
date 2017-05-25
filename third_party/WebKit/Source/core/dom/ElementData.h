@@ -54,8 +54,7 @@ class ElementData : public GarbageCollectedFinalized<ElementData> {
 
   void ClearClass() const { class_names_.Clear(); }
   void SetClass(const AtomicString& class_name, bool should_fold_case) const {
-    class_names_.Set(should_fold_case ? class_name.LowerASCII() : class_name,
-                     SpaceSplitString::kShouldNotFoldCase);
+    class_names_.Set(should_fold_case ? class_name.LowerASCII() : class_name);
   }
   const SpaceSplitString& ClassNames() const { return class_names_; }
 

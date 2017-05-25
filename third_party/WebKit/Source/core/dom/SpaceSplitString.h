@@ -32,17 +32,14 @@ class SpaceSplitString {
   USING_FAST_MALLOC(SpaceSplitString);
 
  public:
-  enum CaseFolding { kShouldNotFoldCase, kShouldFoldCase };
   SpaceSplitString() {}
-  SpaceSplitString(const AtomicString& string, CaseFolding case_folding) {
-    Set(string, case_folding);
-  }
+  explicit SpaceSplitString(const AtomicString& string) { Set(string); }
 
   bool operator!=(const SpaceSplitString& other) const {
     return data_ != other.data_;
   }
 
-  void Set(const AtomicString&, CaseFolding);
+  void Set(const AtomicString&);
   void Clear() { data_.Clear(); }
 
   bool Contains(const AtomicString& string) const {

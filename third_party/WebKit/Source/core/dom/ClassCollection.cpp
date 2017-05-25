@@ -39,9 +39,8 @@ ClassCollection::ClassCollection(ContainerNode& root_node,
     : HTMLCollection(root_node,
                      kClassCollectionType,
                      kDoesNotOverrideItemAfter),
-      class_names_(
-          GetDocument().InQuirksMode() ? class_names.LowerASCII() : class_names,
-          SpaceSplitString::kShouldNotFoldCase) {}
+      class_names_(GetDocument().InQuirksMode() ? class_names.LowerASCII()
+                                                : class_names) {}
 
 ClassCollection::~ClassCollection() {}
 
