@@ -280,7 +280,11 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   }
 
   // Discard the pending navigation entry if needed.
-  DiscardPendingEntryIfNeeded(render_frame_host->navigation_handle());
+  int expected_pending_entry_id =
+      render_frame_host->navigation_handle()
+          ? render_frame_host->navigation_handle()->pending_nav_entry_id()
+          : 0;
+  DiscardPendingEntryIfNeeded(expected_pending_entry_id);
 }
 
 void NavigatorImpl::DidFailLoadWithError(
@@ -936,7 +940,8 @@ void NavigatorImpl::RequestTransferURL(
 
 // PlzNavigate
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
-                                      bool proceed) {
+                                      bool proceed,
+                                      const base::TimeTicks& proceed_time) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
@@ -946,6 +951,10 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   // executing the BeforeUnload event.
   if (!navigation_request)
     return;
+
+  // Update the navigation start: it should be when it was determined that the
+  // navigation will proceed.
+  navigation_request->set_navigation_start_time(proceed_time);
 
   DCHECK_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
             navigation_request->state());
@@ -998,12 +1007,6 @@ void NavigatorImpl::OnBeginNavigation(
 
   // In all other cases the current navigation, if any, is canceled and a new
   // NavigationRequest is created for the node.
-  frame_tree_node->CreatedNavigationRequest(
-      NavigationRequest::CreateRendererInitiated(
-          frame_tree_node, common_params, begin_params,
-          controller_->GetLastCommittedEntryIndex(),
-          controller_->GetEntryCount()));
-  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   if (frame_tree_node->IsMainFrame()) {
     // Renderer-initiated main-frame navigations that need to swap processes
     // will go to the browser via a OpenURL call, and then be handled by the
@@ -1017,13 +1020,17 @@ void NavigatorImpl::OnBeginNavigation(
         frame_tree_node->current_frame_host()->GetSiteInstance(), nullptr);
     navigation_data_.reset();
   }
+  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
+  frame_tree_node->CreatedNavigationRequest(
+      NavigationRequest::CreateRendererInitiated(
+          frame_tree_node, pending_entry, common_params, begin_params,
+          controller_->GetLastCommittedEntryIndex(),
+          controller_->GetEntryCount()));
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // For main frames, NavigationHandle will be created after the call to
   // |DidStartMainFrameNavigation|, so it receives the most up to date pending
   // entry from the NavigationController.
-  NavigationEntry* pending_entry = controller_->GetPendingEntry();
-  navigation_request->CreateNavigationHandle(
-      pending_entry ? pending_entry->GetUniqueID() : 0);
   navigation_request->BeginNavigation();
 }
 
@@ -1076,7 +1083,7 @@ void NavigatorImpl::LogBeforeUnloadTime(
   }
 }
 
-void NavigatorImpl::DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {
+void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
   // Racy conditions can cause a fail message to arrive after its corresponding
   // pending entry has been replaced by another navigation. If
   // |DiscardPendingEntry| is called in this case, then the completely valid
@@ -1085,8 +1092,8 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {
   // navigation handle's entry id, which should correspond to the failed load.
   NavigationEntry* pending_entry = controller_->GetPendingEntry();
   bool pending_matches_fail_msg =
-      handle && pending_entry &&
-      handle->pending_nav_entry_id() == pending_entry->GetUniqueID();
+      pending_entry &&
+      expected_pending_entry_id == pending_entry->GetUniqueID();
   if (!pending_matches_fail_msg)
     return;
 
@@ -1174,15 +1181,9 @@ void NavigatorImpl::RequestNavigation(
 
   frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
 
-  frame_tree_node->navigation_request()->CreateNavigationHandle(
-      entry.GetUniqueID());
-
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   if (!navigation_request)
     return;  // Navigation was synchronously stopped.
-
-  navigation_request->navigation_handle()->set_base_url_for_data_url(
-      entry.GetBaseURLForDataURL());
 
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed then NavigationRequest::BeginNavigation should be directly

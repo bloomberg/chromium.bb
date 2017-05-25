@@ -1678,12 +1678,11 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   if (IsBrowserSideNavigationEnabled() && unload_ack_is_for_navigation_) {
     // TODO(clamy): see if before_unload_end_time should be transmitted to the
     // Navigator.
-    frame_tree_node_->navigator()->OnBeforeUnloadACK(
-        frame_tree_node_, proceed);
+    frame_tree_node_->navigator()->OnBeforeUnloadACK(frame_tree_node_, proceed,
+                                                     before_unload_end_time);
   } else {
     frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-        unload_ack_is_for_navigation_, proceed,
-        before_unload_end_time);
+        unload_ack_is_for_navigation_, proceed, before_unload_end_time);
   }
 
   // If canceled, notify the delegate to cancel its pending navigation entry.
@@ -2983,6 +2982,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
     // handler.
     is_waiting_for_beforeunload_ack_ = true;
     unload_ack_is_for_navigation_ = for_navigation;
+    send_before_unload_start_time_ = base::TimeTicks::Now();
     if (render_view_host_->GetDelegate()->IsJavaScriptDialogShowing()) {
       // If there is a JavaScript dialog up, don't bother sending the renderer
       // the unload event because it is known unresponsive, waiting for the
@@ -2993,7 +2993,6 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
         beforeunload_timeout_->Start(
             TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
       }
-      send_before_unload_start_time_ = base::TimeTicks::Now();
       Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
     }
   }

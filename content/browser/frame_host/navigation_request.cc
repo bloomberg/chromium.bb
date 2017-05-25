@@ -257,6 +257,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 // static
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     FrameTreeNode* frame_tree_node,
+    NavigationEntryImpl* entry,
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     int current_history_list_offset,
@@ -297,7 +298,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       frame_tree_node, common_params, begin_params, request_params,
       false,  // browser_initiated
       false,  // may_transfer
-      nullptr, nullptr));
+      nullptr, entry));
   return navigation_request;
 }
 
@@ -356,9 +357,12 @@ NavigationRequest::NavigationRequest(
 
   // Add necessary headers that may not be present in the BeginNavigationParams.
   std::string user_agent_override;
-  if (entry && entry->GetIsOverridingUserAgent()) {
-    user_agent_override =
-        frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
+  if (entry) {
+    nav_entry_id_ = entry->GetUniqueID();
+    if (entry->GetIsOverridingUserAgent()) {
+      user_agent_override =
+          frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
+    }
   }
 
   net::HttpRequestHeaders headers;
@@ -380,6 +384,19 @@ void NavigationRequest::BeginNavigation() {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "BeginNavigation");
   state_ = STARTED;
+  CreateNavigationHandle();
+
+  if (nav_entry_id_) {
+    NavigationEntryImpl* nav_entry =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node_->navigator()->GetController())
+            ->GetEntryWithUniqueID(nav_entry_id_);
+    if (nav_entry) {
+      navigation_handle_->set_base_url_for_data_url(
+          nav_entry->GetBaseURLForDataURL());
+    }
+  }
+
   RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url) &&
@@ -427,7 +444,7 @@ void NavigationRequest::SetWaitingForRendererResponse() {
   state_ = WAITING_FOR_RENDERER_RESPONSE;
 }
 
-void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
+void NavigationRequest::CreateNavigationHandle() {
   DCHECK_EQ(frame_tree_node_->navigation_request(), this);
   FrameTreeNode* frame_tree_node = frame_tree_node_;
 
@@ -442,7 +459,7 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
                                    FrameMsg_Navigate_Type::IsSameDocument(
                                        common_params_.navigation_type),
                                    common_params_.navigation_start,
-                                   pending_nav_entry_id,
+                                   nav_entry_id_,
                                    false,  // started_in_context_menu
                                    common_params_.should_check_main_world_csp,
                                    begin_params_.is_form_submission);
@@ -633,8 +650,11 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
   // renderer, however do not discard the pending entry so that the URL bar
   // shows them correctly.
   if (!IsRendererDebugURL(common_params_.url)) {
+    int expected_pending_entry_id =
+        navigation_handle_.get() ? navigation_handle_->pending_nav_entry_id()
+                                 : nav_entry_id_;
     frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-        navigation_handle_.get());
+        expected_pending_entry_id);
   }
 
   // If the request was canceled by the user do not show an error page.

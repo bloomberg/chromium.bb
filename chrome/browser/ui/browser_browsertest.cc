@@ -349,24 +349,6 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderViewSizeObserver);
 };
 
-// Waits for a failed commit notification.
-class FailedCommitWatcher : public content::WebContentsObserver {
-public:
-  explicit FailedCommitWatcher(content::WebContents* wc)
-      : content::WebContentsObserver(wc) {}
-  void Wait() {
-    run_loop_.Run();
-  }
-
- private:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    CHECK(!navigation_handle->HasCommitted());
-    run_loop_.Quit();
-  }
-  base::RunLoop run_loop_;
-};
-
 }  // namespace
 
 class BrowserTest : public ExtensionBrowserTest {
@@ -728,10 +710,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
 
-  FailedCommitWatcher watcher(contents);
   alert->CloseModalDialog();
-  if (content::IsBrowserSideNavigationEnabled())
-    watcher.Wait();
   EXPECT_FALSE(contents->IsLoading());
 
   // Clear the beforeunload handler so the test can easily exit.
@@ -888,10 +867,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   // Cancel the dialog.
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  FailedCommitWatcher watcher(contents);
   alert->CloseModalDialog();
-  if (content::IsBrowserSideNavigationEnabled())
-    watcher.Wait();
   EXPECT_FALSE(contents->IsLoading());
 
   // Verify there are no pending history items after the dialog is cancelled.
@@ -952,11 +928,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
 
-  // Cancel the reload.
-  FailedCommitWatcher watcher(contents);
-  alert->native_dialog()->CancelAppModalDialog();
-  if (content::IsBrowserSideNavigationEnabled())
-    watcher.Wait();
+  // Proceed with the reload.
+  alert->native_dialog()->AcceptAppModalDialog();
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
+
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Navigate to another url, and check that we get a "before unload" dialog.
   GURL url2(url::kAboutBlankURL);

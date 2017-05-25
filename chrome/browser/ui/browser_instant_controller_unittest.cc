@@ -81,21 +81,9 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
         url_(contents->GetURL()),
         num_reloads_(0) {}
 
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    if (!content::IsBrowserSideNavigationEnabled())
-      return;
-    if (url_ == navigation_handle->GetURL())
-      num_reloads_++;
-    current_url_ = navigation_handle->GetURL();
-  }
-
-  // TODO: remove this method when PlzNavigate is turned on by default.
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::ReloadType reload_type) override {
-    if (content::IsBrowserSideNavigationEnabled())
-      return;
     if (url_ == url)
       num_reloads_++;
     current_url_ = url;

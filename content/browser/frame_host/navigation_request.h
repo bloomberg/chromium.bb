@@ -93,6 +93,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // threading subtleties.
   static std::unique_ptr<NavigationRequest> CreateRendererInitiated(
       FrameTreeNode* frame_tree_node,
+      NavigationEntryImpl* entry,
       const CommonNavigationParams& common_params,
       const BeginNavigationParams& begin_params,
       int current_history_list_offset,
@@ -109,6 +110,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   const RequestNavigationParams& request_params() const {
     return request_params_;
+  }
+
+  // Updates the navigation start time.
+  void set_navigation_start_time(const base::TimeTicks& time) {
+    common_params_.navigation_start = time;
   }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }
@@ -150,7 +156,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   // Creates a NavigationHandle. This should be called after any previous
   // NavigationRequest for the FrameTreeNode has been destroyed.
-  void CreateNavigationHandle(int pending_nav_entry_id);
+  void CreateNavigationHandle();
 
   // Transfers the ownership of the NavigationHandle to |render_frame_host|.
   // This should be called when the navigation is ready to commit, because the
@@ -164,6 +170,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const base::Closure& closure) {
     on_start_checks_complete_closure_ = closure;
   }
+
+  int nav_entry_id() const { return nav_entry_id_; }
 
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
@@ -229,6 +237,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   RestoreType restore_type_;
   bool is_view_source_;
   int bindings_;
+  int nav_entry_id_ = 0;
 
   // Whether the navigation should be sent to a renderer a process. This is
   // true, except for 204/205 responses and downloads.

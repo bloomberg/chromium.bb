@@ -1204,6 +1204,30 @@ class NavigationFinishedObserver : public content::WebContentsObserver {
   int num_finished_;
   int num_to_wait_for_;
 };
+
+class LoadFinishedObserver : public content::WebContentsObserver {
+ public:
+  explicit LoadFinishedObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents), num_finished_(0) {}
+
+  ~LoadFinishedObserver() override {}
+
+  void DidStopLoading() override {
+    num_finished_++;
+    if (run_loop_.running())
+      run_loop_.Quit();
+  }
+
+  void WaitForLoadToFinish() {
+    if (num_finished_ == 0)
+      run_loop_.Run();
+  }
+
+ private:
+  int num_finished_;
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageStopLoading) {
@@ -1219,8 +1243,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageStopLoading) {
   params->SetBoolean("enabled", true);
   SendCommand("Page.setControlNavigations", std::move(params), true);
 
-  NavigationFinishedObserver navigation_finished_observer(
-      shell()->web_contents());
+  LoadFinishedObserver load_finished_observer(shell()->web_contents());
 
   // The page will try to navigate twice, however since
   // Page.setControlNavigations is true, it'll wait for confirmation before
@@ -1233,7 +1256,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageStopLoading) {
   SendCommand("Page.stopLoading", nullptr);
 
   // Wait for the initial navigation to finish.
-  navigation_finished_observer.WaitForNavigationsToFinish(1);
+  load_finished_observer.WaitForLoadToFinish();
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ControlNavigationsMainFrame) {
