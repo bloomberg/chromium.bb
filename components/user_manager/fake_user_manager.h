@@ -32,13 +32,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
       const AccountId& account_id,
       bool is_affiliated);
 
-  // Calculates the user name hash and calls UserLoggedIn to login a user.
-  void LoginUser(const AccountId& account_id);
-
   // UserManager overrides.
   const user_manager::UserList& GetUsers() const override;
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
-  const user_manager::UserList& GetLoggedInUsers() const override;
 
   // Set the user as logged in.
   void UserLoggedIn(const AccountId& account_id,
@@ -119,6 +115,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
 
   // UserManagerBase overrides:
   bool AreEphemeralUsersEnabled() const override;
+  void SetEphemeralUsersEnabled(bool enabled) override;
   const std::string& GetApplicationLocale() const override;
   PrefService* GetLocalState() const override;
   void HandleUserOAuthTokenStatusChange(

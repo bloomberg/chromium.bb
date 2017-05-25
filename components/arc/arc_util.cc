@@ -92,6 +92,36 @@ bool IsArcKioskMode() {
          user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
 }
 
+bool IsArcAllowedForUser(const user_manager::User* user) {
+  if (!user) {
+    VLOG(1) << "No ARC for nullptr user.";
+    return false;
+  }
+
+  // ARC is only supported for the following cases:
+  // - Users have Gaia accounts;
+  // - Active directory users;
+  // - ARC kiosk session;
+  //   USER_TYPE_ARC_KIOSK_APP check is compatible with IsArcKioskMode()
+  //   above because ARC kiosk user is always the primary/active user of a
+  //   user session.
+  if (!user->HasGaiaAccount() && !user->IsActiveDirectoryUser() &&
+      user->GetType() != user_manager::USER_TYPE_ARC_KIOSK_APP) {
+    VLOG(1) << "Users without GAIA or AD accounts, or not ARC kiosk apps are "
+               "not supported in ARC.";
+    return false;
+  }
+
+  // Do not allow for ephemeral data user. cf) b/26402681
+  if (user_manager::UserManager::Get()->IsUserCryptohomeDataEphemeral(
+          user->GetAccountId())) {
+    VLOG(1) << "Users with ephemeral data are not supported in ARC.";
+    return false;
+  }
+
+  return true;
+}
+
 bool IsArcOptInVerificationDisabled() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(
