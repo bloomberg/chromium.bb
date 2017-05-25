@@ -97,24 +97,18 @@ NSString* const kUserInfo = @"kUserInfo";
             default:
               NOTREACHED();
           }
-          // TODO(nicholss): Not yet integrated: createdTime, hostVersion,
-          // kind, offlineReason. Add them as the app will need this info.
+          // TODO(nicholss): Not yet integrated: createdTime, kind,
+          // offlineReason. Add them as the app will need this info.
           HostInfo* host = [[HostInfo alloc] init];
-          host.hostId =
-              [NSString stringWithCString:host_info.host_id.c_str()
-                                 encoding:[NSString defaultCStringEncoding]];
-          host.hostName =
-              [NSString stringWithCString:host_info.host_name.c_str()
-                                 encoding:[NSString defaultCStringEncoding]];
-          host.jabberId =
-              [NSString stringWithCString:host_info.host_jid.c_str()
-                                 encoding:[NSString defaultCStringEncoding]];
-          host.publicKey =
-              [NSString stringWithCString:host_info.public_key.c_str()
-                                 encoding:[NSString defaultCStringEncoding]];
-          host.status =
-              [NSString stringWithCString:status.c_str()
-                                 encoding:[NSString defaultCStringEncoding]];
+          host.hostId = base::SysUTF8ToNSString(host_info.host_id);
+          host.hostName = base::SysUTF8ToNSString(host_info.host_name);
+          host.hostOs = base::SysUTF8ToNSString(host_info.host_os);
+          host.hostOsVersion =
+              base::SysUTF8ToNSString(host_info.host_os_version);
+          host.hostVersion = base::SysUTF8ToNSString(host_info.host_version);
+          host.jabberId = base::SysUTF8ToNSString(host_info.host_jid);
+          host.publicKey = base::SysUTF8ToNSString(host_info.public_key);
+          host.status = base::SysUTF8ToNSString(status);
           [hosts addObject:host];
         }
         _hosts = hosts;
@@ -166,9 +160,7 @@ NSString* const kUserInfo = @"kUserInfo";
                                   remoting::OAuthTokenGetter::Status status,
                                   const std::string& user_email,
                                   const std::string& access_token) {
-        NSString* accessToken =
-            [NSString stringWithCString:access_token.c_str()
-                               encoding:[NSString defaultCStringEncoding]];
+        NSString* accessToken = base::SysUTF8ToNSString(access_token);
         [self startHostListFetchWith:accessToken];
       })];
 }

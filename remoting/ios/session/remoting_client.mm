@@ -84,6 +84,9 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   info.host_jid = base::SysNSStringToUTF8(hostInfo.jabberId);
   info.host_id = base::SysNSStringToUTF8(hostInfo.hostId);
   info.host_pubkey = base::SysNSStringToUTF8(hostInfo.publicKey);
+  info.host_os = base::SysNSStringToUTF8(hostInfo.hostOs);
+  info.host_os_version = base::SysNSStringToUTF8(hostInfo.hostOsVersion);
+  info.host_version = base::SysNSStringToUTF8(hostInfo.hostVersion);
   // TODO(nicholss): If iOS supports pairing, pull the stored data and
   // insert it here.
   info.pairing_id = "";
@@ -92,9 +95,6 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   // TODO(nicholss): I am not sure about the following fields yet.
   // info.capabilities =
   // info.flags =
-  // info.host_version =
-  // info.host_os =
-  // info.host_os_version =
 
   remoting::protocol::ClientAuthenticationConfig client_auth_config;
   client_auth_config.host_id = info.host_id;

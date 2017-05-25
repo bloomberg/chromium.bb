@@ -30,6 +30,9 @@ struct HostInfo {
   std::string host_id;
   std::string host_jid;
   std::string host_name;
+  std::string host_os;
+  std::string host_os_version;
+  std::string host_version;
   HostStatus status = kHostStatusOffline;
   std::string offline_reason;
   std::string public_key;
