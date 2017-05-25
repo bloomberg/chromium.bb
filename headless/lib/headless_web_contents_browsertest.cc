@@ -34,6 +34,7 @@
 #include "ui/gfx/geometry/rect.h"
 #endif
 
+using testing::ElementsAre;
 using testing::UnorderedElementsAre;
 
 namespace headless {
@@ -335,18 +336,28 @@ class HeadlessMainWorldTabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
         web_contents_->GetHeadlessTabSocket();
     DCHECK(headless_tab_socket);
 
-    headless_tab_socket->SendMessageToTab("Hello");
+    headless_tab_socket->SendMessageToTab("One");
+    headless_tab_socket->SendMessageToTab("Two");
+    headless_tab_socket->SendMessageToTab("Three");
     headless_tab_socket->SetListener(this);
   }
 
   void OnMessageFromTab(const std::string& message) override {
-    EXPECT_EQ("Embedder sent us: Hello", message);
-    FinishAsynchronousTest();
+    messages_.push_back(message);
+    if (messages_.size() == 3u) {
+      EXPECT_THAT(messages_,
+                  ElementsAre("Embedder sent us: One", "Embedder sent us: Two",
+                              "Embedder sent us: Three"));
+      FinishAsynchronousTest();
+    }
   }
 
   HeadlessWebContents::Builder::TabSocketType GetTabSocketType() override {
     return HeadlessWebContents::Builder::TabSocketType::MAIN_WORLD;
   }
+
+ private:
+  std::vector<std::string> messages_;
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessMainWorldTabSocketTest);

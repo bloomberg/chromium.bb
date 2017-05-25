@@ -116,6 +116,10 @@ class HeadlessTabSocketBindings
     render_frame()->GetWebFrame()->RequestExecuteV8Function(
         context, GetOnMessageCallback(), context->Global(), arraysize(argv),
         argv, this);
+
+    EnsureTabSocketPtr()->AwaitNextMessageFromEmbedder(
+        base::Bind(&HeadlessTabSocketBindings::OnNextMessageFromEmbedder,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   void InitializeTabSocketBindings(v8::Local<v8::Context> context) {
