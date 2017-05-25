@@ -22,8 +22,6 @@ class Size;
 
 namespace ash {
 
-class WmWindow;
-
 namespace wm {
 
 // We force at least this many DIPs for any window on the screen.
@@ -60,11 +58,11 @@ ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
     aura::Window* window);
 
 // Moves the window to the center of the display.
-ASH_EXPORT void CenterWindow(WmWindow* window);
+ASH_EXPORT void CenterWindow(aura::Window* window);
 
 // Sets the bounds of |window| to |bounds_in_screen|. This may move |window|
 // to |display| if necessary.
-ASH_EXPORT void SetBoundsInScreen(WmWindow* window,
+ASH_EXPORT void SetBoundsInScreen(aura::Window* window,
                                   const gfx::Rect& bounds_in_screen,
                                   const display::Display& display);
 

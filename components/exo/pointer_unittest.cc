@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm_window.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/shell_surface.h"
@@ -313,7 +312,7 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
   surface2->Commit();
-  ash::wm::CenterWindow(ash::WmWindow::Get(surface2->window()));
+  ash::wm::CenterWindow(surface2->window());
   gfx::Point location2 = surface2->window()->GetBoundsInScreen().origin();
 
   // Make the window modal.
