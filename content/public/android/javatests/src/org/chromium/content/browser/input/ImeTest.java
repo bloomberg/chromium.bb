@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
@@ -424,7 +423,6 @@ public class ImeTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/694812")
     @Feature({"TextInput"})
     public void testShowAndHideSoftInput() throws Exception {
         mRule.focusElement("input_radio", false);
