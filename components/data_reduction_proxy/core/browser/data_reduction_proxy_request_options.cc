@@ -116,7 +116,7 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
         experiments_.push_back(experiment_tokenizer.token());
     }
   } else if (params::AreLitePagesEnabledViaFlags()) {
-    experiments_.push_back(chrome_proxy_lite_page_ignore_blacklist());
+    experiments_.push_back(chrome_proxy_force_lite_page_experiment());
   } else {
     // If no other "exp" directive is forced by flags, add the field trial
     // value.

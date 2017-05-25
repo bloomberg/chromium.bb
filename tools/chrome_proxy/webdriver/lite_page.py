@@ -10,9 +10,9 @@ import time
 
 class LitePage(IntegrationTest):
 
-  # Checks that a Lite Page is served and that the ignore_preview_blacklist
-  # experiment is being used.
-  def testLitePage(self):
+  # Checks that a Lite Page is served and the force_lite_page experiment
+  # directive is provided when always-on.
+  def testLitePageForcedExperiment(self):
     # If it was attempted to run with another experiment, skip this test.
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -32,7 +32,7 @@ class LitePage(IntegrationTest):
         if not common.ParseFlags().browser_args or (
           '--data-reduction-proxy-experiment' not in
           common.ParseFlags().browser_args):
-            self.assertIn('exp=ignore_preview_blacklist',
+            self.assertIn('exp=force_lite_page',
               response.request_headers['chrome-proxy'])
         if (self.checkLitePageResponse(response)):
           lite_page_responses = lite_page_responses + 1
@@ -64,7 +64,7 @@ class LitePage(IntegrationTest):
         if not common.ParseFlags().browser_args or (
           '--data-reduction-proxy-experiment' not in
           common.ParseFlags().browser_args):
-            self.assertIn('exp=ignore_preview_blacklist',
+            self.assertIn('exp=force_lite_page',
               response.request_headers['chrome-proxy'])
         if (self.checkLitePageResponse(response)):
           lite_page_responses = lite_page_responses + 1

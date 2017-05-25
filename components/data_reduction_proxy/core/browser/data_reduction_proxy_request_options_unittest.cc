@@ -355,14 +355,14 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
 
-  // "ignore_preview_blacklist" has the next lowest priority.
+  // "force_lite_page" has the next lowest priority.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
       switches::kDataReductionProxyLoFiValueAlwaysOn);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDataReductionProxyLitePage);
   expected_experiments.clear();
-  expected_experiments.push_back(chrome_proxy_lite_page_ignore_blacklist());
+  expected_experiments.push_back(chrome_proxy_force_lite_page_experiment());
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
                         expected_experiments, &expected_header);
