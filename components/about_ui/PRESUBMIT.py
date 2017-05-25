@@ -7,7 +7,7 @@ def _CommonChecks(input_api, output_api):
   results = []
   try:
     import sys
-    old_sys_path = sys.path
+    old_sys_path = sys.path[:]
     cwd = input_api.PresubmitLocalPath()
     sys.path += [input_api.os_path.join(cwd, '..', '..', 'tools')]
     import web_dev_style.presubmit_support
