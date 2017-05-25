@@ -126,11 +126,11 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
   client_->PromptUserToSaveOrUpdatePassword(std::move(form_manager_), false);
 }
 
-void CredentialManagerImpl::RequireUserMediation(
-    RequireUserMediationCallback callback) {
+void CredentialManagerImpl::PreventSilentAccess(
+    PreventSilentAccessCallback callback) {
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
-        .LogRequireUserMediation(web_contents()->GetLastCommittedURL());
+        .LogPreventSilentAccess(web_contents()->GetLastCommittedURL());
   }
   // Send acknowledge response back.
   std::move(callback).Run();
@@ -142,7 +142,7 @@ void CredentialManagerImpl::RequireUserMediation(
 
   if (!pending_require_user_mediation_) {
     pending_require_user_mediation_.reset(
-        new CredentialManagerPendingRequireUserMediationTask(this));
+        new CredentialManagerPendingPreventSilentAccessTask(this));
   }
   pending_require_user_mediation_->AddOrigin(GetSynthesizedFormForOrigin());
 }

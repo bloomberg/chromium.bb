@@ -63,11 +63,11 @@ void CredentialManagerClient::DispatchStore(
   client_->DispatchStore(credential, callbacks);
 }
 
-void CredentialManagerClient::DispatchRequireUserMediation(
+void CredentialManagerClient::DispatchPreventSilentAccess(
     WebCredentialManagerClient::NotificationCallbacks* callbacks) {
   if (!client_)
     return;
-  client_->DispatchRequireUserMediation(callbacks);
+  client_->DispatchPreventSilentAccess(callbacks);
 }
 
 void CredentialManagerClient::DispatchGet(

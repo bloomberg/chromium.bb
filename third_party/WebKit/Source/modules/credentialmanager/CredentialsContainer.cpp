@@ -277,7 +277,7 @@ ScriptPromise CredentialsContainer::create(
   return promise;
 }
 
-ScriptPromise CredentialsContainer::requireUserMediation(
+ScriptPromise CredentialsContainer::preventSilentAccess(
     ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -285,8 +285,13 @@ ScriptPromise CredentialsContainer::requireUserMediation(
     return promise;
 
   CredentialManagerClient::From(ExecutionContext::From(script_state))
-      ->DispatchRequireUserMediation(new NotificationCallbacks(resolver));
+      ->DispatchPreventSilentAccess(new NotificationCallbacks(resolver));
   return promise;
+}
+
+ScriptPromise CredentialsContainer::requireUserMediation(
+    ScriptState* script_state) {
+  return preventSilentAccess(script_state);
 }
 
 }  // namespace blink

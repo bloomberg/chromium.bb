@@ -29,7 +29,7 @@ class MockCredentialManagerClient : public WebCredentialManagerClient {
                void(const WebCredential&, NotificationCallbacks*));
   MOCK_METHOD2(DispatchStore,
                void(const WebCredential&, NotificationCallbacks*));
-  MOCK_METHOD1(DispatchRequireUserMediation, void(NotificationCallbacks*));
+  MOCK_METHOD1(DispatchPreventSilentAccess, void(NotificationCallbacks*));
   MOCK_METHOD4(DispatchGet,
                void(WebCredentialMediationRequirement,
                     bool,

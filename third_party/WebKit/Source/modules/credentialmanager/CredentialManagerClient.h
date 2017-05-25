@@ -44,7 +44,7 @@ class MODULES_EXPORT CredentialManagerClient final
   virtual void DispatchStore(
       const WebCredential&,
       WebCredentialManagerClient::NotificationCallbacks*);
-  virtual void DispatchRequireUserMediation(
+  virtual void DispatchPreventSilentAccess(
       WebCredentialManagerClient::NotificationCallbacks*);
   virtual void DispatchGet(WebCredentialMediationRequirement,
                            bool include_passwords,

@@ -32,7 +32,7 @@ class WebCredentialManagerClient {
   virtual void DispatchFailedSignIn(const WebCredential&,
                                     NotificationCallbacks*) {}
   virtual void DispatchStore(const WebCredential&, NotificationCallbacks*) {}
-  virtual void DispatchRequireUserMediation(NotificationCallbacks*) {}
+  virtual void DispatchPreventSilentAccess(NotificationCallbacks*) {}
   virtual void DispatchGet(WebCredentialMediationRequirement mediation,
                            bool include_passwords,
                            const WebVector<WebURL>& federations,
