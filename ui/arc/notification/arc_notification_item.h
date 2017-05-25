@@ -75,6 +75,8 @@ class ArcNotificationItem {
   virtual mojom::ArcNotificationShownContents GetShownContents() const = 0;
   // Returns the notification key passed from Android-side.
   virtual const std::string& GetNotificationKey() const = 0;
+  // Returns the notification ID used in the Chrome message center.
+  virtual const std::string& GetNotificationId() const = 0;
 };
 
 }  // namespace arc

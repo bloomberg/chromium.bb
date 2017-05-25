@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/views/slide_out_controller.h"
 #include "ui/views/view.h"
 
@@ -26,6 +27,7 @@ class ScrollView;
 
 namespace message_center {
 
+class Notification;
 class MessageCenterController;
 
 // Individual notifications constants.

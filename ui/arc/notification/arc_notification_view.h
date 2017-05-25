@@ -1,33 +1,34 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_VIEWS_CUSTOM_NOTIFICATION_VIEW_H_
-#define UI_MESSAGE_CENTER_VIEWS_CUSTOM_NOTIFICATION_VIEW_H_
+#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_VIEW_H_
+#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_VIEW_H_
 
 #include "base/macros.h"
-#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
-
-namespace ui {
-struct AXActionData;
-}
 
 namespace views {
 class Painter;
 }
 
-namespace message_center {
+namespace arc {
 
-// View for notification with NOTIFICATION_TYPE_CUSTOM that hosts the custom
-// content of the notification.
-class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
+class ArcNotificationContentViewDelegate;
+
+// View for custom notification with NOTIFICATION_TYPE_CUSTOM which hosts the
+// ArcCustomNotificationView which shows content of the notification.
+class ArcNotificationView : public message_center::MessageView {
  public:
   static const char kViewClassName[];
 
-  CustomNotificationView(MessageCenterController* controller,
-                         const Notification& notification);
-  ~CustomNotificationView() override;
+  // |content_view| is a view to be hosted in this view.
+  ArcNotificationView(
+      std::unique_ptr<views::View> content_view,
+      std::unique_ptr<ArcNotificationContentViewDelegate> delegate,
+      message_center::MessageCenterController* controller,
+      const message_center::Notification& notification);
+  ~ArcNotificationView() override;
 
   // These method are called by the content view when focus handling is defered
   // to the content.
@@ -55,18 +56,17 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
 
  private:
-  friend class CustomNotificationViewTest;
+  friend class ArcNotificationViewTest;
 
   // The view for the custom content. Owned by view hierarchy.
   views::View* contents_view_ = nullptr;
-  std::unique_ptr<CustomNotificationContentViewDelegate>
-      contents_view_delegate_;
+  std::unique_ptr<ArcNotificationContentViewDelegate> contents_view_delegate_;
 
   std::unique_ptr<views::Painter> focus_painter_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomNotificationView);
+  DISALLOW_COPY_AND_ASSIGN(ArcNotificationView);
 };
 
-}  // namespace message_center
+}  // namespace arc
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_CUSTOM_NOTIFICATION_VIEW_H_
+#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_VIEW_H_

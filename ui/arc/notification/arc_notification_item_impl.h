@@ -47,6 +47,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   mojom::ArcNotificationExpandState GetExpandState() const override;
   mojom::ArcNotificationShownContents GetShownContents() const override;
   const std::string& GetNotificationKey() const override;
+  const std::string& GetNotificationId() const override;
 
  private:
   // Return true if it's on the thread this instance is created on.

@@ -10,6 +10,7 @@
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -19,7 +20,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/views/custom_notification_view.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -175,7 +175,7 @@ class ArcCustomNotificationView::SlideHelper
 };
 
 class ArcCustomNotificationView::ContentViewDelegate
-    : public message_center::CustomNotificationContentViewDelegate {
+    : public ArcNotificationContentViewDelegate {
  public:
   explicit ContentViewDelegate(ArcCustomNotificationView* owner)
       : owner_(owner) {}
@@ -264,7 +264,7 @@ ArcCustomNotificationView::~ArcCustomNotificationView() {
   }
 }
 
-std::unique_ptr<message_center::CustomNotificationContentViewDelegate>
+std::unique_ptr<ArcNotificationContentViewDelegate>
 ArcCustomNotificationView::CreateContentViewDelegate() {
   return base::MakeUnique<ArcCustomNotificationView::ContentViewDelegate>(this);
 }
@@ -580,12 +580,10 @@ void ArcCustomNotificationView::OnMouseExited(const ui::MouseEvent&) {
 }
 
 void ArcCustomNotificationView::OnFocus() {
-  CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
-           parent()->GetClassName());
+  CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
 
   NativeViewHost::OnFocus();
-  static_cast<message_center::CustomNotificationView*>(parent())
-      ->OnContentFocused();
+  static_cast<ArcNotificationView*>(parent())->OnContentFocused();
 }
 
 void ArcCustomNotificationView::OnBlur() {
@@ -594,12 +592,10 @@ void ArcCustomNotificationView::OnBlur() {
     return;
   }
 
-  CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
-           parent()->GetClassName());
+  CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
 
   NativeViewHost::OnBlur();
-  static_cast<message_center::CustomNotificationView*>(parent())
-      ->OnContentBlured();
+  static_cast<ArcNotificationView*>(parent())->OnContentBlured();
 }
 
 void ArcCustomNotificationView::ActivateToast() {
@@ -629,10 +625,8 @@ bool ArcCustomNotificationView::HandleAccessibleAction(
 void ArcCustomNotificationView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
   if (item_ && !item_->GetPinned() && sender == close_button_.get()) {
-    CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
-             parent()->GetClassName());
-    static_cast<message_center::CustomNotificationView*>(parent())
-        ->OnCloseButtonPressed();
+    CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
+    static_cast<ArcNotificationView*>(parent())->OnCloseButtonPressed();
   }
   if (item_ && settings_button_ && sender == settings_button_) {
     item_->OpenSettings();

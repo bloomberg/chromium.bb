@@ -1,11 +1,13 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/custom_notification_view.h"
+#include "ui/arc/notification/arc_notification_view.h"
 
 #include <algorithm>
 
+#include "ui/arc/notification/arc_custom_notification_view.h"
+#include "ui/arc/notification/arc_notification_item.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
@@ -17,24 +19,24 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
-namespace message_center {
+namespace arc {
 
 // static
-const char CustomNotificationView::kViewClassName[] = "CustomNotificationView";
+const char ArcNotificationView::kViewClassName[] = "ArcNotificationView";
 
-CustomNotificationView::CustomNotificationView(
-    MessageCenterController* controller,
-    const Notification& notification)
-    : MessageView(controller, notification) {
-  DCHECK_EQ(NOTIFICATION_TYPE_CUSTOM, notification.type());
+ArcNotificationView::ArcNotificationView(
+    std::unique_ptr<views::View> contents_view,
+    std::unique_ptr<ArcNotificationContentViewDelegate> contents_view_delegate,
+    message_center::MessageCenterController* controller,
+    const message_center::Notification& notification)
+    : message_center::MessageView(controller, notification),
+      contents_view_(contents_view.get()),
+      contents_view_delegate_(std::move(contents_view_delegate)) {
+  DCHECK_EQ(message_center::NOTIFICATION_TYPE_CUSTOM, notification.type());
 
-  auto custom_content = notification.delegate()->CreateCustomContent();
+  DCHECK(contents_view);
+  AddChildView(contents_view.release());
 
-  contents_view_ = custom_content->view.release();
-  DCHECK(contents_view_);
-  AddChildView(contents_view_);
-
-  contents_view_delegate_ = std::move(custom_content->delegate);
   DCHECK(contents_view_delegate_);
 
   if (contents_view_->background()) {
@@ -43,61 +45,63 @@ CustomNotificationView::CustomNotificationView(
   }
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
+      message_center::kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
 
-CustomNotificationView::~CustomNotificationView() {}
+ArcNotificationView::~ArcNotificationView() = default;
 
-void CustomNotificationView::OnContentFocused() {
+void ArcNotificationView::OnContentFocused() {
   SchedulePaint();
 }
 
-void CustomNotificationView::OnContentBlured() {
+void ArcNotificationView::OnContentBlured() {
   SchedulePaint();
 }
 
-void CustomNotificationView::SetDrawBackgroundAsActive(bool active) {
+void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {
   // Do nothing if |contents_view_| has a background.
   if (contents_view_->background())
     return;
 
-  MessageView::SetDrawBackgroundAsActive(active);
+  message_center::MessageView::SetDrawBackgroundAsActive(active);
 }
 
-bool CustomNotificationView::IsCloseButtonFocused() const {
+bool ArcNotificationView::IsCloseButtonFocused() const {
   if (!contents_view_delegate_)
     return false;
   return contents_view_delegate_->IsCloseButtonFocused();
 }
 
-void CustomNotificationView::RequestFocusOnCloseButton() {
+void ArcNotificationView::RequestFocusOnCloseButton() {
   if (contents_view_delegate_)
     contents_view_delegate_->RequestFocusOnCloseButton();
 }
 
-const char* CustomNotificationView::GetClassName() const {
+const char* ArcNotificationView::GetClassName() const {
   return kViewClassName;
 }
 
-void CustomNotificationView::UpdateControlButtonsVisibility() {
+void ArcNotificationView::UpdateControlButtonsVisibility() {
   if (contents_view_delegate_)
     contents_view_delegate_->UpdateControlButtonsVisibility();
 }
 
-void CustomNotificationView::OnSlideChanged() {
+void ArcNotificationView::OnSlideChanged() {
   if (contents_view_delegate_)
     contents_view_delegate_->OnSlideChanged();
 }
 
-gfx::Size CustomNotificationView::GetPreferredSize() const {
+gfx::Size ArcNotificationView::GetPreferredSize() const {
   const gfx::Insets insets = GetInsets();
-  const int contents_width = kNotificationWidth - insets.width();
+  const int contents_width =
+      message_center::kNotificationWidth - insets.width();
   const int contents_height = contents_view_->GetHeightForWidth(contents_width);
-  return gfx::Size(kNotificationWidth, contents_height + insets.height());
+  return gfx::Size(message_center::kNotificationWidth,
+                   contents_height + insets.height());
 }
 
-void CustomNotificationView::Layout() {
-  MessageView::Layout();
+void ArcNotificationView::Layout() {
+  message_center::MessageView::Layout();
 
   contents_view_->SetBoundsRect(GetContentsBounds());
 
@@ -106,30 +110,30 @@ void CustomNotificationView::Layout() {
     SetFocusBehavior(FocusBehavior::NEVER);
 }
 
-bool CustomNotificationView::HasFocus() const {
+bool ArcNotificationView::HasFocus() const {
   // In case that focus handling is defered to the content view, asking the
   // content view about focus.
   if (contents_view_ && contents_view_->IsFocusable())
     return contents_view_->HasFocus();
   else
-    return MessageView::HasFocus();
+    return message_center::MessageView::HasFocus();
 }
 
-void CustomNotificationView::RequestFocus() {
+void ArcNotificationView::RequestFocus() {
   if (contents_view_ && contents_view_->IsFocusable())
     contents_view_->RequestFocus();
   else
-    MessageView::RequestFocus();
+    message_center::MessageView::RequestFocus();
 }
 
-void CustomNotificationView::OnPaint(gfx::Canvas* canvas) {
+void ArcNotificationView::OnPaint(gfx::Canvas* canvas) {
   MessageView::OnPaint(canvas);
   if (contents_view_ && contents_view_->IsFocusable())
     views::Painter::PaintFocusPainter(contents_view_, canvas,
                                       focus_painter_.get());
 }
 
-bool CustomNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
+bool ArcNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
   if (contents_view_) {
     ui::InputMethod* input_method = contents_view_->GetInputMethod();
     if (input_method) {
@@ -145,17 +149,17 @@ bool CustomNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
     }
   }
 
-  return MessageView::OnKeyPressed(event);
+  return message_center::MessageView::OnKeyPressed(event);
 }
 
-void CustomNotificationView::ChildPreferredSizeChanged(View* child) {
+void ArcNotificationView::ChildPreferredSizeChanged(View* child) {
   // Notify MessageCenterController when the custom content changes size,
   // as it may need to relayout.
   if (controller())
     controller()->UpdateNotificationSize(notification_id());
 }
 
-bool CustomNotificationView::HandleAccessibleAction(
+bool ArcNotificationView::HandleAccessibleAction(
     const ui::AXActionData& action) {
   if (contents_view_)
     return contents_view_->HandleAccessibleAction(action);

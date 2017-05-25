@@ -9,19 +9,27 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/message_center/notification_delegate.h"
 
+namespace message_center {
+
+class MessageCenterController;
+class MessageView;
+class Notification;
+
+}  // namespace message_center
+
 namespace arc {
 
 class ArcNotificationItem;
 
-/*
- * Implementation of NotificationDelegate for ARC notifications.
- */
+// Implementation of NotificationDelegate for ARC notifications.
 class ArcNotificationDelegate : public message_center::NotificationDelegate {
  public:
   explicit ArcNotificationDelegate(base::WeakPtr<ArcNotificationItem> item);
 
   // message_center::NotificationDelegate overrides:
-  std::unique_ptr<message_center::CustomContent> CreateCustomContent() override;
+  std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
+      message_center::MessageCenterController* controller,
+      const message_center::Notification& notification) override;
   void Close(bool by_user) override;
   void Click() override;
 

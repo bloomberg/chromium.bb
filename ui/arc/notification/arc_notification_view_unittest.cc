@@ -9,6 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/arc/notification/arc_notification_content_view_delegate.h"
+#include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -18,27 +20,26 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/views/custom_notification_view.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace message_center {
+namespace arc {
 
 namespace {
 
 const SkColor kBackgroundColor = SK_ColorGREEN;
 
-class TestCustomView : public views::View {
+class TestNotificationContentsView : public views::View {
  public:
-  TestCustomView() {
+  TestNotificationContentsView() {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     set_preferred_size(gfx::Size(100, 100));
   }
-  ~TestCustomView() override {}
+  ~TestNotificationContentsView() override = default;
 
   void Reset() {
     mouse_event_count_ = 0;
@@ -68,10 +69,10 @@ class TestCustomView : public views::View {
   int mouse_event_count_ = 0;
   int keyboard_event_count_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(TestCustomView);
+  DISALLOW_COPY_AND_ASSIGN(TestNotificationContentsView);
 };
 
-class TestContentViewDelegate : public CustomNotificationContentViewDelegate {
+class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
  public:
   bool IsCloseButtonFocused() const override { return false; }
   void RequestFocusOnCloseButton() override {}
@@ -79,26 +80,29 @@ class TestContentViewDelegate : public CustomNotificationContentViewDelegate {
   void OnSlideChanged() override {}
 };
 
-class TestNotificationDelegate : public NotificationDelegate {
+class TestNotificationDelegate : public message_center::NotificationDelegate {
  public:
-  TestNotificationDelegate() {}
+  TestNotificationDelegate() = default;
 
   // NotificateDelegate
-  std::unique_ptr<CustomContent> CreateCustomContent() override {
-    return base::MakeUnique<CustomContent>(
-        base::MakeUnique<TestCustomView>(),
-        base::MakeUnique<TestContentViewDelegate>());
+  std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
+      message_center::MessageCenterController* controller,
+      const message_center::Notification& notification) override {
+    return base::MakeUnique<ArcNotificationView>(
+        base::MakeUnique<TestNotificationContentsView>(),
+        base::MakeUnique<TestContentViewDelegate>(), controller, notification);
   }
 
  private:
-  ~TestNotificationDelegate() override {}
+  ~TestNotificationDelegate() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(TestNotificationDelegate);
 };
 
-class TestMessageCenterController : public MessageCenterController {
+class TestMessageCenterController
+    : public message_center::MessageCenterController {
  public:
-  TestMessageCenterController() {}
+  TestMessageCenterController() = default;
 
   // MessageCenterController
   void ClickOnNotification(const std::string& notification_id) override {
@@ -112,7 +116,7 @@ class TestMessageCenterController : public MessageCenterController {
   }
 
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const NotifierId& notifier_id,
+      const message_center::NotifierId& notifier_id,
       const base::string16& display_source) override {
     // For this test, this method should not be invoked.
     NOTREACHED();
@@ -165,10 +169,10 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 
 }  // namespace
 
-class CustomNotificationViewTest : public views::ViewsTestBase {
+class ArcNotificationViewTest : public views::ViewsTestBase {
  public:
-  CustomNotificationViewTest() {}
-  ~CustomNotificationViewTest() override {}
+  ArcNotificationViewTest() = default;
+  ~ArcNotificationViewTest() override = default;
 
   // views::ViewsTestBase
   void SetUp() override {
@@ -176,15 +180,18 @@ class CustomNotificationViewTest : public views::ViewsTestBase {
 
     notification_delegate_ = new TestNotificationDelegate;
 
-    notification_.reset(new Notification(
-        NOTIFICATION_TYPE_CUSTOM, std::string("notification id"),
-        base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
+    notification_ = base::MakeUnique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_CUSTOM,
+        std::string("notification id"), base::UTF8ToUTF16("title"),
+        base::UTF8ToUTF16("message"), gfx::Image(),
         base::UTF8ToUTF16("display source"), GURL(),
-        NotifierId(NotifierId::APPLICATION, "extension_id"),
-        message_center::RichNotificationData(), notification_delegate_.get()));
+        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                   "extension_id"),
+        message_center::RichNotificationData(), notification_delegate_.get());
 
-    notification_view_.reset(static_cast<CustomNotificationView*>(
-        MessageViewFactory::Create(controller(), *notification_, true)));
+    notification_view_.reset(static_cast<ArcNotificationView*>(
+        message_center::MessageViewFactory::Create(controller(), *notification_,
+                                                   true)));
     notification_view_->set_owned_by_client();
 
     views::Widget::InitParams init_params(
@@ -261,49 +268,48 @@ class CustomNotificationViewTest : public views::ViewsTestBase {
   }
 
   TestMessageCenterController* controller() { return &controller_; }
-  Notification* notification() { return notification_.get(); }
-  TestCustomView* custom_view() {
-    return static_cast<TestCustomView*>(notification_view_->contents_view_);
+  message_center::Notification* notification() { return notification_.get(); }
+  TestNotificationContentsView* contents_view() {
+    return static_cast<TestNotificationContentsView*>(
+        notification_view_->contents_view_);
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
-  CustomNotificationView* notification_view() {
-    return notification_view_.get();
-  }
+  ArcNotificationView* notification_view() { return notification_view_.get(); }
 
  private:
   TestMessageCenterController controller_;
   scoped_refptr<TestNotificationDelegate> notification_delegate_;
-  std::unique_ptr<Notification> notification_;
-  std::unique_ptr<CustomNotificationView> notification_view_;
+  std::unique_ptr<message_center::Notification> notification_;
+  std::unique_ptr<ArcNotificationView> notification_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomNotificationViewTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcNotificationViewTest);
 };
 
-TEST_F(CustomNotificationViewTest, Background) {
+TEST_F(ArcNotificationViewTest, Background) {
   EXPECT_EQ(kBackgroundColor, GetBackgroundColor());
 }
 
-TEST_F(CustomNotificationViewTest, Events) {
+TEST_F(ArcNotificationViewTest, Events) {
   widget()->Show();
-  custom_view()->RequestFocus();
+  contents_view()->RequestFocus();
 
-  EXPECT_EQ(0, custom_view()->mouse_event_count());
+  EXPECT_EQ(0, contents_view()->mouse_event_count());
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToWidget(custom_view(), &cursor_location);
+  views::View::ConvertPointToWidget(contents_view(), &cursor_location);
   PerformClick(cursor_location);
-  EXPECT_EQ(2, custom_view()->mouse_event_count());
+  EXPECT_EQ(2, contents_view()->mouse_event_count());
 
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
-  EXPECT_EQ(3, custom_view()->mouse_event_count());
+  EXPECT_EQ(3, contents_view()->mouse_event_count());
 
-  EXPECT_EQ(0, custom_view()->keyboard_event_count());
+  EXPECT_EQ(0, contents_view()->keyboard_event_count());
   KeyPress(ui::VKEY_A);
-  EXPECT_EQ(1, custom_view()->keyboard_event_count());
+  EXPECT_EQ(1, contents_view()->keyboard_event_count());
 }
 
-TEST_F(CustomNotificationViewTest, SlideOut) {
+TEST_F(ArcNotificationViewTest, SlideOut) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -326,7 +332,7 @@ TEST_F(CustomNotificationViewTest, SlideOut) {
   EXPECT_TRUE(controller()->IsRemoved(notification_id));
 }
 
-TEST_F(CustomNotificationViewTest, SlideOutNested) {
+TEST_F(ArcNotificationViewTest, SlideOutNested) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -353,7 +359,7 @@ TEST_F(CustomNotificationViewTest, SlideOutNested) {
 // Pinning notification is ChromeOS only feature.
 #if defined(OS_CHROMEOS)
 
-TEST_F(CustomNotificationViewTest, SlideOutPinned) {
+TEST_F(ArcNotificationViewTest, SlideOutPinned) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -371,11 +377,11 @@ TEST_F(CustomNotificationViewTest, SlideOutPinned) {
 
 #endif  // defined(OS_CHROMEOS)
 
-TEST_F(CustomNotificationViewTest, PressBackspaceKey) {
+TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
   std::string notification_id = notification()->id();
-  custom_view()->RequestFocus();
+  contents_view()->RequestFocus();
 
-  ui::InputMethod* input_method = custom_view()->GetInputMethod();
+  ui::InputMethod* input_method = contents_view()->GetInputMethod();
   ASSERT_TRUE(input_method);
   TestTextInputClient text_input_client;
   input_method->SetFocusedTextInputClient(&text_input_client);
@@ -388,11 +394,11 @@ TEST_F(CustomNotificationViewTest, PressBackspaceKey) {
   input_method->SetFocusedTextInputClient(nullptr);
 }
 
-TEST_F(CustomNotificationViewTest, PressBackspaceKeyOnEditBox) {
+TEST_F(ArcNotificationViewTest, PressBackspaceKeyOnEditBox) {
   std::string notification_id = notification()->id();
-  custom_view()->RequestFocus();
+  contents_view()->RequestFocus();
 
-  ui::InputMethod* input_method = custom_view()->GetInputMethod();
+  ui::InputMethod* input_method = contents_view()->GetInputMethod();
   ASSERT_TRUE(input_method);
   TestTextInputClient text_input_client;
   input_method->SetFocusedTextInputClient(&text_input_client);
@@ -407,23 +413,23 @@ TEST_F(CustomNotificationViewTest, PressBackspaceKeyOnEditBox) {
   input_method->SetFocusedTextInputClient(nullptr);
 }
 
-TEST_F(CustomNotificationViewTest, ChangeContentHeight) {
+TEST_F(ArcNotificationViewTest, ChangeContentHeight) {
   // Default size.
   gfx::Size size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x100", size.ToString());
 
   // Allow small notifications.
-  custom_view()->set_preferred_size(gfx::Size(10, 10));
+  contents_view()->set_preferred_size(gfx::Size(10, 10));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x10", size.ToString());
 
   // The long notification.
-  custom_view()->set_preferred_size(gfx::Size(1000, 1000));
+  contents_view()->set_preferred_size(gfx::Size(1000, 1000));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x1000", size.ToString());
 }
 
-}  // namespace message_center
+}  // namespace arc
