@@ -1270,13 +1270,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     # datetime.timedelta type. So, we must find out if the deadline is past
     # separately.
     r = self._Execute(
-        'SELECT deadline >= NOW(), TIMEDIFF(deadline, NOW()) '
+        'SELECT deadline >= NOW(), TIMEDIFF(deadline, NOW()), deadline '
         'from buildTable where id = %d' % build_id).fetchall()
     if not r:
       return None
 
     time_remaining = r[0][1]
-    if time_remaining is None:
+    deadline = r[0][2]
+    if deadline is None:
       return None
 
     deadline_past = (r[0][0] == 0)
