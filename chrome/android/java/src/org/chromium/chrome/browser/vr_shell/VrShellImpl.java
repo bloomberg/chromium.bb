@@ -417,6 +417,15 @@ public class VrShellImpl
     }
 
     @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        boolean parentConsumed = super.dispatchTouchEvent(event);
+        if (mOnDispatchTouchEventForTesting != null) {
+            mOnDispatchTouchEventForTesting.onDispatchTouchEvent(parentConsumed);
+        }
+        return parentConsumed;
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if (mNativeVrShell != 0) {
