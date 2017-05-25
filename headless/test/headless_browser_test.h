@@ -133,6 +133,7 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   HeadlessBrowserContext* browser_context_;  // Not owned.
   HeadlessWebContents* web_contents_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
+  std::unique_ptr<HeadlessDevToolsClient> browser_devtools_client_;
   bool render_process_exited_;
 };
 

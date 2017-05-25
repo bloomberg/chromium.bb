@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
@@ -66,6 +67,19 @@ std::unique_ptr<base::DictionaryValue> CreateInvalidParamResponse(
   return CreateErrorResponse(
       command_id, kErrorInvalidParam,
       base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
+}
+
+std::unique_ptr<base::DictionaryValue> CreateBoundsDict(
+    const HeadlessWebContentsImpl* web_contents) {
+  auto bounds_object = base::MakeUnique<base::DictionaryValue>();
+  gfx::Rect bounds =
+      web_contents->web_contents()->GetRenderWidgetHostView()->GetViewBounds();
+  bounds_object->SetInteger("left", bounds.x());
+  bounds_object->SetInteger("top", bounds.y());
+  bounds_object->SetInteger("width", bounds.width());
+  bounds_object->SetInteger("height", bounds.height());
+  bounds_object->SetString("windowState", web_contents->window_state());
+  return bounds_object;
 }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -169,6 +183,15 @@ HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
   command_map_["Target.disposeBrowserContext"] =
       base::Bind(&HeadlessDevToolsManagerDelegate::DisposeBrowserContext,
                  base::Unretained(this));
+  command_map_["Browser.getWindowForTarget"] =
+      base::Bind(&HeadlessDevToolsManagerDelegate::GetWindowForTarget,
+                 base::Unretained(this));
+  command_map_["Browser.getWindowBounds"] =
+      base::Bind(&HeadlessDevToolsManagerDelegate::GetWindowBounds,
+                 base::Unretained(this));
+  command_map_["Browser.setWindowBounds"] =
+      base::Bind(&HeadlessDevToolsManagerDelegate::SetWindowBounds,
+                 base::Unretained(this));
 
   async_command_map_["Page.printToPDF"] = base::Bind(
       &HeadlessDevToolsManagerDelegate::PrintToPDF, base::Unretained(this));
@@ -191,6 +214,11 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
 
   auto find_it = command_map_.find(method);
   if (find_it == command_map_.end())
+    return nullptr;
+
+  // Handle Browser domain commands only from Browser DevToolsAgentHost.
+  if (method.find("Browser.") == 0 &&
+      agent_host->GetType() != content::DevToolsAgentHost::kTypeBrowser)
     return nullptr;
 
   const base::DictionaryValue* params = nullptr;
@@ -376,6 +404,118 @@ HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
           .Build()
           ->Serialize());
   return CreateSuccessResponse(command_id, std::move(result));
+}
+
+std::unique_ptr<base::DictionaryValue>
+HeadlessDevToolsManagerDelegate::GetWindowForTarget(
+    int command_id,
+    const base::DictionaryValue* params) {
+  std::string target_id;
+  if (!params->GetString("targetId", &target_id))
+    return CreateInvalidParamResponse(command_id, "targetId");
+
+  HeadlessWebContentsImpl* web_contents = HeadlessWebContentsImpl::From(
+      browser_->GetWebContentsForDevToolsAgentHostId(target_id));
+  if (!web_contents) {
+    return CreateErrorResponse(command_id, kErrorServerError,
+                               "No web contents for the given target id");
+  }
+
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  result->SetInteger("windowId", web_contents->window_id());
+  result->Set("bounds", CreateBoundsDict(web_contents));
+  return CreateSuccessResponse(command_id, std::move(result));
+}
+
+std::unique_ptr<base::DictionaryValue>
+HeadlessDevToolsManagerDelegate::GetWindowBounds(
+    int command_id,
+    const base::DictionaryValue* params) {
+  int window_id;
+  if (!params->GetInteger("windowId", &window_id))
+    return CreateInvalidParamResponse(command_id, "windowId");
+  HeadlessWebContentsImpl* web_contents =
+      browser_->GetWebContentsForWindowId(window_id);
+  if (!web_contents) {
+    return CreateErrorResponse(command_id, kErrorServerError,
+                               "Browser window not found");
+  }
+
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  result->Set("bounds", CreateBoundsDict(web_contents));
+  return CreateSuccessResponse(command_id, std::move(result));
+}
+
+std::unique_ptr<base::DictionaryValue>
+HeadlessDevToolsManagerDelegate::SetWindowBounds(
+    int command_id,
+    const base::DictionaryValue* params) {
+  int window_id;
+  if (!params->GetInteger("windowId", &window_id))
+    return CreateInvalidParamResponse(command_id, "windowId");
+  HeadlessWebContentsImpl* web_contents =
+      browser_->GetWebContentsForWindowId(window_id);
+  if (!web_contents) {
+    return CreateErrorResponse(command_id, kErrorServerError,
+                               "Browser window not found");
+  }
+
+  const base::Value* value = nullptr;
+  const base::DictionaryValue* bounds_dict = nullptr;
+  if (!params->Get("bounds", &value) || !value->GetAsDictionary(&bounds_dict))
+    return CreateInvalidParamResponse(command_id, "bounds");
+
+  std::string window_state;
+  if (!bounds_dict->GetString("windowState", &window_state)) {
+    window_state = "normal";
+  } else if (window_state != "normal" && window_state != "minimized" &&
+             window_state != "maximized" && window_state != "fullscreen") {
+    return CreateInvalidParamResponse(command_id, "windowState");
+  }
+
+  // Compute updated bounds when window state is normal.
+  bool set_bounds = false;
+  gfx::Rect bounds =
+      web_contents->web_contents()->GetRenderWidgetHostView()->GetViewBounds();
+  int left, top, width, height;
+  if (bounds_dict->GetInteger("left", &left)) {
+    bounds.set_x(left);
+    set_bounds = true;
+  }
+  if (bounds_dict->GetInteger("top", &top)) {
+    bounds.set_y(top);
+    set_bounds = true;
+  }
+  if (bounds_dict->GetInteger("width", &width)) {
+    if (width < 0)
+      return CreateInvalidParamResponse(command_id, "width");
+    bounds.set_width(width);
+    set_bounds = true;
+  }
+  if (bounds_dict->GetInteger("height", &height)) {
+    if (height < 0)
+      return CreateInvalidParamResponse(command_id, "height");
+    bounds.set_height(height);
+    set_bounds = true;
+  }
+
+  if (set_bounds && window_state != "normal") {
+    return CreateErrorResponse(
+        command_id, kErrorServerError,
+        "The 'minimized', 'maximized' and 'fullscreen' states cannot be "
+        "combined with 'left', 'top', 'width' or 'height'");
+  }
+
+  if (set_bounds && web_contents->window_state() != "normal") {
+    return CreateErrorResponse(
+        command_id, kErrorServerError,
+        "To resize minimized/maximized/fullscreen window, restore it to normal "
+        "state first.");
+  }
+
+  web_contents->set_window_state(window_state);
+  web_contents->web_contents()->GetRenderWidgetHostView()->SetBounds(bounds);
+  return CreateSuccessResponse(command_id, nullptr);
 }
 
 }  // namespace headless

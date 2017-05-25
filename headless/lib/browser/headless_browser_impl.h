@@ -72,6 +72,8 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   // (all web contents associated with it go away too).
   void DestroyBrowserContext(HeadlessBrowserContextImpl* browser_context);
 
+  HeadlessWebContentsImpl* GetWebContentsForWindowId(const int window_id);
+
   base::WeakPtr<HeadlessBrowserImpl> GetWeakPtr();
 
   // All the methods that begin with Platform need to be implemented by the

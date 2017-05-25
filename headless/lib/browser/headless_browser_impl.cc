@@ -200,6 +200,19 @@ HeadlessWebContents* HeadlessBrowserImpl::GetWebContentsForDevToolsAgentHostId(
   return nullptr;
 }
 
+HeadlessWebContentsImpl* HeadlessBrowserImpl::GetWebContentsForWindowId(
+    const int window_id) {
+  for (HeadlessBrowserContext* context : GetAllBrowserContexts()) {
+    for (HeadlessWebContents* web_contents : context->GetAllWebContents()) {
+      auto* contents = HeadlessWebContentsImpl::From(web_contents);
+      if (contents->window_id() == window_id) {
+        return contents;
+      }
+    }
+  }
+  return nullptr;
+}
+
 HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
     const std::string& id) {
   auto find_it = browser_contexts_.find(id);
