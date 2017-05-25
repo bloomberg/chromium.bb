@@ -1250,8 +1250,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
 
-        // The profile may be null if the model is not yet initialized.
-        if (profile != null && mCurrentProfile != profile) {
+        if (mCurrentProfile != profile) {
             if (mBookmarkBridge != null) mBookmarkBridge.destroy();
             mBookmarkBridge = new BookmarkBridge(profile);
             mBookmarkBridge.addObserver(mBookmarksObserver);

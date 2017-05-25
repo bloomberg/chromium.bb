@@ -531,13 +531,6 @@ public class BottomSheet
         }
 
         mNtpController.setTabModelSelector(tabModelSelector);
-
-        mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
-            @Override
-            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                setSheetState(SHEET_STATE_PEEK, true);
-            }
-        });
     }
 
     /**
@@ -686,21 +679,24 @@ public class BottomSheet
             return TabLoadStatus.PAGE_LOAD_FAILED;
         }
 
+        assert mTabModelSelector != null;
+
+        int tabLoadStatus = TabLoadStatus.DEFAULT_PAGE_LOAD;
+
+        // First try to get the tab behind the sheet.
+        if (!isShowingNtp && getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
+            tabLoadStatus = getActiveTab().loadUrl(params);
+        } else {
+            // If no compatible tab is active behind the sheet, open a new one.
+            mTabModelSelector.openNewTab(
+                    params, TabModel.TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
+        }
+
         // In all non-native cases, minimize the sheet.
         mMetrics.setSheetCloseReason(BottomSheetMetrics.CLOSED_BY_NAVIGATION);
         setSheetState(SHEET_STATE_PEEK, true);
 
-        assert mTabModelSelector != null;
-
-        // First try to get the tab behind the sheet.
-        if (!isShowingNtp && getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
-            return getActiveTab().loadUrl(params);
-        }
-
-        // If no compatible tab is active behind the sheet, open a new one.
-        mTabModelSelector.openNewTab(
-                params, TabModel.TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
-        return TabLoadStatus.DEFAULT_PAGE_LOAD;
+        return tabLoadStatus;
     }
 
     /**
@@ -712,13 +708,6 @@ public class BottomSheet
         assert isShowingNewTab();
 
         loadUrl(params, mTabModelSelector.isIncognitoSelected());
-    }
-
-    /**
-     * Called when the activity containing the {@link BottomSheet} processes a url view intent.
-     */
-    public void onProcessUrlViewIntent() {
-        mNtpController.onProcessUrlViewIntent();
     }
 
     @Override
@@ -734,7 +723,7 @@ public class BottomSheet
 
     @Override
     public Tab getActiveTab() {
-        return mTabModelSelector == null || mNtpController.isShowingNewTab()
+        return mTabModelSelector == null || mNtpController.isShowingNewTabUi()
                 ? null
                 : mTabModelSelector.getCurrentTab();
     }
@@ -1267,7 +1256,7 @@ public class BottomSheet
      *         returns true if a normal or incognito new tab is showing.
      */
     public boolean isShowingNewTab() {
-        return mNtpController.isShowingNewTab();
+        return mNtpController.isShowingNewTabUi();
     }
 
     /**
@@ -1297,7 +1286,7 @@ public class BottomSheet
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
 
         return !isToolbarAndroidViewHidden()
-                && (!isInOverviewMode || mNtpController.isShowingNewTab()) && !isFindInPageVisible
+                && (!isInOverviewMode || mNtpController.isShowingNewTabUi()) && !isFindInPageVisible
                 && !blockPeekingSwipes;
     }
 
