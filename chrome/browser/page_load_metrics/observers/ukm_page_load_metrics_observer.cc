@@ -19,6 +19,7 @@ const char kUkmParseStartName[] = "ParseTiming.NavigationToParseStart";
 const char kUkmDomContentLoadedName[] =
     "DocumentTiming.NavigationToDOMContentLoadedEventFired";
 const char kUkmLoadEventName[] = "DocumentTiming.NavigationToLoadEventFired";
+const char kUkmFirstPaintName[] = "PaintTiming.NavigationToFirstPaint";
 const char kUkmFirstContentfulPaintName[] =
     "PaintTiming.NavigationToFirstContentfulPaint";
 const char kUkmFirstMeaningfulPaintName[] =
@@ -164,6 +165,11 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder->AddMetric(
         internal::kUkmLoadEventName,
         timing.document_timing->load_event_start.value().InMilliseconds());
+  }
+  if (timing.paint_timing->first_paint) {
+    builder->AddMetric(
+        internal::kUkmFirstPaintName,
+        timing.paint_timing->first_paint.value().InMilliseconds());
   }
   if (timing.paint_timing->first_contentful_paint) {
     builder->AddMetric(

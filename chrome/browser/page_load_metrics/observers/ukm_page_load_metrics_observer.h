@@ -24,6 +24,7 @@ extern const char kUkmPageLoadEventName[];
 extern const char kUkmParseStartName[];
 extern const char kUkmDomContentLoadedName[];
 extern const char kUkmLoadEventName[];
+extern const char kUkmFirstPaintName[];
 extern const char kUkmFirstContentfulPaintName[];
 extern const char kUkmFirstMeaningfulPaintName[];
 extern const char kUkmForegroundDurationName[];
