@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
@@ -44,6 +45,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             "https://support.google.com/chrome/?p=sync_history&amp;hl="
                     + Locale.getDefault().toString();
     private static final String GOOGLE_HISTORY_LINK = "history.google.com";
+    private static final String MY_ACTIVITY_LINK = "myactivity.google.com";
 
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
     private final HistoryProvider mHistoryProvider;
@@ -334,8 +336,12 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
         mOtherFormsOfBrowsingHistoryTextView = (TextView) v.findViewById(
                 R.id.other_forms_of_browsing_history);
-        setPrivacyDisclaimerText(mOtherFormsOfBrowsingHistoryTextView,
-                R.string.android_history_other_forms_of_history, GOOGLE_HISTORY_LINK);
+        boolean flagEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.TABS_IN_CBD);
+        int disclaimerTextId = flagEnabled ? R.string.android_history_other_forms_of_history_new
+                                           : R.string.android_history_other_forms_of_history;
+        String disclaimerUrl = flagEnabled ? MY_ACTIVITY_LINK : GOOGLE_HISTORY_LINK;
+        setPrivacyDisclaimerText(
+                mOtherFormsOfBrowsingHistoryTextView, disclaimerTextId, disclaimerUrl);
         MarginResizer.createWithViewAdapter(mOtherFormsOfBrowsingHistoryTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 getDefaultTextMargin(resources),
