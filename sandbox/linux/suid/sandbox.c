@@ -353,10 +353,10 @@ static bool SetupChildEnvironment() {
   unsigned i;
 
   // ld.so may have cleared several environment variables because we are SUID.
-  // However, the child process might need them so zygote_host_linux.cc saves a
-  // copy in SANDBOX_$x. This is safe because we have dropped root by this
-  // point, so we can only exec a binary with the permissions of the user who
-  // ran us in the first place.
+  // However, the child process might need them so zygote_host_impl_linux.cc
+  // saves a copy in SANDBOX_$x. This is safe because we have dropped root by
+  // this point, so we can only exec a binary with the permissions of the user
+  // who ran us in the first place.
 
   for (i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
     const char* const envvar = kSUIDUnsafeEnvironmentVariables[i];

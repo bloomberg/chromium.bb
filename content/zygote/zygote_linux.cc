@@ -125,7 +125,8 @@ bool Zygote::ProcessRequests() {
 
   if (UsingSUIDSandbox() || UsingNSSandbox()) {
     // Let the ZygoteHost know we are ready to go.
-    // The receiving code is in content/browser/zygote_host_linux.cc.
+    // The receiving code is in
+    // content/browser/zygote_host/zygote_host_impl_linux.cc.
     bool r = base::UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
                                              kZygoteHelloMessage,
                                              sizeof(kZygoteHelloMessage),

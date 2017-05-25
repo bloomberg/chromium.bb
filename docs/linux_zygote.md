@@ -36,7 +36,7 @@ randomisation than the browser.
 
 The zygote process is triggered by the `--type=zygote` command line flag, which
 causes `ZygoteMain` (in `chrome/browser/zygote_main_linux.cc`) to be run. The
-zygote is launched from `chrome/browser/zygote_host_linux.cc`.
+zygote is launched from `content/browser/zygote_host/zygote_host_impl_linux.cc`.
 
 Signaling the zygote for a new renderer happens in
 `chrome/browser/child_process_launcher.cc`.
