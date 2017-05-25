@@ -108,8 +108,11 @@ bool Surface::QueueFrame(CompositorFrame frame,
           frame_sink_ids_for_dependencies.count(surface_id.frame_sink_id()) > 0;
       if (is_fallback_surface) {
         Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-        DCHECK(surface);
-        surface->Close();
+        // A misbehaving client may report a non-existent surface ID as a
+        // |referenced_surface|. In that case, |surface| would be nullptr, and
+        // there is nothing to do here.
+        if (surface)
+          surface->Close();
       }
     }
     pending_frame_data_ =

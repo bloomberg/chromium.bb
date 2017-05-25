@@ -59,11 +59,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   std::string SurfaceReferencesToString();
 #endif
 
-  void SetDependencyTracker(
-      std::unique_ptr<SurfaceDependencyTracker> dependency_tracker);
-  SurfaceDependencyTracker* dependency_tracker() {
-    return dependency_tracker_.get();
-  }
+  void SetDependencyTracker(SurfaceDependencyTracker* dependency_tracker);
+  SurfaceDependencyTracker* dependency_tracker() { return dependency_tracker_; }
 
   void RequestSurfaceResolution(Surface* pending_surface);
 
@@ -140,6 +137,10 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void RegisterBeginFrameSource(BeginFrameSource* source,
                                 const FrameSinkId& frame_sink_id);
   void UnregisterBeginFrameSource(BeginFrameSource* source);
+
+  // Returns a stable BeginFrameSource that forwards BeginFrames from the first
+  // available BeginFrameSource.
+  BeginFrameSource* GetPrimaryBeginFrameSource();
 
   // Register a relationship between two namespaces.  This relationship means
   // that surfaces from the child namespace will be displayed in the parent.
@@ -288,7 +289,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temporary_reference_ranges_;
 
-  std::unique_ptr<SurfaceDependencyTracker> dependency_tracker_;
+  SurfaceDependencyTracker* dependency_tracker_ = nullptr;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 

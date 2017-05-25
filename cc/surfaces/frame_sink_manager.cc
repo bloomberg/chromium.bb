@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
+#include "cc/surfaces/primary_begin_frame_source.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>
@@ -16,15 +17,14 @@
 
 namespace cc {
 
-FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping()
-    : source(nullptr) {}
+FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping() = default;
 
 FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping(
     const FrameSinkSourceMapping& other) = default;
 
-FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {}
+FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() = default;
 
-FrameSinkManager::FrameSinkManager() {}
+FrameSinkManager::FrameSinkManager() = default;
 
 FrameSinkManager::~FrameSinkManager() {
   // All CompositorFrameSinks should be unregistered prior to
@@ -82,6 +82,8 @@ void FrameSinkManager::RegisterBeginFrameSource(
 
   registered_sources_[source] = frame_sink_id;
   RecursivelyAttachBeginFrameSource(frame_sink_id, source);
+
+  primary_source_.OnBeginFrameSourceAdded(source);
 }
 
 void FrameSinkManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
@@ -90,6 +92,8 @@ void FrameSinkManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
 
   FrameSinkId frame_sink_id = registered_sources_[source];
   registered_sources_.erase(source);
+
+  primary_source_.OnBeginFrameSourceRemoved(source);
 
   if (frame_sink_source_map_.count(frame_sink_id) == 0u)
     return;
@@ -101,6 +105,10 @@ void FrameSinkManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
   // became null because of the previous step but that have an alternative.
   for (auto source_iter : registered_sources_)
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
+}
+
+BeginFrameSource* FrameSinkManager::GetPrimaryBeginFrameSource() {
+  return &primary_source_;
 }
 
 void FrameSinkManager::RecursivelyAttachBeginFrameSource(
