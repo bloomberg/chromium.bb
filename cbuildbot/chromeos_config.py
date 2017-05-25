@@ -2183,7 +2183,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'falco',
       'glados',
       'guado',
-      'guado_moblab',
       'kevin',
       'lakitu',
       'leon',
@@ -2224,17 +2223,18 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale',
       'gonzo',
       'guado',
+      'guado_moblab',
       'kip',
       'lakitu-gpu',
       'lasilla-ground',
       'lasilla-sky',
+      'oak',
       'poppy',
       'scarlet',
       'tatl',
       'veyron_jerry',
       'whirlwind',
       'wooten',
-      'oak'
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
