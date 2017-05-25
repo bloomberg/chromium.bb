@@ -22736,6 +22736,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.DirectComposition.DCLayerResult" enum="DCLayerResult">
+  <owner>jbauman@chromium.org</owner>
+  <summary>
+    Recorded for each quad (on overlay processing) the reason it was or wasn't
+    put in an overlay.
+  </summary>
+</histogram>
+
 <histogram name="GPU.DirectComposition.FramesSinceColorSpaceChange"
     units="frames">
   <owner>jbauman@chromium.org</owner>
