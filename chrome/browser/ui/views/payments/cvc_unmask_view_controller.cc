@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/payment_request_delegate.h"
@@ -31,6 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -171,15 +174,45 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->AddPaddingRow(0, 22);
 
   views::ColumnSet* cvc_field_columns = layout->AddColumnSet(1);
+  constexpr int kPadding = 16;
+
+  bool requesting_expiration =
+      credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now());
+  if (requesting_expiration) {
+    // Month dropdown column
+    cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
+                                 views::GridLayout::Alignment::BASELINE, 0,
+                                 views::GridLayout::SizeType::USE_PREF, 0, 0);
+    cvc_field_columns->AddPaddingColumn(0, kPadding);
+    // Year dropdown column
+    cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
+                                 views::GridLayout::Alignment::BASELINE, 0,
+                                 views::GridLayout::SizeType::USE_PREF, 0, 0);
+    cvc_field_columns->AddPaddingColumn(0, kPadding);
+  }
+  // CVC image
   cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
                                views::GridLayout::Alignment::BASELINE, 0,
                                views::GridLayout::SizeType::FIXED, 32, 32);
-  cvc_field_columns->AddPaddingColumn(0, 16);
+  cvc_field_columns->AddPaddingColumn(0, kPadding);
+  // CVC field
   cvc_field_columns->AddColumn(views::GridLayout::Alignment::FILL,
                                views::GridLayout::Alignment::BASELINE, 0,
                                views::GridLayout::SizeType::FIXED, 80, 80);
 
   layout->StartRow(0, 1);
+  if (requesting_expiration) {
+    auto month = base::MakeUnique<views::Combobox>(&month_combobox_model_);
+    month->set_listener(this);
+    month->set_id(static_cast<int>(DialogViewID::CVC_MONTH));
+    layout->AddView(month.release());
+
+    auto year = base::MakeUnique<views::Combobox>(&year_combobox_model_);
+    year->set_listener(this);
+    year->set_id(static_cast<int>(DialogViewID::CVC_YEAR));
+    layout->AddView(year.release());
+  }
+
   std::unique_ptr<views::ImageView> cvc_image =
       base::MakeUnique<views::ImageView>();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -245,6 +278,17 @@ void CvcUnmaskViewController::CvcConfirmed() {
   if (unmask_delegate_) {
     autofill::CardUnmaskDelegate::UnmaskResponse response;
     response.cvc = cvc;
+    if (credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now())) {
+      views::Combobox* month = static_cast<views::Combobox*>(
+          dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_MONTH)));
+      DCHECK(month);
+      views::Combobox* year = static_cast<views::Combobox*>(
+          dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_YEAR)));
+      DCHECK(year);
+
+      response.exp_month = month->GetTextForRow(month->selected_index());
+      response.exp_year = year->GetTextForRow(year->selected_index());
+    }
     unmask_delegate_->OnUnmaskResponse(response);
   }
 
@@ -259,6 +303,51 @@ void CvcUnmaskViewController::DisplayError(base::string16 error) {
   RelayoutPane();
 }
 
+void CvcUnmaskViewController::UpdatePayButtonState() {
+  base::string16 trimmed_text;
+  base::TrimWhitespace(cvc_field_->text(), base::TRIM_ALL, &trimmed_text);
+  bool cvc_valid = autofill::IsValidCreditCardSecurityCode(
+      trimmed_text, credit_card_.network());
+  cvc_field_->SetInvalid(!cvc_valid);
+
+  views::Combobox* month = static_cast<views::Combobox*>(
+      dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_MONTH)));
+  views::Combobox* year = static_cast<views::Combobox*>(
+      dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_YEAR)));
+
+  bool expiration_date_valid =
+      !credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now());
+
+  if (month && year) {
+    DCHECK(!expiration_date_valid);
+    int month_value = 0;
+    int year_value = 0;
+    bool parsable =
+        base::StringToInt(month->GetTextForRow(month->selected_index()),
+                          &month_value) &&
+        base::StringToInt(year->GetTextForRow(year->selected_index()),
+                          &year_value);
+
+    if (!parsable) {
+      // The "Month" or "Year" placeholder items are selected instead of actual
+      // month/year values.
+      expiration_date_valid = false;
+    } else {
+      // Convert 2 digit year to 4 digit year.
+      if (year_value < 100) {
+        base::Time::Exploded now;
+        autofill::AutofillClock::Now().LocalExplode(&now);
+        year_value += (now.year / 100) * 100;
+      }
+
+      expiration_date_valid = autofill::IsValidCreditCardExpirationDate(
+          year_value, month_value, autofill::AutofillClock::Now());
+    }
+  }
+
+  primary_button()->SetEnabled(cvc_valid && expiration_date_valid);
+}
+
 bool CvcUnmaskViewController::GetSheetId(DialogViewID* sheet_id) {
   *sheet_id = DialogViewID::CVC_UNMASK_SHEET;
   return true;
@@ -271,12 +360,11 @@ views::View* CvcUnmaskViewController::GetFirstFocusedView() {
 void CvcUnmaskViewController::ContentsChanged(
     views::Textfield* sender,
     const base::string16& new_contents) {
-  base::string16 trimmed_text;
-  base::TrimWhitespace(new_contents, base::TRIM_ALL, &trimmed_text);
-  bool valid = autofill::IsValidCreditCardSecurityCode(trimmed_text,
-                                                       credit_card_.network());
-  cvc_field_->SetInvalid(!valid);
-  primary_button()->SetEnabled(valid);
+  UpdatePayButtonState();
+}
+
+void CvcUnmaskViewController::OnPerformAction(views::Combobox* combobox) {
+  UpdatePayButtonState();
 }
 
 }  // namespace payments
