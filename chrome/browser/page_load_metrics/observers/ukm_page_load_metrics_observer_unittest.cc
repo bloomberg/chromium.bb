@@ -164,6 +164,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(100);
   timing.document_timing->dom_content_loaded_event_start =
       base::TimeDelta::FromMilliseconds(200);
+  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(250);
   timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(300);
   timing.document_timing->load_event_start =
@@ -190,6 +191,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
                entry.get());
   ExpectMetric(internal::kUkmParseStartName, 100, entry.get());
   ExpectMetric(internal::kUkmDomContentLoadedName, 200, entry.get());
+  ExpectMetric(internal::kUkmFirstPaintName, 250, entry.get());
   ExpectMetric(internal::kUkmFirstContentfulPaintName, 300, entry.get());
   ExpectMetric(internal::kUkmLoadEventName, 500, entry.get());
   EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName, entry.get()));
