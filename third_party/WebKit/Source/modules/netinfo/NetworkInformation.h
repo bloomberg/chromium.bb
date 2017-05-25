@@ -12,6 +12,7 @@
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/WebConnectionType.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 
 namespace blink {
 
@@ -31,12 +32,14 @@ class NetworkInformation final
 
   String type() const;
   double downlinkMax() const;
+  String effectiveType() const;
   unsigned long rtt() const;
   double downlink() const;
 
   // NetworkStateObserver overrides.
   void ConnectionChange(WebConnectionType,
                         double downlink_max_mbps,
+                        WebEffectiveConnectionType effective_type,
                         const Optional<TimeDelta>& http_rtt,
                         const Optional<TimeDelta>& transport_rtt,
                         const Optional<double>& downlink_mbps) override;
@@ -74,6 +77,11 @@ class NetworkInformation final
 
   // Touched only on context thread.
   double downlink_max_mbps_;
+
+  // Current effective connection type, which is the connection type whose
+  // typical performance is most similar to the measured performance of the
+  // network in use.
+  WebEffectiveConnectionType effective_type_;
 
   // Transport RTT estimate. Rounded off to the nearest 25 msec. Touched only on
   // context thread.

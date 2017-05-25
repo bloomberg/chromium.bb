@@ -159,11 +159,14 @@ interface Renderer {
                              double max_bandwidth_mbps);
 
   // Tells the renderer process that the network quality estimate has changed.
+  // EffectiveConnectionType is the connection type whose typical performance is
+  // most similar to the measured performance of the network in use.
   // The downstream throughput is computed in kilobits per second. If an
   // estimate of the HTTP or transport RTT is unavailable, it will be set to 
   // net::nqe::internal::InvalidRTT(). If the throughput estimate is
   // unavailable, it will be set to net::nqe::internal::kInvalidThroughput.
-  OnNetworkQualityChanged(mojo.common.mojom.TimeDelta http_rtt,
+  OnNetworkQualityChanged(EffectiveConnectionType effective_connection_type,
+                          mojo.common.mojom.TimeDelta http_rtt,
                           mojo.common.mojom.TimeDelta transport_rtt,
                           double bandwidth_kbps);
 

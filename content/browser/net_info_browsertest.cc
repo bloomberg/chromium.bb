@@ -19,7 +19,22 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
 #include "net/log/test_net_log.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
+
+namespace {
+
+// Returns the total count of samples in |histogram|.
+int GetTotalSampleCount(base::HistogramTester* tester,
+                        const std::string& histogram) {
+  int count = 0;
+  std::vector<base::Bucket> buckets = tester->GetAllSamples(histogram);
+  for (const auto& bucket : buckets)
+    count += bucket.count;
+  return count;
+}
+
+}  // namespace
 
 namespace content {
 
@@ -165,6 +180,50 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
   EXPECT_EQ(0, RunScriptExtractDouble("getRtt()"));
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             RunScriptExtractDouble("getDownlink()"));
+  EXPECT_EQ("4g", RunScriptExtractString("getEffectiveType()"));
+}
+
+// Make sure the changes in the effective connection typeare notified to the
+// render thread.
+IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
+                       EffectiveConnectionTypeChangeNotfied) {
+  base::HistogramTester histogram_tester;
+  net::TestNetworkQualityEstimator estimator(
+      nullptr, std::map<std::string, std::string>(), false, false, true, true,
+      base::MakeUnique<net::BoundTestNetLog>());
+  NetworkQualityObserverImpl impl(&estimator);
+
+  net::nqe::internal::NetworkQuality network_quality_1(
+      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(2), 300);
+  estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
+      network_quality_1);
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/net_info.html")));
+
+  FetchHistogramsFromChildProcesses();
+
+  int samples =
+      GetTotalSampleCount(&histogram_tester, "NQE.RenderThreadNotified");
+  EXPECT_LT(0, samples);
+
+  // Change effective connection type so that the renderer process is notified.
+  // Changing the effective connection type from 2G to 3G is guaranteed to
+  // generate the notification to the renderers, irrespective of the current
+  // effective connection type.
+  estimator.NotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("2g", RunScriptExtractString("getEffectiveType()"));
+  estimator.NotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("3g", RunScriptExtractString("getEffectiveType()"));
+  FetchHistogramsFromChildProcesses();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_GT(GetTotalSampleCount(&histogram_tester, "NQE.RenderThreadNotified"),
+            samples);
 }
 
 // Make sure the changes in the network quality are notified to the render

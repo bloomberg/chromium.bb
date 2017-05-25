@@ -38,6 +38,7 @@
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebConnectionType.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 
 namespace blink {
 
@@ -53,6 +54,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     bool connection_initialized = false;
     WebConnectionType type = kWebConnectionTypeOther;
     double max_bandwidth_mbps = kInvalidMaxBandwidth;
+    WebEffectiveConnectionType effective_type =
+        WebEffectiveConnectionType::kTypeUnknown;
     Optional<TimeDelta> http_rtt;
     Optional<TimeDelta> transport_rtt;
     Optional<double> downlink_throughput_mbps;
@@ -64,6 +67,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     virtual void ConnectionChange(
         WebConnectionType,
         double max_bandwidth_mbps,
+        WebEffectiveConnectionType,
         const Optional<TimeDelta>& http_rtt,
         const Optional<TimeDelta>& transport_rtt,
         const Optional<double>& downlink_throughput_mbps) {}
@@ -78,6 +82,16 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     const NetworkState& state = has_override_ ? override_ : state_;
     DCHECK(state.on_line_initialized);
     return state.on_line;
+  }
+
+  // Returns the current effective connection type, which is the connection type
+  // whose typical performance is most similar to the measured performance of
+  // the network in use.
+  WebEffectiveConnectionType EffectiveType() const {
+    MutexLocker locker(mutex_);
+    const NetworkState& state = has_override_ ? override_ : state_;
+    DCHECK(state.on_line_initialized);
+    return state.effective_type;
   }
 
   // Returns the current HTTP RTT estimate. If the estimate is unavailable, the
@@ -146,7 +160,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   }
 
   void SetWebConnection(WebConnectionType, double max_bandwidth_mbps);
-  void SetNetworkQuality(TimeDelta http_rtt,
+  void SetNetworkQuality(WebEffectiveConnectionType,
+                         TimeDelta http_rtt,
                          TimeDelta transport_rtt,
                          int downlink_throughput_kbps);
 

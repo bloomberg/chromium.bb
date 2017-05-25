@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/network_quality_observer_factory.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality.h"
 #include "net/nqe/network_quality_estimator.h"
 
@@ -21,7 +22,8 @@ namespace content {
 // Listens for changes to the network quality and manages sending updates to
 // each RenderProcess via mojo.
 class CONTENT_EXPORT NetworkQualityObserverImpl
-    : public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver {
+    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver,
+      public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver {
  public:
   explicit NetworkQualityObserverImpl(
       net::NetworkQualityEstimator* network_quality_estimator);
@@ -30,6 +32,11 @@ class CONTENT_EXPORT NetworkQualityObserverImpl
 
  private:
   class UiThreadObserver;
+
+  // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
+  // implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override;
 
   // net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver
   // implementation:
@@ -49,6 +56,7 @@ class CONTENT_EXPORT NetworkQualityObserverImpl
   net::NetworkQualityEstimator* network_quality_estimator_;
 
   //  The network quality when the |ui_thread_observer_| was last notified.
+  net::EffectiveConnectionType last_notified_type_;
   net::nqe::internal::NetworkQuality last_notified_network_quality_;
 
   base::ThreadChecker thread_checker_;

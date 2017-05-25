@@ -459,6 +459,10 @@ class NET_EXPORT NetworkQualityEstimator
   base::ObserverList<RTTAndThroughputEstimatesObserver>
       rtt_and_throughput_estimates_observer_list_;
 
+  // Observer list for changes in effective connection type.
+  base::ObserverList<EffectiveConnectionTypeObserver>
+      effective_connection_type_observer_list_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            AdaptiveRecomputationEffectiveConnectionType);
@@ -722,10 +726,6 @@ class NET_EXPORT NetworkQualityEstimator
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.
   const std::unique_ptr<ExternalEstimateProvider> external_estimate_provider_;
-
-  // Observer list for changes in effective connection type.
-  base::ObserverList<EffectiveConnectionTypeObserver>
-      effective_connection_type_observer_list_;
 
   // Observer lists for round trip times and throughput measurements.
   base::ObserverList<RTTObserver> rtt_observer_list_;

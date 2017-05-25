@@ -103,6 +103,7 @@
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
@@ -2168,12 +2169,14 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
 }
 
 void RenderThreadImpl::OnNetworkQualityChanged(
+    net::EffectiveConnectionType type,
     base::TimeDelta http_rtt,
     base::TimeDelta transport_rtt,
     double downlink_throughput_kbps) {
   UMA_HISTOGRAM_BOOLEAN("NQE.RenderThreadNotified", true);
-  WebNetworkStateNotifier::SetNetworkQuality(http_rtt, transport_rtt,
-                                             downlink_throughput_kbps);
+  WebNetworkStateNotifier::SetNetworkQuality(
+      EffectiveConnectionTypeToWebEffectiveConnectionType(type), http_rtt,
+      transport_rtt, downlink_throughput_kbps);
 }
 
 void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {

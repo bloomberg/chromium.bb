@@ -59,6 +59,7 @@ NetworkStateNotifier::ScopedNotifier::~ScopedNotifier() {
       notifier_.has_override_ ? notifier_.override_ : notifier_.state_;
   if ((after.type != before_.type ||
        after.max_bandwidth_mbps != before_.max_bandwidth_mbps ||
+       after.effective_type != before_.effective_type ||
        after.http_rtt != before_.http_rtt ||
        after.transport_rtt != before_.transport_rtt ||
        after.downlink_throughput_mbps != before_.downlink_throughput_mbps) &&
@@ -94,7 +95,8 @@ void NetworkStateNotifier::SetWebConnection(WebConnectionType type,
   }
 }
 
-void NetworkStateNotifier::SetNetworkQuality(TimeDelta http_rtt,
+void NetworkStateNotifier::SetNetworkQuality(WebEffectiveConnectionType type,
+                                             TimeDelta http_rtt,
                                              TimeDelta transport_rtt,
                                              int downlink_throughput_kbps) {
   DCHECK(IsMainThread());
@@ -102,6 +104,7 @@ void NetworkStateNotifier::SetNetworkQuality(TimeDelta http_rtt,
   {
     MutexLocker locker(mutex_);
 
+    state_.effective_type = type;
     state_.http_rtt = base::nullopt;
     state_.transport_rtt = base::nullopt;
     state_.downlink_throughput_mbps = base::nullopt;
@@ -209,8 +212,9 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
         continue;
       case ObserverType::CONNECTION_TYPE:
         observer_list->observers[i]->ConnectionChange(
-            state.type, state.max_bandwidth_mbps, state.http_rtt,
-            state.transport_rtt, state.downlink_throughput_mbps);
+            state.type, state.max_bandwidth_mbps, state.effective_type,
+            state.http_rtt, state.transport_rtt,
+            state.downlink_throughput_mbps);
         continue;
     }
     NOTREACHED();

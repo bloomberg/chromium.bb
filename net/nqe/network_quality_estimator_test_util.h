@@ -222,6 +222,10 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   void NotifyObserversOfRTTOrThroughputEstimatesComputed(
       const net::nqe::internal::NetworkQuality& network_quality);
 
+  // Notifies the registered observers that the network quality estimate has
+  // changed to |network_quality|.
+  void NotifyObserversOfEffectiveConnectionType(EffectiveConnectionType type);
+
   using NetworkQualityEstimator::SetTickClockForTesting;
   using NetworkQualityEstimator::OnConnectionTypeChanged;
   using NetworkQualityEstimator::OnUpdatedRTTAvailable;
