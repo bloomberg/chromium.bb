@@ -4,7 +4,6 @@
 
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 
-#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
 namespace blink {

@@ -36,7 +36,6 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/wtf/PassRefPtr.h"

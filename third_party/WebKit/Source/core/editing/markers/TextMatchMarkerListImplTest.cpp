@@ -5,7 +5,6 @@
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
 
 #include "core/editing/EditingTestBase.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
 
 namespace blink {
 

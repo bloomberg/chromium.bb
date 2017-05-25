@@ -4,7 +4,6 @@
 
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
-#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/editing/markers/SpellingMarkerListImpl.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
