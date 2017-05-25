@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -45,6 +46,36 @@ using State = chromeos::CupsPrintJob::State;
 using ErrorCode = chromeos::CupsPrintJob::ErrorCode;
 
 using PrinterReason = printing::PrinterStatus::PrinterReason;
+
+// Enumeration of print job results for histograms.  Do not modify!
+enum JobResultForHistogram {
+  UNKNOWN = 0,         // unidentified result
+  FINISHED = 1,        // successful completion of job
+  TIMEOUT_CANCEL = 2,  // cancelled due to timeout
+  PRINTER_CANCEL = 3,  // cancelled by printer
+  LOST = 4,            // final state never received
+  RESULT_MAX
+};
+
+// Returns the appropriate JobResultForHistogram for a given |state|.  Only
+// FINISHED and PRINTER_CANCEL are derived from CupsPrintJob::State.
+JobResultForHistogram ResultForHistogram(State state) {
+  switch (state) {
+    case State::STATE_DOCUMENT_DONE:
+      return FINISHED;
+    case State::STATE_CANCELLED:
+      return PRINTER_CANCEL;
+    default:
+      break;
+  }
+
+  return UNKNOWN;
+}
+
+void RecordJobResult(JobResultForHistogram result) {
+  UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.JobResult", TIMEOUT_CANCEL,
+                            RESULT_MAX);
+}
 
 // Returns the equivalient CupsPrintJob#State from a CupsJob#JobState.
 chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
@@ -223,6 +254,11 @@ bool CupsPrintJobManagerImpl::CreatePrintJob(const std::string& printer_name,
     return false;
   }
 
+  // Records the number of jobs we're currently tracking when a new job is
+  // started.  This is equivalent to print queue size in the current
+  // implementation.
+  UMA_HISTOGRAM_EXACT_LINEAR("Printing.CUPS.PrintJobsQueued", jobs_.size(), 20);
+
   // Create a new print job.
   auto cpj = base::MakeUnique<CupsPrintJob>(*printer, job_id, title,
                                             total_page_number);
@@ -354,10 +390,12 @@ void CupsPrintJobManagerImpl::UpdateJobs(const QueryResult& result) {
 
       if (print_job->expired()) {
         // Job needs to be forcibly cancelled.
+        RecordJobResult(TIMEOUT_CANCEL);
         CancelPrintJob(print_job);
         // Beware, print_job was removed from jobs_ and deleted.
       } else if (print_job->IsJobFinished()) {
         // Cleanup completed jobs.
+        RecordJobResult(ResultForHistogram(print_job->state()));
         jobs_.erase(entry);
       } else {
         active_jobs.push_back(key);
@@ -380,6 +418,7 @@ void CupsPrintJobManagerImpl::UpdateJobs(const QueryResult& result) {
 void CupsPrintJobManagerImpl::PurgeJobs() {
   for (const auto& entry : jobs_) {
     // Declare all lost jobs errors.
+    RecordJobResult(LOST);
     CupsPrintJob* job = entry.second.get();
     job->set_state(CupsPrintJob::State::STATE_ERROR);
     NotifyJobStateUpdate(job);
