@@ -309,39 +309,50 @@ CreditCardEditorViewController::CreateCustomFieldView(
   DCHECK_EQ(type, autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 
   std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
-  std::unique_ptr<views::GridLayout> combobox_layout =
-      base::MakeUnique<views::GridLayout>(view.get());
-  views::ColumnSet* columns = combobox_layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
-  // Space between the two comboboxes.
-  constexpr int kHorizontalSpacing = 8;
-  columns->AddPaddingColumn(0, kHorizontalSpacing);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
+  if (IsEditingServerCard()) {
+    std::unique_ptr<views::Label> exp_label = base::MakeUnique<views::Label>(
+        credit_card_to_edit_->ExpirationDateForDisplay());
+    exp_label->set_id(
+        GetInputFieldViewId(autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
+    exp_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  combobox_layout->StartRow(0, 0);
-  constexpr int kInputFieldHeight = 28;
-  EditorField tmp_month{autofill::CREDIT_CARD_EXP_MONTH, base::string16(),
-                        EditorField::LengthHint::HINT_SHORT,
-                        /*required=*/true, EditorField::ControlType::COMBOBOX};
-  std::unique_ptr<ValidatingCombobox> month_combobox =
-      CreateComboboxForField(tmp_month);
-  *focusable_field = month_combobox.get();
-  combobox_layout->AddView(month_combobox.release(), 1, 1,
-                           views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                           kInputFieldHeight);
+    view = std::move(exp_label);
+  } else {
+    // Two comboboxes, one for month and the other for year.
+    std::unique_ptr<views::GridLayout> combobox_layout =
+        base::MakeUnique<views::GridLayout>(view.get());
+    views::ColumnSet* columns = combobox_layout->AddColumnSet(0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
+                       views::GridLayout::USE_PREF, 0, 0);
+    // Space between the two comboboxes.
+    constexpr int kHorizontalSpacing = 8;
+    columns->AddPaddingColumn(0, kHorizontalSpacing);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
+                       views::GridLayout::USE_PREF, 0, 0);
 
-  EditorField tmp_year{autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR, base::string16(),
-                       EditorField::LengthHint::HINT_SHORT,
-                       /*required=*/true, EditorField::ControlType::COMBOBOX};
-  std::unique_ptr<ValidatingCombobox> year_combobox =
-      CreateComboboxForField(tmp_year);
-  combobox_layout->AddView(year_combobox.release(), 1, 1,
-                           views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                           kInputFieldHeight);
+    combobox_layout->StartRow(0, 0);
+    constexpr int kInputFieldHeight = 28;
+    EditorField tmp_month{autofill::CREDIT_CARD_EXP_MONTH, base::string16(),
+                          EditorField::LengthHint::HINT_SHORT,
+                          /*required=*/true,
+                          EditorField::ControlType::COMBOBOX};
+    std::unique_ptr<ValidatingCombobox> month_combobox =
+        CreateComboboxForField(tmp_month);
+    *focusable_field = month_combobox.get();
+    combobox_layout->AddView(month_combobox.release(), 1, 1,
+                             views::GridLayout::FILL, views::GridLayout::FILL,
+                             0, kInputFieldHeight);
 
-  view->SetLayoutManager(combobox_layout.release());
+    EditorField tmp_year{autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                         base::string16(), EditorField::LengthHint::HINT_SHORT,
+                         /*required=*/true, EditorField::ControlType::COMBOBOX};
+    std::unique_ptr<ValidatingCombobox> year_combobox =
+        CreateComboboxForField(tmp_year);
+    combobox_layout->AddView(year_combobox.release(), 1, 1,
+                             views::GridLayout::FILL, views::GridLayout::FILL,
+                             0, kInputFieldHeight);
+    view->SetLayoutManager(combobox_layout.release());
+  }
 
   // Set the initial validity of the custom view.
   base::string16 month =
@@ -372,9 +383,7 @@ CreditCardEditorViewController::CreateExtraViewForField(
 }
 
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
-  bool is_server_card =
-      credit_card_to_edit_ &&
-      credit_card_to_edit_->record_type() != autofill::CreditCard::LOCAL_CARD;
+  bool is_server_card = IsEditingServerCard();
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NUMBER,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER),
@@ -408,6 +417,22 @@ base::string16 CreditCardEditorViewController::GetInitialValueForType(
 }
 
 bool CreditCardEditorViewController::ValidateModelAndSave() {
+  if (IsEditingServerCard()) {
+    views::Combobox* address_combobox = static_cast<views::Combobox*>(
+        dialog()->GetViewByID(GetInputFieldViewId(kBillingAddressType)));
+    if (address_combobox->invalid())
+      return false;
+
+    autofill::AddressComboboxModel* model =
+        static_cast<autofill::AddressComboboxModel*>(address_combobox->model());
+
+    credit_card_to_edit_->set_billing_address_id(
+        model->GetItemIdentifierAt(address_combobox->selected_index()));
+    state()->GetPersonalDataManager()->UpdateServerCardMetadata(
+        *credit_card_to_edit_);
+    return true;
+  }
+
   const std::string& locale = state()->GetApplicationLocale();
   // Use a temporary object for validation.
   autofill::CreditCard credit_card;
@@ -430,14 +455,11 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
       return false;
 
     if (field.second.type == kBillingAddressType) {
-      views::Combobox* address_combobox = static_cast<views::Combobox*>(
-          dialog()->GetViewByID(GetInputFieldViewId(kBillingAddressType)));
       autofill::AddressComboboxModel* model =
-          static_cast<autofill::AddressComboboxModel*>(
-              address_combobox->model());
+          static_cast<autofill::AddressComboboxModel*>(combobox->model());
 
       credit_card.set_billing_address_id(
-          model->GetItemIdentifierAt(address_combobox->selected_index()));
+          model->GetItemIdentifierAt(combobox->selected_index()));
     } else {
       credit_card.SetInfo(autofill::AutofillType(field.second.type),
                           combobox->GetTextForRow(combobox->selected_index()),
@@ -633,6 +655,11 @@ void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
   address_combobox->SetSelectedRow(index);
   // But it needs to be blured at least once.
   address_combobox->OnBlur();
+}
+
+bool CreditCardEditorViewController::IsEditingServerCard() const {
+  return credit_card_to_edit_ && credit_card_to_edit_->record_type() !=
+                                     autofill::CreditCard::LOCAL_CARD;
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::

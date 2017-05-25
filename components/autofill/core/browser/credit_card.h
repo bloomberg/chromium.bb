@@ -96,25 +96,8 @@ class CreditCard : public AutofillDataModel {
                const base::string16& value,
                const std::string& app_locale) override;
 
-  // Card preview summary, for example: "Visa - 1234", ", 01/2020".
-  const std::pair<base::string16, base::string16> LabelPieces() const;
-
-  // Like LabelPieces, but appends the two pieces together.
-  const base::string16 Label() const;
-
   // Special method to set value for HTML5 month input type.
   void SetInfoForMonthInputType(const base::string16& value);
-
-  // The last four digits of the card number (or possibly less if there aren't
-  // enough characters).
-  base::string16 LastFourDigits() const;
-  // The user-visible issuer network of the card, e.g. 'Mastercard'.
-  base::string16 NetworkForDisplay() const;
-  // A label for this card formatted as 'IssuerNetwork - 2345'.
-  base::string16 NetworkAndLastFourDigits() const;
-
-  // Localized expiration for this card formatted as 'Exp: 06/17'.
-  base::string16 AbbreviatedExpirationDateForDisplay() const;
 
   const std::string& network() const { return network_; }
 
@@ -178,9 +161,6 @@ class CreditCard : public AutofillDataModel {
   // |network_|.
   void SetNumber(const base::string16& number);
 
-  // Returns the date when the card was last used in autofill.
-  base::string16 GetLastUsedDateForDisplay(const std::string& app_locale) const;
-
   // Logs the number of days since the card was last used and records its use.
   void RecordAndLogUse();
 
@@ -216,9 +196,34 @@ class CreditCard : public AutofillDataModel {
   // digit months, with various separators.
   void SetExpirationDateFromString(const base::string16& text);
 
+  // Various display functions.
+
+  // Card preview summary, for example: "Visa - 1234", ", 01/2020".
+  const std::pair<base::string16, base::string16> LabelPieces() const;
+  // Like LabelPieces, but appends the two pieces together.
+  const base::string16 Label() const;
+  // The last four digits of the card number (or possibly less if there aren't
+  // enough characters).
+  base::string16 LastFourDigits() const;
+  // The user-visible issuer network of the card, e.g. 'Mastercard'.
+  base::string16 NetworkForDisplay() const;
+  // A label for this card formatted as 'IssuerNetwork - 2345'.
+  base::string16 NetworkAndLastFourDigits() const;
+  // Localized expiration for this card formatted as 'Exp: 06/17'.
+  base::string16 AbbreviatedExpirationDateForDisplay() const;
+  // Returns the date when the card was last used in autofill.
+  base::string16 GetLastUsedDateForDisplay(const std::string& app_locale) const;
+  // Formatted expiration date (e.g., 05/2020).
+  base::string16 ExpirationDateForDisplay() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
+
+  // Private display functions.
+  base::string16 ExpirationMonthAsString() const;
+  base::string16 Expiration4DigitYearAsString() const;
+  base::string16 Expiration2DigitYearAsString() const;
 
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
@@ -229,9 +234,6 @@ class CreditCard : public AutofillDataModel {
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
   int Expiration2DigitYear() const { return expiration_year_ % 100; }
-  base::string16 ExpirationMonthAsString() const;
-  base::string16 Expiration4DigitYearAsString() const;
-  base::string16 Expiration2DigitYearAsString() const;
 
   // See enum definition above.
   RecordType record_type_;
