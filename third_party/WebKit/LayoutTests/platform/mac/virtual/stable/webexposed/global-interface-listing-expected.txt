@@ -3951,6 +3951,9 @@ interface PerformanceObserverEntryList
     method getEntries
     method getEntriesByName
     method getEntriesByType
+interface PerformancePaintTiming : PerformanceEntry
+    attribute @@toStringTag
+    method constructor
 interface PerformanceResourceTiming : PerformanceEntry
     attribute @@toStringTag
     getter connectEnd
