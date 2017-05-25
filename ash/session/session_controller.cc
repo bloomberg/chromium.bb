@@ -82,13 +82,18 @@ bool SessionController::ShouldLockScreenAutomatically() const {
 }
 
 bool SessionController::IsUserSessionBlocked() const {
-  // User sessions are blocked when session state is not ACTIVE, except that
-  // LOCKED state with a running unlocking animation. This is made an exception
-  // because the unlocking animation hides lock container at the end. During the
-  // unlock animation, IsUserSessionBlocked needs to return unblocked so that
-  // user windows are deemed activatable and ash correctly restore the active
-  // window before locking.
+  // User sessions are blocked when session state is not ACTIVE, with two
+  // exceptions:
+  // - LOGGED_IN_NOT_ACTIVE state. This is needed so that browser windows
+  //   created by session restore (or a default new browser window) are properly
+  //   activated before session state changes to ACTIVE.
+  // - LOCKED state with a running unlocking animation. This is needed because
+  //   the unlocking animation hides the lock container at the end. During the
+  //   unlock animation, IsUserSessionBlocked needs to return unblocked so that
+  //   user windows are deemed activatable and ash correctly restores the active
+  //   window before locking.
   return state_ != SessionState::ACTIVE &&
+         state_ != SessionState::LOGGED_IN_NOT_ACTIVE &&
          !(state_ == SessionState::LOCKED && is_unlocking_);
 }
 

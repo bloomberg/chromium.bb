@@ -88,7 +88,7 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
     return nullptr;
   }
   void BeforeSessionStart() override {}
-  void Finalize() override {}
+  void Finalize(base::OnceClosure) override {}
   void OpenProxySettings() override {}
   void SetStatusAreaVisible(bool visible) override {}
   void StartWizard(chromeos::OobeScreen first_screen) override {}
@@ -96,7 +96,7 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   chromeos::AppLaunchController* GetAppLaunchController() override {
     return nullptr;
   }
-  void StartUserAdding(const base::Closure& completion_callback) override {}
+  void StartUserAdding(base::OnceClosure completion_callback) override {}
   void CancelUserAdding() override {}
   void StartSignInScreen(const chromeos::LoginScreenContext& context) override {
   }

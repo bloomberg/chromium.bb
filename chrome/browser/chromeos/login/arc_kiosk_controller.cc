@@ -54,7 +54,7 @@ void ArcKioskController::CleanUp() {
   if (profile_)
     ArcKioskAppService::Get(profile_)->SetDelegate(nullptr);
   if (host_)
-    host_->Finalize();
+    host_->Finalize(base::OnceClosure());
 }
 
 void ArcKioskController::CloseSplashScreen() {

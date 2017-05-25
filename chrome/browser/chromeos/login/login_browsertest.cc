@@ -93,7 +93,7 @@ class LoginSigninTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     // Close the login manager, which otherwise holds a KeepAlive that is not
     // cleared in time by the end of the test.
-    LoginDisplayHost::default_host()->Finalize();
+    LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
   }
 
   void SetUpOnMainThread() override {

@@ -440,7 +440,7 @@ class ExistingUserControllerPublicSessionTest
       controller->current_screen()->Hide();
 
     if (LoginDisplayHost::default_host())
-      LoginDisplayHost::default_host()->Finalize();
+      LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
     base::RunLoop().RunUntilIdle();
   }
 
