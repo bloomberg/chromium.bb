@@ -38,7 +38,7 @@ SocketPermissionRequest CreateSocketPermissionRequest(
   std::string host =
       ppapi::NetAddressPrivateImpl::DescribeNetAddress(net_addr, false);
   uint16_t port = 0;
-  std::vector<unsigned char> address;
+  net::IPAddressBytes address;
   ppapi::NetAddressPrivateImpl::NetAddressToIPEndPoint(
       net_addr, &address, &port);
   return SocketPermissionRequest(type, host, port);

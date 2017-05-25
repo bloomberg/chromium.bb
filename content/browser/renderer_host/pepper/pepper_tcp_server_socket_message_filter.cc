@@ -174,7 +174,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
     int32_t backlog) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<uint8_t> address;
+  net::IPAddressBytes address;
   uint16_t port;
   if (state_ != STATE_BEFORE_LISTENING ||
       !NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
