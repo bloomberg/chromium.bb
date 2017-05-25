@@ -28,6 +28,7 @@ import optparse
 import os
 import platform
 import shutil
+import subprocess
 import sys
 import tempfile
 import zipfile
@@ -38,6 +39,32 @@ import get_toolchain_if_necessary
 VS_VERSION = None
 WIN_VERSION = None
 VC_TOOLS = None
+
+
+def GetVSPath():
+  if VS_VERSION == '2015':
+    return r'C:\Program Files (x86)\Microsoft Visual Studio 14.0'
+  elif VS_VERSION == '2017':
+    # Use vswhere to find the VS 2017 installation. This handles preview
+    # versions automatically. This assumes that only one version is installed.
+    command = (r'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
+               r'\vswhere.exe')
+    marker = 'installationPath: '
+    for line in subprocess.check_output(command).splitlines():
+      if line.startswith(marker):
+        return line[len(marker):]
+    raise Exception('VS 2017 path not found in vswhere output')
+  else:
+    raise ValueError(VS_VERSION)
+
+
+def ExpandWildcards(root, sub_dir):
+  # normpath is needed to change '/' to '\\' characters.
+  matches = glob.glob(os.path.normpath(os.path.join(root, sub_dir)))
+  if len(matches) != 1:
+    raise Exception('%s had %d matches - should be one' % (full, len(matches)))
+  return matches[0]
+
 
 def BuildFileList(override_dir):
   result = []
@@ -83,34 +110,28 @@ def BuildFileList(override_dir):
     ]
   elif VS_VERSION == '2017':
     paths += [
-        ('VC/redist/MSVC/14.10.25008/x86/Microsoft.VC150.CRT', 'sys32'),
-        ('VC/redist/MSVC/14.10.25008/x86/Microsoft.VC150.CRT', 'win_sdk/bin/x86'),
-        ('VC/redist/MSVC/14.10.25017/x86/Microsoft.VC150.MFC', 'sys32'),
-        ('VC/redist/MSVC/14.10.25008/debug_nonredist/x86/Microsoft.VC150.DebugCRT', 'sys32'),
-        ('VC/redist/MSVC/14.10.25017/debug_nonredist/x86/Microsoft.VC150.DebugMFC', 'sys32'),
-        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'sys64'),
-        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'VC/bin/amd64_x86'),
-        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'VC/bin/amd64'),
-        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'win_sdk/bin/x64'),
-        ('VC/redist/MSVC/14.10.25017/x64/Microsoft.VC150.MFC', 'sys64'),
-        ('VC/redist/MSVC/14.10.25008/debug_nonredist/x64/Microsoft.VC150.DebugCRT', 'sys64'),
-        ('VC/redist/MSVC/14.10.25017/debug_nonredist/x64/Microsoft.VC150.DebugMFC', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC150.CRT', 'sys32'),
+        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC150.CRT', 'win_sdk/bin/x86'),
+        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC150.MFC', 'sys32'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC150.DebugCRT', 'sys32'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC150.DebugMFC', 'sys32'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'VC/bin/amd64_x86'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'VC/bin/amd64'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'win_sdk/bin/x64'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.MFC', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC150.DebugCRT', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC150.DebugMFC', 'sys64'),
     ]
   else:
     raise ValueError('VS_VERSION %s' % VS_VERSION)
 
-  if VS_VERSION == '2015':
-    vs_path = r'C:\Program Files (x86)\Microsoft Visual Studio 14.0'
-  elif VS_VERSION == '2017':
-    vs_path = r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional'
-  else:
-    assert ValueError(VS_VERSION)
+  vs_path = GetVSPath()
 
   for path in paths:
     src = path[0] if isinstance(path, tuple) else path
     # Note that vs_path is ignored if src is an absolute path.
-    # normpath is needed to change '/' to '\\' characters.
-    combined = os.path.normpath(os.path.join(vs_path, src))
+    combined = ExpandWildcards(vs_path, src)
     if not os.path.exists(combined):
       raise Exception('%s missing.' % combined)
     if not os.path.isdir(combined):
@@ -389,7 +410,10 @@ def main():
   WIN_VERSION = options.winver
   global VC_TOOLS
   if VS_VERSION == '2017':
-    VC_TOOLS = 'VC/Tools/MSVC/14.10.25017'
+    vs_path = GetVSPath()
+    temp_tools_path = ExpandWildcards(vs_path, 'VC/Tools/MSVC/14.*.*')
+    # Strip off the leading vs_path characters and switch back to / separators.
+    VC_TOOLS = temp_tools_path[len(vs_path) + 1:].replace('\\', '/')
   else:
     VC_TOOLS = 'VC'
 
