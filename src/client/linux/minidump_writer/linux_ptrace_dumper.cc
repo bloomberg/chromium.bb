@@ -169,6 +169,7 @@ bool LinuxPtraceDumper::ReadRegisterSet(ThreadInfo* info, pid_t tid)
 }
 
 bool LinuxPtraceDumper::ReadRegisters(ThreadInfo* info, pid_t tid) {
+#ifdef PTRACE_GETREGS
   void* gp_addr;
   info->GetGeneralPurposeRegisters(&gp_addr, NULL);
   if (sys_ptrace(PTRACE_GETREGS, tid, NULL, gp_addr) == -1) {
@@ -185,8 +186,11 @@ bool LinuxPtraceDumper::ReadRegisters(ThreadInfo* info, pid_t tid) {
   if (sys_ptrace(PTRACE_GETFPREGS, tid, NULL, fp_addr) == -1) {
     return false;
   }
-#endif
+#endif  // !(defined(__ANDROID__) && defined(__ARM_EABI__))
   return true;
+#else  // PTRACE_GETREGS
+  return false;
+#endif
 }
 
 // Read thread info from /proc/$pid/status.
