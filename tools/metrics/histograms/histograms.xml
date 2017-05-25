@@ -22665,6 +22665,92 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.AtExitMBytesAllocated" units="MB">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The amount of GPU memory that was currently allocated as of just before the
+    GPU process' exit.
+  </summary>
+</histogram>
+
+<histogram name="GPU.AtExitMBytesAllocatedMax" units="MB">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The maximum amount of GPU memory that had ever been allocated during the GPU
+    process' lifetime, as of just before the GPU process' exit.
+  </summary>
+</histogram>
+
+<histogram name="GPU.AtExitMBytesLimit" units="MB">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The GPU memory manager's limit on the amount of GPU memory that can be
+    allocated as of just before the GPU process' exit.
+  </summary>
+</histogram>
+
+<histogram name="GPU.AtExitSurfaceCount">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The number of surfaces that the GPU process was rendering to right before
+    exiting. This should be equal to the number of tabs (both visible and
+    hidden) rendering via the compositor.
+  </summary>
+</histogram>
+
+<histogram name="GPU.AtExitWindowCount">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The number of windows that the GPU memory manager believed to exist as of
+    just before the GPU process' exit.
+  </summary>
+</histogram>
+
+<histogram name="GPU.BlacklistFeatureTestResults"
+    enum="GPUBlacklistFeatureTestResults">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts number of browser invocations for which a GPU feature is
+    allowed/blacklisted/disabled.
+  </summary>
+</histogram>
+
+<histogram name="GPU.BlacklistFeatureTestResultsWin"
+    enum="GPUBlacklistFeatureTestResultsWin">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts number of browser invocations for which a GPU feature is blacklisted
+    in various Windows sub-versions.
+  </summary>
+</histogram>
+
+<histogram name="GPU.BlacklistFeatureTestResultsWindows"
+    enum="GPUBlacklistFeatureTestResultsWindows">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts number of browser invocations for which a GPU feature is
+    allowed/blacklisted/disabled in various Windows sub-versions.
+  </summary>
+</histogram>
+
+<histogram name="GPU.BlacklistTestResultsPerDisabledEntry"
+    enum="GPUBlacklistTestResultPerEntry">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts number of browser invocations for which a disabled blacklist entry is
+    matched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.BlacklistTestResultsPerEntry"
+    enum="GPUBlacklistTestResultPerEntry">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts number of browser invocations for which the GPU process is blocked
+    due to a blacklist entry match.
+  </summary>
+</histogram>
+
 <histogram name="GPU.CheckFramebufferValidDuration" units="ms">
   <obsolete>
     Deprecated 01/2017.
@@ -22702,6 +22788,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     point of view. One of these is created for each top-level window (browser
     frame, menus, etc.).
   </summary>
+</histogram>
+
+<histogram name="GPU.D3D11_B8G8R8A8_RenderTargetSupport" enum="BooleanSuccess">
+  <owner>vmiura@chromium.org</owner>
+  <summary>Whether D3D11 supports B8G8R8A8 format for render targets.</summary>
+</histogram>
+
+<histogram name="GPU.D3D11_B8G8R8A8_Texture2DSupport" enum="BooleanSuccess">
+  <owner>vmiura@chromium.org</owner>
+  <summary>Whether D3D11 supports B8G8R8A8 format for 2D textures.</summary>
+</histogram>
+
+<histogram name="GPU.D3D11_FeatureLevel" enum="D3D11FeatureLevel">
+  <owner>vmiura@chromium.org</owner>
+  <summary>The highest D3D11 feature level available.</summary>
 </histogram>
 
 <histogram name="GPU.D3DShaderModel" enum="ShaderModel">
@@ -22797,6 +22898,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>What type of swapchain was actually created for an overlay.</summary>
 </histogram>
 
+<histogram name="GPU.DisplayLinkInstallationStatus"
+    enum="DisplayLinkInstallationStatus">
+  <obsolete>
+    Deprecated 2/2017. The values hadn't been updated since it was created, and
+    the code gathering the installation status has been removed in Chrome CL
+    2679773002.
+  </obsolete>
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Whether a version of DisplayLink is installed that crashes the GPU process.
+    This information is collected at statup. It applies only to Windows. See
+    http://crbug.com/177611.
+  </summary>
+</histogram>
+
 <histogram name="GPU.DoLinkProgramTime" units="ms">
   <owner>jmadill@chromium.org</owner>
   <summary>
@@ -22853,6 +22969,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.GPUProcessInitialized" enum="BooleanSuccess">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Whether the GPU process successfully initialized or failed and then exitted
+    normally.
+  </summary>
+</histogram>
+
 <histogram name="GPU.GPUProcessLaunchCause" enum="GPUProcessLaunchCauses">
   <obsolete>
     Deprecated 08/2016.
@@ -22867,6 +22991,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>piman@chromium.org</owner>
   <summary>
     Startup time of the GPU process as measured by the GPU process host.
+  </summary>
+</histogram>
+
+<histogram name="GPU.GPUProcessLifetimeEvents" enum="GPUProcessLifetimeEvent">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts of the number of process launches and crashes (when running on h/w).
+  </summary>
+</histogram>
+
+<histogram name="GPU.GPUProcessSoftwareRendering" enum="GPUProcessType">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    A boolean indicating whether the gpu process that was launched uses software
+    or hardware 3d rendering.
+  </summary>
+</histogram>
+
+<histogram name="GPU.GPUProcessTerminationStatus" enum="TerminationStatus">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts for each time the GPU Process Host detects the process dies.
+  </summary>
+</histogram>
+
+<histogram name="GPU.InForceCompositingModeFieldTrial" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated 10/2013.
+  </obsolete>
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Records whether a client was selected for the force compositing mode field
+    trial or not.
   </summary>
 </histogram>
 
@@ -22927,11 +23084,76 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ProgramCache.BinaryCacheHitTime" units="microseconds">
+  <owner>vmiura@chromium.org</owner>
+  <summary>The time to load a gpu program from the program cache.</summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.BinaryCacheMissTime" units="microseconds">
+  <owner>vmiura@chromium.org</owner>
+  <summary>The time to link a gpu program.</summary>
+</histogram>
+
 <histogram name="GPU.ProgramCache.CacheHit" enum="BooleanSuccess">
   <owner>jmadill@chromium.org</owner>
   <summary>
     If a successfully linked program was found in the GPU program cache during a
     program link call.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.CompilationCacheHitTime" units="microseconds">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The time to check the program cache that we've already compiled the shader.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.CompilationCacheMissTime"
+    units="microseconds">
+  <owner>vmiura@chromium.org</owner>
+  <summary>The time to compile a shader.</summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.LoadBinarySuccess" enum="BooleanSuccess">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Records if the call to glProgramBinary was successful.  This can
+    legitimately fail if the driver wants chrome to re-link and re-cache the gpu
+    program.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.MemorySizeAfterKb" units="KB">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Records the total in-memory cache size, before a program is cached.  Can be
+    used with GPU.ProgramCache.MemorySizeBeforeKb to find the maximum cache size
+    distribution.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.MemorySizeBeforeKb" units="KB">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Records the total in-memory cache size, after a program is cached.  Can be
+    used with GPU.ProgramCache.MemorySizeAfterKb to find the maximum cache size
+    distribution.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.ProgramBinarySizeBytes" units="bytes">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The size of program binaries loaded into the gpu program cache.
+  </summary>
+</histogram>
+
+<histogram name="GPU.setIsAcceleratedCompositingActive"
+    enum="GPUsetIsAcceleratedCompositingActive">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts activation and deactivation of accelerated compositing.
   </summary>
 </histogram>
 
@@ -22944,6 +23166,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.SoftwareRendererLifetimeEvents"
+    enum="GPUProcessLifetimeEvent">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts of the number of gpu process crashes when the software rasterizer is
+    enabled.
+  </summary>
+</histogram>
+
+<histogram name="GPU.Stage3DFieldTrial" enum="BooleanEnabled">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Records whether a client was selected for the Stage3D on XP field trial or
+    not.
+  </summary>
+</histogram>
+
+<histogram name="GPU.SurfaceCountAtExit">
+  <obsolete>
+    Deprecated 12/2012. Moved to GPU.AtExitSurfaceCount.
+  </obsolete>
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The number of surfaces that the GPU process was rendering to right before
+    exiting. This should be equal to the number of tabs (both visible and
+    hidden) rendering via the compositor.
+  </summary>
+</histogram>
+
 <histogram name="GPU.TextureRG" enum="BooleanAvailable">
   <owner>reveman@chromium.org</owner>
   <summary>
@@ -22952,12 +23203,105 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ThreeDAPIInfoBarDismissal"
+    enum="GPUThreeDAPIInfoBarDismissal">
+  <owner>vmiura@chromium.org</owner>
+  <summary>Counts user actions when a 3D API info bar is raised.</summary>
+</histogram>
+
 <histogram name="GPU.WaitForVBlankErrorCode" enum="WaitForVBlankErrorCode">
   <owner>stanisc@chromium.org</owner>
   <summary>
     Whether WaitForVBlank operation has been successful or failed with one of
     the errors prompting a backup delay based v-sync mechanism. Recorded each
     time a new GPU v-sync signal is generated.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WebGraphicsContext3D_Init_CanLoseContext"
+    enum="GPUWebGraphicsContext3D_Init_CanLoseContext">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    Counts of context initialization that succeed or fail based on combinations
+    of attributes requiring canRecoverFromContextLoss and devices that report
+    can_lose_context. Failing Init is desired when a device can not guarantee it
+    won't fail for a user that can not handle failures, e.g. DX9 on WinXP used
+    by Canvas2D'
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.GamingScore">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The WinSAT (Windows System Assessment Tool) gaming graphics score. It is in
+    the range 1.0-5.9 on Vista, 1.0-7.9 on Win7 and 1.0-9.9 on Win8. 0
+    represents a failure to get the score. This is collected each time Chrome is
+    launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.GamingScore2">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The WinSAT (Windows System Assessment Tool) gaming graphics score, scaled by
+    10x. It is in the range 10-59 on Vista, 10-79 on Win7 and 10-99 on Win8. 0
+    represents a failure to get the score. This is collected each time Chrome is
+    launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.GraphicsScore">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The WinSAT (Windows System Assessment Tool) graphics score. It is in the
+    range 1.0-5.9 on Vista, 1.0-7.9 on Win7 and 1.0-9.9 on Win8. 0 represents a
+    failure to get the score. This is collected each time Chrome is launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.GraphicsScore2">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The WinSAT (Windows System Assessment Tool) graphics score, scaled by 10x.
+    It is in the range 10-59 on Vista, 10-79 on Win7 and 10-99 on Win8. 0
+    represents a failure to get the score. This is collected each time Chrome is
+    launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.HasResults" enum="BooleanSuccess">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    A boolean representing whether or not we succeeded in getting the system's
+    WinSAT scores. This is collected each time Chrome is launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.OverallScore">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The WinSAT (Windows System Assessment Tool) overall system score. This is
+    the minimum of all the individual subscores. It is in the range 1.0-5.9 on
+    Vista, 1.0-7.9 on Win7 and 1.0-9.9 on Win8. 0 represents a failure to get
+    the score. This is collected each time Chrome is launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.OverallScore2">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The WinSAT (Windows System Assessment Tool) overall system score, scaled by
+    10x. This is the minimum of all the individual subscores. It is in the range
+    10-59 on Vista, 10-79 on Win7 and 10-99 on Win8. 0 represents a failure to
+    get the score. This is collected each time Chrome is launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.WinSAT.ReadResultsFileTime" units="microseconds">
+  <owner>vmiura@chromium.org</owner>
+  <summary>
+    The amount of time it takes to read the WinSAT results. This is collected
+    each time Chrome is launched.
   </summary>
 </histogram>
 
@@ -87094,6 +87438,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Pressure" label="Sampled on CRITICAL memory pressure signal."/>
   <affected-histogram name="GPU.ContextMemory.GLES"/>
   <affected-histogram name="GPU.ContextMemory.WebGL"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="GPUBlacklistPerFeature" separator=".">
+  <owner>vmiura@chromium.org</owner>
+  <suffix name="Accelerated2dCanvas" label="Accelerated2dCanvas"/>
+  <suffix name="AcceleratedCompositing" label="AcceleratedCompositing"/>
+  <suffix name="Webgl" label="Webgl"/>
+  <suffix name="TextureSharing" label="TextureSharing"/>
+  <affected-histogram name="GPU.BlacklistFeatureTestResults"/>
+  <affected-histogram name="GPU.BlacklistFeatureTestResultsWin"/>
+  <affected-histogram name="GPU.BlacklistFeatureTestResultsWindows"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GpuMemoryAllocator2" separator=".">
