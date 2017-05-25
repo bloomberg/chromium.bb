@@ -63,6 +63,14 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {%- endif %}
 {% endmacro %}
 
+{% macro compare(is_pointer_type, expr, other_name) %}
+{% if is_pointer_type -%}
+  DataEquivalent({{expr}}, {{other_name}}.{{expr}})
+{%- else -%}
+  {{expr}} == {{other_name}}.{{expr}}
+{%- endif %}
+{% endmacro %}
+
 {# Given a group and a list of fields to compare, this generates a set of
    equality comparisons on those fields. The generated comparisons take
    advantage of group sharing. #}
@@ -79,7 +87,7 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
   {% endif %}
 {% endfor %}
 {% for field in group.fields|select("in", fields_to_compare) -%}
-  {{getter_expression(field)}} == o.{{getter_expression(field)}} &&
+  {{compare(field.wrapper_pointer_name, getter_expression(field), "o")}} &&
 {% endfor %}
 {% endmacro %}
 

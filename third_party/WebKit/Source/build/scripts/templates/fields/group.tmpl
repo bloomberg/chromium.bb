@@ -1,4 +1,4 @@
-{% from 'fields/field.tmpl' import encode, declare_storage %}
+{% from 'fields/field.tmpl' import encode, declare_storage, compare %}
 {% from 'macros.tmpl' import print_if %}
 {% macro define_field_group_class(group): -%}
 class {{group.type_name}} : public RefCountedCopyable<{{group.type_name}}> {
@@ -13,7 +13,7 @@ class {{group.type_name}} : public RefCountedCopyable<{{group.type_name}}> {
   bool operator==(const {{group.type_name}}& other) const {
     return (
     {% for field in group.fields %}
-      {{field.name}} == other.{{field.name}}{{print_if(not loop.last, ' &&')}}
+      {{compare(field.wrapper_pointer_name, field.name, "other")}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );
   }

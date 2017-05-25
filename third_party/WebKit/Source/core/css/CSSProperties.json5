@@ -109,6 +109,13 @@
     field_type_path: {
     },
 
+    // Name of the pointer type that wraps this field (e.g. RefPtr).
+    // Can only be set if the field template is storage_only.
+    wrapper_pointer_name: {
+      valid_type: "str",
+      valid_values: ["RefPtr", "Persistent"],
+    },
+
     // - keywords: ["keyword1", "keyword2"]
     // This specifies all valid keyword values for the property.
     // TODO(sashab): Once all properties are represented here, delete
@@ -513,7 +520,11 @@
       custom_value: true,
       inherited: true,
       priority: "High",
+      field_template: "storage_only",
       type_name: "TextOrientation",
+      default_value: "kTextOrientationMixed",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-orientation",
@@ -938,6 +949,10 @@
       custom_all: true,
       inherited: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "Color()",
+      field_group: "rare-inherited",
     },
     {
       name: "clear",
@@ -1245,11 +1260,20 @@
       name: "hyphens",
       inherited: true,
       runtime_flag: "CSSHyphens",
+      field_template: "storage_only",
       type_name: "Hyphens",
+      default_value: "Hyphens::kManual",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "image-rendering",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "EImageRendering",
+      default_value: "kImageRenderingAuto",
+      field_size: 3,
+      field_group: "rare-inherited",
     },
     {
       name: "image-orientation",
@@ -1335,6 +1359,10 @@
       converter: "ConvertComputedLength<uint8_t>",
       inherited: true,
       runtime_flag: "CSSSnapSize",
+      field_template: "storage_only",
+      type_name: "uint8_t",
+      default_value: "0",
+      field_group: "rare-inherited",
     },
     {
       name: "list-style-image",
@@ -1344,6 +1372,11 @@
       inherited: true,
       interpolable: true,
       typedom_types: ["Image"],
+      field_template: "storage_only",
+      type_name: "StyleImage",
+      wrapper_pointer_name: "Persistent",
+      default_value: "nullptr",
+      field_group: "rare-inherited",
     },
     {
       name: "list-style-position",
@@ -1557,6 +1590,9 @@
       inherited: true,
       interpolable: true,
       type_name: "short",
+      field_template: "storage_only",
+      default_value: "2",
+      field_group: "rare-inherited",
     },
     {
       name: "outline-color",
@@ -1596,6 +1632,11 @@
     {
       name: "overflow-wrap",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "EOverflowWrap",
+      default_value: "EOverflowWrap::kNormal",
+      field_size: 1,
+      field_group: "rare-inherited",
     },
     {
       name: "overflow-x",
@@ -1704,6 +1745,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuotes",
       inherited: true,
+      field_template: "storage_only",
+      field_type_path: "core/style/QuotesData",
+      default_value: "nullptr",
+      wrapper_pointer_name: "RefPtr",
+      field_group: "rare-inherited",
     },
     {
       name: "resize",
@@ -1814,6 +1860,11 @@
     {
       name: "speak",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "ESpeak",
+      default_value: "ESpeak::kNormal",
+      field_size: 3,
+      field_group: "rare-inherited",
     },
     {
       name: "stop-color",
@@ -1915,7 +1966,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertLengthOrTabSpaces",
       inherited: true,
-      type_name: "TabSize",
+      getter: "GetTabSize",
+      field_type_path: "platform/text/TabSize",
+      field_template: "storage_only",
+      default_value: "TabSize(8)",
+      field_group: "rare-inherited",
     },
     {
       name: "text-align",
@@ -1932,7 +1987,11 @@
     {
       name: "text-align-last",
       inherited: true,
+      field_template: "storage_only",
       type_name: "TextAlignLast",
+      default_value: "kTextAlignLastAuto",
+      field_size: 3,
+      field_group: "rare-inherited",
     },
     {
       name: "text-anchor",
@@ -1943,7 +2002,11 @@
       name: "text-combine-upright",
       inherited: true,
       name_for_methods: "TextCombine",
+      field_template: "storage_only",
       type_name: "TextCombine",
+      default_value: "kTextCombineNone",
+      field_size: 1,
+      field_group: "rare-inherited",
     },
     // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
     {
@@ -1975,7 +2038,11 @@
       converter: "ConvertFlags<TextDecorationSkip>",
       inherited: true,
       runtime_flag: "CSS3TextDecorations",
+      field_template: "storage_only",
       type_name: "TextDecorationSkip",
+      default_value: "kTextDecorationSkipObjects",
+      field_size: 3,
+      field_group: "rare-inherited",
     },
     {
       name: "text-decoration-style",
@@ -1989,12 +2056,22 @@
       custom_all: true,
       inherited: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      default_value: "Length(kFixed)",
+      field_group: "rare-inherited",
     },
     {
       name: "text-justify",
       inherited: true,
       runtime_flag: "CSS3Text",
+      getter: "GetTextJustify",
+      field_template: "storage_only",
+      field_type_path: "platform/text/TextJustify",
       type_name: "TextJustify",
+      default_value: "kTextJustifyAuto",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "text-overflow",
@@ -2005,6 +2082,11 @@
       converter: "ConvertShadowList",
       inherited: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "core/style/ShadowList",
+      wrapper_pointer_name: "RefPtr",
+      default_value: "nullptr",
+      field_group: "rare-inherited",
     },
     {
       name: "text-size-adjust",
@@ -2012,7 +2094,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertTextSizeAdjust",
       inherited: true,
-      type_name: "TextSizeAdjust",
+      getter: "GetTextSizeAdjust",
+      field_template: "storage_only",
+      field_type_path: "core/style/TextSizeAdjust",
+      default_value: "TextSizeAdjust::AdjustAuto()",
+      field_group: "rare-inherited",
     },
     {
       name: "text-transform",
@@ -2028,7 +2114,11 @@
       api_methods: ["parseSingleValue"],
       inherited: true,
       runtime_flag: "CSS3TextDecorations",
+      field_template: "storage_only",
       type_name: "TextUnderlinePosition",
+      default_value: "kTextUnderlinePositionAuto",
+      field_size: 1,
+      field_group: "rare-inherited",
     },
     {
       name: "top",
@@ -2293,17 +2383,29 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertString<CSSValueNone>",
       inherited: true,
+      field_template: "storage_only",
+      field_type_path: "platform/wtf/text/AtomicString",
+      default_value: "g_null_atom",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-hyphenate-character",
       converter: "ConvertString<CSSValueAuto>",
       inherited: true,
       name_for_methods: "HyphenationString",
+      field_template: "storage_only",
+      field_type_path: "platform/wtf/text/AtomicString",
+      default_value: "AtomicString()",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-line-break",
       inherited: true,
+      field_template: "storage_only",
       type_name: "LineBreak",
+      default_value: "LineBreak::kAuto",
+      field_size: 3,
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-line-clamp",
@@ -2435,7 +2537,11 @@
     {
       name: "-webkit-ruby-position",
       inherited: true,
+      field_template: "storage_only",
       type_name: "RubyPosition",
+      default_value: "kRubyPositionBefore",
+      field_size: 1,
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-tap-highlight-color",
@@ -2443,6 +2549,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       inherited: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "LayoutTheme::TapHighlightColor()",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-combine",
@@ -2456,6 +2566,10 @@
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "Color()",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-emphasis-position",
@@ -2475,10 +2589,19 @@
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "Color()",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-security",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "ETextSecurity",
+      default_value: "ETextSecurity::kNone",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-stroke-color",
@@ -2487,6 +2610,10 @@
       custom_all: true,
       inherited: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "Color()",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-stroke-width",
@@ -2494,6 +2621,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertTextStrokeWidth",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "float",
+      default_value: "0",
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-transform-origin-x",
@@ -2518,10 +2649,20 @@
     {
       name: "-webkit-user-modify",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "EUserModify",
+      default_value: "EUserModify::kReadOnly",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "user-select",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "EUserSelect",
+      default_value: "EUserSelect::kText",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "white-space",
@@ -2537,7 +2678,10 @@
       api_methods: ["parseSingleValue"],
       inherited: true,
       interpolable: true,
+      field_template: "storage_only",
       type_name: "short",
+      default_value: "2",
+      field_group: "rare-inherited",
     },
     {
       name: "width",
@@ -2562,6 +2706,11 @@
     {
       name: "word-break",
       inherited: true,
+      field_template: "storage_only",
+      type_name: "EWordBreak",
+      default_value: "EWordBreak::kNormal",
+      field_size: 2,
+      field_group: "rare-inherited",
     },
     {
       name: "word-spacing",
