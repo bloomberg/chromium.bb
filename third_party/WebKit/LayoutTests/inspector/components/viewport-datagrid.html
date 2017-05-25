@@ -51,6 +51,16 @@ function test()
         InspectorTest.addResult("");
     }
 
+    function revealChildAndDumpClassAndVisibleNodes(index) {
+        root.children[index].revealAndSelect();
+        dataGrid.updateInstantly();
+
+        InspectorTest.addResult(`Class list: ${dataGrid.element.classList}`);
+
+        for (var node of dataGrid._visibleNodes)
+            InspectorTest.addResult(node.data.id);
+    }
+
     var columns = [{id: "id", title: "ID column", width: "250px"}];
     var dataGrid = new DataGrid.ViewportDataGrid(columns);
     var a = new DataGrid.ViewportDataGridNode({id: "a"});
@@ -70,6 +80,7 @@ function test()
     containerElement.appendChild(dataGrid.element);
     dataGrid.wasShown();
     dataGrid.element.style.width = "100%";
+    dataGrid.element.style.height = "100%";
 
     InspectorTest.addResult("Building tree.");
 
@@ -164,6 +175,16 @@ function test()
         root.appendChild(children[i]);
     }
     dataGrid.updateInstantly();
+
+    dataGrid.setStriped(true);
+    InspectorTest.addResult('Scrolling to the top');
+    revealChildAndDumpClassAndVisibleNodes(0);
+    InspectorTest.addResult('Scrolling 1 node down');
+    revealChildAndDumpClassAndVisibleNodes(dataGrid._visibleNodes.length);
+    InspectorTest.addResult('Disabling the stripes');
+    dataGrid.setStriped(false);
+    InspectorTest.addResult(`Class list: ${dataGrid.element.classList}`);
+
     InspectorTest.completeTest();
 }
 </script>

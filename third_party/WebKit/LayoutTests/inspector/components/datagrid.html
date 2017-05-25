@@ -53,6 +53,12 @@ function test()
 
     var root = dataGrid.rootNode();
 
+    InspectorTest.addResult(dataGrid.element.classList);
+    dataGrid.setStriped(true);
+    InspectorTest.addResult(dataGrid.element.classList);
+    dataGrid.setStriped(false);
+    InspectorTest.addResult(dataGrid.element.classList);
+
     InspectorTest.addResult("Building tree.");
 
     // Appending to detached node.
