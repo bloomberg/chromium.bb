@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_CHROMEOS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
@@ -98,6 +100,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
 
+  void AddCompatibleCrOSComponent(const std::string& name);
+
+  bool IsCompatibleCrOSComponent(const std::string& name);
+
  private:
   void CreateProfileHelper();
 
@@ -123,6 +129,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   std::unique_ptr<chromeos::system::SystemClock> system_clock_;
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
+
+  base::flat_set<std::string> compatible_cros_components_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

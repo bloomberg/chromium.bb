@@ -154,6 +154,16 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
 }
 
+void BrowserProcessPlatformPart::AddCompatibleCrOSComponent(
+    const std::string& name) {
+  compatible_cros_components_.insert(name);
+}
+
+bool BrowserProcessPlatformPart::IsCompatibleCrOSComponent(
+    const std::string& name) {
+  return compatible_cros_components_.count(name) > 0;
+}
+
 void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && !profile_helper_);
   created_profile_helper_ = true;
