@@ -1613,6 +1613,7 @@ class CORE_EXPORT UseCounter {
     kUnitlessZeroAngleGradient = 2008,
     kUnitlessZeroAngleOffsetRotate = 2009,
     kUnitlessZeroAngleTransform = 2010,
+    kHTMLOListElementStartGetterReversedWithoutStartAttribute = 2011,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
