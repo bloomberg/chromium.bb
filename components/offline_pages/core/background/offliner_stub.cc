@@ -25,16 +25,16 @@ bool OfflinerStub::LoadAndSave(const SavePageRequest& request,
     return false;
 
   pending_request_.reset(new SavePageRequest(request));
-  completion_callback_ =
-      base::Bind(completion_callback, request, Offliner::RequestStatus::SAVED);
+  completion_callback_ = completion_callback;
 
   // Post the callback on the run loop.
   if (enable_callback_) {
     const int64_t arbitrary_size = 153LL;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(progress_callback, request, arbitrary_size));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  completion_callback_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(completion_callback, *pending_request_.get(),
+                              Offliner::RequestStatus::SAVED));
   }
   return true;
 }
@@ -50,10 +50,18 @@ bool OfflinerStub::Cancel(const CancelCallback& callback) {
   return true;
 }
 
+void OfflinerStub::TerminateLoadIfInProgress() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(completion_callback_, *pending_request_.get(),
+                            Offliner::RequestStatus::FOREGROUND_CANCELED));
+  pending_request_.reset();
+}
+
 bool OfflinerStub::HandleTimeout(int64_t request_id) {
   if (snapshot_on_last_retry_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  completion_callback_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(completion_callback_, *pending_request_.get(),
+                              Offliner::RequestStatus::SAVED));
     pending_request_.reset();
     return true;
   }

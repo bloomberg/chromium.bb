@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/offline_pages/content/background_loader/background_loader_contents_stub.h"
+#include "components/offline_pages/core/background/load_termination_listener.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -39,6 +40,19 @@ const GURL kHttpUrl("http://www.tunafish.com");
 const GURL kFileUrl("file://salmon.png");
 const ClientId kClientId("async_loading", "88");
 const bool kUserRequested = true;
+
+class TestLoadTerminationListener : public LoadTerminationListener {
+ public:
+  TestLoadTerminationListener() = default;
+  ~TestLoadTerminationListener() override = default;
+
+  void TerminateLoad() { offliner()->TerminateLoadIfInProgress(); }
+
+  Offliner* offliner() { return offliner_; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestLoadTerminationListener);
+};
 
 // Mock OfflinePageModel for testing the SavePage calls
 class MockOfflinePageModel : public StubOfflinePageModel {
@@ -106,7 +120,8 @@ class TestBackgroundLoaderOffliner : public BackgroundLoaderOffliner {
   explicit TestBackgroundLoaderOffliner(
       content::BrowserContext* browser_context,
       const OfflinerPolicy* policy,
-      OfflinePageModel* offline_page_model);
+      OfflinePageModel* offline_page_model,
+      std::unique_ptr<LoadTerminationListener> load_termination_listener);
   ~TestBackgroundLoaderOffliner() override;
   content::WebContentsTester* web_contents_tester() {
     return content::WebContentsTester::For(stub_->web_contents());
@@ -126,8 +141,12 @@ class TestBackgroundLoaderOffliner : public BackgroundLoaderOffliner {
 TestBackgroundLoaderOffliner::TestBackgroundLoaderOffliner(
     content::BrowserContext* browser_context,
     const OfflinerPolicy* policy,
-    OfflinePageModel* offline_page_model)
-    : BackgroundLoaderOffliner(browser_context, policy, offline_page_model) {}
+    OfflinePageModel* offline_page_model,
+    std::unique_ptr<LoadTerminationListener> load_termination_listener)
+    : BackgroundLoaderOffliner(browser_context,
+                               policy,
+                               offline_page_model,
+                               std::move(load_termination_listener)) {}
 
 TestBackgroundLoaderOffliner::~TestBackgroundLoaderOffliner() {}
 
@@ -166,6 +185,9 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   const base::HistogramTester& histograms() const { return histogram_tester_; }
   int64_t progress() { return progress_; }
   OfflinerPolicy* policy() const { return policy_.get(); }
+  TestLoadTerminationListener* load_termination_listener() {
+    return load_termination_listener_;
+  }
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
@@ -191,6 +213,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<OfflinerPolicy> policy_;
+  TestLoadTerminationListener* load_termination_listener_;
   std::unique_ptr<TestBackgroundLoaderOffliner> offliner_;
   MockOfflinePageModel* model_;
   bool completion_callback_called_;
@@ -204,6 +227,8 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
 
 BackgroundLoaderOfflinerTest::BackgroundLoaderOfflinerTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      load_termination_listener_(nullptr),
+      model_(nullptr),
       completion_callback_called_(false),
       cancel_callback_called_(false),
       progress_(0LL),
@@ -212,10 +237,13 @@ BackgroundLoaderOfflinerTest::BackgroundLoaderOfflinerTest()
 BackgroundLoaderOfflinerTest::~BackgroundLoaderOfflinerTest() {}
 
 void BackgroundLoaderOfflinerTest::SetUp() {
+  std::unique_ptr<TestLoadTerminationListener> listener =
+      base::MakeUnique<TestLoadTerminationListener>();
+  load_termination_listener_ = listener.get();
   model_ = new MockOfflinePageModel();
   policy_.reset(new OfflinerPolicy());
-  offliner_.reset(
-      new TestBackgroundLoaderOffliner(profile(), policy_.get(), model_));
+  offliner_.reset(new TestBackgroundLoaderOffliner(
+      profile(), policy_.get(), model_, std::move(listener)));
 }
 
 void BackgroundLoaderOfflinerTest::OnCompletion(
@@ -244,6 +272,13 @@ void BackgroundLoaderOfflinerTest::OnCancel(const SavePageRequest& request) {
 #define MAYBE_FailsOnErrorPage FailsOnErrorPage
 #define MAYBE_NoNextOnInternetDisconnected NoNextOnInternetDisconnected
 #endif
+
+TEST_F(BackgroundLoaderOfflinerTest, LoadTerminationListenerSetup) {
+  // Verify that back pointer to offliner is set up in the listener.
+  Offliner* base_offliner = offliner();
+  EXPECT_NE(base_offliner, nullptr);
+  EXPECT_EQ(base_offliner, load_termination_listener()->offliner());
+}
 
 TEST_F(BackgroundLoaderOfflinerTest,
        LoadAndSaveBlockThirdPartyCookiesForCustomTabs) {
@@ -337,6 +372,19 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoading) {
   EXPECT_TRUE(cancel_callback_called());
   EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.
   EXPECT_EQ(progress(), 0LL);  // network bytes not recorded when not busy.
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoadTerminated) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  load_termination_listener()->TerminateLoad();
+  PumpLoop();
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.
+  EXPECT_EQ(Offliner::RequestStatus::FOREGROUND_CANCELED, request_status());
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoaded) {

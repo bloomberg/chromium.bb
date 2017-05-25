@@ -17,6 +17,7 @@
 #include "chrome/browser/android/offline_pages/prerendering_offliner.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
+#include "chrome/browser/offline_pages/android/load_termination_listener_impl.h"
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -62,7 +63,10 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
 
   // Determines which offliner to use based on flag.
   if (ShouldUseNewBackgroundLoader()) {
-    offliner.reset(new BackgroundLoaderOffliner(context, policy.get(), model));
+    std::unique_ptr<LoadTerminationListenerImpl> load_termination_listener =
+        base::MakeUnique<LoadTerminationListenerImpl>();
+    offliner.reset(new BackgroundLoaderOffliner(
+        context, policy.get(), model, std::move(load_termination_listener)));
   } else {
     offliner.reset(new PrerenderingOffliner(context, policy.get(), model));
   }

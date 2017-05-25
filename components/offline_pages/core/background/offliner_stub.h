@@ -25,6 +25,8 @@ class OfflinerStub : public Offliner {
 
   bool Cancel(const CancelCallback& callback) override;
 
+  void TerminateLoadIfInProgress() override;
+
   bool HandleTimeout(int64_t request_id) override;
 
   void disable_loading() { disable_loading_ = true; }
@@ -38,7 +40,7 @@ class OfflinerStub : public Offliner {
   void enable_snapshot_on_last_retry() { snapshot_on_last_retry_ = true; }
 
  private:
-  base::Closure completion_callback_;
+  CompletionCallback completion_callback_;
   std::unique_ptr<SavePageRequest> pending_request_;
   bool disable_loading_;
   bool enable_callback_;

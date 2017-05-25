@@ -23,6 +23,7 @@ static_library("background_offliner") {
     "get_requests_task.h",
     "initialize_store_task.cc",
     "initialize_store_task.h",
+    "load_termination_listener.h",
     "mark_attempt_aborted_task.cc",
     "mark_attempt_aborted_task.h",
     "mark_attempt_completed_task.cc",
