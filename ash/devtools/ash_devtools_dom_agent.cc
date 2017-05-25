@@ -221,11 +221,12 @@ AshDevToolsDOMAgent::BuildInitialTree() {
 
   // TODO(thanhph): Root of UIElement tree shoudn't be WindowElement
   // but maybe a new different element type.
-  window_element_root_ = new WindowElement(nullptr, this, nullptr);
+  window_element_root_ =
+      base::MakeUnique<WindowElement>(nullptr, this, nullptr);
 
   for (aura::Window* window : Shell::GetAllRootWindows()) {
     UIElement* window_element =
-        new WindowElement(window, this, window_element_root_);
+        new WindowElement(window, this, window_element_root_.get());
 
     children->addItem(BuildTreeForUIElement(window_element));
     window_element_root_->AddChild(window_element);
@@ -323,7 +324,7 @@ void AshDevToolsDOMAgent::RemoveDomNode(UIElement* ui_element) {
 void AshDevToolsDOMAgent::Reset() {
   is_building_tree_ = false;
   widget_for_highlighting_.reset();
-  delete window_element_root_;
+  window_element_root_.reset();
   node_id_to_ui_element_.clear();
   observers_.Clear();
 }

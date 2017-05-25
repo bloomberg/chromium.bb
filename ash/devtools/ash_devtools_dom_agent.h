@@ -56,7 +56,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void AddObserver(AshDevToolsDOMAgentObserver* observer);
   void RemoveObserver(AshDevToolsDOMAgentObserver* observer);
   UIElement* GetElementFromNodeId(int node_id);
-  UIElement* window_element_root() const { return window_element_root_; };
+  UIElement* window_element_root() const { return window_element_root_.get(); };
 
  private:
   void OnNodeBoundsChanged(int node_id);
@@ -86,7 +86,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
       int node_id);
 
   bool is_building_tree_;
-  UIElement* window_element_root_;
+  std::unique_ptr<UIElement> window_element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
   std::unique_ptr<views::Widget> widget_for_highlighting_;
   base::ObserverList<AshDevToolsDOMAgentObserver> observers_;
