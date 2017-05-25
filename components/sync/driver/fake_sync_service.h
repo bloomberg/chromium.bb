@@ -83,6 +83,7 @@ class FakeSyncService : public SyncService {
   base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
+  SigninManagerBase* signin() const override;
 
   // DataTypeEncryptionHandler:
   bool IsPassphraseRequired() const override;

@@ -78,6 +78,16 @@ void SyncServiceBase::RemoveObserver(SyncServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return observers_.HasObserver(observer);
+}
+
+SigninManagerBase* SyncServiceBase::signin() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return signin_ ? signin_->GetOriginal() : nullptr;
+}
+
 // static
 base::FilePath SyncServiceBase::FormatSyncDataPath(
     const base::FilePath& base_directory) {
@@ -89,11 +99,6 @@ base::FilePath SyncServiceBase::FormatSharedModelTypeStorePath(
     const base::FilePath& base_directory) {
   return FormatSyncDataPath(base_directory)
       .Append(base::FilePath(kLevelDBFolderName));
-}
-
-bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return observers_.HasObserver(observer);
 }
 
 void SyncServiceBase::NotifyObservers() {

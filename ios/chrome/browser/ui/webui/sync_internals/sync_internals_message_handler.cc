@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_service.h"
@@ -19,7 +18,6 @@
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/js/js_event_details.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
@@ -209,14 +207,10 @@ void SyncInternalsMessageHandler::HandleJsEvent(const std::string& name,
 }
 
 void SyncInternalsMessageHandler::SendAboutInfo() {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui());
-  SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state);
   syncer::SyncService* sync_service = GetSyncService();
   std::unique_ptr<base::DictionaryValue> value =
-      syncer::sync_ui_util::ConstructAboutInformation(
-          sync_service, signin_manager, GetChannel());
+      syncer::sync_ui_util::ConstructAboutInformation(sync_service,
+                                                      GetChannel());
   web_ui()->CallJavascriptFunction(
       syncer::sync_ui_util::kDispatchEvent,
       base::Value(syncer::sync_ui_util::kOnAboutInfoUpdated), *value);
