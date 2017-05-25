@@ -51,9 +51,14 @@ function test()
     <canvas role="presentation" data-dump><div>Canvas fallback content</div></canvas>
 
     <select data-dump>
-      <option>Options should be</option>
+      <option data-dump>Options should be</option>
       <option>sent down even though</option>
       <option>they are grandchildren</option>
     </select>
+
+    <button inert data-dump>inert button</button>
+    <div id="inert-root" inert>
+      <button data-dump>button in inert subtree</button>
+    </div>
 </body>
 </html>

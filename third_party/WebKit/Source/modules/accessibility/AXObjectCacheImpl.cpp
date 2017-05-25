@@ -39,6 +39,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
@@ -591,11 +592,8 @@ void AXObjectCacheImpl::TextChanged(AXObjectImpl* obj) {
   if (!obj)
     return;
 
-  bool parent_already_exists = obj->ParentObjectIfExists();
   obj->TextChanged();
   PostNotification(obj, AXObjectCacheImpl::kAXTextChanged);
-  if (parent_already_exists)
-    obj->NotifyIfIgnoredValueChanged();
 }
 
 void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {

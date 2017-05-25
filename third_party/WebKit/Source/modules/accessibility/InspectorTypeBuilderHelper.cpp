@@ -26,16 +26,18 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "ancestorDisallowsChild";
     case kAXAncestorIsLeafNode:
       return "ancestorIsLeafNode";
-    case kAXAriaHidden:
-      return "ariaHidden";
-    case kAXAriaHiddenRoot:
-      return "ariaHiddenRoot";
+    case kAXAriaHiddenElement:
+      return "ariaHiddenElement";
+    case kAXAriaHiddenSubtree:
+      return "ariaHiddenSubtree";
     case kAXEmptyAlt:
       return "emptyAlt";
     case kAXEmptyText:
       return "emptyText";
-    case kAXInert:
-      return "inert";
+    case kAXInertElement:
+      return "inertElement";
+    case kAXInertSubtree:
+      return "inertSubtree";
     case kAXInheritsPresentation:
       return "inheritsPresentation";
     case kAXLabelContainer:
@@ -97,7 +99,7 @@ std::unique_ptr<AXValue> CreateBooleanValue(bool value, const String& type) {
       .build();
 }
 
-std::unique_ptr<AXRelatedNode> RelatedNodeForAXObject(
+std::unique_ptr<AXRelatedNode> RelatedNodeForAXObjectImpl(
     const AXObjectImpl& ax_object,
     String* name = nullptr) {
   Node* node = ax_object.GetNode();
@@ -127,7 +129,7 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
     const String& value_type) {
   std::unique_ptr<protocol::Array<AXRelatedNode>> related_nodes =
       protocol::Array<AXRelatedNode>::create();
-  related_nodes->addItem(RelatedNodeForAXObject(ax_object, name));
+  related_nodes->addItem(RelatedNodeForAXObjectImpl(ax_object, name));
   return AXValue::create()
       .setType(value_type)
       .setRelatedNodes(std::move(related_nodes))
@@ -141,8 +143,8 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
       protocol::Array<AXRelatedNode>::create();
   for (unsigned i = 0; i < related_objects.size(); i++) {
     std::unique_ptr<AXRelatedNode> frontend_related_node =
-        RelatedNodeForAXObject(*(related_objects[i]->object),
-                               &(related_objects[i]->text));
+        RelatedNodeForAXObjectImpl(*(related_objects[i]->object),
+                                   &(related_objects[i]->text));
     if (frontend_related_node)
       frontend_related_nodes->addItem(std::move(frontend_related_node));
   }
@@ -159,7 +161,7 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
       protocol::Array<AXRelatedNode>::create();
   for (unsigned i = 0; i < ax_objects.size(); i++) {
     std::unique_ptr<AXRelatedNode> related_node =
-        RelatedNodeForAXObject(*(ax_objects[i].Get()));
+        RelatedNodeForAXObjectImpl(*(ax_objects[i].Get()));
     if (related_node)
       related_nodes->addItem(std::move(related_node));
   }

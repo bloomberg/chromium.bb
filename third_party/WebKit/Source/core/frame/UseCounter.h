@@ -1597,8 +1597,7 @@ class CORE_EXPORT UseCounter {
     kShapeDetection_FaceDetectorConstructor = 1992,
     kShapeDetection_TextDetectorConstructor = 1993,
     kCredentialManagerCredentialRequestOptionsOnlyUnmediated = 1994,
-    // TODO(aboxhall): Reuse value 1995 when
-    // https://codereview.chromium.org/2088453002 is relanded.
+    kInertAttribute = 1995,
     kPluginInstanceAccessFromIsolatedWorld = 1996,
     kPluginInstanceAccessFromMainWorld = 1997,
     kRequestFullscreenForDialogElement = 1998,
