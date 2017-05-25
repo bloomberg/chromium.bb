@@ -17,7 +17,8 @@
 
 namespace safe_browsing {
 
-// Implementation of the ChromePrompt Mojo interface.
+// Implementation of the ChromePrompt Mojo interface. Must be constructed and
+// destructed on the IO thread.
 class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
  public:
   using OnPromptUser = base::OnceCallback<void(

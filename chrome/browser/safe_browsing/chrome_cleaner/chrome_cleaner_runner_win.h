@@ -20,6 +20,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 
@@ -131,7 +132,8 @@ class ChromeCleanerRunner
   base::OnceClosure on_connection_closed_;
   ProcessDoneCallback on_process_done_;
 
-  std::unique_ptr<ChromePromptImpl> chrome_prompt_impl_;
+  std::unique_ptr<ChromePromptImpl, content::BrowserThread::DeleteOnIOThread>
+      chrome_prompt_impl_;
 };
 
 // A delegate class used to override launching of the Cleaner proccess for
