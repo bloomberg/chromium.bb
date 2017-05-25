@@ -1968,7 +1968,7 @@
       inherited: true,
       getter: "GetTabSize",
       field_type_path: "platform/text/TabSize",
-      field_template: "storage_only",
+      field_template: "external",
       default_value: "TabSize(8)",
       field_group: "rare-inherited",
     },

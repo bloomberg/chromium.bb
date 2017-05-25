@@ -1654,13 +1654,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_inherited_data_, speak_, static_cast<unsigned>(s));
   }
 
-  // tab-size
-  static TabSize InitialTabSize() { return TabSize(8); }
-  TabSize GetTabSize() const { return rare_inherited_data_->tab_size_; }
-  void SetTabSize(TabSize size) {
-    SET_VAR(rare_inherited_data_, tab_size_, size);
-  }
-
   // text-align-last
   static TextAlignLast InitialTextAlignLast() { return kTextAlignLastAuto; }
   TextAlignLast GetTextAlignLast() const {
