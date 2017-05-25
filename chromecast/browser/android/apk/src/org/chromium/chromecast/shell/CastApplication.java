@@ -5,11 +5,9 @@
 package org.chromium.chromecast.shell;
 
 import android.content.Context;
-import android.os.Build;
 
-import org.chromium.base.CommandLine;
+import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.content.app.ContentApplication;
 
@@ -25,7 +23,7 @@ public class CastApplication extends ContentApplication {
     private static final String TAG = "CastApplication";
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cast_shell";
-    private static final String COMMAND_LINE_FILE = "/data/local/tmp/castshell-command-line";
+    private static final String COMMAND_LINE_FILE = "castshell-command-line";
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -41,15 +39,6 @@ public class CastApplication extends ContentApplication {
 
     @Override
     public void initCommandLine() {
-        if (allowCommandLineImport()) {
-            Log.d(TAG, "Initializing command line from " + COMMAND_LINE_FILE);
-            CommandLine.initFromFile(COMMAND_LINE_FILE);
-        } else {
-            CommandLine.init(null);
-        }
-    }
-
-    private static boolean allowCommandLineImport() {
-        return !Build.TYPE.equals("user");
+        CommandLineInitUtil.initCommandLine(this, COMMAND_LINE_FILE);
     }
 }
