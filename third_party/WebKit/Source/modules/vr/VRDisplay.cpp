@@ -589,14 +589,10 @@ void VRDisplay::submitFrame() {
   //   to defer this wait to increase parallelism.
   //
   // - After submitting, need to wait for the mailbox to be consumed,
-  //   and must remain inside the execution context while waiting.
-  //   The waitForPreviousTransferToFinish option defers this wait
-  //   until the next frame. That's more efficient, but seems to
-  //   cause wobbly framerates.
-  bool wait_for_previous_transfer_to_finish =
-      RuntimeEnabledFeatures::webVRExperimentalRenderingEnabled();
-
-  if (wait_for_previous_transfer_to_finish) {
+  //   and the image object must remain alive during this time.
+  //   We keep a reference to the image so that we can defer this
+  //   wait. Here, we wait for the previous transfer to complete.
+  {
     TRACE_EVENT0("gpu", "VRDisplay::waitForPreviousTransferToFinish");
     while (pending_submit_frame_) {
       if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
@@ -630,12 +626,10 @@ void VRDisplay::submitFrame() {
   static_image->EnsureMailbox();
   TRACE_EVENT_END0("gpu", "VRDisplay::EnsureMailbox");
 
-  if (wait_for_previous_transfer_to_finish) {
-    // Save a reference to the image to keep it alive until next frame,
-    // where we'll wait for the transfer to finish before overwriting
-    // it.
-    previous_image_ = std::move(image_ref);
-  }
+  // Save a reference to the image to keep it alive until next frame,
+  // where we'll wait for the transfer to finish before overwriting
+  // it.
+  previous_image_ = std::move(image_ref);
 
   // Create mailbox and sync token for transfer.
   TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetMailbox");
@@ -680,19 +674,6 @@ void VRDisplay::submitFrame() {
   // happens as part of compositing, but that's not active while
   // presenting, so run the responsible code directly.
   rendering_context_->MarkCompositedAndClearBackbufferIfNeeded();
-
-  // If we're not deferring the wait for transferring the mailbox,
-  // we need to wait for it now to prevent the image going out of
-  // scope before its mailbox is retrieved.
-  if (!wait_for_previous_transfer_to_finish) {
-    TRACE_EVENT0("gpu", "waitForCurrentTransferToFinish");
-    while (pending_submit_frame_) {
-      if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
-        DLOG(ERROR) << "Failed to receive SubmitFrame response";
-        break;
-      }
-    }
-  }
 }
 
 void VRDisplay::OnSubmitFrameTransferred() {
