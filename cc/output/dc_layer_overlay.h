@@ -66,12 +66,17 @@ typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
 class DCLayerOverlayProcessor {
  public:
+  // This is used for a histogram to determine why overlays are or aren't
+  // used, so don't remove entries and make sure to update enums.xml if
+  // it changes.
   enum DCLayerResult {
     DC_LAYER_SUCCESS,
+    DC_LAYER_FAILED_UNSUPPORTED_QUAD,
     DC_LAYER_FAILED_QUAD_BLEND_MODE,
     DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE,
     DC_LAYER_FAILED_OCCLUDED,
-    DC_LAYER_FAILED_UNKNOWN
+    DC_LAYER_FAILED_COMPLEX_TRANSFORM,
+    DC_LAYER_FAILED_MAX,
   };
 
   void Process(ResourceProvider* resource_provider,
