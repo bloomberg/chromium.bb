@@ -1,5 +1,8 @@
 Tests ViewportDataGrid.
 
+data-grid
+data-grid striped-data-grid
+data-grid
 Building tree.
 Attached aaa to aa
 Attached aab to aa
