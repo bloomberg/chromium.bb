@@ -779,6 +779,75 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
   EXPECT_EQ(gfx::Size(7, 8), last_surface_info_.size_in_pixels());
 }
 
+// Check that if a CompositorFrame is received with size zero, we don't create
+// a Surface for it.
+TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  CompositorFrame frame = MakeEmptyCompositorFrame();
+  frame.render_pass_list.push_back(RenderPass::Create());
+  EXPECT_TRUE(
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
+}
+
+// Check that if a CompositorFrame is received with device scale factor of 0, we
+// don't create a Surface for it.
+TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  CompositorFrame frame = MakeCompositorFrame();
+  frame.metadata.device_scale_factor = 0.f;
+  EXPECT_TRUE(
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
+}
+
+// Check that if the size of a CompositorFrame doesn't match the size of the
+// Surface it's being submitted to, we skip the frame.
+TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+
+  // Submit a frame with size (5,5).
+  CompositorFrame frame = MakeEmptyCompositorFrame();
+  auto pass = RenderPass::Create();
+  pass->SetNew(1, gfx::Rect(5, 5), gfx::Rect(), gfx::Transform());
+  frame.render_pass_list.push_back(std::move(pass));
+  EXPECT_TRUE(
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  EXPECT_TRUE(manager_.GetSurfaceForId(id));
+
+  // Submit a frame with size (5,4). This frame should be rejected and the
+  // surface should be destroyed.
+  frame = MakeEmptyCompositorFrame();
+  pass = RenderPass::Create();
+  pass->SetNew(1, gfx::Rect(5, 4), gfx::Rect(), gfx::Transform());
+  frame.render_pass_list.push_back(std::move(pass));
+  EXPECT_FALSE(
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
+}
+
+// Check that if the device scale factor of a CompositorFrame doesn't match the
+// device scale factor of the Surface it's being submitted to, the frame is
+// rejected and the surface is destroyed.
+TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+
+  // Submit a frame with device scale factor of 0.5.
+  CompositorFrame frame = MakeCompositorFrame();
+  frame.metadata.device_scale_factor = 0.5f;
+  EXPECT_TRUE(
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  EXPECT_TRUE(manager_.GetSurfaceForId(id));
+
+  // Submit a frame with device scale factor of 0.4. This frame should be
+  // rejected and the surface should be destroyed.
+  frame = MakeCompositorFrame();
+  frame.metadata.device_scale_factor = 0.4f;
+  EXPECT_FALSE(
+      support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
+}
+
 }  // namespace
 
 }  // namespace test
