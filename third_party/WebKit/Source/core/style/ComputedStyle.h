@@ -1619,16 +1619,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   StyleImage* ListStyleImage() const;
   void SetListStyleImage(StyleImage*);
 
-  // orphans
-  static short InitialOrphans() { return 2; }
-  short Orphans() const { return rare_inherited_data_->orphans_; }
-  void SetOrphans(short o) { SET_VAR(rare_inherited_data_, orphans_, o); }
-
-  // widows
-  static short InitialWidows() { return 2; }
-  short Widows() const { return rare_inherited_data_->widows_; }
-  void SetWidows(short w) { SET_VAR(rare_inherited_data_, widows_, w); }
-
   // overflow-wrap (aka word-wrap)
   static EOverflowWrap InitialOverflowWrap() { return EOverflowWrap::kNormal; }
   EOverflowWrap OverflowWrap() const {
