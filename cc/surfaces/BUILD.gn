@@ -50,8 +50,6 @@ cc_component("surfaces") {
     "frame_sink_manager_client.h",
     "local_surface_id_allocator.cc",
     "local_surface_id_allocator.h",
-    "primary_begin_frame_source.cc",
-    "primary_begin_frame_source.h",
     "referenced_surface_tracker.cc",
     "referenced_surface_tracker.h",
     "sequence_surface_reference_factory.cc",

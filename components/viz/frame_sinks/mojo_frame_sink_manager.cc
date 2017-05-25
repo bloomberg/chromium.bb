@@ -26,15 +26,10 @@ MojoFrameSinkManager::MojoFrameSinkManager(bool use_surface_references,
       display_provider_(display_provider),
       binding_(this) {
   manager_.AddObserver(this);
-  dependency_tracker_ = base::MakeUnique<cc::SurfaceDependencyTracker>(
-      &manager_, manager_.GetPrimaryBeginFrameSource());
-  manager_.SetDependencyTracker(dependency_tracker_.get());
 }
 
 MojoFrameSinkManager::~MojoFrameSinkManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  manager_.SetDependencyTracker(nullptr);
-  dependency_tracker_.reset();
   manager_.RemoveObserver(this);
 }
 
@@ -61,6 +56,16 @@ void MojoFrameSinkManager::CreateRootCompositorFrameSink(
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source;
   std::unique_ptr<cc::Display> display = display_provider_->CreateDisplay(
       frame_sink_id, surface_handle, &begin_frame_source);
+
+  // Lazily inject a SurfaceDependencyTracker into SurfaceManager if surface
+  // synchronization is enabled.
+  if (!manager_.dependency_tracker() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization)) {
+    std::unique_ptr<cc::SurfaceDependencyTracker> dependency_tracker(
+        new cc::SurfaceDependencyTracker(&manager_, begin_frame_source.get()));
+    manager_.SetDependencyTracker(std::move(dependency_tracker));
+  }
 
   compositor_frame_sinks_[frame_sink_id] =
       base::MakeUnique<GpuRootCompositorFrameSink>(
