@@ -6,6 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   sources = [
+    "availability.proto",
     "event.proto",
   ]
 }

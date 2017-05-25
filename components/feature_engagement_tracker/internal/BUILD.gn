@@ -14,6 +14,8 @@ static_library("internal") {
   ]
 
   sources = [
+    "availability_store.cc",
+    "availability_store.h",
     "chrome_variations_configuration.cc",
     "chrome_variations_configuration.h",
     "condition_validator.cc",
@@ -82,6 +84,7 @@ source_set("unit_tests") {
   # IMPORTANT NOTE: When adding new tests, also remember to update the list of
   # tests in //components/feature_engagement_tracker/components_unittests.filter
   sources = [
+    "availability_store_unittest.cc",
     "chrome_variations_configuration_unittest.cc",
     "condition_validator_unittest.cc",
     "configuration_unittest.cc",
@@ -104,6 +107,7 @@ source_set("unit_tests") {
     ":internal",
     "//base/test:test_support",
     "//components/feature_engagement_tracker/internal/test:test_support",
+    "//components/feature_engagement_tracker/public",
     "//components/leveldb_proto:test_support",
     "//testing/gmock",
     "//testing/gtest",
