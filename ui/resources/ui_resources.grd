@@ -116,7 +116,6 @@
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
       <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED" file="legacy/menu_check.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_OVERFLOW_UP" file="common/menu_overflow_up.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_OVERFLOW_DOWN" file="common/menu_overflow_down.png" />
       </if>
@@ -124,7 +123,6 @@
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="cros/menu_droparrow.png" />
-      <structure type="chrome_scaled_image" name="IDR_MESSAGE_CLOSE" file="common/message_close.png" />
       <if expr="toolkit_views or is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW" file="common/notification_arrow.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW_HOVER" file="common/notification_arrow_hover.png"/>
@@ -195,7 +193,6 @@
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_LINK" file="common/drag_tip_link.png" />
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_NODROP" file="common/drag_tip_nodrop.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_TRANSLATE_ICON_BUBBLE" file="common/translate.png" />
     </structures>
   </release>
 </grit>
