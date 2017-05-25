@@ -140,7 +140,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         builders = self._builders_with_scheduled_jobs(builds)
         if not builders:
             return
-        _log.info('There are existing pending builds for:')
+        _log.info('There are scheduled (but not yet started) builds for:')
         for builder in sorted(builders):
             _log.info('  %s', builder)
 
