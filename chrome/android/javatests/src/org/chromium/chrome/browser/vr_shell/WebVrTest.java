@@ -107,10 +107,8 @@ public class WebVrTest {
         ((VrShellImpl) VrShellDelegate.getVrShellForTesting())
                 .setOnDispatchTouchEventForTesting(new OnDispatchTouchEventCallback() {
                     @Override
-                    public void onDispatchTouchEvent(
-                            boolean parentConsumed, boolean cardboardTriggered) {
+                    public void onDispatchTouchEvent(boolean parentConsumed) {
                         if (!parentConsumed) Assert.fail("Parent did not consume event");
-                        if (cardboardTriggered) Assert.fail("Cardboard event triggered");
                         touchRegisteredLatch.countDown();
                     }
                 });
