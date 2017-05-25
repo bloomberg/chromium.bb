@@ -15949,6 +15949,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.ClickNotFiredDueToDomManipulation" enum="BooleanHit">
+  <owner>nzolghadr@chromium.org</owner>
+  <summary>
+    Whether click target was affected by DOM manipulation or not.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram name="Event.CoalescedCount.Mouse">
   <owner>tdresser@chromium.org</owner>
   Team: input-dev@chromium.org.

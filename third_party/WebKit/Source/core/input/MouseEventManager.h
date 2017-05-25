@@ -228,6 +228,10 @@ class CORE_EXPORT MouseEventManager final
 
   int click_count_;
   Member<Element> click_element_;
+  // This element should be mostly the same as click_element_. Only when
+  // click_element_ is set to null due to DOM manipulation mouse_down_element_
+  // remains unchanged.
+  Member<Element> mouse_down_element_;
 
   IntPoint mouse_down_pos_;  // In our view's coords.
   TimeTicks mouse_down_timestamp_;
