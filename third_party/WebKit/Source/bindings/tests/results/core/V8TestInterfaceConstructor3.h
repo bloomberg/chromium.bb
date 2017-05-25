@@ -42,10 +42,10 @@ class V8TestInterfaceConstructor3 {
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceConstructor3>());
   }
-  static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
+  CORE_EXPORT static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>
