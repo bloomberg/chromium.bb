@@ -44,6 +44,7 @@ class PermissionUmaUtilTest : public testing::Test {
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               BuildFakeSigninManagerBase);
     profile_ = builder.Build();
+    PermissionUmaUtil::FakeOfficialBuildForTest();
   }
 
   void FakeSignIn() {

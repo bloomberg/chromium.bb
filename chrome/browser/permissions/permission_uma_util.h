@@ -196,6 +196,10 @@ class PermissionUmaUtil {
       ContentSettingsType permission,
       bool toggle_enabled);
 
+  // Permission Action Reporting data is only sent in official, Chrome branded
+  // builds. This function allows this to be overridden for testing.
+  static void FakeOfficialBuildForTest();
+
  private:
   friend class PermissionUmaUtilTest;
 
