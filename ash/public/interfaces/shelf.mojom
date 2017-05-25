@@ -61,7 +61,7 @@ interface ShelfController {
   // Observers are immediately notified of the current shelf states when added.
   AddObserver(associated ShelfObserver observer);
 
-  // Set the shelf alignment and auto-hide behavior. See WmShelf for details.
+  // Set the shelf alignment and auto-hide behavior. See Shelf for details.
   SetAlignment(ShelfAlignment alignment, int64 display_id);
   SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide, int64 display_id);
 

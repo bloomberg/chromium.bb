@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -24,9 +24,9 @@
 
 namespace ash {
 
-LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf),
-      container_(new TrayContainer(wm_shelf)),
+LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
+    : shelf_(shelf),
+      container_(new TrayContainer(shelf)),
       button_(views::MdTextButton::Create(this,
                                           base::string16(),
                                           CONTEXT_LAUNCHER_BUTTON)),
@@ -85,17 +85,17 @@ void LogoutButtonTray::UpdateAfterLoginStatusChange() {
 }
 
 void LogoutButtonTray::UpdateVisibility() {
-  LoginStatus login_status = wm_shelf_->GetStatusAreaWidget()->login_status();
+  LoginStatus login_status = shelf_->GetStatusAreaWidget()->login_status();
   SetVisible(show_logout_button_in_tray_ &&
              login_status != LoginStatus::NOT_LOGGED_IN &&
              login_status != LoginStatus::LOCKED);
 }
 
 void LogoutButtonTray::UpdateButtonTextAndImage() {
-  LoginStatus login_status = wm_shelf_->GetStatusAreaWidget()->login_status();
+  LoginStatus login_status = shelf_->GetStatusAreaWidget()->login_status();
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login_status, false);
-  if (wm_shelf_->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     button_->SetText(title);
     button_->SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
     button_->SetMinSize(gfx::Size(0, kTrayItemSize));

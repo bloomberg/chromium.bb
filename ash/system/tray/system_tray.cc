@@ -14,7 +14,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -199,7 +199,7 @@ class SystemTray::ActivationObserver
 
 // SystemTray
 
-SystemTray::SystemTray(WmShelf* wm_shelf) : TrayBackgroundView(wm_shelf) {
+SystemTray::SystemTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   SetInkDropMode(InkDropMode::ON);
 
   // Since user avatar is on the right hand side of System tray of a

@@ -37,7 +37,7 @@ class ASH_EXPORT LockScreenActionTray : public TrayBackgroundView,
                                         public SessionObserver,
                                         public TrayActionObserver {
  public:
-  explicit LockScreenActionTray(WmShelf* wm_shelf);
+  explicit LockScreenActionTray(Shelf* shelf);
   ~LockScreenActionTray() override;
 
   // TrayBackgroundView:

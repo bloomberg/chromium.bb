@@ -17,13 +17,13 @@
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_model.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
-#include "ash/shelf/wm_shelf_observer.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/web_notification/web_notification_tray.h"
@@ -85,17 +85,17 @@ int64_t GetPrimaryDisplayId() {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// WmShelfObserver::OnShelfIconPositionsChanged tests.
+// ShelfObserver::OnShelfIconPositionsChanged tests.
 
-class TestWmShelfObserver : public WmShelfObserver {
+class TestShelfObserver : public ShelfObserver {
  public:
-  explicit TestWmShelfObserver(WmShelf* shelf) : shelf_(shelf) {
+  explicit TestShelfObserver(Shelf* shelf) : shelf_(shelf) {
     shelf_->AddObserver(this);
   }
 
-  ~TestWmShelfObserver() override { shelf_->RemoveObserver(this); }
+  ~TestShelfObserver() override { shelf_->RemoveObserver(this); }
 
-  // WmShelfObserver implementation.
+  // ShelfObserver implementation.
   void OnShelfIconPositionsChanged() override {
     icon_positions_changed_ = true;
   }
@@ -104,20 +104,20 @@ class TestWmShelfObserver : public WmShelfObserver {
   void Reset() { icon_positions_changed_ = false; }
 
  private:
-  WmShelf* shelf_;
+  Shelf* shelf_;
   bool icon_positions_changed_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWmShelfObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestShelfObserver);
 };
 
-class WmShelfObserverIconTest : public AshTestBase {
+class ShelfObserverIconTest : public AshTestBase {
  public:
-  WmShelfObserverIconTest() {}
-  ~WmShelfObserverIconTest() override {}
+  ShelfObserverIconTest() {}
+  ~ShelfObserverIconTest() override {}
 
   void SetUp() override {
     AshTestBase::SetUp();
-    observer_.reset(new TestWmShelfObserver(GetPrimaryShelf()));
+    observer_.reset(new TestShelfObserver(GetPrimaryShelf()));
     shelf_view_test_.reset(
         new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
@@ -128,15 +128,15 @@ class WmShelfObserverIconTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  TestWmShelfObserver* observer() { return observer_.get(); }
+  TestShelfObserver* observer() { return observer_.get(); }
 
   ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
  private:
-  std::unique_ptr<TestWmShelfObserver> observer_;
+  std::unique_ptr<TestShelfObserver> observer_;
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 
-  DISALLOW_COPY_AND_ASSIGN(WmShelfObserverIconTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfObserverIconTest);
 };
 
 // A ShelfItemDelegate that tracks selections and reports a custom action.
@@ -168,7 +168,7 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
 };
 
-TEST_F(WmShelfObserverIconTest, AddRemove) {
+TEST_F(ShelfObserverIconTest, AddRemove) {
   ShelfItem item;
   item.id = ShelfID("foo");
   item.type = TYPE_APP;
@@ -187,7 +187,7 @@ TEST_F(WmShelfObserverIconTest, AddRemove) {
 
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
-TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
+TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
   if (Shell::GetAshConfig() == Config::MASH)
     return;
@@ -195,8 +195,8 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   UpdateDisplay("400x400,400x400");
   observer()->Reset();
 
-  WmShelf* second_shelf = WmShelf::ForWindow(Shell::GetAllRootWindows()[1]);
-  TestWmShelfObserver second_observer(second_shelf);
+  Shelf* second_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
+  TestShelfObserver second_observer(second_shelf);
 
   ShelfItem item;
   item.id = ShelfID("foo");
@@ -221,7 +221,7 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   second_observer.Reset();
 }
 
-TEST_F(WmShelfObserverIconTest, BoundsChanged) {
+TEST_F(ShelfObserverIconTest, BoundsChanged) {
   views::Widget* widget =
       GetPrimaryShelf()->GetShelfViewForTesting()->GetWidget();
   gfx::Rect shelf_bounds = widget->GetWindowBoundsInScreen();
@@ -911,7 +911,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   };
 
   for (ShelfAlignment alignment : kAlignments) {
-    shelf_view_->wm_shelf()->SetAlignment(alignment);
+    shelf_view_->shelf()->SetAlignment(alignment);
     // For every 2 successive visible icons, expect that their bounds don't
     // intersect.
     for (int i = 1; i < test_api_->GetButtonCount() - 1; ++i) {
@@ -1280,10 +1280,10 @@ TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
 // Confirm that shelf item bounds are correctly updated on shelf changes.
 TEST_F(ShelfViewTest, ShelfItemBoundsCheck) {
   VerifyShelfItemBoundsAreValid();
-  shelf_view_->wm_shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_view_->shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyShelfItemBoundsAreValid();
-  shelf_view_->wm_shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf_view_->shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyShelfItemBoundsAreValid();
 }
@@ -1641,7 +1641,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 // Check the drag insertion bounds of shelf view in multi monitor environment.
 TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
-  WmShelf* secondary_shelf = WmShelf::ForWindow(Shell::GetAllRootWindows()[1]);
+  Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
   ShelfView* shelf_view_for_secondary =
       secondary_shelf->GetShelfViewForTesting();
 
@@ -1706,7 +1706,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2U, ShellPort::Get()->GetAllRootWindows().size());
 
-  WmShelf* secondary_shelf = WmShelf::ForWindow(Shell::GetAllRootWindows()[1]);
+  Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
 
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
@@ -2529,7 +2529,7 @@ class TestOverflowButtonShellDelegate : public TestShellDelegate {
   ~TestOverflowButtonShellDelegate() override {}
 
   // TestShellDelegate:
-  ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
+  ui::MenuModel* CreateContextMenu(Shelf* shelf,
                                    const ShelfItem* item) override {
     // Caller takes ownership of the returned object.
     return new TestShellMenuModel;

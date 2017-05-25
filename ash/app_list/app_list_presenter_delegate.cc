@@ -10,9 +10,9 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -111,7 +111,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
   Shell::Get()->AddPreTargetHandler(this);
-  WmShelf* shelf = WmShelf::ForWindow(root_window);
+  Shelf* shelf = Shelf::ForWindow(root_window);
   shelf->AddObserver(this);
 
   // By setting us as DnD recipient, the app list knows that we can
@@ -126,7 +126,7 @@ void AppListPresenterDelegate::OnShown(int64_t display_id) {
   aura::Window* root_window =
       ShellPort::Get()->GetRootWindowForDisplayId(display_id);
   AppListButton* app_list_button =
-      WmShelf::ForWindow(root_window)->shelf_widget()->GetAppListButton();
+      Shelf::ForWindow(root_window)->shelf_widget()->GetAppListButton();
   if (app_list_button)
     app_list_button->OnAppListShown();
 }
@@ -138,7 +138,7 @@ void AppListPresenterDelegate::OnDismissed() {
   is_visible_ = false;
 
   // Update applist button status when app list visibility is changed.
-  WmShelf* shelf = WmShelf::ForWindow(view_->GetWidget()->GetNativeWindow());
+  Shelf* shelf = Shelf::ForWindow(view_->GetWidget()->GetNativeWindow());
   AppListButton* app_list_button = shelf->shelf_widget()->GetAppListButton();
   if (app_list_button)
     app_list_button->OnAppListDismissed();
@@ -160,7 +160,7 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  WmShelf* shelf = WmShelf::ForWindow(root_window);
+  Shelf* shelf = Shelf::ForWindow(root_window);
   shelf->UpdateAutoHideState();
 
   switch (shelf->alignment()) {
@@ -240,7 +240,7 @@ void AppListPresenterDelegate::OnOverviewModeStarting() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListPresenterDelegate, WmShelfObserver implementation:
+// AppListPresenterDelegate, ShelfObserver implementation:
 
 void AppListPresenterDelegate::OnShelfIconPositionsChanged() {
   UpdateBounds();

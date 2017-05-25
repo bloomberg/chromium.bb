@@ -16,7 +16,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -135,7 +135,7 @@ class RoundedContainerView : public views::View {
 // Triggers a shelf visibility update on all root window controllers.
 void UpdateShelfVisibility() {
   for (aura::Window* root : Shell::GetAllRootWindows())
-    WmShelf::ForWindow(root)->UpdateVisibilityState();
+    Shelf::ForWindow(root)->UpdateVisibilityState();
 }
 
 gfx::Rect GetTextFilterPosition(aura::Window* root_window) {

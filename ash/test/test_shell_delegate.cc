@@ -11,7 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -40,7 +40,7 @@ class ShelfInitializer : public ShellObserver {
 
   // ShellObserver:
   void OnShelfCreatedForRootWindow(WmWindow* root_window) override {
-    WmShelf* shelf = root_window->GetRootWindowController()->GetShelf();
+    Shelf* shelf = root_window->GetRootWindowController()->GetShelf();
     // Do not override the custom initialization performed by some unit tests.
     if (shelf->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED &&
         shelf->auto_hide_behavior() == SHELF_AUTO_HIDE_ALWAYS_HIDDEN) {
@@ -130,7 +130,7 @@ std::unique_ptr<PaletteDelegate> TestShellDelegate::CreatePaletteDelegate() {
   return nullptr;
 }
 
-ui::MenuModel* TestShellDelegate::CreateContextMenu(WmShelf* wm_shelf,
+ui::MenuModel* TestShellDelegate::CreateContextMenu(Shelf* shelf,
                                                     const ShelfItem* item) {
   return nullptr;
 }

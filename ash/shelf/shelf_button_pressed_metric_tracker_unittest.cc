@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/config.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
@@ -106,8 +106,8 @@ ShelfButtonPressedMetricTrackerTest::~ShelfButtonPressedMetricTrackerTest() {}
 void ShelfButtonPressedMetricTrackerTest::SetUp() {
   AshTestBase::SetUp();
 
-  WmShelf* wm_shelf = GetPrimaryShelf();
-  ShelfViewTestAPI shelf_view_test_api(wm_shelf->GetShelfViewForTesting());
+  Shelf* shelf = GetPrimaryShelf();
+  ShelfViewTestAPI shelf_view_test_api(shelf->GetShelfViewForTesting());
 
   metric_tracker_ = shelf_view_test_api.shelf_button_pressed_metric_tracker();
 

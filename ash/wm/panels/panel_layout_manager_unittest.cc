@@ -9,12 +9,12 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
@@ -142,7 +142,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
 
     WmWindow* wm_panel = WmWindow::Get(panel);
-    WmShelf* shelf = wm_panel->GetRootWindowController()->GetShelf();
+    Shelf* shelf = wm_panel->GetRootWindowController()->shelf();
     gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(wm_panel);
     ASSERT_FALSE(icon_bounds.width() == 0 && icon_bounds.height() == 0);
 
@@ -178,7 +178,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
     WmWindow* wm_panel = WmWindow::Get(panel);
-    WmShelf* shelf = wm_panel->GetRootWindowController()->GetShelf();
+    Shelf* shelf = wm_panel->GetRootWindowController()->shelf();
     gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(wm_panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
@@ -230,7 +230,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
-  WmShelf* GetShelfForWindow(aura::Window* window) {
+  Shelf* GetShelfForWindow(aura::Window* window) {
     return WmWindow::Get(window)->GetRootWindowController()->GetShelf();
   }
 
@@ -240,7 +240,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void SetShelfAutoHideBehavior(aura::Window* window,
                                 ShelfAutoHideBehavior behavior) {
-    WmShelf* shelf = GetShelfForWindow(window);
+    Shelf* shelf = GetShelfForWindow(window);
     shelf->SetAutoHideBehavior(behavior);
     test::ShelfViewTestAPI test_api(shelf->GetShelfViewForTesting());
     test_api.RunMessageLoopUntilAnimationsDone();
@@ -248,7 +248,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void SetShelfVisibilityState(aura::Window* window,
                                ShelfVisibilityState visibility_state) {
-    WmShelf* shelf = GetShelfForWindow(window);
+    Shelf* shelf = GetShelfForWindow(window);
     shelf->shelf_layout_manager()->SetState(visibility_state);
   }
 
@@ -627,7 +627,7 @@ TEST_F(PanelLayoutManagerTest, FanWindows) {
   int window_x1 = w1->GetBoundsInRootWindow().CenterPoint().x();
   int window_x2 = w2->GetBoundsInRootWindow().CenterPoint().x();
   int window_x3 = w3->GetBoundsInRootWindow().CenterPoint().x();
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   int icon_x1 =
       shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(w1.get())).x();
   int icon_x2 =

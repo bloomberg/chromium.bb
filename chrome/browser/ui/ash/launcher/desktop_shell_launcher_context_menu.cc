@@ -7,8 +7,8 @@
 DesktopShellLauncherContextMenu::DesktopShellLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
-    ash::WmShelf* wm_shelf)
-    : LauncherContextMenu(controller, item, wm_shelf) {
+    ash::Shelf* shelf)
+    : LauncherContextMenu(controller, item, shelf) {
   Init();
 }
 

@@ -55,8 +55,8 @@ class LockScreenActionTray::NewNoteActionView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(NewNoteActionView);
 };
 
-LockScreenActionTray::LockScreenActionTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+LockScreenActionTray::LockScreenActionTray(Shelf* shelf)
+    : TrayBackgroundView(shelf),
       session_observer_(this),
       tray_action_observer_(this) {
   SetInkDropMode(InkDropMode::ON);

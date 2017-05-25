@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
@@ -38,13 +38,13 @@ bool ShelfBackgroundAnimator::AnimationValues::InitialValuesEqualTargetValuesOf(
 
 ShelfBackgroundAnimator::ShelfBackgroundAnimator(
     ShelfBackgroundType background_type,
-    WmShelf* wm_shelf,
+    Shelf* shelf,
     WallpaperController* wallpaper_controller)
-    : wm_shelf_(wm_shelf), wallpaper_controller_(wallpaper_controller) {
+    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
-  if (wm_shelf_)
-    wm_shelf_->AddObserver(this);
+  if (shelf_)
+    shelf_->AddObserver(this);
 
   // Initialize animators so that adding observers get notified with consistent
   // values.
@@ -54,8 +54,8 @@ ShelfBackgroundAnimator::ShelfBackgroundAnimator(
 ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
   if (wallpaper_controller_)
     wallpaper_controller_->RemoveObserver(this);
-  if (wm_shelf_)
-    wm_shelf_->RemoveObserver(this);
+  if (shelf_)
+    shelf_->RemoveObserver(this);
 }
 
 void ShelfBackgroundAnimator::AddObserver(

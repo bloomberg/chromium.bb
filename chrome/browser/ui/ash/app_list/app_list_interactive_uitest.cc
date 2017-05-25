@@ -6,8 +6,8 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm_window.h"
@@ -21,7 +21,7 @@ using AppListTest = InProcessBrowserTest;
 
 // An integration test to toggle the app list by pressing the shelf button.
 IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
-  ash::WmShelf* shelf = ash::WmShelf::ForWindow(ash::wm::GetActiveWindow());
+  ash::Shelf* shelf = ash::Shelf::ForWindow(ash::wm::GetActiveWindow());
   ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
   ash::AppListButton* app_list_button = shelf_widget->GetAppListButton();
 

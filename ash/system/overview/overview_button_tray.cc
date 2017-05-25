@@ -23,8 +23,8 @@
 
 namespace ash {
 
-OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
+    : TrayBackgroundView(shelf),
       icon_(new views::ImageView()),
       scoped_session_observer_(this) {
   SetInkDropMode(InkDropMode::ON);

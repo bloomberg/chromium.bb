@@ -8,8 +8,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
@@ -265,7 +265,7 @@ class WebNotificationLabel : public WebNotificationItem {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationLabel);
 };
 
-WebNotificationTray::WebNotificationTray(WmShelf* shelf,
+WebNotificationTray::WebNotificationTray(Shelf* shelf,
                                          aura::Window* status_area_window,
                                          SystemTray* system_tray)
     : TrayBackgroundView(shelf),

@@ -8,8 +8,8 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -80,7 +80,7 @@ using extension_misc::kGmailAppId;
 
 namespace {
 
-int64_t GetDisplayIDForShelf(ash::WmShelf* shelf) {
+int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
   display::Display display =
       shelf->GetWindow()->GetRootWindow()->GetDisplayNearestWindow();
   DCHECK(display.is_valid());
@@ -653,7 +653,7 @@ ChromeLauncherController::GetBrowserShortcutLauncherItemController() {
 }
 
 bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
-    ash::WmShelf* shelf,
+    ash::Shelf* shelf,
     const AccountId& account_id) const {
   Profile* other_profile = multi_user_util::GetProfileFromAccountId(account_id);
   if (!other_profile || other_profile == profile())
@@ -1358,8 +1358,7 @@ void ChromeLauncherController::OnDisplayConfigurationChanged() {
   // In BOTTOM_LOCKED state, ignore the call of SetShelfBehaviorsFromPrefs.
   // Because it might be called by some operations, like crbug.com/627040
   // rotating screen.
-  ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
+  ash::Shelf* shelf = ash::Shelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
   if (shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
     SetShelfBehaviorsFromPrefs();
 }

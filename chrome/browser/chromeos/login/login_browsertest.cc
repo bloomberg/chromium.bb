@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm_window.h"
@@ -329,10 +329,10 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 void TestSystemTrayIsVisible(bool otr) {
   ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
-  ash::WmShelf* wm_shelf = ash::WmShelf::ForWindow(primary_win);
+  ash::Shelf* shelf = ash::Shelf::ForWindow(primary_win);
   SCOPED_TRACE(testing::Message()
-               << "ShelfVisibilityState=" << wm_shelf->GetVisibilityState()
-               << " ShelfAutoHideBehavior=" << wm_shelf->auto_hide_behavior());
+               << "ShelfVisibilityState=" << shelf->GetVisibilityState()
+               << " ShelfAutoHideBehavior=" << shelf->auto_hide_behavior());
   EXPECT_TRUE(tray->visible());
 
   // This check flakes for LoginGuestTest: https://crbug.com/693106.

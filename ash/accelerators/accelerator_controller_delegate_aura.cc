@@ -19,7 +19,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/touch/touch_hud_debug.h"
@@ -27,7 +26,6 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_state.h"
-
 #include "ash/wm/wm_event.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

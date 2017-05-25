@@ -17,7 +17,7 @@
 
 namespace ash {
 
-class WmShelf;
+class Shelf;
 
 // Ash's implementation of the mojom::ShelfController interface. Chrome connects
 // to this interface to observe and manage the per-display ash shelf instances.
@@ -32,9 +32,9 @@ class ShelfController : public mojom::ShelfController {
   ShelfModel* model() { return &model_; }
 
   // Functions used to notify mojom::ShelfObserver instances of changes.
-  void NotifyShelfInitialized(WmShelf* shelf);
-  void NotifyShelfAlignmentChanged(WmShelf* shelf);
-  void NotifyShelfAutoHideBehaviorChanged(WmShelf* shelf);
+  void NotifyShelfInitialized(Shelf* shelf);
+  void NotifyShelfAlignmentChanged(Shelf* shelf);
+  void NotifyShelfAutoHideBehaviorChanged(Shelf* shelf);
 
   // mojom::Shelf:
   void AddObserver(mojom::ShelfObserverAssociatedPtrInfo observer) override;

@@ -10,7 +10,7 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -280,8 +280,8 @@ class ImeMenuListView : public ImeListView {
 
 }  // namespace
 
-ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+ImeMenuTray::ImeMenuTray(Shelf* shelf)
+    : TrayBackgroundView(shelf),
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
       force_show_keyboard_(false),

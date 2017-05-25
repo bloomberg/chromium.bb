@@ -10,11 +10,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
@@ -122,17 +122,17 @@ void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
   opaque_background_.SetColor(color);
 }
 
-ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf),
+ShelfWidget::ShelfWidget(WmWindow* shelf_container, Shelf* shelf)
+    : shelf_(shelf),
       status_area_widget_(nullptr),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(Shell::Get()->shelf_model(), wm_shelf_, this)),
+      shelf_view_(new ShelfView(Shell::Get()->shelf_model(), shelf_, this)),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
-                           wm_shelf_,
+                           shelf_,
                            Shell::Get()->wallpaper_controller()),
       activating_as_fallback_(false) {
   DCHECK(shelf_container);
-  DCHECK(wm_shelf_);
+  DCHECK(shelf_);
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -155,7 +155,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
   shelf_view_->Init();
   GetContentsView()->AddChildView(shelf_view_);
 
-  shelf_layout_manager_ = new ShelfLayoutManager(this, wm_shelf_);
+  shelf_layout_manager_ = new ShelfLayoutManager(this, shelf_);
   shelf_layout_manager_->AddObserver(this);
   shelf_container->aura_window()->SetLayoutManager(shelf_layout_manager_);
   background_animator_.PaintBackground(
@@ -183,7 +183,7 @@ void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
   DCHECK(status_container);
   DCHECK(!status_area_widget_);
   status_area_widget_ =
-      new StatusAreaWidget(status_container->aura_window(), wm_shelf_);
+      new StatusAreaWidget(status_container->aura_window(), shelf_);
   status_area_widget_->CreateTrayViews();
   // NOTE: Container may be hidden depending on login/display state.
   status_area_widget_->Show();

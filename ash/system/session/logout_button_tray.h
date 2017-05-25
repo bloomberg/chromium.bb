@@ -17,8 +17,8 @@ class MdTextButton;
 }
 
 namespace ash {
+class Shelf;
 class TrayContainer;
-class WmShelf;
 
 // Adds a logout button to the launcher's status area if enabled by the
 // kShowLogoutButtonInTray pref.
@@ -26,7 +26,7 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
                                     public LogoutButtonObserver,
                                     public views::ButtonListener {
  public:
-  explicit LogoutButtonTray(WmShelf* wm_shelf);
+  explicit LogoutButtonTray(Shelf* shelf);
   ~LogoutButtonTray() override;
 
   void UpdateAfterLoginStatusChange();
@@ -46,7 +46,7 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   void UpdateVisibility();
   void UpdateButtonTextAndImage();
 
-  WmShelf* const wm_shelf_;
+  Shelf* const shelf_;
   TrayContainer* const container_;
   views::MdTextButton* const button_;
   bool show_logout_button_in_tray_;

@@ -7,8 +7,8 @@
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -59,9 +59,9 @@ StatusAreaWidgetDelegate* StatusAreaWidgetDelegate::GetPrimaryInstance() {
               : nullptr;
 }
 
-StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf), focus_cycler_for_testing_(nullptr) {
-  DCHECK(wm_shelf_);
+StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
+    : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
+  DCHECK(shelf_);
 
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
@@ -104,7 +104,7 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
 void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
   views::Widget* target_widget =
       static_cast<views::View*>(event->target())->GetWidget();
-  WmShelf* shelf = WmShelf::ForWindow(target_widget->GetNativeWindow());
+  Shelf* shelf = Shelf::ForWindow(target_widget->GetNativeWindow());
   if (shelf->ProcessGestureEvent(*event))
     event->StopPropagation();
   else
@@ -147,7 +147,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
-  if (wm_shelf_->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     for (int c = child_count() - 1; c >= 0; --c) {
       views::View* child = child_at(c);
       if (!child->visible())
@@ -200,7 +200,7 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool extend_border_to_edge) {
   // Tray views are laid out right-to-left or bottom-to-top.
-  const bool horizontal_alignment = wm_shelf_->IsHorizontalAlignment();
+  const bool horizontal_alignment = shelf_->IsHorizontalAlignment();
   const int padding = (kShelfSize - kTrayItemSize) / 2;
 
   const int top_edge = horizontal_alignment ? padding : 0;

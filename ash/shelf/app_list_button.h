@@ -14,15 +14,15 @@
 
 namespace ash {
 class InkDropButtonListener;
+class Shelf;
 class ShelfView;
-class WmShelf;
 
 // Button used for the AppList icon on the shelf.
 class ASH_EXPORT AppListButton : public views::ImageButton {
  public:
   AppListButton(InkDropButtonListener* listener,
                 ShelfView* shelf_view,
-                WmShelf* wm_shelf);
+                Shelf* shelf);
   ~AppListButton() override;
 
   void OnAppListShown();
@@ -64,7 +64,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
 
   InkDropButtonListener* listener_;
   ShelfView* shelf_view_;
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

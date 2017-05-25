@@ -37,10 +37,10 @@ class AccessibilityDelegate;
 class GPUSupport;
 class PaletteDelegate;
 class SessionStateDelegate;
-class SystemTrayDelegate;
+class Shelf;
 struct ShelfItem;
+class SystemTrayDelegate;
 class WallpaperDelegate;
-class WmShelf;
 class WmWindow;
 
 // Delegate of the Shell.
@@ -107,9 +107,9 @@ class ASH_EXPORT ShellDelegate {
 
   virtual std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() = 0;
 
-  // Creates a menu model for the |wm_shelf| and optional shelf |item|.
+  // Creates a menu model for the |shelf| and optional shelf |item|.
   // If |item| is null, this creates a context menu for the wallpaper or shelf.
-  virtual ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
+  virtual ui::MenuModel* CreateContextMenu(Shelf* shelf,
                                            const ShelfItem* item) = 0;
 
   // Creates a GPU support object. Shell takes ownership of the object.

@@ -11,7 +11,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_bubble.h"
@@ -291,7 +291,7 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   // At the beginning the tray coloring is not active.
   ASSERT_FALSE(tray->is_active());
@@ -430,7 +430,7 @@ TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
 // Tests that the tray view is laid out properly and is fully contained within
 // the shelf widget.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
-  WmShelf* shelf = GetPrimaryShelf();
+  Shelf* shelf = GetPrimaryShelf();
   StatusAreaWidget* widget = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   SystemTray* tray = GetPrimarySystemTray();
 

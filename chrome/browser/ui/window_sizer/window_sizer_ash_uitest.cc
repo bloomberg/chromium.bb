@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
@@ -54,7 +54,7 @@ void CloseBrowser(Browser* browser) {
 
 gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root_window) {
   const ash::ShelfView* shelf_view =
-      ash::WmShelf::ForWindow(root_window)->GetShelfViewForTesting();
+      ash::Shelf::ForWindow(root_window)->GetShelfViewForTesting();
   const views::ViewModel* view_model = shelf_view->view_model_for_test();
 
   EXPECT_EQ(2, view_model->view_size());

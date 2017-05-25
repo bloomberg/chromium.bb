@@ -21,10 +21,10 @@
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
@@ -354,22 +354,22 @@ void RootWindowController::InitializeShelf() {
   if (shelf_initialized_)
     return;
   shelf_initialized_ = true;
-  wm_shelf_->NotifyShelfInitialized();
+  shelf_->NotifyShelfInitialized();
 
-  // TODO(jamescook): Pass |wm_shelf_| into the constructors for these layout
+  // TODO(jamescook): Pass |shelf_| into the constructors for these layout
   // managers.
   if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(wm_shelf_.get());
+    panel_layout_manager_->SetShelf(shelf_.get());
 
   // TODO(jamescook): Eliminate this. Refactor AttachedPanelWidgetTargeter's
-  // access to WmShelf.
+  // access to Shelf.
   Shell::Get()->NotifyShelfCreatedForRootWindow(WmWindow::Get(GetRootWindow()));
 
-  wm_shelf_->shelf_widget()->PostCreateShelf();
+  shelf_->shelf_widget()->PostCreateShelf();
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
-  return wm_shelf_->shelf_layout_manager();
+  return shelf_->shelf_layout_manager();
 }
 
 SystemModalContainerLayoutManager*
@@ -396,15 +396,15 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
 }
 
 StatusAreaWidget* RootWindowController::GetStatusAreaWidget() {
-  ShelfWidget* shelf_widget = wm_shelf_->shelf_widget();
+  ShelfWidget* shelf_widget = shelf_->shelf_widget();
   return shelf_widget ? shelf_widget->status_area_widget() : nullptr;
 }
 
 SystemTray* RootWindowController::GetSystemTray() {
   // We assume in throughout the code that this will not return NULL. If code
   // triggers this for valid reasons, it should test status_area_widget first.
-  CHECK(wm_shelf_->shelf_widget()->status_area_widget());
-  return wm_shelf_->shelf_widget()->status_area_widget()->system_tray();
+  CHECK(shelf_->shelf_widget()->status_area_widget());
+  return shelf_->shelf_widget()->status_area_widget()->system_tray();
 }
 
 bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
@@ -557,7 +557,7 @@ void RootWindowController::CloseChildWindows() {
     panel_layout_manager_ = nullptr;
   }
 
-  WmShelf* shelf = GetShelf();
+  Shelf* shelf = GetShelf();
   shelf->ShutdownShelfWidget();
 
   workspace_controller_.reset();
@@ -603,7 +603,7 @@ void RootWindowController::MoveWindowsTo(aura::Window* dst) {
 }
 
 void RootWindowController::UpdateShelfVisibility() {
-  wm_shelf_->UpdateVisibilityState();
+  shelf_->UpdateVisibilityState();
 }
 
 void RootWindowController::InitTouchHuds() {
@@ -671,7 +671,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
   ShellDelegate* delegate = Shell::Get()->shell_delegate();
   DCHECK(delegate);
-  menu_model_.reset(delegate->CreateContextMenu(wm_shelf_.get(), nullptr));
+  menu_model_.reset(delegate->CreateContextMenu(shelf_.get(), nullptr));
   if (!menu_model_)
     return;
 
@@ -693,7 +693,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
 
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
   StatusAreaWidget* status_area_widget =
-      wm_shelf_->shelf_widget()->status_area_widget();
+      shelf_->shelf_widget()->status_area_widget();
   if (status_area_widget)
     status_area_widget->UpdateAfterLoginStatusChange(status);
 }
@@ -708,7 +708,7 @@ RootWindowController::RootWindowController(
       mus_window_tree_host_(window_tree_host),
       window_tree_host_(ash_host ? ash_host->AsWindowTreeHost()
                                  : window_tree_host),
-      wm_shelf_(base::MakeUnique<WmShelf>()) {
+      shelf_(base::MakeUnique<Shelf>()) {
   DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
 
   if (!root_window_controllers_)
@@ -771,7 +771,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
 void RootWindowController::InitLayoutManagers() {
   // Create the shelf and status area widgets.
-  DCHECK(!wm_shelf_->shelf_widget());
+  DCHECK(!shelf_->shelf_widget());
   GetShelf()->CreateShelfWidget(GetWindow());
 
   aura::Window* root = GetRootWindow();
@@ -815,13 +815,11 @@ void RootWindowController::InitLayoutManagers() {
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
-  WmWindow* wm_shelf_container = WmWindow::Get(shelf_container);
   shelf_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
-      wm_shelf_container, wm_shelf_.get()));
+      WmWindow::Get(shelf_container), shelf_.get()));
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
-  WmWindow* wm_status_container = WmWindow::Get(status_container);
   status_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
-      wm_status_container, wm_shelf_.get()));
+      WmWindow::Get(status_container), shelf_.get()));
 
   panel_container_handler_ = base::MakeUnique<PanelWindowEventHandler>();
   GetContainer(kShellWindowId_PanelContainer)
@@ -1073,7 +1071,7 @@ void RootWindowController::OnMenuClosed() {
   menu_runner_.reset();
   menu_model_adapter_.reset();
   menu_model_.reset();
-  wm_shelf_->UpdateVisibilityState();
+  shelf_->UpdateVisibilityState();
 }
 
 void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {

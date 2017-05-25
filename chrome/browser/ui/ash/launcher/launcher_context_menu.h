@@ -13,7 +13,7 @@
 class ChromeLauncherController;
 
 namespace ash {
-class WmShelf;
+class Shelf;
 }
 
 // Base class for context menu which is shown for a regular extension item in
@@ -44,7 +44,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // Static function to create contextmenu instance.
   static LauncherContextMenu* Create(ChromeLauncherController* controller,
                                      const ash::ShelfItem* item,
-                                     ash::WmShelf* wm_shelf);
+                                     ash::Shelf* shelf);
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsItemForCommandIdDynamic(int command_id) const override;
@@ -56,7 +56,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
  protected:
   LauncherContextMenu(ChromeLauncherController* controller,
                       const ash::ShelfItem* item,
-                      ash::WmShelf* wm_shelf);
+                      ash::Shelf* shelf);
   ChromeLauncherController* controller() const { return controller_; }
 
   const ash::ShelfItem& item() const { return item_; }
@@ -77,7 +77,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   ash::ShelfAlignmentMenu shelf_alignment_menu_;
 
-  ash::WmShelf* wm_shelf_;
+  ash::Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

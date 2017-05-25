@@ -5,7 +5,7 @@
 #include "ash/wm/immersive_context_ash.h"
 
 #include "ash/shared/immersive_fullscreen_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
@@ -39,7 +39,7 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   window_state->set_in_immersive_fullscreen(entering);
 
   for (aura::Window* root_window : Shell::GetAllRootWindows())
-    WmShelf::ForWindow(root_window)->UpdateVisibilityState();
+    Shelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 
 gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {

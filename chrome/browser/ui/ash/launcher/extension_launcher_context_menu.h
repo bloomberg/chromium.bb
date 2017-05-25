@@ -14,8 +14,8 @@
 class ChromeLauncherController;
 
 namespace ash {
+class Shelf;
 struct ShelfItem;
-class WmShelf;
 }
 
 namespace extensions {
@@ -27,7 +27,7 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
  public:
   ExtensionLauncherContextMenu(ChromeLauncherController* controller,
                                const ash::ShelfItem* item,
-                               ash::WmShelf* wm_shelf);
+                               ash::Shelf* shelf);
   ~ExtensionLauncherContextMenu() override;
 
   // ui::SimpleMenuModel::Delegate overrides:

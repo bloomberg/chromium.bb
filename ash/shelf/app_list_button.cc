@@ -9,9 +9,9 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/ink_drop_button_listener.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -34,16 +34,16 @@ namespace ash {
 
 AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view,
-                             WmShelf* wm_shelf)
+                             Shelf* shelf)
     : views::ImageButton(nullptr),
       is_showing_app_list_(false),
       background_color_(kShelfDefaultBaseColor),
       listener_(listener),
       shelf_view_(shelf_view),
-      wm_shelf_(wm_shelf) {
+      shelf_(shelf) {
   DCHECK(listener_);
   DCHECK(shelf_view_);
-  DCHECK(wm_shelf_);
+  DCHECK(shelf_);
 
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
@@ -60,13 +60,13 @@ AppListButton::~AppListButton() {}
 void AppListButton::OnAppListShown() {
   AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
-  wm_shelf_->UpdateAutoHideState();
+  shelf_->UpdateAutoHideState();
 }
 
 void AppListButton::OnAppListDismissed() {
   AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   is_showing_app_list_ = false;
-  wm_shelf_->UpdateAutoHideState();
+  shelf_->UpdateAutoHideState();
 }
 
 void AppListButton::UpdateShelfItemBackground(SkColor color) {
@@ -232,7 +232,7 @@ gfx::Point AppListButton::GetCenterPoint() const {
   // adjust the x-position for a left- or right-aligned shelf.
   const int x_mid = width() / 2.f;
   const int y_mid = height() / 2.f;
-  ShelfAlignment alignment = wm_shelf_->GetAlignment();
+  ShelfAlignment alignment = shelf_->alignment();
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     return gfx::Point(x_mid, x_mid);

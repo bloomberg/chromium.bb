@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/wm_shelf_observer.h"
+#include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -29,7 +29,7 @@ class ShelfViewTest;
 // ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                                        public views::PointerWatcher,
-                                       public WmShelfObserver {
+                                       public ShelfObserver {
  public:
   explicit ShelfTooltipManager(ShelfView* shelf_view);
   ~ShelfTooltipManager() override;
@@ -62,7 +62,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                               const gfx::Point& location_in_screen,
                               views::Widget* target) override;
 
-  // WmShelfObserver overrides:
+  // ShelfObserver overrides:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 

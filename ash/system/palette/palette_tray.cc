@@ -9,8 +9,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_tool_manager.h"
@@ -137,8 +137,8 @@ class TitleView : public views::View, public views::ButtonListener {
 
 }  // namespace
 
-PaletteTray::PaletteTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+PaletteTray::PaletteTray(Shelf* shelf)
+    : TrayBackgroundView(shelf),
       palette_tool_manager_(new PaletteToolManager(this)),
       scoped_session_observer_(this),
       weak_factory_(this) {

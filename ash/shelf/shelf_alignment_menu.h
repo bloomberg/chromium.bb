@@ -11,13 +11,13 @@
 
 namespace ash {
 
-class WmShelf;
+class Shelf;
 
 // Submenu for choosing the alignment of the shelf.
 class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
                                       public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ShelfAlignmentMenu(WmShelf* wm_shelf);
+  explicit ShelfAlignmentMenu(Shelf* shelf);
   ~ShelfAlignmentMenu() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -33,7 +33,7 @@ class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
     MENU_ALIGN_BOTTOM,
   };
 
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfAlignmentMenu);
 };

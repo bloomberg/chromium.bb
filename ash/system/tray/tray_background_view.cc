@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "ash/ash_constants.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -131,16 +131,16 @@ class TrayBackground : public views::Background {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
-TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
+TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
     // Note the ink drop style is ignored.
     : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
-      wm_shelf_(wm_shelf),
-      tray_container_(new TrayContainer(wm_shelf)),
+      shelf_(shelf),
+      tray_container_(new TrayContainer(shelf)),
       background_(new TrayBackground(this)),
       is_active_(false),
       separator_visible_(true),
       widget_observer_(new TrayWidgetObserver(this)) {
-  DCHECK(wm_shelf_);
+  DCHECK(shelf_);
   set_notify_enter_exit_on_child(true);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
@@ -303,7 +303,7 @@ bool TrayBackgroundView::RequiresNotificationWhenAnimatorDestroyed() const {
 
 void TrayBackgroundView::HideTransformation() {
   gfx::Transform transform;
-  if (wm_shelf_->IsHorizontalAlignment())
+  if (shelf_->IsHorizontalAlignment())
     transform.Translate(width(), 0.0f);
   else
     transform.Translate(0.0f, height());
@@ -311,9 +311,9 @@ void TrayBackgroundView::HideTransformation() {
 }
 
 TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
-  if (wm_shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
+  if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
     return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
-  if (wm_shelf_->alignment() == SHELF_ALIGNMENT_RIGHT)
+  if (shelf_->alignment() == SHELF_ALIGNMENT_RIGHT)
     return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }
@@ -402,7 +402,7 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   const gfx::Rect local_bounds = GetLocalBounds();
   const SkColor color = SkColorSetA(SK_ColorWHITE, 0x4D);
 
-  if (wm_shelf_->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     const gfx::PointF point(
         base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth),
         (kShelfSize - kTrayItemSize) / 2);
@@ -418,7 +418,7 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
 
 gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   gfx::Insets insets =
-      GetMirroredBackgroundInsets(wm_shelf_->IsHorizontalAlignment());
+      GetMirroredBackgroundInsets(shelf_->IsHorizontalAlignment());
 
   // |insets| are relative to contents bounds. Change them to be relative to
   // local bounds.

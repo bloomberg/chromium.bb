@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell_port.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/window_state.h"
@@ -60,7 +60,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   if (fullscreen && !wm::GetWindowState(fullscreen)->ignored_by_shelf())
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 
-  const gfx::Rect shelf_bounds(WmShelf::ForWindow(viewport_)->GetIdealBounds());
+  const gfx::Rect shelf_bounds(Shelf::ForWindow(viewport_)->GetIdealBounds());
   bool window_overlaps_launcher = false;
   // The default container may contain windows that may overlap the launcher
   // shelf and affect its transparency.

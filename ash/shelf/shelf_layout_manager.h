@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
@@ -37,10 +37,10 @@ namespace ash {
 
 enum class AnimationChangeType;
 class PanelLayoutManagerTest;
+class Shelf;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
-class WmShelf;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -57,7 +57,7 @@ class ASH_EXPORT ShelfLayoutManager
       public wm::WmSnapToPixelLayoutManager,
       public SessionObserver {
  public:
-  ShelfLayoutManager(ShelfWidget* shelf_widget, WmShelf* wm_shelf);
+  ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
   ~ShelfLayoutManager() override;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -159,7 +159,7 @@ class ASH_EXPORT ShelfLayoutManager
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
-    switch (wm_shelf_->GetAlignment()) {
+    switch (shelf_->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
       case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
@@ -174,7 +174,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   template <typename T>
   T PrimaryAxisValue(T horizontal, T vertical) const {
-    return wm_shelf_->IsHorizontalAlignment() ? horizontal : vertical;
+    return shelf_->IsHorizontalAlignment() ? horizontal : vertical;
   }
 
   // Returns how the shelf background should be painted.
@@ -308,7 +308,7 @@ class ASH_EXPORT ShelfLayoutManager
   State state_;
 
   ShelfWidget* shelf_widget_;
-  WmShelf* wm_shelf_;
+  Shelf* shelf_;
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;

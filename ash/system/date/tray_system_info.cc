@@ -4,7 +4,7 @@
 
 #include "ash/system/date/tray_system_info.h"
 
-#include "ash/shelf/wm_shelf.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/date/system_info_default_view.h"

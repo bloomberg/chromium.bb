@@ -42,7 +42,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                public ui::InputDeviceEventObserver,
                                public views::TrayBubbleView::Delegate {
  public:
-  explicit PaletteTray(WmShelf* wm_shelf);
+  explicit PaletteTray(Shelf* shelf);
   ~PaletteTray() override;
 
   // ActionableView:

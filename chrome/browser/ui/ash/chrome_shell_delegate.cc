@@ -510,7 +510,7 @@ void ChromeShellDelegate::ShelfShutdown() {
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
-    ash::WmShelf* wm_shelf,
+    ash::Shelf* shelf,
     const ash::ShelfItem* item) {
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())
@@ -523,8 +523,7 @@ ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
   if (!launcher_controller_)
     return nullptr;
 
-  return LauncherContextMenu::Create(launcher_controller_.get(), item,
-                                     wm_shelf);
+  return LauncherContextMenu::Create(launcher_controller_.get(), item, shelf);
 }
 
 ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
