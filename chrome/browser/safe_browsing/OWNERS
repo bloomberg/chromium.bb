@@ -3,4 +3,4 @@ nparker@chromium.org
 jialiul@chromium.org
 
 # For interstitial-related changes:
-per-file safe_browsing_blocking_page*=felt@chromium.org
+per-file *safe_browsing_blocking_page*=felt@chromium.org
