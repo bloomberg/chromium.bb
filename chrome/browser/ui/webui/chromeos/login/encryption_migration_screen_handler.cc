@@ -138,6 +138,7 @@ void EncryptionMigrationScreenHandler::SetContinueLoginCallback(
 }
 
 void EncryptionMigrationScreenHandler::SetupInitialView() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   CheckAvailableStorage();
 }
 
@@ -191,8 +192,6 @@ void EncryptionMigrationScreenHandler::Initialize() {
   if (!page_is_ready() || !delegate_)
     return;
 
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-
   if (show_on_init_) {
     Show();
     show_on_init_ = false;
@@ -212,15 +211,28 @@ void EncryptionMigrationScreenHandler::RegisterMessages() {
 
 void EncryptionMigrationScreenHandler::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
-  current_battery_percent_ = proto.battery_percent();
-  CallJS("setBatteryState", current_battery_percent_,
-         current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent,
+  if (proto.has_battery_percent()) {
+    if (!current_battery_percent_) {
+      // If initial battery level is below the minimum, migration should start
+      // automatically once the device is charged enough.
+      if (proto.battery_percent() < arc::kMigrationMinimumBatteryPercent)
+        should_migrate_on_enough_battery_ = true;
+    }
+    current_battery_percent_ = proto.battery_percent();
+  } else {
+    // If battery level is not provided, we regard it as 100% to start migration
+    // immediately.
+    current_battery_percent_ = 100.0;
+  }
+
+  CallJS("setBatteryState", *current_battery_percent_,
+         *current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent,
          proto.battery_state() ==
              power_manager::PowerSupplyProperties_BatteryState_CHARGING);
 
   // If the migration was already requested and the bettery level is enough now,
   // The migration should start immediately.
-  if (current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent &&
+  if (*current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent &&
       should_migrate_on_enough_battery_) {
     should_migrate_on_enough_battery_ = false;
     StartMigration();
@@ -305,7 +317,8 @@ void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
 }
 
 void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
-  if (current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent) {
+  if (current_battery_percent_ &&
+      *current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent) {
     StartMigration();
     return;
   }
@@ -317,7 +330,7 @@ void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
 
 void EncryptionMigrationScreenHandler::StartMigration() {
   UpdateUIState(UIState::MIGRATING);
-  initial_battery_percent_ = current_battery_percent_;
+  initial_battery_percent_ = *current_battery_percent_;
 
   // Mount the existing eCryptfs vault to a temporary location for migration.
   cryptohome::MountParameters mount(false);
@@ -418,11 +431,11 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
     case cryptohome::DIRCRYPTO_MIGRATION_SUCCESS:
       // If the battery level decreased during migration, record the consumed
       // battery level.
-      if (current_battery_percent_ < initial_battery_percent_) {
+      if (*current_battery_percent_ < initial_battery_percent_) {
         UMA_HISTOGRAM_PERCENTAGE(
             kUmaNameConsumedBatteryPercent,
             static_cast<int>(std::round(initial_battery_percent_ -
-                                        current_battery_percent_)));
+                                        *current_battery_percent_)));
       }
       // Restart immediately after successful migration.
       DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();

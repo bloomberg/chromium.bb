@@ -51,7 +51,7 @@
               <div>$i18n{migrationButtonSkip}</div>
             </oobe-text-button>
             <oobe-text-button inverse on-tap="onUpgrade_"
-                disabled="[[isMigrationAccepted]]">
+                disabled="[[!isEnoughBattery]]">
               <div>$i18n{migrationButtonUpdate}</div>
             </oobe-text-button>
           </div>

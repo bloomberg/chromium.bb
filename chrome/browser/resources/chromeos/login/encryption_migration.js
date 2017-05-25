@@ -77,14 +77,6 @@ Polymer({
     },
 
     /**
-     * True if the user already accepted the migration.
-     */
-    isMigrationAccepted: {
-      type: Boolean,
-      value: false
-    },
-
-    /**
      * Formatted string of the current available space size.
      */
     availableSpaceInString: {
@@ -209,7 +201,6 @@ Polymer({
    * @private
    */
   onUpgrade_: function() {
-    this.isMigrationAccepted = true;
     this.fire('upgrade');
   },
 
