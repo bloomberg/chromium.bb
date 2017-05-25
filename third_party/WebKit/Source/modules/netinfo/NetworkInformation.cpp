@@ -42,6 +42,23 @@ String ConnectionTypeToString(WebConnectionType type) {
   return "none";
 }
 
+String EffectiveConnectionTypeToString(WebEffectiveConnectionType type) {
+  switch (type) {
+    case WebEffectiveConnectionType::kTypeUnknown:
+    case WebEffectiveConnectionType::kTypeOffline:
+    case WebEffectiveConnectionType::kType4G:
+      return "4g";
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      return "slow-2g";
+    case WebEffectiveConnectionType::kType2G:
+      return "2g";
+    case WebEffectiveConnectionType::kType3G:
+      return "3g";
+  }
+  NOTREACHED();
+  return "4g";
+}
+
 // Rounds |rtt_msec| to the nearest 25 milliseconds as per the NetInfo spec.
 unsigned long RoundRtt(const Optional<TimeDelta>& rtt) {
   if (!rtt.has_value()) {
@@ -82,7 +99,7 @@ NetworkInformation::~NetworkInformation() {
 }
 
 String NetworkInformation::type() const {
-  // m_type is only updated when listening for events, so ask
+  // type_ is only updated when listening for events, so ask
   // networkStateNotifier if not listening (crbug.com/379841).
   if (!observing_)
     return ConnectionTypeToString(GetNetworkStateNotifier().ConnectionType());
@@ -96,6 +113,18 @@ double NetworkInformation::downlinkMax() const {
     return GetNetworkStateNotifier().MaxBandwidth();
 
   return downlink_max_mbps_;
+}
+
+String NetworkInformation::effectiveType() const {
+  // effective_type_ is only updated when listening for events, so ask
+  // networkStateNotifier if not listening (crbug.com/379841).
+  if (!observing_) {
+    return EffectiveConnectionTypeToString(
+        GetNetworkStateNotifier().EffectiveType());
+  }
+
+  // If observing, return m_type which changes when the event fires, per spec.
+  return EffectiveConnectionTypeToString(effective_type_);
 }
 
 unsigned long NetworkInformation::rtt() const {
@@ -115,11 +144,13 @@ double NetworkInformation::downlink() const {
 void NetworkInformation::ConnectionChange(
     WebConnectionType type,
     double downlink_max_mbps,
+    WebEffectiveConnectionType effective_type,
     const Optional<TimeDelta>& http_rtt,
     const Optional<TimeDelta>& transport_rtt,
     const Optional<double>& downlink_mbps) {
   DCHECK(GetExecutionContext()->IsContextThread());
 
+  effective_type_ = effective_type;
   transport_rtt_msec_ = RoundRtt(transport_rtt);
   downlink_mbps_ = RoundMbps(downlink_mbps);
   // TODO(tbansal): https://crbug.com/719108. Dispatch |change| event if the
@@ -204,6 +235,7 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       type_(GetNetworkStateNotifier().ConnectionType()),
       downlink_max_mbps_(GetNetworkStateNotifier().MaxBandwidth()),
+      effective_type_(GetNetworkStateNotifier().EffectiveType()),
       transport_rtt_msec_(RoundRtt(GetNetworkStateNotifier().TransportRtt())),
       downlink_mbps_(
           RoundMbps(GetNetworkStateNotifier().DownlinkThroughputMbps())),

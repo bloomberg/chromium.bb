@@ -4452,6 +4452,7 @@ interface NetworkInformation : EventTarget
     attribute @@toStringTag
     getter downlink
     getter downlinkMax
+    getter effectiveType
     getter onchange
     getter ontypechange
     getter rtt

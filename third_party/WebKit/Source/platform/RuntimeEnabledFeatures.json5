@@ -662,6 +662,10 @@
       status: "stable",
     },
     {
+      name: "NetInfoEffectiveType",
+      status: "experimental",
+    },
+    {
       name: "NetInfoRtt",
       status: "experimental",
     },

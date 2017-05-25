@@ -26,7 +26,6 @@
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_info.h"
-#include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -169,9 +168,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRedirectMode,
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerMode,
                           content::ServiceWorkerMode::LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(net::EffectiveConnectionType,
-                          net::EFFECTIVE_CONNECTION_TYPE_LAST - 1)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMixedContentContextType,
                           blink::WebMixedContentContextType::kLast)

@@ -47,6 +47,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
+#include "net/nqe/effective_connection_type.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebMemoryStatistics.h"
@@ -566,7 +567,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;
-  void OnNetworkQualityChanged(base::TimeDelta http_rtt,
+  void OnNetworkQualityChanged(net::EffectiveConnectionType type,
+                               base::TimeDelta http_rtt,
                                base::TimeDelta transport_rtt,
                                double bandwidth_kbps) override;
   void SetWebKitSharedTimersSuspended(bool suspend) override;

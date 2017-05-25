@@ -626,6 +626,7 @@ interface MessagePort : EventTarget
 interface NetworkInformation : EventTarget
     getter downlink
     getter downlinkMax
+    getter effectiveType
     getter onchange
     getter ontypechange
     getter rtt
