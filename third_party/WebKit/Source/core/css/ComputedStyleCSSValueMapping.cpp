@@ -3499,6 +3499,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return nullptr;
 
     // Unimplemented @font-face properties.
+    case CSSPropertyFontDisplay:
     case CSSPropertySrc:
     case CSSPropertyUnicodeRange:
       return nullptr;
