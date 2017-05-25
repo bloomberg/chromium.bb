@@ -1887,24 +1887,23 @@ static int intra_edge_filter_strength(int bsz, int delta) {
 static void filter_intra_edge(uint8_t *p, int sz, int strength) {
   if (!strength) return;
 
-  const int kernel[2][3] = { { 4, 8, 4 }, { 5, 6, 5 } };
-  const int filt = (strength < 2) ? 0 : 1;
-  const int n_iter = (strength < 3) ? 1 : 2;
+  const int kernel[3][5] = {
+    { 0, 4, 8, 4, 0 }, { 0, 5, 6, 5, 0 }, { 2, 4, 4, 4, 2 }
+  };
+  const int filt = strength - 1;
   uint8_t edge[129];
 
-  for (int ii = 0; ii < n_iter; ii++) {
-    memcpy(edge, p, sz * sizeof(*p));
-    for (int i = 1; i < sz - 1; i++) {
-      int s = 0;
-      for (int j = 0; j < 3; j++) {
-        int k = i - 1 + j;
-        k = (k < 0) ? 0 : k;
-        k = (k > sz - 1) ? sz - 1 : k;
-        s += edge[k] * kernel[filt][j];
-      }
-      s = (s + 8) >> 4;
-      p[i] = s;
+  memcpy(edge, p, sz * sizeof(*p));
+  for (int i = 1; i < sz - 1; i++) {
+    int s = 0;
+    for (int j = 0; j < 5; j++) {
+      int k = i - 2 + j;
+      k = (k < 0) ? 0 : k;
+      k = (k > sz - 1) ? sz - 1 : k;
+      s += edge[k] * kernel[filt][j];
     }
+    s = (s + 8) >> 4;
+    p[i] = s;
   }
 }
 
@@ -1912,24 +1911,23 @@ static void filter_intra_edge(uint8_t *p, int sz, int strength) {
 static void filter_intra_edge_high(uint16_t *p, int sz, int strength) {
   if (!strength) return;
 
-  const int kernel[2][3] = { { 4, 8, 4 }, { 5, 6, 5 } };
-  const int filt = (strength < 2) ? 0 : 1;
-  const int n_iter = (strength < 3) ? 1 : 2;
+  const int kernel[3][5] = {
+    { 0, 4, 8, 4, 0 }, { 0, 5, 6, 5, 0 }, { 2, 4, 4, 4, 2 }
+  };
+  const int filt = strength - 1;
   uint16_t edge[129];
 
-  for (int ii = 0; ii < n_iter; ii++) {
-    memcpy(edge, p, sz * sizeof(*p));
-    for (int i = 1; i < sz - 1; i++) {
-      int s = 0;
-      for (int j = 0; j < 3; j++) {
-        int k = i - 1 + j;
-        k = (k < 0) ? 0 : k;
-        k = (k > sz - 1) ? sz - 1 : k;
-        s += edge[k] * kernel[filt][j];
-      }
-      s = (s + 8) >> 4;
-      p[i] = s;
+  memcpy(edge, p, sz * sizeof(*p));
+  for (int i = 1; i < sz - 1; i++) {
+    int s = 0;
+    for (int j = 0; j < 5; j++) {
+      int k = i - 2 + j;
+      k = (k < 0) ? 0 : k;
+      k = (k > sz - 1) ? sz - 1 : k;
+      s += edge[k] * kernel[filt][j];
     }
+    s = (s + 8) >> 4;
+    p[i] = s;
   }
 }
 #endif  // CONFIG_INTRA_EDGE
