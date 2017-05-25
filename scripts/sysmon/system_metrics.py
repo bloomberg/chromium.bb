@@ -6,7 +6,6 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import errno
 import os
@@ -206,9 +205,9 @@ def collect_proc_info():
     elif _is_apache(proc):
       apache_count += 1
     total += 1
-  logger.debug('autoserv_count: %s', autoserv_count)
-  logger.debug('sysmon_count: %s', sysmon_count)
-  logger.debug('apache_count: %s', apache_count)
+  logger.debug(u'autoserv_count: %s', autoserv_count)
+  logger.debug(u'sysmon_count: %s', sysmon_count)
+  logger.debug(u'apache_count: %s', apache_count)
   _autoserv_proc_count_metric.set(autoserv_count)
   _sysmon_proc_count_metric.set(sysmon_count)
   _apache_proc_count_metric.set(apache_count)

@@ -6,7 +6,6 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import time
 
@@ -93,7 +92,7 @@ def collect_puppet_summary():
   try:
     summary = _PuppetRunSummary(LAST_RUN_FILE)
   except Exception as e:
-    logger.warning('Error loading Puppet run summary: %s', e)
+    logger.warning(u'Error loading Puppet run summary: %s', e)
   else:
     _config_version_metric.set(summary.config_version)
     _puppet_version_metric.set(str(summary.puppet_version))

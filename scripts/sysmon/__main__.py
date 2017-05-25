@@ -6,7 +6,6 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import random
 import time
@@ -38,7 +37,7 @@ class _MetricCollector(object):
         callback=osinfo_metrics.collect_os_info,
         interval=60 * 60)
     if collect_prod_hosts:
-      logger.info('Enabling prod host metric collection.')
+      logger.info(u'Enabling prod host metric collection.')
       self._collect_prod_hosts = _TimedCallback(
           callback=prod_metrics.collect_prod_hosts,
           interval=10 * 60)

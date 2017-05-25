@@ -6,7 +6,6 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
 import subprocess
@@ -69,17 +68,17 @@ class _GitMetricCollector(object):
       self._collect_commit_hash_metric()
       self._collect_timestamp_metric()
     except subprocess.CalledProcessError as e:
-      logger.warning('Error collecting git metrics for %s: %s',
+      logger.warning(u'Error collecting git metrics for %s: %s',
                      self._gitdir, e)
 
   def _collect_commit_hash_metric(self):
     commit_hash = self._gitrepo.get_commit_hash()
-    logger.debug('Collecting Git hash %r for %r', commit_hash, self._gitdir)
+    logger.debug(u'Collecting Git hash %r for %r', commit_hash, self._gitdir)
     self._commit_hash_metric.set(commit_hash, self._fields)
 
   def _collect_timestamp_metric(self):
     commit_time = self._gitrepo.get_commit_time()
-    logger.debug('Collecting Git timestamp %r for %r',
+    logger.debug(u'Collecting Git timestamp %r for %r',
                  commit_time, self._gitdir)
     self._timestamp_metric.set(commit_time, self._fields)
 
