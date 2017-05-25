@@ -33,12 +33,23 @@ void FramePainter::Paint(GraphicsContext& context,
                          const CullRect& rect) {
   GetFrameView().NotifyPageThatContentAreaWillPaint();
 
-  IntRect document_dirty_rect = rect.rect_;
+  IntRect document_dirty_rect;
   IntRect visible_area_without_scrollbars(
       GetFrameView().Location(), GetFrameView().VisibleContentRect().Size());
-  document_dirty_rect.Intersect(visible_area_without_scrollbars);
-  document_dirty_rect.MoveBy(-GetFrameView().Location() +
-                             GetFrameView().ScrollOffsetInt());
+  IntPoint content_offset =
+      -GetFrameView().Location() + GetFrameView().ScrollOffsetInt();
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    auto content_cull_rect = rect;
+    content_cull_rect.UpdateForScrollingContents(
+        visible_area_without_scrollbars,
+        AffineTransform().Translate(-content_offset.X(), -content_offset.Y()));
+    document_dirty_rect = content_cull_rect.rect_;
+  } else {
+    document_dirty_rect = rect.rect_;
+    document_dirty_rect.Intersect(visible_area_without_scrollbars);
+    document_dirty_rect.MoveBy(content_offset);
+  }
 
   bool should_paint_contents = !document_dirty_rect.IsEmpty();
   bool should_paint_scrollbars = !GetFrameView().ScrollbarsSuppressed() &&

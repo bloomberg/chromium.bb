@@ -46,4 +46,16 @@ void CullRect::UpdateCullRect(
     rect_ = local_to_parent_transform.Inverse().MapRect(rect_);
 }
 
+void CullRect::UpdateForScrollingContents(
+    const IntRect& overflow_clip_rect,
+    const AffineTransform& local_to_parent_transform) {
+  // The distance to expand the cull rect for scrolling contents.
+  static const int kPixelDistanceToExpand = 4000;
+
+  rect_.Intersect(overflow_clip_rect);
+  UpdateCullRect(local_to_parent_transform);
+  // TODO(wangxianzhu, chrishtr): How about non-composited scrolling contents?
+  rect_.Inflate(kPixelDistanceToExpand);
+}
+
 }  // namespace blink
