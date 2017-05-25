@@ -13841,51 +13841,30 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
   EXPECT_EQ("hello!", response_data);
 }
 
-class OneTimeCachingHostResolver : public HostResolver {
+class OneTimeCachingHostResolver : public MockHostResolverBase {
  public:
   explicit OneTimeCachingHostResolver(const HostPortPair& host_port)
-      : host_port_(host_port) {}
+      : MockHostResolverBase(/* use_caching = */ true), host_port_(host_port) {}
   ~OneTimeCachingHostResolver() override {}
-
-  RuleBasedHostResolverProc* rules() { return host_resolver_.rules(); }
-
-  // HostResolver methods:
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              const CompletionCallback& callback,
-              std::unique_ptr<Request>* out_req,
-              const NetLogWithSource& net_log) override {
-    return host_resolver_.Resolve(
-        info, priority, addresses, callback, out_req, net_log);
-  }
 
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const NetLogWithSource& net_log) override {
-    int rv = host_resolver_.ResolveFromCache(info, addresses, net_log);
+    int rv = MockHostResolverBase::ResolveFromCache(info, addresses, net_log);
     if (rv == OK && info.host_port_pair().Equals(host_port_))
-      host_resolver_.GetHostCache()->clear();
+      GetHostCache()->clear();
     return rv;
   }
 
-  MockCachingHostResolver* GetMockHostResolver() {
-    return &host_resolver_;
-  }
-
  private:
-  MockCachingHostResolver host_resolver_;
   const HostPortPair host_port_;
 };
 
 TEST_F(HttpNetworkTransactionTest,
        UseIPConnectionPoolingWithHostCacheExpiration) {
   // Set up a special HttpNetworkSession with a OneTimeCachingHostResolver.
-  OneTimeCachingHostResolver host_resolver(
+  session_deps_.host_resolver = base::MakeUnique<OneTimeCachingHostResolver>(
       HostPortPair("mail.example.com", 443));
-  HttpNetworkSession::Params params =
-      SpdySessionDependencies::CreateSessionParams(&session_deps_);
-  params.host_resolver = &host_resolver;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   AddSSLSocketData();
@@ -13940,8 +13919,9 @@ TEST_F(HttpNetworkTransactionTest,
   HostResolver::RequestInfo resolve_info(HostPortPair("mail.example.com", 443));
   AddressList ignored;
   std::unique_ptr<HostResolver::Request> request;
-  rv = host_resolver.Resolve(resolve_info, DEFAULT_PRIORITY, &ignored,
-                             callback.callback(), &request, NetLogWithSource());
+  rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
+                                            &ignored, callback.callback(),
+                                            &request, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
