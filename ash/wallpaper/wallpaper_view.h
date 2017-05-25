@@ -10,10 +10,13 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/view.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
 
 class PreEventDispatchHandler;
-class WmWindow;
 
 class WallpaperView : public views::View, public views::ContextMenuController {
  public:
@@ -36,7 +39,7 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
-views::Widget* CreateWallpaper(WmWindow* root_window, int container_id);
+views::Widget* CreateWallpaper(aura::Window* root_window, int container_id);
 
 }  // namespace ash
 

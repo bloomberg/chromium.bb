@@ -235,7 +235,7 @@ class AccessibilityManager
 
   // ShellObserver overrides:
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                ash::WmWindow* root_window) override;
+                                aura::Window* root_window) override;
 
   void SetProfileForTest(Profile* profile);
 

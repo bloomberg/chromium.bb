@@ -347,7 +347,7 @@ void Shell::OnCastingSessionStartedOrStopped(bool started) {
     observer.OnCastingSessionStartedOrStopped(started);
 }
 
-void Shell::OnRootWindowAdded(WmWindow* root_window) {
+void Shell::OnRootWindowAdded(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnRootWindowAdded(root_window);
 }
@@ -513,7 +513,7 @@ void Shell::NotifyOverviewModeEnded() {
 }
 
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
-                                         WmWindow* root_window) {
+                                         aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnFullscreenStateChanged(is_fullscreen, root_window);
 }

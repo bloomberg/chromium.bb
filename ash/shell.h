@@ -285,7 +285,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnCastingSessionStartedOrStopped(bool started);
 
   // Called when a root window is created.
-  void OnRootWindowAdded(WmWindow* root_window);
+  void OnRootWindowAdded(aura::Window* root_window);
 
   // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
   // exists.
@@ -586,7 +586,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   void NotifyOverviewModeEnded();
 
   // Notifies observers that fullscreen mode has changed for |root_window|.
-  void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);
+  void NotifyFullscreenStateChanged(bool is_fullscreen,
+                                    aura::Window* root_window);
 
   // Notifies observers that |pinned_window| changed its pinned window state.
   void NotifyPinnedStateChanged(aura::Window* pinned_window);

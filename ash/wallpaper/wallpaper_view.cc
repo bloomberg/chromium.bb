@@ -12,7 +12,7 @@
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -21,6 +21,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -39,11 +40,12 @@ class LayerControlView : public views::View {
 
   // Overrides views::View.
   void Layout() override {
-    WmWindow* window = WmWindow::Get(GetWidget()->GetNativeWindow());
+    aura::Window* window = GetWidget()->GetNativeWindow();
     // Keep |this| at the bottom since there may be other windows on top of the
     // wallpaper view such as an overview mode shield.
-    window->GetParent()->StackChildAtBottom(window);
-    display::Display display = window->GetDisplayNearestWindow();
+    window->parent()->StackChildAtBottom(window);
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window);
 
     // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
     float ui_scale = 1.f;
@@ -191,7 +193,7 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
   ShellPort::Get()->ShowContextMenu(point, source_type);
 }
 
-views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
+views::Widget* CreateWallpaper(aura::Window* root_window, int container_id) {
   WallpaperController* controller = Shell::Get()->wallpaper_controller();
   WallpaperDelegate* wallpaper_delegate = Shell::Get()->wallpaper_delegate();
 
@@ -201,17 +203,15 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
   params.name = "WallpaperView";
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+  RootWindowController* root_window_controller =
+      RootWindowController::ForWindow(root_window);
+  root_window_controller->ConfigureWidgetInitParamsForContainer(
       wallpaper_widget, container_id, &params);
   wallpaper_widget->Init(params);
   wallpaper_widget->SetContentsView(new LayerControlView(new WallpaperView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
-  WmWindow* wallpaper_window =
-      WmWindow::Get(wallpaper_widget->GetNativeWindow());
-  wallpaper_window->SetVisibilityAnimationType(animation_type);
-
-  RootWindowController* root_window_controller =
-      root_window->GetRootWindowController();
+  aura::Window* wallpaper_window = wallpaper_widget->GetNativeWindow();
+  ::wm::SetWindowVisibilityAnimationType(wallpaper_window, animation_type);
 
   // Enable wallpaper transition for the following cases:
   // 1. Initial(OOBE) wallpaper animation.
@@ -221,19 +221,22 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
       root_window_controller->animating_wallpaper_widget_controller() ||
       Shell::Get()->session_controller()->NumberOfLoggedInUsers()) {
-    wallpaper_window->SetVisibilityAnimationTransition(::wm::ANIMATE_SHOW);
+    ::wm::SetWindowVisibilityAnimationTransition(wallpaper_window,
+                                                 ::wm::ANIMATE_SHOW);
     int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
     if (duration_override) {
-      wallpaper_window->SetVisibilityAnimationDuration(
+      ::wm::SetWindowVisibilityAnimationDuration(
+          wallpaper_window,
           base::TimeDelta::FromMilliseconds(duration_override));
     }
   } else {
     // Disable animation if transition to login screen from an empty background.
-    wallpaper_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
+    ::wm::SetWindowVisibilityAnimationTransition(wallpaper_window,
+                                                 ::wm::ANIMATE_NONE);
   }
 
-  WmWindow* container = root_window->GetChildByShellWindowId(container_id);
-  wallpaper_widget->SetBounds(container->GetBounds());
+  aura::Window* container = root_window->GetChildById(container_id);
+  wallpaper_widget->SetBounds(container->bounds());
   return wallpaper_widget;
 }
 

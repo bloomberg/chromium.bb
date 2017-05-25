@@ -304,12 +304,11 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, ShellObserver implementation:
 
-void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
-                                                      WmWindow* root_window) {
-  if (root_window->aura_window() != root_window_ ||
-      is_fullscreen_ == is_fullscreen) {
+void WorkspaceLayoutManager::OnFullscreenStateChanged(
+    bool is_fullscreen,
+    aura::Window* root_window) {
+  if (root_window != root_window_ || is_fullscreen_ == is_fullscreen)
     return;
-  }
 
   is_fullscreen_ = is_fullscreen;
   if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
@@ -383,8 +382,7 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
     return;
   bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
   if (is_fullscreen != is_fullscreen_) {
-    Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen,
-                                               WmWindow::Get(root_window_));
+    Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen, root_window_);
     is_fullscreen_ = is_fullscreen;
   }
 }

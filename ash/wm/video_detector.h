@@ -104,7 +104,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
 
   // ShellObserver overrides.
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                WmWindow* root_window) override;
+                                aura::Window* root_window) override;
 
  private:
   // Called when video activity is observed in |window|.
