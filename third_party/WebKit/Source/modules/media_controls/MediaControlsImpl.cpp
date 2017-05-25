@@ -313,20 +313,18 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
   controls->InitializeControls();
   controls->Reset();
 
-  // RotateToFullscreen and FullscreenOrientationLock are not yet compatible
-  // so enabling RotateToFullscreen disables FullscreenOrientationLock.
-  // TODO(johnme): Make it possible to use both features simultaneously.
+  if (RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled() &&
+      media_element.IsHTMLVideoElement()) {
+    // Initialize the orientation lock when going fullscreen feature.
+    controls->orientation_lock_delegate_ =
+        new MediaControlsOrientationLockDelegate(
+            toHTMLVideoElement(media_element));
+  }
   if (RuntimeEnabledFeatures::videoRotateToFullscreenEnabled() &&
       media_element.IsHTMLVideoElement()) {
     // Initialize the rotate-to-fullscreen feature.
     controls->rotate_to_fullscreen_delegate_ =
         new MediaControlsRotateToFullscreenDelegate(
-            toHTMLVideoElement(media_element));
-  } else if (RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled() &&
-             media_element.IsHTMLVideoElement()) {
-    // Initialize the orientation lock when going fullscreen feature.
-    controls->orientation_lock_delegate_ =
-        new MediaControlsOrientationLockDelegate(
             toHTMLVideoElement(media_element));
   }
 

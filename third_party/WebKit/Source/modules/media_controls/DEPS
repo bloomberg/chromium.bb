@@ -1,6 +1,10 @@
 include_rules = [
   "-modules",
+  "+device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h",
   "+modules/ModulesExport.h",
+  "+modules/device_orientation",
   "+modules/media_controls",
   "+modules/remoteplayback",
+  "+modules/screen_orientation",
+  "+services/device/public/interfaces/constants.mojom-blink.h",
 ]
