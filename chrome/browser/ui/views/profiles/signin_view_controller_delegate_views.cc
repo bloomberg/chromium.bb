@@ -102,7 +102,6 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
       ->GetMaximumDialogSize().height();
   content_view_->SetPreferredSize(
       gfx::Size(kModalDialogWidth, std::min(height, max_height)));
-  content_view_->Layout();
 
   if (!modal_signin_widget_) {
     // The modal wasn't displayed yet so just show it with the already resized

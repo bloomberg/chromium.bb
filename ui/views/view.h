@@ -282,7 +282,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Sets the size that this View will request during layout. The actual size
   // may differ. It should rarely be necessary to set this; usually the right
   // approach is controlling the parent's layout via a LayoutManager.
-  void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
+  void SetPreferredSize(const gfx::Size& size);
 
   // Convenience method that sizes this view to its preferred size.
   void SizeToPreferredSize();

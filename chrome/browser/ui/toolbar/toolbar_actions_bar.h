@@ -95,9 +95,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns the preferred size for the toolbar; this does *not* reflect any
+  // Returns the default/full size for the toolbar; this does *not* reflect any
   // animations that may be running.
-  gfx::Size GetPreferredSize() const;
+  gfx::Size GetFullSize() const;
 
   // Returns the [minimum|maximum] possible width for the toolbar.
   int GetMinimumWidth() const;

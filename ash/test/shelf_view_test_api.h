@@ -10,16 +10,9 @@
 
 namespace gfx {
 class Rect;
-class Size;
-}
-
-namespace ui {
-class Event;
 }
 
 namespace views {
-class Button;
-class InkDrop;
 class View;
 }
 
@@ -92,16 +85,8 @@ class ShelfViewTestAPI {
   // An accessor for overflow button.
   OverflowButton* overflow_button() const;
 
-  // Returns the preferred size of |shelf_view_|.
-  gfx::Size GetPreferredSize();
-
   // Returns minimum distance before drag starts.
   int GetMinimumDragDistance() const;
-
-  // Wrapper for ShelfView::ButtonPressed.
-  void ButtonPressed(views::Button* sender,
-                     const ui::Event& event,
-                     views::InkDrop* ink_drop);
 
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;

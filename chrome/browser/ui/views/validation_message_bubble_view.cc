@@ -76,7 +76,7 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
     content_bottom += kTextVerticalMargin + sub_label->height();
   }
 
-  set_preferred_size(gfx::Size(text_start_x + label_width, content_bottom));
+  SetPreferredSize(gfx::Size(text_start_x + label_width, content_bottom));
 
   views::BubbleDialogDelegateView::CreateBubble(this)->ShowInactive();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::VALIDATION_MESSAGE);

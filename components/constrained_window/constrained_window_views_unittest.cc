@@ -117,7 +117,7 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
     // contents.
     gfx::Size preferred_size = dialog()->GetRootView()->GetPreferredSize();
     preferred_size.Enlarge(500, 500);
-    contents()->set_preferred_size(preferred_size);
+    contents()->SetPreferredSize(preferred_size);
   }
 
   void TearDown() override {
@@ -155,7 +155,7 @@ TEST_F(ConstrainedWindowViewsTest, GrowModalDialogSize) {
   gfx::Size preferred_size = contents()->GetPreferredSize();
   expected_size.Enlarge(50, 50);
   preferred_size.Enlarge(50, 50);
-  contents()->set_preferred_size(preferred_size);
+  contents()->SetPreferredSize(preferred_size);
   UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
 }
@@ -168,7 +168,7 @@ TEST_F(ConstrainedWindowViewsTest, ShrinkModalDialogSize) {
   gfx::Size preferred_size = contents()->GetPreferredSize();
   expected_size.Enlarge(-50, -50);
   preferred_size.Enlarge(-50, -50);
-  contents()->set_preferred_size(preferred_size);
+  contents()->SetPreferredSize(preferred_size);
   UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
 }
@@ -230,7 +230,7 @@ TEST_F(ConstrainedWindowViewsTest, NullModalParent) {
 // screen.
 TEST_F(ConstrainedWindowViewsTest, ClampDialogToNearestDisplay) {
   // Make sure the dialog will fit fully on the display
-  contents()->set_preferred_size(gfx::Size(200, 100));
+  contents()->SetPreferredSize(gfx::Size(200, 100));
 
   // First, make sure the host and dialog are sized and positioned.
   UpdateWebContentsModalDialogPosition(dialog(), dialog_host());

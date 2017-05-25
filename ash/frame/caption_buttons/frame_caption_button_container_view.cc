@@ -205,9 +205,9 @@ void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility() {
 }
 
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
-  minimize_button_->set_preferred_size(size);
-  size_button_->set_preferred_size(size);
-  close_button_->set_preferred_size(size);
+  minimize_button_->SetPreferredSize(size);
+  size_button_->SetPreferredSize(size);
+  close_button_->SetPreferredSize(size);
 }
 
 gfx::Size FrameCaptionButtonContainerView::CalculatePreferredSize() const {

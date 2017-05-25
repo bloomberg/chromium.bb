@@ -19,7 +19,7 @@ class TestLayoutManager : public LayoutManager {
   TestLayoutManager();
   ~TestLayoutManager() override;
 
-  void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
+  void SetPreferredSize(const gfx::Size& size) { preferred_size_ = size; }
 
   void set_preferred_height_for_width(int height) {
     preferred_height_for_width_ = height;

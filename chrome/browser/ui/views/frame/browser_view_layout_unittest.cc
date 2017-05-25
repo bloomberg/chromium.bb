@@ -72,7 +72,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
 
 views::View* CreateFixedSizeView(const gfx::Size& size) {
   auto* view = new views::View;
-  view->set_preferred_size(size);
+  view->SetPreferredSize(size);
   view->SizeToPreferredSize();
   return view;
 }

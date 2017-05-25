@@ -385,8 +385,8 @@ void ExtensionInstallDialogView::InitView() {
       0,
       std::min(kScrollViewMaxHeight, scrollable->GetPreferredSize().height()));
 
-  dialog_size_ = gfx::Size(content_width + button_row_insets.width(),
-                           container_->GetPreferredSize().height());
+  SetPreferredSize(gfx::Size(content_width + button_row_insets.width(),
+                             container_->GetPreferredSize().height()));
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
   event_name.append(
@@ -584,10 +584,6 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
 void ExtensionInstallDialogView::Layout() {
   container_->SetBounds(0, 0, width(), height());
   DialogDelegateView::Layout();
-}
-
-gfx::Size ExtensionInstallDialogView::GetPreferredSize() const {
-  return dialog_size_;
 }
 
 views::View* ExtensionInstallDialogView::CreateExtraView() {

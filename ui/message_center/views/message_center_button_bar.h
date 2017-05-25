@@ -14,13 +14,13 @@
 
 namespace views {
 class Label;
+class ToggleImageButton;
 }
 
 namespace message_center {
 
 class MessageCenter;
 class MessageCenterView;
-class NotificationCenterButton;
 class NotifierSettingsProvider;
 
 // MessageCenterButtonBar is the class that shows the content outside the main
@@ -83,12 +83,12 @@ class MessageCenterButtonBar : public views::View,
 #endif
 
   // Sub-views of the button bar.
-  NotificationCenterButton* title_arrow_;
+  views::ToggleImageButton* title_arrow_;
   views::Label* notification_label_;
   views::View* button_container_;
-  NotificationCenterButton* close_all_button_;
-  NotificationCenterButton* settings_button_;
-  NotificationCenterButton* quiet_mode_button_;
+  views::ToggleImageButton* close_all_button_;
+  views::ToggleImageButton* settings_button_;
+  views::ToggleImageButton* quiet_mode_button_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterButtonBar);
 };

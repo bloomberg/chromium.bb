@@ -367,7 +367,7 @@ class ShelfViewTest : public AshTestBase {
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), 0, 0);
-    test_api_->ButtonPressed(
+    test_api_->shelf_view()->ButtonPressed(
         button, release_event,
         views::test::InkDropHostViewTestApi(button).GetInkDrop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
@@ -380,7 +380,7 @@ class ShelfViewTest : public AshTestBase {
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), ui::EF_IS_DOUBLE_CLICK,
                                  0);
-    test_api_->ButtonPressed(
+    test_api_->shelf_view()->ButtonPressed(
         button, release_event,
         views::test::InkDropHostViewTestApi(button).GetInkDrop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
@@ -1538,7 +1538,8 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
       test_api_->overflow_bubble()->shelf_view());
 
   int ripped_index = test_for_overflow_view.GetLastVisibleIndex();
-  gfx::Size bubble_size = test_for_overflow_view.GetPreferredSize();
+  gfx::Size bubble_size =
+      test_for_overflow_view.shelf_view()->GetPreferredSize();
   int item_width = kShelfButtonSize + kShelfButtonSpacing;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -1556,7 +1557,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 
   // Check the overflow bubble size when an item is ripped off.
   EXPECT_EQ(bubble_size.width() - item_width,
-            test_for_overflow_view.GetPreferredSize().width());
+            test_for_overflow_view.shelf_view()->GetPreferredSize().width());
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   // Re-insert an item into the overflow bubble.
@@ -1567,12 +1568,12 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(bubble_size.width(),
-            test_for_overflow_view.GetPreferredSize().width());
+            test_for_overflow_view.shelf_view()->GetPreferredSize().width());
 
   generator.ReleaseLeftButton();
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(bubble_size.width(),
-            test_for_overflow_view.GetPreferredSize().width());
+            test_for_overflow_view.shelf_view()->GetPreferredSize().width());
 }
 
 TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
