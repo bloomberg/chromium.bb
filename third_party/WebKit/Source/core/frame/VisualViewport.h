@@ -217,11 +217,11 @@ class CORE_EXPORT VisualViewport final
   RefPtr<WebTaskRunner> GetTimerTaskRunner() const final;
 
   // Visual Viewport API implementation.
-  double ScrollLeft();
-  double ScrollTop();
-  double ClientWidth();
-  double ClientHeight();
-  double PageScale();
+  double OffsetLeft() const;
+  double OffsetTop() const;
+  double Width() const;
+  double Height() const;
+  double ScaleForVisualViewport() const;
 
   // Used for gathering data on user pinch-zoom statistics.
   void UserDidChangeScale();
@@ -239,7 +239,7 @@ class CORE_EXPORT VisualViewport final
 
   bool VisualViewportSuppliesScrollbars() const;
 
-  void UpdateStyleAndLayoutIgnorePendingStylesheets();
+  void UpdateStyleAndLayoutIgnorePendingStylesheets() const;
 
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();

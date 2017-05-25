@@ -16,7 +16,7 @@
   var scrollbarHeight = 15;
 
   function frameViewport() {
-    return frame.contentWindow.visualViewport;
+    return frame.contentWindow.view;
   }
 
   async_test(function(t) {
@@ -27,12 +27,12 @@
       // values in the iframe.
       var frame = document.getElementById("frame");
       frame.contentWindow.scrollTo(10, 15);
-      assert_equals(frameViewport().clientWidth, 200 - scrollbarWidth);
-      assert_equals(frameViewport().clientHeight, 500 - scrollbarHeight);
-      assert_equals(frameViewport().pageX, 10);
-      assert_equals(frameViewport().pageY, 15);
-      assert_equals(frameViewport().scrollLeft, 0);
-      assert_equals(frameViewport().scrollTop, 0);
+      assert_equals(frameViewport().width, 200 - scrollbarWidth);
+      assert_equals(frameViewport().height, 500 - scrollbarHeight);
+      assert_equals(frameViewport().pageLeft, 10);
+      assert_equals(frameViewport().pageTop, 15);
+      assert_equals(frameViewport().offsetLeft, 0);
+      assert_equals(frameViewport().offsetTop, 0);
       assert_equals(frameViewport().scale, 1);
 
       t.done();

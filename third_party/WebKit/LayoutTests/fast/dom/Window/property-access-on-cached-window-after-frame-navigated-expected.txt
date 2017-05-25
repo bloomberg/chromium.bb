@@ -224,13 +224,13 @@ PASS oldChildWindow.status is newChildWindow.status
 PASS oldChildWindow.statusbar.visible is newChildWindow.statusbar.visible
 PASS oldChildWindow.styleMedia.type is newChildWindow.styleMedia.type
 PASS oldChildWindow.toolbar.visible is newChildWindow.toolbar.visible
-PASS oldChildWindow.visualViewport.clientHeight is newChildWindow.visualViewport.clientHeight
-PASS oldChildWindow.visualViewport.clientWidth is newChildWindow.visualViewport.clientWidth
-PASS oldChildWindow.visualViewport.pageX is newChildWindow.visualViewport.pageX
-PASS oldChildWindow.visualViewport.pageY is newChildWindow.visualViewport.pageY
-PASS oldChildWindow.visualViewport.scale is newChildWindow.visualViewport.scale
-PASS oldChildWindow.visualViewport.scrollLeft is newChildWindow.visualViewport.scrollLeft
-PASS oldChildWindow.visualViewport.scrollTop is newChildWindow.visualViewport.scrollTop
+PASS oldChildWindow.view.height is newChildWindow.view.height
+PASS oldChildWindow.view.offsetLeft is newChildWindow.view.offsetLeft
+PASS oldChildWindow.view.offsetTop is newChildWindow.view.offsetTop
+PASS oldChildWindow.view.pageLeft is newChildWindow.view.pageLeft
+PASS oldChildWindow.view.pageTop is newChildWindow.view.pageTop
+PASS oldChildWindow.view.scale is newChildWindow.view.scale
+PASS oldChildWindow.view.width is newChildWindow.view.width
 PASS successfullyParsed is true
 
 TEST COMPLETE

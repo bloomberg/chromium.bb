@@ -101,13 +101,13 @@ PASS window.cached_speechSynthesis.speaking is false
 PASS window.cached_statusbar.visible is false
 PASS window.cached_styleMedia.type is ''
 PASS window.cached_toolbar.visible is false
-PASS window.cached_visualViewport.clientHeight is 0
-PASS window.cached_visualViewport.clientWidth is 0
-PASS window.cached_visualViewport.pageX is 0
-PASS window.cached_visualViewport.pageY is 0
-PASS window.cached_visualViewport.scale is 0
-PASS window.cached_visualViewport.scrollLeft is 0
-PASS window.cached_visualViewport.scrollTop is 0
+PASS window.cached_view.height is 0
+PASS window.cached_view.offsetLeft is 0
+PASS window.cached_view.offsetTop is 0
+PASS window.cached_view.pageLeft is 0
+PASS window.cached_view.pageTop is 0
+PASS window.cached_view.scale is 0
+PASS window.cached_view.width is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

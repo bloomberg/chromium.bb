@@ -272,7 +272,7 @@ unsigned LocalDOMWindow::PendingUnloadEventListeners() const {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
-      visual_viewport_(DOMVisualViewport::Create(this)),
+      view_(DOMVisualViewport::Create(this)),
       unused_preloads_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
           this,
@@ -1057,7 +1057,7 @@ double LocalDOMWindow::scrollX() const {
     return 0;
 
   if (!GetFrame()->GetPage()->GetSettings().GetInertVisualViewport())
-    return visual_viewport_->pageX();
+    return view_->pageLeft();
 
   FrameView* view = GetFrame()->View();
   if (!view)
@@ -1075,7 +1075,7 @@ double LocalDOMWindow::scrollY() const {
     return 0;
 
   if (!GetFrame()->GetPage()->GetSettings().GetInertVisualViewport())
-    return visual_viewport_->pageY();
+    return view_->pageTop();
 
   FrameView* view = GetFrame()->View();
   if (!view)
@@ -1088,11 +1088,11 @@ double LocalDOMWindow::scrollY() const {
   return AdjustScrollForAbsoluteZoom(viewport_y, GetFrame()->PageZoomFactor());
 }
 
-DOMVisualViewport* LocalDOMWindow::visualViewport() {
+DOMVisualViewport* LocalDOMWindow::view() {
   if (!GetFrame())
     return nullptr;
 
-  return visual_viewport_;
+  return view_;
 }
 
 const AtomicString& LocalDOMWindow::name() const {
@@ -1680,7 +1680,7 @@ DEFINE_TRACE(LocalDOMWindow) {
   visitor->Trace(application_cache_);
   visitor->Trace(event_queue_);
   visitor->Trace(post_message_timers_);
-  visitor->Trace(visual_viewport_);
+  visitor->Trace(view_);
   visitor->Trace(event_listener_observers_);
   DOMWindow::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);

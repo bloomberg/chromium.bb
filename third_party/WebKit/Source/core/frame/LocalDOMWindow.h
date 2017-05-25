@@ -146,7 +146,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   double pageXOffset() const { return scrollX(); }
   double pageYOffset() const { return scrollY(); }
 
-  DOMVisualViewport* visualViewport();
+  DOMVisualViewport* view();
 
   const AtomicString& name() const;
   void setName(const AtomicString&);
@@ -344,7 +344,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearDocument();
 
   Member<Document> document_;
-  Member<DOMVisualViewport> visual_viewport_;
+  Member<DOMVisualViewport> view_;
   TaskRunnerTimer<LocalDOMWindow> unused_preloads_timer_;
 
   bool should_print_when_finished_loading_;

@@ -2255,7 +2255,7 @@ float Internals::pageScaleFactor(ExceptionState& exception_state) {
     return 0;
   }
   Page* page = document_->GetPage();
-  return page->GetVisualViewport().PageScale();
+  return page->GetVisualViewport().Scale();
 }
 
 void Internals::setPageScaleFactor(float scale_factor,

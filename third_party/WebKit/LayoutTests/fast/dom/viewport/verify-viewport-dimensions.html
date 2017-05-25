@@ -15,7 +15,7 @@
 
 <script>
   function viewport() {
-    return window.visualViewport;
+    return window.view;
   }
 
   async_test(function(t) {
@@ -26,32 +26,32 @@
       window.scrollTo(100, 100);
 
       // Initial viewport dimensions.
-      assert_equals(viewport().clientWidth, 800, "initial clientWidth");
-      assert_equals(viewport().clientHeight, 600, "initial clientHeight");
-      assert_equals(viewport().scrollLeft, 0, "initial scrollLeft");
-      assert_equals(viewport().scrollTop, 0, "initial scrollTop");
-      assert_equals(viewport().pageX, 100, "initial pageX");
-      assert_equals(viewport().pageY, 100, "initial pageY");
+      assert_equals(viewport().width, 800, "initial width");
+      assert_equals(viewport().height, 600, "initial height");
+      assert_equals(viewport().offsetLeft, 0, "initial offsetLeft");
+      assert_equals(viewport().offsetTop, 0, "initial offsetTop");
+      assert_equals(viewport().pageLeft, 100, "initial pageLeft");
+      assert_equals(viewport().pageTop, 100, "initial pageTop");
       assert_equals(viewport().scale, 1, "initial scale");
 
       // Scale and scroll visual viewport.
       internals.setPageScaleFactor(2);
       internals.setVisualViewportOffset(10, 10);
-      assert_equals(viewport().clientWidth, 400, "scaled width");
-      assert_equals(viewport().clientHeight, 300, "scaled height");
-      assert_equals(viewport().scrollLeft, 10, "scrolled left viewport");
-      assert_equals(viewport().scrollTop, 10, "scrolled top viewport");
-      assert_equals(viewport().pageX, 110, "initial pageX");
-      assert_equals(viewport().pageY, 110, "initial pageY");
+      assert_equals(viewport().width, 400, "scaled width");
+      assert_equals(viewport().height, 300, "scaled height");
+      assert_equals(viewport().offsetLeft, 10, "scrolled left viewport");
+      assert_equals(viewport().offsetTop, 10, "scrolled top viewport");
+      assert_equals(viewport().pageLeft, 110, "initial pageLeft");
+      assert_equals(viewport().pageTop, 110, "initial pageTop");
       assert_equals(viewport().scale, 2, "scale");
 
-      // Set scrollTop/Left.
+      // Set offsetTop/Left.
       internals.setVisualViewportOffset(0, 20);
-      assert_equals(viewport().scrollTop, 20, "set scrollTop");
-      assert_equals(viewport().scrollLeft, 0, "set scrollLeft");
+      assert_equals(viewport().offsetTop, 20, "set offsetTop");
+      assert_equals(viewport().offsetLeft, 0, "set offsetLeft");
       internals.setVisualViewportOffset(-20, -20);
-      assert_equals(viewport().scrollTop, 0, "negative scrollTop");
-      assert_equals(viewport().scrollTop, 0, "negative scrollLeft");
+      assert_equals(viewport().offsetTop, 0, "negative offsetTop");
+      assert_equals(viewport().offsetTop, 0, "negative offsetLeft");
 
       t.done();
     });

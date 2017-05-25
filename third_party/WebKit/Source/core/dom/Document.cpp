@@ -4583,13 +4583,13 @@ void Document::EnqueueMediaQueryChangeListeners(
 
 void Document::EnqueueVisualViewportScrollEvent() {
   VisualViewportScrollEvent* event = VisualViewportScrollEvent::Create();
-  event->SetTarget(domWindow()->visualViewport());
+  event->SetTarget(domWindow()->view());
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
 }
 
 void Document::EnqueueVisualViewportResizeEvent() {
   VisualViewportResizeEvent* event = VisualViewportResizeEvent::Create();
-  event->SetTarget(domWindow()->visualViewport());
+  event->SetTarget(domWindow()->view());
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
 }
 
