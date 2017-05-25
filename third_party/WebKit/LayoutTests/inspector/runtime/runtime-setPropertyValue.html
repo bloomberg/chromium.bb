@@ -36,130 +36,77 @@ function test()
         {
             InspectorTest.evaluateInPage("dumpObject('Initial')", step0);
 
-            function step0()
-            {
-                InspectorTest.RuntimeAgent.evaluate("object1", step1);
-            }
-
-            function step1(error, result, exceptionDetails)
-            {
+            async function step0() {
+                var result = await InspectorTest.RuntimeAgent.evaluate("object1");
                 obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
-                InspectorTest.RuntimeAgent.evaluate("object2", step2);
-            }
-
-            function step2(error, result, exceptionDetails)
-            {
+                result = await InspectorTest.RuntimeAgent.evaluate("object2");
                 obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
                 next();
             }
         },
 
-        function testSetPrimitive(next)
+        async function testSetPrimitive(next)
         {
-            obj1.setPropertyValue(nameFoo, "2", step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set primitive')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "2");
+            InspectorTest.evaluateInPage("dumpObject('Set primitive')", next);
         },
 
-        function testSetHandle(next)
+        async function testSetHandle(next)
         {
-            obj1.setPropertyValue(nameFoo, "object2", step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set handle')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "object2");
+            InspectorTest.evaluateInPage("dumpObject('Set handle')", next);
         },
 
-        function testSetUndefined(next)
+        async function testSetUndefined(next)
         {
-            obj1.setPropertyValue(nameFoo, "undefined", step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set undefined')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "undefined");
+            InspectorTest.evaluateInPage("dumpObject('Set undefined')", next);
         },
 
-        function testSetZero(next)
+        async function testSetZero(next)
         {
-            obj1.setPropertyValue(nameFoo, "0", step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set zero')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "0");
+            InspectorTest.evaluateInPage("dumpObject('Set zero')", next);
         },
 
-        function testSetNull(next)
+        async function testSetNull(next)
         {
-            obj1.setPropertyValue(nameFoo, "null", step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set null')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "null");
+            InspectorTest.evaluateInPage("dumpObject('Set null')", next);
         },
 
-        function testSetEmptyString(next)
+        async function testSetEmptyString(next)
         {
-            obj1.setPropertyValue(nameFoo, "\"\"", step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set empty string')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "\"\"");
+            InspectorTest.evaluateInPage("dumpObject('Set empty string')", next);
         },
 
-        function testSetException(next)
+        async function testSetException(next)
         {
-            obj1.setPropertyValue(nameFoo, "throw 'exception'", step1);
-
-            function step1(error)
-            {
-                InspectorTest.addResult(error);
-                InspectorTest.evaluateInPage("dumpObject('Set exception')", next);
-            }
+            var error = await obj1.setPropertyValue(nameFoo, "throw 'exception'");
+            InspectorTest.addResult(error);
+            InspectorTest.evaluateInPage("dumpObject('Set exception')", next);
         },
 
-        function testSetNonFiniteNumbers(next)
+        async function testSetNonFiniteNumbers(next)
         {
-            obj1.setPropertyValue(nameFoo, "NaN", step1);
-
-            function step1(error)
-            {
-                obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo1"), "Infinity", step2);
-            }
-
-            function step2(error)
-            {
-                obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo2"), "-Infinity", step3);
-            }
-
-            function step3(error)
-            {
-                InspectorTest.evaluateInPage("dumpObject('Set non-finite numbers')", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "NaN");
+            await obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo1"), "Infinity");
+            await obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo2"), "-Infinity");
+            InspectorTest.evaluateInPage("dumpObject('Set non-finite numbers')", next);
         },
 
-        function testNegativeZero(next)
+        async function testNegativeZero(next)
         {
-            obj1.setPropertyValue(nameFoo, "1/-Infinity", step1);
-
-            function step1(error)
-            {
-                InspectorTest.evaluateInPage("checkNegativeZero()", next);
-            }
+            await obj1.setPropertyValue(nameFoo, "1/-Infinity");
+            InspectorTest.evaluateInPage("checkNegativeZero()", next);
         },
 
         function testReleaseObjectIsCalled(next)
         {
             // If failed, this test will time out.
             InspectorTest.addSniffer(InspectorTest.RuntimeAgent, "releaseObject", next);
-            obj1.setPropertyValue(nameFoo, "[1,2,3]", function(){});
+            obj1.setPropertyValue(nameFoo, "[1,2,3]");
         }
     ]);
 }
