@@ -559,9 +559,9 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // First we have to center the mouse cursor over the item.
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
-  gfx::Point point_in_root =
-      wm::GetRootWindowAt(location_in_screen_coordinates)
-          ->ConvertPointFromScreen(location_in_screen_coordinates);
+  gfx::Point point_in_root = location_in_screen_coordinates;
+  ::wm::ConvertPointFromScreen(
+      wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerPressedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
@@ -580,9 +580,9 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   views::View* drag_and_drop_view =
       view_model_->view_at(model_->ItemIndexByID(drag_and_drop_shelf_id_));
   ConvertPointFromScreen(drag_and_drop_view, &pt);
-  gfx::Point point_in_root =
-      wm::GetRootWindowAt(location_in_screen_coordinates)
-          ->ConvertPointFromScreen(location_in_screen_coordinates);
+  gfx::Point point_in_root = location_in_screen_coordinates;
+  ::wm::ConvertPointFromScreen(
+      wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerDraggedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);

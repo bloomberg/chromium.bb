@@ -7,6 +7,10 @@
 
 #include "ash/ash_export.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace gfx {
 class Point;
 class Rect;
@@ -14,18 +18,15 @@ class Rect;
 
 namespace ash {
 
-class WmWindow;
-
 namespace wm {
 
 // Returns the RootWindow at |point| in the virtual screen coordinates.
-// Returns NULL if the root window does not exist at the given
-// point.
-ASH_EXPORT WmWindow* GetRootWindowAt(const gfx::Point& point);
+// Returns nullptr if the root window does not exist at the given point.
+ASH_EXPORT aura::Window* GetRootWindowAt(const gfx::Point& point);
 
-// Returns the RootWindow that shares the most area with |rect| in
-// the virtual scren coordinates.
-ASH_EXPORT WmWindow* GetRootWindowMatching(const gfx::Rect& rect);
+// Returns the RootWindow that shares the most area with |rect| in the virtual
+// screen coordinates.
+ASH_EXPORT aura::Window* GetRootWindowMatching(const gfx::Rect& rect);
 
 }  // namespace wm
 }  // namespace ash

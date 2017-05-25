@@ -10,10 +10,10 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
@@ -95,8 +95,7 @@ bool ScreenAsh::IsWindowUnderCursor(gfx::NativeWindow window) {
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {
-  aura::Window* root_window =
-      WmWindow::GetAuraWindow(wm::GetRootWindowAt(point));
+  aura::Window* root_window = wm::GetRootWindowAt(point);
   aura::client::ScreenPositionClient* position_client =
       aura::client::GetScreenPositionClient(root_window);
 

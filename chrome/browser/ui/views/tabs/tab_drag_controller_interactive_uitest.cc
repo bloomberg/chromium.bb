@@ -69,7 +69,6 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -403,9 +402,8 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return;
 #if defined(OS_CHROMEOS)
-    event_generator_.reset(
-        new ui::test::EventGenerator(new ScreenEventGeneratorDelegate(
-            ash::WmWindow::GetAuraWindow(ash::wm::GetRootWindowAt(point)))));
+    event_generator_.reset(new ui::test::EventGenerator(
+        new ScreenEventGeneratorDelegate(ash::wm::GetRootWindowAt(point))));
 #endif
   }
 

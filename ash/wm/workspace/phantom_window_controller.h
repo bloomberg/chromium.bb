@@ -11,20 +11,22 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace aura {
+class Window;
+}
+
 namespace views {
 class Widget;
 }
 
 namespace ash {
 
-class WmWindow;
-
 // PhantomWindowController is responsible for showing a phantom representation
 // of a window. It's used to show a preview of how snapping or docking a window
 // will affect the window's bounds.
 class ASH_EXPORT PhantomWindowController {
  public:
-  explicit PhantomWindowController(WmWindow* window);
+  explicit PhantomWindowController(aura::Window* window);
 
   // Hides the phantom window without any animation.
   ~PhantomWindowController();
@@ -36,11 +38,11 @@ class ASH_EXPORT PhantomWindowController {
   // Creates, shows and returns a phantom widget at |bounds|
   // with kShellWindowId_ShelfContainer in |root_window| as a parent.
   std::unique_ptr<views::Widget> CreatePhantomWidget(
-      WmWindow* root_window,
+      aura::Window* root_window,
       const gfx::Rect& bounds_in_screen);
 
   // Window that the phantom window is stacked above.
-  WmWindow* window_;
+  aura::Window* window_;
 
   // Target bounds (including the shadows if any) of the animation in screen
   // coordinates.

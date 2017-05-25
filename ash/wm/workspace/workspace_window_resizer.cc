@@ -22,7 +22,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/window_types.h"
@@ -895,7 +894,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
 
   if (!snap_phantom_window_controller_) {
     snap_phantom_window_controller_ =
-        base::MakeUnique<PhantomWindowController>(WmWindow::Get(GetTarget()));
+        base::MakeUnique<PhantomWindowController>(GetTarget());
   }
   gfx::Rect phantom_bounds_in_screen(phantom_bounds);
   ::wm::ConvertRectToScreen(GetTarget()->parent(), &phantom_bounds_in_screen);

@@ -6,7 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -15,21 +15,23 @@
 namespace ash {
 namespace wm {
 
-WmWindow* GetRootWindowAt(const gfx::Point& point) {
+aura::Window* GetRootWindowAt(const gfx::Point& point) {
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   DCHECK(display.is_valid());
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display.id());
-  return root_window_controller ? root_window_controller->GetWindow() : nullptr;
+  return root_window_controller ? root_window_controller->GetRootWindow()
+                                : nullptr;
 }
 
-WmWindow* GetRootWindowMatching(const gfx::Rect& rect) {
+aura::Window* GetRootWindowMatching(const gfx::Rect& rect) {
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayMatching(rect);
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display.id());
-  return root_window_controller ? root_window_controller->GetWindow() : nullptr;
+  return root_window_controller ? root_window_controller->GetRootWindow()
+                                : nullptr;
 }
 
 }  // namespace wm
