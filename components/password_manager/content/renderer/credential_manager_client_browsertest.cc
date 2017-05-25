@@ -51,7 +51,7 @@ class FakeCredentialManager : public mojom::CredentialManager {
     std::move(callback).Run();
   }
 
-  void RequireUserMediation(RequireUserMediationCallback callback) override {
+  void PreventSilentAccess(PreventSilentAccessCallback callback) override {
     std::move(callback).Run();
   }
 
@@ -196,7 +196,7 @@ TEST_F(CredentialManagerClientTest, SendStore) {
 TEST_F(CredentialManagerClientTest, SendRequestUserMediation) {
   std::unique_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_->DispatchRequireUserMediation(callbacks.release());
+  client_->DispatchPreventSilentAccess(callbacks.release());
 
   RunAllPendingTasks();
 

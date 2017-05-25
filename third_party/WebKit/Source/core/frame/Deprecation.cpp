@@ -430,7 +430,6 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "details and https://www.chromium.org/developers/"
           "recent-changes-credential-management-api for migration suggestions.",
           milestoneString(M62));
-
     case UseCounter::kPaymentRequestNetworkNameInSupportedMethods:
       return replacedWillBeRemoved(
           "Card issuer network (\"amex\", \"diners\", \"discover\", \"jcb\", "
@@ -438,6 +437,11 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "payment method name \"basic-card\" with issuer network in the "
           "\"supportedNetworks\" field",
           M64, "5725727580225536");
+    case UseCounter::kCredentialManagerRequireUserMediation:
+      return replacedWillBeRemoved(
+          "The CredentialsContainer.requireUserMediation method",
+          "the CredentialsContainer.preventSilentAccess method", M62,
+          "4781762488041472");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

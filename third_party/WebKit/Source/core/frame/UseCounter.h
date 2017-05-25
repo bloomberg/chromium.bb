@@ -1614,6 +1614,7 @@ class CORE_EXPORT UseCounter {
     kUnitlessZeroAngleOffsetRotate = 2009,
     kUnitlessZeroAngleTransform = 2010,
     kHTMLOListElementStartGetterReversedWithoutStartAttribute = 2011,
+    kCredentialManagerPreventSilentAccess = 2012,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

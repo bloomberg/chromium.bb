@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUIRE_USER_MEDIATION_TASK_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUIRE_USER_MEDIATION_TASK_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_PREVENT_SILENT_ACCESS_TASK_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_PREVENT_SILENT_ACCESS_TASK_H_
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -12,9 +12,9 @@
 namespace password_manager {
 
 // Handles mediation completion and retrieves embedder-dependent services.
-class CredentialManagerPendingRequireUserMediationTaskDelegate {
+class CredentialManagerPendingPreventSilentAccessTaskDelegate {
  public:
-  virtual ~CredentialManagerPendingRequireUserMediationTaskDelegate() {}
+  virtual ~CredentialManagerPendingPreventSilentAccessTaskDelegate() {}
 
   // Retrieves the PasswordStore.
   virtual PasswordStore* GetPasswordStore() = 0;
@@ -24,12 +24,12 @@ class CredentialManagerPendingRequireUserMediationTaskDelegate {
 };
 
 // Notifies the password store that a list of origins require user mediation.
-class CredentialManagerPendingRequireUserMediationTask
+class CredentialManagerPendingPreventSilentAccessTask
     : public PasswordStoreConsumer {
  public:
-  explicit CredentialManagerPendingRequireUserMediationTask(
-      CredentialManagerPendingRequireUserMediationTaskDelegate* delegate);
-  ~CredentialManagerPendingRequireUserMediationTask() override;
+  explicit CredentialManagerPendingPreventSilentAccessTask(
+      CredentialManagerPendingPreventSilentAccessTaskDelegate* delegate);
+  ~CredentialManagerPendingPreventSilentAccessTask() override;
 
   // Adds an origin to require user mediation.
   void AddOrigin(const PasswordStore::FormDigest& form_digest);
@@ -39,15 +39,15 @@ class CredentialManagerPendingRequireUserMediationTask
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
-  CredentialManagerPendingRequireUserMediationTaskDelegate* const
+  CredentialManagerPendingPreventSilentAccessTaskDelegate* const
       delegate_;  // Weak.
 
   // Number of password store requests to be resolved.
   int pending_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequireUserMediationTask);
+  DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingPreventSilentAccessTask);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUIRE_USER_MEDIATION_TASK_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_PREVENT_SILENT_ACCESS_TASK_H_
