@@ -279,6 +279,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
+    IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,
                         OnAddContentSecurityPolicies)
@@ -347,6 +348,10 @@ void RenderFrameProxy::OnDidStopLoading() {
 
 void RenderFrameProxy::OnDispatchLoad() {
   web_frame_->DispatchLoadEventOnFrameOwner();
+}
+
+void RenderFrameProxy::OnCollapse(bool collapsed) {
+  web_frame_->Collapse(collapsed);
 }
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,

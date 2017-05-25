@@ -26,6 +26,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -306,7 +307,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // A disallowed subframe navigation should be successfully filtered.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }
@@ -354,9 +356,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/before-redirect.html"), main_rfh());
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+  content::NavigationThrottle::ThrottleCheckResult expected_result =
+      content::IsBrowserSideNavigationEnabled()
+          ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
+          : content::NavigationThrottle::CANCEL;
   SimulateRedirectAndExpectResult(
-      GURL("https://www.example.com/disallowed.html"),
-      content::NavigationThrottle::CANCEL);
+      GURL("https://www.example.com/disallowed.html"), expected_result);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }
@@ -391,13 +396,15 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // A disallowed subframe navigation should be successfully filtered.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/1/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }
@@ -411,7 +418,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // A disallowed subframe navigation should be successfully filtered.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/1/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 
@@ -421,7 +429,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(2, disallowed_notification_count());
 }
@@ -437,7 +446,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // A disallowed subframe navigation should be successfully filtered.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/1/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 
@@ -449,7 +459,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }
@@ -478,7 +489,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 
@@ -493,7 +505,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(2, disallowed_notification_count());
 }
@@ -539,7 +552,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // A subframe navigation fail.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }
@@ -595,7 +609,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
   // A final, nested subframe navigation is filtered.
   CreateSubframeWithTestNavigation(GURL("https://www.c.com/disallowed.html"),
                                    subframe2);
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }
@@ -633,7 +648,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation2) {
   // Navigate a sub-subframe that is not filtered due to the whitelist.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), subframe3);
-  SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+  SimulateStartAndExpectResult(
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }

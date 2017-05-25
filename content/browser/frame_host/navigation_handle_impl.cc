@@ -388,7 +388,15 @@ void NavigationHandleImpl::CancelDeferredNavigation(
          state_ == DEFERRING_REDIRECT ||
          state_ == DEFERRING_RESPONSE);
   DCHECK(result == NavigationThrottle::CANCEL_AND_IGNORE ||
-         result == NavigationThrottle::CANCEL);
+         result == NavigationThrottle::CANCEL ||
+         result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
+  DCHECK(result != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
+         state_ == DEFERRING_START ||
+         (state_ == DEFERRING_REDIRECT && IsBrowserSideNavigationEnabled()));
+
+  if (result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE)
+    frame_tree_node_->SetCollapsed(true);
+
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "CancelDeferredNavigation");
   state_ = CANCELING;
@@ -744,6 +752,17 @@ void NavigationHandleImpl::DidCommitNavigation(
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "DidCommitNavigation");
     state_ = DID_COMMIT;
+
+    // Getting this far means that the navigation was not blocked, and neither
+    // is this the error page navigation following a blocked navigation. Ensure
+    // the frame owner element is no longer collapsed as a result of a prior
+    // navigation having been blocked with BLOCK_REQUEST_AND_COLLAPSE.
+    if (!frame_tree_node()->IsMainFrame()) {
+      // The last committed load in collapsed frames will be an error page with
+      // |kUnreachableWebDataURL|. Same-page navigation should not be possible.
+      DCHECK(!is_same_page_ || !frame_tree_node()->is_collapsed());
+      frame_tree_node()->SetCollapsed(false);
+    }
   }
 }
 
@@ -808,6 +827,8 @@ NavigationHandleImpl::CheckWillStartRequest() {
       case NavigationThrottle::PROCEED:
         continue;
 
+      case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
+        frame_tree_node_->SetCollapsed(true);  // Fall through.
       case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
@@ -846,9 +867,12 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
       case NavigationThrottle::PROCEED:
         continue;
 
+      case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
+        frame_tree_node_->SetCollapsed(true);  // Fall through.
       case NavigationThrottle::BLOCK_REQUEST:
         CHECK(IsBrowserSideNavigationEnabled())
-            << "BLOCK_REQUEST must not be used on redirect without PlzNavigate";
+            << "BLOCK_REQUEST and BLOCK_REQUEST_AND_COLLAPSE must not be used "
+               "on redirect without PlzNavigate";
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
         state_ = CANCELING;
@@ -902,6 +926,7 @@ NavigationHandleImpl::CheckWillProcessResponse() {
         return result;
 
       case NavigationThrottle::BLOCK_REQUEST:
+      case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
         NOTREACHED();
     }
   }

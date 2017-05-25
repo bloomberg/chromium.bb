@@ -56,6 +56,10 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // return any LayoutObject when using fallback content.
   LayoutPart* GetLayoutPart() const;
 
+  // Whether to collapse the frame owner element in the embedder document. That
+  // is, to remove it from the layout as if it did not exist.
+  virtual void SetCollapsed(bool) {}
+
   Document* getSVGDocument(ExceptionState&) const;
 
   virtual bool LoadedNonEmptyDocument() const { return false; }

@@ -431,6 +431,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // when the frame changes its setting.
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
 
+  // Called when the client changes whether the frame's owner element in the
+  // embedder document should be collapsed, that is, remove from the layout as
+  // if it did not exist. Never called for main frames. Only has an effect for
+  // <iframe> owner elements.
+  void OnDidChangeCollapsedState(bool collapsed);
+
   // Called on a frame to notify it that its out-of-process parent frame
   // changed a property (such as allowFullscreen) on its <iframe> element.
   // Sends updated FrameOwnerProperties to the RenderFrame and to all proxies,

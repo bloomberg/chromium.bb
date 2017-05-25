@@ -55,6 +55,9 @@ class TestNavigationThrottle : public NavigationThrottle {
   const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
 
   void Resume() { navigation_handle()->Resume(); }
+  void Cancel(NavigationThrottle::ThrottleCheckResult result) {
+    navigation_handle()->CancelDeferredNavigation(result);
+  }
 
   RequestContextType request_context_type() { return request_context_type_; }
 
@@ -102,21 +105,23 @@ class TestNavigationThrottle : public NavigationThrottle {
   RequestContextType request_context_type_ = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
 };
 
-// Install a TestNavigationThrottle on all following requests and allows waiting
-// for various NavigationThrottle related events. Waiting works only for the
-// immediately next navigation. New instances are needed to wait for further
-// navigations.
+// Installs a TestNavigationThrottle either on all following requests or on
+// requests with an expected starting URL, and allows waiting for various
+// NavigationThrottle related events. Waiting works only for the immediately
+// next navigation. New instances are needed to wait for further navigations.
 class TestNavigationThrottleInstaller : public WebContentsObserver {
  public:
   TestNavigationThrottleInstaller(
       WebContents* web_contents,
       NavigationThrottle::ThrottleCheckResult will_start_result,
       NavigationThrottle::ThrottleCheckResult will_redirect_result,
-      NavigationThrottle::ThrottleCheckResult will_process_result)
+      NavigationThrottle::ThrottleCheckResult will_process_result,
+      const GURL& expected_start_url = GURL())
       : WebContentsObserver(web_contents),
         will_start_result_(will_start_result),
         will_redirect_result_(will_redirect_result),
         will_process_result_(will_process_result),
+        expected_start_url_(expected_start_url),
         weak_factory_(this) {}
   ~TestNavigationThrottleInstaller() override {}
 
@@ -146,14 +151,45 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
     will_process_loop_runner_ = nullptr;
   }
 
+  void Continue(NavigationThrottle::ThrottleCheckResult result) {
+    ASSERT_NE(NavigationThrottle::DEFER, result);
+    if (result == NavigationThrottle::PROCEED)
+      navigation_throttle()->Resume();
+    else
+      navigation_throttle()->Cancel(result);
+  }
+
   int will_start_called() { return will_start_called_; }
   int will_redirect_called() { return will_redirect_called_; }
   int will_process_called() { return will_process_called_; }
 
   int install_count() { return install_count_; }
 
+ protected:
+  virtual void DidCallWillStartRequest() {
+    will_start_called_++;
+    if (will_start_loop_runner_)
+      will_start_loop_runner_->Quit();
+  }
+
+  virtual void DidCallWillRedirectRequest() {
+    will_redirect_called_++;
+    if (will_redirect_loop_runner_)
+      will_redirect_loop_runner_->Quit();
+  }
+
+  virtual void DidCallWillProcessResponse() {
+    will_process_called_++;
+    if (will_process_loop_runner_)
+      will_process_loop_runner_->Quit();
+  }
+
  private:
   void DidStartNavigation(NavigationHandle* handle) override {
+    if (!expected_start_url_.is_empty() &&
+        handle->GetURL() != expected_start_url_)
+      return;
+
     std::unique_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
         handle, will_start_result_, will_redirect_result_, will_process_result_,
         base::Bind(&TestNavigationThrottleInstaller::DidCallWillStartRequest,
@@ -175,24 +211,6 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
       navigation_throttle_ = nullptr;
   }
 
-  void DidCallWillStartRequest() {
-    will_start_called_++;
-    if (will_start_loop_runner_)
-      will_start_loop_runner_->Quit();
-  }
-
-  void DidCallWillRedirectRequest() {
-    will_redirect_called_++;
-    if (will_redirect_loop_runner_)
-      will_redirect_loop_runner_->Quit();
-  }
-
-  void DidCallWillProcessResponse() {
-    will_process_called_++;
-    if (will_process_loop_runner_)
-      will_process_loop_runner_->Quit();
-  }
-
   NavigationThrottle::ThrottleCheckResult will_start_result_;
   NavigationThrottle::ThrottleCheckResult will_redirect_result_;
   NavigationThrottle::ThrottleCheckResult will_process_result_;
@@ -204,10 +222,54 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_redirect_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_process_loop_runner_;
+  GURL expected_start_url_;
 
   // The throttle installer can be deleted before all tasks posted by its
   // throttles are run, so it must be referenced via weak pointers.
   base::WeakPtrFactory<TestNavigationThrottleInstaller> weak_factory_;
+};
+
+// Same as above, but installs NavigationThrottles that do not directly return
+// the pre-programmed check results, but first DEFER the navigation at each
+// stage and then resume/cancel asynchronously.
+class TestDeferringNavigationThrottleInstaller
+    : public TestNavigationThrottleInstaller {
+ public:
+  TestDeferringNavigationThrottleInstaller(
+      WebContents* web_contents,
+      NavigationThrottle::ThrottleCheckResult will_start_result,
+      NavigationThrottle::ThrottleCheckResult will_redirect_result,
+      NavigationThrottle::ThrottleCheckResult will_process_result,
+      GURL expected_start_url = GURL())
+      : TestNavigationThrottleInstaller(web_contents,
+                                        NavigationThrottle::DEFER,
+                                        NavigationThrottle::DEFER,
+                                        NavigationThrottle::DEFER,
+                                        expected_start_url),
+        will_start_deferred_result_(will_start_result),
+        will_redirect_deferred_result_(will_redirect_result),
+        will_process_deferred_result_(will_process_result) {}
+
+ protected:
+  void DidCallWillStartRequest() override {
+    TestNavigationThrottleInstaller::DidCallWillStartRequest();
+    Continue(will_start_deferred_result_);
+  }
+
+  void DidCallWillRedirectRequest() override {
+    TestNavigationThrottleInstaller::DidCallWillStartRequest();
+    Continue(will_redirect_deferred_result_);
+  }
+
+  void DidCallWillProcessResponse() override {
+    TestNavigationThrottleInstaller::DidCallWillStartRequest();
+    Continue(will_process_deferred_result_);
+  }
+
+ private:
+  NavigationThrottle::ThrottleCheckResult will_start_deferred_result_;
+  NavigationThrottle::ThrottleCheckResult will_redirect_deferred_result_;
+  NavigationThrottle::ThrottleCheckResult will_process_deferred_result_;
 };
 
 // Records all navigation start URLs from the WebContents.
@@ -225,6 +287,37 @@ class NavigationStartUrlRecorder : public WebContentsObserver {
  private:
   std::vector<GURL> urls_;
 };
+
+void ExpectChildFrameSetAsCollapsedInFTN(Shell* shell, bool expect_collapsed) {
+  // Check if the frame should be collapsed in theory as per FTN.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0u);
+  EXPECT_EQ(expect_collapsed, child->is_collapsed());
+}
+
+void ExpectChildFrameCollapsedInLayout(Shell* shell,
+                                       const std::string& frame_id,
+                                       bool expect_collapsed) {
+  // Check if the frame is collapsed in practice.
+  const char kScript[] =
+      "window.domAutomationController.send("
+      "  document.getElementById(\"%s\").clientWidth"
+      ");";
+  int client_width = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      shell, base::StringPrintf(kScript, frame_id.c_str()), &client_width));
+  EXPECT_EQ(expect_collapsed, !client_width) << client_width;
+}
+
+void ExpectChildFrameCollapsed(Shell* shell,
+                               const std::string& frame_id,
+                               bool expect_collapsed) {
+  ExpectChildFrameSetAsCollapsedInFTN(shell, expect_collapsed);
+  ExpectChildFrameCollapsedInLayout(shell, frame_id, expect_collapsed);
+}
 
 }  // namespace
 
@@ -632,6 +725,155 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
   EXPECT_FALSE(observer.is_error());
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             GURL(embedded_test_server()->GetURL("bar.com", "/title2.html")));
+}
+
+// Ensure that a NavigationThrottle can block the navigation and collapse the
+// frame owner both on request start as well as after a redirect. Plus, ensure
+// that the frame is restored on the subsequent non-error-page navigation.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       ThrottleBlockAndCollapse) {
+  const char kChildFrameId[] = "child0";
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html"));
+  GURL blocked_subframe_url(embedded_test_server()->GetURL(
+      "a.com", "/cross-site/baz.com/title1.html"));
+  GURL allowed_subframe_url(embedded_test_server()->GetURL(
+      "a.com", "/cross-site/baz.com/title2.html"));
+  GURL allowed_subframe_final_url(
+      embedded_test_server()->GetURL("baz.com", "/title2.html"));
+
+  // Exercise both synchronous and deferred throttle check results, and both on
+  // WillStartRequest and on WillRedirectRequest.
+  const struct {
+    NavigationThrottle::ThrottleCheckResult will_start_result;
+    NavigationThrottle::ThrottleCheckResult will_redirect_result;
+    bool deferred_block;
+  } kTestCases[] = {
+      {NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
+       NavigationThrottle::PROCEED, false},
+      {NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
+       NavigationThrottle::PROCEED, true},
+      {NavigationThrottle::PROCEED,
+       NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE, false},
+      {NavigationThrottle::PROCEED,
+       NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE, true},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message() << test_case.will_start_result << ", "
+                                      << test_case.will_redirect_result << ", "
+                                      << test_case.deferred_block);
+
+    if (!IsBrowserSideNavigationEnabled() &&
+        test_case.will_redirect_result ==
+            NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
+      continue;
+    }
+
+    std::unique_ptr<TestNavigationThrottleInstaller>
+        subframe_throttle_installer;
+    if (test_case.deferred_block) {
+      subframe_throttle_installer.reset(
+          new TestDeferringNavigationThrottleInstaller(
+              shell()->web_contents(), test_case.will_start_result,
+              test_case.will_redirect_result, NavigationThrottle::PROCEED,
+              blocked_subframe_url));
+    } else {
+      subframe_throttle_installer.reset(new TestNavigationThrottleInstaller(
+          shell()->web_contents(), test_case.will_start_result,
+          test_case.will_redirect_result, NavigationThrottle::PROCEED,
+          blocked_subframe_url));
+    }
+
+    {
+      SCOPED_TRACE("Initial navigation blocked on main frame load.");
+      NavigationHandleObserver subframe_observer(shell()->web_contents(),
+                                                 blocked_subframe_url);
+
+      ASSERT_TRUE(NavigateToURL(shell(), main_url));
+      EXPECT_TRUE(subframe_observer.is_error());
+      EXPECT_TRUE(subframe_observer.has_committed());
+      EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, subframe_observer.net_error_code());
+      ExpectChildFrameCollapsed(shell(), kChildFrameId,
+                                true /* expect_collapsed */);
+    }
+
+    {
+      SCOPED_TRACE("Subsequent subframe navigation is allowed.");
+      NavigationHandleObserver subframe_observer(shell()->web_contents(),
+                                                 allowed_subframe_url);
+
+      ASSERT_TRUE(NavigateIframeToURL(shell()->web_contents(), kChildFrameId,
+                                      allowed_subframe_url));
+      EXPECT_TRUE(subframe_observer.has_committed());
+      EXPECT_FALSE(subframe_observer.is_error());
+      EXPECT_EQ(allowed_subframe_final_url,
+                subframe_observer.last_committed_url());
+      ExpectChildFrameCollapsed(shell(), kChildFrameId,
+                                false /* expect_collapsed */);
+    }
+
+    {
+      SCOPED_TRACE("Subsequent subframe navigation is blocked.");
+      NavigationHandleObserver subframe_observer(shell()->web_contents(),
+                                                 blocked_subframe_url);
+
+      ASSERT_TRUE(NavigateIframeToURL(shell()->web_contents(), kChildFrameId,
+                                      blocked_subframe_url));
+
+      EXPECT_TRUE(subframe_observer.has_committed());
+      EXPECT_TRUE(subframe_observer.is_error());
+      EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, subframe_observer.net_error_code());
+      ExpectChildFrameCollapsed(shell(), kChildFrameId,
+                                true /* expect_collapsed */);
+    }
+  }
+}
+
+// BLOCK_REQUEST_AND_COLLAPSE should block the navigation in legacy <frame>'s,
+// but should not collapse the <frame> element itself for legacy reasons.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       ThrottleBlockAndCollapse_LegacyFrameNotCollapsed) {
+  const char kChildFrameId[] = "child0";
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/legacy_frameset.html"));
+  GURL blocked_subframe_url(
+      embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL allowed_subframe_url(
+      embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  TestNavigationThrottleInstaller subframe_throttle_installer(
+      shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
+      blocked_subframe_url);
+
+  {
+    SCOPED_TRACE("Initial navigation blocked on main frame load.");
+    NavigationHandleObserver subframe_observer(shell()->web_contents(),
+                                               blocked_subframe_url);
+
+    ASSERT_TRUE(NavigateToURL(shell(), main_url));
+    EXPECT_TRUE(subframe_observer.is_error());
+    EXPECT_TRUE(subframe_observer.has_committed());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, subframe_observer.net_error_code());
+    ExpectChildFrameSetAsCollapsedInFTN(shell(), true /* expect_collapsed */);
+    ExpectChildFrameCollapsedInLayout(shell(), kChildFrameId,
+                                      false /* expect_collapsed */);
+  }
+
+  {
+    SCOPED_TRACE("Subsequent subframe navigation is allowed.");
+    NavigationHandleObserver subframe_observer(shell()->web_contents(),
+                                               allowed_subframe_url);
+
+    ASSERT_TRUE(NavigateIframeToURL(shell()->web_contents(), kChildFrameId,
+                                    allowed_subframe_url));
+    EXPECT_TRUE(subframe_observer.has_committed());
+    EXPECT_FALSE(subframe_observer.is_error());
+    EXPECT_EQ(allowed_subframe_url, subframe_observer.last_committed_url());
+    ExpectChildFrameCollapsed(shell(), kChildFrameId,
+                              false /* expect_collapsed */);
+  }
 }
 
 // Checks that the RequestContextType value is properly set.

@@ -854,6 +854,7 @@ class CONTENT_EXPORT RenderFrameImpl
                  const FrameReplicationState& replicated_frame_state);
   void OnDeleteFrame();
   void OnStop();
+  void OnCollapse(bool collapse);
   void OnShowContextMenu(const gfx::Point& location);
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,

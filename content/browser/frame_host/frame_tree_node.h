@@ -147,6 +147,20 @@ class CONTENT_EXPORT FrameTreeNode {
     return has_committed_real_load_;
   }
 
+  // Returns whether the frame's owner element in the parent document is
+  // collapsed, that is, removed from the layout as if it did not exist, as per
+  // request by the embedder (of the content/ layer).
+  bool is_collapsed() const { return is_collapsed_; }
+
+  // Sets whether to collapse the frame's owner element in the parent document,
+  // that is, to remove it from the layout as if it did not exist, as per
+  // request by the embedder (of the content/ layer). Cannot be called for main
+  // frames.
+  //
+  // This only has an effect for <iframe> owner elements, and is a no-op when
+  // called on sub-frames hosted in <frame>, <object>, and <embed> elements.
+  void SetCollapsed(bool collapsed);
+
   // Returns the origin of the last committed page in this frame.
   // WARNING: To get the last committed origin for a particular
   // RenderFrameHost, use RenderFrameHost::GetLastCommittedOrigin() instead,
@@ -397,6 +411,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // Whether this frame has committed any real load, replacing its initial
   // about:blank page.
   bool has_committed_real_load_;
+
+  // Whether the frame's owner element in the parent document is collapsed.
+  bool is_collapsed_;
 
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.

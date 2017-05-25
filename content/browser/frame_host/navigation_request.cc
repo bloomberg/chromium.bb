@@ -731,7 +731,8 @@ void NavigationRequest::OnStartChecksComplete(
     return;
   }
 
-  if (result == NavigationThrottle::BLOCK_REQUEST) {
+  if (result == NavigationThrottle::BLOCK_REQUEST ||
+      result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
     OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
@@ -826,7 +827,7 @@ void NavigationRequest::OnRedirectChecksComplete(
   // Abort the request if needed. This will destroy the NavigationRequest.
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
       result == NavigationThrottle::CANCEL) {
-    // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
+    // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE if needed.
     OnRequestFailed(false, net::ERR_ABORTED);
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
@@ -834,9 +835,9 @@ void NavigationRequest::OnRedirectChecksComplete(
     return;
   }
 
-  if (result == NavigationThrottle::BLOCK_REQUEST) {
+  if (result == NavigationThrottle::BLOCK_REQUEST ||
+      result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
     OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
-
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;

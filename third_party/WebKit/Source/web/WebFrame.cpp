@@ -181,6 +181,12 @@ void WebFrame::SetFrameOwnerProperties(
   owner->SetAllowedFeatures(properties.allowed_features);
 }
 
+void WebFrame::Collapse(bool collapsed) {
+  FrameOwner* owner = ToCoreFrame(*this)->Owner();
+  DCHECK(owner->IsLocal());
+  ToHTMLFrameOwnerElement(owner)->SetCollapsed(collapsed);
+}
+
 WebFrame* WebFrame::Opener() const {
   return opener_;
 }
