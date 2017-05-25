@@ -43,6 +43,8 @@
             should(false).beFalse();
             should(1).beEqualTo(1)
             should(1).notBeEqualTo(2)
+            should(NaN).beNaN();
+            should(1).notBeNaN();
             should(typeof AudioContext.prototype).beEqualTo('object');
             should(2).beGreaterThan(1);
             should(2).beGreaterThanOrEqualTo(2);

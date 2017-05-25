@@ -40,7 +40,7 @@ void IIRDSPKernel::GetFrequencyResponse(int n_frequencies,
   // Convert from frequency in Hz to normalized frequency (0 -> 1),
   // with 1 equal to the Nyquist frequency.
   for (int k = 0; k < n_frequencies; ++k)
-    frequency[k] = clampTo<float>(frequency_hz[k] / nyquist);
+    frequency[k] = frequency_hz[k] / nyquist;
 
   iir_.GetFrequencyResponse(n_frequencies, frequency.data(), mag_response,
                             phase_response);

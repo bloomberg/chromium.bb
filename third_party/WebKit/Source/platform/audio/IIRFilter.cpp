@@ -127,18 +127,25 @@ void IIRFilter::GetFrequencyResponse(int n_frequencies,
   // 1/z.
 
   for (int k = 0; k < n_frequencies; ++k) {
-    // zRecip = 1/z = exp(-j*frequency)
-    double omega = -piDouble * frequency[k];
-    std::complex<double> z_recip = std::complex<double>(cos(omega), sin(omega));
+    if (frequency[k] < 0 || frequency[k] > 1) {
+      // Out-of-bounds frequencies should return NaN.
+      mag_response[k] = std::nanf("");
+      phase_response[k] = std::nanf("");
+    } else {
+      // zRecip = 1/z = exp(-j*frequency)
+      double omega = -piDouble * frequency[k];
+      std::complex<double> z_recip =
+          std::complex<double>(cos(omega), sin(omega));
 
-    std::complex<double> numerator = EvaluatePolynomial(
-        feedforward_->Data(), z_recip, feedforward_->size() - 1);
-    std::complex<double> denominator =
-        EvaluatePolynomial(feedback_->Data(), z_recip, feedback_->size() - 1);
-    std::complex<double> response = numerator / denominator;
-    mag_response[k] = static_cast<float>(abs(response));
-    phase_response[k] =
-        static_cast<float>(atan2(imag(response), real(response)));
+      std::complex<double> numerator = EvaluatePolynomial(
+          feedforward_->Data(), z_recip, feedforward_->size() - 1);
+      std::complex<double> denominator =
+          EvaluatePolynomial(feedback_->Data(), z_recip, feedback_->size() - 1);
+      std::complex<double> response = numerator / denominator;
+      mag_response[k] = static_cast<float>(abs(response));
+      phase_response[k] =
+          static_cast<float>(atan2(imag(response), real(response)));
+    }
   }
 }
 

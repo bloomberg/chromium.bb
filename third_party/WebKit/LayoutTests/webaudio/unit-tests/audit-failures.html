@@ -39,6 +39,8 @@
             should(true).beFalse();
             should(1, 'The number of channels').beEqualTo(2);
             should(1).notBeEqualTo(1);
+            should(1).beNaN();
+            should(NaN).notBeNaN();
             should(typeof 3.141592, 'typeof 3.141592').beEqualTo('string');
             should(1).beGreaterThan(2);
             should(1).beGreaterThanOrEqualTo(2);
