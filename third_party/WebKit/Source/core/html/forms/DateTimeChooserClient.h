@@ -31,6 +31,7 @@
 #ifndef DateTimeChooserClient_h
 #define DateTimeChooserClient_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -38,7 +39,7 @@ namespace blink {
 
 class Element;
 
-class DateTimeChooserClient : public GarbageCollectedMixin {
+class CORE_EXPORT DateTimeChooserClient : public GarbageCollectedMixin {
  public:
   virtual ~DateTimeChooserClient();
   DEFINE_INLINE_VIRTUAL_TRACE() {}

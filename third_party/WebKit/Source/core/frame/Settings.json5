@@ -226,6 +226,17 @@
       initial: false,
     },
 
+    // This is used when page popups should not be presented at all from time
+    // to time in the life of a renderer. This is different than the runtime
+    // enabled feature to enable page popups which remains fixed for the
+    // lifetime of a render and semantically means that an alternative UI
+    // should be shown. An example of when this might be used is in an
+    // embedder than cannot render these popups (in VR mode, say).
+    {
+      name: "pagePopupsSuppressed",
+      initial: false,
+    },
+
     {
       name: "scrollAnimatorEnabled",
       initial: true,
