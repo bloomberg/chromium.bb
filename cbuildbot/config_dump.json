@@ -14956,8 +14956,7 @@
             "wolf-paladin",
             "wolf-tot-paladin",
             "wooten-paladin",
-            "x86-generic-paladin",
-            "x86-mario-nowithdebug-paladin"
+            "x86-generic-paladin"
         ],
         "trybot_list": false,
         "useflags": [
@@ -28899,25 +28898,6 @@
         "useflags": [
             "chrome_internal"
         ]
-    },
-    "x86-mario-nowithdebug-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "x86-mario"
-        ],
-        "description": "Commit Queue (internal, nowithdebug)",
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": false,
-        "useflags": [
-            "-cros-debug",
-            "chrome_internal"
-        ],
-        "vm_tests": []
     },
     "x86-mario-paladin": {
         "_template": "paladin",

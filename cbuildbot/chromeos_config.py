@@ -2479,15 +2479,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   master_config.AddSlaves([
       site_config.Add(
-          'x86-mario-nowithdebug-paladin',
-          site_config.templates.paladin,
-          site_config.templates.internal_nowithdebug_paladin,
-          boards=['x86-mario'],
-          important=False,
-          active_waterfall=constants.WATERFALL_INTERNAL,
-      ),
-
-      site_config.Add(
           'chell-nowithdebug-paladin',
           site_config.templates.paladin,
           site_config.templates.internal_nowithdebug_paladin,
