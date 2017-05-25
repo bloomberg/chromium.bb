@@ -42,9 +42,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
    public:
     // Handles UI changes on the translate step given.
     virtual void OnTranslateStepChanged(translate::TranslateStep step,
-                              TranslateErrors::Type error_type){};
+                                        TranslateErrors::Type error_type) = 0;
     // Return whether user declined translate service.
-    virtual bool IsDeclinedByUser();
+    virtual bool IsDeclinedByUser() = 0;
 
    protected:
     virtual ~Observer() {}
