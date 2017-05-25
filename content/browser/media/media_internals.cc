@@ -342,11 +342,8 @@ class MediaInternals::MediaInternalsUMAHandler {
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);
 
   bool ShouldReportUkmWatchTime(base::StringPiece key) {
-    // UKM may be unavailable in content_shell or other non-chrome/ builds.
-    static bool has_ukm = !!ukm::UkmRecorder::Get();
-
     // EmbeddedExperience is always a file:// URL, so skip reporting.
-    return has_ukm && !key.ends_with("EmbeddedExperience");
+    return !key.ends_with("EmbeddedExperience");
   }
 
   void RecordWatchTime(base::StringPiece key, base::TimeDelta value) {
@@ -367,12 +364,16 @@ class MediaInternals::MediaInternalsUMAHandler {
     if (!url.is_valid())
       return;
 
+    // UKM may be unavailable in content_shell or other non-chrome/ builds; it
+    // may also be unavailable if browser shutdown has started.
+    const bool has_ukm = !!ukm::UkmRecorder::Get();
+
     if (finalize_type == FinalizeType::EVERYTHING) {
       std::unique_ptr<ukm::UkmEntryBuilder> builder;
       for (auto& kv : *watch_time_info) {
         RecordWatchTime(kv.first, kv.second);
 
-        if (!ShouldReportUkmWatchTime(kv.first))
+        if (!has_ukm || !ShouldReportUkmWatchTime(kv.first))
           continue;
 
         if (!builder)
@@ -396,7 +397,7 @@ class MediaInternals::MediaInternalsUMAHandler {
         continue;
       RecordWatchTime(it->first, it->second);
 
-      if (ShouldReportUkmWatchTime(it->first)) {
+      if (has_ukm && ShouldReportUkmWatchTime(it->first)) {
         if (!builder)
           builder = media_internals_->CreateUkmBuilder(url, kWatchTimeEvent);
 
