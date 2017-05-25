@@ -36,6 +36,8 @@ PASS   3 < 5 is true.
 PASS   false is false. 
 PASS   1 is equal to 1. 
 PASS   1 is not equal to 2. 
+PASS   NaN is NaN. 
+PASS   1 is not NaN. 
 PASS   object is equal to object. 
 PASS   2 is greater than 1. 
 PASS   2 is greater than or equal to 2. 
@@ -51,7 +53,7 @@ PASS   An AudioBufferSourceNode inherits from "AudioNode".
 PASS   Decoding audio data with no argument rejected correctly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. 
 PASS   Suspending OAC with no argument rejected correctly with TypeError. 
 PASS   Start OAC rendering resolved correctly. 
-PASS < [basic] All assertions passed. (total 26 assertions) 
+PASS < [basic] All assertions passed. (total 28 assertions) 
 PASS > [load-file-in-should] Test Audit.loadFileFromUrl() within |should| assertion. 
 PASS   Loading file within should().beResolved() resolved correctly. 
 PASS < [load-file-in-should] All assertions passed. (total 1 assertions) 

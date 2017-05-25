@@ -489,6 +489,42 @@ window.Audit = (function() {
     }
 
     /**
+     * check if |actual| is NaN
+     *
+     * @example
+     *   should(NaN).beNaN();
+     *
+     * @result
+     *   "PASS   NaN is NaN"
+     *
+     */
+    beNaN() {
+      this._processArguments(arguments);
+      return this._assert(
+          isNaN(this._actual),
+          '${actual} is NaN.',
+          '${actual} is not NaN but should be.');
+    }
+
+    /**
+     * check if |actual| is NOT NaN
+     *
+     * @example
+     *   should(42).notBeNaN();
+     *
+     * @result
+     *   "PASS   42 is not NaN"
+     *
+     */
+    notBeNaN() {
+      this._processArguments(arguments);
+      return this._assert(
+          !isNaN(this._actual),
+          '${actual} is not NaN.',
+          '${actual} is NaN but should not be.');
+    }
+
+    /**
      * Check if |actual| is greater than |expected|.
      *
      * @example

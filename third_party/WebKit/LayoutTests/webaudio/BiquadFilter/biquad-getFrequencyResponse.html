@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>
-      biquad-getFrequencyResponse.html
+      Test BiquadFilter getFrequencyResponse() functionality
     </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
@@ -288,6 +288,43 @@
                 frequencies, magResponse, phaseResponse);
             compareResponses(
                 should, filter, frequencies, magResponse, phaseResponse);
+
+            task.done();
+          });
+
+      audit.define(
+          {
+            label: 'getFrequencyResponse',
+            description: 'Test out-of-bounds frequency values'
+          },
+          (task, should) => {
+            let context = new OfflineAudioContext(1, 1, sampleRate);
+            let filter = new BiquadFilterNode(context);
+
+            // Frequencies to test.  These are all outside the valid range of
+            // frequencies of 0 to Nyquist.
+            let freq = new Float32Array(2);
+            freq[0] = -1;
+            freq[1] = context.sampleRate / 2 + 1;
+
+            let mag = new Float32Array(freq.length);
+            let phase = new Float32Array(freq.length);
+
+            filter.getFrequencyResponse(freq, mag, phase);
+
+            // Verify that the returned magnitude and phase entries are alL NaN
+            // since the frequencies are outside the valid range
+            for (let k = 0; k < mag.length; ++k) {
+              should(mag[k],
+                  'Magnitude response at frequency ' + freq[k])
+                  .beNaN();
+            }
+
+            for (let k = 0; k < phase.length; ++k) {
+              should(phase[k],
+                  'Phase response at frequency ' + freq[k])
+                  .beNaN();
+            }
 
             task.done();
           });
