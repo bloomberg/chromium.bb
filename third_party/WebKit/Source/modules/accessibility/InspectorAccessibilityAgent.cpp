@@ -475,9 +475,9 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
                                                 *nodes, *cache));
     return Response::OK();
   } else {
-    (*nodes)->addItem(
-        BuildProtocolAXObject(*inspected_ax_object, inspected_ax_object,
-                              fetch_relatives.fromMaybe(true), *nodes, *cache));
+    (*nodes)->addItem(BuildProtocolAXObjectImpl(
+        *inspected_ax_object, inspected_ax_object,
+        fetch_relatives.fromMaybe(true), *nodes, *cache));
   }
 
   if (!inspected_ax_object)
@@ -500,8 +500,8 @@ void InspectorAccessibilityAgent::AddAncestors(
     AXObjectCacheImpl& cache) const {
   AXObjectImpl* ancestor = &first_ancestor;
   while (ancestor) {
-    nodes->addItem(BuildProtocolAXObject(*ancestor, inspected_ax_object, true,
-                                         nodes, cache));
+    nodes->addItem(BuildProtocolAXObjectImpl(*ancestor, inspected_ax_object,
+                                             true, nodes, cache));
     ancestor = ancestor->ParentObjectUnignored();
   }
 }
@@ -577,7 +577,7 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
 
   // Populate parent and ancestors.
   std::unique_ptr<AXNode> parent_node_object =
-      BuildProtocolAXObject(*parent_ax_object, nullptr, true, nodes, cache);
+      BuildProtocolAXObjectImpl(*parent_ax_object, nullptr, true, nodes, cache);
   std::unique_ptr<protocol::Array<AXNodeId>> child_ids =
       protocol::Array<AXNodeId>::create();
   child_ids->addItem(String::Number(kIDForInspectedNodeWithNoAXNode));
@@ -590,7 +590,7 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
     AddAncestors(*grandparent_ax_object, nullptr, nodes, cache);
 }
 
-std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
+std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObjectImpl(
     AXObjectImpl& ax_object,
     AXObjectImpl* inspected_ax_object,
     bool fetch_relatives,
@@ -724,15 +724,16 @@ void InspectorAccessibilityAgent::AddChildren(
     child_ids->addItem(String::Number(child_ax_object.AxObjectID()));
     if (&child_ax_object == inspected_ax_object)
       continue;
-    if (&ax_object != inspected_ax_object &&
-        (ax_object.GetNode() ||
-         ax_object.ParentObjectUnignored() != inspected_ax_object)) {
-      continue;
+    if (&ax_object != inspected_ax_object) {
+      if (!inspected_ax_object)
+        continue;
+      if (&ax_object != inspected_ax_object->ParentObjectUnignored())
+        continue;
     }
 
     // Only add children of inspected node (or un-inspectable children of
     // inspected node) to returned nodes.
-    std::unique_ptr<AXNode> child_node = BuildProtocolAXObject(
+    std::unique_ptr<AXNode> child_node = BuildProtocolAXObjectImpl(
         child_ax_object, inspected_ax_object, true, nodes, cache);
     nodes->addItem(std::move(child_node));
   }

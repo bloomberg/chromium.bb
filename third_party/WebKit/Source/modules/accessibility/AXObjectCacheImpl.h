@@ -54,6 +54,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   virtual ~AXObjectCacheImpl();
   DECLARE_VIRTUAL_TRACE();
 
+  Document& GetDocument() { return *document_; }
   AXObjectImpl* FocusedObject();
 
   void Dispose() override;

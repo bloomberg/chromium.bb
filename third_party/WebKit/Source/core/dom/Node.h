@@ -544,8 +544,11 @@ class CORE_EXPORT Node : public EventTarget {
   // This is called only when the node is focused.
   virtual bool ShouldHaveFocusAppearance() const;
 
-  // Whether the node is inert. This can't be in Element because text nodes
-  // must be recognized as inert to prevent text selection.
+  // Whether the node is inert:
+  // https://html.spec.whatwg.org/multipage/interaction.html#inert
+  // https://github.com/WICG/inert/blob/master/README.md
+  // This can't be in Element because text nodes must be recognized as
+  // inert to prevent text selection.
   bool IsInert() const;
 
   virtual LayoutRect BoundingBox() const;

@@ -505,6 +505,10 @@
       status: "test",
     },
     {
+      name: "InertAttribute",
+      status: "experimental",
+    },
+    {
       name: "InertTopControls",
       status: "stable",
     },

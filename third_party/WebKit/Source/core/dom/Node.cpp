@@ -755,8 +755,9 @@ void Node::MarkAncestorsWithChildNeedsStyleInvalidation() {
 void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
   ScriptForbiddenScope forbid_script_during_raw_iteration;
   for (Node* node = this; node && !node->ChildNeedsDistributionRecalc();
-       node = node->ParentOrShadowHostNode())
+       node = node->ParentOrShadowHostNode()) {
     node->SetChildNeedsDistributionRecalc();
+  }
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
@@ -848,11 +849,27 @@ bool Node::ShouldHaveFocusAppearance() const {
 }
 
 bool Node::IsInert() const {
+  if (!isConnected() || !CanParticipateInFlatTree())
+    return true;
+
+  DCHECK(!ChildNeedsDistributionRecalc());
+
   const HTMLDialogElement* dialog = GetDocument().ActiveModalDialog();
   if (dialog && this != GetDocument() &&
-      (!CanParticipateInFlatTree() ||
-       !FlatTreeTraversal::ContainsIncludingPseudoElement(*dialog, *this)))
+      !FlatTreeTraversal::ContainsIncludingPseudoElement(*dialog, *this)) {
     return true;
+  }
+
+  if (RuntimeEnabledFeatures::inertAttributeEnabled()) {
+    const Element* element = this->IsElementNode()
+                                 ? ToElement(this)
+                                 : FlatTreeTraversal::ParentElement(*this);
+    while (element) {
+      if (element->hasAttribute(HTMLNames::inertAttr))
+        return true;
+      element = FlatTreeTraversal::ParentElement(*element);
+    }
+  }
   return GetDocument().LocalOwner() && GetDocument().LocalOwner()->IsInert();
 }
 

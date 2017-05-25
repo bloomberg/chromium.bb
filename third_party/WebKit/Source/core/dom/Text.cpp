@@ -464,6 +464,7 @@ void Text::UpdateTextLayoutObject(unsigned offset_of_replaced_data,
     LazyReattachIfAttached();
     return;
   }
+
   text_layout_object->SetTextWithOffset(DataImpl(), offset_of_replaced_data,
                                         length_of_replaced_data);
 }
