@@ -588,8 +588,6 @@ static_library("extensions") {
     "extension_install_prompt.h",
     "extension_install_prompt_show_params.cc",
     "extension_install_prompt_show_params.h",
-    "extension_install_ui_util.cc",
-    "extension_install_ui_util.h",
     "extension_keybinding_registry.cc",
     "extension_keybinding_registry.h",
     "extension_management.cc",
