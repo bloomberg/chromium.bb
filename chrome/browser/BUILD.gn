@@ -2190,6 +2190,12 @@ split_static_library("browser") {
       "offline_pages/background_loader_offliner.cc",
       "offline_pages/background_loader_offliner.h",
     ]
+    if (is_android) {
+      sources += [
+        "offline_pages/android/load_termination_listener_impl.cc",
+        "offline_pages/android/load_termination_listener_impl.h",
+      ]
+    }
     deps += [
       "//components/offline_pages/content",
       "//components/offline_pages/content/background_loader",

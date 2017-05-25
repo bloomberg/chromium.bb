@@ -37,6 +37,7 @@ class PrerenderingOffliner : public Offliner {
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& completion_callback,
                    const ProgressCallback& progress_callback) override;
+  void TerminateLoadIfInProgress() override;
   bool Cancel(const CancelCallback& callback) override;
   bool HandleTimeout(int64_t request_id) override;
 

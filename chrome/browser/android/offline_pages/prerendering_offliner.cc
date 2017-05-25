@@ -278,6 +278,11 @@ bool PrerenderingOffliner::Cancel(const CancelCallback& callback) {
   return true;
 }
 
+void PrerenderingOffliner::TerminateLoadIfInProgress() {
+  // This is not implemented since this offliner is deprecated and
+  // will be removed shortly.
+}
+
 bool PrerenderingOffliner::HandleTimeout(int64_t request_id) {
   if (pending_request_) {
     DCHECK(request_id == pending_request_->request_id());

@@ -97,6 +97,11 @@ class Offliner {
   // returns true and canceled request will be delivered using callback.
   virtual bool Cancel(const CancelCallback& callback) = 0;
 
+  // On some external condition changes (RAM pressure, browser backgrounded on
+  // low-level devices, etc) it is needed to terminate a load if there is one
+  // in progress. It is no-op if there is no active request loading.
+  virtual void TerminateLoadIfInProgress() = 0;
+
   // Handles timeout scenario. Returns true if lowbar is met and try to do a
   // snapshot of the current webcontents. If that is the case, the result of
   // offlining will be provided by |completion_callback|.

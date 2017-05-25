@@ -7,10 +7,10 @@
 
 #include <memory>
 
-#include "base/android/application_status_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
+#include "components/offline_pages/core/background/load_termination_listener.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/snapshot_controller.h"
@@ -32,9 +32,11 @@ class BackgroundLoaderOffliner : public Offliner,
                                  public content::WebContentsObserver,
                                  public SnapshotController::Client {
  public:
-  BackgroundLoaderOffliner(content::BrowserContext* browser_context,
-                           const OfflinerPolicy* policy,
-                           OfflinePageModel* offline_page_model);
+  BackgroundLoaderOffliner(
+      content::BrowserContext* browser_context,
+      const OfflinerPolicy* policy,
+      OfflinePageModel* offline_page_model,
+      std::unique_ptr<LoadTerminationListener> load_termination_listener);
   ~BackgroundLoaderOffliner() override;
 
   static BackgroundLoaderOffliner* FromWebContents(
@@ -45,6 +47,7 @@ class BackgroundLoaderOffliner : public Offliner,
                    const CompletionCallback& completion_callback,
                    const ProgressCallback& progress_callback) override;
   bool Cancel(const CancelCallback& callback) override;
+  void TerminateLoadIfInProgress() override;
   bool HandleTimeout(int64_t request_id) override;
 
   // WebContentsObserver implementation.
@@ -81,10 +84,6 @@ class BackgroundLoaderOffliner : public Offliner,
   // Called to attach 'this' as the observer to the loader.
   void AttachObservers();
 
-  // Called when application state has changed.
-  void OnApplicationStateChange(
-      base::android::ApplicationState application_state);
-
   // Called to remember at what time we started loading.
   void MarkLoadStartTime();
 
@@ -109,8 +108,9 @@ class BackgroundLoaderOffliner : public Offliner,
   CompletionCallback completion_callback_;
   // Callback to report progress.
   ProgressCallback progress_callback_;
-  // ApplicationStatusListener to monitor if Chrome moves to the foreground.
-  std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
+  // LoadTerminationListener to monitor external conditions requiring immediate
+  // termination of the offlining operation (memory conditions etc).
+  std::unique_ptr<LoadTerminationListener> load_termination_listener_;
   // Whether we are on a low-end device.
   bool is_low_end_device_;
 
