@@ -87,7 +87,7 @@ public class ChildProcessCreationParams {
         return mPackageNameForSandboxedService;
     }
 
-    public boolean getIsSandboxedSerivceExternal() {
+    public boolean getIsSandboxedServiceExternal() {
         return mIsSandboxedServiceExternal;
     }
 
