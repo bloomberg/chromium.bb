@@ -3706,11 +3706,9 @@
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
+        "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "betty-release-afdo": {
@@ -15044,6 +15042,7 @@
             "nasher-release",
             "newbie-release",
             "ninja-release",
+            "novato-release",
             "nyan_big-release",
             "nyan_blaze-release",
             "nyan_kitty-release",
@@ -15860,11 +15859,9 @@
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
+        "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "newbie-release-afdo": {
@@ -16281,13 +16278,12 @@
     },
     "novato-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "novato-release-afdo": {

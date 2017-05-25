@@ -128,7 +128,7 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "",
+          "board_group": "VM Builds",
           "arch": "X86_INTERNAL"
         }
       ]
@@ -752,7 +752,7 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "",
+          "board_group": "VM Builds",
           "arch": "X86_INTERNAL"
         }
       ]
@@ -765,6 +765,18 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "rambi",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "novato",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "VM Builds",
           "arch": "X86_INTERNAL"
         }
       ]
