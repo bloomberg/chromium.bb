@@ -19,14 +19,14 @@ ActiveProfilePrefService::~ActiveProfilePrefService() = default;
 void ActiveProfilePrefService::Connect(
     prefs::mojom::PrefRegistryPtr pref_registry,
     const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-    const ConnectCallback& callback) {
+    ConnectCallback callback) {
   auto* connector = content::BrowserContext::GetConnectorFor(
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile());
   connector->BindInterface(prefs::mojom::kServiceName, &connector_ptr_);
   connector_ptr_.set_connection_error_handler(base::Bind(
       &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
   connector_ptr_->Connect(std::move(pref_registry), already_connected_types,
-                          callback);
+                          std::move(callback));
 }
 
 void ActiveProfilePrefService::Create(
