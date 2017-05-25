@@ -40018,6 +40018,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.URLRequestContext.OutstandingRequests.Type"
+    enum="URLRequestAnnotationType">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>
+    Records the annotation type of the URLRequest that is handed out by a
+    URLRequestContext when Net.URLRequestContext.OutstandingRequests is
+    recorded.
+  </summary>
+</histogram>
+
 <histogram name="Net.ValidDNSName" enum="Boolean">
   <owner>palmer@chromium.org</owner>
   <summary>
