@@ -21,10 +21,13 @@
 // PrefValueMap. Read operations are first answered by the PrefValueMap.
 // If the PrefValueMap does not contain a value for the requested key,
 // the look-up is passed on to an underlying PersistentPrefStore |underlay_|.
-class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
-                                               public PrefStore::Observer {
+class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore
+    : public PersistentPrefStore {
  public:
   explicit OverlayUserPrefStore(PersistentPrefStore* underlay);
+  // The |overlay| must already be initialized.
+  OverlayUserPrefStore(PersistentPrefStore* overlay,
+                       PersistentPrefStore* underlay);
 
   // Returns true if a value has been set for the |key| in this
   // OverlayUserPrefStore, i.e. if it potentially overrides a value
@@ -57,10 +60,6 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   void SchedulePendingLossyWrites() override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
 
-  // Methods of PrefStore::Observer.
-  void OnPrefValueChanged(const std::string& key) override;
-  void OnInitializationCompleted(bool succeeded) override;
-
   void RegisterOverlayPref(const std::string& key);
 
   void ClearMutableValues() override;
@@ -70,15 +69,22 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
 
  private:
   typedef std::set<std::string> NamesSet;
+  class ObserverAdapter;
+
+  void OnPrefValueChanged(bool overlay, const std::string& key);
+  void OnInitializationCompleted(bool overlay, bool succeeded);
 
   // Returns true if |key| corresponds to a preference that shall be stored in
   // an in-memory PrefStore that is not persisted to disk.
   bool ShallBeStoredInOverlay(const std::string& key) const;
 
   base::ObserverList<PrefStore::Observer, true> observers_;
-  PrefValueMap overlay_;
+  std::unique_ptr<ObserverAdapter> overlay_observer_;
+  std::unique_ptr<ObserverAdapter> underlay_observer_;
+  scoped_refptr<PersistentPrefStore> overlay_;
   scoped_refptr<PersistentPrefStore> underlay_;
   NamesSet overlay_names_set_;
+  NamesSet written_overlay_names_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayUserPrefStore);
 };

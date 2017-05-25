@@ -225,6 +225,25 @@ TEST_F(OverlayUserPrefStoreTest, ClearMutableValues) {
   EXPECT_TRUE(base::Value(42).Equals(value));
 }
 
+// Check that mutable values are removed correctly when using a silent set.
+TEST_F(OverlayUserPrefStoreTest, ClearMutableValues_Silently) {
+  // Set in overlay and underlay the same preference.
+  underlay_->SetValueSilently(overlay_key, base::WrapUnique(new Value(42)),
+                              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  overlay_->SetValueSilently(overlay_key, base::WrapUnique(new Value(43)),
+                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+
+  const Value* value = nullptr;
+  // Check that an overlay preference is returned.
+  EXPECT_TRUE(overlay_->GetValue(overlay_key, &value));
+  EXPECT_TRUE(base::Value(43).Equals(value));
+  overlay_->ClearMutableValues();
+
+  // Check that an underlay preference is returned.
+  EXPECT_TRUE(overlay_->GetValue(overlay_key, &value));
+  EXPECT_TRUE(base::Value(42).Equals(value));
+}
+
 TEST_F(OverlayUserPrefStoreTest, GetValues) {
   // To check merge behavior, create underlay and overlay so each has a key the
   // other doesn't have and they have one key in common.
