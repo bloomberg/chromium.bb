@@ -38,7 +38,7 @@ const char kRemoteDevicePublicKey[] = "Remote Public Key";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
 const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kPersistentSymmetricKey[] = "PSK";
-const int kRssiThreshold = -50;
+const int kRssiThreshold = -70;
 
 class MockProximityMonitorObserver : public ProximityMonitorObserver {
  public:
@@ -233,6 +233,8 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   ProvideConnectionInfo({-20, 4, 4});
   ProvideConnectionInfo({kRssiThreshold, 4, 4});
   ProvideConnectionInfo({kRssiThreshold - 10, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 20, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 20, 4, 4});
   ProvideConnectionInfo({kRssiThreshold - 20, 4, 4});
   ProvideConnectionInfo({kRssiThreshold - 20, 4, 4});
 
