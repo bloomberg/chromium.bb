@@ -37,6 +37,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/unique_name_helper.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_dialog_type.h"
@@ -48,7 +49,6 @@
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
-#include "content/renderer/unique_name_helper.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/routing_token_callback.h"
@@ -1165,6 +1165,27 @@ class CONTENT_EXPORT RenderFrameImpl
   // |frame_| has been invalidated.
   bool is_main_frame_;
 
+  class UniqueNameFrameAdapter : public UniqueNameHelper::FrameAdapter {
+   public:
+    explicit UniqueNameFrameAdapter(RenderFrameImpl* render_frame);
+    ~UniqueNameFrameAdapter() override;
+
+    // FrameAdapter overrides:
+    bool IsMainFrame() const override;
+    bool IsCandidateUnique(const std::string& name) const override;
+    int GetSiblingCount() const override;
+    int GetChildCount() const override;
+    std::vector<base::StringPiece> CollectAncestorNames(
+        BeginPoint begin_point,
+        bool (*should_stop)(base::StringPiece)) const override;
+    std::vector<int> GetFramePosition(BeginPoint begin_point) const override;
+
+   private:
+    blink::WebLocalFrame* GetWebFrame() const;
+
+    RenderFrameImpl* render_frame_;
+  };
+  UniqueNameFrameAdapter unique_name_frame_adapter_;
   UniqueNameHelper unique_name_helper_;
 
   // When a frame is detached in response to a message from the browser process,
