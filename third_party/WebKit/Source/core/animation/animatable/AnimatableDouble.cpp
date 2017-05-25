@@ -42,8 +42,4 @@ PassRefPtr<AnimatableValue> AnimatableDouble::InterpolateTo(
   return AnimatableDouble::Create(Blend(number_, other->number_, fraction));
 }
 
-bool AnimatableDouble::EqualTo(const AnimatableValue* value) const {
-  return number_ == ToAnimatableDouble(value)->number_;
-}
-
 }  // namespace blink

@@ -779,10 +779,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (CompositorAnimations::IsCompositableProperty(property.CssProperty())) {
-    RefPtr<AnimatableValue> from =
-        CSSAnimatableValueFactory::Create(property, state.old_style);
+    RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::Create(
+        property.CssProperty(), state.old_style);
     RefPtr<AnimatableValue> to =
-        CSSAnimatableValueFactory::Create(property, state.style);
+        CSSAnimatableValueFactory::Create(property.CssProperty(), state.style);
     delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);

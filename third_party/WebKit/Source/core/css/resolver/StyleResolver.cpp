@@ -829,8 +829,7 @@ PassRefPtr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
         state.GetDocument().GetStyleEngine().FontSelector(),
         state.MutableStyleRef());
   }
-  return CSSAnimatableValueFactory::Create(PropertyHandle(property),
-                                           *state.Style());
+  return CSSAnimatableValueFactory::Create(property, *state.Style());
 }
 
 PseudoElement* StyleResolver::CreatePseudoElement(Element* parent,

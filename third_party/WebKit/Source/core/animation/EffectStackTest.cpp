@@ -72,12 +72,13 @@ class AnimationEffectStackTest : public ::testing::Test {
     return KeyframeEffect::Create(element.Get(), effect, timing);
   }
 
-  AnimatableValue* InterpolationValue(
-      const ActiveInterpolationsMap& active_interpolations,
-      CSSPropertyID id) {
+  double GetDoubleValue(const ActiveInterpolationsMap& active_interpolations,
+                        CSSPropertyID id) {
     Interpolation& interpolation =
         *active_interpolations.at(PropertyHandle(id)).at(0);
-    return ToLegacyStyleInterpolation(interpolation).CurrentValue().Get();
+    AnimatableValue* animatable_value =
+        ToLegacyStyleInterpolation(interpolation).CurrentValue().Get();
+    return ToAnimatableDouble(animatable_value)->ToDouble();
   }
 
   std::unique_ptr<DummyPageHolder> page_holder;
@@ -100,8 +101,7 @@ TEST_F(AnimationEffectStackTest, ElementAnimationsSorted) {
       &element->GetElementAnimations()->GetEffectStack(), 0, 0,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
-  EXPECT_TRUE(InterpolationValue(result, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(GetDoubleValue(result, CSSPropertyFontSize), 3);
 }
 
 TEST_F(AnimationEffectStackTest, NewAnimations) {
@@ -122,10 +122,8 @@ TEST_F(AnimationEffectStackTest, NewAnimations) {
       &element->GetElementAnimations()->GetEffectStack(), &new_animations, 0,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(2u, result.size());
-  EXPECT_TRUE(InterpolationValue(result, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(3).Get()));
-  EXPECT_TRUE(InterpolationValue(result, CSSPropertyZIndex)
-                  ->Equals(AnimatableDouble::Create(4).Get()));
+  EXPECT_EQ(GetDoubleValue(result, CSSPropertyFontSize), 3);
+  EXPECT_EQ(GetDoubleValue(result, CSSPropertyZIndex), 4);
 }
 
 TEST_F(AnimationEffectStackTest, CancelledAnimations) {
@@ -142,8 +140,7 @@ TEST_F(AnimationEffectStackTest, CancelledAnimations) {
       &element->GetElementAnimations()->GetEffectStack(), 0,
       &cancelled_animations, KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
-  EXPECT_TRUE(InterpolationValue(result, CSSPropertyZIndex)
-                  ->Equals(AnimatableDouble::Create(2).Get()));
+  EXPECT_EQ(GetDoubleValue(result, CSSPropertyZIndex), 2);
 }
 
 TEST_F(AnimationEffectStackTest, ClearedEffectsRemoved) {
@@ -155,8 +152,7 @@ TEST_F(AnimationEffectStackTest, ClearedEffectsRemoved) {
       &element->GetElementAnimations()->GetEffectStack(), 0, 0,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
-  EXPECT_TRUE(InterpolationValue(result, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(1).Get()));
+  EXPECT_EQ(GetDoubleValue(result, CSSPropertyFontSize), 1);
 
   animation->setEffect(0);
   result = EffectStack::ActiveInterpolations(
@@ -185,8 +181,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(GetDoubleValue(interpolations, CSSPropertyFontSize), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
   UpdateTimeline(13);
@@ -195,8 +190,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(GetDoubleValue(interpolations, CSSPropertyFontSize), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
   UpdateTimeline(15);
@@ -205,8 +199,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(GetDoubleValue(interpolations, CSSPropertyFontSize), 3);
   EXPECT_EQ(2u, SampledEffectCount());
 
   UpdateTimeline(17);
@@ -215,8 +208,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
       KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
-                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(GetDoubleValue(interpolations, CSSPropertyFontSize), 3);
   EXPECT_EQ(1u, SampledEffectCount());
 }
 
