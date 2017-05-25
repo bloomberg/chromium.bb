@@ -8,17 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/base/page_transition_types.h"
-
-namespace base {
-class GURL;
-}  // namespace base
 
 namespace content {
 class WebContents;
@@ -46,31 +40,31 @@ class ContentSubresourceFilterDriverFactory
   static void CreateForWebContents(content::WebContents* web_contents,
                                    SubresourceFilterClient* client);
 
-  // Whether the |url|, |referrer|, and |transition| are considered to be
-  // associated with a page reload.
-  static bool NavigationIsPageReload(const GURL& url,
-                                     const content::Referrer& referrer,
-                                     ui::PageTransition transition);
-
   explicit ContentSubresourceFilterDriverFactory(
       content::WebContents* web_contents,
       SubresourceFilterClient* client);
   ~ContentSubresourceFilterDriverFactory() override;
 
-  // Called when the Safe Browsing throttle has computed the threat type and
-  // metadata for this navigation. Will be called once per navigation before
-  // the ReadyToCommit stage.
-  void OnSafeBrowsingMatchComputed(
+  void NotifyPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      safe_browsing::SBThreatType threat_type,
-      safe_browsing::ThreatPatternType threat_type_metadata);
+      ActivationDecision activation_decision,
+      Configuration::ActivationOptions matched_options);
 
-  // Returns the |ActivationDecision| for the current main frame
-  // document.
+  // Returns the |ActivationDecision| for the current main frame document. Do
+  // not rely on this API, it is only temporary.
   // TODO(csharrison): Remove this and |activation_decision_| once consumers
   // move to become SubresourceFilterObservers.
   ActivationDecision GetActivationDecisionForLastCommittedPageLoad() const {
     return activation_decision_;
+  }
+
+  // Returns the |ActivationOptions| for the current main frame
+  // document. Do not rely on this API, it is only temporary.
+  // TODO(csharrison): Remove this and |activation_options_| in place of adding
+  // |should_suppress_notifications| on ActivationState.
+  const Configuration::ActivationOptions&
+  GetActivationOptionsForLastCommittedPageLoad() const {
+    return activation_options_;
   }
 
   // ContentSubresourceFilterThrottleManager::Delegate:
@@ -91,21 +85,6 @@ class ContentSubresourceFilterDriverFactory
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-
-  // Checks base on the value of |url| and current activation scope if
-  // activation signal should be sent.
-  void ComputeActivationForMainFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      ActivationList matched_list);
-
-  // Returns whether a main-frame navigation to the given |url| satisfies the
-  // activation |conditions| of a given configuration, except for |priority|.
-  // Pass |scheme_is_http_or_https| to avoid multiple string comparisons.
-  bool DoesMainFrameURLSatisfyActivationConditions(
-      const GURL& url,
-      bool scheme_is_http_or_https,
-      const Configuration::ActivationConditions& conditions,
-      ActivationList matched_list) const;
 
   // Must outlive this class.
   SubresourceFilterClient* client_;

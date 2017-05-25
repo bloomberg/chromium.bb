@@ -207,7 +207,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     if (navigation_handle->IsInMainFrame()) {
       navigation_handle->RegisterThrottleForTesting(
           base::MakeUnique<SubresourceFilterSafeBrowsingActivationThrottle>(
-              navigation_handle, test_io_task_runner_,
+              navigation_handle, client(), test_io_task_runner_,
               fake_safe_browsing_database_));
     }
     std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
