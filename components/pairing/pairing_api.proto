@@ -97,3 +97,8 @@ message AddNetwork {
   optional int32 api_version = 1;
   optional AddNetworkParameters parameters = 2;
 }
+
+message Reboot {
+  optional int32 api_version = 1;
+  optional bool reboot = 2 [default = true];
+}

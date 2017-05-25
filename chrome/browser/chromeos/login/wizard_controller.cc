@@ -1287,6 +1287,10 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   }
 }
 
+void WizardController::RebootHostRequested() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
 void WizardController::OnEnableDebuggingScreenRequested() {
   if (!login_screen_started())
     AdvanceToScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);

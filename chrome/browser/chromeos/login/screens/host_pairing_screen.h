@@ -35,6 +35,10 @@ class HostPairingScreen
     // Called when a network configuration has been received, and should be
     // used on this device.
     virtual void AddNetworkRequested(const std::string& onc_spec) = 0;
+
+    // Called when a reboot message has been received, and should reboot this
+    // device.
+    virtual void RebootHostRequested() = 0;
   };
 
   HostPairingScreen(BaseScreenDelegate* base_screen_delegate,
@@ -61,6 +65,7 @@ class HostPairingScreen
                               const std::string& keyboard_layout) override;
   void AddNetworkRequested(const std::string& onc_spec) override;
   void EnrollHostRequested(const std::string& auth_token) override;
+  void RebootHostRequested() override;
 
   // Overridden from ControllerPairingView::Delegate:
   void OnViewDestroyed(HostPairingScreenView* view) override;

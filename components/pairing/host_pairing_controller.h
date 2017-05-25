@@ -72,6 +72,10 @@ class HostPairingController {
     // Called when the controller has provided an |auth_token| for enrollment.
     virtual void EnrollHostRequested(const std::string& auth_token) {}
 
+    // Called when the controller has sent a reboot request. This will happen
+    // when the host enrollment fails.
+    virtual void RebootHostRequested() {}
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
