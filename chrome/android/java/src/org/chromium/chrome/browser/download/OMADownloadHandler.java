@@ -1036,4 +1036,14 @@ public class OMADownloadHandler extends BroadcastReceiver
         }
         return false;
     }
+
+    /**
+     * Check whether a url path is OMA download.
+     * @param path Path of download.
+     */
+    static boolean isOMAFile(String path) {
+        if (path == null) return false;
+        return path.endsWith(".dm") || path.endsWith(".dcf") || path.endsWith(".dr")
+                || path.endsWith(".drc");
+    }
 }

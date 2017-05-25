@@ -12,6 +12,11 @@
 
 namespace {
 static const char kOMADrmMessageMimeType[] = "application/vnd.oma.drm.message";
+static const char kOMADrmContentMimeType[] = "application/vnd.oma.drm.content";
+static const char kOMADrmRightsMimeType1[] =
+    "application/vnd.oma.drm.rights+xml";
+static const char kOMADrmRightsMimeType2[] =
+    "application/vnd.oma.drm.rights+wbxml";
 }
 
 InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
@@ -42,8 +47,12 @@ void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
 
   std::string mime_type;
   request_->response_headers()->GetMimeType(&mime_type);
-  if (!base::EqualsCaseInsensitiveASCII(mime_type, kOMADrmMessageMimeType))
+  if (!base::EqualsCaseInsensitiveASCII(mime_type, kOMADrmMessageMimeType) &&
+      !base::EqualsCaseInsensitiveASCII(mime_type, kOMADrmContentMimeType) &&
+      !base::EqualsCaseInsensitiveASCII(mime_type, kOMADrmRightsMimeType1) &&
+      !base::EqualsCaseInsensitiveASCII(mime_type, kOMADrmRightsMimeType2)) {
     return;
+  }
 
   net::CookieStore* cookie_store = request_->context()->cookie_store();
   if (cookie_store) {
