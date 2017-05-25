@@ -2102,10 +2102,21 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
                      "Autofill_PolledCreditCardSuggestions"));
   }
 
-  // Simulate showing a credit card suggestion.
+  // Simulate showing a credit card suggestion polled from "Name on card" field.
   {
     base::UserActionTester user_action_tester;
-    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_ShowedCreditCardSuggestions"));
+  }
+
+  // Simulate showing a credit card suggestion polled from "Credit card number"
+  // field.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[1]);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Autofill_ShowedCreditCardSuggestions"));
   }
@@ -2145,7 +2156,14 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
 
   VerifyFormInteractionUkm(
       form, &test_ukm_recorder_, internal::kUKMSuggestionsShownEntryName,
-      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+        {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NAME_FULL},
+        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+        {internal::kUKMServerTypeMetricName, CREDIT_CARD_NAME_FULL}},
+       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+        {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
+        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+        {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
   // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
   // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
   // |autofill_manager_->FillOrPreviewForm|.
@@ -2196,10 +2214,20 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
                      "Autofill_PolledProfileSuggestions"));
   }
 
-  // Simulate showing a profile suggestion.
+  // Simulate showing a profile suggestion polled from "State" field.
   {
     base::UserActionTester user_action_tester;
-    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[0]);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_ShowedProfileSuggestions"));
+  }
+
+  // Simulate showing a profile suggestion polled from "City" field.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[1]);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Autofill_ShowedProfileSuggestions"));
   }
@@ -2239,7 +2267,14 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
 
   VerifyFormInteractionUkm(
       form, &test_ukm_recorder_, internal::kUKMSuggestionsShownEntryName,
-      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+        {internal::kUKMHeuristicTypeMetricName, ADDRESS_HOME_STATE},
+        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+        {internal::kUKMServerTypeMetricName, ADDRESS_HOME_STATE}},
+       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+        {internal::kUKMHeuristicTypeMetricName, ADDRESS_HOME_CITY},
+        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+        {internal::kUKMServerTypeMetricName, ADDRESS_HOME_CITY}}});
   // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
   // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
   // |autofill_manager_->FillOrPreviewForm|.
@@ -2873,7 +2908,10 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
 
     VerifyFormInteractionUkm(
         form, &test_ukm_recorder_, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+          {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
+          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+          {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
     VerifySubmitFormUkm(form, &test_ukm_recorder_,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -3099,7 +3137,10 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
 
     VerifyFormInteractionUkm(
         form, &test_ukm_recorder_, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+          {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
+          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+          {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
     VerifySubmitFormUkm(form, &test_ukm_recorder_,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -4178,7 +4219,10 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
 
     VerifyFormInteractionUkm(
         form, &test_ukm_recorder_, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+          {internal::kUKMHeuristicTypeMetricName, PHONE_HOME_WHOLE_NUMBER},
+          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+          {internal::kUKMServerTypeMetricName, NO_SERVER_DATA}}});
     expected_form_submission_ukm_metrics.push_back(
         {{internal::kUKMAutofillFormSubmittedStateMetricName,
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS},
@@ -4374,8 +4418,14 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
         {internal::kUKMServerRecordTypeCountMetricName, 0}}});
   VerifyFormInteractionUkm(
       form, &test_ukm_recorder_, internal::kUKMSuggestionsShownEntryName,
-      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+        {internal::kUKMHeuristicTypeMetricName, PHONE_HOME_WHOLE_NUMBER},
+        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA}},
+       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
+        {internal::kUKMHeuristicTypeMetricName, EMAIL_ADDRESS},
+        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
+        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA}}});
   VerifyFormInteractionUkm(
       form, &test_ukm_recorder_, internal::kUKMSuggestionFilledEntryName,
       {{{internal::kUKMRecordTypeMetricName, AutofillProfile::LOCAL_PROFILE},

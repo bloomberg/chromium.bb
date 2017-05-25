@@ -76,15 +76,6 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="Autofill.SuggestionsShown">
-  <owner>csashi@google.com</owner>
-  <metric name="MillisecondsSinceFormParsed">
-    <summary>
-      Time since form parse.
-    </summary>
-  </metric>
-</event>
-
 <event name="Autofill.SelectedMaskedServerCard">
   <owner>csashi@google.com</owner>
   <metric name="MillisecondsSinceFormParsed">
@@ -109,6 +100,35 @@ be describing additional metrics about the same event.
     <summary>
       Whether the suggestion was from a local card/autofill profile or from a
       server card/autofill profile.
+    </summary>
+  </metric>
+</event>
+
+<event name="Autofill.SuggestionsShown">
+  <owner>csashi@google.com</owner>
+  <summary>
+    Recorded when a suggestion is shown to user.
+  </summary>
+  <metric name="HeuristicType">
+    <summary>
+      Field's |ServerFieldType| based on heuristics. See
+      |AutofillField.heuristic_type()|.
+    </summary>
+  </metric>
+  <metric name="HtmlFieldType">
+    <summary>
+      Field's autocomplete field type hint. See |AutofillField.html_type()|.
+    </summary>
+  </metric>
+  <metric name="MillisecondsSinceFormParsed">
+    <summary>
+      Time since form parse.
+    </summary>
+  </metric>
+  <metric name="ServerType">
+    <summary>
+      Field's |ServerFieldType| returned by server. See
+      |AutofillField.server_type()|.
     </summary>
   </metric>
 </event>

@@ -36,8 +36,12 @@ extern const char kUKMIsForCreditCardMetricName[];
 extern const char kUKMLocalRecordTypeCountMetricName[];
 extern const char kUKMServerRecordTypeCountMetricName[];
 
-// |UkmEntry| when we show suggestions.
+// |UkmEntry| when we show suggestions and when user edits text field. See
+// |kUkmTextFieldDidChangeEntryName|.
 extern const char kUKMSuggestionsShownEntryName[];
+extern const char kUKMHeuristicTypeMetricName[];
+extern const char kUKMHtmlFieldTypeMetricName[];
+extern const char kUKMServerTypeMetricName[];
 
 // |UkmEntry| when user selects a masked server credit card.
 extern const char kUKMSelectedMaskedServerCardEntryName[];
@@ -57,9 +61,6 @@ extern const char kUKMRecordTypeMetricName[];
 // |UkmEntry| for user editing text field. Metrics contain field's attributes.
 extern const char kUKMTextFieldDidChangeEntryName[];
 extern const char kUKMFieldTypeGroupMetricName[];
-extern const char kUKMHeuristicTypeMetricName[];
-extern const char kUKMServerTypeMetricName[];
-extern const char kUKMHtmlFieldTypeMetricName[];
 extern const char kUKMHtmlFieldModeMetricName[];
 extern const char kUKMIsAutofilledMetricName[];
 extern const char kUKMIsEmptyMetricName[];
@@ -629,7 +630,7 @@ class AutofillMetrics {
     void LogInteractedWithForm(bool is_for_credit_card,
                                size_t local_record_type_count,
                                size_t server_record_type_count);
-    void LogSuggestionsShown();
+    void LogSuggestionsShown(const AutofillField& field);
     void LogSelectedMaskedServerCard();
     void LogDidFillSuggestion(int record_type);
     void LogTextFieldDidChange(const AutofillField& field);
@@ -859,7 +860,7 @@ class AutofillMetrics {
 
     void OnDidPollSuggestions(const FormFieldData& field);
 
-    void OnDidShowSuggestions();
+    void OnDidShowSuggestions(const AutofillField& field);
 
     void OnDidSelectMaskedServerCardSuggestion();
 
