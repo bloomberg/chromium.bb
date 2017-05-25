@@ -206,7 +206,7 @@ void aom_lpf_vertical_4_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
   aom_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1);
 }
 
-static INLINE void filter8(int8_t mask, uint8_t thresh, uint8_t flat,
+static INLINE void filter8(int8_t mask, uint8_t thresh, int8_t flat,
                            uint8_t *op3, uint8_t *op2, uint8_t *op1,
                            uint8_t *op0, uint8_t *oq0, uint8_t *oq1,
                            uint8_t *oq2, uint8_t *oq3) {
@@ -278,8 +278,8 @@ void aom_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
 }
 
 #if PARALLEL_DEBLOCKING_11_TAP
-static INLINE void filter12(int8_t mask, uint8_t thresh, uint8_t flat,
-                            uint8_t flat2, uint8_t *op5, uint8_t *op4,
+static INLINE void filter12(int8_t mask, uint8_t thresh, int8_t flat,
+                            int8_t flat2, uint8_t *op5, uint8_t *op4,
                             uint8_t *op3, uint8_t *op2, uint8_t *op1,
                             uint8_t *op0, uint8_t *oq0, uint8_t *oq1,
                             uint8_t *oq2, uint8_t *oq3, uint8_t *oq4,
@@ -308,8 +308,8 @@ static INLINE void filter12(int8_t mask, uint8_t thresh, uint8_t flat,
 #endif
 
 #if PARALLEL_DEBLOCKING_9_TAP
-static INLINE void filter10(int8_t mask, uint8_t thresh, uint8_t flat,
-                            uint8_t flat2, uint8_t *op4, uint8_t *op3,
+static INLINE void filter10(int8_t mask, uint8_t thresh, int8_t flat,
+                            int8_t flat2, uint8_t *op4, uint8_t *op3,
                             uint8_t *op2, uint8_t *op1, uint8_t *op0,
                             uint8_t *oq0, uint8_t *oq1, uint8_t *oq2,
                             uint8_t *oq3, uint8_t *oq4) {
@@ -332,8 +332,8 @@ static INLINE void filter10(int8_t mask, uint8_t thresh, uint8_t flat,
 }
 #endif
 
-static INLINE void filter16(int8_t mask, uint8_t thresh, uint8_t flat,
-                            uint8_t flat2, uint8_t *op7, uint8_t *op6,
+static INLINE void filter16(int8_t mask, uint8_t thresh, int8_t flat,
+                            int8_t flat2, uint8_t *op7, uint8_t *op6,
                             uint8_t *op5, uint8_t *op4, uint8_t *op3,
                             uint8_t *op2, uint8_t *op1, uint8_t *op0,
                             uint8_t *oq0, uint8_t *oq1, uint8_t *oq2,
@@ -665,7 +665,7 @@ void aom_highbd_lpf_vertical_4_dual_c(
                               bd);
 }
 
-static INLINE void highbd_filter8(int8_t mask, uint8_t thresh, uint8_t flat,
+static INLINE void highbd_filter8(int8_t mask, uint8_t thresh, int8_t flat,
                                   uint16_t *op3, uint16_t *op2, uint16_t *op1,
                                   uint16_t *op0, uint16_t *oq0, uint16_t *oq1,
                                   uint16_t *oq2, uint16_t *oq3, int bd) {
@@ -741,8 +741,8 @@ void aom_highbd_lpf_vertical_8_dual_c(
                               bd);
 }
 
-static INLINE void highbd_filter16(int8_t mask, uint8_t thresh, uint8_t flat,
-                                   uint8_t flat2, uint16_t *op7, uint16_t *op6,
+static INLINE void highbd_filter16(int8_t mask, uint8_t thresh, int8_t flat,
+                                   int8_t flat2, uint16_t *op7, uint16_t *op6,
                                    uint16_t *op5, uint16_t *op4, uint16_t *op3,
                                    uint16_t *op2, uint16_t *op1, uint16_t *op0,
                                    uint16_t *oq0, uint16_t *oq1, uint16_t *oq2,
