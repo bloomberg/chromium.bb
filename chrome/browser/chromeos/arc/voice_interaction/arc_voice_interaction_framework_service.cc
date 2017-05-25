@@ -24,7 +24,9 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/instance_holder.h"
+#include "components/exo/surface.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
@@ -41,6 +43,8 @@ namespace arc {
 
 namespace {
 
+using LayerSet = base::flat_set<const ui::Layer*>;
+
 void ScreenshotCallback(
     const mojom::VoiceInteractionFrameworkHost::CaptureFocusedWindowCallback&
         callback,
@@ -53,9 +57,26 @@ void ScreenshotCallback(
   callback.Run(result);
 }
 
+bool IsMetalayerWindow(aura::Window* window) {
+  exo::Surface* surface = exo::Surface::AsSurface(window);
+  return surface != nullptr && surface->IsStylusOnly();
+}
+
+void CollectLayers(LayerSet& layers,
+                   aura::Window* root_window,
+                   base::Callback<bool(aura::Window*)> matcher_func) {
+  if (matcher_func.Run(root_window))
+    layers.insert(root_window->layer());
+
+  aura::Window::Windows children = root_window->children();
+  for (aura::Window::Windows::iterator iter = children.begin();
+       iter != children.end(); ++iter) {
+    CollectLayers(layers, *iter, matcher_func);
+  }
+}
+
 std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
     aura::Window* root_window) {
-  using LayerSet = base::flat_set<const ui::Layer*>;
   LayerSet blocked_layers;
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->profile()->IsOffTheRecord())
@@ -63,15 +84,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
   }
 
   LayerSet excluded_layers;
-  // For the best UX the metalayer has to be excluded from the snapshot.
-  // It is currently impossible to identify the metalayer among others layers
-  // under kShellWindowId_SystemModalContainer. Other layers in this container
-  // are not relevant for this kind of snapshot, so it is safe to exclude all
-  // of them.
-  aura::Window* modal_container = ash::Shell::GetContainer(
-      root_window, ash::kShellWindowId_SystemModalContainer);
-  if (modal_container != nullptr)
-    excluded_layers.insert(modal_container->layer());
+  CollectLayers(excluded_layers, root_window, base::Bind(IsMetalayerWindow));
 
   auto layer_tree_owner = ::wm::RecreateLayersWithClosure(
       root_window, base::BindRepeating(
