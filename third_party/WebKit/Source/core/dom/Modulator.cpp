@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ModulatorImpl.h"
 #include "core/frame/LocalFrame.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PerContextData.h"
 
@@ -27,11 +28,21 @@ Modulator* Modulator::From(ScriptState* script_state) {
 
   Modulator* modulator =
       static_cast<Modulator*>(per_context_data->GetData(kPerContextDataKey));
-  if (!modulator) {
-    if (Document* document = ToDocument(ExecutionContext::From(script_state))) {
-      modulator = ModulatorImpl::Create(script_state, document->Fetcher());
-      Modulator::SetModulator(script_state, modulator);
-    }
+  if (modulator)
+    return modulator;
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  if (execution_context->IsDocument()) {
+    Document* document = ToDocument(execution_context);
+    modulator = ModulatorImpl::Create(script_state, document->Fetcher());
+    Modulator::SetModulator(script_state, modulator);
+  } else if (execution_context->IsMainThreadWorkletGlobalScope()) {
+    MainThreadWorkletGlobalScope* global_scope =
+        ToMainThreadWorkletGlobalScope(execution_context);
+    modulator = ModulatorImpl::Create(
+        script_state, global_scope->GetFrame()->GetDocument()->Fetcher());
+    Modulator::SetModulator(script_state, modulator);
+  } else {
+    NOTREACHED();
   }
   return modulator;
 }

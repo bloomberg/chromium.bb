@@ -28,6 +28,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
       const String& task_name_for_instrumentation = g_empty_string) final;
+  bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
 
   virtual ScriptWrappable* GetScriptWrappable() const = 0;
 

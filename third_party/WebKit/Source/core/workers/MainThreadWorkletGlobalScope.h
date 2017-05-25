@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/loader/WorkletScriptLoader.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "public/platform/WebURLRequest.h"
@@ -17,11 +16,9 @@ namespace blink {
 
 class ConsoleMessage;
 class LocalFrame;
-class ScriptSourceCode;
 
 class CORE_EXPORT MainThreadWorkletGlobalScope
     : public WorkletGlobalScope,
-      public WorkletScriptLoader::Client,
       public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(MainThreadWorkletGlobalScope);
 
@@ -44,20 +41,12 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
                             WorkletPendingTasks*);
   void Terminate();
 
-  // WorkletScriptLoader::Client
-  void NotifyWorkletScriptLoadingFinished(WorkletScriptLoader*,
-                                          const ScriptSourceCode&) final;
-
   // ExecutionContext
   void AddConsoleMessage(ConsoleMessage*) final;
   void ExceptionThrown(ErrorEvent*) final;
   CoreProbeSink* GetProbeSink() final;
 
   DECLARE_VIRTUAL_TRACE();
-
- private:
-  HeapHashMap<Member<WorkletScriptLoader>, Member<WorkletPendingTasks>>
-      loader_map_;
 };
 
 DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,
