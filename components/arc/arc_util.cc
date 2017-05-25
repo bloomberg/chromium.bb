@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -28,6 +30,12 @@ const base::Feature kEnableArcFeature{"EnableARC",
 constexpr char kAvailabilityNone[] = "none";
 constexpr char kAvailabilityInstalled[] = "installed";
 constexpr char kAvailabilityOfficiallySupported[] = "officially-supported";
+
+void SetArcCpuRestrictionCallback(bool success) {
+  VLOG(2) << "Finished prioritizing the instance: result=" << success;
+  if (!success)
+    LOG(ERROR) << "Failed to prioritize ARC";
+}
 
 }  // namespace
 
@@ -133,6 +141,15 @@ bool IsArcAppWindow(aura::Window* window) {
     return false;
   return window->GetProperty(aura::client::kAppType) ==
          static_cast<int>(ash::AppType::ARC_APP);
+}
+
+void PrioritizeArcContainer() {
+  VLOG(2) << "Prioritizing the instance";
+  chromeos::SessionManagerClient* session_manager_client =
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  session_manager_client->SetArcCpuRestriction(
+      login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND,
+      base::Bind(SetArcCpuRestrictionCallback));
 }
 
 }  // namespace arc

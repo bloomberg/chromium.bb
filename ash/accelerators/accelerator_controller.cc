@@ -50,8 +50,10 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -536,6 +538,21 @@ bool CanHandleShowStylusTools() {
   return palette_utils::ShouldShowPalette();
 }
 
+bool CanHandleStartVoiceInteraction() {
+  return chromeos::switches::IsVoiceInteractionEnabled();
+}
+
+void HandleStartVoiceInteraction(const ui::Accelerator& accelerator) {
+  if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_SPACE) {
+    base::RecordAction(
+        base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
+  } else if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
+    base::RecordAction(
+        base::UserMetricsAction("VoiceInteraction.Started.Search_A"));
+  }
+  Shell::Get()->app_list()->StartVoiceInteractionSession();
+}
+
 void HandleSuspend() {
   base::RecordAction(UserMetricsAction("Accel_Suspend"));
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestSuspend();
@@ -933,6 +950,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleShowMessageCenterBubble();
     case SHOW_STYLUS_TOOLS:
       return CanHandleShowStylusTools();
+    case START_VOICE_INTERACTION:
+      return CanHandleStartVoiceInteraction();
     case SWITCH_IME:
       return CanHandleSwitchIme(accelerator);
     case SWITCH_TO_PREVIOUS_USER:
@@ -1168,6 +1187,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case SHOW_TASK_MANAGER:
       HandleShowTaskManager();
+      break;
+    case START_VOICE_INTERACTION:
+      HandleStartVoiceInteraction(accelerator);
       break;
     case SUSPEND:
       HandleSuspend();

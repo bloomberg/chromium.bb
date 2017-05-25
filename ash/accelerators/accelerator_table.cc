@@ -161,6 +161,12 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
     {true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
 
+    // Voice Interaction shortcuts.
+    {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_VOICE_INTERACTION},
+    // Temporary shortcut added for UX/PM exploration.
+    // TODO(updowndota): Remove the temporary shortcut.
+    {true, ui::VKEY_SPACE, ui::EF_COMMAND_DOWN, START_VOICE_INTERACTION},
+
     // Debugging shortcuts that need to be available to end-users in
     // release builds.
     {true, ui::VKEY_U, kDebugModifier, PRINT_UI_HIERARCHIES},
