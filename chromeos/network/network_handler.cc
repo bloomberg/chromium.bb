@@ -12,6 +12,7 @@
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_cert_migrator.h"
+#include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler_impl.h"
 #include "chromeos/network/network_device_handler_impl.h"
@@ -41,6 +42,7 @@ NetworkHandler::NetworkHandler()
   if (CertLoader::IsInitialized()) {
     auto_connect_handler_.reset(new AutoConnectHandler());
     network_cert_migrator_.reset(new NetworkCertMigrator());
+    network_certificate_handler_.reset(new NetworkCertificateHandler());
     client_cert_resolver_.reset(new ClientCertResolver());
   }
   network_activation_handler_.reset(new NetworkActivationHandler());
@@ -146,6 +148,10 @@ NetworkHandler::managed_network_configuration_handler() {
 
 NetworkActivationHandler* NetworkHandler::network_activation_handler() {
   return network_activation_handler_.get();
+}
+
+NetworkCertificateHandler* NetworkHandler::network_certificate_handler() {
+  return network_certificate_handler_.get();
 }
 
 NetworkConnectionHandler* NetworkHandler::network_connection_handler() {

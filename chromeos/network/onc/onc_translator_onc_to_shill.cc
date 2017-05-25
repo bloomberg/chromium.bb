@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/onc/onc_translator.h"
@@ -260,6 +261,21 @@ void LocalTranslator::TranslateEAP() {
                                                 : kEAP_TTLS_InnerTable;
       TranslateWithTableAndSet(inner, table, shill::kEapPhase2AuthProperty);
     }
+  }
+
+  std::string cert_type;
+  onc_object_->GetStringWithoutPathExpansion(
+      ::onc::client_cert::kClientCertType, &cert_type);
+  if (cert_type == ::onc::client_cert::kPKCS11Id) {
+    std::string pkcs11_id;
+    onc_object_->GetStringWithoutPathExpansion(
+        ::onc::client_cert::kClientCertPKCS11Id, &pkcs11_id);
+    shill_dictionary_->SetStringWithoutPathExpansion(
+        shill::kEapPinProperty, chromeos::client_cert::kDefaultTPMPin);
+    shill_dictionary_->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
+                                                     pkcs11_id);
+    shill_dictionary_->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
+                                                     pkcs11_id);
   }
 
   CopyFieldsAccordingToSignature();

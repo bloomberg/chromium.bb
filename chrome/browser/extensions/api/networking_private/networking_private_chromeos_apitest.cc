@@ -28,6 +28,7 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -51,6 +52,8 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -323,7 +326,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                               state, true /* add_to_visible */);
   }
 
-  static std::unique_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
+  static std::unique_ptr<KeyedService> CreateNetworkingPrivateDelegate(
       content::BrowserContext* context) {
     std::unique_ptr<NetworkingPrivateDelegate> result(
         new NetworkingPrivateChromeOS(context));
@@ -351,7 +354,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     content::RunAllPendingInMessageLoop();
 
     NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
-        profile(), &CreateNetworkingPrivateServiceClient);
+        profile(), &CreateNetworkingPrivateDelegate);
 
     InitializeSanitizedUsername();
 
@@ -486,10 +489,26 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
   }
 
- private:
   std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
   CreateNetworkingCastPrivateDelegate() {
     return base::MakeUnique<TestNetworkingCastPrivateDelegate>();
+  }
+
+  bool SetupCertificates() {
+    scoped_refptr<net::X509Certificate> system_ca_cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                "client_1_ca.pem");
+    if (!system_ca_cert)
+      return false;
+
+    net::CertificateList cert_list;
+    cert_list.push_back(std::move(system_ca_cert));
+    // TODO(stevenjb): Figure out a simple way to import a test user cert.
+
+    chromeos::NetworkHandler::Get()
+        ->network_certificate_handler()
+        ->SetCertificatesForTest(cert_list);
+    return true;
   }
 
  protected:
@@ -770,6 +789,17 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       OnCertificateListsChangedEvent) {
+  TestListener listener("eventListenerReady", base::Bind([]() {
+                          chromeos::NetworkHandler::Get()
+                              ->network_certificate_handler()
+                              ->NotifyCertificatsChangedForTest();
+                        }));
+  EXPECT_TRUE(RunNetworkingSubtest("onCertificateListsChangedEvent"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
 }
@@ -889,6 +919,11 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        Tether_GetTetherNetworkState) {
   SetupTether();
   EXPECT_TRUE(RunNetworkingSubtest("getTetherNetworkState")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetCertificateLists) {
+  ASSERT_TRUE(SetupCertificates());
+  EXPECT_TRUE(RunNetworkingSubtest("getCertificateLists")) << message_;
 }
 
 // Tests subset of networking API for the networking API alias - to verify that

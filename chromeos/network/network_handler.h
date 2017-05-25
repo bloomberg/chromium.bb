@@ -23,6 +23,7 @@ class ManagedNetworkConfigurationHandler;
 class ManagedNetworkConfigurationHandlerImpl;
 class NetworkActivationHandler;
 class NetworkCertMigrator;
+class NetworkCertificateHandler;
 class NetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkDeviceHandler;
@@ -74,6 +75,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   NetworkConfigurationHandler* network_configuration_handler();
   ManagedNetworkConfigurationHandler* managed_network_configuration_handler();
   NetworkActivationHandler* network_activation_handler();
+  NetworkCertificateHandler* network_certificate_handler();
   NetworkConnectionHandler* network_connection_handler();
   NetworkSmsHandler* network_sms_handler();
   GeolocationHandler* geolocation_handler();
@@ -97,6 +99,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_network_configuration_handler_;
   std::unique_ptr<NetworkCertMigrator> network_cert_migrator_;
+  std::unique_ptr<NetworkCertificateHandler> network_certificate_handler_;
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
   std::unique_ptr<NetworkActivationHandler> network_activation_handler_;
   std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;

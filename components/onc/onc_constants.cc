@@ -243,6 +243,7 @@ const char kSignalStrength[] = "SignalStrength";
 
 namespace client_cert {
 const char kClientCertPattern[] = "ClientCertPattern";
+const char kClientCertPKCS11Id[] = "ClientCertPKCS11Id";
 const char kClientCertRef[] = "ClientCertRef";
 const char kClientCertType[] = "ClientCertType";
 const char kClientCertTypeNone[] = "None";
@@ -256,6 +257,7 @@ const char kLocality[] = "Locality";
 const char kOrganization[] = "Organization";
 const char kOrganizationalUnit[] = "OrganizationalUnit";
 const char kPattern[] = "Pattern";
+const char kPKCS11Id[] = "PKCS11Id";
 const char kRef[] = "Ref";
 const char kSubject[] = "Subject";
 }  // namespace client_cert

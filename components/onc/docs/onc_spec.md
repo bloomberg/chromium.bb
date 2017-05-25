@@ -1042,9 +1042,19 @@ type exists to configure the authentication.
     * (required if **ClientCertType** is *Ref*, otherwise ignored) - **string**
     * Reference to client certificate stored in certificate section.
 
+* **ClientCertPKCS11Id**
+    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) - 
+    * PKCS#11 identifier in the format slot:key_id.
+  
 * **ClientCertType**
-    * (optional) **string**
-    `Allowed values are` *Ref*, and *Pattern*.
+    * (optional) - **string**
+    * `Allowed values are` *Ref*, *Pattern*, *PKCS11Id* and *None*.
+    * *Ref* and *Pattern* indicate that the associated property should be used
+      to identify the client certificate.
+    * *PKCS11Id* is used when representing a certificate in a local store and is
+      only valid when describing a local configuration.
+    * *None* indicates that the server is configured to not require client
+      certificates.
 
 * **Identity**
     * (optional) - **string**

@@ -11137,6 +11137,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="406" label="ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_START"/>
   <int value="407" label="ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_STOP"/>
   <int value="408" label="MEDIA_PERCEPTION_PRIVATE_ON_MEDIA_PERCEPTION"/>
+  <int value="409" label="NETWORKING_PRIVATE_ON_CERTIFICATE_LISTS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -12363,6 +12364,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1174" label="MEDIAPERCEPTIONPRIVATE_GETSTATE"/>
   <int value="1175" label="MEDIAPERCEPTIONPRIVATE_SETSTATE"/>
   <int value="1176" label="MEDIAPERCEPTIONPRIVATE_GETDIAGNOSTICS"/>
+  <int value="1177" label="NETWORKINGPRIVATE_GETCERTIFICATELISTS"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

@@ -1055,4 +1055,23 @@ NetworkingPrivateGetGlobalPolicyFunction::Run() {
       ArgumentList(private_api::GetGlobalPolicy::Results::Create(*policy)));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetCertificateListsFunction
+
+NetworkingPrivateGetCertificateListsFunction::
+    ~NetworkingPrivateGetCertificateListsFunction() {}
+
+ExtensionFunction::ResponseAction
+NetworkingPrivateGetCertificateListsFunction::Run() {
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    return RespondNow(Error(kPrivateOnlyError));
+  }
+
+  std::unique_ptr<base::DictionaryValue> certificate_lists(
+      GetDelegate(browser_context())->GetCertificateLists());
+  DCHECK(certificate_lists);
+  return RespondNow(OneArgument(std::move(certificate_lists)));
+}
+
 }  // namespace extensions

@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -33,6 +34,7 @@ namespace extensions {
 class NetworkingPrivateEventRouterImpl
     : public NetworkingPrivateEventRouter,
       public chromeos::NetworkStateHandlerObserver,
+      public chromeos::NetworkCertificateHandler::Observer,
       public NetworkPortalDetector::Observer {
  public:
   explicit NetworkingPrivateEventRouterImpl(content::BrowserContext* context);
@@ -51,6 +53,9 @@ class NetworkingPrivateEventRouterImpl
   void DeviceListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
   void DevicePropertiesUpdated(const DeviceState* device) override;
+
+  // NetworkCertificateHandler::Observer overrides:
+  void OnCertificatesChanged() override;
 
   // NetworkPortalDetector::Observer overrides:
   void OnPortalDetectionCompleted(
@@ -87,6 +92,8 @@ NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
         this, api::networking_private::OnDeviceStateListChanged::kEventName);
     event_router->RegisterObserver(
         this, api::networking_private::OnPortalDetectionCompleted::kEventName);
+    event_router->RegisterObserver(
+        this, api::networking_private::OnCertificateListsChanged::kEventName);
     StartOrStopListeningForNetworkChanges();
   }
 }
@@ -133,16 +140,20 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
       event_router->HasEventListener(
           api::networking_private::OnDeviceStateListChanged::kEventName) ||
       event_router->HasEventListener(
-          api::networking_private::OnPortalDetectionCompleted::kEventName);
+          api::networking_private::OnPortalDetectionCompleted::kEventName) ||
+      event_router->HasEventListener(
+          api::networking_private::OnCertificateListsChanged::kEventName);
 
   if (should_listen && !listening_) {
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);
+    NetworkHandler::Get()->network_certificate_handler()->AddObserver(this);
     if (chromeos::network_portal_detector::IsInitialized())
       chromeos::network_portal_detector::GetInstance()->AddObserver(this);
   } else if (!should_listen && listening_) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
+    NetworkHandler::Get()->network_certificate_handler()->RemoveObserver(this);
     if (chromeos::network_portal_detector::IsInitialized())
       chromeos::network_portal_detector::GetInstance()->RemoveObserver(this);
   }
@@ -223,6 +234,24 @@ void NetworkingPrivateEventRouterImpl::DevicePropertiesUpdated(
   for (const NetworkState* network : cellular_networks) {
     NetworkPropertiesUpdated(network);
   }
+}
+
+void NetworkingPrivateEventRouterImpl::OnCertificatesChanged() {
+  EventRouter* event_router = EventRouter::Get(context_);
+  if (!event_router->HasEventListener(
+          api::networking_private::OnCertificateListsChanged::kEventName)) {
+    NET_LOG_EVENT("NetworkingPrivate.OnCertificatesChanged: No Listeners", "");
+    return;
+  }
+  NET_LOG_EVENT("NetworkingPrivate.OnCertificatesChanged", "");
+
+  std::unique_ptr<base::ListValue> args(
+      api::networking_private::OnCertificateListsChanged::Create());
+  std::unique_ptr<Event> extension_event(
+      new Event(events::NETWORKING_PRIVATE_ON_CERTIFICATE_LISTS_CHANGED,
+                api::networking_private::OnCertificateListsChanged::kEventName,
+                std::move(args)));
+  event_router->BroadcastEvent(std::move(extension_event));
 }
 
 void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(

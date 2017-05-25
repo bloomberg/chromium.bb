@@ -528,6 +528,23 @@ class NetworkingPrivateGetGlobalPolicyFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetGlobalPolicyFunction);
 };
 
+class NetworkingPrivateGetCertificateListsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  NetworkingPrivateGetCertificateListsFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getCertificateLists",
+                             NETWORKINGPRIVATE_GETCERTIFICATELISTS);
+
+ protected:
+  ~NetworkingPrivateGetCertificateListsFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetCertificateListsFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_

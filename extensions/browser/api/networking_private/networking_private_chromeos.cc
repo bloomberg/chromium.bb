@@ -18,6 +18,7 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_activation_handler.h"
+#include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -43,6 +44,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::NetworkHandler;
+using chromeos::NetworkCertificateHandler;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 using chromeos::ShillManagerClient;
@@ -297,6 +299,20 @@ void SetManualProxy(base::DictionaryValue* manual,
   base::DictionaryValue* port_dict =
       EnsureDictionaryValue(::onc::proxy::kPort, dict);
   SetProxyEffectiveValue(port_dict, state, base::MakeUnique<base::Value>(port));
+}
+
+private_api::Certificate GetCertDictionary(
+    const NetworkCertificateHandler::Certificate& cert) {
+  private_api::Certificate api_cert;
+  api_cert.hash = cert.hash;
+  api_cert.issued_by = cert.issued_by;
+  api_cert.issued_to = cert.issued_to;
+  api_cert.hardware_backed = cert.hardware_backed;
+  if (!cert.pem.empty())
+    api_cert.pem = base::MakeUnique<std::string>(cert.pem);
+  if (!cert.pkcs11_id.empty())
+    api_cert.pkcs11_id = base::MakeUnique<std::string>(cert.pkcs11_id);
+  return api_cert;
 }
 
 }  // namespace
@@ -744,6 +760,25 @@ NetworkingPrivateChromeOS::GetGlobalPolicy() {
   if (global_network_config)
     result->MergeDictionary(global_network_config);
   return result;
+}
+
+std::unique_ptr<base::DictionaryValue>
+NetworkingPrivateChromeOS::GetCertificateLists() {
+  private_api::CertificateLists result;
+  const std::vector<NetworkCertificateHandler::Certificate>& server_cas =
+      NetworkHandler::Get()
+          ->network_certificate_handler()
+          ->server_ca_certificates();
+  for (const auto& cert : server_cas)
+    result.server_ca_certificates.push_back(GetCertDictionary(cert));
+
+  std::vector<private_api::Certificate> user_cert_list;
+  const std::vector<NetworkCertificateHandler::Certificate>& user_certs =
+      NetworkHandler::Get()->network_certificate_handler()->user_certificates();
+  for (const auto& cert : user_certs)
+    result.user_certificates.push_back(GetCertDictionary(cert));
+
+  return result.ToValue();
 }
 
 bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {
