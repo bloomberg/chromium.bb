@@ -42,7 +42,6 @@ namespace blink {
 
 class DocumentMarkerList;
 class Node;
-class RenderedDocumentMarker;
 
 class CORE_EXPORT DocumentMarkerController final
     : public GarbageCollected<DocumentMarkerController>,
@@ -96,7 +95,6 @@ class CORE_EXPORT DocumentMarkerController final
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   DocumentMarkerVector Markers();
   Vector<IntRect> RenderedRectsForTextMatchMarkers();
-  void UpdateMarkerRenderedRectIfNeeded(const Node&, RenderedDocumentMarker&);
   void InvalidateRectsForAllTextMatchMarkers();
   void InvalidateRectsForTextMatchMarkersInNode(const Node&);
 
