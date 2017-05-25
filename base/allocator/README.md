@@ -87,7 +87,7 @@ time we no longer need any forked files.
 
 Unified allocator shim
 ----------------------
-On most platform, Chrome overrides the malloc / operator new symbols (and
+On most platforms, Chrome overrides the malloc / operator new symbols (and
 corresponding free / delete and other variants). This is to enforce security
 checks and lately to enable the
 [memory-infra heap profiler][url-memory-infra-heap-profiler].  
@@ -97,9 +97,10 @@ a project aimed to unify the symbol definition and allocator routing logic in
 a central place.
 
  - Full documentation: [Allocator shim design doc][url-allocator-shim].
- - Current state: Available and enabled by default on Linux, CrOS and Android.
+ - Current state: Available and enabled by default on Android, CrOS, Linux,
+   Mac OS and Windows.
  - Tracking bug: [https://crbug.com/550886][crbug.com/550886].
- - Build-time flag: `use_experimental_allocator_shim`.
+ - Build-time flag: `use_allocator_shim`.
 
 **Overview of the unified allocator shim**  
 The allocator shim consists of three stages:

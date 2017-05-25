@@ -40,7 +40,7 @@ declare_args() {
   # Turn on memory profiling in the task profiler when the heap shim is
   # available. Profiling can then be enabled at runtime by passing the command
   # line flag --enable-heap-profiling=task-profiler.
-  enable_memory_task_profiler = use_experimental_allocator_shim
+  enable_memory_task_profiler = use_allocator_shim
 
   # Partition alloc is included by default except iOS.
   use_partition_alloc = !is_ios
@@ -1147,9 +1147,7 @@ component("base") {
     libs = [ "atomic" ]
   }
 
-  if (use_experimental_allocator_shim) {
-    # TODO(primiano): support other platforms, currently this works only on
-    # Linux/CrOS/Android. http://crbug.com/550886 .
+  if (use_allocator_shim) {
     sources += [
       "allocator/allocator_shim.cc",
       "allocator/allocator_shim.h",
@@ -2409,7 +2407,7 @@ test("base_unittests") {
     }
   }
 
-  if (use_experimental_allocator_shim) {
+  if (use_allocator_shim) {
     sources += [ "allocator/allocator_shim_unittest.cc" ]
   }
 

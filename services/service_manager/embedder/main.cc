@@ -65,7 +65,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "services/service_manager/embedder/mac_init.h"
 
-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "base/allocator/allocator_shim.h"
 #endif
 #endif  // defined(OS_MACOSX)
@@ -335,7 +335,7 @@ int Main(const MainParams& params) {
   MainDelegate* delegate = params.delegate;
   DCHECK(delegate);
 
-#if defined(OS_MACOSX) && BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+#if defined(OS_MACOSX) && BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InitializeAllocatorShim();
 #endif
   base::EnableTerminationOnOutOfMemory();
