@@ -11,7 +11,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
-#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
@@ -55,9 +54,6 @@ static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
               "ids must match");
 
 }  // namespace
-
-// static
-bool WmWindow::default_use_empty_minimum_size_for_testing_ = false;
 
 WmWindow::~WmWindow() {
   if (added_transient_observer_)
@@ -155,9 +151,7 @@ bool WmWindow::HasNonClientArea() {
 }
 
 int WmWindow::GetNonClientComponent(const gfx::Point& location) {
-  return window_->delegate()
-             ? window_->delegate()->GetNonClientComponent(location)
-             : HTNOWHERE;
+  return wm::GetNonClientComponent(window_, location);
 }
 
 gfx::Point WmWindow::ConvertPointToTarget(const WmWindow* target,
@@ -192,9 +186,8 @@ gfx::Rect WmWindow::ConvertRectFromScreen(const gfx::Rect& rect) const {
 }
 
 gfx::Size WmWindow::GetMinimumSize() const {
-  return window_->delegate() && !use_empty_minimum_size_for_testing_
-             ? window_->delegate()->GetMinimumSize()
-             : gfx::Size();
+  return window_->delegate() ? window_->delegate()->GetMinimumSize()
+                             : gfx::Size();
 }
 
 gfx::Size WmWindow::GetMaximumSize() const {
@@ -517,28 +510,6 @@ WmWindow* WmWindow::GetChildByShellWindowId(int id) {
   return Get(window_->GetChildById(id));
 }
 
-void WmWindow::ShowResizeShadow(int component) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // TODO: http://crbug.com/640773.
-    return;
-  }
-  ResizeShadowController* resize_shadow_controller =
-      Shell::Get()->resize_shadow_controller();
-  if (resize_shadow_controller)
-    resize_shadow_controller->ShowShadow(window_, component);
-}
-
-void WmWindow::HideResizeShadow() {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // TODO: http://crbug.com/640773.
-    return;
-  }
-  ResizeShadowController* resize_shadow_controller =
-      Shell::Get()->resize_shadow_controller();
-  if (resize_shadow_controller)
-    resize_shadow_controller->HideShadow(window_);
-}
-
 void WmWindow::InstallResizeHandleWindowTargeter(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
   window_->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
@@ -606,10 +577,7 @@ void WmWindow::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
   window_->RemovePreTargetHandler(handler);
 }
 
-WmWindow::WmWindow(aura::Window* window)
-    : window_(window),
-      use_empty_minimum_size_for_testing_(
-          default_use_empty_minimum_size_for_testing_) {
+WmWindow::WmWindow(aura::Window* window) : window_(window) {
   window_->SetProperty(kWmWindowKey, this);
 }
 

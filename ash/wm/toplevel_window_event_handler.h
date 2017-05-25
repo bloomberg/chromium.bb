@@ -22,8 +22,6 @@ class RunLoop;
 }
 
 namespace ash {
-namespace wm {
-}
 
 class ASH_EXPORT ToplevelWindowEventHandler
     : public ui::EventHandler,

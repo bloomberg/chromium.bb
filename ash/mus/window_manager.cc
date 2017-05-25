@@ -526,8 +526,7 @@ void WindowManager::OnWmPerformMoveLoop(
     ui::mojom::MoveLoopSource source,
     const gfx::Point& cursor_location,
     const base::Callback<void(bool)>& on_done) {
-  WmWindow* child_window = WmWindow::Get(window);
-  MoveEventHandler* handler = MoveEventHandler::GetForWindow(child_window);
+  MoveEventHandler* handler = MoveEventHandler::GetForWindow(window);
   if (!handler) {
     on_done.Run(false);
     return;
@@ -542,8 +541,7 @@ void WindowManager::OnWmPerformMoveLoop(
 }
 
 void WindowManager::OnWmCancelMoveLoop(aura::Window* window) {
-  WmWindow* child_window = WmWindow::Get(window);
-  MoveEventHandler* handler = MoveEventHandler::GetForWindow(child_window);
+  MoveEventHandler* handler = MoveEventHandler::GetForWindow(window);
   if (handler)
     handler->RevertDrag();
 }

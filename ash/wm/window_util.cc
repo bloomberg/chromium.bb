@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -132,6 +133,12 @@ void SetSnapsChildrenToPhysicalPixelBoundary(aura::Window* container) {
   DCHECK(!container->GetProperty(kSnapChildrenToPixelBoundary))
       << container->GetName();
   container->SetProperty(kSnapChildrenToPixelBoundary, true);
+}
+
+int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {
+  return window->delegate()
+             ? window->delegate()->GetNonClientComponent(location)
+             : HTNOWHERE;
 }
 
 }  // namespace wm

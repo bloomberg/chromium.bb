@@ -6,7 +6,6 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
@@ -34,13 +33,12 @@ void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 
 void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  wm_toplevel_window_event_handler_.OnMouseEvent(event, WmWindow::Get(target));
+  wm_toplevel_window_event_handler_.OnMouseEvent(event, target);
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  wm_toplevel_window_event_handler_.OnGestureEvent(event,
-                                                   WmWindow::Get(target));
+  wm_toplevel_window_event_handler_.OnGestureEvent(event, target);
 }
 
 aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
@@ -76,7 +74,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   wm::WmToplevelWindowEventHandler::DragResult result =
       wm::WmToplevelWindowEventHandler::DragResult::SUCCESS;
   if (!wm_toplevel_window_event_handler_.AttemptToStartDrag(
-          WmWindow::Get(source), drag_location, HTCAPTION, move_source,
+          source, drag_location, HTCAPTION, move_source,
           base::Bind(&ToplevelWindowEventHandler::OnDragCompleted,
                      weak_factory_.GetWeakPtr(), &result, &run_loop))) {
     return aura::client::MOVE_CANCELED;

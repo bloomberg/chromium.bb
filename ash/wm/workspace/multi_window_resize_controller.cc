@@ -7,8 +7,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
@@ -276,10 +276,7 @@ MultiWindowResizeController::DetermineWindowsFromScreenPoint(
   gfx::Point mouse_location(
       display::Screen::GetScreen()->GetCursorScreenPoint());
   mouse_location = ConvertPointFromScreen(window, mouse_location);
-  const int component =
-      window->delegate()
-          ? window->delegate()->GetNonClientComponent(mouse_location)
-          : HTNOWHERE;
+  const int component = wm::GetNonClientComponent(window, mouse_location);
   return DetermineWindows(window, component, mouse_location);
 }
 
@@ -596,10 +593,7 @@ bool MultiWindowResizeController::IsOverComponent(
     const gfx::Point& location_in_screen,
     int component) const {
   gfx::Point window_loc = ConvertPointFromScreen(window, location_in_screen);
-  const int window_component =
-      window->delegate() ? window->delegate()->GetNonClientComponent(window_loc)
-                         : HTNOWHERE;
-  return window_component == component;
+  return wm::GetNonClientComponent(window, window_loc) == component;
 }
 
 }  // namespace ash
