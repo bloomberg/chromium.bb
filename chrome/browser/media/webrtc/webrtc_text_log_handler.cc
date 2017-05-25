@@ -77,10 +77,9 @@ std::string IPAddressToSensitiveString(const net::IPAddress& address) {
     case net::IPAddress::kIPv6AddressSize: {
       // TODO(grunell): Create a string of format "1:2:3:x:x:x:x:x" to clarify
       // that the end has been stripped out.
-      std::vector<uint8_t> bytes = address.bytes();
-      std::fill(bytes.begin() + 6, bytes.end(), 0);
-      net::IPAddress stripped_address(bytes);
-      sensitive_address = stripped_address.ToString();
+      net::IPAddressBytes stripped = address.bytes();
+      std::fill(stripped.begin() + 6, stripped.end(), 0);
+      sensitive_address = net::IPAddress(stripped).ToString();
       break;
     }
     default: { break; }
