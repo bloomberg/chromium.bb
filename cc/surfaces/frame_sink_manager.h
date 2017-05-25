@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/primary_begin_frame_source.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
@@ -57,6 +58,10 @@ class CC_SURFACES_EXPORT FrameSinkManager {
                                 const FrameSinkId& frame_sink_id);
   void UnregisterBeginFrameSource(BeginFrameSource* source);
 
+  // Returns a stable BeginFrameSource that forwards BeginFrames from the first
+  // available BeginFrameSource.
+  BeginFrameSource* GetPrimaryBeginFrameSource();
+
   // Register a relationship between two framesinks.  This relationship means
   // that surfaces from the child framesik will be displayed in the parent.
   // Children are allowed to use any begin frame source that their parent can
@@ -99,7 +104,7 @@ class CC_SURFACES_EXPORT FrameSinkManager {
     ~FrameSinkSourceMapping();
     bool has_children() const { return !children.empty(); }
     // The currently assigned begin frame source for this client.
-    BeginFrameSource* source;
+    BeginFrameSource* source = nullptr;
     // This represents a dag of parent -> children mapping.
     std::vector<FrameSinkId> children;
   };
@@ -110,10 +115,12 @@ class CC_SURFACES_EXPORT FrameSinkManager {
   std::unordered_map<FrameSinkId, FrameSinkSourceMapping, FrameSinkIdHash>
       frame_sink_source_map_;
 
-  // Set of which sources are registered to which frmesinks.  Any child
+  // Set of BeginFrameSource along with associated FrameSinkIds. Any child
   // that is implicitly using this framesink must be reachable by the
   // parent in the dag.
   std::unordered_map<BeginFrameSource*, FrameSinkId> registered_sources_;
+
+  PrimaryBeginFrameSource primary_source_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManager);
 };
