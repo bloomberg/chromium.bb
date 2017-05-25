@@ -939,4 +939,68 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
 #endif
 }
 
+// Test case to verify that redirects to data: URLs are properly disallowed,
+// even when invoked through history navigations.
+// See https://crbug.com/723796.
+IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
+                       WindowOpenRedirectAndBack) {
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/data_url_navigations.html"));
+
+  // This test will need to navigate the newly opened window.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(),
+                    "document.getElementById('window-open-redirect').click()"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  NavigationController* controller =
+      &new_shell->web_contents()->GetController();
+  WaitForLoadStop(new_shell->web_contents());
+
+  // The window.open() should have resulted in an error page. The blocked
+  // URL should be in the virtual URL, not the actual URL.
+  {
+    EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
+    NavigationEntry* entry = controller->GetLastCommittedEntry();
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
+    EXPECT_TRUE(entry->GetVirtualURL().SchemeIs(url::kDataScheme));
+  }
+
+  // Navigate forward and then go back to ensure the navigation to data: URL
+  // is blocked. Use a browser-initiated back navigation, equivalent to user
+  // pressing the back button.
+  EXPECT_TRUE(
+      NavigateToURL(new_shell, embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(1, controller->GetLastCommittedEntryIndex());
+  {
+    TestNavigationObserver observer(new_shell->web_contents());
+    controller->GoBack();
+    observer.Wait();
+
+    NavigationEntry* entry = controller->GetLastCommittedEntry();
+    EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
+    EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
+    EXPECT_TRUE(entry->GetVirtualURL().SchemeIs(url::kDataScheme));
+    EXPECT_EQ(url::kAboutBlankURL, entry->GetURL().spec());
+  }
+
+  // Do another new navigation, but then use JavaScript to navigate back,
+  // equivalent to document executing JS.
+  EXPECT_TRUE(
+      NavigateToURL(new_shell, embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(1, controller->GetLastCommittedEntryIndex());
+  {
+    TestNavigationObserver observer(new_shell->web_contents());
+    EXPECT_TRUE(ExecuteScript(new_shell, "history.go(-1)"));
+    observer.Wait();
+
+    NavigationEntry* entry = controller->GetLastCommittedEntry();
+    EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
+    EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
+    EXPECT_TRUE(entry->GetVirtualURL().SchemeIs(url::kDataScheme));
+    EXPECT_EQ(url::kAboutBlankURL, entry->GetURL().spec());
+  }
+}
+
 }  // content

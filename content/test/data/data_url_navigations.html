@@ -13,6 +13,11 @@
         <script>console.log(&quot;NAVIGATION_SUCCESSFUL&quot;)</script>`);'>
   Open new window with a data URL HTML
 </button>
+<button id='window-open-redirect'
+    onclick='window.open(`/server-redirect?data:text/html,
+        <script>console.log(&quot;NAVIGATION_SUCCESSFUL&quot;)</script>`);'>
+  Open new window with a redirect to data URL
+</button>
 <br>
 <form method="post" action="data:text/html,
              <script>console.log('NAVIGATION_SUCCESSFUL')</script>">

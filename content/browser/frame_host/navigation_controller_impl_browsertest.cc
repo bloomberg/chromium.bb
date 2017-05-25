@@ -6827,4 +6827,47 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(back_observer.last_navigation_succeeded());
 }
 
+// Test to verify that navigating to a blocked URL does not result in a
+// NavigationEntry that allows the navigation to succeed when using a history
+// navigation. See https://crbug.com/723796.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       VerifyBlockedErrorPageURL_SessionHistory) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+
+  // Navigate to an URL, which redirects to a data: URL, since it is an
+  // unsafe redirect and will result in a blocked navigation and error page.
+  // TODO(nasko): Find a different way to cause a blocked navigation, so
+  // we test a bit more generic case.
+  GURL redirect_to_blank_url(
+      embedded_test_server()->GetURL("/server-redirect?data:text/html,Hello!"));
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_to_blank_url));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+
+  // Navigate to a new document, then go back in history trying to load the
+  // blocked URL.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+
+  // The expectation is that about:blank was loaded and the virtual URL is set
+  // to the URL that was blocked.
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->GetURL().SchemeIs(url::kDataScheme));
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetVirtualURL().SchemeIs(
+      url::kDataScheme));
+  EXPECT_EQ(url::kAboutBlankURL,
+            controller.GetLastCommittedEntry()->GetURL().spec());
+}
+
 }  // namespace content
