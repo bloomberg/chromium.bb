@@ -122,11 +122,6 @@ class CORE_EXPORT FrameSelection final
                     SetSelectionOptions = kCloseTyping | kClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
                     TextGranularity = kCharacterGranularity);
-  bool SetSelectedRange(
-      const EphemeralRange&,
-      TextAffinity,
-      SelectionDirectionalMode = SelectionDirectionalMode::kNonDirectional,
-      FrameSelection::SetSelectionOptions = kCloseTyping | kClearTypingStyle);
   void SelectAll(EUserTriggered = kNotUserTriggered);
   void Clear();
   bool IsHidden() const;

@@ -724,22 +724,6 @@ void FrameSelection::SelectAll(EUserTriggered user_triggered) {
   NotifyTextControlOfSelectionChange(kUserTriggered);
 }
 
-bool FrameSelection::SetSelectedRange(const EphemeralRange& range,
-                                      TextAffinity affinity,
-                                      SelectionDirectionalMode directional,
-                                      SetSelectionOptions options) {
-  if (range.IsNull())
-    return false;
-  SetSelection(SelectionInDOMTree::Builder()
-                   .SetBaseAndExtent(range)
-                   .SetAffinity(affinity)
-                   .SetIsDirectional(directional ==
-                                     SelectionDirectionalMode::kDirectional)
-                   .Build(),
-               options);
-  return true;
-}
-
 void FrameSelection::NotifyAccessibilityForSelectionChange() {
   if (GetSelectionInDOMTree().IsNone())
     return;
