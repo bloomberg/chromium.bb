@@ -74,7 +74,7 @@ public class WebApkValidatorTest {
     public void setUp() {
         mPackageManager =
                 (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
-        WebApkValidator.init(true, EXPECTED_SIGNATURE, PUBLIC_KEY);
+        WebApkValidator.init(EXPECTED_SIGNATURE, PUBLIC_KEY);
     }
 
     /**
