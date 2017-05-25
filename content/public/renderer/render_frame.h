@@ -102,6 +102,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Visit all live RenderFrames.
   static void ForEach(RenderFrameVisitor* visitor);
 
+  // Returns the routing ID for |web_frame|, whether it is a WebLocalFrame in
+  // this process or a WebRemoteFrame placeholder for a frame in a different
+  // process.
+  static int GetRoutingIdForWebFrame(blink::WebFrame* web_frame);
+
   // Returns the RenderView associated with this frame.
   virtual RenderView* GetRenderView() = 0;
 

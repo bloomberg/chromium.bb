@@ -618,7 +618,7 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
         frame_routing_id_to_local_path_(frame_routing_id_to_local_path) {}
 
   bool RewriteFrameSource(WebFrame* frame, WebString* rewritten_link) override {
-    int routing_id = GetRoutingIdForFrameOrProxy(frame);
+    int routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
     auto it = frame_routing_id_to_local_path_.find(routing_id);
     if (it == frame_routing_id_to_local_path_.end())
       return false;  // This can happen because of https://crbug.com/541354.
@@ -677,7 +677,7 @@ class MHTMLPartsGenerationDelegate
   }
 
   WebString GetContentID(WebFrame* frame) override {
-    int routing_id = GetRoutingIdForFrameOrProxy(frame);
+    int routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
 
     auto it = params_.frame_routing_id_to_content_id.find(routing_id);
     if (it == params_.frame_routing_id_to_content_id.end())
@@ -1063,6 +1063,15 @@ void RenderFrame::ForEach(RenderFrameVisitor* visitor) {
 }
 
 // static
+int RenderFrame::GetRoutingIdForWebFrame(blink::WebFrame* web_frame) {
+  if (!web_frame)
+    return MSG_ROUTING_NONE;
+  if (web_frame->IsWebRemoteFrame())
+    return RenderFrameProxy::FromWebFrame(web_frame)->routing_id();
+  return RenderFrameImpl::FromWebFrame(web_frame)->GetRoutingID();
+}
+
+// static
 RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
   FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
   if (iter != g_frame_map.Get().end())
@@ -1261,7 +1270,7 @@ void RenderFrameImpl::Initialize() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing_navigation);
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("rail", &is_tracing_rail);
   if (is_tracing_rail || is_tracing_navigation) {
-    int parent_id = GetRoutingIdForFrameOrProxy(frame_->Parent());
+    int parent_id = RenderFrame::GetRoutingIdForWebFrame(frame_->Parent());
     TRACE_EVENT2("navigation,rail", "RenderFrameImpl::Initialize",
                  "id", routing_id_,
                  "parent", parent_id);
@@ -3320,7 +3329,7 @@ void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebSandboxFlags flags,
     const blink::WebParsedFeaturePolicy& container_policy) {
   Send(new FrameHostMsg_DidChangeFramePolicy(
-      routing_id_, GetRoutingIdForFrameOrProxy(child_frame), flags,
+      routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame), flags,
       FeaturePolicyHeaderFromWeb(container_policy)));
 }
 
@@ -3344,7 +3353,7 @@ void RenderFrameImpl::DidChangeFrameOwnerProperties(
     blink::WebFrame* child_frame,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   Send(new FrameHostMsg_DidChangeFrameOwnerProperties(
-      routing_id_, GetRoutingIdForFrameOrProxy(child_frame),
+      routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame),
       ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
           frame_owner_properties)));
 }
@@ -4414,7 +4423,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   bool should_replace_current_entry = data_source->ReplacesCurrentHistoryItem();
 
   WebFrame* parent = frame_->Parent();
-  int parent_routing_id = parent ? GetRoutingIdForFrameOrProxy(parent) : -1;
+  int parent_routing_id =
+      parent ? RenderFrame::GetRoutingIdForWebFrame(parent) : -1;
 
   RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(request.GetExtraData());
