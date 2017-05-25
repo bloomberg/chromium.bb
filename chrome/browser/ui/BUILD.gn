@@ -1443,6 +1443,7 @@ split_static_library("ui") {
       "autofill/save_card_bubble_controller_impl.cc",
       "autofill/save_card_bubble_controller_impl.h",
       "autofill/save_card_bubble_view.h",
+      "desktop_ios_promotion/desktop_ios_promotion_footnote_delegate.h",
       "views/apps/app_info_dialog/app_info_dialog_container.cc",
       "views/apps/app_info_dialog/app_info_dialog_container.h",
       "views/apps/app_info_dialog/app_info_dialog_views.cc",
@@ -3075,6 +3076,8 @@ split_static_library("ui") {
 
   if (is_win) {
     sources += [
+      "desktop_ios_promotion/desktop_ios_promotion_bubble_controller.cc",
+      "desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h",
       "desktop_ios_promotion/desktop_ios_promotion_controller.cc",
       "desktop_ios_promotion/desktop_ios_promotion_controller.h",
       "desktop_ios_promotion/desktop_ios_promotion_util.cc",
@@ -3098,6 +3101,8 @@ split_static_library("ui") {
       "views/critical_notification_bubble_view.h",
       "views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.cc",
       "views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h",
+      "views/desktop_ios_promotion/desktop_ios_promotion_footnote_view.cc",
+      "views/desktop_ios_promotion/desktop_ios_promotion_footnote_view.h",
       "views/frame/browser_desktop_window_tree_host.h",
       "views/frame/browser_desktop_window_tree_host_win.cc",
       "views/frame/browser_desktop_window_tree_host_win.h",

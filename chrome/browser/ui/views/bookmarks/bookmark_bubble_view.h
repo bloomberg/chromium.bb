@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_footnote_delegate.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
@@ -26,6 +27,12 @@ namespace bookmarks {
 class BookmarkBubbleObserver;
 }
 
+#if defined(OS_WIN)
+namespace desktop_ios_promotion {
+enum class PromotionEntryPoint;
+}
+#endif
+
 namespace views {
 class LabelButton;
 class Textfield;
@@ -37,7 +44,8 @@ class Textfield;
 // instead use the static Show method.
 class BookmarkBubbleView : public LocationBarBubbleDelegateView,
                            public views::ButtonListener,
-                           public views::ComboboxListener {
+                           public views::ComboboxListener,
+                           public DesktopIOSPromotionFootnoteDelegate {
  public:
   // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble and
   // |parent_window| is used to ensure the bubble closes if the parent closes.
@@ -111,9 +119,16 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // Sets the title and parent of the node.
   void ApplyEdits();
 
+  // DesktopIOSPromotionFootnoteDelegate :
+  void OnIOSPromotionFootnoteLinkClicked() override;
+
 #if defined(OS_WIN)
+  // Check eligiblity to showthe iOS promotion from a specific entry point.
+  bool IsIOSPromotionEligible(
+      desktop_ios_promotion::PromotionEntryPoint entry_point);
+
   // Shows the iOS promotion.
-  void ShowIOSPromotion();
+  void ShowIOSPromotion(desktop_ios_promotion::PromotionEntryPoint entry_point);
 #endif
 
   // The bookmark bubble, if we're showing one.
@@ -158,6 +173,9 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
   // iOS promotion view.
   DesktopIOSPromotionBubbleView* ios_promo_view_;
+
+  // Footnote view.
+  views::View* footnote_view_;
 
   // When the destructor is invoked should the bookmark be removed?
   bool remove_bookmark_;

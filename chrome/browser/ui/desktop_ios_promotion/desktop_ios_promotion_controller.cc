@@ -4,53 +4,39 @@
 
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
 
-#include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
-#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_view.h"
-#include "chrome/browser/ui/desktop_ios_promotion/sms_service.h"
-#include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
 
 DesktopIOSPromotionController::DesktopIOSPromotionController(
     Profile* profile,
-    DesktopIOSPromotionView* promotion_view,
     desktop_ios_promotion::PromotionEntryPoint entry_point)
     : profile_prefs_(profile->GetPrefs()),
       entry_point_(entry_point),
-      sms_service_(SMSServiceFactory::GetForProfile(profile)),
-      promotion_view_(promotion_view),
       dismissal_reason_(
-          desktop_ios_promotion::PromotionDismissalReason::FOCUS_LOST),
-      weak_ptr_factory_(this) {
-  sms_service_->QueryPhoneNumber(
-      base::Bind(&DesktopIOSPromotionController::OnGotPhoneNumber,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
+          desktop_ios_promotion::PromotionDismissalReason::FOCUS_LOST) {}
 
 DesktopIOSPromotionController::~DesktopIOSPromotionController() {
   desktop_ios_promotion::LogDismissalReason(dismissal_reason_, entry_point_);
 }
 
-void DesktopIOSPromotionController::OnSendSMSClicked() {
-  sms_service_->SendSMS(desktop_ios_promotion::GetSMSID(),
-                        base::Bind(&DesktopIOSPromotionController::OnSendSMS,
-                                   weak_ptr_factory_.GetWeakPtr()));
-
-  // Update Profile prefs.
-  profile_prefs_->SetInteger(prefs::kIOSPromotionSMSEntryPoint,
-                             static_cast<int>(entry_point_));
-
-  // Update dismissal reason.
-  dismissal_reason_ = desktop_ios_promotion::PromotionDismissalReason::SEND_SMS;
-}
-
 void DesktopIOSPromotionController::OnPromotionShown() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "DesktopIOSPromotion.ImpressionFromEntryPoint",
+      static_cast<int>(entry_point_),
+      static_cast<int>(
+          desktop_ios_promotion::PromotionEntryPoint::ENTRY_POINT_MAX_VALUE));
+
+  if (entry_point_ ==
+      desktop_ios_promotion::PromotionEntryPoint::FOOTNOTE_FOLLOWUP_BUBBLE) {
+    // We don't want to update sync with the impression of this entrypoint.
+    return;
+  }
   // update the impressions count.
   PrefService* local_state = g_browser_process->local_state();
   int impressions = local_state->GetInteger(
@@ -85,44 +71,14 @@ void DesktopIOSPromotionController::OnPromotionShown() {
       features::kDesktopIOSPromotion, "promo_variation_id", 0);
   if (variation_id)
     profile_prefs_->SetInteger(prefs::kIOSPromotionVariationId, variation_id);
-
-  // Update histograms.
-  UMA_HISTOGRAM_ENUMERATION(
-      "DesktopIOSPromotion.ImpressionFromEntryPoint",
-      static_cast<int>(entry_point_),
-      static_cast<int>(
-          desktop_ios_promotion::PromotionEntryPoint::ENTRY_POINT_MAX_VALUE));
 }
 
-void DesktopIOSPromotionController::OnNoThanksClicked() {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(
-      desktop_ios_promotion::kEntryPointLocalPrefs
-          [static_cast<int>(entry_point_)][static_cast<int>(
-              desktop_ios_promotion::EntryPointLocalPrefType::DISMISSED)],
-      true);
+void DesktopIOSPromotionController::OnLearnMoreLinkClicked() {
   dismissal_reason_ =
-      desktop_ios_promotion::PromotionDismissalReason::NO_THANKS;
+      desktop_ios_promotion::PromotionDismissalReason::LEARN_MORE;
 }
 
-std::string DesktopIOSPromotionController::GetUsersRecoveryPhoneNumber() {
-  return recovery_number_;
-}
-
-void DesktopIOSPromotionController::OnGotPhoneNumber(
-    SMSService::Request* request,
-    bool success,
-    const std::string& number) {
-  if (success) {
-    recovery_number_ = desktop_ios_promotion::FormatPhoneNumber(number);
-    promotion_view_->UpdateRecoveryPhoneLabel();
-  }
-  UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.QueryPhoneNumberSucceeded",
-                        success);
-}
-
-void DesktopIOSPromotionController::OnSendSMS(SMSService::Request* request,
-                                              bool success,
-                                              const std::string& number) {
-  UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.SendSMSSucceeded", success);
+void DesktopIOSPromotionController::SetDismissalReason(
+    desktop_ios_promotion::PromotionDismissalReason reason) {
+  dismissal_reason_ = reason;
 }

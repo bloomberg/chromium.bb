@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
@@ -50,10 +50,10 @@ std::unique_ptr<KeyedService> BuildFakeSMSService(
 
 }  // namespace
 
-class DesktopIOSPromotionControllerTest : public testing::Test {
+class DesktopIOSPromotionBubbleControllerTest : public testing::Test {
  public:
-  DesktopIOSPromotionControllerTest() {}
-  ~DesktopIOSPromotionControllerTest() override {}
+  DesktopIOSPromotionBubbleControllerTest() {}
+  ~DesktopIOSPromotionBubbleControllerTest() override {}
 
   void SetUp() override {
     pref_service_ =
@@ -84,7 +84,7 @@ class DesktopIOSPromotionControllerTest : public testing::Test {
   void InitController(desktop_ios_promotion::PromotionEntryPoint entry_point) {
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(sms_service_));
     EXPECT_CALL(*sms_service_, QueryPhoneNumber(_));
-    controller_ = base::MakeUnique<DesktopIOSPromotionController>(
+    controller_ = base::MakeUnique<DesktopIOSPromotionBubbleController>(
         profile_.get(), nullptr, entry_point);
   }
 
@@ -94,15 +94,15 @@ class DesktopIOSPromotionControllerTest : public testing::Test {
   FakeSMSService* sms_service_ = nullptr;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
-  std::unique_ptr<DesktopIOSPromotionController> controller_;
+  std::unique_ptr<DesktopIOSPromotionBubbleController> controller_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TestingProfile> profile_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DesktopIOSPromotionControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(DesktopIOSPromotionBubbleControllerTest);
 };
 
-TEST_F(DesktopIOSPromotionControllerTest, ClickSendSMS) {
+TEST_F(DesktopIOSPromotionBubbleControllerTest, ClickSendSMS) {
   InitController(
       desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
   EXPECT_CALL(*sms_service_, SendSMS(_, _));
@@ -112,22 +112,20 @@ TEST_F(DesktopIOSPromotionControllerTest, ClickSendSMS) {
   EXPECT_EQ(1, prefs()->GetInteger(prefs::kIOSPromotionSMSEntryPoint));
 }
 
-TEST_F(DesktopIOSPromotionControllerTest, PromotionShown) {
+TEST_F(DesktopIOSPromotionBubbleControllerTest, PromotionShown) {
   const char kHistogram[] = "DesktopIOSPromotion.ImpressionFromEntryPoint";
   base::HistogramTester histograms;
   desktop_ios_promotion::PromotionEntryPoint entry_point =
       desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE;
   InitController(entry_point);
 
-  EXPECT_EQ(
-      0,
-      local_state_->GetInteger(prefs::kNumberSavePasswordsBubbleIOSPromoShown));
+  EXPECT_EQ(0, local_state_->GetInteger(
+                   prefs::kNumberSavePasswordsBubbleIOSPromoShown));
   EXPECT_EQ(0, prefs()->GetInteger(prefs::kIOSPromotionShownEntryPoints));
   controller_->OnPromotionShown();
   // Impressions increase.
-  EXPECT_EQ(
-      1,
-      local_state_->GetInteger(prefs::kNumberSavePasswordsBubbleIOSPromoShown));
+  EXPECT_EQ(1, local_state_->GetInteger(
+                   prefs::kNumberSavePasswordsBubbleIOSPromoShown));
   double lst_impr = prefs()->GetDouble(prefs::kIOSPromotionLastImpression);
   // last impression time updated correctly.
   EXPECT_LT(base::Time::Now() - base::Time::FromDoubleT(lst_impr),
@@ -144,9 +142,8 @@ TEST_F(DesktopIOSPromotionControllerTest, PromotionShown) {
       prefs()->GetInteger(prefs::kIOSPromotionShownEntryPoints);
 
   controller_->OnPromotionShown();
-  EXPECT_EQ(
-      2,
-      local_state_->GetInteger(prefs::kNumberSavePasswordsBubbleIOSPromoShown));
+  EXPECT_EQ(2, local_state_->GetInteger(
+                   prefs::kNumberSavePasswordsBubbleIOSPromoShown));
   histograms.ExpectUniqueSample(kHistogram, static_cast<int>(entry_point), 2);
 
   // Check different entry point.
@@ -161,13 +158,12 @@ TEST_F(DesktopIOSPromotionControllerTest, PromotionShown) {
             prefs()->GetInteger(prefs::kIOSPromotionShownEntryPoints));
 }
 
-TEST_F(DesktopIOSPromotionControllerTest, ClickNoThanks) {
+TEST_F(DesktopIOSPromotionBubbleControllerTest, ClickNoThanks) {
   InitController(
       desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
   controller_->OnNoThanksClicked();
   EXPECT_EQ(desktop_ios_promotion::PromotionDismissalReason::NO_THANKS,
             controller_->dismissal_reason());
-  EXPECT_EQ(
-      true,
+  EXPECT_TRUE(
       local_state_->GetBoolean(prefs::kSavePasswordsBubbleIOSPromoDismissed));
 }
