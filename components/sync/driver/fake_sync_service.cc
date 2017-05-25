@@ -214,4 +214,8 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
 void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
+SigninManagerBase* FakeSyncService::signin() const {
+  return nullptr;
+}
+
 }  // namespace syncer

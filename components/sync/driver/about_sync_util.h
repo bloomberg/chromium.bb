@@ -9,8 +9,6 @@
 
 #include "components/version_info/version_info.h"
 
-class SigninManagerBase;
-
 namespace base {
 class DictionaryValue;
 }
@@ -68,7 +66,6 @@ extern const char kUpdate[];
 // Note that |service| may be null.
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     SyncService* service,
-    SigninManagerBase* signin,
     version_info::Channel channel);
 
 }  // namespace sync_ui_util

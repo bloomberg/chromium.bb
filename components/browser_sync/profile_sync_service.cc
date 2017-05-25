@@ -2194,13 +2194,6 @@ bool ProfileSyncService::IsSyncRequested() const {
   return sync_prefs_.IsSyncRequested() || sync_prefs_.IsLocalSyncEnabled();
 }
 
-SigninManagerBase* ProfileSyncService::signin() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!signin_)
-    return nullptr;
-  return signin_->GetOriginal();
-}
-
 void ProfileSyncService::RequestStart() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsSyncAllowed()) {

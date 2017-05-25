@@ -20,6 +20,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class GoogleServiceAuthError;
+class SigninManagerBase;
 
 namespace sync_sessions {
 class OpenTabsUIDelegate;
@@ -346,6 +347,10 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual void GetAllNodes(
       const base::Callback<void(std::unique_ptr<base::ListValue>)>&
           callback) = 0;
+
+  // Non-owning pointer to sign in logic that can be used to fetch information
+  // about the currently signed in user.
+  virtual SigninManagerBase* signin() const = 0;
 
  protected:
   SyncService() {}

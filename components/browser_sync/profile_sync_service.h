@@ -496,8 +496,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
 
-  SigninManagerBase* signin() const;
-
   syncer::SyncErrorController* sync_error_controller() {
     return sync_error_controller_.get();
   }

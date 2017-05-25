@@ -278,7 +278,6 @@ std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
 // classes defined above.
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     SyncService* service,
-    SigninManagerBase* signin,
     version_info::Channel channel) {
   std::unique_ptr<base::DictionaryValue> about_info(
       new base::DictionaryValue());
@@ -434,8 +433,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     sync_id.SetValue(full_status.sync_id);
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id.SetValue(full_status.invalidator_client_id);
-  if (signin)
-    username.SetValue(signin->GetAuthenticatedAccountInfo().email);
+  if (service->signin())
+    username.SetValue(service->signin()->GetAuthenticatedAccountInfo().email);
 
   const SyncService::SyncTokenStatus& token_status =
       service->GetSyncTokenStatus();

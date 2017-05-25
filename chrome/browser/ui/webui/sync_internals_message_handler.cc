@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -13,7 +15,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_service.h"
@@ -25,45 +26,41 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
 using browser_sync::ProfileSyncService;
 using syncer::JsEventDetails;
 using syncer::ModelTypeSet;
+using syncer::SyncService;
 using syncer::WeakHandle;
-
-namespace {
-class UtilAboutSyncDataExtractor : public AboutSyncDataExtractor {
- public:
-  std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
-      syncer::SyncService* service,
-      SigninManagerBase* signin) override {
-    return syncer::sync_ui_util::ConstructAboutInformation(
-        service, signin, chrome::GetChannel());
-  }
-};
-}  //  namespace
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
     : SyncInternalsMessageHandler(
-          base::MakeUnique<UtilAboutSyncDataExtractor>()) {}
+          base::BindRepeating(
+              &SyncInternalsMessageHandler::BindForSyncServiceProvider,
+              base::Unretained(this)),
+          base::BindRepeating(
+              &syncer::sync_ui_util::ConstructAboutInformation)) {}
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
-    std::unique_ptr<AboutSyncDataExtractor> about_sync_data_extractor)
-    : about_sync_data_extractor_(std::move(about_sync_data_extractor)),
+    SyncServiceProvider sync_service_provider,
+    AboutSyncDataDelegate about_sync_data_delegate)
+    : sync_service_provider_(std::move(sync_service_provider)),
+      about_sync_data_delegate_(std::move(about_sync_data_delegate)),
       weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
-  if (js_controller_)
-    js_controller_->RemoveJsEventHandler(this);
+  UnregisterModelNotifications();
+}
 
-  ProfileSyncService* service = GetProfileSyncService();
-  if (service && service->HasObserver(this)) {
-    service->RemoveObserver(this);
-    service->RemoveProtocolEventObserver(this);
-  }
-
-  if (service && is_registered_for_counters_) {
-    service->RemoveTypeDebugInfoObserver(this);
-  }
+void SyncInternalsMessageHandler::OnJavascriptDisallowed() {
+  // Invaliding weak ptrs works well here because the only weak ptr we vend is
+  // to the sync side to give us information that should be used to populate the
+  // javascript side. If javascript is disallowed, we don't care about updating
+  // the UI with data, so dropping those callbacks is fine.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  UnregisterModelNotifications();
 }
 
 void SyncInternalsMessageHandler::RegisterMessages() {
@@ -96,13 +93,14 @@ void SyncInternalsMessageHandler::RegisterMessages() {
 }
 
 void SyncInternalsMessageHandler::HandleRegisterForEvents(
-    const base::ListValue* args) {
+    const ListValue* args) {
   DCHECK(args->empty());
+  AllowJavascript();
 
   // is_registered_ flag protects us from double-registering.  This could
   // happen on a page refresh, where the JavaScript gets re-run but the
   // message handler remains unchanged.
-  ProfileSyncService* service = GetProfileSyncService();
+  SyncService* service = sync_service_provider_.Run();
   if (service && !is_registered_) {
     service->AddObserver(this);
     service->AddProtocolEventObserver(this);
@@ -113,52 +111,61 @@ void SyncInternalsMessageHandler::HandleRegisterForEvents(
 }
 
 void SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters(
-    const base::ListValue* args) {
+    const ListValue* args) {
   DCHECK(args->empty());
+  AllowJavascript();
 
-  if (ProfileSyncService* service = GetProfileSyncService()) {
-    if (!is_registered_for_counters_) {
-      service->AddTypeDebugInfoObserver(this);
-      is_registered_for_counters_ = true;
-    } else {
-      // Re-register to ensure counters get re-emitted.
-      service->RemoveTypeDebugInfoObserver(this);
-      service->AddTypeDebugInfoObserver(this);
-    }
+  SyncService* service = sync_service_provider_.Run();
+  if (!service)
+    return;
+
+  if (!is_registered_for_counters_) {
+    service->AddTypeDebugInfoObserver(this);
+    is_registered_for_counters_ = true;
+  } else {
+    // Re-register to ensure counters get re-emitted.
+    service->RemoveTypeDebugInfoObserver(this);
+    service->AddTypeDebugInfoObserver(this);
   }
 }
 
 void SyncInternalsMessageHandler::HandleRequestUpdatedAboutInfo(
-    const base::ListValue* args) {
+    const ListValue* args) {
   DCHECK(args->empty());
+  AllowJavascript();
   SendAboutInfo();
 }
 
 void SyncInternalsMessageHandler::HandleRequestListOfTypes(
-    const base::ListValue* args) {
+    const ListValue* args) {
   DCHECK(args->empty());
-  base::DictionaryValue event_details;
-  std::unique_ptr<base::ListValue> type_list(new base::ListValue());
+  AllowJavascript();
+
+  DictionaryValue event_details;
+  auto type_list = base::MakeUnique<ListValue>();
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
-  for (ModelTypeSet::Iterator it = protocol_types.First();
-       it.Good(); it.Inc()) {
+  for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
+       it.Inc()) {
     type_list->AppendString(ModelTypeToString(it.Get()));
   }
   event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnReceivedListOfTypes), event_details);
+  DispatchEvent(syncer::sync_ui_util::kOnReceivedListOfTypes, event_details);
 }
 
-void SyncInternalsMessageHandler::HandleGetAllNodes(
-    const base::ListValue* args) {
+void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
   DCHECK_EQ(1U, args->GetSize());
+  AllowJavascript();
+
   int request_id = 0;
   bool success = ExtractIntegerValue(args, &request_id);
   DCHECK(success);
 
-  ProfileSyncService* service = GetProfileSyncService();
+  SyncService* service = sync_service_provider_.Run();
   if (service) {
+    // This opens up the possibility of non-javascript code calling us
+    // asynchronously, and potentially at times we're not allowed to call into
+    // the javascript side. We guard against this by invalidating this weak ptr
+    // should javascript become disallowed.
     service->GetAllNodes(
         base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
                    weak_ptr_factory_.GetWeakPtr(), request_id));
@@ -167,23 +174,19 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
-    std::unique_ptr<base::ListValue> nodes) {
-  base::Value id(request_id);
-  web_ui()->CallJavascriptFunctionUnsafe(
-      syncer::sync_ui_util::kGetAllNodesCallback, id, *nodes);
+    std::unique_ptr<ListValue> nodes) {
+  CallJavascriptFunction(syncer::sync_ui_util::kGetAllNodesCallback,
+                         Value(request_id), *nodes);
 }
 
-void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
+void SyncInternalsMessageHandler::OnStateChanged(SyncService* sync) {
   SendAboutInfo();
 }
 
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
-  std::unique_ptr<base::DictionaryValue> value(
-      syncer::ProtocolEvent::ToValue(event));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnProtocolEvent), *value);
+  std::unique_ptr<DictionaryValue> value(syncer::ProtocolEvent::ToValue(event));
+  DispatchEvent(syncer::sync_ui_util::kOnProtocolEvent, *value);
 }
 
 void SyncInternalsMessageHandler::OnCommitCountersUpdated(
@@ -207,14 +210,12 @@ void SyncInternalsMessageHandler::OnStatusCountersUpdated(
 void SyncInternalsMessageHandler::EmitCounterUpdate(
     syncer::ModelType type,
     const std::string& counter_type,
-    std::unique_ptr<base::DictionaryValue> value) {
-  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue());
+    std::unique_ptr<DictionaryValue> value) {
+  auto details = base::MakeUnique<DictionaryValue>();
   details->SetString(syncer::sync_ui_util::kModelType, ModelTypeToString(type));
   details->SetString(syncer::sync_ui_util::kCounterType, counter_type);
   details->Set(syncer::sync_ui_util::kCounters, std::move(value));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnCountersUpdated), *details);
+  DispatchEvent(syncer::sync_ui_util::kOnCountersUpdated, *details);
 }
 
 void SyncInternalsMessageHandler::HandleJsEvent(
@@ -222,25 +223,44 @@ void SyncInternalsMessageHandler::HandleJsEvent(
     const JsEventDetails& details) {
   DVLOG(1) << "Handling event: " << name
            << " with details " << details.ToString();
-  web_ui()->CallJavascriptFunctionUnsafe(syncer::sync_ui_util::kDispatchEvent,
-                                         base::Value(name), details.Get());
+  DispatchEvent(name, details.Get());
 }
 
 void SyncInternalsMessageHandler::SendAboutInfo() {
-  ProfileSyncService* sync_service = GetProfileSyncService();
-  SigninManagerBase* signin = sync_service ? sync_service->signin() : nullptr;
-  std::unique_ptr<base::DictionaryValue> value =
-      about_sync_data_extractor_->ConstructAboutInformation(sync_service,
-                                                            signin);
-  web_ui()->CallJavascriptFunctionUnsafe(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnAboutInfoUpdated), *value);
+  std::unique_ptr<DictionaryValue> value = about_sync_data_delegate_.Run(
+      sync_service_provider_.Run(), chrome::GetChannel());
+  DispatchEvent(syncer::sync_ui_util::kOnAboutInfoUpdated, *value);
 }
 
-// Gets the ProfileSyncService of the underlying original profile.
-// May return NULL (e.g., if sync is disabled on the command line).
-ProfileSyncService* SyncInternalsMessageHandler::GetProfileSyncService() {
-  Profile* profile = Profile::FromWebUI(web_ui());
+SyncService* SyncInternalsMessageHandler::BindForSyncServiceProvider() {
   return ProfileSyncServiceFactory::GetForProfile(
-      profile->GetOriginalProfile());
+      Profile::FromWebUI(web_ui())->GetOriginalProfile());
+}
+
+void SyncInternalsMessageHandler::DispatchEvent(const std::string& name,
+                                                const Value& details_value) {
+  CallJavascriptFunction(syncer::sync_ui_util::kDispatchEvent, Value(name),
+                         details_value);
+}
+
+void SyncInternalsMessageHandler::UnregisterModelNotifications() {
+  SyncService* service = sync_service_provider_.Run();
+  if (!service)
+    return;
+
+  // Cannot use ScopedObserver to do all the tracking because most don't follow
+  // AddObserver/RemoveObserver method naming style.
+  if (is_registered_) {
+    DCHECK(js_controller_);
+    service->RemoveObserver(this);
+    service->RemoveProtocolEventObserver(this);
+    js_controller_->RemoveJsEventHandler(this);
+    js_controller_ = nullptr;
+    is_registered_ = false;
+  }
+
+  if (is_registered_for_counters_) {
+    service->RemoveTypeDebugInfoObserver(this);
+    is_registered_for_counters_ = false;
+  }
 }
