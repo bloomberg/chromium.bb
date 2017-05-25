@@ -29,57 +29,6 @@ from telemetry import decorators
 from core.sharding_map_generator import load_benchmark_sharding_map
 
 
-SCRIPT_TESTS = [
-  {
-    'args': [
-      'cc_perftests',
-      '--adb-path',
-      'src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb',
-    ],
-    'name': 'cc_perftests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        # crbug.com/698831
-        # {
-        #   'name': 'Android Nexus5 Perf',
-        #   'shards': [2]
-        # },
-        # {
-        #   'name': 'Android Nexus6 Perf',
-        #   'shards': [2]
-        # },
-        # {
-        #   'name': 'Android Nexus7v2 Perf',
-        #   'shards': [2]
-        # },
-        {
-          'name': 'Android Nexus9 Perf',
-          'shards': [2]
-        },
-      ],
-    }
-  },
-  {
-    'args': [
-      'tracing_perftests',
-      '--adb-path',
-      'src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb',
-    ],
-    'name': 'tracing_perftests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        {
-          'name': 'Android Nexus9 Perf',
-          'shards': [2]
-        },
-      ]
-    }
-  },
-]
-
-
 def add_builder(waterfall, name, additional_compile_targets=None):
   waterfall['builders'][name] = added = {}
   if additional_compile_targets:
@@ -642,19 +591,6 @@ def script_test_enabled_on_tester(master, test, tester_name, shard):
   return False
 
 
-def generate_script_tests(master, tester_name, shard):
-  script_tests = []
-  for test in SCRIPT_TESTS:
-    if script_test_enabled_on_tester(master, test, tester_name, shard):
-      script = {
-        'args': test['args'],
-        'name': test['name'],
-        'script': test['script']
-      }
-      script_tests.append(script)
-  return script_tests
-
-
 def get_swarming_dimension(dimension, device_id):
   assert device_id in dimension['device_ids']
 
@@ -803,38 +739,25 @@ def generate_all_tests(waterfall):
   benchmark_sharding_map = load_benchmark_sharding_map()
 
   for name, config in waterfall['testers'].iteritems():
-    benchmark_list = all_benchmarks
-    if config.get('swarming', False):
-      # Our current configuration only ever has one set of swarming dimensions
-      # Make sure this still holds true
-      if len(config['swarming_dimensions']) > 1:
-        raise Exception('Invalid assumption on number of swarming dimensions')
-      # Generate benchmarks
-      isolated_scripts = generate_telemetry_tests(
-          name, config, benchmark_list, benchmark_sharding_map,
-          BENCHMARK_REF_BUILD_BLACKLIST)
-      # Generate swarmed non-telemetry tests if present
-      if config['swarming_dimensions'][0].get('perf_tests', False):
-        isolated_scripts += generate_cplusplus_isolate_script_test(
-          config['swarming_dimensions'][0])
+    assert config.get('swarming', False), 'Only swarming config is supported'
+    # Our current configuration only ever has one set of swarming dimensions
+    # Make sure this still holds true
+    if len(config['swarming_dimensions']) > 1:
+      raise Exception('Invalid assumption on number of swarming dimensions')
+    # Generate benchmarks
+    isolated_scripts = generate_telemetry_tests(
+        name, config, all_benchmarks, benchmark_sharding_map,
+        BENCHMARK_REF_BUILD_BLACKLIST)
+    # Generate swarmed non-telemetry tests if present
+    if config['swarming_dimensions'][0].get('perf_tests', False):
+      isolated_scripts += generate_cplusplus_isolate_script_test(
+        config['swarming_dimensions'][0])
 
-      isolated_scripts = RemoveBlacklistedTests(
-          isolated_scripts, BLACKLISTED_DEVICES)
-      tests[name] = {
-        'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
-      }
-    else:
-      # scripts are only currently run in addition to the main waterfall.  They
-      # are currently the only thing generated in the perf json file.
-      # TODO eyaich: will need to handle the sharding differently when we have
-      # swarmed bots on the main waterfall.
-      for shard in range(0, config['num_host_shards']):
-        tester_name = '%s (%d)' % (name, shard + 1)
-        scripts = generate_script_tests(waterfall['name'], name, shard + 1)
-        if scripts:
-          tests[tester_name] = {
-            'scripts': sorted(scripts, key=lambda x: x['name'])
-          }
+    isolated_scripts = RemoveBlacklistedTests(
+        isolated_scripts, BLACKLISTED_DEVICES)
+    tests[name] = {
+      'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
+    }
 
   for name, config in waterfall['builders'].iteritems():
     tests[name] = config
