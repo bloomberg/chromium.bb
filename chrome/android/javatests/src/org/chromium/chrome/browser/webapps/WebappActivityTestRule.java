@@ -15,7 +15,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
@@ -117,21 +116,15 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     }
 
     /**
-     * Waits until any loads in progress of the activity under test have completed.
+     * Waits until any loads in progress have completed.
      */
-    protected void waitUntilIdle() {
-        waitUntilIdle(getActivity());
-    }
-
-    /**
-     * Waits until any loads in progress of a selected activity have completed.
-     */
-    protected void waitUntilIdle(final ChromeActivity activity) {
+    public void waitUntilIdle() {
         getInstrumentation().waitForIdleSync();
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return activity.getActivityTab() != null && !activity.getActivityTab().isLoading();
+                return getActivity().getActivityTab() != null
+                        && !getActivity().getActivityTab().isLoading();
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
