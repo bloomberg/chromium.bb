@@ -60,9 +60,11 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
   SetBodyContent("<div id=sample>0123456789</div>abc");
   Element* const sample = GetDocument().getElementById("sample");
   Node* const text = sample->firstChild();
-  Selection().SetSelectedRange(
-      EphemeralRange(Position(text, 3), Position(text, 6)), VP_DEFAULT_AFFINITY,
-      SelectionDirectionalMode::kNonDirectional, 0);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent(EphemeralRange(
+                                   Position(text, 3), Position(text, 6)))
+                               .Build(),
+                           0);
   sample->setAttribute(HTMLNames::styleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
   UpdateAllLifecyclePhases();
@@ -296,7 +298,7 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
          "after it.";
 }
 
-TEST_F(FrameSelectionTest, SetSelectedRangeHidesHandle) {
+TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
   Text* text = AppendTextNode("Hello, World!");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Selection().SetSelection(
@@ -305,12 +307,14 @@ TEST_F(FrameSelectionTest, SetSelectedRangeHidesHandle) {
           .SetIsHandleVisible(false)
           .Build());
 
-  Selection().SetSelectedRange(
-      EphemeralRange(Position(text, 0), Position(text, 12)),
-      VP_DEFAULT_AFFINITY, SelectionDirectionalMode::kNonDirectional, 0);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent(EphemeralRange(
+                                   Position(text, 0), Position(text, 12)))
+                               .Build(),
+                           0);
 
   EXPECT_FALSE(Selection().IsHandleVisible())
-      << "After SetSelectedRange handles shouldn't be present.";
+      << "After SetSelection on Range, handles shouldn't be present.";
 
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
@@ -318,12 +322,14 @@ TEST_F(FrameSelectionTest, SetSelectedRangeHidesHandle) {
           .SetIsHandleVisible(true)
           .Build());
 
-  Selection().SetSelectedRange(
-      EphemeralRange(Position(text, 0), Position(text, 12)),
-      VP_DEFAULT_AFFINITY, SelectionDirectionalMode::kNonDirectional, 0);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent(EphemeralRange(
+                                   Position(text, 0), Position(text, 12)))
+                               .Build(),
+                           0);
 
   EXPECT_FALSE(Selection().IsHandleVisible())
-      << "After SetSelectedRange handles shouldn't be present.";
+      << "After SetSelection on Range, handles shouldn't be present.";
 }
 
 // Regression test for crbug.com/702756
