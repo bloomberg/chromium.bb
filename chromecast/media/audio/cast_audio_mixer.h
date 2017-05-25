@@ -44,7 +44,7 @@ class CastAudioMixer : public ::media::AudioOutputStream::AudioSourceCallback {
                  int prior_frames_skipped,
                  ::media::AudioBus* dest) override;
 
-  void OnError(::media::AudioOutputStream* stream) override;
+  void OnError() override;
 
   // MixedAudioOutputStreams call Register on opening and AddInput on starting.
   bool Register(MixerProxyStream* proxy_stream);

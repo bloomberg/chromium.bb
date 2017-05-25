@@ -78,7 +78,7 @@ class MEDIA_EXPORT AudioOutputStream {
     // destroyed yet. No direct action needed by the AudioStream, but it is
     // a good place to stop accumulating sound data since is is likely that
     // playback will not continue.
-    virtual void OnError(AudioOutputStream* stream) = 0;
+    virtual void OnError() = 0;
   };
 
   virtual ~AudioOutputStream() {}
@@ -106,7 +106,7 @@ class MEDIA_EXPORT AudioOutputStream {
   // Gets the relative volume, with range [0.0, 1.0] inclusive.
   virtual void GetVolume(double* volume) = 0;
 
-  // Close the stream. This also generates AudioSourceCallback::OnClose().
+  // Close the stream.
   // After calling this method, the object should not be used anymore.
   virtual void Close() = 0;
 };

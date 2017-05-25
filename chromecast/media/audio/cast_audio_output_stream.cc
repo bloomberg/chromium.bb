@@ -312,7 +312,7 @@ void CastAudioOutputStream::OnPushBufferComplete(bool success) {
   if (!source_callback_)
     return;
   if (!success) {
-    source_callback_->OnError(this);
+    source_callback_->OnError();
     return;
   }
 

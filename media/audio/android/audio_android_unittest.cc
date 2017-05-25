@@ -219,7 +219,7 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  void OnError(AudioOutputStream* stream) override {}
+  void OnError() override {}
 
   int file_size() { return file_->data_size(); }
 
@@ -397,7 +397,7 @@ class FullDuplexAudioSinkSource
     return dest->frames();
   }
 
-  void OnError(AudioOutputStream* stream) override {}
+  void OnError() override {}
 
  private:
   // Converts from bytes to milliseconds given number of bytes and existing
@@ -527,7 +527,7 @@ class AudioAndroidOutputTest : public testing::Test {
                                             base::ThreadTaskRunnerHandle::Get(),
                                             run_loop.QuitWhenIdleClosure()),
                   Invoke(RealOnMoreData)));
-    EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
+    EXPECT_CALL(source, OnError()).Times(0);
 
     OpenAndStartAudioOutputStreamOnAudioThread(&source);
 
@@ -928,7 +928,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
 
   EXPECT_CALL(source, OnMoreData(_, _, 0, NotNull()))
       .WillRepeatedly(Invoke(RealOnMoreData));
-  EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
+  EXPECT_CALL(source, OnError()).Times(0);
 
   OpenAndStartAudioInputStreamOnAudioThread(&sink);
   OpenAndStartAudioOutputStreamOnAudioThread(&source);

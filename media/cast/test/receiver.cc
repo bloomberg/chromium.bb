@@ -390,7 +390,7 @@ class NaivePlayer : public InProcessReceiver,
     return dest->frames();
   }
 
-  void OnError(AudioOutputStream* stream) final {
+  void OnError() final {
     LOG(ERROR) << "AudioOutputStream reports an error.  "
                << "Playback is unlikely to continue.";
   }

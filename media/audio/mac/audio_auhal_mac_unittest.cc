@@ -109,7 +109,7 @@ TEST_F(AUHALStreamTest, CreateOpenStartStopClose) {
           ZeroBuffer(),
           MaybeSignalEvent(&callback_counter, number_of_callbacks, &event),
           Return(0)));
-  EXPECT_CALL(source_, OnError(_)).Times(0);
+  EXPECT_CALL(source_, OnError()).Times(0);
   stream->Start(&source_);
   event.Wait();
 

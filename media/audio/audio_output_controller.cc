@@ -307,7 +307,7 @@ void AudioOutputController::BroadcastDataToDuplicationTargets(
   (*duplication_targets_.begin())->OnData(std::move(audio_bus), reference_time);
 }
 
-void AudioOutputController::OnError(AudioOutputStream* stream) {
+void AudioOutputController::OnError() {
   {
     base::AutoLock auto_lock(error_lock_);
     if (ignore_errors_during_stop_close_)

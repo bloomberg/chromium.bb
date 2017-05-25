@@ -80,9 +80,9 @@ TEST(SimpleSources, SineWaveAudioCapped) {
 
 TEST(SimpleSources, OnError) {
   SineWaveAudioSource source(1, 200, AudioParameters::kTelephoneSampleRate);
-  source.OnError(NULL);
+  source.OnError();
   EXPECT_EQ(1, source.errors());
-  source.OnError(NULL);
+  source.OnError();
   EXPECT_EQ(2, source.errors());
 }
 

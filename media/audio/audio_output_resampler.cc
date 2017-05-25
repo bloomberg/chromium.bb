@@ -42,7 +42,7 @@ class OnMoreDataConverter
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError(AudioOutputStream* stream) override;
+  void OnError() override;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
   // called before Start().
@@ -496,9 +496,9 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
   return frames > 0 ? 1 : 0;
 }
 
-void OnMoreDataConverter::OnError(AudioOutputStream* stream) {
+void OnMoreDataConverter::OnError() {
   error_occurred_ = true;
-  source_callback_->OnError(stream);
+  source_callback_->OnError();
 }
 
 }  // namespace media

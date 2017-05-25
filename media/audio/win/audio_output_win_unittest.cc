@@ -68,7 +68,7 @@ class TestSourceBasic : public AudioOutputStream::AudioSourceCallback {
     return dest->frames();
   }
   // AudioSourceCallback::OnError implementation:
-  void OnError(AudioOutputStream* stream) override { ++had_error_; }
+  void OnError() override { ++had_error_; }
   // Returns how many times OnMoreData() has been called.
   int callback_count() const {
     return callback_count_;
@@ -565,7 +565,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
   }
 
   // AudioSourceCallback::OnError implementation:
-  void OnError(AudioOutputStream* stream) override {}
+  void OnError() override {}
 
  private:
   base::SyncSocket* socket_;

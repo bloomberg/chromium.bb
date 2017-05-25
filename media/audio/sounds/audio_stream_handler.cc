@@ -133,7 +133,7 @@ class AudioStreamHandler::AudioStreamContainer
     return dest->frames();
   }
 
-  void OnError(AudioOutputStream* /* stream */) override {
+  void OnError() override {
     LOG(ERROR) << "Error during system sound reproduction.";
     audio_manager_->GetTaskRunner()->PostTask(
         FROM_HERE,

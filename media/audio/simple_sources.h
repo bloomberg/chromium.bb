@@ -40,7 +40,7 @@ class MEDIA_EXPORT SineWaveAudioSource
                  base::TimeTicks timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError(AudioOutputStream* stream) override;
+  void OnError() override;
 
   // The number of OnMoreData() and OnError() calls respectively.
   int callbacks() { return callbacks_; }
@@ -69,7 +69,7 @@ class MEDIA_EXPORT FileSource : public AudioOutputStream::AudioSourceCallback,
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError(AudioOutputStream* stream) override;
+  void OnError() override;
 
  private:
   AudioParameters params_;
@@ -106,7 +106,7 @@ class BeepingSource : public AudioOutputStream::AudioSourceCallback {
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError(AudioOutputStream* stream) override;
+  void OnError() override;
 
   static void BeepOnce();
  private:

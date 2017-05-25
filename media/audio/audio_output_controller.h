@@ -153,7 +153,7 @@ class MEDIA_EXPORT AudioOutputController
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError(AudioOutputStream* stream) override;
+  void OnError() override;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will
   // shutdown the existing |stream_|, transition to the kRecreating state,

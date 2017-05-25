@@ -41,7 +41,7 @@ class CastAudioMixer::MixerProxyStream
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
     if (source_callback_)
-      source_callback_->OnError(this);
+      source_callback_->OnError();
   }
 
  private:
@@ -260,9 +260,8 @@ int CastAudioMixer::OnMoreData(base::TimeDelta delay,
   return dest->frames();
 }
 
-void CastAudioMixer::OnError(::media::AudioOutputStream* stream) {
+void CastAudioMixer::OnError() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(output_stream_ == stream);
 
   // TODO(ameyak): Add rate limiting. If errors are seen to occur
   //               above some arbitrary value in a specified amount
