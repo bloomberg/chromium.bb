@@ -212,6 +212,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
   // Start rendering and return the promise.
   is_rendering_started_ = true;
   SetContextState(kRunning);
+  DestinationHandler().InitializeOfflineRenderThread();
   DestinationHandler().StartRendering();
 
   return complete_resolver_->Promise();
@@ -230,8 +231,8 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // The render thread does not exist; reject the promise.
-  if (!DestinationHandler().OfflineRenderThread()) {
+  // If the rendering is finished, reject the promise.
+  if (ContextState() == AudioContextState::kClosed) {
     resolver->Reject(DOMException::Create(kInvalidStateError,
                                           "the rendering is already finished"));
     return promise;
