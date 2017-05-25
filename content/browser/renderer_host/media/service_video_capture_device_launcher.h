@@ -13,7 +13,8 @@ namespace content {
 
 // Implementation of VideoCaptureDeviceLauncher that uses the "video_capture"
 // service.
-class ServiceVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
+class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
+    : public VideoCaptureDeviceLauncher {
  public:
   explicit ServiceVideoCaptureDeviceLauncher(
       video_capture::mojom::DeviceFactoryPtr* device_factory);
@@ -41,13 +42,15 @@ class ServiceVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
       const media::VideoCaptureParams& params,
       video_capture::mojom::DevicePtr device,
       base::WeakPtr<media::VideoFrameReceiver> receiver,
-      Callbacks* callbacks,
-      base::OnceClosure done_cb,
       video_capture::mojom::DeviceAccessResultCode result_code);
+
+  void OnConnectionLostWhileWaitingForCallback();
 
   video_capture::mojom::DeviceFactoryPtr* const device_factory_;
   State state_;
   base::SequenceChecker sequence_checker_;
+  base::OnceClosure done_cb_;
+  Callbacks* callbacks_;
 };
 
 }  // namespace content
