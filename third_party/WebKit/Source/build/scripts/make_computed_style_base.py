@@ -25,11 +25,11 @@ from itertools import chain
 # TODO(shend): Put alignment sizes into code form, rather than linking to a CL which may disappear.
 ALIGNMENT_ORDER = [
     'double',
-    'Font', 'FillLayer', 'NinePieceImage',  # Aligns like a void * (can be 32 or 64 bits)
-    'LengthBox', 'LengthSize', 'Length', 'float',
+    'AtomicString', 'RefPtr', 'Persistent', 'Font', 'FillLayer', 'NinePieceImage',  # Aligns like a pointer (can be 32 or 64 bits)
+    'LengthBox', 'LengthSize', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
     'StyleColor', 'Color', 'LayoutUnit', 'unsigned', 'int',
     'short',
-    'char',
+    'uint8_t', 'char',
     'bool'
 ]
 
@@ -110,6 +110,7 @@ class Field(object):
             Should be in upper camel case.
         property_name: Name of the property that the field is part of.
         type_name: Name of the C++ type exposed by the generated interface (e.g. EClear, int).
+        wrapper_pointer_name: Name of the pointer type that wraps this field (e.g. RefPtr).
         field_template: Determines the interface generated for the field. Can be one of:
            keyword, flag, or monotonic_flag.
         field_group: The name of the group that this field is inside.
@@ -117,13 +118,15 @@ class Field(object):
         default_value: Default value for this field when it is first initialized.
     """
 
-    def __init__(self, field_role, name_for_methods, property_name, type_name,
+    def __init__(self, field_role, name_for_methods, property_name, type_name, wrapper_pointer_name,
                  field_template, field_group, size, default_value, has_custom_compare_and_copy,
                  getter_method_name, setter_method_name, initial_method_name, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
         self.property_name = property_name
         self.type_name = type_name
+        self.wrapper_pointer_name = wrapper_pointer_name
+        self.alignment_type = self.wrapper_pointer_name or self.type_name
         self.field_template = field_template
         self.group_name = field_group
         self.group_member_name = class_member_name(join_name(field_group, 'data')) if field_group else None
@@ -273,6 +276,10 @@ def _create_property_field(property_):
         default_value = 'false'
         size = 1
 
+    if property_['wrapper_pointer_name']:
+        assert property_['field_template'] == 'storage_only'
+        type_name = '{}<{}>'.format(property_['wrapper_pointer_name'], type_name)
+
     return Field(
         'property',
         name_for_methods,
@@ -280,6 +287,7 @@ def _create_property_field(property_):
         inherited=property_['inherited'],
         independent=property_['independent'],
         type_name=type_name,
+        wrapper_pointer_name=property_['wrapper_pointer_name'],
         field_template=property_['field_template'],
         field_group=property_['field_group'],
         size=size,
@@ -302,6 +310,7 @@ def _create_inherited_flag_field(property_):
         name_for_methods,
         property_name=property_['name'],
         type_name='bool',
+        wrapper_pointer_name=None,
         field_template='primitive',
         field_group=property_['field_group'],
         size=1,
@@ -364,9 +373,9 @@ def _reorder_non_bit_fields(non_bit_fields):
     # A general rule of thumb is to sort members by their alignment requirement
     # (from biggest aligned to smallest).
     for field in non_bit_fields:
-        assert field.type_name in ALIGNMENT_ORDER, \
-            "Type {} has unknown alignment. Please update ALIGNMENT_ORDER to include it.".format(field.type_name)
-    return list(sorted(non_bit_fields, key=lambda f: ALIGNMENT_ORDER.index(f.type_name)))
+        assert field.alignment_type in ALIGNMENT_ORDER, \
+            "Type {} has unknown alignment. Please update ALIGNMENT_ORDER to include it.".format(field.alignment_type)
+    return list(sorted(non_bit_fields, key=lambda f: ALIGNMENT_ORDER.index(f.alignment_type)))
 
 
 def _reorder_fields(fields):
