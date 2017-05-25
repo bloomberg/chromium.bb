@@ -21,7 +21,6 @@
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
@@ -40,13 +39,6 @@ namespace {
 // Global delegate used to override the launching of the Cleaner process during
 // tests.
 ChromeCleanerRunnerTestDelegate* g_test_delegate = nullptr;
-
-void ReleaseChromePromptImpl(
-    std::unique_ptr<ChromePromptImpl> chrome_prompt_impl) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(chrome_prompt_impl);
-  chrome_prompt_impl.reset();
-}
 
 }  // namespace
 
@@ -192,24 +184,20 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread() {
   return {false, kBadProcessExitCode};
 }
 
-ChromeCleanerRunner::~ChromeCleanerRunner() {
-  if (chrome_prompt_impl_) {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
-        ->PostTask(FROM_HERE, base::Bind(&ReleaseChromePromptImpl,
-                                         base::Passed(&chrome_prompt_impl_)));
-  }
-}
+ChromeCleanerRunner::~ChromeCleanerRunner() = default;
 
 void ChromeCleanerRunner::CreateChromePromptImpl(
     ChromePromptRequest chrome_prompt_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!chrome_prompt_impl_);
 
-  chrome_prompt_impl_ = base::MakeUnique<ChromePromptImpl>(
+  // Cannot use base::MakeUnique() since it does not support creating
+  // std::unique_ptrs with custom deleters.
+  chrome_prompt_impl_.reset(new ChromePromptImpl(
       std::move(chrome_prompt_request),
       base::Bind(&ChromeCleanerRunner::OnConnectionClosed,
                  base::RetainedRef(this)),
-      base::Bind(&ChromeCleanerRunner::OnPromptUser, base::RetainedRef(this)));
+      base::Bind(&ChromeCleanerRunner::OnPromptUser, base::RetainedRef(this))));
 }
 
 void ChromeCleanerRunner::OnPromptUser(

@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserThread;
+
 namespace safe_browsing {
 
 using chrome_cleaner::mojom::ChromePrompt;
@@ -25,10 +27,13 @@ ChromePromptImpl::ChromePromptImpl(ChromePromptRequest request,
     : binding_(this, std::move(request)),
       on_prompt_user_(std::move(on_prompt_user)) {
   DCHECK(on_prompt_user_);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   binding_.set_connection_error_handler(std::move(on_connection_closed));
 }
 
-ChromePromptImpl::~ChromePromptImpl() {}
+ChromePromptImpl::~ChromePromptImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 void ChromePromptImpl::PromptUser(std::vector<UwSPtr> removable_uws_found,
                                   ElevationStatus elevation_status,
