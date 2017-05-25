@@ -446,7 +446,34 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
 };
 
-class ArcDefaulAppTest : public ArcAppModelBuilderTest {
+class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
+ public:
+  ArcAppModelBuilderRecreate() = default;
+  ~ArcAppModelBuilderRecreate() override = default;
+
+ protected:
+  // Simulates ARC restart.
+  void RestartArc() {
+    arc_test()->TearDown();
+    ResetBuilder();
+
+    ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
+        profile_.get());
+    arc_test()->SetUp(profile_.get());
+    CreateBuilder();
+  }
+
+  // ArcAppModelBuilderTest:
+  void OnBeforeArcTestSetup() override {
+    arc::ArcPackageSyncableServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderRecreate);
+};
+
+class ArcDefaulAppTest : public ArcAppModelBuilderRecreate {
  public:
   ArcDefaulAppTest() = default;
   ~ArcDefaulAppTest() override = default;
@@ -456,8 +483,7 @@ class ArcDefaulAppTest : public ArcAppModelBuilderTest {
   void OnBeforeArcTestSetup() override {
     ArcDefaultAppList::UseTestAppsDirectory();
     arc_test()->set_wait_default_apps(IsWaitDefaultAppsNeeded());
-    arc::ArcPackageSyncableServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), nullptr);
+    ArcAppModelBuilderRecreate::OnBeforeArcTestSetup();
   }
 
   // Returns true if test needs to wait for default apps on setup.
@@ -546,22 +572,6 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
-};
-
-class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
- public:
-  ArcAppModelBuilderRecreate() = default;
-  ~ArcAppModelBuilderRecreate() override = default;
-
- protected:
-  // ArcAppModelBuilderTest:
-  void OnBeforeArcTestSetup() override {
-    arc::ArcPackageSyncableServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), nullptr);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderRecreate);
 };
 
 TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
@@ -1096,13 +1106,7 @@ TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
   EXPECT_EQ(apps1.size(), GetArcItemCount());
 
   // Simulate restart.
-  arc_test()->TearDown();
-  ResetBuilder();
-
-  ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
-      profile_.get());
-  arc_test()->SetUp(profile_.get());
-  CreateBuilder();
+  RestartArc();
 
   // On restart new model contains last apps.
   ValidateHaveApps(apps1);
@@ -1333,6 +1337,75 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
   EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_cnt());
 }
 
+TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported_scale_factors(
+      supported_scale_factors);
+
+  ASSERT_FALSE(fake_apps().empty());
+  std::vector<arc::mojom::AppInfo> apps = std::vector<arc::mojom::AppInfo>(
+      fake_apps().begin(), fake_apps().begin() + 1);
+
+  const arc::mojom::AppInfo& app = apps[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps);
+
+  prefs->MaybeRequestIcon(app_id, ui::SCALE_FACTOR_100P);
+
+  std::string png_data;
+  EXPECT_TRUE(app_instance()->GenerateAndSendIcon(
+      app, arc::mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data));
+  WaitForIconUpdates(profile_.get(), app_id, 1);
+
+  // Simulate ARC restart.
+  RestartArc();
+
+  prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps);
+
+  // No icon update requests on restart. Icons were not invalidated.
+  EXPECT_TRUE(app_instance()->icon_requests().empty());
+
+  // Send new apps for the package. This should invalidate app icons.
+  app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps);
+  base::RunLoop().RunUntilIdle();
+
+  // Requests to reload icons are issued for all supported scales.
+  const std::vector<std::unique_ptr<arc::FakeAppInstance::IconRequest>>&
+      icon_requests = app_instance()->icon_requests();
+  ASSERT_EQ(2U, icon_requests.size());
+  EXPECT_TRUE(icon_requests[0]->IsForApp(app));
+  EXPECT_EQ(icon_requests[0]->scale_factor(), ui::SCALE_FACTOR_100P);
+  EXPECT_TRUE(icon_requests[1]->IsForApp(app));
+  EXPECT_EQ(icon_requests[1]->scale_factor(), ui::SCALE_FACTOR_200P);
+
+  EXPECT_TRUE(app_instance()->GenerateAndSendIcon(
+      app, arc::mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data));
+  EXPECT_TRUE(app_instance()->GenerateAndSendIcon(
+      app, arc::mojom::ScaleFactor::SCALE_FACTOR_200P, &png_data));
+  WaitForIconUpdates(profile_.get(), app_id, 2);
+
+  // Simulate ARC restart again.
+  RestartArc();
+
+  prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps);
+
+  // No new icon update requests on restart. Icons were invalidated and updated.
+  EXPECT_TRUE(app_instance()->icon_requests().empty());
+}
+
 TEST_P(ArcAppModelBuilderTest, AppLauncher) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile());
   ASSERT_NE(nullptr, prefs);
@@ -1405,7 +1478,7 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsAndShortcutsOnPackageChange) {
   ASSERT_NE(nullptr, prefs);
 
   std::vector<arc::mojom::AppInfo> apps = fake_apps();
-  ASSERT_GE(3u, apps.size());
+  ASSERT_GE(apps.size(), 3U);
   apps[0].package_name = apps[2].package_name;
   apps[1].package_name = apps[2].package_name;
 
@@ -1507,12 +1580,7 @@ TEST_P(ArcDefaulAppTest, DefaultApps) {
   ValidateHaveApps(all_apps);
 
   // Sign-out and sign-in again. Removed default app should not appear.
-  arc_test()->TearDown();
-  ResetBuilder();
-  ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
-      profile_.get());
-  arc_test()->SetUp(profile_.get());
-  CreateBuilder();
+  RestartArc();
 
   // Prefs are changed.
   prefs = ArcAppListPrefs::Get(profile_.get());
