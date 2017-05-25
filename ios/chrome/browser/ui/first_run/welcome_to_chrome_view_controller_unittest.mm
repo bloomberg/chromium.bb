@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -24,6 +23,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface WelcomeToChromeView (ExposedForTesting)
 @property(nonatomic, retain, readonly) UIButton* checkBoxButton;
 - (void)checkBoxButtonWasTapped;
@@ -38,21 +41,21 @@ class WelcomeToChromeViewControllerTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
     id tabModel = [OCMockObject mockForClass:[TabModel class]];
-    controller_.reset([[WelcomeToChromeViewController alloc]
+    controller_ = [[WelcomeToChromeViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()
-                    tabModel:tabModel]);
+                    tabModel:tabModel];
     [controller_ loadView];
   }
 
   void TearDown() override {
-    controller_.reset();
+    controller_ = nil;
     PlatformTest::TearDown();
   }
 
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<WelcomeToChromeViewController> controller_;
+  WelcomeToChromeViewController* controller_;
 };
 
 TEST_F(WelcomeToChromeViewControllerTest, TestDefaultStatsCheckBoxValue) {
@@ -62,7 +65,7 @@ TEST_F(WelcomeToChromeViewControllerTest, TestDefaultStatsCheckBoxValue) {
 }
 
 TEST_F(WelcomeToChromeViewControllerTest, TestConstructorDestructor) {
-  EXPECT_TRUE(controller_.get());
+  EXPECT_TRUE(controller_);
   EXPECT_TRUE([controller_ view]);
 }
 

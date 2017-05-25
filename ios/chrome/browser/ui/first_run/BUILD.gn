@@ -75,6 +75,7 @@ source_set("first_run") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "first_run_util_unittest.mm",
