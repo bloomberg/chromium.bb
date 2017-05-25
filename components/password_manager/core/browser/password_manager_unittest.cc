@@ -339,7 +339,8 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(existing_different)));
+      .WillOnce(WithArg<1>(InvokeConsumer(existing_different)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
@@ -497,7 +498,8 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   observed.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -514,7 +516,8 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
 }
 
@@ -855,7 +858,8 @@ TEST_F(PasswordManagerTest, DoNotSaveWithEmptyNewPasswordAndNonemptyPassword) {
   form.new_password_value.clear();
   observed.push_back(form);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .Times(2)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -888,7 +892,8 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
   PasswordForm form(MakeSimpleFormWithOnlyPasswordField());
   observed.push_back(form);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .Times(2)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -920,7 +925,8 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames) {
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
 
   // Now the form will be seen the second time, in a different frame. The driver
@@ -939,7 +945,8 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .Times(2)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -969,7 +976,8 @@ TEST_F(PasswordManagerTest, InPageNavigationBlacklistedSite) {
   blacklisted_form.username_value = ASCIIToUTF16("");
   blacklisted_form.blacklisted_by_user = true;
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(blacklisted_form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(blacklisted_form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1141,7 +1149,8 @@ TEST_F(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1174,7 +1183,7 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
 
   // No call-back from store after GetLogins is called emulates that
   // PasswordStore did not fetch a form in time before submission.
-  EXPECT_CALL(*store_, GetLogins(_, _));
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(2);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   ASSERT_EQ(1u, manager()->pending_login_managers().size());
@@ -1566,7 +1575,8 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   autofill::PasswordFormFillData form_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(android_form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(android_form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   observed_forms.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
@@ -1612,7 +1622,8 @@ TEST_F(PasswordManagerTest, UpdatePasswordOfAffiliatedCredential) {
   autofill::PasswordFormFillData form_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(android_form)));
+      .WillOnce(WithArg<1>(InvokeConsumer(android_form)))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   observed_forms.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
@@ -1655,7 +1666,7 @@ TEST_F(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
   observed.push_back(form);
 
   // Emulate page load.
-  EXPECT_CALL(*store_, GetLogins(_, _)).Times(2);
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(3);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   ASSERT_EQ(1u, manager()->pending_login_managers().size());
