@@ -3251,7 +3251,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
   // Not in field trial.
   ResetFieldTrialList();
   CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, false);
-  EXPECT_FALSE(SearchProvider::CanSendURL(
+  EXPECT_TRUE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
@@ -3277,6 +3277,19 @@ TEST_F(SearchProviderTest, CanSendURL) {
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       SearchTermsData(), &client));
+
+  // Invalid page classification.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      metrics::OmniboxEventProto::NTP, SearchTermsData(), &client));
+
+  // Invalid page classification.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      metrics::OmniboxEventProto::OBSOLETE_INSTANT_NTP, SearchTermsData(),
+      &client));
 
   // HTTPS page URL on same domain as provider.
   EXPECT_TRUE(SearchProvider::CanSendURL(
