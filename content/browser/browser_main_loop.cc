@@ -36,6 +36,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/task_scheduler/initialization_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -1132,12 +1133,15 @@ int BrowserMainLoop::CreateThreads() {
       redirection_task_runner =
           (thread_id == BrowserThread::FILE)
               ? base::CreateCOMSTATaskRunnerWithTraits(
-                    non_ui_non_io_task_runner_traits)
+                    non_ui_non_io_task_runner_traits,
+                    base::SingleThreadTaskRunnerThreadMode::DEDICATED)
               : base::CreateSingleThreadTaskRunnerWithTraits(
-                    non_ui_non_io_task_runner_traits);
+                    non_ui_non_io_task_runner_traits,
+                    base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 #else   // defined(OS_WIN)
       redirection_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-          non_ui_non_io_task_runner_traits);
+          non_ui_non_io_task_runner_traits,
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 #endif  // defined(OS_WIN)
       DCHECK(redirection_task_runner);
       BrowserThreadImpl::RedirectThreadIDToTaskRunner(
