@@ -1124,14 +1124,16 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   }
 
   {
-    // Reloading the page should not transfer processes.
-    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
+    // Reloading the blocked document should load about:blank and not transfer
+    // processes.
+    GURL about_blank_url(url::kAboutBlankURL);
+    NavigationHandleObserver observer(shell()->web_contents(), about_blank_url);
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
 
     shell()->Reload();
     navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
-    EXPECT_TRUE(observer.is_error());
+    EXPECT_FALSE(observer.is_error());
     EXPECT_EQ(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
   }

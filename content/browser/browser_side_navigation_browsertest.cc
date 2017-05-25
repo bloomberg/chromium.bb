@@ -381,4 +381,45 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   process_exit_observer.Wait();
 }
 
+// Test case to verify that redirects to data: URLs are properly disallowed,
+// even when invoked through a reload.
+// See https://crbug.com/723796.
+//
+// Note: This is PlzNavigate specific test, as the behavior of reloads in the
+// non-PlzNavigate path differs. The WebURLRequest for the reload is generated
+// based on Blink's state instead of the history state in the browser process,
+// which ends up loading the originally blocked URL. With PlzNavigate, the
+// reload uses the NavigationEntry state to create a navigation and commit it.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       VerifyBlockedErrorPageURL_Reload) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+
+  // Navigate to an URL, which redirects to a data: URL, since it is an
+  // unsafe redirect and will result in a blocked navigation and error page.
+  GURL redirect_to_blank_url(
+      embedded_test_server()->GetURL("/server-redirect?data:text/html,Hello!"));
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_to_blank_url));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+
+  TestNavigationObserver reload_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecuteScript(shell(), "location.reload()"));
+  reload_observer.Wait();
+
+  // The expectation is that about:blank was loaded and the virtual URL is set
+  // to the URL that was blocked.
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->GetURL().SchemeIs(url::kDataScheme));
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetVirtualURL().SchemeIs(
+      url::kDataScheme));
+  EXPECT_EQ(url::kAboutBlankURL,
+            controller.GetLastCommittedEntry()->GetURL().spec());
+}
+
 }  // namespace content

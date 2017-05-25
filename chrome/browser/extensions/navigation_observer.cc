@@ -69,7 +69,16 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
   if (!nav_entry)
     return;
 
-  const GURL& url = nav_entry->GetURL();
+  // With a disabled extension, the navigation is blocked, which results in
+  // an error page and NavigationEntry with "about:blank" URL. In this case,
+  // the virtual URL is the real URL the user navigated to, so if this is the
+  // case, use it instead.
+  const GURL& url = (nav_entry->GetPageType() == content::PAGE_TYPE_ERROR &&
+                     nav_entry->GetURL() == url::kAboutBlankURL &&
+                     nav_entry->GetVirtualURL().SchemeIs(kExtensionScheme))
+                        ? nav_entry->GetVirtualURL()
+                        : nav_entry->GetURL();
+
   // NOTE: We only consider chrome-extension:// urls, and deliberately don't
   // consider hosted app urls. This is because it's really annoying to visit the
   // site associated with a hosted app (like calendar.google.com or
