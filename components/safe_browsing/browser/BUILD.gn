@@ -6,6 +6,8 @@ import("//build/config/features.gni")
 
 source_set("browser") {
   sources = [
+    "safe_browsing_url_request_context_getter.cc",
+    "safe_browsing_url_request_context_getter.h",
     "threat_details.cc",
     "threat_details.h",
     "threat_details_cache.cc",
@@ -22,5 +24,6 @@ source_set("browser") {
     "//components/safe_browsing/common:common",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser:browser",
+    "//net:extras",
   ]
 }

@@ -9,4 +9,8 @@ namespace safe_browsing {
 const base::FilePath::CharType kSafeBrowsingBaseFilename[] =
     FILE_PATH_LITERAL("Safe Browsing");
 
+const base::FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
+const base::FilePath::CharType kChannelIDFile[] =
+    FILE_PATH_LITERAL(" Channel IDs");
+
 }  // namespace safe_browsing
