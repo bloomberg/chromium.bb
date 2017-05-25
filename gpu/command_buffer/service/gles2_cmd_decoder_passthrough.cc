@@ -369,14 +369,13 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
   caps.occlusion_query_boolean =
       feature_info_->feature_flags().occlusion_query_boolean;
+  caps.timer_queries = feature_info_->feature_flags().ext_disjoint_timer_query;
+  caps.post_sub_buffer = surface_->SupportsPostSubBuffer();
+  caps.surfaceless = !offscreen_ && surface_->IsSurfaceless();
+  caps.flips_vertically = !offscreen_ && surface_->FlipsVertically();
 
   // TODO:
-  // caps.timer_queries
-  // caps.post_sub_buffer
   // caps.commit_overlay_planes
-  // caps.surfaceless
-  // caps.is_offscreen
-  // caps.flips_vertically
 
   return caps;
 }
