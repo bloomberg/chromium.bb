@@ -604,10 +604,6 @@ group("gn_all") {
     if (is_win && is_component_build) {
       deps -= [ "//media/mojo/services:media_service_unittests" ]
     }
-
-    if (use_ozone && is_chromeos) {
-      deps += [ "//services/ui/display:display_service_unittests" ]
-    }
   }
 
   if (is_linux && !is_chromeos && !is_chromecast) {

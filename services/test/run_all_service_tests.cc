@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,17 +7,16 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "services/service_manager/public/cpp/test/common_initialization.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace {
 
-class DisplayServiceTestSuite : public base::TestSuite {
+class ServiceTestSuite : public base::TestSuite {
  public:
-  DisplayServiceTestSuite(int argc, char** argv)
-      : base::TestSuite(argc, argv) {}
-  ~DisplayServiceTestSuite() override {}
+  ServiceTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+  ~ServiceTestSuite() override {}
 
  protected:
   void Initialize() override {
@@ -35,15 +34,15 @@ class DisplayServiceTestSuite : public base::TestSuite {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayServiceTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(ServiceTestSuite);
 };
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  DisplayServiceTestSuite test_suite(argc, argv);
+  ServiceTestSuite test_suite(argc, argv);
 
-  return base::LaunchUnitTests(
+  return service_manager::InitializeAndLaunchUnitTests(
       argc, argv,
-      base::Bind(&DisplayServiceTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&ServiceTestSuite::Run, base::Unretained(&test_suite)));
 }
