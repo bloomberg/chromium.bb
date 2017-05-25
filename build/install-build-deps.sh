@@ -601,9 +601,6 @@ fi
 
 if test "$do_inst_lib32" = "1" || test "$do_inst_nacl" = "1"; then
   sudo dpkg --add-architecture i386
-  if [[ $distro_id == "Debian" ]]; then
-      sudo dpkg --add-architecture armhf
-  fi
 fi
 sudo apt-get update
 
