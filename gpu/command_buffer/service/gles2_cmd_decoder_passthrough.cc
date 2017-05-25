@@ -761,7 +761,7 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
 error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
   while (!pending_queries_.empty()) {
     const PendingQuery& query = pending_queries_.front();
-    GLint result_available = GL_FALSE;
+    GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
       case GL_COMMANDS_ISSUED_CHROMIUM:
@@ -792,11 +792,18 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
         if (did_finish) {
           result_available = GL_TRUE;
         } else {
-          glGetQueryObjectiv(query.service_id, GL_QUERY_RESULT_AVAILABLE,
-                             &result_available);
+          glGetQueryObjectuiv(query.service_id, GL_QUERY_RESULT_AVAILABLE,
+                              &result_available);
         }
         if (result_available == GL_TRUE) {
-          glGetQueryObjectui64v(query.service_id, GL_QUERY_RESULT, &result);
+          if (feature_info_->feature_flags().ext_disjoint_timer_query) {
+            glGetQueryObjectui64v(query.service_id, GL_QUERY_RESULT, &result);
+          } else {
+            GLuint temp_result = 0;
+            glGetQueryObjectuiv(query.service_id, GL_QUERY_RESULT,
+                                &temp_result);
+            result = temp_result;
+          }
         }
         break;
     }
