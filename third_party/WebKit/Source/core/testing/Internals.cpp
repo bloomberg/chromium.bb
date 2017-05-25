@@ -920,9 +920,23 @@ void Internals::setMarker(Document* document,
     return;
   }
 
+  if (type != DocumentMarker::kSpelling && type != DocumentMarker::kGrammar) {
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "internals.setMarker() currently only "
+                                      "supports spelling and grammar markers; "
+                                      "attempted to add marker of type '" +
+                                          marker_type + "'.");
+    return;
+  }
+
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  document->Markers().AddMarker(range->StartPosition(), range->EndPosition(),
-                                type.value());
+  if (type == DocumentMarker::kSpelling) {
+    document->Markers().AddSpellingMarker(range->StartPosition(),
+                                          range->EndPosition());
+  } else {
+    document->Markers().AddGrammarMarker(range->StartPosition(),
+                                         range->EndPosition());
+  }
 }
 
 unsigned Internals::markerCountForNode(Node* node,

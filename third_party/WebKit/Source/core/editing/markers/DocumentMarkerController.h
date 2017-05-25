@@ -54,10 +54,12 @@ class CORE_EXPORT DocumentMarkerController final
   explicit DocumentMarkerController(Document&);
 
   void Clear();
-  void AddMarker(const Position& start,
-                 const Position& end,
-                 DocumentMarker::MarkerType,
-                 const String& description = g_empty_string);
+  void AddSpellingMarker(const Position& start,
+                         const Position& end,
+                         const String& description = g_empty_string);
+  void AddGrammarMarker(const Position& start,
+                        const Position& end,
+                        const String& description = g_empty_string);
   void AddTextMatchMarker(const EphemeralRange&, DocumentMarker::MatchStatus);
   void AddCompositionMarker(const EphemeralRange&,
                             Color underline_color,
@@ -112,6 +114,10 @@ class CORE_EXPORT DocumentMarkerController final
 
  private:
   void AddMarker(Node*, DocumentMarker*);
+  void AddSpellCheckMarker(const Position& start,
+                           const Position& end,
+                           DocumentMarker::MarkerType,
+                           const String& description = g_empty_string);
 
   using MarkerLists = HeapVector<Member<DocumentMarkerList>,
                                  DocumentMarker::kMarkerTypeIndexesCount>;

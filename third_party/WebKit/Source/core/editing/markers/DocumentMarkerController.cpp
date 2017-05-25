@@ -123,10 +123,25 @@ void DocumentMarkerController::Clear() {
   possibly_existing_marker_types_ = 0;
 }
 
-void DocumentMarkerController::AddMarker(const Position& start,
-                                         const Position& end,
-                                         DocumentMarker::MarkerType type,
-                                         const String& description) {
+void DocumentMarkerController::AddSpellingMarker(const Position& start,
+                                                 const Position& end,
+                                                 const String& description) {
+  AddSpellCheckMarker(start, end, DocumentMarker::kSpelling, description);
+}
+
+void DocumentMarkerController::AddGrammarMarker(const Position& start,
+                                                const Position& end,
+                                                const String& description) {
+  AddSpellCheckMarker(start, end, DocumentMarker::kGrammar, description);
+}
+
+void DocumentMarkerController::AddSpellCheckMarker(
+    const Position& start,
+    const Position& end,
+    DocumentMarker::MarkerType type,
+    const String& description) {
+  DCHECK(type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar)
+      << type;
   // Use a TextIterator to visit the potentially multiple nodes the range
   // covers.
   for (TextIterator marked_text(start, end); !marked_text.AtEnd();
