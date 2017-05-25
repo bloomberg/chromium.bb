@@ -12,6 +12,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/devtools/domains/browser.h"
 #include "headless/public/devtools/domains/dom.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/inspector.h"
@@ -85,6 +86,165 @@ class HeadlessDevToolsClientNavigationTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientNavigationTest);
+
+class HeadlessDevToolsClientWindowManagementTest
+    : public HeadlessAsyncDevTooledBrowserTest {
+ public:
+  void SetWindowBounds(
+      const gfx::Rect& rect,
+      base::Callback<void(std::unique_ptr<browser::SetWindowBoundsResult>)>
+          callback) {
+    std::unique_ptr<headless::browser::Bounds> bounds =
+        headless::browser::Bounds::Builder()
+            .SetLeft(rect.x())
+            .SetTop(rect.y())
+            .SetWidth(rect.width())
+            .SetHeight(rect.height())
+            .SetWindowState(browser::WindowState::NORMAL)
+            .Build();
+    int window_id = HeadlessWebContentsImpl::From(web_contents_)->window_id();
+    std::unique_ptr<browser::SetWindowBoundsParams> params =
+        browser::SetWindowBoundsParams::Builder()
+            .SetWindowId(window_id)
+            .SetBounds(std::move(bounds))
+            .Build();
+    browser_devtools_client_->GetBrowser()->GetExperimental()->SetWindowBounds(
+        std::move(params), callback);
+  }
+
+  void SetWindowState(
+      const browser::WindowState state,
+      base::Callback<void(std::unique_ptr<browser::SetWindowBoundsResult>)>
+          callback) {
+    std::unique_ptr<headless::browser::Bounds> bounds =
+        headless::browser::Bounds::Builder().SetWindowState(state).Build();
+    int window_id = HeadlessWebContentsImpl::From(web_contents_)->window_id();
+    std::unique_ptr<browser::SetWindowBoundsParams> params =
+        browser::SetWindowBoundsParams::Builder()
+            .SetWindowId(window_id)
+            .SetBounds(std::move(bounds))
+            .Build();
+    browser_devtools_client_->GetBrowser()->GetExperimental()->SetWindowBounds(
+        std::move(params), callback);
+  }
+
+  void GetWindowBounds(
+      base::Callback<void(std::unique_ptr<browser::GetWindowBoundsResult>)>
+          callback) {
+    int window_id = HeadlessWebContentsImpl::From(web_contents_)->window_id();
+    std::unique_ptr<browser::GetWindowBoundsParams> params =
+        browser::GetWindowBoundsParams::Builder()
+            .SetWindowId(window_id)
+            .Build();
+
+    browser_devtools_client_->GetBrowser()->GetExperimental()->GetWindowBounds(
+        std::move(params), callback);
+  }
+
+  void CheckWindowBounds(
+      const gfx::Rect& bounds,
+      const browser::WindowState state,
+      std::unique_ptr<browser::GetWindowBoundsResult> result) {
+    const headless::browser::Bounds* actual_bounds = result->GetBounds();
+    EXPECT_EQ(bounds.x(), actual_bounds->GetLeft());
+    EXPECT_EQ(bounds.y(), actual_bounds->GetTop());
+    EXPECT_EQ(bounds.width(), actual_bounds->GetWidth());
+    EXPECT_EQ(bounds.height(), actual_bounds->GetHeight());
+    EXPECT_EQ(state, actual_bounds->GetWindowState());
+  }
+};
+
+class HeadlessDevToolsClientChangeWindowBoundsTest
+    : public HeadlessDevToolsClientWindowManagementTest {
+  void RunDevTooledTest() override {
+    SetWindowBounds(
+        gfx::Rect(100, 200, 300, 400),
+        base::Bind(
+            &HeadlessDevToolsClientChangeWindowBoundsTest::OnSetWindowBounds,
+            base::Unretained(this)));
+  }
+
+  void OnSetWindowBounds(
+      std::unique_ptr<browser::SetWindowBoundsResult> result) {
+    GetWindowBounds(base::Bind(
+        &HeadlessDevToolsClientChangeWindowBoundsTest::OnGetWindowBounds,
+        base::Unretained(this)));
+  }
+
+  void OnGetWindowBounds(
+      std::unique_ptr<browser::GetWindowBoundsResult> result) {
+    CheckWindowBounds(gfx::Rect(100, 200, 300, 400),
+                      browser::WindowState::NORMAL, std::move(result));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientChangeWindowBoundsTest);
+
+class HeadlessDevToolsClientChangeWindowStateTest
+    : public HeadlessDevToolsClientWindowManagementTest {
+ public:
+  explicit HeadlessDevToolsClientChangeWindowStateTest(
+      browser::WindowState state)
+      : state_(state){};
+
+  void RunDevTooledTest() override {
+    SetWindowState(
+        state_,
+        base::Bind(
+            &HeadlessDevToolsClientChangeWindowStateTest::OnSetWindowState,
+            base::Unretained(this)));
+  }
+
+  void OnSetWindowState(
+      std::unique_ptr<browser::SetWindowBoundsResult> result) {
+    GetWindowBounds(base::Bind(
+        &HeadlessDevToolsClientChangeWindowStateTest::OnGetWindowState,
+        base::Unretained(this)));
+  }
+
+  void OnGetWindowState(
+      std::unique_ptr<browser::GetWindowBoundsResult> result) {
+    HeadlessBrowser::Options::Builder builder;
+    const HeadlessBrowser::Options kDefaultOptions = builder.Build();
+    CheckWindowBounds(gfx::Rect(kDefaultOptions.window_size), state_,
+                      std::move(result));
+    FinishAsynchronousTest();
+  }
+
+ protected:
+  browser::WindowState state_;
+};
+
+class HeadlessDevToolsClientMinimizeWindowTest
+    : public HeadlessDevToolsClientChangeWindowStateTest {
+ public:
+  HeadlessDevToolsClientMinimizeWindowTest()
+      : HeadlessDevToolsClientChangeWindowStateTest(
+            browser::WindowState::MINIMIZED){};
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientMinimizeWindowTest);
+
+class HeadlessDevToolsClientMaximizeWindowTest
+    : public HeadlessDevToolsClientChangeWindowStateTest {
+ public:
+  HeadlessDevToolsClientMaximizeWindowTest()
+      : HeadlessDevToolsClientChangeWindowStateTest(
+            browser::WindowState::MAXIMIZED){};
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientMaximizeWindowTest);
+
+class HeadlessDevToolsClientFullscreenWindowTest
+    : public HeadlessDevToolsClientChangeWindowStateTest {
+ public:
+  HeadlessDevToolsClientFullscreenWindowTest()
+      : HeadlessDevToolsClientChangeWindowStateTest(
+            browser::WindowState::FULLSCREEN){};
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientFullscreenWindowTest);
 
 class HeadlessDevToolsClientEvalTest
     : public HeadlessAsyncDevTooledBrowserTest {

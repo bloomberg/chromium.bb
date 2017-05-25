@@ -195,6 +195,7 @@ HeadlessAsyncDevTooledBrowserTest::HeadlessAsyncDevTooledBrowserTest()
     : browser_context_(nullptr),
       web_contents_(nullptr),
       devtools_client_(HeadlessDevToolsClient::Create()),
+      browser_devtools_client_(HeadlessDevToolsClient::Create()),
       render_process_exited_(false) {}
 
 HeadlessAsyncDevTooledBrowserTest::~HeadlessAsyncDevTooledBrowserTest() {}
@@ -227,6 +228,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser_context_ = builder.Build();
 
   browser()->SetDefaultBrowserContext(browser_context_);
+  browser()->GetDevToolsTarget()->AttachClient(browser_devtools_client_.get());
 
   web_contents_ = browser_context_->CreateWebContentsBuilder()
                       .SetTabSocketType(GetTabSocketType())
@@ -240,6 +242,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   web_contents_->RemoveObserver(this);
   web_contents_->Close();
   web_contents_ = nullptr;
+  browser()->GetDevToolsTarget()->DetachClient(browser_devtools_client_.get());
   browser_context_->Close();
   browser_context_ = nullptr;
 }

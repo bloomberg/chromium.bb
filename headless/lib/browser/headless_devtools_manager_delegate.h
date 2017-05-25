@@ -62,6 +62,15 @@ class HeadlessDevToolsManagerDelegate
   std::unique_ptr<base::DictionaryValue> DisposeBrowserContext(
       int command_id,
       const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> GetWindowForTarget(
+      int command_id,
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> GetWindowBounds(
+      int command_id,
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> SetWindowBounds(
+      int command_id,
+      const base::DictionaryValue* params);
   void PrintToPDF(content::DevToolsAgentHost* agent_host,
                   int command_id,
                   const base::DictionaryValue* params,

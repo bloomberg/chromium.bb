@@ -194,6 +194,9 @@ HeadlessWebContentsImpl::CreateFromWebContents(
 }
 
 void HeadlessWebContentsImpl::InitializeScreen(const gfx::Size& initial_size) {
+  static int window_id = 1;
+  window_id_ = window_id++;
+  window_state_ = "normal";
   browser()->PlatformInitializeWebContents(initial_size, this);
 }
 

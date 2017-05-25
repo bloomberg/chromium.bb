@@ -38,6 +38,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       accessibility_domain_(this),
       animation_domain_(this),
       application_cache_domain_(this),
+      browser_domain_(this),
       cache_storage_domain_(this),
       console_domain_(this),
       css_domain_(this),
@@ -242,6 +243,10 @@ animation::Domain* HeadlessDevToolsClientImpl::GetAnimation() {
 
 application_cache::Domain* HeadlessDevToolsClientImpl::GetApplicationCache() {
   return &application_cache_domain_;
+}
+
+browser::Domain* HeadlessDevToolsClientImpl::GetBrowser() {
+  return &browser_domain_;
 }
 
 cache_storage::Domain* HeadlessDevToolsClientImpl::GetCacheStorage() {

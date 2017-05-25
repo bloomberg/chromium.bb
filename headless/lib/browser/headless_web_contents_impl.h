@@ -100,6 +100,13 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   HeadlessWindowTreeHost* window_tree_host() const {
     return window_tree_host_.get();
   }
+  int window_id() const { return window_id_; }
+  void set_window_state(const std::string& state) {
+    DCHECK(state == "normal" || state == "minimized" || state == "maximized" ||
+           state == "fullscreen");
+    window_state_ = state;
+  }
+  const std::string& window_state() const { return window_state_; }
 
  private:
   // Takes ownership of |web_contents|.
@@ -112,6 +119,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;
   std::unique_ptr<HeadlessWindowTreeHost> window_tree_host_;
+  int window_id_ = 0;
+  std::string window_state_;
   std::unique_ptr<content::WebContents> web_contents_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::list<MojoService> mojo_services_;
