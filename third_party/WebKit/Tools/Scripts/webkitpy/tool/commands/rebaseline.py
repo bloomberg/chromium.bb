@@ -399,18 +399,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 release_builders.append(builder_name)
         return release_builders
 
-    def _run_webkit_patch(self, args, verbose):
-        try:
-            verbose_args = ['--verbose'] if verbose else []
-            stderr = self._tool.executive.run_command(
-                [self._tool.path()] + verbose_args + args,
-                cwd=self._tool.git().checkout_root,
-                return_stderr=True)
-            for line in stderr.splitlines():
-                _log.warning(line)
-        except ScriptError:
-            traceback.print_exc(file=sys.stderr)
-
     def _builders_to_fetch_from(self, builders_to_check):
         """Returns the subset of builders that will cover all of the baseline
         search paths used in the input list.

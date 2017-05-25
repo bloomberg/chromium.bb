@@ -96,10 +96,6 @@ class BuildBot(object):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
 
     @memoized
-    def latest_layout_test_results(self, builder_name):
-        return self.fetch_layout_test_results(self.accumulated_results_url_base(builder_name))
-
-    @memoized
     def fetch_results(self, build):
         return self.fetch_layout_test_results(self.results_url(build.builder_name, build.build_number))
 

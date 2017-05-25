@@ -220,18 +220,6 @@ class Executive(object):
         stdout, _ = ps_process.communicate()
         return [line.strip() for line in stdout.splitlines()]
 
-    def wait_newest(self, process_name_filter=None):
-        if not process_name_filter:
-            process_name_filter = lambda process_name: True
-
-        running_pids = self.running_pids(process_name_filter)
-        if not running_pids:
-            return
-        pid = running_pids[-1]
-
-        while self.check_running_pid(pid):
-            time.sleep(0.25)
-
     def wait_limited(self, pid, limit_in_seconds=None, check_frequency_in_seconds=None):
         seconds_left = limit_in_seconds or 10
         sleep_length = check_frequency_in_seconds or 1

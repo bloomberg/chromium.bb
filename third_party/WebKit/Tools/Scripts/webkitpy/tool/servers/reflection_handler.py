@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import BaseHTTPServer
-
 import cgi
 import codecs
 import datetime
@@ -38,7 +37,6 @@ import shutil
 import threading
 import time
 import wsgiref.handlers
-import BaseHTTPServer
 
 
 class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -63,9 +61,6 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def read_entity_body(self):
         length = int(self.headers.getheader('content-length'))
         return self.rfile.read(length)
-
-    def _read_entity_body_as_json(self):
-        return json.loads(self.read_entity_body())
 
     def _handle_request(self):
         # The query attribute is used in subclasses. If we want to set it in the constructor,
