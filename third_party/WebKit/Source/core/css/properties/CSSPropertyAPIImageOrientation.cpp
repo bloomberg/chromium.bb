@@ -19,7 +19,8 @@ const CSSValue* CSSPropertyAPIImageOrientation::parseSingleValue(
   if (range.Peek().Id() == CSSValueFromImage)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   if (range.Peek().GetType() != kNumberToken) {
-    CSSPrimitiveValue* angle = CSSPropertyParserHelpers::ConsumeAngle(range);
+    CSSPrimitiveValue* angle = CSSPropertyParserHelpers::ConsumeAngle(
+        range, context, WTF::Optional<UseCounter::Feature>());
     if (angle && angle->GetDoubleValue() == 0)
       return angle;
   }

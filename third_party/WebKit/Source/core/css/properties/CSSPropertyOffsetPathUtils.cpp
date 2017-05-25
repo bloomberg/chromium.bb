@@ -44,7 +44,8 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   return CSSPathValue::Create(std::move(byte_stream));
 }
 
-CSSValue* ConsumeRay(CSSParserTokenRange& range) {
+CSSValue* ConsumeRay(CSSParserTokenRange& range,
+                     const CSSParserContext* context) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueRay);
   CSSParserTokenRange function_range = range;
   CSSParserTokenRange function_args =
@@ -55,7 +56,8 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range) {
   CSSIdentifierValue* contain = nullptr;
   while (!function_args.AtEnd()) {
     if (!angle) {
-      angle = CSSPropertyParserHelpers::ConsumeAngle(function_args);
+      angle = CSSPropertyParserHelpers::ConsumeAngle(
+          function_args, *context, WTF::Optional<UseCounter::Feature>());
       if (angle)
         continue;
     }
@@ -88,7 +90,7 @@ CSSValue* CSSPropertyOffsetPathUtils::ConsumeOffsetPath(
   CSSValue* value = nullptr;
   if (RuntimeEnabledFeatures::cssOffsetPathRayEnabled() &&
       range.Peek().FunctionId() == CSSValueRay)
-    value = ConsumeRay(range);
+    value = ConsumeRay(range, context);
   else
     value = ConsumePathOrNone(range);
 

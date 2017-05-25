@@ -94,13 +94,15 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
     case CSSValueSkewX:
     case CSSValueSkewY:
     case CSSValueSkew:
-      parsed_value = CSSPropertyParserHelpers::ConsumeAngle(args);
+      parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
+          args, *context, UseCounter::kUnitlessZeroAngleTransform);
       if (!parsed_value)
         return nullptr;
       if (function_id == CSSValueSkew &&
           CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)) {
         transform_value->Append(*parsed_value);
-        parsed_value = CSSPropertyParserHelpers::ConsumeAngle(args);
+        parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
+            args, *context, UseCounter::kUnitlessZeroAngleTransform);
         if (!parsed_value)
           return nullptr;
       }
@@ -164,7 +166,8 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
           !CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)) {
         return nullptr;
       }
-      parsed_value = CSSPropertyParserHelpers::ConsumeAngle(args);
+      parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
+          args, *context, UseCounter::kUnitlessZeroAngleTransform);
       if (!parsed_value)
         return nullptr;
       break;

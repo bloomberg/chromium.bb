@@ -1609,6 +1609,11 @@ class CORE_EXPORT UseCounter {
     kThreeValuedPositionGradient = 2003,
     kThreeValuedPositionObjectPosition = 2004,
     kThreeValuedPositionPerspectiveOrigin = 2005,
+    kUnitlessZeroAngleCustomProperty = 2006,
+    kUnitlessZeroAngleFilter = 2007,
+    kUnitlessZeroAngleGradient = 2008,
+    kUnitlessZeroAngleOffsetRotate = 2009,
+    kUnitlessZeroAngleTransform = 2010,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
