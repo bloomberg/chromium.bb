@@ -23,6 +23,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import hwtest_results
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import patch_unittest
 
 
 # pylint: disable=protected-access
@@ -941,6 +942,88 @@ class HWTestResultTableTest(CIDBIntegrationTest):
                           expected_result_3)
 
     self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
+
+
+class CLActionTableTest(CIDBIntegrationTest, patch_unittest.MockPatchBase):
+  """Tests for CLActionTable."""
+
+  def setUp(self):
+    self.changes = self.GetPatches(how_many=3)
+    self.actions = []
+    for x in range(3):
+      self.actions.append(clactions.CLAction.FromGerritPatchAndAction(
+          self.changes[x], constants.CL_ACTION_PICKED_UP))
+
+    self.build_config_1 = 'build_1'
+    self.build_bb_id_1 = 'bb_id_1'
+
+  def _AssertActionEqual(self, action, build_config, change, status):
+    self.assertEqual(action.build_config, build_config)
+    self.assertEqual(action.change_number, int(change.gerrit_number))
+    self.assertEqual(action.patch_number, int(change.patch_number))
+    self.assertEqual(action.status, status)
+
+  def testGetActionsForChanges(self):
+    """Test GetActionsForChanges."""
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    b_id_1 = bot_db.InsertBuild(
+        self.build_config_1, constants.WATERFALL_INTERNAL, _random(),
+        self.build_config_1, 'bot_hostname', buildbucket_id=self.build_bb_id_1)
+    bot_db.InsertCLActions(b_id_1, self.actions)
+
+    result = bot_db.GetActionsForChanges(self.changes[0:1])
+    self.assertEqual(len(result), 1)
+    self._AssertActionEqual(result[0], self.build_config_1, self.changes[0],
+                            'inflight')
+
+    change_1 = self.MockPatch(change_id=int(self.changes[0].gerrit_number),
+                              patch_number=10)
+    result = bot_db.GetActionsForChanges([change_1], ignore_patch_number=False)
+    self.assertEqual(len(result), 0)
+
+    result = bot_db.GetActionsForChanges(self.changes[0:3])
+    self.assertEqual(len(result), 3)
+    self._AssertActionEqual(result[1], self.build_config_1, self.changes[1],
+                            'inflight')
+    self._AssertActionEqual(result[2], self.build_config_1, self.changes[2],
+                            'inflight')
+
+  def testGetActionsForChangesWithTimestamp(self):
+    """Test GetActionsForChanges with timestamps."""
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    b_id_1 = bot_db.InsertBuild(
+        self.build_config_1, constants.WATERFALL_INTERNAL, _random(),
+        self.build_config_1, 'bot_hostname', buildbucket_id=self.build_bb_id_1)
+    ts_1 = datetime.datetime.now() - datetime.timedelta(days=3)
+    format_ts_1 = ts_1.strftime('%Y-%m-%d %H:%M:%S')
+    ts_2 = datetime.datetime.now()
+    format_ts_2 = ts_2.strftime('%Y-%m-%d %H:%M:%S')
+    bot_db.InsertCLActions(b_id_1, self.actions[0:2], format_ts_1)
+    bot_db.InsertCLActions(b_id_1, self.actions[2:3], format_ts_2)
+
+    now = datetime.datetime.now()
+    result = bot_db.GetActionsForChanges(self.changes, start_time=now)
+    self.assertEqual(len(result), 0)
+
+    two_days_ago = now - datetime.timedelta(hours=48)
+    result = bot_db.GetActionsForChanges(self.changes, start_time=two_days_ago)
+    self.assertEqual(len(result), 1)
+    self._AssertActionEqual(result[0], self.build_config_1, self.changes[2],
+                            'inflight')
+
+    four_days_ago = now - datetime.timedelta(hours=96)
+    result = bot_db.GetActionsForChanges(self.changes, start_time=four_days_ago)
+    self.assertEqual(len(result), 3)
+    self._AssertActionEqual(result[0], self.build_config_1, self.changes[0],
+                            'inflight')
+    self._AssertActionEqual(result[1], self.build_config_1, self.changes[1],
+                            'inflight')
+    self._AssertActionEqual(result[2], self.build_config_1, self.changes[2],
+                            'inflight')
 
 
 class DataSeries1Test(CIDBIntegrationTest):

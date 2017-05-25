@@ -628,8 +628,9 @@ class TestCLActionHistoryRejections(cros_test_lib.TestCase):
     kwargs['patch_number'] = int(patch.patch_number)
     kwargs['change_source'] = clactions.BoolToChangeSource(patch.internal)
     kwargs['buildbucket_id'] = 'test-id'
+    kwargs['status'] = None
 
-    action = clactions.CLAction.GetCLAction(**kwargs)
+    action = clactions.CLAction(**kwargs)
     self.action_history.append(action)
     return action
 

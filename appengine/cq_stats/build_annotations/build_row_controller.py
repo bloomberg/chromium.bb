@@ -254,7 +254,7 @@ class BuildRowController(object):
     for build_entry in build_entries:
       for claction_entry in claction_entries_by_build_id.get(build_entry.id,
                                                              []):
-        claction_list.append(clactions.CLAction.GetCLAction(
+        claction_list.append(clactions.CLAction(
             id=claction_entry.id,
             build_id=build_entry.id,
             action=claction_entry.action,
@@ -263,7 +263,9 @@ class BuildRowController(object):
             change_number=claction_entry.change_number,
             patch_number=claction_entry.patch_number,
             change_source=claction_entry.change_source,
-            timestamp=claction_entry.timestamp))
+            timestamp=claction_entry.timestamp,
+            buildbucket_id=None,
+            status=None))
 
     return claction_list
 

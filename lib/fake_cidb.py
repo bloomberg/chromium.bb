@@ -276,16 +276,40 @@ class FakeCIDBConnection(object):
 
     self.buildStageTable[build_stage_id]['status'] = status
 
-  def GetActionsForChanges(self, changes):
-    """Gets all the actions for the given changes."""
-    clauses = set()
-    for change in changes:
-      change_source = 'internal' if change.internal else 'external'
-      clauses.add((int(change.gerrit_number), change_source))
+  def GetActionsForChanges(self, changes, ignore_patch_number=True,
+                           start_time=None):
+    """Gets all the actions for the given changes.
+
+    Args:
+      changes: A list of GerritChangeTuple, GerritPatchTuple or GerritPatch
+        specifying the changes to whose actions should be fetched.
+      ignore_patch_number: Boolean indicating whether to ignore patch_number of
+        the changes. If ignore_patch_number is False, only get the actions with
+        matched patch_number. Default to True.
+      start_time: If provided, only return the actions with timestamp >=
+        start_time. Default to None.
+
+    Returns:
+      A list of CLAction instances, in action id order.
+    """
     values = []
     for row in self.GetActionHistory():
-      if (row.change_number, row.change_source) in clauses:
+      if start_time is not None and row.timestamp < start_time:
+        continue
+
+      for change in changes:
+        change_source = 'internal' if change.internal else 'external'
+
+        if (change_source != row.change_source or
+            int(change.gerrit_number) != row.change_number):
+          continue
+        if (not ignore_patch_number and
+            int(change.patch_number) != row.patch_number):
+          continue
+
         values.append(row)
+        break
+
     return values
 
   def GetActionHistory(self, *args, **kwargs):
@@ -303,7 +327,8 @@ class FakeCIDBConnection(object):
           item['patch_number'],
           item['change_source'],
           item['timestamp'],
-          item['buildbucket_id'])
+          item['buildbucket_id'],
+          self.buildTable[item['build_id']]['status'])
       values.append(row)
 
     return clactions.CLActionHistory(clactions.CLAction(*row) for row in values)

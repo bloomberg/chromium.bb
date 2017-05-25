@@ -1206,7 +1206,7 @@ pre-cq-configs: link-pre-cq
     old_build_action = clactions.CLAction(
         0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
         'binhost-pre-cq', 'config', 1, 2, 'external',
-        datetime.datetime.now() - datetime.timedelta(hours=1), '100')
+        datetime.datetime.now() - datetime.timedelta(hours=1), '100', None)
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_once_with(
         '100', dryrun=self.sync_stage._run.options.debug)
@@ -1232,19 +1232,19 @@ pre-cq-configs: link-pre-cq
     c1 = clactions.CLAction(
         0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
         'binhost-pre-cq', 'config', 1, 1, 'external',
-        datetime.datetime.now() - datetime.timedelta(hours=5), '100')
+        datetime.datetime.now() - datetime.timedelta(hours=5), '100', None)
     c2 = clactions.CLAction(
         0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
         'binhost-pre-cq', 'config', 1, 2, 'external',
-        datetime.datetime.now() - datetime.timedelta(hours=1), '100')
+        datetime.datetime.now() - datetime.timedelta(hours=1), '100', None)
     c3 = clactions.CLAction(
         0, 1, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
         'binhost-pre-cq', 'config', 1, 3, 'external',
-        datetime.datetime.now(), None)
+        datetime.datetime.now(), None, None)
     c4 = clactions.CLAction(
         0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
         'binhost-pre-cq', 'config', 1, 3, 'external',
-        datetime.datetime.now(), '101')
+        datetime.datetime.now(), '101', None)
     action_history = clactions.CLActionHistory([c1, c2, c3, c4])
     mock_cancel = self.PatchObject(sync_stages.PreCQLauncherStage,
                                    '_CancelPreCQIfNeeded')
