@@ -68,6 +68,38 @@ class JSChecker(object):
     return self.RegexCheck(i, line, r"(?<!this)(\.\$)[\[\.]",
         "Please only use this.$.localId, not element.$.localId")
 
+  def RunEsLintChecks(self, affected_js_files):
+    """Runs lint checks using ESLint. The ESLint rules being applied are defined
+       in the .eslintrc.js configuration file.
+    """
+    os_path = self.input_api.os_path
+
+    try:
+      # Import ESLint.
+      _HERE_PATH = os_path.dirname(os_path.realpath(__file__))
+      _SRC_PATH = os_path.normpath(os_path.join(_HERE_PATH, '..', '..'))
+      import sys
+      old_sys_path = sys.path[:]
+      sys.path.append(os_path.join(_SRC_PATH, 'third_party', 'node'))
+      import node, node_modules
+    finally:
+      sys.path = old_sys_path
+
+    # Extract paths to be passed to ESLint.
+    affected_js_files_paths = []
+    presubmit_path = self.input_api.PresubmitLocalPath()
+    for f in affected_js_files:
+      affected_js_files_paths.append(
+          os_path.relpath(f.AbsoluteLocalPath(), presubmit_path))
+
+    output = node.RunNode([
+        node_modules.PathToEsLint(),
+        '--color',
+        '--ignore-pattern \'!.eslintrc.js\'',
+        ' '.join(affected_js_files_paths)])
+
+    return [self.output_api.PresubmitError(output)] if output else []
+
   def WrapperTypeCheck(self, i, line):
     """Check for wrappers (new String()) instead of builtins (string)."""
     return self.RegexCheck(i, line,
@@ -97,6 +129,10 @@ class JSChecker(object):
                                                   include_deletes=False)
     affected_js_files = filter(lambda f: f.LocalPath().endswith('.js'),
                                affected_files)
+
+    if affected_js_files:
+      results += self.RunEsLintChecks(affected_js_files)
+
     for f in affected_js_files:
       error_lines = []
 
