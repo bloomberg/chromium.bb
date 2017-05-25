@@ -32,11 +32,10 @@ def callback_function_context(callback_function):
     includes.update(CALLBACK_FUNCTION_CPP_INCLUDES)
     idl_type = callback_function.idl_type
     idl_type_str = str(idl_type)
-    forward_declarations = []
+
     for argument in callback_function.arguments:
-        if argument.idl_type.is_interface_type:
-            forward_declarations.append(argument.idl_type)
-        argument.idl_type.add_includes_for_type(callback_function.extended_attributes)
+        argument.idl_type.add_includes_for_type(
+            callback_function.extended_attributes)
 
     context = {
         # While both |callback_function_name| and |cpp_class| are identical at
@@ -46,7 +45,7 @@ def callback_function_context(callback_function):
         'callback_function_name': callback_function.name,
         'cpp_class': callback_function.name,
         'cpp_includes': sorted(includes),
-        'forward_declarations': sorted(forward_declarations),
+        'forward_declarations': sorted(forward_declarations(callback_function)),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
     }
@@ -63,6 +62,22 @@ def callback_function_context(callback_function):
 
     context.update(arguments_context(callback_function.arguments, context.get('return_cpp_type')))
     return context
+
+
+def forward_declarations(callback_function):
+    def find_interface_name(idl_type):
+        if idl_type.is_interface_type:
+            return idl_type.implemented_as
+        elif idl_type.is_array_or_sequence_type:
+            return find_interface_name(idl_type.element_type)
+        return None
+
+    declarations = []
+    for argument in callback_function.arguments:
+        name = find_interface_name(argument.idl_type)
+        if name:
+            declarations.append(name)
+    return declarations
 
 
 def arguments_context(arguments, return_cpp_type):

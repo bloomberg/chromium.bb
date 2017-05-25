@@ -8,6 +8,7 @@ callback LongCallbackFunction = long (long num1, long num2);
 
 // Following callback functions are to be generated as expected.
 callback VoidCallbackFunctionInterfaceArg = void (HTMLDivElement divElement);
+callback VoidCallbackFunctionTestInterfaceSequenceArg = void (sequence<TestInterface> arg);
 callback StringSequenceCallbackFunctionLongSequenceArg = sequence<DOMString> (sequence<long> arg);
 callback VoidCallbackFunctionTypedef = void (String arg);
 
