@@ -38,7 +38,7 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
     abort();
   }
 
-  char* exec_path = malloc(exec_path_size);
+  char* exec_path = new char[exec_path_size];
   if (!exec_path) {
     fprintf(stderr, "malloc %u: %s\n", exec_path_size, strerror(errno));
     abort();
@@ -57,13 +57,13 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
     fprintf(stderr, "dirname %s: %s\n", exec_path, strerror(errno));
     abort();
   }
-  free(exec_path);
+  delete[] exec_path;
 
   const size_t parent_path_len = strlen(parent_dir);
   const size_t rel_path_len = strlen(rel_path);
   // 2 accounts for a trailing NUL byte and the '/' in the middle of the paths.
   const size_t framework_path_size = parent_path_len + rel_path_len + 2;
-  char* framework_path = malloc(framework_path_size);
+  char* framework_path = new char[framework_path_size];
   if (!framework_path) {
     fprintf(stderr, "malloc %zu: %s\n", framework_path_size, strerror(errno));
     abort();
@@ -75,9 +75,10 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
     fprintf(stderr, "dlopen %s: %s\n", framework_path, dlerror());
     abort();
   }
-  free(framework_path);
+  delete[] framework_path;
 
-  const ChromeMainPtr chrome_main = dlsym(library, "ChromeMain");
+  const ChromeMainPtr chrome_main =
+      reinterpret_cast<ChromeMainPtr>(dlsym(library, "ChromeMain"));
   if (!chrome_main) {
     fprintf(stderr, "dlsym ChromeMain: %s\n", dlerror());
     abort();
