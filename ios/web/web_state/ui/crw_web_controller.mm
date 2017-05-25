@@ -44,6 +44,7 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#include "ios/web/navigation/navigation_manager_util.h"
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
 #import "ios/web/net/crw_ssl_status_updater.h"
@@ -4622,15 +4623,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // corresponds to committed navigation.
     web::NavigationContextImpl* context =
         [_navigationStates contextForNavigation:navigation];
-    for (int i = 0; i < self.navigationManagerImpl->GetItemCount(); i++) {
-      if (self.navigationManagerImpl->GetItemAtIndex(i)->GetUniqueID() ==
-          context->GetNavigationItemUniqueID()) {
-        // Do not discard pending entry, because another pending navigation is
-        // still in progress and will commit or fail soon.
-        [self.sessionController goToItemAtIndex:i discardNonCommittedItems:NO];
-        break;
-      }
-    }
+    int itemIndex = web::GetCommittedItemIndexWithUniqueID(
+        self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+    // Do not discard pending entry, because another pending navigation is still
+    // in progress and will commit or fail soon.
+    [self.sessionController goToItemAtIndex:itemIndex
+                   discardNonCommittedItems:NO];
   }
 
   self.webStateImpl->OnNavigationFinished(context);
