@@ -1106,7 +1106,7 @@ component("base") {
       "base_paths_win.h",
     ]
 
-    if (is_linux || is_fuchsia) {
+    if (is_linux) {
       sources += [ "base_paths_posix.cc" ]
     }
   }
@@ -1243,6 +1243,7 @@ component("base") {
     ]
 
     sources += [
+      "base_paths_fuchsia.cc",
       "debug/stack_trace_fuchsia.cc",
       "process/launch_fuchsia.cc",
       "process/process_fuchsia.cc",
