@@ -135,7 +135,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   icon_view_ = new views::ImageView();
-  icon_view_->set_preferred_size(gfx::Size(kIconSize, kIconSize));
+  icon_view_->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
   AddChildView(icon_view_);
 
   views::View* text_container = new views::View();

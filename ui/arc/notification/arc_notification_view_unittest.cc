@@ -37,7 +37,7 @@ class TestNotificationContentsView : public views::View {
   TestNotificationContentsView() {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-    set_preferred_size(gfx::Size(100, 100));
+    SetPreferredSize(gfx::Size(100, 100));
   }
   ~TestNotificationContentsView() override = default;
 
@@ -138,10 +138,7 @@ class TestMessageCenterController
     NOTREACHED();
   }
 
-  void UpdateNotificationSize(const std::string& notification_id) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
+  void UpdateNotificationSize(const std::string& notification_id) override {}
 
   bool IsRemoved(const std::string& notification_id) const {
     return (removed_ids_.find(notification_id) != removed_ids_.end());
@@ -420,13 +417,13 @@ TEST_F(ArcNotificationViewTest, ChangeContentHeight) {
   EXPECT_EQ("360x100", size.ToString());
 
   // Allow small notifications.
-  contents_view()->set_preferred_size(gfx::Size(10, 10));
+  contents_view()->SetPreferredSize(gfx::Size(10, 10));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x10", size.ToString());
 
   // The long notification.
-  contents_view()->set_preferred_size(gfx::Size(1000, 1000));
+  contents_view()->SetPreferredSize(gfx::Size(1000, 1000));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x1000", size.ToString());

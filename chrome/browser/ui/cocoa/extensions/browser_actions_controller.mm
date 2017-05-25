@@ -356,7 +356,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (gfx::Size)preferredSize {
-  return toolbarActionsBar_->GetPreferredSize();
+  return toolbarActionsBar_->GetFullSize();
 }
 
 - (NSPoint)popupPointForId:(const std::string&)id {
@@ -599,9 +599,9 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
     // right edge in the container so that, if the container is animating, the
     // button appears stationary.
     if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-      buttonFrame.origin.x = NSWidth([containerView_ frame]) -
-                             (toolbarActionsBar_->GetPreferredSize().width() -
-                              NSMinX(buttonFrame));
+      buttonFrame.origin.x =
+          NSWidth([containerView_ frame]) -
+          (toolbarActionsBar_->GetFullSize().width() - NSMinX(buttonFrame));
     }
     [button setFrame:buttonFrame animate:NO];
   }
@@ -760,8 +760,8 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   NSRect buttonFrame = [self frameForIndex:index];
 
   CGFloat currentX = NSMinX([button frame]);
-  CGFloat xLeft = toolbarActionsBar_->GetPreferredSize().width() -
-      NSMinX(buttonFrame);
+  CGFloat xLeft =
+      toolbarActionsBar_->GetFullSize().width() - NSMinX(buttonFrame);
   // We check if the button is already in the correct place for the toolbar's
   // current size. This could mean that the button could be the correct distance
   // from the left or from the right edge. If it has the correct distance, we

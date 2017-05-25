@@ -435,8 +435,8 @@ void CheckAppMenuLayout(ToolbarController* toolbarController,
   // The overflow container should fully fit in the app menu, including the
   // space taken away for padding, and should have its desired size.
   EXPECT_LE(NSWidth(frame), menu_width - kMenuPadding) << error_message;
-  EXPECT_EQ(NSWidth(frame), overflowBar->GetPreferredSize().width()) <<
-      error_message;
+  EXPECT_EQ(NSWidth(frame), overflowBar->GetFullSize().width())
+      << error_message;
 
   // Every button that has an index lower than the overflow start index (i.e.,
   // every button on the main toolbar) should not be attached to a view.

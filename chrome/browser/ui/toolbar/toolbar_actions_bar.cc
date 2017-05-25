@@ -156,7 +156,7 @@ void ToolbarActionsBar::RegisterProfilePrefs(
                               0);
 }
 
-gfx::Size ToolbarActionsBar::GetPreferredSize() const {
+gfx::Size ToolbarActionsBar::GetFullSize() const {
   if (in_overflow_mode()) {
     // In overflow, we always have a preferred size of a full row (even if we
     // don't use it), and always of at least one row. The parent may decide to
@@ -709,7 +709,7 @@ void ToolbarActionsBar::OnToolbarVisibleCountChanged() {
 
 void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
                                        bool suppress_chevron) {
-  int desired_width = GetPreferredSize().width();
+  int desired_width = GetFullSize().width();
   if (desired_width !=
       delegate_->GetWidth(ToolbarActionsBarDelegate::GET_WIDTH_CURRENT)) {
     delegate_->ResizeAndAnimate(tween_type, desired_width);

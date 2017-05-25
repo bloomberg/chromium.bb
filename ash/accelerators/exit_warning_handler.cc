@@ -50,7 +50,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     const gfx::FontList& font_list =
         rb.GetFontList(ui::ResourceBundle::LargeFont);
     text_width_ = gfx::GetStringWidth(text_, font_list);
-    set_preferred_size(
+    SetPreferredSize(
         gfx::Size(text_width_ + kHorizontalMarginAroundText,
                   font_list.GetHeight() + kVerticalMarginAroundText));
     views::Label* label = new views::Label();

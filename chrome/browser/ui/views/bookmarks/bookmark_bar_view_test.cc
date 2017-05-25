@@ -309,13 +309,14 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     AddTestData(CreateBigMenu());
 
-    // Create the Widget. Note the initial size is given by GetPreferredSize()
-    // during initialization. This occurs after the WidgetDelegate provides
-    // |bb_view_| as the contents view and adds it to the hierarchy.
+    // Create the Widget. Note the initial size is given by
+    // GetPreferredSizeForContents() during initialization. This occurs after
+    // the WidgetDelegate provides |bb_view_| as the contents view and adds it
+    // to the hierarchy.
     ViewEventTestBase::SetUp();
 
     // Verify the layout triggered by the initial size preserves the overflow
-    // state calculated in GetPreferredSize().
+    // state calculated in GetPreferredSizeForContents().
     EXPECT_TRUE(GetBookmarkButton(5)->visible());
     EXPECT_FALSE(GetBookmarkButton(6)->visible());
   }
@@ -347,7 +348,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
  protected:
   views::View* CreateContentsView() override { return bb_view_.get(); }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSizeForContents() const override {
     // Calculate the preferred size so that one button doesn't fit, which
     // triggers the overflow button to appear. We have to do this incrementally
     // as there isn't a good way to determine the point at which the overflow

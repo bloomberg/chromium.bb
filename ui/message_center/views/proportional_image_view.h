@@ -22,14 +22,12 @@ class MESSAGE_CENTER_EXPORT ProportionalImageView : public views::View {
   explicit ProportionalImageView(const gfx::Size& view_size);
   ~ProportionalImageView() override;
 
-  // |image| is scaled to fit within |view_size_| and |max_image_size| while
+  // |image| is scaled to fit within |view_size| and |max_image_size| while
   // maintaining its original aspect ratio. It is then centered within the view.
   void SetImage(const gfx::ImageSkia& image,
                 const gfx::Size& max_image_size);
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
 
@@ -38,7 +36,6 @@ class MESSAGE_CENTER_EXPORT ProportionalImageView : public views::View {
 
   gfx::ImageSkia image_;
   gfx::Size max_image_size_;
-  gfx::Size view_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ProportionalImageView);
 };

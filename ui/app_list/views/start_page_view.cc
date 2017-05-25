@@ -54,25 +54,6 @@ constexpr int kTilesHorizontalMarginLeft = 145;
 
 constexpr int kLauncherPageBackgroundWidth = 400;
 
-// An invisible placeholder view which fills the space for the search box view
-// in a box layout. The search box view itself is a child of the AppListView
-// (because it is visible on many different pages).
-class SearchBoxSpacerView : public views::View {
- public:
-  explicit SearchBoxSpacerView(const gfx::Size& search_box_size)
-      : size_(kStartPageSearchBoxWidth, search_box_size.height()) {}
-
-  ~SearchBoxSpacerView() override {}
-
-  // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override { return size_; }
-
- private:
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxSpacerView);
-};
-
 }  // namespace
 
 class CustomLauncherPageBackgroundView : public views::View {
@@ -275,8 +256,7 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
                              AppListViewDelegate* view_delegate)
     : app_list_main_view_(app_list_main_view),
       view_delegate_(view_delegate),
-      search_box_spacer_view_(new SearchBoxSpacerView(
-          app_list_main_view->search_box_view()->GetPreferredSize())),
+      search_box_spacer_view_(new View()),
       instant_container_(new views::View),
       custom_launcher_page_background_(new CustomLauncherPageBackgroundView(
           view_delegate_->GetModel()->custom_launcher_page_name())),
@@ -284,6 +264,10 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
           app_list_main_view->contents_view(),
           new AllAppsTileItemView(app_list_main_view_->contents_view()),
           view_delegate)) {
+  search_box_spacer_view_->SetPreferredSize(gfx::Size(
+      kStartPageSearchBoxWidth,
+      app_list_main_view->search_box_view()->GetPreferredSize().height()));
+
   // The view containing the start page WebContents and SearchBoxSpacerView.
   InitInstantContainer();
   AddChildView(instant_container_);

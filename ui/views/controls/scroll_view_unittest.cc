@@ -75,19 +75,12 @@ const int kWidth = 100;
 const int kMinHeight = 50;
 const int kMaxHeight = 100;
 
-// View implementation that allows setting the preferred size.
 class CustomView : public View {
  public:
   CustomView() {}
-
-  void SetPreferredSize(const gfx::Size& size) {
-    preferred_size_ = size;
-    PreferredSizeChanged();
-  }
+  ~CustomView() override {}
 
   const gfx::Point last_location() const { return last_location_; }
-
-  gfx::Size GetPreferredSize() const override { return preferred_size_; }
 
   void Layout() override {
     gfx::Size pref = GetPreferredSize();
@@ -106,7 +99,6 @@ class CustomView : public View {
   }
 
  private:
-  gfx::Size preferred_size_;
   gfx::Point last_location_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomView);

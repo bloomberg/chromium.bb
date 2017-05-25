@@ -92,7 +92,7 @@ class PaddingTrayItem : public SystemTrayItem {
     // The other tray items already have some padding baked in so we have to
     // subtract that off.
     constexpr int side = kTrayEdgePadding - kTrayImageItemPadding;
-    padding->set_preferred_size(gfx::Size(side, side));
+    padding->SetPreferredSize(gfx::Size(side, side));
     return padding;
   }
 

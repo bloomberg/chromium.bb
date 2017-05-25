@@ -189,7 +189,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
   views::View* CreateContentsView() override { return button_; }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSizeForContents() const override {
     return button_->GetPreferredSize();
   }
 

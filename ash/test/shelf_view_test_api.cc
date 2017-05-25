@@ -131,18 +131,8 @@ ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
   return &shelf_view_->tooltip_;
 }
 
-gfx::Size ShelfViewTestAPI::GetPreferredSize() {
-  return shelf_view_->GetPreferredSize();
-}
-
 int ShelfViewTestAPI::GetMinimumDragDistance() const {
   return ShelfView::kMinimumDragDistance;
-}
-
-void ShelfViewTestAPI::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event,
-                                     views::InkDrop* ink_drop) {
-  return shelf_view_->ButtonPressed(sender, event, ink_drop);
 }
 
 bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,

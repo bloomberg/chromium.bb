@@ -212,7 +212,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // of the rightmost icon.
   int expected_width =
       3 * ToolbarActionsBar::IconWidth(true) + platform_settings.item_spacing;
-  EXPECT_EQ(expected_width, toolbar_actions_bar()->GetPreferredSize().width());
+  EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
   // Since all icons are showing, the current width should be the max width.
   int maximum_width = expected_width;
   EXPECT_EQ(maximum_width, toolbar_actions_bar()->GetMaximumWidth());
@@ -232,7 +232,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // icon.
   expected_width = 2 * ToolbarActionsBar::IconWidth(true) +
                    platform_settings.item_spacing;
-  EXPECT_EQ(expected_width, toolbar_actions_bar()->GetPreferredSize().width());
+  EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
   // The maximum and minimum widths should have remained constant (since we have
   // the same number of actions).
   EXPECT_EQ(maximum_width, toolbar_actions_bar()->GetMaximumWidth());
@@ -278,26 +278,26 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   }
 
   // Try resizing the toolbar. Start with the current width (enough for 1 icon).
-  int width = toolbar_actions_bar()->GetPreferredSize().width();
+  int width = toolbar_actions_bar()->GetFullSize().width();
 
   // If we try to resize by increasing, without allowing enough room for a new
   // icon, width, and icon count should stay the same.
   toolbar_actions_bar()->OnResizeComplete(width + 1);
-  EXPECT_EQ(width, toolbar_actions_bar()->GetPreferredSize().width());
+  EXPECT_EQ(width, toolbar_actions_bar()->GetFullSize().width());
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 
   // If we resize by enough to include a new icon, width and icon count should
   // both increase.
   width += ToolbarActionsBar::IconWidth(true);
   toolbar_actions_bar()->OnResizeComplete(width);
-  EXPECT_EQ(width, toolbar_actions_bar()->GetPreferredSize().width());
+  EXPECT_EQ(width, toolbar_actions_bar()->GetFullSize().width());
   EXPECT_EQ(2u, toolbar_actions_bar()->GetIconCount());
 
   // If we shrink the bar so that a full icon can't fit, it should resize to
   // hide that icon.
   toolbar_actions_bar()->OnResizeComplete(width - 1);
   width -= ToolbarActionsBar::IconWidth(true);
-  EXPECT_EQ(width, toolbar_actions_bar()->GetPreferredSize().width());
+  EXPECT_EQ(width, toolbar_actions_bar()->GetFullSize().width());
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 }
 
@@ -512,7 +512,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
 
   // Set the width back to the preferred width. All should be back to normal.
   browser_action_test_util()->SetWidth(
-      toolbar_actions_bar()->GetPreferredSize().width());
+      toolbar_actions_bar()->GetFullSize().width());
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
   EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
   EXPECT_EQ(3u, toolbar_actions_bar()->GetEndIndexInBounds());

@@ -87,10 +87,6 @@ class WEBVIEW_EXPORT WebView : public View,
     allow_accelerators_ = allow_accelerators;
   }
 
-  // Sets the preferred size. If empty, View's implementation of
-  // GetPreferredSize() is used.
-  void SetPreferredSize(const gfx::Size& preferred_size);
-
   // Overridden from View:
   const char* GetClassName() const override;
 
@@ -115,7 +111,6 @@ class WEBVIEW_EXPORT WebView : public View,
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  gfx::Size GetPreferredSize() const override;
 
   // Overridden from content::RenderProcessHostObserver:
   void RenderProcessExited(content::RenderProcessHost* host,
@@ -174,7 +169,6 @@ class WEBVIEW_EXPORT WebView : public View,
   bool is_embedding_fullscreen_widget_;
   content::BrowserContext* browser_context_;
   bool allow_accelerators_;
-  gfx::Size preferred_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebView);
 };

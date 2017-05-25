@@ -310,7 +310,7 @@ int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
   if (ShownInsideMenu())
-    return toolbar_actions_bar_->GetPreferredSize();
+    return toolbar_actions_bar_->GetFullSize();
 
   // If there are no actions to show, then don't show the container at all.
   if (toolbar_action_views_.empty())
@@ -318,9 +318,9 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
 
   // When resizing, preferred width is the starting width - resize amount.
   // Otherwise, use the normal preferred width.
-  int preferred_width = resize_starting_width_ == -1 ?
-      toolbar_actions_bar_->GetPreferredSize().width() :
-      resize_starting_width_ - resize_amount_;
+  int preferred_width = resize_starting_width_ == -1
+                            ? toolbar_actions_bar_->GetFullSize().width()
+                            : resize_starting_width_ - resize_amount_;
   // In either case, clamp it within the max/min bounds.
   preferred_width = std::min(
       std::max(toolbar_actions_bar_->GetMinimumWidth(), preferred_width),

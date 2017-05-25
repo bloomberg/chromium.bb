@@ -1267,7 +1267,7 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
     DCHECK(button_out);
     // Adds a padding row between error title/content and the button.
     auto* padding = new views::View;
-    padding->set_preferred_size(
+    padding->SetPreferredSize(
         gfx::Size(0, views::kRelatedControlVerticalSpacing));
     vertical_view->AddChildView(padding);
 

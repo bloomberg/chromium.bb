@@ -234,14 +234,14 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
 
 views::ImageView* TrayPopupUtils::CreateMainImageView() {
   auto* image = new views::ImageView;
-  image->set_preferred_size(
+  image->SetPreferredSize(
       gfx::Size(kTrayPopupItemMinStartWidth, kTrayPopupItemMinHeight));
   return image;
 }
 
 views::ImageView* TrayPopupUtils::CreateMoreImageView() {
   auto* image = new views::ImageView;
-  image->set_preferred_size(gfx::Size(gfx::Size(kMenuIconSize, kMenuIconSize)));
+  image->SetPreferredSize(gfx::Size(gfx::Size(kMenuIconSize, kMenuIconSize)));
   image->EnableCanvasFlippingForRTLUI(true);
   image->SetImage(
       gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));

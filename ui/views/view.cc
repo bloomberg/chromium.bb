@@ -433,6 +433,14 @@ int View::GetBaseline() const {
   return -1;
 }
 
+void View::SetPreferredSize(const gfx::Size& size) {
+  if (preferred_size_ && *preferred_size_ == size)
+    return;
+
+  preferred_size_ = size;
+  PreferredSizeChanged();
+}
+
 void View::SizeToPreferredSize() {
   gfx::Size prefsize = GetPreferredSize();
   if ((prefsize.width() != width()) || (prefsize.height() != height()))

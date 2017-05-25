@@ -270,7 +270,7 @@ void PublicAccountUserDetails::DeterminePreferredSize() {
   const int line_height = font_list.GetHeight();
   const int link_extra_height = std::max(
       link_size.height() - learn_more_->GetInsets().top() - line_height, 0);
-  set_preferred_size(gfx::Size(
+  SetPreferredSize(gfx::Size(
       min_width + insets.width(),
       line_count * line_height + link_extra_height + insets.height()));
 }

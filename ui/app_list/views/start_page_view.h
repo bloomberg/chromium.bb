@@ -66,7 +66,11 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
   AppListViewDelegate* view_delegate_;  // Owned by AppListView.
 
+  // An invisible placeholder view which fills the space for the search box view
+  // in a box layout. The search box view itself is a child of the AppListView
+  // (because it is visible on many different pages).
   views::View* search_box_spacer_view_;  // Owned by views hierarchy.
+
   views::View* instant_container_;  // Owned by views hierarchy.
   CustomLauncherPageBackgroundView*
       custom_launcher_page_background_;       // Owned by view hierarchy.
