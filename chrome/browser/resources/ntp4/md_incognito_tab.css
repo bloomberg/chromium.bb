@@ -176,7 +176,7 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
   -webkit-margin-start: 40px;
 }
 
-.bulletpoints + .bulletpoints.tooWide {
+.bulletpoints + .bulletpoints.too-wide {
   -webkit-margin-start: 0;
   margin-top: 1.5rem;
 }
