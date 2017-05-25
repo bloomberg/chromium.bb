@@ -6876,7 +6876,6 @@ crbug.com/591099 external/wpt/encoding/textdecoder-fatal-single-byte.html [ Time
 crbug.com/591099 external/wpt/eventsource/eventsource-onmessage-realm.htm [ Crash ]
 crbug.com/591099 external/wpt/fetch/api/request/multi-globals/url-parsing.html [ Crash ]
 crbug.com/591099 external/wpt/fetch/api/response/multi-globals/url-parsing.html [ Crash ]
-crbug.com/591099 external/wpt/fetch/dangling-markup-mitigation.tentative.html [ Crash ]
 crbug.com/591099 external/wpt/FileAPI/idlharness.html [ Crash ]
 crbug.com/591099 external/wpt/FileAPI/url/blob-url-in-sandboxed-iframe.html [ Crash ]
 crbug.com/591099 external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Crash ]
