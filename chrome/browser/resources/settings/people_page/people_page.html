@@ -190,8 +190,8 @@
         </template>
 
 <if expr="chromeos">
-        <div class="settings-box two-line" actionable
-             on-tap="onConfigureLockTap_">
+        <div id="lock-screen-subpage-trigger" class="settings-box two-line"
+            actionable on-tap="onConfigureLockTap_">
           <div class="start">
             $i18n{lockScreenTitle}
             <div class="secondary" id="lockScreenSecondary">
@@ -199,7 +199,7 @@
                                   prefs.settings.enable_screen_lock.value)]]
             </div>
           </div>
-          <button id="lockScreenSubpageTrigger" class="subpage-arrow"
+          <button class="subpage-arrow"
               is="paper-icon-button-light" aria-label="$i18n{lockScreenTitle}"
               aria-describedby="lockScrenSecondary"></button>
         </div>
@@ -242,8 +242,9 @@
         </settings-subpage>
       </template>
 <if expr="chromeos">
-      <template is="dom-if" route-path="/lockScreen" no-search>
-        <settings-subpage page-title="$i18n{lockScreenTitle}">
+      <template is="dom-if" route-path="/lockScreen">
+        <settings-subpage page-title="$i18n{lockScreenTitle}"
+            associated-control="[[$$('#lock-screen-subpage-trigger')]]">
           <settings-lock-screen
             prefs="{{prefs}}">
           </settings-lock-screen>
