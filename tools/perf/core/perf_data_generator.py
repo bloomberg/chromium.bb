@@ -711,8 +711,6 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
   else:
     browser_name ='release'
 
-  num_shards = len(tester_config['swarming_dimensions'][0]['device_ids'])
-  current_shard = 0
   for benchmark in benchmarks:
     if not ShouldBenchmarkBeScheduled(benchmark, tester_config['platform']):
       continue
@@ -731,7 +729,6 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
                          ' component and cc martiniss@ and nednguyen@ to'
                          ' execute the benchmark on the waterfall.' % (
                              benchmark.Name()))
-
       swarming_dimensions.append(get_swarming_dimension(
           dimension, device))
 
@@ -744,10 +741,6 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
       reference_test = generate_telemetry_test(
         swarming_dimensions, benchmark.Name(),'reference')
       isolated_scripts.append(reference_test)
-      if current_shard == (num_shards - 1):
-        current_shard = 0
-      else:
-        current_shard += 1
 
   return isolated_scripts
 
@@ -758,6 +751,13 @@ BENCHMARK_SWARMING_TIMEOUTS = {
     'system_health.memory_mobile': 10800, # 3 hours
     'system_health.memory_desktop': 10800, # 3 hours
 }
+
+
+# Devices which are broken right now. Tests will not be scheduled on them.
+# Please add a comment with a bug for replacing the device.
+BLACKLISTED_DEVICES = [
+    'build8-b1', # https://crbug.com/724998
+]
 
 
 # List of benchmarks that are to never be run with reference builds.
@@ -777,6 +777,23 @@ def current_benchmarks():
       index_by_class_name=True).values()
 
   return sorted(all_benchmarks, key=lambda b: b.Name())
+
+
+def RemoveBlacklistedTests(tests, blacklist):
+  new_tests = []
+  for test in tests:
+    if test.get('swarming', None):
+      swarming = test['swarming']
+      new_dimensions = []
+
+      for dimension in swarming['dimension_sets']:
+        if dimension['id'] in blacklist:
+          continue
+        new_dimensions.append(dimension)
+      if not new_dimensions:
+        continue
+    new_tests.append(test)
+  return new_tests
 
 
 def generate_all_tests(waterfall):
@@ -800,6 +817,9 @@ def generate_all_tests(waterfall):
       if config['swarming_dimensions'][0].get('perf_tests', False):
         isolated_scripts += generate_cplusplus_isolate_script_test(
           config['swarming_dimensions'][0])
+
+      isolated_scripts = RemoveBlacklistedTests(
+          isolated_scripts, BLACKLISTED_DEVICES)
       tests[name] = {
         'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
       }
