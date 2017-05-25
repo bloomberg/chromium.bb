@@ -102,14 +102,14 @@ void PrefStoreImpl::OnInitializationCompleted(bool succeeded) {
 
 void PrefStoreImpl::AddObserver(
     const std::vector<std::string>& prefs_to_observe,
-    const AddObserverCallback& callback) {
+    AddObserverCallback callback) {
   mojom::PrefStoreObserverPtr observer_ptr;
   auto request = mojo::MakeRequest(&observer_ptr);
   observers_.push_back(base::MakeUnique<Observer>(
       std::move(observer_ptr),
       std::unordered_set<std::string>(prefs_to_observe.begin(),
                                       prefs_to_observe.end())));
-  callback.Run(mojom::PrefStoreConnection::New(
+  std::move(callback).Run(mojom::PrefStoreConnection::New(
       std::move(request), backing_pref_store_->GetValues(),
       backing_pref_store_->IsInitializationComplete()));
 }

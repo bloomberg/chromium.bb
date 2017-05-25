@@ -31,7 +31,7 @@ class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
   void Connect(
       prefs::mojom::PrefRegistryPtr pref_registry,
       const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-      const ConnectCallback& callback) override;
+      ConnectCallback callback) override;
 
   // service_manager::Service:
   void OnStart() override;

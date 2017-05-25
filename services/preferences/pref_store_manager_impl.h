@@ -61,7 +61,7 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   void Connect(
       mojom::PrefRegistryPtr pref_registry,
       const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-      const ConnectCallback& callback) override;
+      ConnectCallback callback) override;
 
   void BindPrefStoreConnectorRequest(
       const service_manager::BindSourceInfo& source_info,
@@ -93,7 +93,7 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   void ConnectImpl(
       mojom::PrefRegistryPtr pref_registry,
       const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-      const ConnectCallback& callback);
+      ConnectCallback callback);
 
   void OnPersistentPrefStoreReady();
 
