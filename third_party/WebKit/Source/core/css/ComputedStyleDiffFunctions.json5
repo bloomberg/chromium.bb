@@ -11,10 +11,21 @@
 
     // A list of methods to diff (these can be public getters of fields or 
     // functions that use fields to determine a value).
-    // Each entry is expressed as a dict of two fields.
-    // The fields are method - the method to be diffed and field_dependencies
-    // which lists the properties this method depends on.
+    // Each entry is expressed as a dict of two fields:
+    // 1. method: the method to be diffed
+    // 2. field_dependencies: lists the properties this method depends on.
     methods_to_diff: {
+      default: [],
+    },
+
+    // A list of predicates that have the diff logic built into them and are only
+    // called by the diff functions in ComputedStyle.
+    // Each entry is expressed as a dict of two fields:
+    // 1. predicate: the predicate to be tested
+    // 2. field_dependencies: lists the properties this predicate test depends on.
+    // TODO: Note that you also have to pass in the arguments for the predicate. 
+    // This may be removed in the future if we are always passing the other ComputedStyle
+    predicates_to_test: {
       default: [],
     },
   },
@@ -111,6 +122,16 @@
           {
             method: "OriginalDisplay()",
             field_dependencies: ["OriginalDisplay"]
+          }
+        ],
+        predicates_to_test: [
+          {
+            predicate: "TextShadowDataEquivalent(other)",
+            field_dependencies: ["text-shadow"]
+          },
+          {
+            predicate: "QuotesDataEquivalent(other)",
+            field_dependencies: ["quotes"]
           },
         ]
     },

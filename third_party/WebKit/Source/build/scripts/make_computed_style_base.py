@@ -86,6 +86,7 @@ class DiffGroup(object):
         self.group_name = group_name
         self.subgroups = []
         self.expressions = []
+        self.predicates = []
 
 
 class Field(object):
@@ -192,23 +193,24 @@ def _group_fields(fields):
 def _create_diff_groups_map(diff_function_inputs, root_group):
     diff_functions_map = {}
     for entry in diff_function_inputs:
-        diff_functions_map[entry['name']] = _create_diff_groups(entry['fields_to_diff'], entry['methods_to_diff'], root_group)
+        diff_functions_map[entry['name']] = _create_diff_groups(entry['fields_to_diff'],
+                                                                entry['methods_to_diff'], entry['predicates_to_test'], root_group)
     return diff_functions_map
 
 
-def _list_field_dependencies(methods_to_diff):
+def _list_field_dependencies(entries_with_field_dependencies):
     field_dependencies = []
-    for entry in methods_to_diff:
+    for entry in entries_with_field_dependencies:
         field_dependencies += entry['field_dependencies']
     return field_dependencies
 
 
-def _create_diff_groups(fields_to_diff, methods_to_diff, root_group):
+def _create_diff_groups(fields_to_diff, methods_to_diff, predicates_to_test, root_group):
     diff_group = DiffGroup(root_group.member_name)
-    field_dependencies = _list_field_dependencies(methods_to_diff)
+    field_dependencies = _list_field_dependencies(methods_to_diff + predicates_to_test)
     for subgroup in root_group.subgroups:
         if any(field.property_name in (fields_to_diff + field_dependencies) for field in subgroup.all_fields):
-            diff_group.subgroups.append(_create_diff_groups(fields_to_diff, methods_to_diff, subgroup))
+            diff_group.subgroups.append(_create_diff_groups(fields_to_diff, methods_to_diff, predicates_to_test, subgroup))
     for field in root_group.fields:
         if not field.is_inherited_flag:
             if field.property_name in fields_to_diff:
@@ -216,6 +218,9 @@ def _create_diff_groups(fields_to_diff, methods_to_diff, root_group):
             for entry in methods_to_diff:
                 if field.property_name in entry['field_dependencies']:
                     diff_group.expressions.append(entry['method'])
+            for entry in predicates_to_test:
+                if field.property_name in entry['field_dependencies']:
+                    diff_group.predicates.append(entry['predicate'])
     return diff_group
 
 

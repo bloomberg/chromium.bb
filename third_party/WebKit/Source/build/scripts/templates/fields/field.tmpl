@@ -131,4 +131,8 @@ if ({{group.group_name}}.Get() != other.{{group.group_name}}.Get()) {
 if (self.{{expression}} != other.{{expression}})
   return true;
 {% endfor %}
+{% for predicate in group_to_diff.predicates %}
+if (!self.{{predicate}})
+  return true;
+{% endfor %}
 {% endmacro %}

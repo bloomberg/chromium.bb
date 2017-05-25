@@ -704,12 +704,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
         rare_inherited_data_->text_stroke_width_ !=
             other.rare_inherited_data_->text_stroke_width_)
       return true;
-
-    if (!TextShadowDataEquivalent(other))
-      return true;
-
-    if (!QuotesDataEquivalent(other))
-      return true;
   }
 
   if (IsDisplayTableType(Display())) {
