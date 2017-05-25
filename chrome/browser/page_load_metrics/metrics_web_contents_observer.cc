@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/page_load_metrics/browser_page_track_decider.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/chrome_features.h"
@@ -326,6 +327,8 @@ void MetricsWebContentsObserver::DidFinishNavigation(
         GetMainFrame(navigation_handle->GetParentFrame()) ==
             web_contents()->GetMainFrame()) {
       committed_load_->DidFinishSubFrameNavigation(navigation_handle);
+      committed_load_->metrics_update_dispatcher()->DidFinishSubFrameNavigation(
+          navigation_handle);
     }
     return;
   }
@@ -609,13 +612,10 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   if (error)
     return;
 
-  const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
-  if (is_main_frame) {
-    committed_load_->UpdateTiming(timing, metadata);
-  } else {
-    committed_load_->UpdateSubFrameTiming(render_frame_host, timing, metadata);
-  }
+  committed_load_->metrics_update_dispatcher()->UpdateMetrics(render_frame_host,
+                                                              timing, metadata);
 
+  const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
   for (auto& observer : testing_observers_)
     observer.OnTimingUpdated(is_main_frame, timing, metadata);
 }

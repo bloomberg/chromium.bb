@@ -9,13 +9,13 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/common/page_load_metrics/page_load_metrics_constants.h"
 #include "chrome/renderer/page_load_metrics/page_timing_sender.h"
 
 namespace page_load_metrics {
 
 namespace {
 const int kInitialTimerDelayMillis = 50;
-const int kTimerDelayMillis = 1000;
 }  // namespace
 
 PageTimingMetricsSender::PageTimingMetricsSender(
@@ -69,7 +69,7 @@ void PageTimingMetricsSender::EnsureSendTimer() {
     // Send the first IPC eagerly to make sure the receiving side knows we're
     // sending metrics as soon as possible.
     int delay_ms =
-        have_sent_ipc_ ? kTimerDelayMillis : kInitialTimerDelayMillis;
+        have_sent_ipc_ ? kBufferTimerDelayMillis : kInitialTimerDelayMillis;
     timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
         base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));
