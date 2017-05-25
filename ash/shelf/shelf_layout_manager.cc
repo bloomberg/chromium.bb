@@ -411,7 +411,7 @@ void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
+void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   // Shelf needs to be hidden on entering to pinned mode, or restored
   // on exiting from pinned mode.
   UpdateVisibilityState();

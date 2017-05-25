@@ -135,7 +135,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Overridden from ShellObserver:
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
-  void OnPinnedStateChanged(WmWindow* pinned_window) override;
+  void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
                                      aura::Window* root_window) override;
 

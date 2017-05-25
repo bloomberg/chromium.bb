@@ -589,7 +589,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);
 
   // Notifies observers that |pinned_window| changed its pinned window state.
-  void NotifyPinnedStateChanged(WmWindow* pinned_window);
+  void NotifyPinnedStateChanged(aura::Window* pinned_window);
 
   // Notifies observers that the virtual keyboard has been
   // activated/deactivated for |root_window|.
