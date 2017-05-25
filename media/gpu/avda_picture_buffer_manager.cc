@@ -274,7 +274,7 @@ void AVDAPictureBufferManager::CodecChanged(MediaCodecBridge* codec) {
   media_codec_ = codec;
   for (auto& image_kv : codec_images_)
     image_kv.second->CodecChanged(codec);
-  shared_state_->clear_release_time();
+  shared_state_->ClearReleaseTime();
 }
 
 bool AVDAPictureBufferManager::ArePicturesOverlayable() {
