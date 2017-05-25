@@ -38,14 +38,9 @@ if (use_gio) {
 # Looking for libspeechd? Use //third_party/speech-dispatcher
 
 group("fontconfig") {
-  if (is_chromecast) {
-    # Chromecast platform does not provide fontconfig
-    public_deps = [
-      "//third_party/fontconfig",
-    ]
-  } else {
-    public_configs = [ "//build/config/linux:fontconfig" ]
-  }
+  public_deps = [
+    "//third_party/fontconfig",
+  ]
 }
 
 if (!is_chromecast) {
