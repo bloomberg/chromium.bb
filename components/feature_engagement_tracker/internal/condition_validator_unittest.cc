@@ -64,6 +64,18 @@ TEST(ConditionValidatorResultTest, TestSessionRateFailed) {
   EXPECT_FALSE(result.NoErrors());
 }
 
+TEST(ConditionValidatorResultTest, TestAvailabilityModelNotReady) {
+  ConditionValidator::Result result(true);
+  result.availability_model_ready_ok = false;
+  EXPECT_FALSE(result.NoErrors());
+}
+
+TEST(ConditionValidatorResultTest, TestAvailabilityFailed) {
+  ConditionValidator::Result result(true);
+  result.availability_ok = false;
+  EXPECT_FALSE(result.NoErrors());
+}
+
 TEST(ConditionValidatorResultTest, TestMultipleErrors) {
   ConditionValidator::Result result(true);
   result.preconditions_ok = false;

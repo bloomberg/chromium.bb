@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/never_availability_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,6 +48,7 @@ class NeverConditionValidatorTest : public ::testing::Test {
 
  protected:
   TestModel model_;
+  NeverAvailabilityModel availability_model_;
   NeverConditionValidator validator_;
 
  private:
@@ -56,12 +58,14 @@ class NeverConditionValidatorTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(NeverConditionValidatorTest, ShouldNeverMeetConditions) {
-  EXPECT_FALSE(
-      validator_.MeetsConditions(kTestFeatureFoo, FeatureConfig(), model_, 0u)
-          .NoErrors());
-  EXPECT_FALSE(
-      validator_.MeetsConditions(kTestFeatureBar, FeatureConfig(), model_, 0u)
-          .NoErrors());
+  EXPECT_FALSE(validator_
+                   .MeetsConditions(kTestFeatureFoo, FeatureConfig(), model_,
+                                    availability_model_, 0u)
+                   .NoErrors());
+  EXPECT_FALSE(validator_
+                   .MeetsConditions(kTestFeatureBar, FeatureConfig(), model_,
+                                    availability_model_, 0u)
+                   .NoErrors());
 }
 
 }  // namespace feature_engagement_tracker

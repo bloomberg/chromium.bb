@@ -4,6 +4,7 @@
 
 #include "components/feature_engagement_tracker/internal/feature_config_condition_validator.h"
 
+#include <map>
 #include <string>
 
 #include "base/feature_list.h"
@@ -11,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/never_availability_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "components/feature_engagement_tracker/internal/test/event_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,20 +75,23 @@ class FeatureConfigConditionValidatorTest : public ::testing::Test {
   FeatureConfigConditionValidatorTest() = default;
 
  protected:
-  ConditionValidator::Result GetResultForDay(Comparator comparator,
-                                             uint32_t window,
-                                             uint32_t current_day) {
+  ConditionValidator::Result GetResultForDayAndEventWindow(
+      Comparator comparator,
+      uint32_t window,
+      uint32_t current_day) {
     FeatureConfig config = GetAcceptingFeatureConfig();
     config.event_configs.insert(EventConfig("event1", comparator, window, 0));
     return validator_.MeetsConditions(kTestFeatureFoo, config, model_,
-                                      current_day);
+                                      availability_model_, current_day);
   }
 
   ConditionValidator::Result GetResultForDayZero(const FeatureConfig& config) {
-    return validator_.MeetsConditions(kTestFeatureFoo, config, model_, 0);
+    return validator_.MeetsConditions(kTestFeatureFoo, config, model_,
+                                      availability_model_, 0);
   }
 
   TestModel model_;
+  NeverAvailabilityModel availability_model_;
   FeatureConfigConditionValidator validator_;
   uint32_t current_day_;
 
@@ -283,11 +288,14 @@ TEST_F(FeatureConfigConditionValidatorTest, SingleEventChangingComparator) {
   test::SetEventCountForDay(&event1, 102u, 10u);
   model_.SetEvent(event1);
 
-  EXPECT_TRUE(GetResultForDay(Comparator(LESS_THAN, 50u), window, current_day)
+  EXPECT_TRUE(GetResultForDayAndEventWindow(Comparator(LESS_THAN, 50u), window,
+                                            current_day)
                   .NoErrors());
   EXPECT_TRUE(
-      GetResultForDay(Comparator(EQUAL, 30u), window, current_day).NoErrors());
-  EXPECT_FALSE(GetResultForDay(Comparator(LESS_THAN, 30u), window, current_day)
+      GetResultForDayAndEventWindow(Comparator(EQUAL, 30u), window, current_day)
+          .NoErrors());
+  EXPECT_FALSE(GetResultForDayAndEventWindow(Comparator(LESS_THAN, 30u), window,
+                                             current_day)
                    .NoErrors());
 }
 
@@ -306,17 +314,23 @@ TEST_F(FeatureConfigConditionValidatorTest, SingleEventChangingWindow) {
 
   uint32_t current_day = 104u;
 
-  EXPECT_FALSE(GetResultForDay(Comparator(GREATER_THAN, 30u), 0, current_day)
+  EXPECT_FALSE(GetResultForDayAndEventWindow(Comparator(GREATER_THAN, 30u), 0,
+                                             current_day)
                    .NoErrors());
-  EXPECT_FALSE(GetResultForDay(Comparator(GREATER_THAN, 30u), 1u, current_day)
+  EXPECT_FALSE(GetResultForDayAndEventWindow(Comparator(GREATER_THAN, 30u), 1u,
+                                             current_day)
                    .NoErrors());
-  EXPECT_FALSE(GetResultForDay(Comparator(GREATER_THAN, 30u), 2u, current_day)
+  EXPECT_FALSE(GetResultForDayAndEventWindow(Comparator(GREATER_THAN, 30u), 2u,
+                                             current_day)
                    .NoErrors());
-  EXPECT_FALSE(GetResultForDay(Comparator(GREATER_THAN, 30u), 3u, current_day)
+  EXPECT_FALSE(GetResultForDayAndEventWindow(Comparator(GREATER_THAN, 30u), 3u,
+                                             current_day)
                    .NoErrors());
-  EXPECT_TRUE(GetResultForDay(Comparator(GREATER_THAN, 30u), 4u, current_day)
+  EXPECT_TRUE(GetResultForDayAndEventWindow(Comparator(GREATER_THAN, 30u), 4u,
+                                            current_day)
                   .NoErrors());
-  EXPECT_TRUE(GetResultForDay(Comparator(GREATER_THAN, 30u), 5u, current_day)
+  EXPECT_TRUE(GetResultForDayAndEventWindow(Comparator(GREATER_THAN, 30u), 5u,
+                                            current_day)
                   .NoErrors());
 }
 
@@ -334,13 +348,17 @@ TEST_F(FeatureConfigConditionValidatorTest, CapEarliestAcceptedDayAtEpoch) {
   uint32_t current_day = 100u;
 
   EXPECT_TRUE(
-      GetResultForDay(Comparator(EQUAL, 10u), 99u, current_day).NoErrors());
+      GetResultForDayAndEventWindow(Comparator(EQUAL, 10u), 99u, current_day)
+          .NoErrors());
   EXPECT_TRUE(
-      GetResultForDay(Comparator(EQUAL, 20u), 100u, current_day).NoErrors());
+      GetResultForDayAndEventWindow(Comparator(EQUAL, 20u), 100u, current_day)
+          .NoErrors());
   EXPECT_TRUE(
-      GetResultForDay(Comparator(EQUAL, 30u), 101u, current_day).NoErrors());
+      GetResultForDayAndEventWindow(Comparator(EQUAL, 30u), 101u, current_day)
+          .NoErrors());
   EXPECT_TRUE(
-      GetResultForDay(Comparator(EQUAL, 30u), 1000u, current_day).NoErrors());
+      GetResultForDayAndEventWindow(Comparator(EQUAL, 30u), 1000u, current_day)
+          .NoErrors());
 }
 
 TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
@@ -369,8 +387,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
       EventConfig("event1", Comparator(EQUAL, 10u), 99u, 0));
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 5u), 99u, 0));
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, config, model_, current_day);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, config, model_, availability_model_, current_day);
   EXPECT_TRUE(result.NoErrors());
 
   // Verify validator counts correctly for two events last 100 days.
@@ -379,8 +397,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
       EventConfig("event1", Comparator(EQUAL, 20u), 100u, 0));
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 10u), 100u, 0));
-  result =
-      validator_.MeetsConditions(kTestFeatureFoo, config, model_, current_day);
+  result = validator_.MeetsConditions(kTestFeatureFoo, config, model_,
+                                      availability_model_, current_day);
   EXPECT_TRUE(result.NoErrors());
 
   // Verify validator counts correctly for two events last 101 days.
@@ -389,8 +407,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
       EventConfig("event1", Comparator(EQUAL, 30u), 101u, 0));
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 15u), 101u, 0));
-  result =
-      validator_.MeetsConditions(kTestFeatureFoo, config, model_, current_day);
+  result = validator_.MeetsConditions(kTestFeatureFoo, config, model_,
+                                      availability_model_, current_day);
   EXPECT_TRUE(result.NoErrors());
 
   // Verify validator counts correctly for two events last 101 days, and returns
@@ -400,8 +418,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
       EventConfig("event1", Comparator(EQUAL, 0), 101u, 0));
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 15u), 101u, 0));
-  result =
-      validator_.MeetsConditions(kTestFeatureFoo, config, model_, current_day);
+  result = validator_.MeetsConditions(kTestFeatureFoo, config, model_,
+                                      availability_model_, current_day);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.preconditions_ok);
 
@@ -412,8 +430,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
       EventConfig("event1", Comparator(EQUAL, 30u), 101u, 0));
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 0), 101u, 0));
-  result =
-      validator_.MeetsConditions(kTestFeatureFoo, config, model_, current_day);
+  result = validator_.MeetsConditions(kTestFeatureFoo, config, model_,
+                                      availability_model_, current_day);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.preconditions_ok);
 
@@ -424,8 +442,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
       EventConfig("event1", Comparator(EQUAL, 0), 101u, 0));
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 0), 101u, 0));
-  result =
-      validator_.MeetsConditions(kTestFeatureFoo, config, model_, current_day);
+  result = validator_.MeetsConditions(kTestFeatureFoo, config, model_,
+                                      availability_model_, current_day);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.preconditions_ok);
 }

@@ -14,6 +14,7 @@
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
+#include "components/feature_engagement_tracker/internal/never_availability_model.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/time_provider.h"
@@ -139,9 +140,12 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     auto model = base::MakeUnique<ModelImpl>(
         std::move(store), base::MakeUnique<StoreEverythingStorageValidator>());
 
+    auto availability_model = base::MakeUnique<NeverAvailabilityModel>();
+    availability_model_ = availability_model.get();
+
     tracker_.reset(new FeatureEngagementTrackerImpl(
-        std::move(model), std::move(configuration),
-        base::MakeUnique<OnceConditionValidator>(),
+        std::move(model), std::move(availability_model),
+        std::move(configuration), base::MakeUnique<OnceConditionValidator>(),
         base::MakeUnique<TestTimeProvider>()));
   }
 
@@ -167,6 +171,7 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
   TestInMemoryStore* store_;
+  AvailabilityModel* availability_model_;
   Configuration* configuration_;
 
  private:

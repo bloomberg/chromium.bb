@@ -14,6 +14,7 @@ ConditionValidator::Result NeverConditionValidator::MeetsConditions(
     const base::Feature& feature,
     const FeatureConfig& config,
     const Model& model,
+    const AvailabilityModel& availability_model,
     uint32_t current_day) const {
   return ConditionValidator::Result(false);
 }

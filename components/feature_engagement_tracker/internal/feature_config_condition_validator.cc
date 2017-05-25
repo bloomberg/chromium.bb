@@ -21,6 +21,7 @@ ConditionValidator::Result FeatureConfigConditionValidator::MeetsConditions(
     const base::Feature& feature,
     const FeatureConfig& config,
     const Model& model,
+    const AvailabilityModel& availability_model,
     uint32_t current_day) const {
   ConditionValidator::Result result(true);
   result.model_ready_ok = model.IsReady();

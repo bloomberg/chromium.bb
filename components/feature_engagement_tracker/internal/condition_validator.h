@@ -18,6 +18,7 @@ struct Feature;
 
 namespace feature_engagement_tracker {
 struct FeatureConfig;
+class AvailabilityModel;
 class Model;
 
 // A ConditionValidator checks the requred conditions for a given feature,
@@ -30,6 +31,7 @@ class ConditionValidator {
   // be displayed.
   struct Result {
     explicit Result(bool initial_values);
+    Result(const Result& other);
 
     // Whether the Model was ready.
     bool model_ready_ok;
@@ -55,6 +57,12 @@ class ConditionValidator {
     // Whether the session rate precondition was met.
     bool session_rate_ok;
 
+    // Whether the availability model was ready.
+    bool availability_model_ready_ok;
+
+    // Whether the availability precondition was met.
+    bool availability_ok;
+
     // Returns true if this result object has no errors, i.e. no values that
     // are false.
     bool NoErrors();
@@ -66,6 +74,7 @@ class ConditionValidator {
   virtual Result MeetsConditions(const base::Feature& feature,
                                  const FeatureConfig& config,
                                  const Model& model,
+                                 const AvailabilityModel& availability_model,
                                  uint32_t current_day) const = 0;
 
   // Must be called to notify that the |feature| is currently showing.

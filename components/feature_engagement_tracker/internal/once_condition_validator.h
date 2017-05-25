@@ -16,6 +16,7 @@ struct Feature;
 }  // namespace base
 
 namespace feature_engagement_tracker {
+class AvailabilityModel;
 class Model;
 
 // An ConditionValidator that will ensure that each base::Feature will meet
@@ -41,6 +42,7 @@ class OnceConditionValidator : public ConditionValidator {
       const base::Feature& feature,
       const FeatureConfig& config,
       const Model& model,
+      const AvailabilityModel& availability_model,
       uint32_t current_day) const override;
   void NotifyIsShowing(const base::Feature& feature) override;
   void NotifyDismissed(const base::Feature& feature) override;
