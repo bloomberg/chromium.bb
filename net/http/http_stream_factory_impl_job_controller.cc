@@ -477,21 +477,19 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
 
     MarkRequestComplete(was_alpn_negotiated, negotiated_protocol, using_spdy);
 
-    std::unique_ptr<HttpStream> stream;
-    std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl;
-
     if (for_websockets()) {
       // TODO(ricea): Re-instate this code when WebSockets over SPDY is
       // implemented.
       NOTREACHED();
     } else if (job->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      bidirectional_stream_impl = job->ReleaseBidirectionalStream();
+      std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl =
+          job->ReleaseBidirectionalStream();
       DCHECK(bidirectional_stream_impl);
       delegate_->OnBidirectionalStreamImplReady(
           used_ssl_config, used_proxy_info,
           bidirectional_stream_impl.release());
     } else {
-      stream = job->ReleaseStream();
+      std::unique_ptr<HttpStream> stream = job->ReleaseStream();
       DCHECK(stream);
       delegate_->OnStreamReady(used_ssl_config, used_proxy_info,
                                stream.release());
