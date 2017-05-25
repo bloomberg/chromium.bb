@@ -58,6 +58,8 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
@@ -2286,6 +2288,74 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
 
   EXPECT_EQ("AppList, Chrome, App1, Fake App 1, App2, Fake App 0",
             GetPinnedAppStatus());
+}
+
+TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
+  InitLauncherController();
+
+  ArcAppIcon::DisableSafeDecodingForTesting();
+
+  // Register fake ARC apps.
+  SendListOfArcApps();
+  // Use first fake ARC app for testing.
+  const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+
+  // Generate icon for the testing app and use compressed png content as test
+  // input.
+  std::string png_data;
+  EXPECT_TRUE(arc_test_.app_instance()->GenerateAndSendIcon(
+      arc_test_.fake_apps()[0], arc::mojom::ScaleFactor::SCALE_FACTOR_300P,
+      &png_data));
+  EXPECT_FALSE(png_data.empty());
+  // Some input that represents invalid png content.
+  std::string invalid_png_data("aaaaaa");
+
+  EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id)));
+  std::string window_app_id1("org.chromium.arc.1");
+  std::string window_app_id2("org.chromium.arc.2");
+  views::Widget* window1 = CreateArcWindow(window_app_id1);
+  ASSERT_TRUE(window1 && window1->GetNativeWindow());
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
+                                            std::string());
+
+  views::Widget* window2 = CreateArcWindow(window_app_id2);
+  ASSERT_TRUE(window2 && window2->GetNativeWindow());
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0],
+                                            std::string());
+  EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id)));
+  ash::ShelfItemDelegate* item_delegate =
+      model_->GetShelfItemDelegate(ash::ShelfID(arc_app_id));
+  ASSERT_TRUE(item_delegate);
+
+  // No custom icon set. Acitivating windows should not change icon.
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  window1->Activate();
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  window2->Activate();
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
+
+  // Set custom icon on active item. Icon should change to custom.
+  arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
+  EXPECT_TRUE(item_delegate->image_set_by_controller());
+
+  // Switch back to the item without custom icon. Icon should be changed to
+  // default.
+  window1->Activate();
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  // Test that setting an invalid icon should not change custom icon.
+  arc_test_.app_instance()->SendTaskDescription(1, std::string(), png_data);
+  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  arc_test_.app_instance()->SendTaskDescription(1, std::string(),
+                                                invalid_png_data);
+  EXPECT_TRUE(item_delegate->image_set_by_controller());
+
+  // Check window removing with active custom icon. Reseting custom icon of
+  // inactive window doesn't reset shelf icon.
+  arc_test_.app_instance()->SendTaskDescription(2, std::string(),
+                                                std::string());
+  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  window1->CloseNow();
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
 }
 
 // Check that with multi profile V1 apps are properly added / removed from the

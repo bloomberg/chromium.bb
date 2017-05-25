@@ -105,6 +105,16 @@ void FakeAppInstance::SendTaskCreated(int32_t taskId,
                            intent);
 }
 
+void FakeAppInstance::SendTaskDescription(
+    int32_t taskId,
+    const std::string& label,
+    const std::string& icon_png_data_as_string) {
+  app_host_->OnTaskDescriptionUpdated(
+      taskId, label,
+      std::vector<uint8_t>(icon_png_data_as_string.begin(),
+                           icon_png_data_as_string.end()));
+}
+
 void FakeAppInstance::SendTaskDestroyed(int32_t taskId) {
   app_host_->OnTaskDestroyed(taskId);
 }

@@ -27,6 +27,7 @@ void AppWindowLauncherItemController::AddWindow(ui::BaseWindow* app_window) {
   aura::Window* window = app_window->GetNativeWindow();
   if (window)
     observed_windows_.Add(window);
+  UpdateLauncherItem();
 }
 
 AppWindowLauncherItemController::WindowList::iterator
@@ -49,8 +50,8 @@ void AppWindowLauncherItemController::RemoveWindow(ui::BaseWindow* app_window) {
     NOTREACHED();
     return;
   }
-  OnWindowRemoved(app_window);
   windows_.erase(iter);
+  UpdateLauncherItem();
 }
 
 ui::BaseWindow* AppWindowLauncherItemController::GetAppWindow(
@@ -65,6 +66,7 @@ void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
   ui::BaseWindow* app_window = GetAppWindow(window);
   if (app_window)
     last_active_window_ = app_window;
+  UpdateLauncherItem();
 }
 
 AppWindowLauncherItemController*
@@ -117,6 +119,14 @@ void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
   auto it = windows_.begin();
   std::advance(it, index);
   ShowAndActivateOrMinimize(*it);
+}
+
+ui::BaseWindow* AppWindowLauncherItemController::GetLastActiveWindow() {
+  if (last_active_window_)
+    return last_active_window_;
+  if (windows_.empty())
+    return nullptr;
+  return windows_.front();
 }
 
 void AppWindowLauncherItemController::OnWindowPropertyChanged(

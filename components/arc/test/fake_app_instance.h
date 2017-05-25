@@ -121,6 +121,9 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendTaskCreated(int32_t taskId,
                        const mojom::AppInfo& app,
                        const std::string& intent);
+  void SendTaskDescription(int32_t taskId,
+                           const std::string& label,
+                           const std::string& icon_png_data_as_string);
   void SendTaskDestroyed(int32_t taskId);
   bool GenerateAndSendIcon(const mojom::AppInfo& app,
                            mojom::ScaleFactor scale_factor,

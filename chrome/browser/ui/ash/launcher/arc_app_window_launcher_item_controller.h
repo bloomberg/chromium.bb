@@ -11,11 +11,15 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
+class ArcAppWindow;
+class ChromeLauncherController;
+
 // Shelf item delegate for ARC app windows.
 class ArcAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:
-  explicit ArcAppWindowLauncherItemController(const std::string& arc_app_id);
+  ArcAppWindowLauncherItemController(const std::string& arc_app_id,
+                                     ChromeLauncherController* owner);
 
   ~ArcAppWindowLauncherItemController() override;
 
@@ -31,8 +35,17 @@ class ArcAppWindowLauncherItemController
   void RemoveTaskId(int task_id);
   bool HasAnyTasks() const;
 
+  // AppWindowLauncherItemController:
+  void UpdateLauncherItem() override;
+
  private:
+  // Update the shelf item's icon for the active window.
+  void UpdateIcon(ArcAppWindow* arc_app_window);
+
   std::unordered_set<int> task_ids_;
+
+  // Unowned property.
+  ChromeLauncherController* const owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherItemController);
 };

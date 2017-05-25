@@ -1056,13 +1056,6 @@ void ArcAppListPrefs::MaybeSetDefaultAppLoadingTimeout() {
   }
 }
 
-void ArcAppListPrefs::OnTaskOrientationLockRequested(
-    int32_t task_id,
-    const arc::mojom::OrientationLock orientation_lock) {
-  for (auto& observer : observer_list_)
-    observer.OnTaskOrientationLockRequested(task_id, orientation_lock);
-}
-
 void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app_info) {
   if ((app_info.name.empty() || app_info.package_name.empty() ||
        app_info.activity.empty())) {
@@ -1261,9 +1254,24 @@ void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
   }
 }
 
+void ArcAppListPrefs::OnTaskDescriptionUpdated(
+    int32_t task_id,
+    const std::string& label,
+    const std::vector<uint8_t>& icon_png_data) {
+  for (auto& observer : observer_list_)
+    observer.OnTaskDescriptionUpdated(task_id, label, icon_png_data);
+}
+
 void ArcAppListPrefs::OnTaskDestroyed(int32_t task_id) {
   for (auto& observer : observer_list_)
     observer.OnTaskDestroyed(task_id);
+}
+
+void ArcAppListPrefs::OnTaskOrientationLockRequested(
+    int32_t task_id,
+    const arc::mojom::OrientationLock orientation_lock) {
+  for (auto& observer : observer_list_)
+    observer.OnTaskOrientationLockRequested(task_id, orientation_lock);
 }
 
 void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {

@@ -22,6 +22,7 @@ namespace aura {
 class Window;
 }
 
+class ArcAppWindow;
 class ArcAppWindowLauncherItemController;
 class ChromeLauncherController;
 
@@ -67,14 +68,19 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                      const std::string& package_name,
                      const std::string& activity,
                      const std::string& intent) override;
+  void OnTaskDescriptionUpdated(
+      int32_t task_id,
+      const std::string& label,
+      const std::vector<uint8_t>& icon_png_data) override;
   void OnTaskDestroyed(int task_id) override;
-  void OnTaskSetActive(int32_t task_id) override;
   void OnTaskOrientationLockRequested(
       int32_t task_id,
       const arc::mojom::OrientationLock orientation_lock) override;
+  void OnTaskSetActive(int32_t task_id) override;
+
+  int active_task_id() const { return active_task_id_; }
 
  private:
-  class AppWindow;
   class AppWindowInfo;
 
   using TaskIdToAppWindowInfo = std::map<int, std::unique_ptr<AppWindowInfo>>;
@@ -91,7 +97,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void UnregisterApp(AppWindowInfo* app_window_info);
 
   AppWindowInfo* GetAppWindowInfoForTask(int task_id);
-  AppWindow* GetAppWindowForTask(int task_id);
+  ArcAppWindow* GetAppWindowForTask(int task_id);
 
   void AttachControllerToWindowIfNeeded(aura::Window* window);
   void AttachControllerToWindowsIfNeeded();
@@ -99,7 +105,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
       int taskId,
       const AppWindowInfo& app_window_info);
 
-  void SetOrientationLockForAppWindow(AppWindow* app_window);
+  void SetOrientationLockForAppWindow(ArcAppWindow* app_window);
 
   std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
 

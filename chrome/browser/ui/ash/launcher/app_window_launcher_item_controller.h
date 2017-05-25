@@ -60,13 +60,15 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   // Activates the window at position |index|.
   void ActivateIndexedApp(size_t index);
 
+  // Called when launcher item may need to be updated, eg. label or icon.
+  // TODO(khmel): Use aura::Window property and observe property change
+  // http://crbug.com/724292
+  virtual void UpdateLauncherItem() {}
+
   const WindowList& windows() const { return windows_; }
 
  protected:
   explicit AppWindowLauncherItemController(const ash::ShelfID& shelf_id);
-
-  // Called when app window is removed from controller.
-  virtual void OnWindowRemoved(ui::BaseWindow* window) {}
 
   // Returns the action performed. Should be one of SHELF_ACTION_NONE,
   // SHELF_ACTION_WINDOW_ACTIVATED, or SHELF_ACTION_WINDOW_MINIMIZED.
@@ -79,6 +81,9 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   ash::ShelfAction ActivateOrAdvanceToNextAppWindow(
       ui::BaseWindow* window_to_show);
 
+  // Returns last active window in the controller or first window.
+  ui::BaseWindow* GetLastActiveWindow();
+
  private:
   WindowList::iterator GetFromNativeWindow(aura::Window* window);
 
@@ -86,6 +91,8 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   WindowList windows_;
 
   // Pointer to the most recently active app window
+  // TODO(khmel): Get rid of |last_active_window_| and provide more reliable
+  // way to determine active window.
   ui::BaseWindow* last_active_window_ = nullptr;
 
   // Scoped list of observed windows (for removal on destruction)

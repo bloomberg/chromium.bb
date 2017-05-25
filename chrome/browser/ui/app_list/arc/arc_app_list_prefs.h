@@ -125,8 +125,16 @@ class ArcAppListPrefs
                                const std::string& package_name,
                                const std::string& activity,
                                const std::string& intent) {}
+    // Notifies that task description has been updated.
+    virtual void OnTaskDescriptionUpdated(
+        int32_t task_id,
+        const std::string& label,
+        const std::vector<uint8_t>& icon_png_data) {}
     // Notifies that task has been destroyed.
     virtual void OnTaskDestroyed(int32_t task_id) {}
+    virtual void OnTaskOrientationLockRequested(
+        int32_t task_id,
+        const arc::mojom::OrientationLock orientation_lock) {}
     // Notifies that task has been activated and moved to the front.
     virtual void OnTaskSetActive(int32_t task_id) {}
 
@@ -146,10 +154,6 @@ class ArcAppListPrefs
                                   bool uninstalled) {}
     // Notifies sync date type controller the model is ready to start.
     virtual void OnPackageListInitialRefreshed() {}
-
-    virtual void OnTaskOrientationLockRequested(
-        int32_t task_id,
-        const arc::mojom::OrientationLock orientation_lock) {}
 
    protected:
     virtual ~Observer() {}
@@ -286,7 +290,14 @@ class ArcAppListPrefs
                      const std::string& activity,
                      const base::Optional<std::string>& name,
                      const base::Optional<std::string>& intent) override;
+  void OnTaskDescriptionUpdated(
+      int32_t task_id,
+      const std::string& label,
+      const std::vector<uint8_t>& icon_png_data) override;
   void OnTaskDestroyed(int32_t task_id) override;
+  void OnTaskOrientationLockRequested(
+      int32_t task_id,
+      const arc::mojom::OrientationLock orientation_lock) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const std::string& package_name,
                                      bool enabled) override;
@@ -294,9 +305,6 @@ class ArcAppListPrefs
   void OnPackageModified(arc::mojom::ArcPackageInfoPtr package_info) override;
   void OnPackageListRefreshed(
       std::vector<arc::mojom::ArcPackageInfoPtr> packages) override;
-  void OnTaskOrientationLockRequested(
-      int32_t task_id,
-      const arc::mojom::OrientationLock orientation_lock) override;
   void OnInstallationStarted(
       const base::Optional<std::string>& package_name) override;
   void OnInstallationFinished(
