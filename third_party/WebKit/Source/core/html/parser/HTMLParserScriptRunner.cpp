@@ -301,7 +301,6 @@ void EmitWarningForDocWriteScripts(const String& url, Document& document) {
       "connectivity.";
   document.AddConsoleMessage(
       ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
-  WTFLogAlways("%s", message.Utf8().data());
 }
 
 void EmitErrorForDocWriteScripts(const String& url, Document& document) {
@@ -313,7 +312,6 @@ void EmitErrorForDocWriteScripts(const String& url, Document& document) {
       "network connectivity. ";
   document.AddConsoleMessage(
       ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
-  WTFLogAlways("%s", message.Utf8().data());
 }
 
 void HTMLParserScriptRunner::PossiblyFetchBlockedDocWriteScript(
