@@ -887,7 +887,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
     // TODO(ikilpatrick): remove IsInterpolableProperty check once
     // CSSPropertyEquality::PropertiesEqual correctly handles all properties.
     if (!CSSPropertyMetadata::IsInterpolableProperty(property_id) ||
-        !CSSPropertyEquality::PropertiesEqual(property_id, *this, other))
+        !CSSPropertyEquality::PropertiesEqual(PropertyHandle(property_id),
+                                              *this, other))
       return true;
   }
 
