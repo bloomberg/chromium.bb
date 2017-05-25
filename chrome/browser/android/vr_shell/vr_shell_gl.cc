@@ -1214,8 +1214,8 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
 
     DrawElements(view_proj_matrix, sorted_elements, draw_reticle);
     if (draw_reticle) {
-      DrawLaser(view_proj_matrix);
       DrawController(view_proj_matrix);
+      DrawLaser(view_proj_matrix);
     }
   }
 }

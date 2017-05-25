@@ -50,7 +50,7 @@ static constexpr float kLaserColor[] = {1.0f, 1.0f, 1.0f, 0.5f};
 static constexpr int kLaserDataWidth = 48;
 static constexpr int kLaserDataHeight = 1;
 
-// Laser texture data, 48x1 RGBA.
+// Laser texture data, 48x1 RGBA (not premultiplied alpha).
 // TODO(mthiesse): As we add more resources for VR Shell, we should put them
 // in Chrome's resource files.
 static const unsigned char kLaserData[] =
@@ -120,7 +120,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                 vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
                      u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
             lowp vec4 color = texture2D(u_Texture, scaledTex);
-            gl_FragColor = vec4(color.xyz, color.w * opacity);
+            gl_FragColor = color * opacity;
           }
           /* clang-format on */);
     case vr_shell::ShaderID::TEXTURED_QUAD_FRAGMENT_SHADER:
@@ -138,7 +138,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                 vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
                      u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
             lowp vec4 color = texture2D(u_Texture, scaledTex);
-            gl_FragColor = vec4(color.xyz, color.w * opacity);
+            gl_FragColor = color * opacity;
           }
           /* clang-format on */);
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
@@ -198,7 +198,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             mediump float alpha = clamp(
                 min(hole_alpha, max(color1, black_alpha_factor)), 0.0, 1.0);
             lowp vec3 color_rgb = color1 * color.xyz;
-            gl_FragColor = vec4(color_rgb, color.w * alpha);
+            gl_FragColor = vec4(color_rgb * color.w * alpha, color.w * alpha);
           }
           /* clang-format on */);
     case vr_shell::ShaderID::LASER_FRAGMENT_SHADER:
@@ -220,8 +220,8 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             mediump float total_fade = front_fade_factor * back_fade_factor;
             lowp vec4 texture_color = texture2D(texture_unit, uv);
             lowp vec4 final_color = color * texture_color;
-            gl_FragColor = vec4(final_color.xyz,
-                                final_color.w * total_fade * u_Opacity);
+            lowp float final_opacity = final_color.w * total_fade * u_Opacity;
+            gl_FragColor = vec4(final_color.xyz * final_opacity, final_opacity);
           }
           /* clang-format on */);
     case vr_shell::ShaderID::GRADIENT_QUAD_FRAGMENT_SHADER:
@@ -237,8 +237,10 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           void main() {
             float edgeColorWeight = clamp(length(v_GridPosition), 0.0, 1.0);
             float centerColorWeight = 1.0 - edgeColorWeight;
-            gl_FragColor = (u_CenterColor * centerColorWeight +
-                u_EdgeColor * edgeColorWeight) * vec4(1.0, 1.0, 1.0, u_Opacity);
+            vec4 color = u_CenterColor * centerColorWeight +
+                u_EdgeColor * edgeColorWeight;
+            gl_FragColor = vec4(color.xyz * color.w * u_Opacity,
+                                color.w * u_Opacity);
           }
           /* clang-format on */);
     case vr_shell::ShaderID::CONTROLLER_FRAGMENT_SHADER:
@@ -251,7 +253,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
 
           void main() {
             lowp vec4 texture_color = texture2D(u_texture, v_TexCoordinate);
-            gl_FragColor = vec4(texture_color.xyz, texture_color.w * u_Opacity);
+            gl_FragColor = texture_color * u_Opacity;
           }
           /* clang-format on */);
     default:
@@ -318,7 +320,7 @@ void BaseQuadRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
   glEnableVertexAttribArray(tex_coord_handle_);
 
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void BaseQuadRenderer::SetVertexBuffer() {
@@ -415,7 +417,7 @@ void TexturedQuadRenderer::Flush() {
   glEnableVertexAttribArray(tex_coord_handle_);
 
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
@@ -667,7 +669,7 @@ void ControllerRenderer::Draw(VrControllerModel::State state,
   glEnableVertexAttribArray(tex_coord_handle_);
 
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer_);
 
@@ -756,7 +758,7 @@ void GradientGridRenderer::Draw(const vr::Mat4f& view_proj_matrix,
                         VOID_OFFSET(0));
   glEnableVertexAttribArray(position_handle_);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   int verticesNumber = 4 * (gridline_count + 1);
   glDrawArrays(GL_LINES, 0, verticesNumber);
 
