@@ -210,6 +210,7 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
                            int16_t delta) {
   __m128i tmp[15];
   int i, j, k;
+  const int bd = 8;
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -271,8 +272,10 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
+                     1)) +
               ref[iy * stride] *
-              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         }
       } else if (ix4 >= width + 6) {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -282,8 +285,10 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
+                     1)) +
               ref[iy * stride + (width - 1)] *
-              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         }
       } else {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -365,7 +370,8 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
           const __m128i res_57 = _mm_maddubs_epi16(src_57, coeff_57);
 
           const __m128i round_const =
-              _mm_set1_epi16((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1);
+              _mm_set1_epi16((1 << (bd + WARPEDPIXEL_FILTER_BITS - 1)) +
+                             ((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1));
 
           // Note: res_02 + res_46 and res_13 + res_57 are always in the range
           // [-6120, 32640]. This gives us enough room to add the rounding
@@ -374,12 +380,8 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
               _mm_add_epi16(_mm_add_epi16(res_02, res_46), round_const);
           const __m128i res_b = _mm_add_epi16(res_13, res_57);
 
-          // Calculate (res_a + res_b) >> 1 while avoiding overflow
-          const __m128i t1 = _mm_and_si128(res_a, res_b);
-          const __m128i t2 = _mm_srai_epi16(_mm_xor_si128(res_a, res_b), 1);
-
-          const __m128i res = _mm_srai_epi16(_mm_add_epi16(t1, t2),
-                                             HORSHEAR_REDUCE_PREC_BITS - 1);
+          const __m128i res = _mm_srli_epi16(_mm_add_epi16(res_a, res_b),
+                                             HORSHEAR_REDUCE_PREC_BITS);
           tmp[k + 7] = res;
         }
       }
@@ -471,7 +473,8 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
 
         // Round and pack into 8 bits
         const __m128i round_const =
-            _mm_set1_epi32((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1);
+            _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
+                           ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
 
         const __m128i res_lo_round = _mm_srai_epi32(
             _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);

@@ -89,8 +89,10 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
+                     1)) +
               ref[iy * stride] *
-              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         }
       } else if (ix4 >= width + 6) {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -100,8 +102,10 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
+                     1)) +
               ref[iy * stride + (width - 1)] *
-              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         }
       } else {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -151,7 +155,8 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           const __m128i coeff_6 = _mm_unpackhi_epi64(tmp_12, tmp_14);
 
           const __m128i round_const =
-              _mm_set1_epi32((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1);
+              _mm_set1_epi32((1 << (bd + WARPEDPIXEL_FILTER_BITS - 1)) +
+                             ((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1));
 
           // Calculate filtered results
           const __m128i res_0 = _mm_madd_epi16(src, coeff_0);
@@ -299,7 +304,8 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
 
         // Round and pack into 8 bits
         const __m128i round_const =
-            _mm_set1_epi32((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1);
+            _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
+                           ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
 
         const __m128i res_lo_round = _mm_srai_epi32(
             _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);

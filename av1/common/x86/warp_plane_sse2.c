@@ -23,6 +23,7 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
                           int16_t delta) {
   __m128i tmp[15];
   int i, j, k;
+  const int bd = 8;
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -84,8 +85,10 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
+                     1)) +
               ref[iy * stride] *
-              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         }
       } else if (ix4 >= width + 6) {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -95,8 +98,10 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
+                     1)) +
               ref[iy * stride + (width - 1)] *
-              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         }
       } else {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -145,7 +150,8 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
           const __m128i coeff_6 = _mm_unpackhi_epi64(tmp_12, tmp_14);
 
           const __m128i round_const =
-              _mm_set1_epi32((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1);
+              _mm_set1_epi32((1 << (bd + WARPEDPIXEL_FILTER_BITS - 1)) +
+                             ((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1));
 
           // Calculate filtered results
           const __m128i src_0 = _mm_unpacklo_epi8(src, zero);
@@ -294,7 +300,8 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
 
         // Round and pack into 8 bits
         const __m128i round_const =
-            _mm_set1_epi32((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1);
+            _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
+                           ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
 
         const __m128i res_lo_round = _mm_srai_epi32(
             _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);
