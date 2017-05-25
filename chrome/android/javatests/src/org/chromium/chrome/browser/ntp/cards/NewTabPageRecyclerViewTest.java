@@ -136,7 +136,7 @@ public class NewTabPageRecyclerViewTest {
 
         // Scroll the last suggestion into view and click it.
         SnippetArticle suggestion = suggestions.get(suggestions.size() - 1);
-        int suggestionPosition = getSuggestionPosition(suggestion);
+        int suggestionPosition = getLastCardPosition();
         final View suggestionView = getViewHolderAtPosition(suggestionPosition).itemView;
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
@@ -189,7 +189,7 @@ public class NewTabPageRecyclerViewTest {
         Assert.assertEquals(10, suggestions.size());
 
         // Scroll a suggestion into view.
-        int suggestionPosition = getSuggestionPosition(suggestions.get(suggestions.size() - 1));
+        int suggestionPosition = getLastCardPosition();
         View suggestionView = getViewHolderAtPosition(suggestionPosition).itemView;
 
         // Dismiss the suggestion using the context menu.
@@ -362,11 +362,10 @@ public class NewTabPageRecyclerViewTest {
         return getRecyclerView().getNewTabPageAdapter();
     }
 
-    private int getSuggestionPosition(SnippetArticle article) {
-        NewTabPageAdapter adapter = getAdapter();
-        for (int i = 0; i < adapter.getItemCount(); i++) {
-            SnippetArticle articleToCheck = adapter.getSuggestionAt(i);
-            if (articleToCheck != null && articleToCheck.equals(article)) return i;
+    private int getLastCardPosition() {
+        int count = getAdapter().getItemCount();
+        for (int i = count - 1; i >= 0; i--) {
+            if (getAdapter().getItemViewType(i) == ItemViewType.SNIPPET) return i;
         }
         return RecyclerView.NO_POSITION;
     }
