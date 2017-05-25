@@ -14,9 +14,11 @@ import android.view.ContextMenu;
 import android.webkit.MimeTypeMap;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
@@ -256,7 +258,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenu menu, Context context, ContextMenuParams params) {
         // Add all items in a group
         Set<ContextMenuItem> supportedOptions = new HashSet<>();
-        if (FirstRunStatus.getFirstRunFlowComplete()) {
+        // Limit context menu to copying until FRE has been completed,
+        // unless FRE has been explicitly disabled (for full context menu in tests).
+        if (FirstRunStatus.getFirstRunFlowComplete()
+                || CommandLine.getInstance().hasSwitch(
+                           ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)) {
             supportedOptions.addAll(BASE_WHITELIST);
             if (mMode == FULLSCREEN_TAB_MODE) {
                 supportedOptions.addAll(FULLSCREEN_TAB_MODE_WHITELIST);
