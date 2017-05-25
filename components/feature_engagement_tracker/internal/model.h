@@ -15,6 +15,7 @@ namespace feature_engagement_tracker {
 class Event;
 
 // A Model provides all necessary runtime state.
+// TODO(nyquist): Rename to EventModel.
 class Model {
  public:
   // Callback for when model initialization has finished. The |success|

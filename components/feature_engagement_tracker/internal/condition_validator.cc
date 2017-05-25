@@ -14,12 +14,27 @@ ConditionValidator::Result::Result(bool initial_values)
       used_ok(initial_values),
       trigger_ok(initial_values),
       preconditions_ok(initial_values),
-      session_rate_ok(initial_values) {}
+      session_rate_ok(initial_values),
+      availability_model_ready_ok(initial_values),
+      availability_ok(initial_values) {}
+
+ConditionValidator::Result::Result(const Result& other) {
+  model_ready_ok = other.model_ready_ok;
+  currently_showing_ok = other.currently_showing_ok;
+  feature_enabled_ok = other.feature_enabled_ok;
+  config_ok = other.config_ok;
+  used_ok = other.used_ok;
+  trigger_ok = other.trigger_ok;
+  preconditions_ok = other.preconditions_ok;
+  session_rate_ok = other.session_rate_ok;
+  availability_model_ready_ok = other.availability_model_ready_ok;
+  availability_ok = other.availability_ok;
+}
 
 bool ConditionValidator::Result::NoErrors() {
   return model_ready_ok && currently_showing_ok && feature_enabled_ok &&
          config_ok && used_ok && trigger_ok && preconditions_ok &&
-         session_rate_ok;
+         session_rate_ok && availability_model_ready_ok && availability_ok;
 }
 
 }  // namespace feature_engagement_tracker

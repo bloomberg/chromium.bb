@@ -4,6 +4,9 @@
 
 #include "components/feature_engagement_tracker/internal/feature_engagement_tracker_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -15,6 +18,7 @@
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/init_aware_model.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
+#include "components/feature_engagement_tracker/internal/never_availability_model.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/persistent_store.h"
@@ -26,7 +30,6 @@
 namespace feature_engagement_tracker {
 
 namespace {
-
 // Creates a FeatureEngagementTrackerImpl that is usable for a demo mode.
 std::unique_ptr<FeatureEngagementTracker>
 CreateDemoModeFeatureEngagementTracker() {
@@ -49,7 +52,8 @@ CreateDemoModeFeatureEngagementTracker() {
 
   return base::MakeUnique<FeatureEngagementTrackerImpl>(
       base::MakeUnique<InitAwareModel>(std::move(raw_model)),
-      std::move(configuration), base::MakeUnique<OnceConditionValidator>(),
+      base::MakeUnique<NeverAvailabilityModel>(), std::move(configuration),
+      base::MakeUnique<OnceConditionValidator>(),
       base::MakeUnique<SystemTimeProvider>());
 }
 
@@ -85,16 +89,19 @@ FeatureEngagementTracker* FeatureEngagementTracker::Create(
   storage_validator->InitializeFeatures(GetAllFeatures(), *configuration);
 
   return new FeatureEngagementTrackerImpl(
-      std::move(model), std::move(configuration),
-      std::move(condition_validator), std::move(time_provider));
+      std::move(model), base::MakeUnique<NeverAvailabilityModel>(),
+      std::move(configuration), std::move(condition_validator),
+      std::move(time_provider));
 }
 
 FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
     std::unique_ptr<Model> model,
+    std::unique_ptr<AvailabilityModel> availability_model,
     std::unique_ptr<Configuration> configuration,
     std::unique_ptr<ConditionValidator> condition_validator,
     std::unique_ptr<TimeProvider> time_provider)
     : model_(std::move(model)),
+      availability_model_(std::move(availability_model)),
       configuration_(std::move(configuration)),
       condition_validator_(std::move(condition_validator)),
       time_provider_(std::move(time_provider)),
@@ -119,7 +126,8 @@ bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
   bool result =
       condition_validator_
           ->MeetsConditions(feature, configuration_->GetFeatureConfig(feature),
-                            *model_, time_provider_->GetCurrentDay())
+                            *model_, *availability_model_,
+                            time_provider_->GetCurrentDay())
           .NoErrors();
   if (result) {
     condition_validator_->NotifyIsShowing(feature);

@@ -15,6 +15,7 @@
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 
 namespace feature_engagement_tracker {
+class AvailabilityModel;
 class Configuration;
 class ConditionValidator;
 class Model;
@@ -26,6 +27,7 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
  public:
   FeatureEngagementTrackerImpl(
       std::unique_ptr<Model> store,
+      std::unique_ptr<AvailabilityModel> availability_model,
       std::unique_ptr<Configuration> configuration,
       std::unique_ptr<ConditionValidator> condition_validator,
       std::unique_ptr<TimeProvider> time_provider);
@@ -44,6 +46,9 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
 
   // The current model.
   std::unique_ptr<Model> model_;
+
+  // The current model for when particular features were enabled.
+  std::unique_ptr<AvailabilityModel> availability_model_;
 
   // The current configuration for all features.
   std::unique_ptr<Configuration> configuration_;
