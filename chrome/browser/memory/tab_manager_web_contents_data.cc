@@ -41,8 +41,8 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
   // If the tab has been previously discarded but is not currently discarded
   // (ie. it has been reloaded), we want to record the time it took between the
   // reload event and the closing of the tab.
-  if (tab_data_.discard_count_ > 0 && !tab_data_.is_discarded_) {
-    auto delta = NowTicks() - tab_data_.last_reload_time_;
+  if (tab_data_.discard_count > 0 && !tab_data_.is_discarded) {
+    auto delta = NowTicks() - tab_data_.last_reload_time;
     // Capped to one day for now, will adjust if necessary.
     UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.ReloadToCloseTime", delta,
                                base::TimeDelta::FromSeconds(1),
@@ -51,31 +51,31 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
 }
 
 bool TabManager::WebContentsData::IsDiscarded() {
-  return tab_data_.is_discarded_;
+  return tab_data_.is_discarded;
 }
 
 void TabManager::WebContentsData::SetDiscardState(bool state) {
-  if (tab_data_.is_discarded_ == state)
+  if (tab_data_.is_discarded == state)
     return;
 
   if (!state) {
     static int reload_count = 0;
-    tab_data_.last_reload_time_ = NowTicks();
+    tab_data_.last_reload_time = NowTicks();
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.ReloadCount",
                                 ++reload_count, 1, 1000, 50);
-    auto delta = tab_data_.last_reload_time_ - tab_data_.last_discard_time_;
+    auto delta = tab_data_.last_reload_time - tab_data_.last_discard_time;
     // Capped to one day for now, will adjust if necessary.
     UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.DiscardToReloadTime",
                                delta, base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
 
     // Record the site engagement score if available.
-    if (tab_data_.engagement_score_ >= 0.0) {
+    if (tab_data_.engagement_score >= 0.0) {
       UMA_HISTOGRAM_COUNTS_100("TabManager.Discarding.ReloadedEngagementScore",
-                               tab_data_.engagement_score_);
+                               tab_data_.engagement_score);
     }
-    if (tab_data_.last_inactive_time_ != base::TimeTicks::UnixEpoch()) {
-      delta = tab_data_.last_reload_time_ - tab_data_.last_inactive_time_;
+    if (tab_data_.last_inactive_time != base::TimeTicks::UnixEpoch()) {
+      delta = tab_data_.last_reload_time - tab_data_.last_inactive_time;
       UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.InactiveToReloadTime",
                                  delta, base::TimeDelta::FromSeconds(1),
                                  base::TimeDelta::FromDays(1), 100);
@@ -85,56 +85,56 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
     static int discard_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
                                 ++discard_count, 1, 1000, 50);
-    tab_data_.last_discard_time_ = NowTicks();
+    tab_data_.last_discard_time = NowTicks();
     // Record the site engagement score if available.
     if (SiteEngagementService::IsEnabled()) {
       SiteEngagementService* service = SiteEngagementService::Get(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
       if (service) {
-        tab_data_.engagement_score_ =
+        tab_data_.engagement_score =
             service->GetScore(web_contents()->GetLastCommittedURL());
         UMA_HISTOGRAM_COUNTS_100(
             "TabManager.Discarding.DiscardedEngagementScore",
-            tab_data_.engagement_score_);
+            tab_data_.engagement_score);
       }
     }
   }
 
-  tab_data_.is_discarded_ = state;
+  tab_data_.is_discarded = state;
   g_browser_process->GetTabManager()->OnDiscardedStateChange(web_contents(),
                                                              state);
 }
 
 int TabManager::WebContentsData::DiscardCount() {
-  return tab_data_.discard_count_;
+  return tab_data_.discard_count;
 }
 
 void TabManager::WebContentsData::IncrementDiscardCount() {
-  tab_data_.discard_count_++;
+  tab_data_.discard_count++;
 }
 
 bool TabManager::WebContentsData::IsRecentlyAudible() {
-  return tab_data_.is_recently_audible_;
+  return tab_data_.is_recently_audible;
 }
 
 void TabManager::WebContentsData::SetRecentlyAudible(bool state) {
-  tab_data_.is_recently_audible_ = state;
+  tab_data_.is_recently_audible = state;
 }
 
 TimeTicks TabManager::WebContentsData::LastAudioChangeTime() {
-  return tab_data_.last_audio_change_time_;
+  return tab_data_.last_audio_change_time;
 }
 
 void TabManager::WebContentsData::SetLastAudioChangeTime(TimeTicks timestamp) {
-  tab_data_.last_audio_change_time_ = timestamp;
+  tab_data_.last_audio_change_time = timestamp;
 }
 
 TimeTicks TabManager::WebContentsData::LastInactiveTime() {
-  return tab_data_.last_inactive_time_;
+  return tab_data_.last_inactive_time;
 }
 
 void TabManager::WebContentsData::SetLastInactiveTime(TimeTicks timestamp) {
-  tab_data_.last_inactive_time_ = timestamp;
+  tab_data_.last_inactive_time = timestamp;
 }
 
 // static
@@ -164,24 +164,24 @@ TimeTicks TabManager::WebContentsData::NowTicks() const {
 }
 
 TabManager::WebContentsData::Data::Data()
-    : is_discarded_(false),
-      discard_count_(0),
-      is_recently_audible_(false),
-      last_audio_change_time_(TimeTicks::UnixEpoch()),
-      last_discard_time_(TimeTicks::UnixEpoch()),
-      last_reload_time_(TimeTicks::UnixEpoch()),
-      last_inactive_time_(TimeTicks::UnixEpoch()),
-      engagement_score_(-1.0),
+    : is_discarded(false),
+      discard_count(0),
+      is_recently_audible(false),
+      last_audio_change_time(TimeTicks::UnixEpoch()),
+      last_discard_time(TimeTicks::UnixEpoch()),
+      last_reload_time(TimeTicks::UnixEpoch()),
+      last_inactive_time(TimeTicks::UnixEpoch()),
+      engagement_score(-1.0),
       is_auto_discardable(true) {}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
-  return is_discarded_ == right.is_discarded_ &&
-         is_recently_audible_ == right.is_recently_audible_ &&
-         last_audio_change_time_ == right.last_audio_change_time_ &&
-         last_discard_time_ == right.last_discard_time_ &&
-         last_reload_time_ == right.last_reload_time_ &&
-         last_inactive_time_ == right.last_inactive_time_ &&
-         engagement_score_ == right.engagement_score_;
+  return is_discarded == right.is_discarded &&
+         is_recently_audible == right.is_recently_audible &&
+         last_audio_change_time == right.last_audio_change_time &&
+         last_discard_time == right.last_discard_time &&
+         last_reload_time == right.last_reload_time &&
+         last_inactive_time == right.last_inactive_time &&
+         engagement_score == right.engagement_score;
 }
 
 bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {
