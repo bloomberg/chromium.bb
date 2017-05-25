@@ -865,9 +865,9 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup,
     }
 
     if (autofill_field->Type().group() == CREDIT_CARD) {
-      credit_card_form_event_logger_->OnDidShowSuggestions();
+      credit_card_form_event_logger_->OnDidShowSuggestions(*autofill_field);
     } else {
-      address_form_event_logger_->OnDidShowSuggestions();
+      address_form_event_logger_->OnDidShowSuggestions(*autofill_field);
     }
   }
 }
