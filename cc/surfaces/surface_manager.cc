@@ -65,8 +65,8 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 #endif
 
 void SurfaceManager::SetDependencyTracker(
-    SurfaceDependencyTracker* dependency_tracker) {
-  dependency_tracker_ = dependency_tracker;
+    std::unique_ptr<SurfaceDependencyTracker> dependency_tracker) {
+  dependency_tracker_ = std::move(dependency_tracker);
 }
 
 void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
@@ -429,10 +429,6 @@ void SurfaceManager::RegisterBeginFrameSource(
 
 void SurfaceManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
   framesink_manager_.UnregisterBeginFrameSource(source);
-}
-
-BeginFrameSource* SurfaceManager::GetPrimaryBeginFrameSource() {
-  return framesink_manager_.GetPrimaryBeginFrameSource();
 }
 
 void SurfaceManager::RegisterFrameSinkHierarchy(

@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::NiceMock;
+using testing::StrictMock;
 
 namespace cc {
 namespace {
@@ -44,7 +44,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
         new TestDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     delay_based_time_source_ = time_source.get();
     source_.reset(new BackToBackBeginFrameSource(std::move(time_source)));
-    obs_ = base::WrapUnique(new ::testing::NiceMock<MockBeginFrameObserver>);
+    obs_ = base::WrapUnique(new ::testing::StrictMock<MockBeginFrameObserver>);
   }
 
   void TearDown() override { obs_.reset(); }
@@ -230,7 +230,7 @@ TEST_F(BackToBackBeginFrameSourceTest, DelayInPostedTaskProducesCorrectFrame) {
 }
 
 TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversSynchronized) {
-  NiceMock<MockBeginFrameObserver> obs1, obs2;
+  StrictMock<MockBeginFrameObserver> obs1, obs2;
 
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs1, false);
   source_->AddObserver(&obs1);
@@ -266,7 +266,7 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversSynchronized) {
 }
 
 TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversInterleaved) {
-  NiceMock<MockBeginFrameObserver> obs1, obs2;
+  StrictMock<MockBeginFrameObserver> obs1, obs2;
 
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs1, false);
   source_->AddObserver(&obs1);
@@ -310,7 +310,7 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversInterleaved) {
 }
 
 TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversAtOnce) {
-  NiceMock<MockBeginFrameObserver> obs1, obs2;
+  StrictMock<MockBeginFrameObserver> obs1, obs2;
 
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs1, false);
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs2, false);
@@ -462,7 +462,7 @@ TEST_F(DelayBasedBeginFrameSourceTest, AuthoritativeVSyncChanges) {
 }
 
 TEST_F(DelayBasedBeginFrameSourceTest, MultipleObservers) {
-  NiceMock<MockBeginFrameObserver> obs1, obs2;
+  StrictMock<MockBeginFrameObserver> obs1, obs2;
 
   // now_src_ starts off at 1000.
   task_runner_->RunForPeriod(base::TimeDelta::FromMicroseconds(9010));
@@ -497,7 +497,7 @@ TEST_F(DelayBasedBeginFrameSourceTest, MultipleObservers) {
 }
 
 TEST_F(DelayBasedBeginFrameSourceTest, DoubleTick) {
-  NiceMock<MockBeginFrameObserver> obs;
+  StrictMock<MockBeginFrameObserver> obs;
 
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   EXPECT_BEGIN_FRAME_USED_MISSED(obs, source_->source_id(), 1, 0, 10000, 10000);
@@ -519,7 +519,7 @@ TEST_F(DelayBasedBeginFrameSourceTest, DoubleTick) {
 }
 
 TEST_F(DelayBasedBeginFrameSourceTest, DoubleTickMissedFrame) {
-  NiceMock<MockBeginFrameObserver> obs;
+  StrictMock<MockBeginFrameObserver> obs;
 
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   EXPECT_BEGIN_FRAME_USED_MISSED(obs, source_->source_id(), 1, 0, 10000, 10000);
