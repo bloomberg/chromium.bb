@@ -17,6 +17,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,12 +41,6 @@ constexpr char kJsScreenPath[] = "login.EncryptionMigrationScreen";
 
 // Path to the mount point to check the available space.
 constexpr char kCheckStoragePath[] = "/home";
-
-// The minimum size of available space to start the migration.
-constexpr int64_t kMinimumAvailableStorage = 10LL * 1024 * 1024;  // 10MB
-
-// The minimum battery level to start the migration.
-constexpr double kMinimumBatteryPercent = 30;
 
 // JS API callbacks names.
 constexpr char kJsApiStartMigration[] = "startMigration";
@@ -219,13 +214,13 @@ void EncryptionMigrationScreenHandler::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   current_battery_percent_ = proto.battery_percent();
   CallJS("setBatteryState", current_battery_percent_,
-         current_battery_percent_ >= kMinimumBatteryPercent,
+         current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent,
          proto.battery_state() ==
              power_manager::PowerSupplyProperties_BatteryState_CHARGING);
 
   // If the migration was already requested and the bettery level is enough now,
   // The migration should start immediately.
-  if (current_battery_percent_ >= kMinimumBatteryPercent &&
+  if (current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent &&
       should_migrate_on_enough_battery_) {
     should_migrate_on_enough_battery_ = false;
     StartMigration();
@@ -292,7 +287,7 @@ void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
 }
 
 void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
-  if (size >= kMinimumAvailableStorage || IsTestingUI()) {
+  if (size >= arc::kMigrationMinimumAvailableStorage || IsTestingUI()) {
     if (should_resume_) {
       RecordFirstScreen(FirstScreen::FIRST_SCREEN_RESUME);
       WaitBatteryAndMigrate();
@@ -304,13 +299,13 @@ void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
     RecordFirstScreen(FirstScreen::FIRST_SCREEN_LOW_STORAGE);
     CallJS("setAvailableSpaceInString", ui::FormatBytes(size));
     CallJS("setNecessarySpaceInString",
-           ui::FormatBytes(kMinimumAvailableStorage));
+           ui::FormatBytes(arc::kMigrationMinimumAvailableStorage));
     UpdateUIState(UIState::NOT_ENOUGH_STORAGE);
   }
 }
 
 void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
-  if (current_battery_percent_ >= kMinimumBatteryPercent) {
+  if (current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent) {
     StartMigration();
     return;
   }

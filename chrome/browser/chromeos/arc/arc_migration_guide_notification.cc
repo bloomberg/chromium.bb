@@ -4,9 +4,12 @@
 
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 
+#include "ash/system/devicetype_utils.h"
+#include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,6 +61,18 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
 
+  const bool is_low_battery = ash::PowerStatus::IsInitialized() &&
+                              ash::PowerStatus::Get()->IsBatteryPresent() &&
+                              ash::PowerStatus::Get()->GetBatteryPercent() <
+                                  kMigrationMinimumBatteryPercent;
+
+  const base::string16 message =
+      is_low_battery
+          ? ash::SubstituteChromeOSDeviceType(
+                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_LOW_BATTERY_MESSAGE)
+          : l10n_util::GetStringUTF16(
+                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
+
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
       IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
@@ -66,9 +81,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
           l10n_util::GetStringUTF16(
               IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-          // TODO(kinaba): crbug/710289 Change message for low-battery case.
-          l10n_util::GetStringUTF16(
-              IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE),
+          message,
           gfx::Image(gfx::CreateVectorIcon(
               kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
           base::string16(), GURL(), notifier_id, data,
