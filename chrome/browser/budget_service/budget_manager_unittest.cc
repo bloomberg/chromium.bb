@@ -216,26 +216,11 @@ TEST_F(BudgetManagerTest, TestIncognitoBehaviour) {
   ASSERT_EQ(GetSiteEngagementScore(&profile), kTestSES);
   ASSERT_EQ(GetSiteEngagementScore(incognito), kTestSES);
 
-  // Budget for the |profile| and the |incognito| profile should be identical.
-  {
-    double profile_budget, incognito_budget;
-    ASSERT_TRUE(GetBudget(&profile, &profile_budget));
-    ASSERT_TRUE(GetBudget(incognito, &incognito_budget));
+  // Budget for the |profile| and the |incognito| profile should not be
+  // identical, given that the |incognito| profile will get a fixed value.
+  double profile_budget, incognito_budget;
+  ASSERT_TRUE(GetBudget(&profile, &profile_budget));
+  ASSERT_TRUE(GetBudget(incognito, &incognito_budget));
 
-    EXPECT_EQ(profile_budget, incognito_budget);
-  }
-
-  // Consume some budget from the |incognito| profile.
-  ASSERT_TRUE(
-      ConsumeBudget(incognito, blink::mojom::BudgetOperationType::SILENT_PUSH));
-
-  // The budget available to |incognito| should have decreased, but the budget
-  // available to the |profile| should've been untouched.
-  {
-    double profile_budget, incognito_budget;
-    ASSERT_TRUE(GetBudget(&profile, &profile_budget));
-    ASSERT_TRUE(GetBudget(incognito, &incognito_budget));
-
-    EXPECT_GT(profile_budget, incognito_budget);
-  }
+  EXPECT_NE(profile_budget, incognito_budget);
 }
