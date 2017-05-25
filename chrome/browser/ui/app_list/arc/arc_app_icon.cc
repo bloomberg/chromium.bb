@@ -32,7 +32,7 @@
 
 namespace {
 
-bool disable_safe_decoding = false;
+bool disable_safe_decoding_for_testing = false;
 
 std::string GetAppFromAppOrGroupId(content::BrowserContext* context,
                                    const std::string& app_or_group_id) {
@@ -236,7 +236,12 @@ void ArcAppIcon::DecodeRequest::OnDecodeImageFailed() {
 
 // static
 void ArcAppIcon::DisableSafeDecodingForTesting() {
-  disable_safe_decoding = true;
+  disable_safe_decoding_for_testing = true;
+}
+
+// static
+bool ArcAppIcon::IsSafeDecodingDisabledForTesting() {
+  return disable_safe_decoding_for_testing;
 }
 
 ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
@@ -335,7 +340,7 @@ void ArcAppIcon::OnIconRead(
     decode_requests_.push_back(base::MakeUnique<DecodeRequest>(
         weak_ptr_factory_.GetWeakPtr(), resource_size_in_dip_,
         read_result->scale_factor));
-    if (disable_safe_decoding) {
+    if (disable_safe_decoding_for_testing) {
       SkBitmap bitmap;
       if (!read_result->unsafe_icon_data.empty() &&
           gfx::PNGCodec::Decode(

@@ -58,6 +58,7 @@ class ArcAppIcon {
   // when g_one_utility_thread_lock from in_process_utility_thread.cc gets
   // released in an acquired state which is crash condition in debug builds.
   static void DisableSafeDecodingForTesting();
+  static bool IsSafeDecodingDisabledForTesting();
 
  private:
   friend class ArcAppIconLoader;
