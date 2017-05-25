@@ -88,7 +88,7 @@ android_assets("android_webview_apk_assets") {
 
 shared_library("libstandalonelibwebviewchromium") {
   sources = [
-    "../lib/main/webview_entry_point.cc",
+    "../lib/webview_entry_point.cc",
   ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
@@ -265,7 +265,7 @@ test("android_webview_unittests") {
     "../browser/test/fake_window.h",
     "../browser/test/rendering_test.cc",
     "../browser/test/rendering_test.h",
-    "../lib/main/webview_tests.cc",
+    "../lib/webview_tests.cc",
   ]
 }
 

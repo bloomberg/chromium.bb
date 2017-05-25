@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/lib/main/aw_main_delegate.h"
+#include "android_webview/lib/aw_main_delegate.h"
 
 #include <memory>
 
@@ -50,11 +50,9 @@
 
 namespace android_webview {
 
-AwMainDelegate::AwMainDelegate() {
-}
+AwMainDelegate::AwMainDelegate() {}
 
-AwMainDelegate::~AwMainDelegate() {
-}
+AwMainDelegate::~AwMainDelegate() {}
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
@@ -76,8 +74,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Web Notification API and the Push API are not supported (crbug.com/434712)
   cl->AppendSwitch(switches::kDisableNotifications);
 
-  // WebRTC hardware decoding is not supported, internal bug 15075307
 #if BUILDFLAG(ENABLE_WEBRTC)
+  // WebRTC hardware decoding is not supported, internal bug 15075307
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
 #endif
 
@@ -239,8 +237,7 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
   logging::CloseLogFile();
 }
 
-content::ContentBrowserClient*
-    AwMainDelegate::CreateContentBrowserClient() {
+content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
   content_browser_client_.reset(new AwContentBrowserClient());
   return content_browser_client_.get();
 }
@@ -258,8 +255,7 @@ content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
   return content_gpu_client_.get();
 }
 
-content::ContentRendererClient*
-    AwMainDelegate::CreateContentRendererClient() {
+content::ContentRendererClient* AwMainDelegate::CreateContentRendererClient() {
   content_renderer_client_.reset(new AwContentRendererClient());
   return content_renderer_client_.get();
 }
