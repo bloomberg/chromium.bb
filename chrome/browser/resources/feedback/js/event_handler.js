@@ -181,7 +181,7 @@ class FeedbackRequest {
         function(result) {
           if (result == ReportStatus.SUCCESS) {
             console.log('Feedback: Report sent for request with ID ' + ID);
-            if (FLOW != FeedbackFlow.LOGIN)
+            if (FLOW != chrome.feedbackPrivate.FeedbackFlow.LOGIN)
               window.open(FEEDBACK_LANDING_PAGE, '_blank');
           } else {
             console.log('Feedback: Report for request with ID ' + ID +
