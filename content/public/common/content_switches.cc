@@ -163,9 +163,6 @@ const char kDisableGpuMemoryBufferVideoFrames[] =
 // For tests and platforms where software fallback is disabled.
 const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 
-// Disable async GL worker context. Overrides kEnableGpuAsyncWorkerContext.
-const char kDisableGpuAsyncWorkerContext[] = "disable-gpu-async-worker-context";
-
 // When using CPU rasterizing disable low resolution tiling. This uses
 // less power, particularly during animations, but more white may be seen
 // during fast scrolling especially on slower devices.
