@@ -16,7 +16,7 @@ from chromite.lib import locking
 from chromite.lib import path_util
 
 PROD_REPLICA_CIDB_READONLY_BUCKET = (
-    'gs://chromeos-cidb-creds/prod_replica_cidb_readonly/')
+    'gs://chromeos-cidb-creds/prod_replica_cidb_gen2_readonly/')
 
 def GetCIDBCreds(cidb_dir):
   """Download CIDB creds from google storage to local cidb diretory."""
