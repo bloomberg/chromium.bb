@@ -1,5 +1,5 @@
 rootWebArea
-++unknown
+++genericContainer
 ++++rootWebArea
 ++++++paragraph
 ++++++++staticText name='My favorite browser is '
@@ -10,7 +10,7 @@ rootWebArea
 ++++++++++inlineTextBox name='Chrome'
 ++++++++staticText name='!'
 ++++++++++inlineTextBox name='!'
-++unknown
+++genericContainer
 ++++rootWebArea
 ++++++paragraph
 ++++++++staticText name='This test is to check '

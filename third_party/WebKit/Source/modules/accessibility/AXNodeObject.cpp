@@ -692,17 +692,7 @@ AccessibilityRole AXNodeObject::DetermineAccessibilityRole() {
     return kStaticTextRole;
 
   AccessibilityRole role = NativeAccessibilityRoleIgnoringAria();
-  if (role != kUnknownRole)
-    return role;
-  if (GetNode()->IsElementNode()) {
-    Element* element = ToElement(GetNode());
-    // A generic element with tabIndex explicitly set gets GroupRole.
-    // The layout checks for focusability aren't critical here; a false
-    // positive would be harmless.
-    if (element->IsInCanvasSubtree() && element->SupportsFocus())
-      return kGenericContainerRole;
-  }
-  return kUnknownRole;
+  return role == kUnknownRole ? kGenericContainerRole : role;
 }
 
 AccessibilityRole AXNodeObject::DetermineAriaRoleAttribute() const {
