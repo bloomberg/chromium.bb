@@ -82,6 +82,10 @@ static constexpr int kViewportListHeadlockedOffset = 2;
 // 2-3 frames.
 static constexpr unsigned kPoseRingBufferSize = 8;
 
+// Number of frames to use for sliding averages for pose timings,
+// as used for estimating prediction times.
+static constexpr unsigned kWebVRSlidingAverageSize = 5;
+
 // Criteria for considering holding the app button in combination with
 // controller movement as a gesture.
 static constexpr float kMinAppButtonGestureAngleRad = 0.25;
@@ -223,9 +227,9 @@ VrShellGl::VrShellGl(VrBrowserInterface* browser,
       binding_(this),
       browser_(browser),
       scene_(scene),
-#if DCHECK_IS_ON()
       fps_meter_(new FPSMeter()),
-#endif
+      webvr_js_time_(new SlidingAverage(kWebVRSlidingAverageSize)),
+      webvr_render_time_(new SlidingAverage(kWebVRSlidingAverageSize)),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -1073,12 +1077,11 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     submit_client_->OnSubmitFrameRendered();
   }
 
-#if DCHECK_IS_ON()
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
   fps_meter_->AddFrame(current_time);
   DVLOG(1) << "fps: " << fps_meter_->GetFPS();
-#endif
+  TRACE_COUNTER1("gpu", "WebVR FPS", fps_meter_->GetFPS());
 }
 
 void VrShellGl::DrawWorldElements(const vr::Mat4f& head_pose) {
@@ -1521,15 +1524,35 @@ void VrShellGl::ForceExitVr() {
   browser_->ForceExitVr();
 }
 
+int64_t VrShellGl::GetPredictedFrameTimeNanos() {
+  int64_t frame_time_micros = vsync_interval_.InMicroseconds();
+  // If we aim to submit at vsync, that frame will start scanning out
+  // one vsync later. Add a half frame to split the difference between
+  // left and right eye.
+  int64_t js_micros = webvr_js_time_->GetAverageOrDefault(frame_time_micros);
+  int64_t render_micros =
+      webvr_render_time_->GetAverageOrDefault(frame_time_micros);
+  int64_t overhead_micros = frame_time_micros * 3 / 2;
+  int64_t expected_frame_micros = js_micros + render_micros + overhead_micros;
+  TRACE_COUNTER2("gpu", "WebVR frame time (ms)", "javascript",
+                 js_micros / 1000.0, "rendering", render_micros / 1000.0);
+  TRACE_COUNTER1("gpu", "WebVR pose prediction (ms)",
+                 expected_frame_micros / 1000.0);
+  return expected_frame_micros * 1000;
+}
+
 void VrShellGl::SendVSync(base::TimeDelta time,
                           const GetVSyncCallback& callback) {
   uint8_t frame_index = frame_index_++;
 
   TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
 
+  int64_t prediction_nanos = GetPredictedFrameTimeNanos();
+
   vr::Mat4f head_mat;
   device::mojom::VRPosePtr pose =
-      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat);
+      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat,
+                                                     prediction_nanos);
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 

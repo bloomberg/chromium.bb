@@ -43,6 +43,7 @@ namespace vr_shell {
 
 class FPSMeter;
 class MailboxToSurfaceBridge;
+class SlidingAverage;
 class UiElement;
 class UiScene;
 class VrBrowserInterface;
@@ -171,7 +172,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void CreateUiSurface();
   void OnContentFrameAvailable();
   void OnWebVRFrameAvailable();
-  bool GetPixelEncodedFrameIndex(uint16_t* frame_index);
+  int64_t GetPredictedFrameTimeNanos();
 
   void OnVSync();
 
@@ -272,6 +273,9 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gfx::Vector3dF controller_start_direction_;
 
   std::unique_ptr<FPSMeter> fps_meter_;
+
+  std::unique_ptr<SlidingAverage> webvr_js_time_;
+  std::unique_ptr<SlidingAverage> webvr_render_time_;
 
   gfx::Point3F pointer_start_;
 

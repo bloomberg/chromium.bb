@@ -22,7 +22,13 @@ namespace device {
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
   static mojom::VRPosePtr VRPosePtrFromGvrPose(const vr::Mat4f& head_mat);
+  static void GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
+                                      vr::Mat4f* out,
+                                      int64_t prediction_time);
   static void GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api, vr::Mat4f* out);
+  static mojom::VRPosePtr GetVRPosePtrWithNeckModel(gvr::GvrApi* gvr_api,
+                                                    vr::Mat4f* head_mat_out,
+                                                    int64_t prediction_time);
   static mojom::VRPosePtr GetVRPosePtrWithNeckModel(gvr::GvrApi* gvr_api,
                                                     vr::Mat4f* head_mat_out);
   static gfx::Size GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
