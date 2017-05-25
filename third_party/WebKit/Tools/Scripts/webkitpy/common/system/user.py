@@ -26,13 +26,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import getpass
 import logging
-import os
 import platform
 import re
-import shlex
-import subprocess
 import sys
 import webbrowser
 
@@ -61,23 +57,6 @@ class User(object):
             repeat -= 1
             response = raw_input(message)
         return response
-
-    @classmethod
-    def prompt_password(cls, message, repeat=1):
-        return cls.prompt(message, repeat=repeat, raw_input=getpass.getpass)
-
-    @classmethod
-    def prompt_with_multiple_lists(cls, list_title, subtitles, lists, can_choose_multiple=False, raw_input=raw_input):
-        item_index = 0
-        cumulated_list = []
-        print list_title
-        for i in range(len(subtitles)):
-            print '\n' + subtitles[i]
-            for item in lists[i]:
-                item_index += 1
-                print '%2d. %s' % (item_index, item)
-            cumulated_list += lists[i]
-        return cls._wait_on_list_response(cumulated_list, can_choose_multiple, raw_input)
 
     @classmethod
     def _wait_on_list_response(cls, list_items, can_choose_multiple, raw_input):
@@ -115,21 +94,6 @@ class User(object):
             i += 1
             print '%2d. %s' % (i, item)
         return cls._wait_on_list_response(list_items, can_choose_multiple, raw_input)
-
-    def edit(self, files):
-        editor = os.environ.get('EDITOR') or 'vi'
-        args = shlex.split(editor)
-        # Note: Not thread safe: http://bugs.python.org/issue2320
-        subprocess.call(args + files)
-
-    def page(self, message):
-        pager = os.environ.get('PAGER') or 'less'
-        try:
-            # Note: Not thread safe: http://bugs.python.org/issue2320
-            child_process = subprocess.Popen([pager], stdin=subprocess.PIPE)
-            child_process.communicate(input=message)
-        except IOError:
-            pass
 
     def confirm(self, message=None, default=DEFAULT_YES, raw_input=raw_input):
         if not message:
