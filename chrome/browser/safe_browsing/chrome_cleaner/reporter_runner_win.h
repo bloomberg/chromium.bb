@@ -13,11 +13,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/process/launch.h"
-#include "base/process/process.h"
 #include "base/time/time.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 namespace base {
 class FilePath;
@@ -29,8 +25,6 @@ class Browser;
 
 namespace safe_browsing {
 
-class ChromePromptImpl;
-
 // A special exit code identifying a failure to run the reporter.
 const int kReporterNotLaunchedExitCode = INT_MAX;
 
@@ -39,10 +33,6 @@ const int kDaysBetweenSuccessfulSwReporterRuns = 7;
 const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
 // The number of days to wait before sending out reporter logs.
 const int kDaysBetweenReporterLogsSent = 7;
-
-// When enabled, moves all user interaction with the Software Reporter and the
-// Chrome Cleanup tool to Chrome.
-extern const base::Feature kInBrowserCleanerUIFeature;
 
 // Parameters used to invoke the sw_reporter component.
 struct SwReporterInvocation {
@@ -113,11 +103,8 @@ class SwReporterTestingDelegate {
  public:
   virtual ~SwReporterTestingDelegate() {}
 
-  // Invoked by tests in places of base::LaunchProcess.
-  // See chrome_cleaner::mojom::ChromePromptRequest().
-  virtual base::Process LaunchReporter(
-      const SwReporterInvocation& invocation,
-      const base::LaunchOptions& launch_options) = 0;
+  // Invoked by tests in place of base::LaunchProcess.
+  virtual int LaunchReporter(const SwReporterInvocation& invocation) = 0;
 
   // Invoked by tests in place of the actual prompting logic.
   // See MaybeFetchSRT().
@@ -131,21 +118,6 @@ class SwReporterTestingDelegate {
   // A task runner used to spawn the reporter process (which blocks).
   // See ReporterRunner::ScheduleNextInvocation().
   virtual base::TaskRunner* BlockingTaskRunner() const = 0;
-
-  // Returns a ChromePromptImpl object that keeps track of specific
-  // actions during tests. Replaces the object returned by
-  // SwReporterProcess::CreateChromePromptImpl().
-  // See SwReporterProcess::LaunchConnectedReporterProcess().
-  virtual std::unique_ptr<ChromePromptImpl> CreateChromePromptImpl(
-      chrome_cleaner::mojom::ChromePromptRequest request) = 0;
-
-  // Connection closed callback defined by tests in place of the default
-  // error handler. See ReporterRunnerTest::CreateChromePromptImpl().
-  virtual void OnConnectionClosed() = 0;
-
-  // Bad message handler callback defined by tests in place of the default
-  // error handler. See SwReporterProcess::LaunchConnectedReporterProcess().
-  virtual void OnConnectionError(const std::string& message) = 0;
 };
 
 // Set a delegate for testing. The implementation will not take ownership of

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/feature_list.h"
+
 namespace safe_browsing {
 
 // These values are used to send UMA information and are replicated in the
@@ -22,6 +24,10 @@ enum SRTPromptHistogramValue {
 
   SRT_PROMPT_MAX,
 };
+
+// When enabled, all user interaction with the Chrome Cleaner will happen from
+// within Chrome.
+extern const base::Feature kInBrowserCleanerUIFeature;
 
 // Returns true if this Chrome is in a field trial group which shows the SRT
 // prompt.

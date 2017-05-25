@@ -35,6 +35,9 @@ const char kCanarySRTDownloadURL[] =
 
 namespace safe_browsing {
 
+const base::Feature kInBrowserCleanerUIFeature{
+    "InBrowserCleanerUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsInSRTPromptFieldTrialGroups() {
   return !base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
                            kSRTPromptOffGroup, base::CompareCase::SENSITIVE);
