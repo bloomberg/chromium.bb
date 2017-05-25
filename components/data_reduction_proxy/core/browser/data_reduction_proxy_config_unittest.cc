@@ -26,6 +26,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -35,6 +36,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -1017,6 +1019,11 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     config()->ResetLoFiStatusForTest();
 
+    // Ensure not using proxy-decides-transform feature.
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kDataReductionProxyDecidesTransform);
+
     base::FieldTrialList field_trial_list(nullptr);
     if (tests[i].previews_black_list_used) {
       base::FieldTrialList::CreateFieldTrial(
@@ -1052,7 +1059,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
     std::unique_ptr<TestPreviewsDecider> previews_decider =
         base::MakeUnique<TestPreviewsDecider>(!tests[i].is_opted_out);
     bool should_enable_lofi =
-        config()->ShouldEnableLoFi(*request.get(), previews_decider.get());
+        config()->ShouldEnableLoFi(*request.get(), *previews_decider.get());
     if (tests[i].expect_bucket_count != 0) {
       histogram_tester.ExpectBucketCount(
           "DataReductionProxy.AutoLoFiRequestHeaderState.Unknown",
@@ -1392,6 +1399,348 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
       "DataReductionProxy.LoFi.Accuracy.1.Unknown", 1);
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.LoFi.Accuracy.1.Unknown", 0, 1);
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFiDoesNotFallback) {
+  // Turn off proxy-decides-transform feature (path for client ECT check).
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  // Enable Server Lo-Fi.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+
+  // Also enable LitePages
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLitePage);
+
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  EXPECT_TRUE(
+      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+  EXPECT_FALSE(
+      config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFiWithECTCheck) {
+  // Turn off proxy-decides-transform feature (so will locally check ECT).
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  // Enable Server Lo-Fi field trial.
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled");
+
+  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_))
+      .WillRepeatedly(testing::Return(true));
+
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  EXPECT_TRUE(
+      config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
+
+  // Now verify should not enable with good network connection.
+  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_))
+      .WillRepeatedly(testing::Return(false));
+
+  EXPECT_FALSE(
+      config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFiWithoutECTCheck) {
+  // Turn on proxy-decides-transform feature (so will not locally check ECT).
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  // Enable Server Lo-Fi field trial.
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled");
+
+  // Expect network quality check is never called.
+  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_)).Times(0);
+
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  EXPECT_TRUE(
+      config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePagesWithECTCheck) {
+  // Turn off proxy-decides-transform feature (so will locally check ECT).
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  // Enable Server Lo-Fi field trial.
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled_Preview");
+
+  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_))
+      .WillRepeatedly(testing::Return(true));
+
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  EXPECT_TRUE(
+      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+
+  // Now verify should not enable with good network connection.
+  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_))
+      .WillRepeatedly(testing::Return(false));
+
+  EXPECT_FALSE(
+      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePagesWithoutECTCheck) {
+  // Turn on proxy-decides-transform feature (so will not locally check ECT).
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  // Enable Server Lo-Fi field trial.
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled_Preview");
+
+  // Expect network quality check is never called.
+  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_)).Times(0);
+
+  net::TestURLRequestContext context_;
+  net::TestDelegate delegate_;
+  std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+      GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  EXPECT_TRUE(
+      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerLoFi) {
+  // Turn on proxy-decides-transform feature to satisfy DCHECK.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  net::TestURLRequestContext context_;
+  net::TestDelegate delegate_;
+  std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+      GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  // Verify false for no flags.
+  EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                                *previews_decider.get()));
+
+  // Verify true for Always-On flag.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                               *previews_decider.get()));
+
+  // Verify true for Always-On with LitePages enabled too.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLitePage);
+  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                               *previews_decider.get()));
+
+  // Verify true for Slow Connection flag.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                               *previews_decider.get()));
+
+  // Verify false for Cellular Only flag and WIFI connection.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueCellularOnly);
+  config()->SetConnectionTypeForTesting(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                                *previews_decider.get()));
+
+  // Verify true for Cellular Only flag and 3G connection.
+  config()->SetConnectionTypeForTesting(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                               *previews_decider.get()));
+
+  // Verify true for field trial.
+  {
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                           "Enabled");
+    EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                                 *previews_decider.get()));
+  }
+
+  // Verify false for control field trial.
+  {
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                           "Control");
+    EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                                  *previews_decider.get()));
+  }
+
+  // Verify PreviewsDecider check.
+  {
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kDataReductionProxyLoFi,
+        switches::kDataReductionProxyLoFiValueAlwaysOn);
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(
+        "DataReductionProxyPreviewsBlackListTransition", "Enabled");
+    EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                                  *previews_decider.get()));
+    previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
+    EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
+                                                 *previews_decider.get()));
+  }
+}
+
+TEST_F(DataReductionProxyConfigTest, ShouldAcceptLitePages) {
+  // Turn on proxy-decides-transform feature to satisfy DCHECK.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  net::TestURLRequestContext context_;
+  net::TestDelegate delegate_;
+  std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+      GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      base::MakeUnique<TestPreviewsDecider>(false);
+
+  // Verify false for no flags.
+  EXPECT_FALSE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+
+  // Verify true for Always-On flag and LitePage flag.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+  EXPECT_FALSE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLitePage);
+  EXPECT_TRUE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+
+  // Verify true for Slow Connection flag and LitePage flag.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+  EXPECT_FALSE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLitePage);
+  EXPECT_TRUE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+
+  // Verify true for Cellular Only flag and 3G connection.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueCellularOnly);
+  config()->SetConnectionTypeForTesting(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  EXPECT_FALSE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLitePage);
+  EXPECT_TRUE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+
+  // Verify false for Cellular Only flag and WIFI connection.
+  config()->SetConnectionTypeForTesting(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  EXPECT_FALSE(
+      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
+
+  // Verify true for field trial.
+  {
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                           "Enabled_Preview");
+    EXPECT_TRUE(config()->ShouldAcceptLitePages(*request.get(),
+                                                *previews_decider.get()));
+  }
+
+  // Verify PreviewsDecider check.
+  {
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kDataReductionProxyLoFi,
+        switches::kDataReductionProxyLoFiValueAlwaysOn);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableDataReductionProxyLitePage);
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(
+        "DataReductionProxyPreviewsBlackListTransition", "Enabled");
+    EXPECT_FALSE(config()->ShouldAcceptLitePages(*request.get(),
+                                                 *previews_decider.get()));
+    previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
+    EXPECT_TRUE(config()->ShouldAcceptLitePages(*request.get(),
+                                                *previews_decider.get()));
+  }
 }
 
 }  // namespace data_reduction_proxy
