@@ -64,6 +64,18 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, PhishingInterstitial) {
       "Security error");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, MalwareInterstitialQuiet) {
+  TestInterstitial(
+      GURL("chrome://interstitials/quietsafebrowsing?type=malware"),
+      "Security error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, PhishingInterstitialQuiet) {
+  TestInterstitial(
+      GURL("chrome://interstitials/quietsafebrowsing?type=phishing"),
+      "Security error");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsideMalwareInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_malware"),
