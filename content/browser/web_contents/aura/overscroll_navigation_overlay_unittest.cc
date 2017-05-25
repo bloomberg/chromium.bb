@@ -55,22 +55,11 @@ class ImmediateLoadObserver : WebContentsObserver {
   }
   ~ImmediateLoadObserver() override {}
 
-  // TODO: remove this method when PlzNavigate is turned on by default.
   void DidStartNavigationToPendingEntry(const GURL& url,
                                         ReloadType reload_type) override {
-    if (!IsBrowserSideNavigationEnabled()) {
-      // Simulate immediate web page load.
-      contents_->TestSetIsLoading(false);
-      Observe(nullptr);
-    }
-  }
-
-  void DidStartNavigation(NavigationHandle* navigation_handlee) override {
-    if (IsBrowserSideNavigationEnabled()) {
-      // Simulate immediate web page load.
-      contents_->TestSetIsLoading(false);
-      Observe(nullptr);
-    }
+    // Simulate immediate web page load.
+    contents_->TestSetIsLoading(false);
+    Observe(nullptr);
   }
 
  private:

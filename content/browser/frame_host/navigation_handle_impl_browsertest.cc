@@ -1068,32 +1068,6 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnRedirect) {
   EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
 }
 
-// Tests that when a navigation is aborted (i.e. because of beforeunload), the
-// right error code is set on the NavigationHandle.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       ErrorCodeOnAbortedNavigation) {
-  // Without PlzNavigate, NavigationHandles aren't created until after the
-  // beforeunload handler runs.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-  GURL url(
-      embedded_test_server()->GetURL("/render_frame_host/beforeunload.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  GURL new_url("/title1.html");
-  NavigationHandleObserver observer(shell()->web_contents(), new_url);
-  TestNavigationManager navigation_waiter(shell()->web_contents(), new_url);
-  PrepContentsForBeforeUnloadTest(shell()->web_contents());
-  SetShouldProceedOnBeforeUnload(shell(), false);
-
-  shell()->LoadURL(new_url);
-  WaitForAppModalDialog(shell());
-  static_cast<WebContentsImpl*>(shell()->web_contents())
-      ->CancelModalDialogsForRenderManager();
-  navigation_waiter.WaitForNavigationFinished();
-  EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
-}
-
 // This class allows running tests with PlzNavigate enabled, regardless of
 // default test configuration.
 class PlzNavigateNavigationHandleImplBrowserTest : public ContentBrowserTest {
