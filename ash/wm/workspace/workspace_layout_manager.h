@@ -98,7 +98,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // ShellObserver overrides:
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                WmWindow* root_window) override;
+                                aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
                                      aura::Window* root_window) override;

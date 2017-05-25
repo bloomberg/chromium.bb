@@ -53,7 +53,7 @@ aura::Window::Windows ScreenDimmer::GetAllContainers() {
                    ash::kShellWindowId_LockScreenContainersContainer);
 }
 
-void ScreenDimmer::OnRootWindowAdded(WmWindow* root_window) {
+void ScreenDimmer::OnRootWindowAdded(aura::Window* root_window) {
   Update(is_dimming_);
 }
 

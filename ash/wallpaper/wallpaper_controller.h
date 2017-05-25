@@ -94,7 +94,7 @@ class ASH_EXPORT WallpaperController
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:
-  void OnRootWindowAdded(WmWindow* root_window) override;
+  void OnRootWindowAdded(aura::Window* root_window) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
@@ -137,7 +137,7 @@ class ASH_EXPORT WallpaperController
   friend class WallpaperControllerTest;
 
   // Creates a WallpaperWidgetController for |root_window|.
-  void InstallDesktopController(WmWindow* root_window);
+  void InstallDesktopController(aura::Window* root_window);
 
   // Creates a WallpaperWidgetController for all root windows.
   void InstallDesktopControllerForAllWindows();

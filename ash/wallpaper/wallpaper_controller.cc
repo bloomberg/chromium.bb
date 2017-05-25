@@ -18,7 +18,6 @@
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -187,7 +186,7 @@ void WallpaperController::OnDisplayConfigurationChanged() {
   }
 }
 
-void WallpaperController::OnRootWindowAdded(WmWindow* root_window) {
+void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
   // The wallpaper hasn't been set yet.
   if (wallpaper_mode_ == WALLPAPER_NONE)
     return;
@@ -291,7 +290,7 @@ void WallpaperController::OnColorCalculationComplete() {
   SetProminentColor(color);
 }
 
-void WallpaperController::InstallDesktopController(WmWindow* root_window) {
+void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   WallpaperWidgetController* component = nullptr;
   int container_id = GetWallpaperContainerId(locked_);
 
@@ -306,23 +305,22 @@ void WallpaperController::InstallDesktopController(WmWindow* root_window) {
       return;
   }
 
-  RootWindowController* controller = root_window->GetRootWindowController();
+  RootWindowController* controller =
+      RootWindowController::ForWindow(root_window);
   controller->SetAnimatingWallpaperWidgetController(
       new AnimatingWallpaperWidgetController(component));
   component->StartAnimating(controller);
 }
 
 void WallpaperController::InstallDesktopControllerForAllWindows() {
-  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows())
+  for (aura::Window* root : Shell::GetAllRootWindows())
     InstallDesktopController(root);
   current_max_display_size_ = GetMaxDisplaySizeInNative();
 }
 
 bool WallpaperController::ReparentWallpaper(int container) {
   bool moved = false;
-  for (WmWindow* root_window : ShellPort::Get()->GetAllRootWindows()) {
-    RootWindowController* root_window_controller =
-        root_window->GetRootWindowController();
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     // In the steady state (no animation playing) the wallpaper widget
     // controller exists in the RootWindowController.
     WallpaperWidgetController* wallpaper_widget_controller =

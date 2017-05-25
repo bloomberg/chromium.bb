@@ -22,7 +22,7 @@ class ASH_EXPORT ShellObserver {
   virtual void OnCastingSessionStartedOrStopped(bool started) {}
 
   // Invoked after a non-primary root window is created.
-  virtual void OnRootWindowAdded(WmWindow* root_window) {}
+  virtual void OnRootWindowAdded(aura::Window* root_window) {}
 
   // Invoked after the shelf has been created for |root_window|.
   virtual void OnShelfCreatedForRootWindow(WmWindow* root_window) {}
@@ -38,7 +38,7 @@ class ASH_EXPORT ShellObserver {
 
   // Invoked when entering or exiting fullscreen mode in |root_window|.
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        WmWindow* root_window) {}
+                                        aura::Window* root_window) {}
 
   // Invoked when |pinned_window| enter or exit pinned mode.
   virtual void OnPinnedStateChanged(aura::Window* pinned_window) {}

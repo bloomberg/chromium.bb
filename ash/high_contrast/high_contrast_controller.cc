@@ -34,8 +34,8 @@ void HighContrastController::UpdateDisplay(aura::Window* root_window) {
   root_window->layer()->SetLayerInverted(enabled_);
 }
 
-void HighContrastController::OnRootWindowAdded(WmWindow* root_window) {
-  UpdateDisplay(WmWindow::GetAuraWindow(root_window));
+void HighContrastController::OnRootWindowAdded(aura::Window* root_window) {
+  UpdateDisplay(root_window);
 }
 
 }  // namespace ash

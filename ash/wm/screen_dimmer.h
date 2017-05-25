@@ -12,10 +12,6 @@
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 
 class WindowDimmer;
@@ -63,7 +59,7 @@ class ASH_EXPORT ScreenDimmer : public ShellObserver {
   std::vector<aura::Window*> GetAllContainers();
 
   // ShellObserver:
-  void OnRootWindowAdded(WmWindow* root_window) override;
+  void OnRootWindowAdded(aura::Window* root_window) override;
 
   // Update the dimming state. This will also create a new DimWindow
   // if necessary. (Used when a new display is connected)

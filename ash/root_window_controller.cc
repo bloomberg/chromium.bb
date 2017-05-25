@@ -758,7 +758,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     InitializeShelf();
 
     // Notify shell observers about new root window.
-    shell->OnRootWindowAdded(WmWindow::Get(root_window));
+    shell->OnRootWindowAdded(root_window);
   }
 
   // TODO: AshTouchExplorationManager doesn't work with mus.
