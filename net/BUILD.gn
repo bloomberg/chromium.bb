@@ -2500,6 +2500,8 @@ static_library("test_support") {
     "test/embedded_test_server/simple_connection_listener.h",
     "test/event_waiter.h",
     "test/gtest_util.h",
+    "test/keychain_test_util_mac.cc",
+    "test/keychain_test_util_mac.h",
     "test/net_test_suite.cc",
     "test/net_test_suite.h",
     "test/python_utils.cc",
