@@ -201,18 +201,6 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
           switches::kEnableHeapProfiling))
     return;
 
-#if !BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
-#if defined(OS_WIN)
-  const char kExtraErrMsg[] = "On Windows it requires release + static builds.";
-#else
-  const char kExtraErrMsg[] = "";
-#endif  // defined(OS_WIN)
-  LOG(FATAL) << "--" << switches::kEnableHeapProfiling
-             << " requires building with use_experimental_allocator_shim=true "
-                "(on by default on the major platforms). "
-             << kExtraErrMsg;
-#endif  // BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
-
   std::string profiling_mode = CommandLine::ForCurrentProcess()
       ->GetSwitchValueASCII(switches::kEnableHeapProfiling);
   if (profiling_mode == switches::kEnableHeapProfilingModePseudo) {
