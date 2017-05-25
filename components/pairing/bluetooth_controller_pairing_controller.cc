@@ -72,9 +72,12 @@ void BluetoothControllerPairingController::DeviceFound(
     device::BluetoothDevice* device) {
   DCHECK_EQ(current_stage_, STAGE_DEVICES_DISCOVERY);
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  device::BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
   if (base::StartsWith(device->GetNameForDisplay(),
                        base::ASCIIToUTF16(kDeviceNamePrefix),
-                       base::CompareCase::INSENSITIVE_ASCII)) {
+                       base::CompareCase::INSENSITIVE_ASCII) &&
+      base::ContainsKey(uuids, device::BluetoothUUID(kPairingServiceUUID))) {
     discovered_devices_.insert(device->GetAddress());
     for (ControllerPairingController::Observer& observer : observers_)
       observer.DiscoveredDevicesListChanged();
