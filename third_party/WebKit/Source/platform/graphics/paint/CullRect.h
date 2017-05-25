@@ -8,8 +8,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/text/WTFString.h"
 
 #include <limits>
@@ -31,11 +29,17 @@ class PLATFORM_EXPORT CullRect {
 
   bool IntersectsCullRect(const AffineTransform&,
                           const FloatRect& bounding_box) const;
-  void UpdateCullRect(const AffineTransform& local_to_parent_transform);
   bool IntersectsCullRect(const IntRect&) const;
   bool IntersectsCullRect(const LayoutRect&) const;
   bool IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
   bool IntersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
+
+  void UpdateCullRect(const AffineTransform& local_to_parent_transform);
+
+  // |overflow_clip_rect| should be in the same coordinate space as |rect_|.
+  void UpdateForScrollingContents(
+      const IntRect& overflow_clip_rect,
+      const AffineTransform& local_to_parent_transform);
 
   String ToString() const { return rect_.ToString(); }
 
@@ -43,6 +47,8 @@ class PLATFORM_EXPORT CullRect {
   IntRect rect_;
 
   friend bool operator==(const CullRect&, const CullRect&);
+
+  friend class CullRectTest;
 
   // TODO(chrishtr): temporary while we implement CullRect everywhere.
   friend class FramePainter;

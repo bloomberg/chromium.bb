@@ -167,4 +167,88 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
                       TestDisplayItem(sub_div, kBackgroundType));
 }
 
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
+  // TODO(wangxianzhu): Fix cull rect issue when painting layered contents
+  // under overflow clip (in this case the LayoutView).
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    return;
+
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { display: none }"
+      "  body { margin: 0; width: 10000px; height: 1000px }"
+      "  div { position: absolute; width: 100px; height: 100px;"
+      "        background: blue; }"
+      "</style>"
+      "<div id='div1' style='top: 0; left: 0'></div>"
+      "<div id='div2' style='top: 3000px; left: 3000px'></div>"
+      "<div id='div3' style='top: 6000px; left: 6000px'></div>"
+      "<div id='div4' style='top: 9000px; left: 9000px'></div>");
+
+  auto& div1 = *GetLayoutObjectByElementId("div1");
+  auto& div2 = *GetLayoutObjectByElementId("div2");
+  auto& div3 = *GetLayoutObjectByElementId("div3");
+  auto& div4 = *GetLayoutObjectByElementId("div4");
+
+  // Initial cull rect: (0,0 4800x4600)
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(div1, kBackgroundType),
+                      TestDisplayItem(div2, kBackgroundType));
+
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(5000, 5000), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Cull rect after scroll: (1000,1000 8800x8600)
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(div2, kBackgroundType),
+                      TestDisplayItem(div3, kBackgroundType),
+                      TestDisplayItem(div4, kBackgroundType));
+}
+
+// TODO(wangxianzhu): Fix cull rect issue when painting layered contents under
+// overflow clip and add a test case.
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
+       BlockScrollingNonLayeredContents) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { display: none }"
+      "  body { margin: 0 }"
+      "  div { width: 100px; height: 100px; background: blue; }"
+      "  container { display: block; width: 200px; height: 200px;"
+      "              overflow: scroll }"
+      "</style>"
+      "<container id='container'>"
+      "  <div id='div1'></div>"
+      "  <div id='div2' style='margin-top: 2900px; margin-left: 3000px'></div>"
+      "  <div id='div3' style='margin-top: 2900px; margin-left: 6000px'></div>"
+      "  <div id='div4' style='margin-top: 2900px; margin-left: 9000px'></div>"
+      "</container>");
+
+  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& div1 = *GetLayoutObjectByElementId("div1");
+  auto& div2 = *GetLayoutObjectByElementId("div2");
+  auto& div3 = *GetLayoutObjectByElementId("div3");
+  auto& div4 = *GetLayoutObjectByElementId("div4");
+
+  // Initial cull rect: (0,0 4200x4200)
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(div1, kBackgroundType),
+                      TestDisplayItem(div2, kBackgroundType));
+
+  container.GetScrollableArea()->SetScrollOffset(ScrollOffset(5000, 5000),
+                                                 kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Cull rect after scroll: (1000,1000 8100x8100)
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(div2, kBackgroundType),
+                      TestDisplayItem(div3, kBackgroundType),
+                      TestDisplayItem(div4, kBackgroundType));
+}
+
 }  // namespace blink

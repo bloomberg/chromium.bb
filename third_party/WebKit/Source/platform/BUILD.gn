@@ -1860,6 +1860,7 @@ test("blink_platform_unittests") {
     "graphics/gpu/DrawingBufferTest.cpp",
     "graphics/gpu/SharedGpuContextTest.cpp",
     "graphics/gpu/WebGLImageConversionTest.cpp",
+    "graphics/paint/CullRectTest.cpp",
     "graphics/paint/DisplayItemClientTest.cpp",
     "graphics/paint/DisplayItemListTest.cpp",
     "graphics/paint/DisplayItemTest.cpp",
