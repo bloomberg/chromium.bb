@@ -27,10 +27,10 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/previews/core/previews_decider.h"
-#include "components/previews/core/previews_experiments.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -1007,11 +1007,15 @@ bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
 
 bool DataReductionProxyConfig::ShouldEnableLoFi(
     const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(previews_decider);
+    const previews::PreviewsDecider& previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
+
+  if (base::FeatureList::IsEnabled(
+          features::kDataReductionProxyDecidesTransform)) {
+    return ShouldAcceptServerLoFi(request, previews_decider);
+  }
 
   bool enable_lofi = ShouldEnableLoFiInternal(request, previews_decider);
 
@@ -1027,11 +1031,15 @@ bool DataReductionProxyConfig::ShouldEnableLoFi(
 
 bool DataReductionProxyConfig::ShouldEnableLitePages(
     const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(previews_decider);
+    const previews::PreviewsDecider& previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
+
+  if (base::FeatureList::IsEnabled(
+          features::kDataReductionProxyDecidesTransform)) {
+    return ShouldAcceptLitePages(request, previews_decider);
+  }
 
   return ShouldEnableLitePagesInternal(request, previews_decider);
 }
@@ -1041,27 +1049,109 @@ bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
   return enabled_by_user_ && !unreachable_;
 }
 
+bool DataReductionProxyConfig::IsBlackListedOrDisabled(
+    const net::URLRequest& request,
+    const previews::PreviewsDecider& previews_decider,
+    previews::PreviewsType previews_type) const {
+  // Make sure request is not locally blacklisted.
+  if (params::IsBlackListEnabledForServerPreviews()) {
+    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the thresold as network
+    // speed is checked in IsNetworkQualityProhibitivelySlow().
+    // TODO(ryansturm): Use the correct ECT value (or add new method to
+    // just check blacklist). crbug.com/720102
+    return !previews_decider.ShouldAllowPreviewAtECT(
+        request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G);
+  } else {
+    // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
+    // will be removed when Lo-Fi and Lite Pages are moved over to using the
+    // PreviewsBlackList.
+    return lofi_off_;
+  }
+}
+
+bool DataReductionProxyConfig::ShouldAcceptServerLoFi(
+    const net::URLRequest& request,
+    const previews::PreviewsDecider& previews_decider) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kDataReductionProxyDecidesTransform));
+
+  if (IsBlackListedOrDisabled(request, previews_decider,
+                              previews::PreviewsType::LOFI)) {
+    return false;
+  }
+
+  if (params::IsLoFiAlwaysOnViaFlags()) {
+    return true;
+  }
+
+  if (params::IsLoFiCellularOnlyViaFlags()) {
+    return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
+  }
+
+  if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
+      params::IsIncludedInLoFiEnabledFieldTrial()) {
+    // Accept Lo-Fi from the data reduction proxy (it will handle the effective
+    // connection type check).
+    return true;
+  }
+
+  return false;
+}
+
+bool DataReductionProxyConfig::ShouldAcceptLitePages(
+    const net::URLRequest& request,
+    const previews::PreviewsDecider& previews_decider) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kDataReductionProxyDecidesTransform));
+
+  if (IsBlackListedOrDisabled(request, previews_decider,
+                              previews::PreviewsType::LITE_PAGE)) {
+    return false;
+  }
+
+  if (params::IsLoFiAlwaysOnViaFlags() &&
+      params::AreLitePagesEnabledViaFlags()) {
+    return true;
+  }
+
+  if (params::IsLoFiCellularOnlyViaFlags() &&
+      params::AreLitePagesEnabledViaFlags()) {
+    return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
+  }
+
+  if ((params::IsLoFiSlowConnectionsOnlyViaFlags() &&
+       params::AreLitePagesEnabledViaFlags()) ||
+      params::IsIncludedInLitePageFieldTrial()) {
+    // Accept LitePages from the data reduction proxy (it will handle the
+    // effective connection type check).
+    return true;
+  }
+
+  return false;
+}
+
 bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
     const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
+    const previews::PreviewsDecider& previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!base::FeatureList::IsEnabled(
+      features::kDataReductionProxyDecidesTransform));
 
   last_query_ = GetTicksNow();
   network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
-  if (params::IsBlackListEnabledForServerPreviews()) {
-    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the thresold as network
-    // speed is checked in IsNetworkQualityProhibitivelySlow().
-    // TODO(ryansturm): Use the correct ECT value. crbug.com/720102
-    if (!previews_decider->ShouldAllowPreviewAtECT(
-            request, previews::PreviewsType::LOFI,
-            net::EFFECTIVE_CONNECTION_TYPE_4G)) {
-      return false;
-    }
-  } else if (lofi_off_) {
-    // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
-    // will be removed when Lo-Fi and Lite Pages are moved over to using the
-    // PreviewsBlackList.
+  // LitePages overrides Server Lo-Fi. No fallback to Lo-Fi supported
+  // on this code path (not using DataReductionProxyDecidesTransform feature).
+  // TODO(dougarnett): Delete this surrounding method and related code once the
+  // DataReductionProxyDecidesTransform feature is launched to stable [725645].
+  if (ShouldEnableLitePages(request, previews_decider)) {
+    return false;
+  }
+
+  if (IsBlackListedOrDisabled(request, previews_decider,
+                              previews::PreviewsType::LOFI)) {
     return false;
   }
 
@@ -1088,22 +1178,13 @@ bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
 
 bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
     const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
+    const previews::PreviewsDecider& previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!base::FeatureList::IsEnabled(
+      features::kDataReductionProxyDecidesTransform));
 
-  if (params::IsBlackListEnabledForServerPreviews()) {
-    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the thresold as network
-    // speed is checked in IsNetworkQualityProhibitivelySlow().
-    // TODO(ryansturm): Use the correct ECT value. crbug.com/720102
-    if (!previews_decider->ShouldAllowPreviewAtECT(
-            request, previews::PreviewsType::LITE_PAGE,
-            net::EFFECTIVE_CONNECTION_TYPE_4G)) {
-      return false;
-    }
-  } else if (lofi_off_) {
-    // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
-    // will be removed when Lo-Fi and Lite Pages are moved over to using the
-    // PreviewsBlackList.
+  if (IsBlackListedOrDisabled(request, previews_decider,
+                              previews::PreviewsType::LITE_PAGE)) {
     return false;
   }
 

@@ -15,5 +15,12 @@ const base::Feature kDataReductionMainMenu{"DataReductionProxyMainMenu",
 const base::Feature kDataReductionSiteBreakdown{
     "DataReductionProxySiteBreakdown", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a new version of the data reduction proxy protocol where the server
+// decides if a server-generated preview should be served. The previous
+// version required the client to make this decision. The new protocol relies
+// on updates primarily to the Chrome-Proxy-Accept-Transform header.
+const base::Feature kDataReductionProxyDecidesTransform{
+    "DataReductionProxyDecidesTransform", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy
