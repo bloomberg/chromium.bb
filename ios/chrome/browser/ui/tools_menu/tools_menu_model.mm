@@ -60,9 +60,6 @@ const MenuItemInfo itemInfoList[] = {
   { IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, kToolsMenuRequestDesktopId,
     IDC_REQUEST_DESKTOP_SITE,             ToolbarTypeWebAll,
     0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, kToolsMenuRequestMobileId,
-    IDC_REQUEST_MOBILE_SITE,              ToolbarTypeWebAll,
-    0,                                    nil },
   { IDS_IOS_TOOLS_MENU_READER_MODE,       kToolsMenuReaderMode,
     IDC_READER_MODE,                      ToolbarTypeWebAll,
     0,                                    nil },
@@ -103,9 +100,10 @@ bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
     // flag should stick when going backward and which cell should be visible
     // when navigating to native pages).
     case IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE:
-      return (configuration.userAgentType != web::UserAgentType::DESKTOP);
+      return true;
     case IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE:
-      return (configuration.userAgentType == web::UserAgentType::DESKTOP);
+      NOTREACHED();
+      return false;
     default:
       return true;
   }
