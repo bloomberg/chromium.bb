@@ -1291,7 +1291,8 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   Browser* browser = chrome::GetLastActiveBrowser();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
-    browser = new Browser(Browser::CreateParams([self lastProfile], true));
+    browser = new Browser(
+        Browser::CreateParams([self safeLastProfileForNewWindows], true));
     browser->window()->Show();
   }
 
