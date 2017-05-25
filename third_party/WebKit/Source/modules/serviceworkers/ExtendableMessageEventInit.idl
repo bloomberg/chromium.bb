@@ -9,5 +9,5 @@ dictionary ExtendableMessageEventInit : ExtendableEventInit {
      DOMString origin;
      DOMString lastEventId;
      (Client or ServiceWorker or MessagePort)? source;
-     sequence<MessagePort>? ports;
+     sequence<MessagePort> ports;
 };
