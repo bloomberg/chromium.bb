@@ -102,9 +102,6 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     chromeos::NetworkConnect::Initialize(nullptr);
     chromeos::NetworkHandler::Initialize();
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableTether);
-
     TestingProfile::Builder builder;
     profile_ = builder.Build();
 
@@ -234,16 +231,17 @@ TEST_F(TetherServiceTest, TestScreenLock) {
                 chromeos::NetworkTypePattern::Tether()));
 }
 
-TEST_F(TetherServiceTest, TestFeatureFlag) {
-  base::CommandLine::Reset();
-  base::CommandLine::Init(0, nullptr);
+TEST_F(TetherServiceTest, TestFeatureFlagDisabled) {
+  EXPECT_FALSE(TetherService::Get(profile_.get()));
+}
 
-  CreateTetherService();
+TEST_F(TetherServiceTest, TestFeatureFlagEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableTether);
 
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
+  TetherService* tether_service = TetherService::Get(profile_.get());
+  EXPECT_TRUE(tether_service);
+  tether_service->Shutdown();
 }
 
 TEST_F(TetherServiceTest, TestNoTetherHosts) {

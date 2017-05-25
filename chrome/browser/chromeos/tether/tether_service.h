@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -44,13 +45,17 @@ class TetherService : public KeyedService,
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Whether the Tether feature has been enabled via a chrome://about or
+  // command line flag.
+  static bool IsFeatureFlagEnabled();
+
   // Attempt to start the Tether module. Only succeeds if all conditions to
   // reach chromeos::NetworkStateHandler::TechnologyState::ENABLED are reached.
   // Should only be called once a user is logged in.
-  void StartTetherIfEnabled();
+  virtual void StartTetherIfEnabled();
 
   // Stop the Tether module.
-  void StopTether();
+  virtual void StopTether();
 
  protected:
   // KeyedService:
@@ -79,24 +84,24 @@ class TetherService : public KeyedService,
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
 
+  // Whether Tether hosts are available.
+  virtual bool HasSyncedTetherHosts() const;
+
   virtual void UpdateTetherTechnologyState();
+  chromeos::NetworkStateHandler::TechnologyState GetTetherTechnologyState();
+
+  chromeos::NetworkStateHandler* network_state_handler() {
+    return network_state_handler_;
+  }
 
  private:
   friend class TetherServiceTest;
-
-  chromeos::NetworkStateHandler::TechnologyState GetTetherTechnologyState();
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestFeatureFlagEnabled);
 
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
 
   bool IsBluetoothAvailable() const;
-
-  // Whether Tether hosts are available.
-  bool HasSyncedTetherHosts() const;
-
-  // Whether the Tether feature has been enabled via an about or command line
-  // flag.
-  bool IsFeatureFlagEnabled() const;
 
   // Whether Tether is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
