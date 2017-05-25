@@ -371,17 +371,6 @@ const char kDisplayList2dCanvasDescription[] =
     "Enables the use of display lists to record 2D canvas commands. This "
     "allows 2D canvas rasterization to be performed on separate thread.";
 
-const char kEnable2dCanvasDynamicRenderingModeSwitchingName[] =
-    "Enable 2D canvas dynamic rendering mode switching.";
-
-const char kEnable2dCanvasDynamicRenderingModeSwitchingDescription[] =
-    "There are multiple implementations of the graphics rendering pipeline "
-    "for the 2D canvas. These different implementations have different "
-    "performance characteristics. Turning on this flag allows canvas 2D "
-    "contexts to switch between these implementations on the fly based on "
-    "how the canvas is used in order to increase performance. For example, "
-    "going from an implementation that uses the GPU to one that doesn't.";
-
 const char kExperimentalExtensionApisName[] = "Experimental Extension APIs";
 
 const char kExperimentalExtensionApisDescription[] =

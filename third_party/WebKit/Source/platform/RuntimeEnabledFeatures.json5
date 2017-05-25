@@ -377,10 +377,6 @@
       status: "experimental",
     },
     {
-      name: "EnableCanvas2dDynamicRenderingModeSwitching",
-      status: "experimental",
-    },
-    {
       name: "ExecCommandInJavaScript",
       status: "test",
     },

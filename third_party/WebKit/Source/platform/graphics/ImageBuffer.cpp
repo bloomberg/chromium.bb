@@ -38,7 +38,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
+#include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
@@ -147,7 +147,7 @@ bool ImageBuffer::IsSurfaceValid() const {
 
 void ImageBuffer::FinalizeFrame() {
   if (IsAccelerated() &&
-      ExpensiveCanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration &&
+      CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration &&
       !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
     if (gpu_readback_invoked_in_current_frame_) {
       gpu_readback_successive_frames_++;
@@ -157,7 +157,7 @@ void ImageBuffer::FinalizeFrame() {
     }
 
     if (gpu_readback_successive_frames_ >=
-        ExpensiveCanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames) {
+        CanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames) {
       DisableAcceleration();
     }
   }

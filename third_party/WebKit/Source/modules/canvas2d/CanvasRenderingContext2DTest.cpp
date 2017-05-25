@@ -22,7 +22,7 @@
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
-#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
+#include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
@@ -537,8 +537,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderOverdrawLimit) {
 
   Context2d()->setGlobalAlpha(0.5f);  // To prevent overdraw optimization
   for (int i = 0;
-       i < ExpensiveCanvasHeuristicParameters::kExpensiveOverdrawThreshold - 1;
-       i++) {
+       i < CanvasHeuristicParameters::kExpensiveOverdrawThreshold - 1; i++) {
     Context2d()->fillRect(0, 0, 10, 10);
   }
 
@@ -554,8 +553,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit) {
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
 
   Context2d()->setGlobalAlpha(0.5f);  // To prevent overdraw optimization
-  for (int i = 0;
-       i < ExpensiveCanvasHeuristicParameters::kExpensiveOverdrawThreshold;
+  for (int i = 0; i < CanvasHeuristicParameters::kExpensiveOverdrawThreshold;
        i++) {
     Context2d()->fillRect(0, 0, 10, 10);
   }
@@ -577,8 +575,8 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit) {
   EXPECT_FALSE(exception_state.HadException());
   HTMLCanvasElement* source_canvas =
       static_cast<HTMLCanvasElement*>(source_canvas_element);
-  IntSize source_size(
-      10, 10 * ExpensiveCanvasHeuristicParameters::kExpensiveImageSizeRatio);
+  IntSize source_size(10,
+                      10 * CanvasHeuristicParameters::kExpensiveImageSizeRatio);
   std::unique_ptr<UnacceleratedImageBufferSurface> source_surface =
       WTF::MakeUnique<UnacceleratedImageBufferSurface>(source_size, kNonOpaque);
   source_canvas->CreateImageBufferUsingSurfaceForTesting(
@@ -612,8 +610,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit) {
   HTMLCanvasElement* source_canvas =
       static_cast<HTMLCanvasElement*>(source_canvas_element);
   IntSize source_size(
-      10,
-      10 * ExpensiveCanvasHeuristicParameters::kExpensiveImageSizeRatio + 1);
+      10, 10 * CanvasHeuristicParameters::kExpensiveImageSizeRatio + 1);
   std::unique_ptr<UnacceleratedImageBufferSurface> source_surface =
       WTF::MakeUnique<UnacceleratedImageBufferSurface>(source_size, kNonOpaque);
   source_canvas->CreateImageBufferUsingSurfaceForTesting(
@@ -643,12 +640,10 @@ TEST_F(CanvasRenderingContext2DTest,
 
   Context2d()->beginPath();
   Context2d()->moveTo(7, 5);
-  for (int i = 1;
-       i < ExpensiveCanvasHeuristicParameters::kExpensivePathPointCount - 1;
+  for (int i = 1; i < CanvasHeuristicParameters::kExpensivePathPointCount - 1;
        i++) {
-    float angle_rad =
-        twoPiFloat * i /
-        (ExpensiveCanvasHeuristicParameters::kExpensivePathPointCount - 1);
+    float angle_rad = twoPiFloat * i /
+                      (CanvasHeuristicParameters::kExpensivePathPointCount - 1);
     Context2d()->lineTo(5 + 2 * cos(angle_rad), 5 + 2 * sin(angle_rad));
   }
   Context2d()->fill();
@@ -667,12 +662,10 @@ TEST_F(CanvasRenderingContext2DTest,
 
   Context2d()->beginPath();
   Context2d()->moveTo(7, 5);
-  for (int i = 1;
-       i < ExpensiveCanvasHeuristicParameters::kExpensivePathPointCount + 1;
+  for (int i = 1; i < CanvasHeuristicParameters::kExpensivePathPointCount + 1;
        i++) {
-    float angle_rad =
-        twoPiFloat * i /
-        (ExpensiveCanvasHeuristicParameters::kExpensivePathPointCount + 1);
+    float angle_rad = twoPiFloat * i /
+                      (CanvasHeuristicParameters::kExpensivePathPointCount + 1);
     Context2d()->lineTo(5 + 2 * cos(angle_rad), 5 + 2 * sin(angle_rad));
   }
   Context2d()->fill();
@@ -695,7 +688,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWhenPathIsConcave) {
   Context2d()->lineTo(5, 9);
   Context2d()->fill();
 
-  if (ExpensiveCanvasHeuristicParameters::kConcavePathsAreExpensive) {
+  if (CanvasHeuristicParameters::kConcavePathsAreExpensive) {
     EXPECT_TRUE(CanvasElement().ShouldBeDirectComposited());
   } else {
     EXPECT_FALSE(CanvasElement().ShouldBeDirectComposited());
@@ -734,7 +727,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithComplexClip) {
   Context2d()->clip();
   Context2d()->fillRect(0, 0, 4, 4);
 
-  if (ExpensiveCanvasHeuristicParameters::kComplexClipsAreExpensive) {
+  if (CanvasHeuristicParameters::kComplexClipsAreExpensive) {
     EXPECT_TRUE(CanvasElement().ShouldBeDirectComposited());
   } else {
     EXPECT_FALSE(CanvasElement().ShouldBeDirectComposited());
@@ -753,7 +746,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithBlurredShadow) {
   Context2d()->setShadowBlur(1.0f);
   Context2d()->fillRect(1, 1, 1, 1);
 
-  if (ExpensiveCanvasHeuristicParameters::kBlurredShadowsAreExpensive) {
+  if (CanvasHeuristicParameters::kBlurredShadowsAreExpensive) {
     EXPECT_TRUE(CanvasElement().ShouldBeDirectComposited());
   } else {
     EXPECT_FALSE(CanvasElement().ShouldBeDirectComposited());
@@ -785,9 +778,7 @@ TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState) {
 
   Context2d()->fillRect(0, 0, 1, 1);  // To have a non-empty dirty rect.
   for (int i = 0;
-       i <
-       ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth - 1;
-       ++i) {
+       i < CanvasHeuristicParameters::kExpensiveRecordingStackDepth - 1; ++i) {
     Context2d()->save();
     Context2d()->translate(1.0f, 0.0f);
   }
@@ -804,8 +795,7 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState) {
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
 
   Context2d()->fillRect(0, 0, 1, 1);  // To have a non-empty dirty rect.
-  for (int i = 0;
-       i < ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth;
+  for (int i = 0; i < CanvasHeuristicParameters::kExpensiveRecordingStackDepth;
        ++i) {
     Context2d()->save();
     Context2d()->translate(1.0f, 0.0f);
@@ -954,8 +944,7 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
 
   DummyExceptionStateForTesting exception_state;
   for (int i = 0;
-       i <
-       ExpensiveCanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames - 1;
+       i < CanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames - 1;
        i++) {
     Context2d()->getImageData(0, 0, 1, 1, exception_state);
     CanvasElement().FinalizeFrame();
@@ -970,7 +959,7 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
   CanvasElement().FinalizeFrame();
 
   EXPECT_FALSE(exception_state.HadException());
-  if (ExpensiveCanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
+  if (CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
     EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
     EXPECT_EQ(0u, GetGlobalAcceleratedImageBufferCount());
     EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
@@ -999,14 +988,14 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
 
   for (int test_variant = 0; test_variant < kTestVariantCount; test_variant++) {
     int delta = test_variant == kLargeTextureDisablesAcceleration ? 1 : -1;
-    int src_size = std::sqrt(static_cast<float>(
-                       ExpensiveCanvasHeuristicParameters::
-                           kDrawImageTextureUploadSoftSizeLimit)) +
-                   delta;
+    int src_size =
+        std::sqrt(static_cast<float>(
+            CanvasHeuristicParameters::kDrawImageTextureUploadSoftSizeLimit)) +
+        delta;
     int dst_size =
         src_size /
             std::sqrt(static_cast<float>(
-                ExpensiveCanvasHeuristicParameters::
+                CanvasHeuristicParameters::
                     kDrawImageTextureUploadSoftSizeLimitScaleThreshold)) -
         delta;
 
@@ -1050,41 +1039,6 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
   // Restore global state to prevent side-effects on other tests
   RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(
       saved_fixed_rendering_mode);
-}
-
-TEST_F(CanvasRenderingContext2DTest,
-       IsAccelerationOptimalForCanvasContentHeuristic) {
-  CreateContext(kNonOpaque);
-
-  auto fake_accelerate_surface =
-      WTF::MakeUnique<FakeAcceleratedImageBufferSurface>(IntSize(10, 10),
-                                                         kNonOpaque);
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(
-      std::move(fake_accelerate_surface));
-
-  NonThrowableExceptionState exception_state;
-
-  CanvasRenderingContext2D* context = Context2d();
-  EXPECT_TRUE(context->IsAccelerationOptimalForCanvasContent());
-
-  context->fillRect(10, 10, 100, 100);
-  EXPECT_TRUE(context->IsAccelerationOptimalForCanvasContent());
-
-  int num_reps = 100;
-  for (int i = 0; i < num_reps; i++) {
-    context->fillText("Text", 10, 10, 1);  // faster with no acceleration
-  }
-  EXPECT_FALSE(context->IsAccelerationOptimalForCanvasContent());
-
-  for (int i = 0; i < num_reps; i++) {
-    context->fillRect(10, 10, 200, 200);  // faster with acceleration
-  }
-  EXPECT_TRUE(context->IsAccelerationOptimalForCanvasContent());
-
-  for (int i = 0; i < num_reps * 100; i++) {
-    context->strokeText("Text", 10, 10, 1);  // faster with no acceleration
-  }
-  EXPECT_FALSE(context->IsAccelerationOptimalForCanvasContent());
 }
 
 TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
