@@ -20,6 +20,26 @@ from google.protobuf import text_format
 import traffic_annotation_pb2
 
 
+def _RecursiveHash(string):
+  if len(string) == 1:
+    return ord(string[0])
+  last_character = ord(string[-1])
+  string = string[:-1]
+  return (_RecursiveHash(string) * 31 + last_character) % 138003713
+
+
+def _ComputeStringHash(unique_id):
+  """Computes the hash value of a string, as in
+  'net/traffic_annotation/network_traffic_annotation.h'.
+  args:
+    unique_id: str The string to be converted to hash code.
+
+  Returns:
+    unsigned int Hash code of the input string
+  """
+  return _RecursiveHash(unique_id) if len(unique_id) else -1
+
+
 def _RunClangTool(src_dir, build_dir, path_filters):
   """Executes the clang tool to extract annotations.
   Args:
@@ -37,8 +57,9 @@ def _RunClangTool(src_dir, build_dir, path_filters):
     args = [
         src_dir + "/tools/clang/scripts/run_tool.py",
         "--generate-compdb",
-        "traffic_annotation_extractor",
-        build_dir, path]
+        "--tool=traffic_annotation_extractor",
+        "-p", build_dir,
+        path]
     if sys.platform == "win32":
       args.insert(0, "python")
     command = subprocess.Popen(args, stdout=subprocess.PIPE,
@@ -59,17 +80,24 @@ def _ParsRawAnnotations(raw_annotations):
         2- File path.
         3- Name of the function including this position.
         4- Line number.
-        5- Unique id of annotation.
-        6- Serialization of annotation text (several lines)
+        5- Function Type.
+        6- Unique id of annotation.
+        7- Completing id or group id, when applicable, empty otherwise.
+        8- Serialization of annotation text (several lines)
         n- "==== ANNOTATION ENDS ===="
 
   Returns:
     annotations: ExtractedNetworkTrafficAnnotation A protobuf including all
       extracted annotations.
+    metadata: list of dict List of metadata for each annotation. Each item
+      includes the following fields:
+        function_type: str Type of the function that defines the annotation.
+        extra_id: str Possible prefix for annotation completion.
     errors: list of str List of errors.
   """
   annotations = traffic_annotation_pb2.ExtractedNetworkTrafficAnnotation()
   errors = []
+  metadata = []
 
   lines = [line.strip("\r\n") for line in raw_annotations.split("\n")]
   current = 0
@@ -88,10 +116,13 @@ def _ParsRawAnnotations(raw_annotations):
       source.file = lines[current + 1]
       source.function = lines[current + 2]
       source.line = int(lines[current + 3])
-      unique_id = lines[current + 4]
+      unique_id = lines[current + 5]
 
+      new_metadata = {'function_type': lines[current + 4],
+                      'extra_id': lines[current + 6],
+                      'unique_id_hash': _ComputeStringHash(unique_id)}
       # Extract serialized proto.
-      current += 5
+      current += 7
       annotation_text = ""
 
       while current < len(lines):
@@ -105,9 +136,9 @@ def _ParsRawAnnotations(raw_annotations):
           "Error at line %i, expected annotation end tag." % current)
 
       # Process unittests and undefined tags.
-      if unique_id == "UnitTest":
+      if unique_id in ("test", "test_partial"):
         continue
-      if unique_id == "Undefined":
+      if unique_id in ("undefined", "missing"):
         errors.append("Annotation is not defined for file '%s', line %i." %
             (source.file, source.line))
         continue
@@ -124,29 +155,54 @@ def _ParsRawAnnotations(raw_annotations):
       annotation_proto.unique_id = unique_id
       annotation_proto.source.CopyFrom(source)
       annotations.network_traffic_annotation.add().CopyFrom(annotation_proto)
+      metadata.append(new_metadata)
 
   except Exception as error:
     errors.append(str(error))
 
   print "Extracted %i annotations with %i errors." % \
     (len(annotations.network_traffic_annotation), len(errors))
-  return annotations, errors
+  return annotations, metadata, errors
 
 
-def _WriteSummaryFile(annotations, errors, file_path):
+def _WriteSummaryFile(annotations, metadata, errors, file_path):
   """Writes extracted annotations and errors into a simple text file.
   args:
-    annotations ExtractedNetworkTrafficAnnotation A protobuf including all
+    annotations: ExtractedNetworkTrafficAnnotation A protobuf including all
       extracted annotations.
-    errors list of str List of all extraction errors.
-    file_path str File path to the brief summary file.
+    metadata: list of dict Metadata for annotations, as specified in the outputs
+      of _ParsRawAnnotations function.
+    errors: list of str List of all extraction errors.
+    file_path: str File path to the brief summary file.
   """
   with open(file_path, 'w') as summary_file:
     if errors:
       summary_file.write("Errors:\n%s\n\n" % "\n".join(errors))
     if len(annotations.network_traffic_annotation):
-      summary_file.write("Annotations:\n%s" % "\n---\n".join(
-          [str(a) for a in annotations.network_traffic_annotation]))
+      summary_file.write("Annotations:\n")
+      for annotation, meta in zip(annotations.network_traffic_annotation,
+                                  metadata):
+        summary_file.write(
+            "%s\n+MetaData:%s\n---\n" % (str(annotation), str(meta)))
+
+
+def _WriteHashCodesFile(annotations, metadata, file_path):
+  """Writes unique ids and hash codes of annotations into a simple text file.
+  args:
+    annotations: ExtractedNetworkTrafficAnnotation A protobuf including all
+      extracted annotations.
+    metadata: list of dict Metadata for annotations, as specified in the outputs
+      of _ParsRawAnnotations function.
+    file_path: str File path to the brief summary file.
+  """
+  with open(file_path, 'w') as summary_file:
+    for annotation, meta in zip(annotations.network_traffic_annotation,
+                                metadata):
+      summary_file.write(
+          "%s,%s\n" % (annotation.unique_id, meta['unique_id_hash']))
+    for keyword in ("test", "test_partial", "undefined", "missing"):
+      summary_file.write(
+          "%s,%s\n" % (keyword, _ComputeStringHash(keyword)))
 
 
 def main():
@@ -162,14 +218,17 @@ def main():
                            'provided, clang tool is not run and this is used '
                            'as input.')
   parser.add_argument('--summary-file',
-                      help='Path to the output file.')
+                      help='Path to the output file with all annotations.')
+  parser.add_argument('--hash-codes-file',
+                      help='Path to the output file with the list of unique '
+                           'ids and their hash codes.')
   parser.add_argument('path_filters',
                       nargs='*',
                       help='Optional paths to filter what files the tool is '
                            'run on.')
   args = parser.parse_args()
 
-  if not args.summary_file:
+  if not args.summary_file and not args.hash_codes_file:
     print "Warning: Output file not specified."
 
   # If a pre-extracted input file is provided, load it.
@@ -194,7 +253,7 @@ def main():
     with open(args.extractor_output, 'w') as raw_file:
       raw_file.write(raw_annotations)
 
-  annotations, errors = _ParsRawAnnotations(raw_annotations)
+  annotations, metadata, errors = _ParsRawAnnotations(raw_annotations)
 
   if not annotations:
     print "Could not extract any annotation."
@@ -203,7 +262,10 @@ def main():
     return 1
 
   if args.summary_file:
-    _WriteSummaryFile(annotations, errors, args.summary_file)
+    _WriteSummaryFile(annotations, metadata, errors, args.summary_file)
+
+  if args.hash_codes_file:
+    _WriteHashCodesFile(annotations, metadata, args.hash_codes_file)
 
   return 0
 
