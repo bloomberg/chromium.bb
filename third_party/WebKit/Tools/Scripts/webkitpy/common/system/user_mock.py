@@ -44,12 +44,6 @@ class MockUser(object):
     def __init__(self):
         self.opened_urls = []
 
-    def edit(self, files):
-        pass
-
-    def page(self, message):
-        pass
-
     def confirm(self, message=None, default='y'):
         _log.info(message)
         return default == 'y'
