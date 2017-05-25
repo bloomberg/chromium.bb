@@ -151,8 +151,18 @@ class BindingSetBase {
   }
 
   void FlushForTesting() {
+    DCHECK(!is_flushing_);
+    is_flushing_ = true;
     for (auto& binding : bindings_)
       binding.second->FlushForTesting();
+    is_flushing_ = false;
+    // Clean up any bindings that were destroyed.
+    for (auto it = bindings_.begin(); it != bindings_.end();) {
+      if (!it->second)
+        it = bindings_.erase(it);
+      else
+        ++it;
+    }
   }
 
  private:
@@ -241,7 +251,8 @@ class BindingSetBase {
 
     // We keep the Entry alive throughout error dispatch.
     std::unique_ptr<Entry> entry = std::move(it->second);
-    bindings_.erase(it);
+    if (!is_flushing_)
+      bindings_.erase(it);
 
     if (!error_handler_.is_null())
       error_handler_.Run();
@@ -254,6 +265,7 @@ class BindingSetBase {
   PreDispatchCallback pre_dispatch_handler_;
   BindingId next_binding_id_ = 0;
   std::map<BindingId, std::unique_ptr<Entry>> bindings_;
+  bool is_flushing_ = false;
   const Context* dispatch_context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BindingSetBase);
