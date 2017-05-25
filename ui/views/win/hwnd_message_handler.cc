@@ -1819,7 +1819,11 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   if (IsVisible())
     delegate_->SchedulePaint();
 
-  if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
+  // Calling DefWindowProc is only necessary if there's a system frame being
+  // drawn. Otherwise it can draw an incorrect title bar and cause visual
+  // corruption.
+  if (!delegate_->HasFrame() ||
+      delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     SetMsgHandled(TRUE);
     return TRUE;
   }
