@@ -354,16 +354,6 @@ public class ChromePreferenceManager {
         writeBoolean(WEBAPK_RUNTIME_KEY, isEnabled);
     }
 
-    /** Checks the cached value for the webapk any package name feature. */
-    public boolean getCachedWebApkAnyPackageName() {
-        return mSharedPreferences.getBoolean(WEBAPK_ANY_PACKAGE_KEY, false);
-    }
-
-    /** Writes the cached value for the webapk any package name feature is enabled. */
-    public void setCachedWebApkAnyPackageNameEnabled(boolean isEnabled) {
-        writeBoolean(WEBAPK_ANY_PACKAGE_KEY, isEnabled);
-    }
-
     public boolean getCachedChromeDefaultBrowser() {
         return mSharedPreferences.getBoolean(CHROME_DEFAULT_BROWSER, false);
     }
