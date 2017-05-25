@@ -386,17 +386,6 @@ void NavigationRequest::BeginNavigation() {
   state_ = STARTED;
   CreateNavigationHandle();
 
-  if (nav_entry_id_) {
-    NavigationEntryImpl* nav_entry =
-        static_cast<NavigationControllerImpl*>(
-            frame_tree_node_->navigator()->GetController())
-            ->GetEntryWithUniqueID(nav_entry_id_);
-    if (nav_entry) {
-      navigation_handle_->set_base_url_for_data_url(
-          nav_entry->GetBaseURLForDataURL());
-    }
-  }
-
   RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url) &&

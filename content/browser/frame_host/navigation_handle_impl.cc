@@ -153,6 +153,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     if (nav_entry) {
       reload_type_ = nav_entry->reload_type();
       restore_type_ = nav_entry->restore_type();
+      base_url_for_data_url_ = nav_entry->GetBaseURLForDataURL();
     }
   }
 
