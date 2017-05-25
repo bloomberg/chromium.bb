@@ -1095,13 +1095,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_CFL
     // TODO(ltrudeau) support PALETTE
     if (mbmi->uv_mode == DC_PRED) {
-      mbmi->cfl_alpha_idx = read_cfl_alphas(
-#if CONFIG_EC_ADAPT
-          xd->tile_ctx,
-#else
-          cm->fc,
-#endif  // CONFIG_EC_ADAPT
-          r, mbmi->skip, mbmi->cfl_alpha_signs);
+      mbmi->cfl_alpha_idx =
+          read_cfl_alphas(ec_ctx, r, mbmi->skip, mbmi->cfl_alpha_signs);
     }
 #endif  // CONFIG_CFL
 
