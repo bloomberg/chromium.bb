@@ -6,7 +6,6 @@
 
 #include <initializer_list>
 #include <set>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -20,8 +19,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -32,8 +29,8 @@
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -43,281 +40,29 @@
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "mojo/edk/system/core.h"
-#include "testing/multiprocess_func_list.h"
 
 namespace safe_browsing {
 
 namespace {
 
-using chrome_cleaner::mojom::ElevationStatus;
-using chrome_cleaner::mojom::PromptAcceptance;
-
-// Special switches passed by the parent process (test case) to the reporter
-// child process to indicate the behavior that should be mocked.
-constexpr char kExitCodeToReturnSwitch[] = "exit-code-to-return";
-constexpr char kReportUwSFoundSwitch[] = "report-uws-found";
-constexpr char kReportElevationRequiredSwitch[] = "report-elevation-required";
-constexpr char kExpectedPromptAcceptanceSwitch[] = "expected-prompt-acceptance";
-constexpr char kExpectedReporterFailureSwitch[] = "expected-reporter-crash";
-
-// The exit code to be returned in case of failure in the child process.
-// This should never be passed as the expected exit code to be reported by
-// tests.
-constexpr int kFailureExitCode = -1;
-
-// Pass the |prompt_acceptance| to the mock child process in command line
-// switch kExpectedPromptAcceptanceSwitch.
-void AddPromptAcceptanceToCommandLine(PromptAcceptance prompt_acceptance,
-                                      base::CommandLine* command_line) {
-  command_line->AppendSwitchASCII(
-      kExpectedPromptAcceptanceSwitch,
-      base::IntToString(static_cast<int>(prompt_acceptance)));
-}
-
-// Parses and returns the prompt acceptance value passed by the parent process
-// in command line switch kExpectedPromptAcceptanceSwitch. Returns
-// PromptAcceptance::UNSPECIFIED if the switch doesn't exist or can't be
-// parsed to a valid PromptAcceptance enumerator.
-PromptAcceptance PromptAcceptanceFromCommandLine(
-    const base::CommandLine& command_line) {
-  const std::string& prompt_acceptance_str =
-      command_line.GetSwitchValueASCII(kExpectedPromptAcceptanceSwitch);
-  int val = -1;
-  if (base::StringToInt(prompt_acceptance_str, &val)) {
-    PromptAcceptance prompt_acceptance = static_cast<PromptAcceptance>(val);
-    if (chrome_cleaner::mojom::IsKnownEnumValue(prompt_acceptance))
-      return prompt_acceptance;
-  }
-  return PromptAcceptance::UNSPECIFIED;
-}
-
-// Pointer to ChromePromptPtr object to be used by the child process. The
-// object must be created, deleted, and accessed on the IPC thread only.
-chrome_cleaner::mojom::ChromePromptPtr* g_chrome_prompt_ptr = nullptr;
-
-// Potential failures in the reporter process that should be handled by the
-// parent process.
-enum class MockedReporterFailure {
-  kNone = 0,
-  // Crashes at specific moments in the reporter when connected to the IPC.
-  kCrashOnStartup = 1,
-  kCrashAfterConnectedToParentProcess = 2,
-  kCrashWhileWaitingForResponse = 3,
-  kCrashAfterReceivedResponse = 4,
-  // Once an IPC message is sent by the reporter, the parent process will
-  // report a bad message that will lead to an invocation of OnConnectionError.
-  kBadMessageReported = 5,
-};
-
-void AddExpectedCrashToCommandLine(MockedReporterFailure reporter_failure,
-                                   base::CommandLine* command_line) {
-  command_line->AppendSwitchASCII(
-      kExpectedReporterFailureSwitch,
-      base::IntToString(static_cast<int>(reporter_failure)));
-}
-
-void CrashIf(MockedReporterFailure reporter_failure) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  const std::string& expected_str =
-      command_line->GetSwitchValueASCII(kExpectedReporterFailureSwitch);
-  int val = -1;
-  if (base::StringToInt(expected_str, &val) &&
-      static_cast<MockedReporterFailure>(val) == reporter_failure) {
-    exit(kFailureExitCode);
-  }
-}
-
-// The callback function to be passed to ChromePrompt::PromptUser to check if
-// the prompt accepted returned by the parent process is equal to
-// |expected_prompt_acceptance|. Will set |expected_value_received| with the
-// comparison result, so that the main thread can report failure. Will invoke
-// |done| callback when done.
-void PromptUserCallback(const base::Closure& done,
-                        PromptAcceptance expected_prompt_acceptance,
-                        bool* expected_value_received,
-                        PromptAcceptance prompt_acceptance) {
-  *expected_value_received = prompt_acceptance == expected_prompt_acceptance;
-  // It's safe to delete the ChromePromptPtr object here, since it will not be
-  // used anymore by the child process.
-  delete g_chrome_prompt_ptr;
-  g_chrome_prompt_ptr = nullptr;
-  CrashIf(MockedReporterFailure::kCrashAfterReceivedResponse);
-  done.Run();
-}
-
-// Mocks the sending of scan results from the child process to the parent
-// process. Obtains the behavior to be mocked from special switches in
-// |command_line|. Sets |expected_value_received| as true if the parent
-// process replies with the expected prompt acceptance value.
-void SendScanResults(chrome_cleaner::mojom::ChromePromptPtrInfo prompt_ptr_info,
-                     const base::CommandLine& command_line,
-                     const base::Closure& done,
-                     bool* expected_value_received) {
-  constexpr int kDefaultUwSId = 10;
-  constexpr char kDefaultUwSName[] = "RemovedUwS";
-
-  // This pointer will be deleted by PromptUserCallback.
-  g_chrome_prompt_ptr = new chrome_cleaner::mojom::ChromePromptPtr();
-  g_chrome_prompt_ptr->Bind(std::move(prompt_ptr_info));
-
-  std::vector<chrome_cleaner::mojom::UwSPtr> removable_uws_found;
-  if (command_line.HasSwitch(kReportUwSFoundSwitch)) {
-    chrome_cleaner::mojom::UwSPtr uws = chrome_cleaner::mojom::UwS::New();
-    uws->id = kDefaultUwSId;
-    uws->name = kDefaultUwSName;
-    uws->observed_behaviours = chrome_cleaner::mojom::ObservedBehaviours::New();
-    removable_uws_found.push_back(std::move(uws));
-  }
-  const ElevationStatus elevation_status =
-      command_line.HasSwitch(kReportElevationRequiredSwitch)
-          ? ElevationStatus::REQUIRED
-          : ElevationStatus::NOT_REQUIRED;
-  const PromptAcceptance expected_prompt_acceptance =
-      PromptAcceptanceFromCommandLine(command_line);
-
-  // This task is posted to the IPC thread so that it will happen after the
-  // request is sent to the parent process and before the response gets
-  // handled on the IPC thread.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CrashIf,
-                 MockedReporterFailure::kCrashWhileWaitingForResponse));
-
-  (*g_chrome_prompt_ptr)
-      ->PromptUser(
-          std::move(removable_uws_found), elevation_status,
-          base::Bind(&PromptUserCallback, done, expected_prompt_acceptance,
-                     expected_value_received));
-}
-
-// Connects to the parent process and sends mocked scan results. Returns true
-// if connection was successful and the prompt acceptance results sent by the
-// parent process are the same as expected.
-bool ConnectAndSendDataToParentProcess(
-    const std::string& chrome_mojo_pipe_token,
-    const base::CommandLine& command_line) {
-  DCHECK(!chrome_mojo_pipe_token.empty());
-
-  mojo::edk::Init();
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-  base::Thread io_thread("IPCThread");
-  if (!io_thread.StartWithOptions(options))
-    return false;
-  mojo::edk::ScopedIPCSupport ipc_support(
-      io_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
-
-  auto invitation =
-      mojo::edk::IncomingBrokerClientInvitation::AcceptFromCommandLine(
-          mojo::edk::TransportProtocol::kLegacy);
-  chrome_cleaner::mojom::ChromePromptPtrInfo prompt_ptr_info(
-      invitation->ExtractMessagePipe(chrome_mojo_pipe_token), 0);
-
-  CrashIf(MockedReporterFailure::kCrashAfterConnectedToParentProcess);
-
-  base::MessageLoop message_loop;
-  base::RunLoop run_loop;
-  // After the response from the parent process is received, this will post a
-  // task to unblock the child process's main thread.
-  auto done = base::Bind(
-      [](scoped_refptr<base::SequencedTaskRunner> main_runner,
-         base::Closure quit_closure) {
-        main_runner->PostTask(FROM_HERE, std::move(quit_closure));
-      },
-      base::SequencedTaskRunnerHandle::Get(),
-      base::Passed(run_loop.QuitClosure()));
-
-  bool expected_value_received = false;
-  io_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&SendScanResults, std::move(prompt_ptr_info),
-                                command_line, done, &expected_value_received));
-
-  run_loop.Run();
-
-  return expected_value_received;
-}
-
-// Mocks a Software Reporter process that returns an exit code specified by
-// command line switch kExitCodeToReturnSwitch. If a Mojo IPC is available,
-// this will also connect to the parent process and send mocked scan results
-// to the parent process using data passed as command line switches.
-MULTIPROCESS_TEST_MAIN(MockSwReporterProcess) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  CrashIf(MockedReporterFailure::kCrashOnStartup);
-  const std::string& str =
-      command_line->GetSwitchValueASCII(kExitCodeToReturnSwitch);
-  const std::string& chrome_mojo_pipe_token = command_line->GetSwitchValueASCII(
-      chrome_cleaner::kChromeMojoPipeTokenSwitch);
-  int exit_code_to_report = kFailureExitCode;
-  bool success = base::StringToInt(str, &exit_code_to_report) &&
-                 (chrome_mojo_pipe_token.empty() ||
-                  ConnectAndSendDataToParentProcess(chrome_mojo_pipe_token,
-                                                    *command_line));
-  return success ? exit_code_to_report : kFailureExitCode;
-}
-
-// Decorates a ChromePromptImpl object to simulate failures indentified by the
-// parent process and keeps track of errors handled. By default, delegates all
-// actions to the decorated object.
-class ReportBadMessageChromePromptImpl : public ChromePromptImpl {
- public:
-  ReportBadMessageChromePromptImpl(
-      chrome_cleaner::mojom::ChromePromptRequest request,
-      bool bad_message_expected,
-      base::Closure on_connection_closed)
-      : ChromePromptImpl(std::move(request), std::move(on_connection_closed)),
-        bad_message_expected_(bad_message_expected) {}
-  ~ReportBadMessageChromePromptImpl() override = default;
-
-  void PromptUser(
-      std::vector<chrome_cleaner::mojom::UwSPtr> removable_uws_found,
-      chrome_cleaner::mojom::ElevationStatus elevation_status,
-      chrome_cleaner::mojom::ChromePrompt::PromptUserCallback callback)
-      override {
-    if (bad_message_expected_)
-      mojo::ReportBadMessage("bad message");
-
-    ChromePromptImpl::PromptUser(std::move(removable_uws_found),
-                                 elevation_status, std::move(callback));
-  }
-
- private:
-  bool bad_message_expected_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ReportBadMessageChromePromptImpl);
-};
-
-// Parameters for this test:
-//  - bool in_browser_cleaner_ui: indicates if InBrowserCleanerUI experiment
-//    is enabled; if so, the parent and the child processes will communicate
-//    via a Mojo IPC.
-//  - ElevationStatus elevation_status: indicates if the scan results sent by
-//    the child process should consider that elevation will be required for
-//    cleanup.
-//  - MockedReporterFailure expected_reporter_failure: indicates errors that
-//    should be simulated in the reporter process.
-class ReporterRunnerTest
-    : public InProcessBrowserTest,
-      public SwReporterTestingDelegate,
-      public ::testing::WithParamInterface<
-          std::tuple<bool, ElevationStatus, MockedReporterFailure>> {
+// Parameter for this test:
+//  - bool in_browser_cleaner_ui: indicates if InBrowserCleanerUI feature
+//    is enabled;
+//
+//    We expect that the reporter's logic should remain unchanged even when the
+//    InBrowserCleanerUI feature is enabled with one exception: the reporter is
+//    not run daily because with the new feature enabled there is no concept of
+//    a pending prompt. See the RunDaily and InBrowserUINoRunDaily tests.
+class ReporterRunnerTest : public InProcessBrowserTest,
+                           public SwReporterTestingDelegate,
+                           public ::testing::WithParamInterface<bool> {
  public:
   ReporterRunnerTest() = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     SetSwReporterTestingDelegate(this);
 
-    std::tie(in_browser_cleaner_ui_, elevation_status_,
-             expected_reporter_failure_) = GetParam();
-    // The config should only accept elevation_status_ if InBrowserCleanerUI
-    // feature is enabled.
-    ASSERT_TRUE(elevation_status_ == ElevationStatus::NOT_REQUIRED ||
-                in_browser_cleaner_ui_);
-
+    in_browser_cleaner_ui_ = GetParam();
     if (in_browser_cleaner_ui_)
       scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
     else
@@ -355,49 +100,14 @@ class ReporterRunnerTest
     prompt_trigger_called_ = true;
   }
 
-  // Spawns and returns a subprocess to mock an execution of the reporter with
-  // the parameters given in |invocation| that will return
-  // |exit_code_to_report_|. If IPC communication needs to be mocked, this will
-  // also provide values that define the expected behavior of the child
-  // process.
-  // Records the launch and parameters used for further verification.
-  base::Process LaunchReporter(
-      const SwReporterInvocation& invocation,
-      const base::LaunchOptions& launch_options) override {
+  // Records that the reporter was launched with the parameters given in
+  // |invocation|
+  int LaunchReporter(const SwReporterInvocation& invocation) override {
     ++reporter_launch_count_;
     reporter_launch_parameters_.push_back(invocation);
     if (first_launch_callback_)
       std::move(first_launch_callback_).Run();
-
-    if (exit_code_to_report_ == kReporterNotLaunchedExitCode)
-      return base::Process();  // IsValid() will return false.
-
-    base::CommandLine command_line(
-        base::GetMultiProcessTestChildBaseCommandLine());
-    command_line.AppendArguments(invocation.command_line,
-                                 /*include_program=*/false);
-    command_line.AppendSwitchASCII(kExitCodeToReturnSwitch,
-                                   base::IntToString(exit_code_to_report_));
-
-    if (in_browser_cleaner_ui_) {
-      AddPromptAcceptanceToCommandLine(PromptAcceptance::DENIED, &command_line);
-      if (exit_code_to_report_ == chrome_cleaner::kSwReporterCleanupNeeded) {
-        command_line.AppendSwitch(kReportUwSFoundSwitch);
-        if (elevation_status_ == ElevationStatus::REQUIRED)
-          command_line.AppendSwitch(kReportElevationRequiredSwitch);
-      }
-    }
-
-    if (expected_reporter_failure_ != MockedReporterFailure::kNone)
-      AddExpectedCrashToCommandLine(expected_reporter_failure_, &command_line);
-
-    bad_message_expected_ = expected_reporter_failure_ ==
-                            MockedReporterFailure::kBadMessageReported;
-    bad_message_reported_ = false;
-
-    base::SpawnChildResult result = base::SpawnMultiProcessTestChild(
-        "MockSwReporterProcess", command_line, launch_options);
-    return std::move(result.process);
+    return exit_code_to_report_;
   }
 
   // Returns the test's idea of the current time.
@@ -411,20 +121,6 @@ class ReporterRunnerTest
     // doing a blocking reporter launch, it doesn't matter that the task runner
     // doesn't have the MayBlock trait.
     return mock_time_task_runner_.get();
-  }
-
-  std::unique_ptr<ChromePromptImpl> CreateChromePromptImpl(
-      chrome_cleaner::mojom::ChromePromptRequest request) override {
-    return base::MakeUnique<ReportBadMessageChromePromptImpl>(
-        std::move(request), bad_message_expected_,
-        base::Bind(&ReporterRunnerTest::OnConnectionClosed,
-                   base::Unretained(this)));
-  }
-
-  void OnConnectionClosed() override {}
-
-  void OnConnectionError(const std::string& message) override {
-    bad_message_reported_ = true;
   }
 
   // Schedules a single reporter to run.
@@ -515,16 +211,7 @@ class ReporterRunnerTest
         base::TimeDelta::FromDays(days_until_launch));
 
     EXPECT_EQ(expected_launch_count, reporter_launch_count_);
-    // Note: a bad message error will not prevent the prompt that is shown to
-    // the user today. Once we hook the new prompt here, we will need to review
-    // this expectation.
-    EXPECT_EQ(expect_prompt &&
-                  (expected_reporter_failure_ == MockedReporterFailure::kNone ||
-                   expected_reporter_failure_ ==
-                       MockedReporterFailure::kBadMessageReported),
-              prompt_trigger_called_);
-
-    EXPECT_EQ(bad_message_expected_, bad_message_reported_);
+    EXPECT_EQ(expect_prompt, prompt_trigger_called_);
   }
 
   // Expects that after |days_until_launched| days, the reporter will be
@@ -590,15 +277,6 @@ class ReporterRunnerTest
   scoped_refptr<base::SingleThreadTaskRunner> saved_task_runner_;
 
   bool in_browser_cleaner_ui_;
-  ElevationStatus elevation_status_;
-  MockedReporterFailure expected_reporter_failure_;
-
-  // Indicates if a bad message error should be simulated by the parent
-  // process.
-  bool bad_message_expected_ = false;
-
-  // Set by ReportBadMessageChromePromptImpl if a bad message error is reported.
-  bool bad_message_reported_ = false;
 
   bool prompt_trigger_called_ = false;
   int reporter_launch_count_ = 0;
@@ -968,28 +646,9 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    NoInBrowserCleanerUI,
-    ReporterRunnerTest,
-    testing::Combine(testing::Values(false),
-                     testing::Values(ElevationStatus::NOT_REQUIRED),
-                     testing::Values(MockedReporterFailure::kNone,
-                                     MockedReporterFailure::kCrashOnStartup)));
-
-INSTANTIATE_TEST_CASE_P(
-    InBrowserCleanerUI,
-    ReporterRunnerTest,
-    testing::Combine(
-        testing::Values(true),
-        testing::Values(ElevationStatus::NOT_REQUIRED,
-                        ElevationStatus::REQUIRED),
-        testing::Values(
-            MockedReporterFailure::kNone,
-            MockedReporterFailure::kCrashOnStartup,
-            MockedReporterFailure::kCrashAfterConnectedToParentProcess,
-            MockedReporterFailure::kCrashWhileWaitingForResponse,
-            MockedReporterFailure::kCrashAfterReceivedResponse,
-            MockedReporterFailure::kBadMessageReported)));
+INSTANTIATE_TEST_CASE_P(WithInBrowserCleanerUIParam,
+                        ReporterRunnerTest,
+                        testing::Bool());
 
 // This provide tests which allows explicit invocation of the SRT Prompt
 // useful for checking dialog layout or any other interactive functionality

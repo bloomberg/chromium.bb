@@ -33,12 +33,21 @@ extern const char kChromeSystemInstallSwitch[];
 // The Chrome version string.
 extern const char kChromeVersionSwitch[];
 
+// Indicates whether logs upload is enabled in the cleaner process. Should be
+// set by Chrome only be set if user has opted into Safe Browsing Extended
+// Reporting v2. Takes effect only if execution mode is not
+// ExecutionMode::kNone.
+extern const char kEnableCleanerLoggingSwitch[];
+
 // Indicates that crash reporting is enabled for the current user.
 extern const char kEnableCrashReportingSwitch[];
 
 // Specifies the name of experiment group in the alternate engine field trial
 // for a Software Reporter run.
 extern const char kEngineExperimentGroupSwitch[];
+
+// Specify the engine to use.
+extern const char kEngineSwitch[];
 
 // Indicates the execution mode for the Chrome Cleanup Tool. Possible values
 // defined in enum ExecutionMode.
