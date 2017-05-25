@@ -541,8 +541,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_OverlappingContinueSessionRestore) {
 }
 
 // Tests that ContinueSessionRestore could be called multiple times.
-// TODO(xiyuan): Re-enable when the test is no longer flaky crbug.com/496325
-IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_OverlappingContinueSessionRestore) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, OverlappingContinueSessionRestore) {
   SetupGaiaServerForUnexpiredAccount();
   SimulateNetworkOnline();
 
