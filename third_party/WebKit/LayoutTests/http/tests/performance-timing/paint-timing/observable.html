@@ -48,10 +48,6 @@
 
     }, "Both first-paint-timing and first-contentful-paint timing entry are observable.");
 
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.capturePixelsAsyncThen(async_test);
-    }
     </script>
     <div style="background-color:black;color:white;padding:20px;">...test...</div>
 </body>
