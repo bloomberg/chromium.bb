@@ -78,6 +78,42 @@ ModuleScript* ModuleScript::CreateForTest(
                         parser_state, credentials_mode);
 }
 
+ModuleScript::ModuleScript(Modulator* settings_object,
+                           ScriptModule record,
+                           const KURL& base_url,
+                           const String& nonce,
+                           ParserDisposition parser_state,
+                           WebURLRequest::FetchCredentialsMode credentials_mode,
+                           const String& source_text)
+    : settings_object_(settings_object),
+      record_(this),
+      base_url_(base_url),
+      instantiation_error_(this),
+      nonce_(nonce),
+      parser_state_(parser_state),
+      credentials_mode_(credentials_mode),
+      source_text_(source_text) {
+  if (record.IsNull()) {
+    // We allow empty records for module infra tests which never touch records.
+    // This should never happen outside unit tests.
+    return;
+  }
+
+  DCHECK(settings_object);
+  v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
+  v8::HandleScope scope(isolate);
+  record_.Set(isolate, record.NewLocal(isolate));
+}
+
+ScriptModule ModuleScript::Record() const {
+  if (record_.IsEmpty())
+    return ScriptModule();
+
+  v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
+  v8::HandleScope scope(isolate);
+  return ScriptModule(isolate, record_.NewLocal(isolate));
+}
+
 void ModuleScript::SetInstantiationErrorAndClearRecord(ScriptValue error) {
   // Implements Step 7.1 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
@@ -94,7 +130,7 @@ void ModuleScript::SetInstantiationErrorAndClearRecord(ScriptValue error) {
   }
 
   // "its module record to null."
-  record_ = ScriptModule();
+  record_.Clear();
 }
 
 void ModuleScript::SetInstantiationSuccess() {
@@ -111,6 +147,9 @@ DEFINE_TRACE(ModuleScript) {
   Script::Trace(visitor);
 }
 DEFINE_TRACE_WRAPPERS(ModuleScript) {
+  // TODO(mlippautz): Support TraceWrappers(const
+  // TraceWrapperV8Reference<v8::Module>&) to remove the cast.
+  visitor->TraceWrappers(record_.Cast<v8::Value>());
   visitor->TraceWrappers(instantiation_error_);
 }
 

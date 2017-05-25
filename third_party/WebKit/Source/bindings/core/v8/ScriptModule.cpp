@@ -68,7 +68,7 @@ ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
 
   DCHECK(!IsNull());
   v8::Local<v8::Context> context = script_state->GetContext();
-  bool success = module_->NewLocal(script_state->GetIsolate())
+  bool success = NewLocal(script_state->GetIsolate())
                      ->Instantiate(context, &ResolveModuleCallback);
   if (!success) {
     DCHECK(try_catch.HasCaught());
