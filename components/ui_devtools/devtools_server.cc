@@ -75,7 +75,7 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::Create(
   if (IsUiDevToolsEnabled() && !devtools_server_) {
     // TODO(mhashmi): Change port if more than one inspectable clients
     server.reset(new UiDevToolsServer(io_thread_task_runner));
-    server->Start("127.0.0.1", GetUiDevToolsPort());
+    server->Start("0.0.0.0", GetUiDevToolsPort());
   }
   return server;
 }
@@ -91,9 +91,8 @@ UiDevToolsServer::GetClientNamesAndUrls() {
        i++) {
     pairs.push_back(std::pair<std::string, std::string>(
         devtools_server_->clients_[i]->name(),
-        base::StringPrintf("%slocalhost:%d/%" PRIuS,
-                           kChromeDeveloperToolsPrefix, GetUiDevToolsPort(),
-                           i)));
+        base::StringPrintf("%s0.0.0.0:%d/%" PRIuS, kChromeDeveloperToolsPrefix,
+                           GetUiDevToolsPort(), i)));
   }
   return pairs;
 }
