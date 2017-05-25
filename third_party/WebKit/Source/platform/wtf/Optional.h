@@ -24,6 +24,11 @@ using Optional =
 constexpr base::nullopt_t nullopt = base::nullopt;
 constexpr base::in_place_t in_place = base::in_place;
 
+template <typename T>
+constexpr Optional<typename std::decay<T>::type> make_optional(T&& value) {
+  return base::make_optional(std::forward<T>(value));
+}
+
 }  // namespace WTF
 
 using WTF::Optional;
