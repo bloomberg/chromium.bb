@@ -34,13 +34,11 @@ class FakeCommandBufferServiceBase : public CommandBufferServiceBase {
   ~FakeCommandBufferServiceBase() override;
 
   CommandBuffer::State GetState() override;
-  void SetGetOffset(int32_t get_offset) override;
   void SetReleaseCount(uint64_t release_count) override;
   scoped_refptr<gpu::Buffer> GetTransferBuffer(int32_t id) override;
   void SetToken(int32_t token) override;
   void SetParseError(error::Error error) override;
   void SetContextLostReason(error::ContextLostReason reason) override;
-  int32_t GetPutOffset() override;
 
   // Get's the Id of the next transfer buffer that will be returned
   // by CreateTransferBuffer. This is useful for testing expected ids.
@@ -55,7 +53,6 @@ class FakeCommandBufferServiceBase : public CommandBufferServiceBase {
  private:
   scoped_refptr<Buffer> transfer_buffer_buffers_[kMaxTransferBuffers];
   CommandBuffer::State state_;
-  int32_t put_offset_;
 };
 
 class MockClientCommandBuffer : public CommandBuffer,
@@ -81,6 +78,11 @@ class MockClientCommandBuffer : public CommandBuffer,
   void OrderingBarrier(int32_t put_offset) override;
 
   void DelegateToFake();
+
+  int32_t GetServicePutOffset() { return put_offset_; }
+
+ private:
+  int32_t put_offset_ = 0;
 };
 
 class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
@@ -92,6 +94,7 @@ class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
   MOCK_METHOD1(OrderingBarrier, void(int32_t put_offset));
 
   void DelegateToFake();
+  void DoFlush(int32_t put_offset);
 };
 
 class MockClientGpuControl : public GpuControl {

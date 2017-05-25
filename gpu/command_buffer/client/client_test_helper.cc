@@ -20,16 +20,12 @@ using ::testing::Invoke;
 
 namespace gpu {
 
-FakeCommandBufferServiceBase::FakeCommandBufferServiceBase() : put_offset_(0) {}
+FakeCommandBufferServiceBase::FakeCommandBufferServiceBase() {}
 
 FakeCommandBufferServiceBase::~FakeCommandBufferServiceBase() {}
 
 CommandBuffer::State FakeCommandBufferServiceBase::GetState() {
   return state_;
-}
-
-void FakeCommandBufferServiceBase::SetGetOffset(int32_t get_offset) {
-  state_.get_offset = get_offset;
 }
 
 void FakeCommandBufferServiceBase::SetReleaseCount(uint64_t release_count) {
@@ -50,7 +46,6 @@ int32_t FakeCommandBufferServiceBase::GetNextFreeTransferBufferId() {
 void FakeCommandBufferServiceBase::SetGetBufferHelper(int transfer_buffer_id) {
   ++state_.set_get_buffer_count;
   state_.get_offset = 0;
-  put_offset_ = 0;
   state_.token = 10000;  // All token checks in the tests should pass.
 }
 
@@ -84,7 +79,7 @@ scoped_refptr<Buffer> FakeCommandBufferServiceBase::GetTransferBuffer(
 }
 
 void FakeCommandBufferServiceBase::FlushHelper(int32_t put_offset) {
-  put_offset_ = put_offset;
+  state_.get_offset = put_offset;
 }
 
 void FakeCommandBufferServiceBase::SetToken(int32_t token) {
@@ -98,10 +93,6 @@ void FakeCommandBufferServiceBase::SetParseError(error::Error error) {
 void FakeCommandBufferServiceBase::SetContextLostReason(
     error::ContextLostReason reason) {
   state_.context_lost_reason = reason;
-}
-
-int32_t FakeCommandBufferServiceBase::GetPutOffset() {
-  return put_offset_;
 }
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -131,8 +122,8 @@ CommandBuffer::State MockClientCommandBuffer::WaitForGetOffsetInRange(
     int32_t end) {
   State state = GetState();
   EXPECT_EQ(set_get_buffer_count, state.set_get_buffer_count);
-  if (state.get_offset != GetPutOffset()) {
-    SetGetOffset(GetPutOffset());
+  if (state.get_offset != put_offset_) {
+    FlushHelper(put_offset_);
     OnFlush();
     state = GetState();
   }
@@ -150,11 +141,11 @@ scoped_refptr<gpu::Buffer> MockClientCommandBuffer::CreateTransferBuffer(
 }
 
 void MockClientCommandBuffer::Flush(int32_t put_offset) {
-  FlushHelper(put_offset);
+  put_offset_ = put_offset;
 }
 
 void MockClientCommandBuffer::OrderingBarrier(int32_t put_offset) {
-  FlushHelper(put_offset);
+  put_offset_ = put_offset;
 }
 
 void MockClientCommandBuffer::DelegateToFake() {
@@ -172,7 +163,11 @@ MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() {}
 void MockClientCommandBufferMockFlush::DelegateToFake() {
   MockClientCommandBuffer::DelegateToFake();
   ON_CALL(*this, Flush(_))
-      .WillByDefault(Invoke(this, &FakeCommandBufferServiceBase::FlushHelper));
+      .WillByDefault(Invoke(this, &MockClientCommandBufferMockFlush::DoFlush));
+}
+
+void MockClientCommandBufferMockFlush::DoFlush(int32_t put_offset) {
+  MockClientCommandBuffer::Flush(put_offset);
 }
 
 MockClientGpuControl::MockClientGpuControl() {}

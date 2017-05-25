@@ -48,7 +48,6 @@ namespace gpu {
 struct Mailbox;
 struct SyncToken;
 struct WaitForCommandState;
-class CommandExecutor;
 class GpuChannel;
 class SyncPointClientState;
 
@@ -115,7 +114,6 @@ class GPU_EXPORT GpuCommandBufferStub
   bool HasUnprocessedCommands();
 
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
-  CommandExecutor* scheduler() const { return executor_.get(); }
   GpuChannel* channel() const { return channel_; }
 
   // Unique command buffer ID for this command buffer stub.
@@ -232,7 +230,6 @@ class GPU_EXPORT GpuCommandBufferStub
 
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
-  std::unique_ptr<CommandExecutor> executor_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLShareGroup> share_group_;

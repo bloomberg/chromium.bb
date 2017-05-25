@@ -32,17 +32,11 @@ CommandBufferDirect::CommandBufferDirect(
     AsyncAPIInterface* handler,
     const MakeCurrentCallback& callback,
     SyncPointManager* sync_point_manager)
-    : service_(transfer_buffer_manager),
-      executor_(&service_, handler),
+    : service_(transfer_buffer_manager, handler),
       make_current_callback_(callback),
       sync_point_manager_(sync_point_manager),
       command_buffer_id_(
           CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)) {
-  service_.SetPutOffsetChangeCallback(
-      base::Bind(&CommandExecutor::PutChanged, base::Unretained(&executor_)));
-  service_.SetGetBufferChangeCallback(
-      base::Bind(&CommandExecutor::SetGetBuffer, base::Unretained(&executor_)));
-
   if (sync_point_manager_) {
     sync_point_order_data_ = sync_point_manager_->CreateSyncPointOrderData();
     sync_point_client_state_ = sync_point_manager_->CreateSyncPointClientState(
@@ -161,7 +155,7 @@ bool CommandBufferDirect::OnWaitSyncToken(const SyncToken& sync_token) {
   DCHECK(sync_point_manager_);
   if (sync_point_manager_->IsSyncTokenReleased(sync_token))
     return false;
-  executor_.SetScheduled(false);
+  service_.SetScheduled(false);
   return true;
 }
 
