@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -71,5 +72,10 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
     @Override
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         return new WebappBrowserControlsDelegate(mActivity, tab);
+    }
+
+    @Override
+    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
+        return new WebappInterceptNavigationDelegate(mActivity, tab);
     }
 }

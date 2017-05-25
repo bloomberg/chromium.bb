@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -323,5 +324,10 @@ public class WebappInfo {
     public boolean isLaunchedFromHomescreen() {
         int source = source();
         return source != ShortcutSource.NOTIFICATION && source != ShortcutSource.EXTERNAL_INTENT;
+    }
+
+    @VisibleForTesting
+    void setScopeForTest(String scope) {
+        mScopeUri = Uri.parse(scope);
     }
 }
