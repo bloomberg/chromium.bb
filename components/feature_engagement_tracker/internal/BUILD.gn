@@ -14,6 +14,9 @@ static_library("internal") {
   ]
 
   sources = [
+    "availability_model.h",
+    "availability_model_impl.cc",
+    "availability_model_impl.h",
     "availability_store.cc",
     "availability_store.h",
     "chrome_variations_configuration.cc",
@@ -37,6 +40,8 @@ static_library("internal") {
     "model.h",
     "model_impl.cc",
     "model_impl.h",
+    "never_availability_model.cc",
+    "never_availability_model.h",
     "never_condition_validator.cc",
     "never_condition_validator.h",
     "never_storage_validator.cc",
@@ -84,6 +89,7 @@ source_set("unit_tests") {
   # IMPORTANT NOTE: When adding new tests, also remember to update the list of
   # tests in //components/feature_engagement_tracker/components_unittests.filter
   sources = [
+    "availability_model_impl_unittest.cc",
     "availability_store_unittest.cc",
     "chrome_variations_configuration_unittest.cc",
     "condition_validator_unittest.cc",
@@ -95,6 +101,7 @@ source_set("unit_tests") {
     "in_memory_store_unittest.cc",
     "init_aware_model_unittest.cc",
     "model_impl_unittest.cc",
+    "never_availability_model_unittest.cc",
     "never_condition_validator_unittest.cc",
     "never_storage_validator_unittest.cc",
     "once_condition_validator_unittest.cc",

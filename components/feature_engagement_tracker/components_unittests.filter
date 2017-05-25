@@ -1,3 +1,4 @@
+AvailabilityModelImplTest.*
 AvailabilityStoreTest.*
 ChromeVariationsConfigurationTest.*
 ComparatorTest.*
@@ -11,6 +12,7 @@ InitAwareModelTest.*
 InMemoryStoreTest.*
 LoadFailingModelImplTest.*
 ModelImplTest.*
+NeverAvailabilityModelTest.*
 NeverConditionValidatorTest.*
 OnceConditionValidatorTest.*
 PersistentStoreTest.*
