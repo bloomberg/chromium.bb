@@ -794,7 +794,7 @@ int AlsaPcmOutputStream::RunDataCallback(base::TimeDelta delay,
 
 void AlsaPcmOutputStream::RunErrorCallback(int code) {
   if (source_callback_)
-    source_callback_->OnError(this);
+    source_callback_->OnError();
 }
 
 // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to

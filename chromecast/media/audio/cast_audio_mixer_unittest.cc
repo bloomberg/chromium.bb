@@ -48,7 +48,7 @@ class MockAudioSourceCallback
 
   MOCK_METHOD4(OnMoreData,
                int(base::TimeDelta, base::TimeTicks, int, ::media::AudioBus*));
-  MOCK_METHOD1(OnError, void(::media::AudioOutputStream* stream));
+  MOCK_METHOD0(OnError, void());
 
  private:
   int OnMoreDataImpl(base::TimeDelta /* delay */,
@@ -81,7 +81,7 @@ class MockCastAudioOutputStream : public CastAudioOutputStream {
   }
 
   void SignalError(AudioSourceCallback* source_callback) {
-    source_callback->OnError(this);
+    source_callback->OnError();
   }
 };
 
@@ -402,7 +402,7 @@ TEST_F(CastAudioMixerTest, OnErrorNoRecovery) {
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(false));
   EXPECT_CALL(mock_mixer_stream(), Close()).Times(2);
-  EXPECT_CALL(source, OnError(streams.front()));
+  EXPECT_CALL(source, OnError());
 
   // The MockAudioSourceCallback should receive an OnError call.
   mock_mixer_stream().SignalError(&mock_mixer());

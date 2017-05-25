@@ -176,7 +176,7 @@ class MockAudioSourceCallback
   // ::media::AudioOutputStream::AudioSourceCallback overrides.
   MOCK_METHOD4(OnMoreData,
                int(base::TimeDelta, base::TimeTicks, int, ::media::AudioBus*));
-  MOCK_METHOD1(OnError, void(::media::AudioOutputStream*));
+  MOCK_METHOD0(OnError, void());
 };
 
 class FakeAudioManager : public CastAudioManager {
@@ -387,7 +387,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   ON_CALL(*source_callback, OnMoreData(_, _, _, _))
       .WillByDefault(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(*source_callback, OnError(_)).Times(0);
+  EXPECT_CALL(*source_callback, OnError()).Times(0);
   stream->Start(source_callback.get());
   RunMessageLoopFor(2);
   stream->Stop();
@@ -422,7 +422,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
   ON_CALL(*source_callback, OnMoreData(_, _, _, _))
       .WillByDefault(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(*source_callback, OnError(_)).Times(0);
+  EXPECT_CALL(*source_callback, OnError()).Times(0);
   stream->Start(source_callback.get());
   RunMessageLoopFor(5);
   // Make sure that one frame was pushed.
@@ -455,7 +455,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceError) {
   ON_CALL(*source_callback, OnMoreData(_, _, _, _))
       .WillByDefault(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(*source_callback, OnError(_));
+  EXPECT_CALL(*source_callback, OnError());
   stream->Start(source_callback.get());
   RunMessageLoopFor(2);
   // Make sure that AudioOutputStream attempted to push the initial frame.
@@ -479,7 +479,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
   ON_CALL(*source_callback, OnMoreData(_, _, _, _))
       .WillByDefault(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(*source_callback, OnError(_));
+  EXPECT_CALL(*source_callback, OnError());
   stream->Start(source_callback.get());
   RunMessageLoopFor(5);
 

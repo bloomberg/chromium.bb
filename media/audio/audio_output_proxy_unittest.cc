@@ -159,7 +159,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
     dest->Zero();
     return dest->frames();
   }
-  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
+  MOCK_METHOD0(OnError, void());
 };
 
 }  // namespace
@@ -414,8 +414,7 @@ class AudioOutputProxyTest : public testing::Test {
         .Times(2)
         .WillRepeatedly(Return(reinterpret_cast<AudioOutputStream*>(NULL)));
 
-    EXPECT_CALL(callback_, OnError(_))
-        .Times(2);
+    EXPECT_CALL(callback_, OnError()).Times(2);
 
     proxy->Start(&callback_);
 
@@ -448,7 +447,7 @@ class AudioOutputProxyTest : public testing::Test {
     AudioOutputProxy* proxy = dispatcher->CreateStreamProxy();
     EXPECT_TRUE(proxy->Open());
 
-    EXPECT_CALL(callback_, OnError(_)).Times(1);
+    EXPECT_CALL(callback_, OnError()).Times(1);
     dispatcher.reset();
     proxy->Start(&callback_);
     proxy->Stop();

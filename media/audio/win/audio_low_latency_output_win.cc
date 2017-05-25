@@ -269,7 +269,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
     if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
             audio_client_.Get(), audio_render_client_.Get())) {
       LOG(ERROR) << "Failed to prepare endpoint buffers with silence.";
-      callback->OnError(this);
+      callback->OnError();
       return;
     }
   }
@@ -284,7 +284,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (!render_thread_->HasBeenStarted()) {
     LOG(ERROR) << "Failed to start WASAPI render thread.";
     StopThread();
-    callback->OnError(this);
+    callback->OnError();
     return;
   }
 
@@ -293,7 +293,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to start output streaming: " << std::hex << hr;
     StopThread();
-    callback->OnError(this);
+    callback->OnError();
   }
 }
 
@@ -307,7 +307,7 @@ void WASAPIAudioOutputStream::Stop() {
   HRESULT hr = audio_client_->Stop();
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to stop output streaming: " << std::hex << hr;
-    source_->OnError(this);
+    source_->OnError();
   }
 
   // Make a local copy of |source_| since StopThread() will clear it.
@@ -318,7 +318,7 @@ void WASAPIAudioOutputStream::Stop() {
   hr = audio_client_->Reset();
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to reset streaming: " << std::hex << hr;
-    callback->OnError(this);
+    callback->OnError();
   }
 
   // Extra safety check to ensure that the buffers are cleared.
@@ -425,7 +425,7 @@ void WASAPIAudioOutputStream::Run() {
 
     // Notify clients that something has gone wrong and that this stream should
     // be destroyed instead of reused in the future.
-    source_->OnError(this);
+    source_->OnError();
   }
 
   // Disable MMCSS.
