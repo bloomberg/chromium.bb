@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -26,6 +25,7 @@
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
+#include "mojo/public/cpp/bindings/lib/deque.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
@@ -253,9 +253,9 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>> endpoints_;
   uint32_t next_interface_id_value_;
 
-  std::deque<std::unique_ptr<Task>> tasks_;
+  deque<std::unique_ptr<Task>> tasks_;
   // It refers to tasks in |tasks_| and doesn't own any of them.
-  std::map<InterfaceId, std::deque<Task*>> sync_message_tasks_;
+  std::map<InterfaceId, deque<Task*>> sync_message_tasks_;
 
   bool posted_to_process_tasks_;
   scoped_refptr<base::SingleThreadTaskRunner> posted_to_task_runner_;
