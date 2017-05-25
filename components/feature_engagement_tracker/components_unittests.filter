@@ -4,7 +4,8 @@ ChromeVariationsConfigurationTest.*
 ComparatorTest.*
 ConditionValidatorResultTest.*
 EditableConfigurationTest.*
-FailingInitFeatureEngagementTrackerImplTest.*
+FailingStoreInitFeatureEngagementTrackerImplTest.*
+FailingAvailabilityModelInitFeatureEngagementTrackerImplTest.*
 FeatureConfigConditionValidatorTest.*
 FeatureConfigStorageValidatorTest.*
 FeatureEngagementTrackerImplTest.*

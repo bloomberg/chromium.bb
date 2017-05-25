@@ -5,6 +5,7 @@
 #include "components/feature_engagement_tracker/internal/feature_config_condition_validator.h"
 
 #include "base/feature_list.h"
+#include "components/feature_engagement_tracker/internal/availability_model.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
@@ -39,7 +40,10 @@ ConditionValidator::Result FeatureConfigConditionValidator::MeetsConditions(
 
   result.session_rate_ok = config.session_rate.MeetsCriteria(times_shown_);
 
-  // TODO(nyquist): Add support for tracking and checking availability.
+  result.availability_model_ready_ok = availability_model.IsReady();
+
+  result.availability_ok = AvailabilityMeetsConditions(
+      feature, config.availability, availability_model, current_day);
 
   return result;
 }
@@ -90,6 +94,28 @@ bool FeatureConfigConditionValidator::EventConfigMeetsConditions(
   }
 
   return event_config.comparator.MeetsCriteria(event_count);
+}
+
+bool FeatureConfigConditionValidator::AvailabilityMeetsConditions(
+    const base::Feature& feature,
+    Comparator comparator,
+    const AvailabilityModel& availability_model,
+    uint32_t current_day) const {
+  if (comparator.type == ANY)
+    return true;
+
+  base::Optional<uint32_t> availability_day =
+      availability_model.GetAvailability(feature);
+  if (!availability_day.has_value())
+    return false;
+
+  uint32_t days_available = current_day - availability_day.value();
+
+  // Ensure that availability days never wrap around.
+  if (availability_day.value() > current_day)
+    days_available = 0u;
+
+  return comparator.MeetsCriteria(days_available);
 }
 
 }  // namespace feature_engagement_tracker
