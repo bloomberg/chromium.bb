@@ -8,6 +8,8 @@
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -32,6 +34,8 @@ namespace {
 constexpr char kNotifierId[] = "arc_fs_migration";
 constexpr char kSuggestNotificationId[] = "arc_fs_migration/suggest";
 constexpr char kSuccessNotificationId[] = "arc_fs_migration/success";
+constexpr base::TimeDelta kSuccessNotificationDelay =
+    base::TimeDelta::FromSeconds(3);
 
 class ArcMigrationGuideNotificationDelegate
     : public message_center::NotificationDelegate {
@@ -46,6 +50,20 @@ class ArcMigrationGuideNotificationDelegate
 
   DISALLOW_COPY_AND_ASSIGN(ArcMigrationGuideNotificationDelegate);
 };
+
+void DoShowArcMigrationSuccessNotification(
+    const message_center::NotifierId& notifier_id) {
+  message_center::MessageCenter::Get()->AddNotification(
+      base::MakeUnique<message_center::Notification>(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
+          base::string16(),  // title
+          l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
+          gfx::Image(gfx::CreateVectorIcon(
+              kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
+          base::string16(), GURL(), notifier_id,
+          message_center::RichNotificationData(),
+          new message_center::NotificationDelegate()));
+}
 
 }  // namespace
 
@@ -116,17 +134,12 @@ void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
         message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
     notifier_id.profile_id = account_id.GetUserEmail();
 
-    message_center::MessageCenter::Get()->AddNotification(
-        base::MakeUnique<message_center::Notification>(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
-            base::string16(),  // title
-            l10n_util::GetStringUTF16(
-                IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-            gfx::Image(gfx::CreateVectorIcon(
-                kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
-            base::string16(), GURL(), notifier_id,
-            message_center::RichNotificationData(),
-            new message_center::NotificationDelegate()));
+    // Delay the notification to make sure that it is not hidden behind windows
+    // which are shown at the beginnig of user session (e.g. Chrome).
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DoShowArcMigrationSuccessNotification, notifier_id),
+        kSuccessNotificationDelay);
   }
 
   // Mark as notified.
