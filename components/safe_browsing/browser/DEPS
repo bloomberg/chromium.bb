@@ -2,6 +2,9 @@ include_rules = [
   "+components/history/core/browser",
   "+components/safe_browsing/csd.pb.h",
   "+content/public/browser",
+  "+net/cookies",
+  "+net/extras",
   "+net/http",
+  "+net/ssl",
   "+net/traffic_annotation",
 ]
