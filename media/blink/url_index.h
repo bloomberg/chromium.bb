@@ -91,6 +91,9 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Returns the number of blocks cached for this resource.
   size_t CachedSize();
 
+  // Returns true if this resource is fully cached in memory.
+  bool FullyCached();
+
   // Returns our url_index, or nullptr if it's been destroyed.
   UrlIndex* url_index() const { return url_index_.get(); }
 
@@ -131,7 +134,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Returns true it is valid to keep using this to access cached data.
   // A single media player instance may choose to ignore this for resources
   // that have already been opened.
-  bool Valid() const;
+  bool Valid();
 
   // Virtual so we can override it for testing.
   virtual ResourceMultiBuffer* multibuffer();

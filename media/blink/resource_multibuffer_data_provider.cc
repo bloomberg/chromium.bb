@@ -452,6 +452,10 @@ void ResourceMultiBufferDataProvider::DidFinishLoading(double finishTime) {
   url_data_->set_length(size);
   fifo_.push_back(DataBuffer::CreateEOSBuffer());
 
+  if (url_data_->url_index()) {
+    url_data_->url_index()->TryInsert(url_data_);
+  }
+
   DCHECK(Available());
   url_data_->multibuffer()->OnDataProviderEvent(this);
 

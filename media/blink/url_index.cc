@@ -149,10 +149,19 @@ void UrlData::OnEmpty() {
                             scoped_refptr<UrlData>(this)));
 }
 
-bool UrlData::Valid() const {
+bool UrlData::FullyCached() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (length_ == kPositionNotSpecified)
+    return false;
+  // Check that the first unavailable block in the cache is after the
+  // end of the file.
+  return (multibuffer()->FindNextUnavailable(0) << kBlockSizeShift) >= length_;
+}
+
+bool UrlData::Valid() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::Time now = base::Time::Now();
-  if (!range_supported_)
+  if (!range_supported_ && !FullyCached())
     return false;
   // When ranges are not supported, we cannot re-use cached data.
   if (valid_until_ > now)
