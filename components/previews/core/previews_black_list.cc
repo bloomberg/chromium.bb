@@ -158,6 +158,14 @@ void PreviewsBlackList::ClearBlackListSync(base::Time begin_time,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(loaded_);
   DCHECK_LE(begin_time, end_time);
+
+  // Clear last_opt_out_time_ if the period being cleared is larger than the
+  // short black list timeout and the last time the user opted out was before
+  // |end_time|.
+  if (end_time - begin_time > params::SingleOptOutDuration() &&
+      last_opt_out_time_ && last_opt_out_time_.value() < end_time) {
+    last_opt_out_time_.reset();
+  }
   black_list_item_map_.reset();
   host_indifferent_black_list_item_.reset();
   loaded_ = false;
