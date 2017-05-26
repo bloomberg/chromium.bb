@@ -4,7 +4,7 @@
 
 #include "core/events/PointerEventFactory.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "platform/geometry/FloatSize.h"
 
 namespace blink {
@@ -153,7 +153,7 @@ void UpdateMousePointerEventInit(const WebMouseEvent& mouse_event,
   IntPoint location_in_frame_zoomed;
   if (view && view->GetFrame() && view->GetFrame()->View()) {
     LocalFrame* frame = view->GetFrame();
-    FrameView* frame_view = frame->View();
+    LocalFrameView* frame_view = frame->View();
     IntPoint location_in_contents = frame_view->RootFrameToContents(
         FlooredIntPoint(mouse_event.PositionInRootFrame()));
     location_in_frame_zoomed =

@@ -32,8 +32,8 @@
 
 #include <memory>
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLTextAreaElement.h"

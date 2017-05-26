@@ -5,8 +5,8 @@
 #include "core/page/PageAnimator.h"
 
 #include "core/animation/DocumentAnimations.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -56,7 +56,7 @@ void PageAnimator::ServiceScriptedAnimations(
         scrollable_area->ServiceScrollAnimations(
             monotonic_animation_start_time);
 
-      if (const FrameView::ScrollableAreaSet* animating_scrollable_areas =
+      if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
               document->View()->AnimatingScrollableAreas()) {
         // Iterate over a copy, since ScrollableAreas may deregister
         // themselves during the iteration.
@@ -95,7 +95,7 @@ void PageAnimator::ScheduleVisualUpdate(LocalFrame* frame) {
 }
 
 void PageAnimator::UpdateAllLifecyclePhases(LocalFrame& root_frame) {
-  FrameView* view = root_frame.View();
+  LocalFrameView* view = root_frame.View();
   AutoReset<bool> servicing(&updating_layout_and_style_for_painting_, true);
   view->UpdateAllLifecyclePhases();
 }

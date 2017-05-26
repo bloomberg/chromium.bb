@@ -4,6 +4,7 @@
 
 #include "core/dom/IntersectionObserver.h"
 
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
@@ -15,15 +16,14 @@
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/IntersectionObserverEntry.h"
 #include "core/dom/IntersectionObserverInit.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Timer.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -246,7 +246,7 @@ void IntersectionObserver::observe(Element* target,
       new IntersectionObservation(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
-  if (FrameView* frame_view = target_frame->View())
+  if (LocalFrameView* frame_view = target_frame->View())
     frame_view->ScheduleAnimation();
 }
 

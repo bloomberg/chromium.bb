@@ -22,7 +22,7 @@ void PaintPropertyTreeBuilderTest::LoadTestData(const char* file_name) {
 
 const TransformPaintPropertyNode*
 PaintPropertyTreeBuilderTest::FramePreTranslation() {
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     return frame_view->GetLayoutView()
         ->PaintProperties()
@@ -32,21 +32,21 @@ PaintPropertyTreeBuilderTest::FramePreTranslation() {
 
 const TransformPaintPropertyNode*
 PaintPropertyTreeBuilderTest::FrameScrollTranslation() {
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     return frame_view->GetLayoutView()->PaintProperties()->ScrollTranslation();
   return frame_view->ScrollTranslation();
 }
 
 const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip() {
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     return frame_view->GetLayoutView()->PaintProperties()->OverflowClip();
   return frame_view->ContentClip();
 }
 
 const ScrollPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameScroll(
-    FrameView* frame_view) {
+    LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
@@ -131,7 +131,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
       GetDocument().getElementById("transformedScroll");
   transformed_scroll->setScrollTop(5);
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
 
   // target1 is a fixed-position element inside an absolute-position scrolling
@@ -194,7 +194,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
 
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->scrollTo(0, 100);
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   const ObjectPaintProperties* scroller_properties =
       scroller->GetLayoutObject()->PaintProperties();
@@ -259,7 +259,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
 
   GetDocument().domWindow()->scrollTo(0, 100);
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix(), FramePreTranslation()->Matrix());
   EXPECT_TRUE(FramePreTranslation()->Parent()->IsRoot());
@@ -1168,7 +1168,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
       "</style>"
       "<div id='innerDivWithTransform'></div>");
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
 
   LayoutObject* div_with_transform =
@@ -1237,7 +1237,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
       "  }"
       "</style>"
       "<div id='transform'></div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
 
   // Assert that we have the following tree structure:
@@ -1300,7 +1300,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
       "      style='position:relative; width:100px; height: 200px;'></div>"
       "  <div style='height:10000px;'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* scroller =
       GetDocument().getElementById("scroller")->GetLayoutObject();
@@ -1634,7 +1634,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FractionalPaintOffset) {
       "<div id='a'>"
       "  <div id='b'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   LayoutPoint a_paint_offset = LayoutPoint(FloatPoint(0.1, 0.3));
@@ -1680,7 +1680,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
       "    <div id='c'></div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
   const ObjectPaintProperties* b_properties = b->PaintProperties();
@@ -1736,7 +1736,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "    <div id='c'></div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
   const ObjectPaintProperties* b_properties = b->PaintProperties();
@@ -1797,7 +1797,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "    <div id='c'></div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
   const ObjectPaintProperties* b_properties = b->PaintProperties();
@@ -1864,7 +1864,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "    </div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
   const ObjectPaintProperties* b_properties = b->PaintProperties();
@@ -1945,7 +1945,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
       "    </div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
   const ObjectPaintProperties* b_properties = b->PaintProperties();
@@ -2068,7 +2068,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
       "  <div id='b'"
       "      style='transform: translateZ(0); width: 20px; height: 10px'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   const ObjectPaintProperties* a_properties = a->PaintProperties();
@@ -2105,7 +2105,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext) {
       "    <div id='b'></div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   const ObjectPaintProperties* a_properties = a->PaintProperties();
@@ -2137,7 +2137,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedRenderingContexts) {
       "    </div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   const ObjectPaintProperties* a_properties = a->PaintProperties();
@@ -2202,7 +2202,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStylePropagatesToChildren) {
       "<div id='a'>"
       "  <div id='b'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
@@ -2240,7 +2240,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "<div id='a'>"
       "  <div id='b'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
@@ -2269,7 +2269,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened) {
       "  <div id='b'"
       "      style='transform: translateZ(0); width: 10px; height: 20px'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
@@ -2298,7 +2298,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "  <div id='b'"
       "      style='transform: translateZ(0); width: 10px; height: 20px'></div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetDocument().getElementById("a")->GetLayoutObject();
   LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
@@ -2327,7 +2327,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
       "        height: 20px'>C<div>"
       "  </div>"
       "</div>");
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
 
   Element* a = GetDocument().getElementById("a");
   const ObjectPaintProperties* a_properties =

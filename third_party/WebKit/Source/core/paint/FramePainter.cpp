@@ -5,7 +5,7 @@
 #include "core/paint/FramePainter.h"
 
 #include "core/editing/markers/DocumentMarkerController.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
@@ -274,7 +274,7 @@ void FramePainter::PaintScrollbar(GraphicsContext& context,
   bar.Paint(context, CullRect(rect));
 }
 
-const FrameView& FramePainter::GetFrameView() {
+const LocalFrameView& FramePainter::GetFrameView() {
   DCHECK(frame_view_);
   return *frame_view_;
 }

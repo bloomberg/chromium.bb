@@ -31,9 +31,9 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -194,7 +194,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state) {
   DCHECK(target_state >= DocumentLifecycle::kCompositingInputsClean);
 
-  FrameView* view = layout_view_.GetFrameView();
+  LocalFrameView* view = layout_view_.GetFrameView();
   if (view->ShouldThrottleRendering())
     return;
 
@@ -245,7 +245,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   layout_view_.GetFrameView()
       ->GetScrollableArea()
       ->UpdateCompositorScrollAnimations();
-  if (const FrameView::ScrollableAreaSet* animating_scrollable_areas =
+  if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
           layout_view_.GetFrameView()->AnimatingScrollableAreas()) {
     for (ScrollableArea* scrollable_area : *animating_scrollable_areas)
       scrollable_area->UpdateCompositorScrollAnimations();
@@ -280,7 +280,7 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
 }
 
 void PaintLayerCompositor::DidLayout() {
-  // FIXME: Technically we only need to do this when the FrameView's
+  // FIXME: Technically we only need to do this when the LocalFrameView's
   // isScrollable method would return a different value.
   root_should_always_composite_dirty_ = true;
   EnableCompositingModeIfNeeded();
@@ -443,7 +443,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
     {
       TRACE_EVENT0("blink",
                    "PaintLayerCompositor::updateAfterCompositingChange");
-      if (const FrameView::ScrollableAreaSet* scrollable_areas =
+      if (const LocalFrameView::ScrollableAreaSet* scrollable_areas =
               layout_view_.GetFrameView()->ScrollableAreas()) {
         for (ScrollableArea* scrollable_area : *scrollable_areas)
           layers_changed |= scrollable_area->UpdateAfterCompositingChange();
@@ -654,7 +654,7 @@ void PaintLayerCompositor::UpdateContainerSizes() {
   if (!container_layer_)
     return;
 
-  FrameView* frame_view = layout_view_.GetFrameView();
+  LocalFrameView* frame_view = layout_view_.GetFrameView();
   container_layer_->SetSize(FloatSize(frame_view->VisibleContentSize()));
   overflow_controls_host_layer_->SetSize(
       FloatSize(frame_view->VisibleContentSize(kIncludeScrollbars)));
@@ -677,7 +677,7 @@ enum AcceleratedFixedRootBackgroundHistogramBuckets {
 };
 
 void PaintLayerCompositor::FrameViewDidScroll() {
-  FrameView* frame_view = layout_view_.GetFrameView();
+  LocalFrameView* frame_view = layout_view_.GetFrameView();
   IntSize scroll_offset = frame_view->ScrollOffsetInt();
 
   if (!scroll_layer_)
@@ -882,7 +882,7 @@ void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
 }
 
 bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
-  FrameView* frame_view = layer->GetLayoutObject().GetFrameView();
+  LocalFrameView* frame_view = layer->GetLayoutObject().GetFrameView();
   // Elements within an invisible frame must not be composited because they are
   // not drawn.
   if (frame_view && !frame_view->IsVisible())
@@ -1042,7 +1042,7 @@ static void SetTracksRasterInvalidationsRecursive(
 void PaintLayerCompositor::SetTracksRasterInvalidations(
     bool tracks_raster_invalidations) {
 #if DCHECK_IS_ON()
-  FrameView* view = layout_view_.GetFrameView();
+  LocalFrameView* view = layout_view_.GetFrameView();
   DCHECK(Lifecycle().GetState() == DocumentLifecycle::kPaintClean ||
          (view && view->ShouldThrottleRendering()));
 #endif
@@ -1139,7 +1139,7 @@ void PaintLayerCompositor::UpdateOverflowControlsLayers() {
 }
 
 void PaintLayerCompositor::ShowScrollbarLayersIfNeeded() {
-  FrameView* frame_view = layout_view_.GetFrameView();
+  LocalFrameView* frame_view = layout_view_.GetFrameView();
   if (scroll_layer_ && frame_view->NeedsShowScrollbarLayers()) {
     scroll_layer_->PlatformLayer()->ShowScrollbars();
     frame_view->DidShowScrollbarLayers();

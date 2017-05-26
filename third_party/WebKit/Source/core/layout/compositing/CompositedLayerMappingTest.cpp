@@ -4,7 +4,7 @@
 
 #include "core/layout/compositing/CompositedLayerMapping.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/api/LayoutViewItem.h"

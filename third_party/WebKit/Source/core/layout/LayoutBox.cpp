@@ -30,8 +30,8 @@
 #include <algorithm>
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -646,7 +646,7 @@ void LayoutBox::ScrollToPosition(const FloatPoint& position,
 // Returns true iff we are attempting an autoscroll inside an iframe with
 // scrolling="no".
 static bool IsDisallowedAutoscroll(HTMLFrameOwnerElement* owner_element,
-                                   FrameView* frame_view) {
+                                   LocalFrameView* frame_view) {
   if (owner_element && IsHTMLFrameElementBase(*owner_element)) {
     HTMLFrameElementBase* frame_element_base =
         ToHTMLFrameElementBase(owner_element);
@@ -694,7 +694,7 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
     if (new_rect.IsEmpty())
       return;
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
-    if (FrameView* frame_view = this->GetFrameView()) {
+    if (LocalFrameView* frame_view = this->GetFrameView()) {
       HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
       if (!IsDisallowedAutoscroll(owner_element, frame_view)) {
         if (make_visible_in_visual_viewport) {
@@ -1034,7 +1034,7 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
   if (!frame)
     return;
 
-  FrameView* frame_view = frame->View();
+  LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return;
 
@@ -1061,7 +1061,7 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   if (!GetFrame())
     return IntSize();
 
-  FrameView* frame_view = GetFrame()->View();
+  LocalFrameView* frame_view = GetFrame()->View();
   if (!frame_view)
     return IntSize();
 
@@ -3766,7 +3766,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
   if (Style()->GetPosition() == EPosition::kFixed &&
       containing_block->IsLayoutView() && !GetDocument().Printing()) {
     const LayoutView* view = ToLayoutView(containing_block);
-    if (FrameView* frame_view = view->GetFrameView()) {
+    if (LocalFrameView* frame_view = view->GetFrameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
       LayoutSize viewport_size(
@@ -3828,7 +3828,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
   if (Style()->GetPosition() == EPosition::kFixed &&
       containing_block->IsLayoutView() && !GetDocument().Printing()) {
     const LayoutView* view = ToLayoutView(containing_block);
-    if (FrameView* frame_view = view->GetFrameView()) {
+    if (LocalFrameView* frame_view = view->GetFrameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
       LayoutSize viewport_size(

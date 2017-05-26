@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "core/dom/DOMNodeIds.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
@@ -41,7 +41,7 @@ PaintPropertyTreeBuilderFragmentContext::
 
 // True if a new property was created, false if an existing one was updated.
 static bool UpdatePreTranslation(
-    FrameView& frame_view,
+    LocalFrameView& frame_view,
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin) {
@@ -57,7 +57,7 @@ static bool UpdatePreTranslation(
 
 // True if a new property was created, false if an existing one was updated.
 static bool UpdateContentClip(
-    FrameView& frame_view,
+    LocalFrameView& frame_view,
     PassRefPtr<const ClipPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
     const FloatRoundedRect& clip_rect) {
@@ -83,7 +83,7 @@ static CompositorElementId CreatePaintLayereBasedCompositorElementId(
 // True if a new property was created or a main thread scrolling reason changed
 // (which can affect descendants), false if an existing one was updated.
 static bool UpdateScrollTranslation(
-    FrameView& frame_view,
+    LocalFrameView& frame_view,
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin,
@@ -117,7 +117,7 @@ static bool UpdateScrollTranslation(
 }
 
 static MainThreadScrollingReasons GetMainThreadScrollingReasons(
-    const FrameView& frame_view,
+    const LocalFrameView& frame_view,
     MainThreadScrollingReasons ancestor_reasons) {
   auto reasons = ancestor_reasons;
   if (!frame_view.GetFrame().GetSettings()->GetThreadedScrollingEnabled())
@@ -128,7 +128,7 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
 }
 
 void PaintPropertyTreeBuilder::UpdateProperties(
-    FrameView& frame_view,
+    LocalFrameView& frame_view,
     PaintPropertyTreeBuilderContext& full_context) {
   if (full_context.fragments.IsEmpty())
     full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());

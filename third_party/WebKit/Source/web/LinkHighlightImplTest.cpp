@@ -30,7 +30,7 @@
 #include "core/dom/Node.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/input/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/TouchDisambiguation.h"

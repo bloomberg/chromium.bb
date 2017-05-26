@@ -26,7 +26,7 @@
 #include "core/html/parser/HTMLParserScheduler.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/CurrentTime.h"

@@ -4,8 +4,8 @@
 
 #include "core/paint/ObjectPaintInvalidator.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -252,7 +252,7 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
 
   client.SetDisplayItemsUncached(reason);
 
-  if (FrameView* frame_view = object_.GetFrameView())
+  if (LocalFrameView* frame_view = object_.GetFrameView())
     frame_view->TrackObjectPaintInvalidation(client, reason);
 }
 
@@ -278,7 +278,7 @@ static std::unique_ptr<TracedValue> JsonObjectForPaintInvalidationInfo(
 static void InvalidatePaintRectangleOnWindow(
     const LayoutBoxModelObject& paint_invalidation_container,
     const IntRect& dirty_rect) {
-  FrameView* frame_view = paint_invalidation_container.GetFrameView();
+  LocalFrameView* frame_view = paint_invalidation_container.GetFrameView();
   DCHECK(paint_invalidation_container.IsLayoutView() &&
          paint_invalidation_container.Layer()->GetCompositingState() ==
              kNotComposited);

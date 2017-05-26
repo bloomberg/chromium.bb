@@ -9,7 +9,7 @@
 #include "core/dom/ResizeObserverCallback.h"
 #include "core/dom/ResizeObserverController.h"
 #include "core/dom/ResizeObserverEntry.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ void ResizeObserver::observe(Element* target) {
   observations_.insert(observation);
   observer_map.Set(this, observation);
 
-  if (FrameView* frame_view = target->GetDocument().View())
+  if (LocalFrameView* frame_view = target->GetDocument().View())
     frame_view->ScheduleAnimation();
 }
 

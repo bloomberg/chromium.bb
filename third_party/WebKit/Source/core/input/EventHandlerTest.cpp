@@ -10,8 +10,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionController.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/AutoscrollController.h"
@@ -105,7 +105,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       "class='line'>Line 10</span>"
       "</div>");
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 400), kProgrammaticScroll);
 

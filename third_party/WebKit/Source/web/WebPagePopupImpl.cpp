@@ -34,9 +34,9 @@
 #include "core/events/MessageEvent.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
@@ -315,7 +315,7 @@ bool WebPagePopupImpl::InitializePage() {
                       (EmptyLocalFrameClient::Create()));
   LocalFrame* frame = LocalFrame::Create(&empty_local_frame_client, *page_, 0);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
-  frame->SetView(FrameView::Create(*frame));
+  frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);

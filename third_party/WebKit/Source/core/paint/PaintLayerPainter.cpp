@@ -4,7 +4,7 @@
 
 #include "core/paint/PaintLayerPainter.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FilterPainter.h"

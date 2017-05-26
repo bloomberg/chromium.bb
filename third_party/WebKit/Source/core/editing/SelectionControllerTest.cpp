@@ -6,7 +6,7 @@
 
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
 

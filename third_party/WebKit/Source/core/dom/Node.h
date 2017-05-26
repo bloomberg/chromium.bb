@@ -644,7 +644,7 @@ class CORE_EXPORT Node : public EventTarget {
   // Attaches this node to the layout tree. This calculates the style to be
   // applied to the node and creates an appropriate LayoutObject which will be
   // inserted into the tree (except when the style has display: none). This
-  // makes the node visible in the FrameView.
+  // makes the node visible in the LocalFrameView.
   virtual void AttachLayoutTree(const AttachContext& = AttachContext());
 
   // Detaches the node from the layout tree, making it invisible in the rendered

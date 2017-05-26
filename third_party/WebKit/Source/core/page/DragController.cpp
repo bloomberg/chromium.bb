@@ -47,8 +47,8 @@
 #include "core/editing/commands/DragAndDropCommand.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -222,7 +222,7 @@ void DragController::DragEnded() {
 void DragController::DragExited(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
 
-  FrameView* frame_view(local_root.View());
+  LocalFrameView* frame_view(local_root.View());
   if (frame_view) {
     DataTransferAccessPolicy policy = kDataTransferTypesReadable;
     DataTransfer* data_transfer = CreateDraggingDataTransfer(policy, drag_data);
@@ -383,7 +383,7 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
 
   // It's unclear why this check is after tryDHTMLDrag.
   // We send drag events in tryDHTMLDrag and that may be the reason.
-  FrameView* frame_view = document_under_mouse_->View();
+  LocalFrameView* frame_view = document_under_mouse_->View();
   if (!frame_view)
     return false;
 
@@ -1213,7 +1213,7 @@ void DragController::DoSystemDrag(DragImage* image,
   did_initiate_drag_ = true;
   drag_initiator_ = frame->GetDocument();
 
-  FrameView* main_frame_view = frame->LocalFrameRoot().View();
+  LocalFrameView* main_frame_view = frame->LocalFrameRoot().View();
   IntPoint adjusted_drag_location = main_frame_view->RootFrameToContents(
       frame->View()->ContentsToRootFrame(drag_location));
   IntPoint adjusted_event_pos = main_frame_view->RootFrameToContents(

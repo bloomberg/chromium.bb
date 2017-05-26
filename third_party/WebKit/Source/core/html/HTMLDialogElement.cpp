@@ -31,7 +31,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/style/ComputedStyle.h"

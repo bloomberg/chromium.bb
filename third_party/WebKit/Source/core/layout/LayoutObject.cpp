@@ -44,8 +44,8 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -763,7 +763,7 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
   // When we're in layout, we're marking a descendant as needing layout with
   // the intention of visiting it during this layout. We shouldn't be
   // scheduling it to be laid out later. Also, scheduleRelayout() must not be
-  // called while iterating FrameView::m_layoutSubtreeRootList.
+  // called while iterating LocalFrameView::layout_subtree_root_list_.
   schedule_relayout &= !GetFrameView()->IsInPerformLayout();
 
   LayoutObject* object = Container();
@@ -2596,7 +2596,7 @@ bool LayoutObject::IsSelectionBorder() const {
 }
 
 inline void LayoutObject::ClearLayoutRootIfNeeded() const {
-  if (FrameView* view = GetFrameView()) {
+  if (LocalFrameView* view = GetFrameView()) {
     if (!DocumentBeingDestroyed())
       view->ClearLayoutSubtreeRoot(*this);
   }
@@ -2750,7 +2750,7 @@ static bool FindReferencingScrollAnchors(
     }
     layer = layer->Parent();
   }
-  if (FrameView* view = layout_object->GetFrameView()) {
+  if (LocalFrameView* view = layout_object->GetFrameView()) {
     ScrollAnchor* anchor = view->GetScrollAnchor();
     DCHECK(anchor);
     if (anchor->RefersTo(layout_object)) {
@@ -2994,13 +2994,13 @@ bool LayoutObject::NodeAtPoint(HitTestResult&,
 
 void LayoutObject::ScheduleRelayout() {
   if (IsLayoutView()) {
-    FrameView* view = ToLayoutView(this)->GetFrameView();
+    LocalFrameView* view = ToLayoutView(this)->GetFrameView();
     if (view)
       view->ScheduleRelayout();
   } else {
     if (IsRooted()) {
       if (LayoutView* layout_view = View()) {
-        if (FrameView* frame_view = layout_view->GetFrameView())
+        if (LocalFrameView* frame_view = layout_view->GetFrameView())
           frame_view->ScheduleRelayoutOfSubtree(this);
       }
     }

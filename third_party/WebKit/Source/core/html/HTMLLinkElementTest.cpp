@@ -5,7 +5,7 @@
 #include "core/html/HTMLLinkElement.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gmock/include/gmock/gmock.h"

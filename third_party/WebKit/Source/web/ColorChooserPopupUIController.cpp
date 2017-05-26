@@ -25,8 +25,8 @@
 
 #include "web/ColorChooserPopupUIController.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/page/PagePopup.h"
 #include "platform/geometry/IntRect.h"

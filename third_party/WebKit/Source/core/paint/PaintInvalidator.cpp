@@ -5,8 +5,8 @@
 #include "core/paint/PaintInvalidator.h"
 
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTable.h"
@@ -254,13 +254,13 @@ namespace {
 
 // This is temporary to workaround paint invalidation issues in
 // non-rootLayerScrolls mode.
-// It undoes FrameView's content clip and scroll for paint invalidation of frame
-// scroll controls and the LayoutView to which the content clip and scroll don't
-// apply.
+// It undoes LocalFrameView's content clip and scroll for paint invalidation of
+// frame scroll controls and the LayoutView to which the content clip and scroll
+// don't apply.
 class ScopedUndoFrameViewContentClipAndScroll {
  public:
   ScopedUndoFrameViewContentClipAndScroll(
-      const FrameView& frame_view,
+      const LocalFrameView& frame_view,
       const PaintPropertyTreeBuilderFragmentContext& tree_builder_context)
       : tree_builder_context_(
             const_cast<PaintPropertyTreeBuilderFragmentContext&>(
@@ -419,7 +419,7 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
 }
 
 void PaintInvalidator::InvalidatePaint(
-    FrameView& frame_view,
+    LocalFrameView& frame_view,
     const PaintPropertyTreeBuilderContext* tree_builder_context,
 
     PaintInvalidatorContext& context) {

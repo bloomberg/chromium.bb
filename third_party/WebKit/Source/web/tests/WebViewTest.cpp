@@ -43,8 +43,8 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
@@ -490,7 +490,8 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
 
   // Paint the root of the main frame in the way that CompositedLayerMapping
   // would.
-  FrameView* view = web_view_helper_.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper_.WebView()->MainFrameImpl()->GetFrameView();
   PaintLayer* root_layer = view->GetLayoutViewItem().Layer();
   LayoutRect paint_rect(0, 0, kWidth, kHeight);
   PaintLayerPaintingInfo painting_info(root_layer, paint_rect,
@@ -676,7 +677,7 @@ void WebViewTest::TestAutoResize(
   client.GetTestData().SetWebView(web_view);
 
   WebLocalFrameBase* frame = web_view->MainFrameImpl();
-  FrameView* frame_view = frame->GetFrame()->View();
+  LocalFrameView* frame_view = frame->GetFrame()->View();
   frame_view->UpdateLayout();
   EXPECT_FALSE(frame_view->LayoutPending());
   EXPECT_FALSE(frame_view->NeedsLayout());
@@ -3556,7 +3557,7 @@ TEST_P(WebViewTest, AutoResizeSubtreeLayout) {
   web_view->EnableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
   LoadFrame(web_view->MainFrame(), url);
 
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper_.WebView()->MainFrameImpl()->GetFrameView();
 
   // Auto-resizing used to DCHECK(needsLayout()) in LayoutBlockFlow::layout.
@@ -4125,7 +4126,8 @@ TEST_P(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->LayerTreeView()->SetViewportSize(WebSize(100, 150));
-  FrameView* frame_view = web_view_impl->MainFrameImpl()->GetFrame()->View();
+  LocalFrameView* frame_view =
+      web_view_impl->MainFrameImpl()->GetFrame()->View();
   DevToolsEmulator* dev_tools_emulator = web_view_impl->GetDevToolsEmulator();
 
   TransformationMatrix expected_matrix;

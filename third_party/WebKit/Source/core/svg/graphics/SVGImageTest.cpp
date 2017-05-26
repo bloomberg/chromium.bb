@@ -4,7 +4,7 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"

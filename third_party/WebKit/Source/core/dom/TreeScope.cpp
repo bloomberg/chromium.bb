@@ -40,8 +40,8 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/DOMSelection.h"
 #include "core/events/EventPath.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLMapElement.h"
@@ -200,7 +200,7 @@ static bool PointWithScrollAndZoomIfPossible(const Document& document,
   LocalFrame* frame = document.GetFrame();
   if (!frame)
     return false;
-  FrameView* frame_view = frame->View();
+  LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return false;
 

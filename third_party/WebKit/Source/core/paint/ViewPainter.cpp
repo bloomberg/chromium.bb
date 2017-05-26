@@ -4,7 +4,7 @@
 
 #include "core/paint/ViewPainter.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
@@ -29,7 +29,7 @@ void ViewPainter::Paint(const PaintInfo& paint_info,
   DCHECK(LayoutPoint(IntPoint(paint_offset.X().ToInt(),
                               paint_offset.Y().ToInt())) == paint_offset);
 
-  const FrameView* frame_view = layout_view_.GetFrameView();
+  const LocalFrameView* frame_view = layout_view_.GetFrameView();
   if (frame_view->ShouldThrottleRendering())
     return;
 
@@ -84,7 +84,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     return;
 
   const Document& document = layout_view_.GetDocument();
-  const FrameView& frame_view = *layout_view_.GetFrameView();
+  const LocalFrameView& frame_view = *layout_view_.GetFrameView();
   bool is_main_frame = document.IsInMainFrame();
   bool paints_base_background =
       is_main_frame && (frame_view.BaseBackgroundColor().Alpha() > 0);

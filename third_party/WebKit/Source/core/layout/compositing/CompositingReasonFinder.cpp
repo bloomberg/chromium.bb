@@ -6,7 +6,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"

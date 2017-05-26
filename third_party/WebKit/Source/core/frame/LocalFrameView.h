@@ -23,8 +23,8 @@
    Boston, MA 02110-1301, USA.
 */
 
-#ifndef FrameView_h
-#define FrameView_h
+#ifndef LocalFrameView_h
+#define LocalFrameView_h
 
 #include <memory>
 #include "core/CoreExport.h"
@@ -100,22 +100,22 @@ struct CompositedSelection;
 
 typedef unsigned long long DOMTimeStamp;
 
-class CORE_EXPORT FrameView final
-    : public GarbageCollectedFinalized<FrameView>,
+class CORE_EXPORT LocalFrameView final
+    : public GarbageCollectedFinalized<LocalFrameView>,
       public PlatformFrameView,
       public FrameOrPlugin,
       public PaintInvalidationCapableScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(FrameView);
+  USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 
   friend class PaintControllerPaintTestBase;
   friend class Internals;
   friend class LayoutPart;  // for invalidateTreeIfNeeded
 
  public:
-  static FrameView* Create(LocalFrame&);
-  static FrameView* Create(LocalFrame&, const IntSize& initial_size);
+  static LocalFrameView* Create(LocalFrame&);
+  static LocalFrameView* Create(LocalFrame&, const IntSize& initial_size);
 
-  ~FrameView() override;
+  ~LocalFrameView() override;
 
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
   void InvalidateRect(const IntRect&);
@@ -182,7 +182,7 @@ class CORE_EXPORT FrameView final
 
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
-  // NOTE: Scrollbar exclusion is based on the FrameView's scrollbars. To
+  // NOTE: Scrollbar exclusion is based on the LocalFrameView's scrollbars. To
   // exclude scrollbars on the root PaintLayer, use LayoutView::layoutSize.
   IntSize GetLayoutSize(IncludeScrollbarsInRect = kExcludeScrollbars) const;
   void SetLayoutSize(const IntSize&);
@@ -209,7 +209,7 @@ class CORE_EXPORT FrameView final
   void RecalculateCustomScrollbarStyle();
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
-  // True if the FrameView's base background color is completely opaque.
+  // True if the LocalFrameView's base background color is completely opaque.
   bool HasOpaqueBackground() const;
 
   Color BaseBackgroundColor() const;
@@ -426,11 +426,11 @@ class CORE_EXPORT FrameView final
   void DidAddScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
-  // passed around the FrameView layout methods can be true while this returns
-  // false.
+  // passed around the LocalFrameView layout methods can be true while this
+  // returns false.
   bool IsSubtreeLayout() const { return !layout_subtree_root_list_.IsEmpty(); }
 
-  // Sets the tickmarks for the FrameView, overriding the default behavior
+  // Sets the tickmarks for the LocalFrameView, overriding the default behavior
   // which is to display the tickmarks corresponding to find results.
   // If |m_tickmarks| is empty, the default behavior is restored.
   void SetTickmarks(const Vector<IntRect>& tickmarks) {
@@ -472,8 +472,9 @@ class CORE_EXPORT FrameView final
                             const ScrollAlignment& align_y,
                             ScrollType = kProgrammaticScroll) override;
 
-  // The window that hosts the FrameView. The FrameView will communicate scrolls
-  // and repaints to the host window in the window's coordinate space.
+  // The window that hosts the LocalFrameView. The LocalFrameView will
+  // communicate scrolls and repaints to the host window in the window's
+  // coordinate space.
   PlatformChromeClient* GetChromeClient() const;
 
   // Functions for child manipulation and inspection.
@@ -566,7 +567,7 @@ class CORE_EXPORT FrameView final
   void ClipPaintRect(FloatRect*) const;
 
   // Functions for getting/setting the size of the document contained inside the
-  // FrameView (as an IntSize or as individual width and height values).
+  // LocalFrameView (as an IntSize or as individual width and height values).
   // Always at least as big as the visibleWidth()/visibleHeight().
   IntSize ContentsSize() const override;
   int ContentsWidth() const { return ContentsSize().Width(); }
@@ -670,7 +671,7 @@ class CORE_EXPORT FrameView final
   // Returns the scrollable area for the frame. For the root frame, this will
   // be the RootFrameViewport, which adds pinch-zoom semantics to scrolling.
   // For non-root frames, this will be the the ScrollableArea used by the
-  // FrameView, depending on whether root-layer-scrolls is enabled.
+  // LocalFrameView, depending on whether root-layer-scrolls is enabled.
   ScrollableArea* GetScrollableArea();
 
   // Used to get at the underlying layoutViewport in the rare instances where
@@ -726,7 +727,7 @@ class CORE_EXPORT FrameView final
   ClipPaintPropertyNode* ContentClip() const { return content_clip_.Get(); }
 
   // The property tree state that should be used for painting contents. These
-  // properties are either created by this FrameView or are inherited from
+  // properties are either created by this LocalFrameView or are inherited from
   // an ancestor.
   void SetTotalPropertyTreeStateForContents(
       std::unique_ptr<PropertyTreeState> state) {
@@ -737,7 +738,7 @@ class CORE_EXPORT FrameView final
   }
 
   // Paint properties (e.g., m_preTranslation, etc.) are built from the
-  // FrameView's state (e.g., x(), y(), etc.) as well as inherited context.
+  // LocalFrameView's state (e.g., x(), y(), etc.) as well as inherited context.
   // When these inputs change, setNeedsPaintPropertyUpdate will cause a paint
   // property tree update during the next document lifecycle update.
   // setNeedsPaintPropertyUpdate also sets the owning layout tree as needing a
@@ -832,7 +833,7 @@ class CORE_EXPORT FrameView final
   // https://crbug.com/680606. Animation timelines and hosts for scrolling
   // are normally owned by ScrollingCoordinator, but there is only one
   // of those objects per page. To get around this, we temporarily stash a
-  // unique timeline and host on each OOPIF FrameView.
+  // unique timeline and host on each OOPIF LocalFrameView.
   void SetAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
   void SetAnimationHost(std::unique_ptr<CompositorAnimationHost>);
 
@@ -871,7 +872,7 @@ class CORE_EXPORT FrameView final
     STACK_ALLOCATED();
 
    public:
-    explicit InUpdateScrollbarsScope(FrameView* view)
+    explicit InUpdateScrollbarsScope(LocalFrameView* view)
         : scope_(&view->in_update_scrollbars_, true) {}
 
    private:
@@ -882,13 +883,14 @@ class CORE_EXPORT FrameView final
   void DeprecatedInvalidateTree(const PaintInvalidationState&);
 
  private:
-  explicit FrameView(LocalFrame&, IntRect);
+  explicit LocalFrameView(LocalFrame&, IntRect);
   class ScrollbarManager : public blink::ScrollbarManager {
     DISALLOW_NEW();
 
     // Helper class to manage the life cycle of Scrollbar objects.
    public:
-    ScrollbarManager(FrameView& scroller) : blink::ScrollbarManager(scroller) {}
+    ScrollbarManager(LocalFrameView& scroller)
+        : blink::ScrollbarManager(scroller) {}
 
     void SetHasHorizontalScrollbar(bool has_scrollbar) override;
     void SetHasVerticalScrollbar(bool has_scrollbar) override;
@@ -901,7 +903,7 @@ class CORE_EXPORT FrameView final
     void DestroyScrollbar(ScrollbarOrientation) override;
   };
 
-  FrameView* ParentFrameView() const;
+  LocalFrameView* ParentFrameView() const;
 
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
 
@@ -983,8 +985,8 @@ class CORE_EXPORT FrameView final
   static bool ComputeCompositedSelection(LocalFrame&, CompositedSelection&);
   void UpdateCompositedSelectionIfNeeded();
 
-  // Returns true if the FrameView's own scrollbars overlay its content when
-  // visible.
+  // Returns true if the LocalFrameView's own scrollbars overlay its content
+  // when visible.
   bool HasOverlayScrollbars() const;
 
   // Returns true if the frame should use custom scrollbars. If true, sets
@@ -1057,8 +1059,8 @@ class CORE_EXPORT FrameView final
   typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
   EmbeddedObjectSet part_update_set_;
 
-  // FIXME: These are just "children" of the FrameView and should be
-  // Member<FrameView> instead.
+  // FIXME: These are just "children" of the LocalFrameView and should be
+  // Member<LocalFrameView> instead.
   HashSet<RefPtr<LayoutPart>> parts_;
 
   Member<LocalFrame> frame_;
@@ -1082,8 +1084,8 @@ class CORE_EXPORT FrameView final
   bool in_synchronous_post_layout_;
   int layout_count_;
   unsigned nested_layout_count_;
-  TaskRunnerTimer<FrameView> post_layout_tasks_timer_;
-  TaskRunnerTimer<FrameView> update_plugins_timer_;
+  TaskRunnerTimer<LocalFrameView> post_layout_tasks_timer_;
+  TaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 
   bool first_layout_;
   Color base_background_color_;
@@ -1120,7 +1122,7 @@ class CORE_EXPORT FrameView final
   IntSize initial_viewport_size_;
   bool layout_size_fixed_to_frame_size_;
 
-  TaskRunnerTimer<FrameView> did_scroll_timer_;
+  TaskRunnerTimer<LocalFrameView> did_scroll_timer_;
 
   Vector<IntRect> tickmarks_;
 
@@ -1155,7 +1157,7 @@ class CORE_EXPORT FrameView final
   bool frame_timing_requests_dirty_;
 
   // Exists only on root frame.
-  // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
+  // TODO(bokan): crbug.com/484188. We should specialize LocalFrameView for the
   // main frame.
   Member<RootFrameViewport> viewport_scrollable_area_;
 
@@ -1167,8 +1169,8 @@ class CORE_EXPORT FrameView final
   bool lifecycle_updates_throttled_;
 
   // Paint properties for SPv2 Only.
-  // The hierarchy of transform subtree created by a FrameView.
-  // [ preTranslation ]               The offset from FrameView::FrameRect.
+  // The hierarchy of transform subtree created by a LocalFrameView.
+  // [ preTranslation ]               The offset from LocalFrameView::FrameRect.
   //     |                            Establishes viewport.
   //     +---[ scrollTranslation ]    Frame scrolling.
   // TODO(trchen): These will not be needed once settings->rootLayerScrolls() is
@@ -1180,11 +1182,11 @@ class CORE_EXPORT FrameView final
   // enabled.
   RefPtr<ClipPaintPropertyNode> content_clip_;
   // The property tree state that should be used for painting contents. These
-  // properties are either created by this FrameView or are inherited from
+  // properties are either created by this LocalFrameView or are inherited from
   // an ancestor.
   std::unique_ptr<PropertyTreeState> total_property_tree_state_for_contents_;
   // Whether the paint properties need to be updated. For more details, see
-  // FrameView::needsPaintPropertyUpdate().
+  // LocalFrameView::needsPaintPropertyUpdate().
   bool needs_paint_property_update_;
 
   // This is set on the local root frame view only.
@@ -1231,7 +1233,8 @@ class CORE_EXPORT FrameView final
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
 
-inline void FrameView::IncrementVisuallyNonEmptyCharacterCount(unsigned count) {
+inline void LocalFrameView::IncrementVisuallyNonEmptyCharacterCount(
+    unsigned count) {
   if (is_visually_non_empty_)
     return;
   visually_non_empty_character_count_ += count;
@@ -1243,7 +1246,7 @@ inline void FrameView::IncrementVisuallyNonEmptyCharacterCount(unsigned count) {
     SetIsVisuallyNonEmpty();
 }
 
-inline void FrameView::IncrementVisuallyNonEmptyPixelCount(
+inline void LocalFrameView::IncrementVisuallyNonEmptyPixelCount(
     const IntSize& size) {
   if (is_visually_non_empty_)
     return;
@@ -1255,17 +1258,17 @@ inline void FrameView::IncrementVisuallyNonEmptyPixelCount(
     SetIsVisuallyNonEmpty();
 }
 
-DEFINE_TYPE_CASTS(FrameView,
+DEFINE_TYPE_CASTS(LocalFrameView,
                   PlatformFrameView,
                   platform_frame_view,
                   platform_frame_view->IsFrameView(),
                   platform_frame_view.IsFrameView());
-DEFINE_TYPE_CASTS(FrameView,
+DEFINE_TYPE_CASTS(LocalFrameView,
                   FrameOrPlugin,
                   frame_or_plugin,
                   frame_or_plugin->IsFrameView(),
                   frame_or_plugin.IsFrameView());
-DEFINE_TYPE_CASTS(FrameView,
+DEFINE_TYPE_CASTS(LocalFrameView,
                   ScrollableArea,
                   scrollableArea,
                   scrollableArea->IsFrameView(),
@@ -1273,4 +1276,4 @@ DEFINE_TYPE_CASTS(FrameView,
 
 }  // namespace blink
 
-#endif  // FrameView_h
+#endif  // LocalFrameView_h

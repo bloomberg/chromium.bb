@@ -24,7 +24,7 @@
 
 #include "core/paint/ThemePainterDefault.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutThemeDefault.h"

@@ -9,7 +9,7 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/media/AutoplayPolicy.h"
 #include "core/loader/DocumentLoader.h"
@@ -105,7 +105,8 @@ class BaseAudioContextTest : public ::testing::Test {
     child_frame_ = LocalFrame::Create(
         MockCrossOriginLocalFrameClient::Create(GetDocument().GetFrame()),
         *GetDocument().GetFrame()->GetPage(), dummy_frame_owner_.Get());
-    child_frame_->SetView(FrameView::Create(*child_frame_, IntSize(500, 500)));
+    child_frame_->SetView(
+        LocalFrameView::Create(*child_frame_, IntSize(500, 500)));
     child_frame_->Init();
 
     ChildDocument().UpdateSecurityOrigin(

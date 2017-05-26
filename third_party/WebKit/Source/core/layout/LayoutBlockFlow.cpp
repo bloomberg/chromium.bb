@@ -32,8 +32,8 @@
 
 #include <memory>
 #include "core/editing/Editor.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/layout/HitTestLocation.h"
@@ -4418,7 +4418,7 @@ void LayoutBlockFlow::PositionDialog() {
     return;
   }
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   LayoutUnit top = LayoutUnit((Style()->GetPosition() == EPosition::kFixed)
                                   ? 0
                                   : frame_view->ScrollOffsetInt().Height());

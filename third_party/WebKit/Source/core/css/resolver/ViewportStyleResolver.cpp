@@ -43,8 +43,8 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/api/LayoutViewItem.h"
 
@@ -284,7 +284,7 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
   bool document_style_has_viewport_units = document_style->HasViewportUnits();
   document_style->SetHasViewportUnits(false);
 
-  FrameView* view = document_->GetFrame()->View();
+  LocalFrameView* view = document_->GetFrame()->View();
   DCHECK(view);
 
   CSSToLengthConversionData::FontSizes font_sizes(document_style,

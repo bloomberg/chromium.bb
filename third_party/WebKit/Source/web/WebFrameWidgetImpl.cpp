@@ -42,7 +42,7 @@
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -162,7 +162,7 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
   if (size_ == new_size)
     return;
 
-  FrameView* view = local_root_->GetFrameView();
+  LocalFrameView* view = local_root_->GetFrameView();
   if (!view)
     return;
 
@@ -184,9 +184,10 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
 }
 
 void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
-  // FIXME: This is wrong. The FrameView is responsible sending a resizeEvent
-  // as part of layout. Layout is also responsible for sending invalidations
-  // to the embedder. This method and all callers may be wrong. -- eseidel.
+  // FIXME: This is wrong. The LocalFrameView is responsible sending a
+  // resizeEvent as part of layout. Layout is also responsible for sending
+  // invalidations to the embedder. This method and all callers may be wrong. --
+  // eseidel.
   if (local_root_->GetFrameView()) {
     // Enqueues the resize event.
     local_root_->GetFrame()->GetDocument()->EnqueueResizeEvent();
@@ -216,7 +217,7 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   if (!local_root_)
     return;
 
-  FrameView* view = local_root_->GetFrameView();
+  LocalFrameView* view = local_root_->GetFrameView();
   if (!view)
     return;
 
@@ -308,7 +309,7 @@ void WebFrameWidgetImpl::SetBaseBackgroundColorOverride(WebColor color) {
   base_background_color_override_enabled_ = true;
   base_background_color_override_ = color;
   // Force lifecycle update to ensure we're good to call
-  // FrameView::setBaseBackgroundColor().
+  // LocalFrameView::setBaseBackgroundColor().
   local_root_->GetFrameView()->UpdateLifecycleToCompositingCleanPlusScrolling();
   UpdateBaseBackgroundColor();
 }
@@ -319,7 +320,7 @@ void WebFrameWidgetImpl::ClearBaseBackgroundColorOverride() {
 
   base_background_color_override_enabled_ = false;
   // Force lifecycle update to ensure we're good to call
-  // FrameView::setBaseBackgroundColor().
+  // LocalFrameView::setBaseBackgroundColor().
   local_root_->GetFrameView()->UpdateLifecycleToCompositingCleanPlusScrolling();
   UpdateBaseBackgroundColor();
 }
@@ -335,7 +336,7 @@ void WebFrameWidgetImpl::CompositeAndReadbackAsync(
 }
 
 void WebFrameWidgetImpl::ThemeChanged() {
-  FrameView* view = local_root_->GetFrameView();
+  LocalFrameView* view = local_root_->GetFrameView();
 
   WebRect damaged_rect(0, 0, size_.width, size_.height);
   view->InvalidateRect(damaged_rect);
@@ -582,7 +583,7 @@ WebColor WebFrameWidgetImpl::BackgroundColor() const {
     return background_color_override_;
   if (!local_root_->GetFrameView())
     return base_background_color_;
-  FrameView* view = local_root_->GetFrameView();
+  LocalFrameView* view = local_root_->GetFrameView();
   return view->DocumentBackgroundColor().Rgb();
 }
 
@@ -1166,7 +1167,7 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
     const WebPoint& point_in_viewport) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       local_root_->GetFrame()->GetDocument()->Lifecycle());
-  FrameView* view = local_root_->GetFrameView();
+  LocalFrameView* view = local_root_->GetFrameView();
   IntPoint point_in_root_frame =
       view->ContentsToFrame(view->ViewportToContents(point_in_viewport));
   return HitTestResultForRootFramePos(point_in_root_frame);

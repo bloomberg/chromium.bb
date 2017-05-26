@@ -28,15 +28,15 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 
 namespace blink {
 
 StyleMedia::StyleMedia(LocalFrame* frame) : ContextClient(frame) {}
 
 AtomicString StyleMedia::type() const {
-  FrameView* view = GetFrame() ? GetFrame()->View() : nullptr;
+  LocalFrameView* view = GetFrame() ? GetFrame()->View() : nullptr;
   if (view)
     return view->MediaType();
 

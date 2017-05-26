@@ -31,9 +31,9 @@
 #include "core/testing/DummyPageHolder.h"
 
 #include <memory>
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/loader/EmptyClients.h"
@@ -83,7 +83,7 @@ DummyPageHolder::DummyPageHolder(const IntSize& initial_view_size,
 
   frame_ = LocalFrame::Create(local_frame_client_.Get(), *page_, nullptr,
                               interface_provider);
-  frame_->SetView(FrameView::Create(*frame_, initial_view_size));
+  frame_->SetView(LocalFrameView::Create(*frame_, initial_view_size));
   frame_->View()->GetPage()->GetVisualViewport().SetSize(initial_view_size);
   frame_->Init();
 }
@@ -103,7 +103,7 @@ LocalFrame& DummyPageHolder::GetFrame() const {
   return *frame_;
 }
 
-FrameView& DummyPageHolder::GetFrameView() const {
+LocalFrameView& DummyPageHolder::GetFrameView() const {
   return *frame_->View();
 }
 

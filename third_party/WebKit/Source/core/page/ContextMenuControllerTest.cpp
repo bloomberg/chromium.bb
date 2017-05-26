@@ -4,15 +4,15 @@
 
 #include "core/page/ContextMenuController.h"
 
+#include <memory>
 #include "core/clipboard/DataTransfer.h"
 #include "core/events/MouseEvent.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/ContextMenu.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

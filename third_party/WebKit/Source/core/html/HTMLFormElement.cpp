@@ -370,7 +370,7 @@ void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
 
 void HTMLFormElement::Submit(Event* event,
                              HTMLFormControlElement* submit_button) {
-  FrameView* view = GetDocument().View();
+  LocalFrameView* view = GetDocument().View();
   LocalFrame* frame = GetDocument().GetFrame();
   if (!view || !frame || !frame->GetPage())
     return;

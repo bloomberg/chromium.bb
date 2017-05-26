@@ -16,8 +16,8 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -513,7 +513,7 @@ InspectorStyleRecalcInvalidationTrackingEvent::Data(
 }
 
 std::unique_ptr<TracedValue> InspectorLayoutEvent::BeginData(
-    FrameView* frame_view) {
+    LocalFrameView* frame_view) {
   bool is_partial;
   unsigned needs_layout_objects;
   unsigned total_objects;
@@ -885,7 +885,7 @@ static void LocalToPageQuad(const LayoutObject& layout_object,
                             const LayoutRect& rect,
                             FloatQuad* quad) {
   LocalFrame* frame = layout_object.GetFrame();
-  FrameView* view = frame->View();
+  LocalFrameView* view = frame->View();
   FloatQuad absolute =
       layout_object.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)));
   quad->SetP1(view->ContentsToRootFrame(RoundedIntPoint(absolute.P1())));

@@ -30,7 +30,7 @@
 
 #include "core/layout/SubtreeLayoutScope.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {

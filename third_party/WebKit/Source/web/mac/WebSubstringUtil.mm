@@ -41,8 +41,8 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/html/HTMLElement.h"
@@ -136,7 +136,7 @@ static NSAttributedString* attributedSubstringFromRange(
   return [string autorelease];
 }
 
-WebPoint getBaselinePoint(FrameView* frameView,
+WebPoint getBaselinePoint(LocalFrameView* frameView,
                           const EphemeralRange& range,
                           NSAttributedString* string) {
   // TODO(yosin): We shold avoid to create |Range| object. See crbug.com/529985.

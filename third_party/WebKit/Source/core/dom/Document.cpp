@@ -136,12 +136,12 @@
 #include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -1711,7 +1711,7 @@ void Document::SetStateForNewFormElements(const Vector<String>& state_vector) {
   GetFormController().SetStateForNewFormElements(state_vector);
 }
 
-FrameView* Document::View() const {
+LocalFrameView* Document::View() const {
   return frame_ ? frame_->View() : nullptr;
 }
 
@@ -2255,7 +2255,7 @@ void Document::UpdateStyleAndLayout() {
 
   ScriptForbiddenScope forbid_script;
 
-  FrameView* frame_view = View();
+  LocalFrameView* frame_view = View();
   if (frame_view && frame_view->IsInPerformLayout()) {
     // View layout should not be re-entrant.
     NOTREACHED();
@@ -2276,7 +2276,7 @@ void Document::UpdateStyleAndLayout() {
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 
-  if (FrameView* frame_view = View())
+  if (LocalFrameView* frame_view = View())
     frame_view->PerformScrollAnchoringAdjustments();
 }
 
@@ -2558,9 +2558,10 @@ void Document::Shutdown() {
   View()->Dispose();
 
   // If the FrameViewBase of the document's frame owner doesn't match view()
-  // then FrameView::dispose() didn't clear the owner's FrameViewBase. If we
-  // don't clear it here, it may be clobbered later in LocalFrame::createView().
-  // See also https://crbug.com/673170 and the comment in FrameView::dispose().
+  // then LocalFrameView::Dispose() didn't clear the owner's FrameViewBase. If
+  // we don't clear it here, it may be clobbered later in
+  // LocalFrame::CreateView(). See also https://crbug.com/673170 and the comment
+  // in LocalFrameView::Dispose().
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
   if (owner_element)
     owner_element->SetWidget(nullptr);
@@ -3321,8 +3322,8 @@ void Document::SetParsingState(ParsingState parsing_state) {
 }
 
 bool Document::ShouldScheduleLayout() const {
-  // This function will only be called when FrameView thinks a layout is needed.
-  // This enforces a couple extra rules.
+  // This function will only be called when LocalFrameView thinks a layout is
+  // needed. This enforces a couple extra rules.
   //
   //    (a) Only schedule a layout once the stylesheets are loaded.
   //    (b) Only schedule layout once we have a body element.

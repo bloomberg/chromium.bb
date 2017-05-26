@@ -75,11 +75,11 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // Returns the ScrollableArea associated with the globalRootScroller(). Note,
   // this isn't necessarily the PLSA belonging to the root scroller Element's
   // LayoutBox.  If the root scroller is the documentElement then we use the
-  // FrameView (or LayoutView if root-layer-scrolls).
+  // LocalFrameView (or LayoutView if root-layer-scrolls).
   ScrollableArea* RootScrollerArea() const;
 
   // Returns the size we should use for the root scroller, accounting for top
-  // controls adjustment and using the root FrameView.
+  // controls adjustment and using the root LocalFrameView.
   IntSize RootScrollerVisibleArea() const;
 
  private:

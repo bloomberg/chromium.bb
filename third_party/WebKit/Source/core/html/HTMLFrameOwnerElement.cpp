@@ -25,9 +25,9 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutPartItem.h"
@@ -41,7 +41,7 @@
 namespace blink {
 
 using FrameOrPluginToParentMap =
-    HeapHashMap<Member<FrameOrPlugin>, Member<FrameView>>;
+    HeapHashMap<Member<FrameOrPlugin>, Member<LocalFrameView>>;
 
 static FrameOrPluginToParentMap& FrameOrPluginNewParentMap() {
   DEFINE_STATIC_LOCAL(FrameOrPluginToParentMap, map,
@@ -125,7 +125,8 @@ void TemporarilyRemoveFrameOrPluginFromParentSoon(FrameOrPlugin* child) {
   }
 }
 
-void MoveFrameOrPluginToParentSoon(FrameOrPlugin* child, FrameView* parent) {
+void MoveFrameOrPluginToParentSoon(FrameOrPlugin* child,
+                                   LocalFrameView* parent) {
   if (!g_update_suspend_count) {
     if (parent) {
       DCHECK(child != parent && !child->IsAttached());

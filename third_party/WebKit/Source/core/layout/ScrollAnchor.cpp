@@ -4,7 +4,7 @@
 
 #include "core/layout/ScrollAnchor.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/api/LayoutBoxItem.h"
@@ -254,7 +254,7 @@ void ScrollAnchor::NotifyBeforeLayout() {
   scroll_anchor_disabling_style_changed_ =
       ComputeScrollAnchorDisablingStyleChanged();
 
-  FrameView* frame_view = ScrollerLayoutBox(scroller_)->GetFrameView();
+  LocalFrameView* frame_view = ScrollerLayoutBox(scroller_)->GetFrameView();
   ScrollableArea* owning_scroller =
       scroller_->IsRootFrameViewport()
           ? &ToRootFrameViewport(scroller_)->LayoutViewport()
@@ -344,7 +344,7 @@ void ScrollAnchor::Clear() {
     layer = layer->Parent();
   }
 
-  if (FrameView* view = layout_object->GetFrameView()) {
+  if (LocalFrameView* view = layout_object->GetFrameView()) {
     ScrollAnchor* anchor = view->GetScrollAnchor();
     DCHECK(anchor);
     anchor->ClearSelf();

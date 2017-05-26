@@ -6,7 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -170,7 +170,7 @@ void TopDocumentRootScrollerController::DidDisposeScrollableArea(
   if (TopDocument()->Lifecycle().GetState() >= DocumentLifecycle::kStopping)
     return;
 
-  FrameView* frame_view = TopDocument()->View();
+  LocalFrameView* frame_view = TopDocument()->View();
 
   RootFrameViewport* rfv = frame_view->GetRootFrameViewport();
 

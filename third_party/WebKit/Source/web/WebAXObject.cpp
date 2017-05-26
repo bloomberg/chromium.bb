@@ -37,7 +37,7 @@
 #include "core/dom/Node.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/input/KeyboardEventManager.h"

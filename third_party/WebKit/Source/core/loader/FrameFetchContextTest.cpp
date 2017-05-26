@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
@@ -128,7 +128,8 @@ class FrameFetchContextTest : public ::testing::Test {
     child_client = StubLocalFrameClientWithParent::Create(document->GetFrame());
     child_frame = LocalFrame::Create(
         child_client.Get(), *document->GetFrame()->GetPage(), owner.Get());
-    child_frame->SetView(FrameView::Create(*child_frame, IntSize(500, 500)));
+    child_frame->SetView(
+        LocalFrameView::Create(*child_frame, IntSize(500, 500)));
     child_frame->Init();
     child_document = child_frame->GetDocument();
     FrameFetchContext* child_fetch_context = static_cast<FrameFetchContext*>(

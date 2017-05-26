@@ -8,7 +8,7 @@
 #include "core/dom/ClientRect.h"
 #include "core/dom/Document.h"
 #include "core/editing/EditingTestBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/PaintLayer.h"

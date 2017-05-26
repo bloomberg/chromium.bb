@@ -4,7 +4,7 @@
 
 #include "core/paint/VideoPainter.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/loader/EmptyClients.h"

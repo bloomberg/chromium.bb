@@ -6,7 +6,7 @@
 
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
@@ -525,7 +525,7 @@ bool DevToolsEmulator::HandleInputEvent(const WebInputEvent& input_event) {
 
   // FIXME: This workaround is required for touch emulation on Mac, where
   // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
-  FrameView* frame_view = page->DeprecatedLocalMainFrame()->View();
+  LocalFrameView* frame_view = page->DeprecatedLocalMainFrame()->View();
   WebGestureEvent scaled_event = TransformWebGestureEvent(
       frame_view, static_cast<const WebGestureEvent&>(input_event));
   float page_scale_factor = page->PageScaleFactor();

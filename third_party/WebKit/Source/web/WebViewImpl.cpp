@@ -54,9 +54,9 @@
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/ResizeViewportAnchor.h"
@@ -1039,7 +1039,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
     if (!duration_in_seconds) {
       SetPageScaleFactor(new_scale);
 
-      FrameView* view = MainFrameImpl()->GetFrameView();
+      LocalFrameView* view = MainFrameImpl()->GetFrameView();
       if (view && view->GetScrollableArea()) {
         view->GetScrollableArea()->SetScrollOffset(
             ScrollOffset(clamped_point.x, clamped_point.y),
@@ -1861,7 +1861,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   if (!main_frame)
     return;
 
-  FrameView* view = main_frame->GetFrameView();
+  LocalFrameView* view = main_frame->GetFrameView();
   if (!view)
     return;
 
@@ -1898,7 +1898,7 @@ void WebViewImpl::ResizeViewWhileAnchored(float browser_controls_height,
     // Avoids unnecessary invalidations while various bits of state in
     // TextAutosizer are updated.
     TextAutosizer::DeferUpdatePageInfo defer_update_page_info(GetPage());
-    FrameView* frame_view = MainFrameImpl()->GetFrameView();
+    LocalFrameView* frame_view = MainFrameImpl()->GetFrameView();
     IntRect old_rect = frame_view->FrameRect();
     UpdateICBAndResizeViewport();
     IntRect new_rect = frame_view->FrameRect();
@@ -1942,7 +1942,7 @@ void WebViewImpl::ResizeWithBrowserControls(
   if (!main_frame)
     return;
 
-  FrameView* view = main_frame->GetFrameView();
+  LocalFrameView* view = main_frame->GetFrameView();
   if (!view)
     return;
 
@@ -2047,7 +2047,7 @@ void WebViewImpl::UpdateAllLifecyclePhases() {
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->UpdateGeometry();
 
-  if (FrameView* view = MainFrameImpl()->GetFrameView()) {
+  if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
     WebWidgetClient* client =
         WebLocalFrameBase::FromFrame(frame)->FrameWidget()->Client();
@@ -2119,7 +2119,7 @@ void WebViewImpl::ThemeChanged() {
     return;
   if (!GetPage()->MainFrame()->IsLocalFrame())
     return;
-  FrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
+  LocalFrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
 
   WebRect damaged_rect(0, 0, size_.width, size_.height);
   view->InvalidateRect(damaged_rect);
@@ -2474,7 +2474,7 @@ WebColor WebViewImpl::BackgroundColor() const {
     return BaseBackgroundColor().Rgb();
   if (!page_->MainFrame()->IsLocalFrame())
     return BaseBackgroundColor().Rgb();
-  FrameView* view = page_->DeprecatedLocalMainFrame()->View();
+  LocalFrameView* view = page_->DeprecatedLocalMainFrame()->View();
   if (!view)
     return BaseBackgroundColor().Rgb();
   return view->DocumentBackgroundColor().Rgb();
@@ -3006,7 +3006,7 @@ void WebViewImpl::ScrollAndRescaleViewports(
   if (!MainFrameImpl())
     return;
 
-  FrameView* view = MainFrameImpl()->GetFrameView();
+  LocalFrameView* view = MainFrameImpl()->GetFrameView();
   if (!view)
     return;
 
@@ -3126,7 +3126,7 @@ void WebViewImpl::RefreshPageScaleFactorAfterLayout() {
       !GetPage()->MainFrame()->IsLocalFrame() ||
       !GetPage()->DeprecatedLocalMainFrame()->View())
     return;
-  FrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
+  LocalFrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
 
   UpdatePageDefinedViewportConstraints(
       MainFrameImpl()->GetFrame()->GetDocument()->GetViewportDescription());
@@ -3243,7 +3243,7 @@ void WebViewImpl::UpdateMainFrameLayoutSize() {
   if (should_auto_resize_ || !MainFrameImpl())
     return;
 
-  FrameView* view = MainFrameImpl()->GetFrameView();
+  LocalFrameView* view = MainFrameImpl()->GetFrameView();
   if (!view)
     return;
 
@@ -3319,7 +3319,8 @@ void WebViewImpl::ResetScrollAndScaleState() {
   if (!GetPage()->MainFrame()->IsLocalFrame())
     return;
 
-  if (FrameView* frame_view = ToLocalFrame(GetPage()->MainFrame())->View()) {
+  if (LocalFrameView* frame_view =
+          ToLocalFrame(GetPage()->MainFrame())->View()) {
     ScrollableArea* scrollable_area =
         frame_view->LayoutViewportScrollableArea();
 
@@ -3400,16 +3401,17 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
     const WebPoint& point_in_viewport) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
-  FrameView* view = MainFrameImpl()->GetFrameView();
+  LocalFrameView* view = MainFrameImpl()->GetFrameView();
   IntPoint point_in_root_frame =
       view->ContentsToFrame(view->ViewportToContents(point_in_viewport));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
 void WebViewImpl::SendResizeEventAndRepaint() {
-  // FIXME: This is wrong. The FrameView is responsible sending a resizeEvent
-  // as part of layout. Layout is also responsible for sending invalidations
-  // to the embedder. This method and all callers may be wrong. -- eseidel.
+  // FIXME: This is wrong. The LocalFrameView is responsible sending a
+  // resizeEvent as part of layout. Layout is also responsible for sending
+  // invalidations to the embedder. This method and all callers may be wrong. --
+  // eseidel.
   if (MainFrameImpl()->GetFrameView()) {
     // Enqueues the resize event.
     MainFrameImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
@@ -3551,7 +3553,7 @@ void WebViewImpl::SetBaseBackgroundColorOverride(WebColor color) {
   base_background_color_override_ = color;
   if (MainFrameImpl()) {
     // Force lifecycle update to ensure we're good to call
-    // FrameView::setBaseBackgroundColor().
+    // LocalFrameView::setBaseBackgroundColor().
     MainFrameImpl()
         ->GetFrame()
         ->View()
@@ -3567,7 +3569,7 @@ void WebViewImpl::ClearBaseBackgroundColorOverride() {
   base_background_color_override_enabled_ = false;
   if (MainFrameImpl()) {
     // Force lifecycle update to ensure we're good to call
-    // FrameView::setBaseBackgroundColor().
+    // LocalFrameView::setBaseBackgroundColor().
     MainFrameImpl()
         ->GetFrame()
         ->View()
@@ -3579,7 +3581,7 @@ void WebViewImpl::ClearBaseBackgroundColorOverride() {
 void WebViewImpl::UpdateBaseBackgroundColor() {
   Color color = BaseBackgroundColor();
   if (page_->MainFrame() && page_->MainFrame()->IsLocalFrame()) {
-    FrameView* view = page_->DeprecatedLocalMainFrame()->View();
+    LocalFrameView* view = page_->DeprecatedLocalMainFrame()->View();
     view->SetBaseBackgroundColor(color);
     view->UpdateBaseBackgroundColorRecursively(color);
   }

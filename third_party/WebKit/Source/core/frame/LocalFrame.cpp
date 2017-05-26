@@ -47,9 +47,9 @@
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -290,7 +290,7 @@ void LocalFrame::Init() {
   loader_.Init();
 }
 
-void LocalFrame::SetView(FrameView* view) {
+void LocalFrame::SetView(LocalFrameView* view) {
   DCHECK(!view_ || view_ != view);
   DCHECK(!GetDocument() || !GetDocument()->IsActive());
   view_ = view;
@@ -312,14 +312,14 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
 
   SetView(nullptr);
 
-  FrameView* frame_view = nullptr;
+  LocalFrameView* frame_view = nullptr;
   if (is_local_root) {
-    frame_view = FrameView::Create(*this, viewport_size);
+    frame_view = LocalFrameView::Create(*this, viewport_size);
 
     // The layout size is set by WebViewImpl to support @viewport
     frame_view->SetLayoutSizeFixedToFrameSize(false);
   } else {
-    frame_view = FrameView::Create(*this);
+    frame_view = LocalFrameView::Create(*this);
   }
 
   frame_view->SetScrollbarModes(horizontal_scrollbar_mode,
@@ -350,7 +350,7 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
 }
 
 LocalFrame::~LocalFrame() {
-  // Verify that the FrameView has been cleared as part of detaching
+  // Verify that the LocalFrameView has been cleared as part of detaching
   // the frame owner.
   DCHECK(!view_);
 }
@@ -688,7 +688,7 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   }
 
   if (page_zoom_factor_ != page_zoom_factor) {
-    if (FrameView* view = this->View()) {
+    if (LocalFrameView* view = this->View()) {
       // Update the scroll position when doing a full page zoom, so the content
       // stays in relatively the same position.
       ScrollableArea* scrollable_area = view->LayoutViewportScrollableArea();

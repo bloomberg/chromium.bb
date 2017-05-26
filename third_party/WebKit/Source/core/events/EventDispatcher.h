@@ -38,8 +38,8 @@ namespace blink {
 
 class Event;
 class EventDispatchMediator;
-class FrameView;
 class EventDispatchHandlingState;
+class LocalFrameView;
 class Node;
 
 class EventDispatchHandlingState
@@ -78,7 +78,7 @@ class EventDispatcher {
 
   Member<Node> node_;
   Member<Event> event_;
-  Member<FrameView> view_;
+  Member<LocalFrameView> view_;
 #if DCHECK_IS_ON()
   bool event_dispatched_ = false;
 #endif

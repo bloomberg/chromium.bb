@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/dom/Range.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/input/EventHandler.h"
 #include "core/page/ChromeClient.h"

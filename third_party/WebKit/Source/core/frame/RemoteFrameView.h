@@ -5,8 +5,7 @@
 #ifndef RemoteFrameView_h
 #define RemoteFrameView_h
 
-#include "core/frame/FrameOrPlugin.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 
@@ -52,12 +51,12 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
  private:
   explicit RemoteFrameView(RemoteFrame*);
 
-  FrameView* ParentFrameView() const;
+  LocalFrameView* ParentFrameView() const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
 
   // The properties and handling of the cycle between RemoteFrame
   // and its RemoteFrameView corresponds to that between LocalFrame
-  // and FrameView. Please see the FrameView::m_frame comment for
+  // and LocalFrameView. Please see the LocalFrameView::frame_ comment for
   // details.
   Member<RemoteFrame> remote_frame_;
   bool is_attached_;

@@ -274,8 +274,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   DECLARE_TRACE();
 
-  void LayerTreeViewInitialized(WebLayerTreeView&, FrameView*);
-  void WillCloseLayerTreeView(WebLayerTreeView&, FrameView*);
+  void LayerTreeViewInitialized(WebLayerTreeView&, LocalFrameView*);
+  void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
 
   void WillBeDestroyed();
 
@@ -318,8 +318,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // However, there are several locations (InspectorOverlay, SVGImage, and
   // WebPagePopupImpl) which don't hold a reference to the main frame at all
   // after creating it. These are still safe because they always create a
-  // Frame with a FrameView. FrameView and Frame hold references to each
-  // other, thus keeping each other alive. The call to willBeDestroyed()
+  // Frame with a LocalFrameView. LocalFrameView and Frame hold references to
+  // each other, thus keeping each other alive. The call to willBeDestroyed()
   // breaks this cycle, so the frame is still properly destroyed once no
   // longer needed.
   Member<Frame> main_frame_;

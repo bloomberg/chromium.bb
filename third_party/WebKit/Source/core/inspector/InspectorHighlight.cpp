@@ -6,7 +6,7 @@
 
 #include "core/dom/ClientRect.h"
 #include "core/dom/PseudoElement.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
@@ -90,7 +90,7 @@ void PathBuilder::AppendPathElement(const PathElement* path_element) {
 
 class ShapePathBuilder : public PathBuilder {
  public:
-  ShapePathBuilder(FrameView& view,
+  ShapePathBuilder(LocalFrameView& view,
                    LayoutObject& layout_object,
                    const ShapeOutsideInfo& shape_outside_info)
       : view_(&view),
@@ -98,7 +98,7 @@ class ShapePathBuilder : public PathBuilder {
         shape_outside_info_(shape_outside_info) {}
 
   static std::unique_ptr<protocol::ListValue> BuildPath(
-      FrameView& view,
+      LocalFrameView& view,
       LayoutObject& layout_object,
       const ShapeOutsideInfo& shape_outside_info,
       const Path& path,
@@ -117,7 +117,7 @@ class ShapePathBuilder : public PathBuilder {
   }
 
  private:
-  Member<FrameView> view_;
+  Member<LocalFrameView> view_;
   LayoutObject& layout_object_;
   const ShapeOutsideInfo& shape_outside_info_;
 };
@@ -147,7 +147,7 @@ Path QuadToPath(const FloatQuad& quad) {
   return quad_path;
 }
 
-void ContentsQuadToViewport(const FrameView* view, FloatQuad& quad) {
+void ContentsQuadToViewport(const LocalFrameView* view, FloatQuad& quad) {
   quad.SetP1(view->ContentsToViewport(RoundedIntPoint(quad.P1())));
   quad.SetP2(view->ContentsToViewport(RoundedIntPoint(quad.P2())));
   quad.SetP3(view->ContentsToViewport(RoundedIntPoint(quad.P3())));
@@ -162,7 +162,7 @@ const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
       !ToLayoutBox(layout_object)->GetShapeOutsideInfo())
     return nullptr;
 
-  FrameView* containing_view = node->GetDocument().View();
+  LocalFrameView* containing_view = node->GetDocument().View();
   LayoutBox* layout_box = ToLayoutBox(layout_object);
   const ShapeOutsideInfo* shape_outside_info =
       layout_box->GetShapeOutsideInfo();
@@ -214,7 +214,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
     element_info->setString("className", class_names.ToString());
 
   LayoutObject* layout_object = element->GetLayoutObject();
-  FrameView* containing_view = element->GetDocument().View();
+  LocalFrameView* containing_view = element->GetDocument().View();
   if (!layout_object || !containing_view)
     return element_info;
 
@@ -251,7 +251,7 @@ InspectorHighlight::InspectorHighlight(
       show_extension_lines_(highlight_config.show_extension_lines),
       display_as_material_(highlight_config.display_as_material),
       scale_(1.f) {
-  FrameView* frame_view = node->GetDocument().View();
+  LocalFrameView* frame_view = node->GetDocument().View();
   if (frame_view)
     scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
   AppendPathsForShapeOutside(node, highlight_config);
@@ -337,7 +337,7 @@ void InspectorHighlight::AppendNodeHighlight(
       !layout_object->IsSVGRoot()) {
     Vector<FloatQuad> quads;
     layout_object->AbsoluteQuads(quads);
-    FrameView* containing_view = layout_object->GetFrameView();
+    LocalFrameView* containing_view = layout_object->GetFrameView();
     for (size_t i = 0; i < quads.size(); ++i) {
       if (containing_view)
         ContentsQuadToViewport(containing_view, quads[i]);
@@ -375,7 +375,7 @@ bool InspectorHighlight::GetBoxModel(
     Node* node,
     std::unique_ptr<protocol::DOM::BoxModel>* model) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  FrameView* view = node->GetDocument().View();
+  LocalFrameView* view = node->GetDocument().View();
   if (!layout_object || !view)
     return false;
 
@@ -442,7 +442,7 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
   if (!layout_object)
     return false;
 
-  FrameView* containing_view = layout_object->GetFrameView();
+  LocalFrameView* containing_view = layout_object->GetFrameView();
   if (!containing_view)
     return false;
   if (!layout_object->IsBox() && !layout_object->IsLayoutInline())

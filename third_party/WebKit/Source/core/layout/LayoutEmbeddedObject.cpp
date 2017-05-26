@@ -26,8 +26,8 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/LayoutAnalyzer.h"
@@ -155,7 +155,7 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
 }
 
 LayoutReplaced* LayoutEmbeddedObject::EmbeddedReplacedContent() const {
-  if (FrameView* frame_view = ChildFrameView())
+  if (LocalFrameView* frame_view = ChildFrameView())
     return frame_view->EmbeddedReplacedContent();
   return nullptr;
 }

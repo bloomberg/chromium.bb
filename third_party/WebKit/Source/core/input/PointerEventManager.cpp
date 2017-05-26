@@ -8,7 +8,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"

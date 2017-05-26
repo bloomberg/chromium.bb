@@ -15,7 +15,7 @@ class LayoutScrollbarPart;
 class PaintInvalidationState;
 struct PaintInvalidatorContext;
 
-// Base class of FrameView and PaintLayerScrollableArea to share paint
+// Base class of LocalFrameView and PaintLayerScrollableArea to share paint
 // invalidation code.
 // TODO(wangxianzhu): Combine this into PaintLayerScrollableArea when
 // root-layer-scrolls launches.

@@ -4,7 +4,7 @@
 
 #include "core/frame/ResizeViewportAnchor.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
 #include "core/page/Page.h"
@@ -14,7 +14,7 @@
 namespace blink {
 
 void ResizeViewportAnchor::ResizeFrameView(IntSize size) {
-  FrameView* frame_view = RootFrameView();
+  LocalFrameView* frame_view = RootFrameView();
   // TODO(szager): Remove this CHECK if it doesn't show up in crash reports.
   CHECK(frame_view);
 
@@ -29,7 +29,7 @@ void ResizeViewportAnchor::EndScope() {
   if (--scope_count_ > 0)
     return;
 
-  FrameView* frame_view = RootFrameView();
+  LocalFrameView* frame_view = RootFrameView();
   if (!frame_view)
     return;
 
@@ -37,7 +37,7 @@ void ResizeViewportAnchor::EndScope() {
       frame_view->GetScrollableArea()->GetScrollOffset() - drift_;
 
   // TODO(bokan): Don't use RootFrameViewport::setScrollPosition since it
-  // assumes we can just set a sub-pixel precision offset on the FrameView.
+  // assumes we can just set a sub-pixel precision offset on the LocalFrameView.
   // While we "can" do this, the offset that will be shipped to CC will be the
   // truncated number and this class is used to handle TopControl movement
   // which needs the two threads to match exactly pixel-for-pixel. We can
@@ -50,7 +50,7 @@ void ResizeViewportAnchor::EndScope() {
   drift_ = ScrollOffset();
 }
 
-FrameView* ResizeViewportAnchor::RootFrameView() {
+LocalFrameView* ResizeViewportAnchor::RootFrameView() {
   if (Frame* frame = page_->MainFrame()) {
     if (frame->IsLocalFrame())
       return ToLocalFrame(frame)->View();

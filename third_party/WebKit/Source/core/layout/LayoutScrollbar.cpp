@@ -26,7 +26,7 @@
 #include "core/layout/LayoutScrollbar.h"
 
 #include "core/css/PseudoStyleRequest.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutScrollbarTheme.h"

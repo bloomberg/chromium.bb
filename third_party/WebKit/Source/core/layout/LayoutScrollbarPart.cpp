@@ -25,7 +25,7 @@
 
 #include "core/layout/LayoutScrollbarPart.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarTheme.h"
@@ -234,7 +234,7 @@ void LayoutScrollbarPart::SetNeedsPaintInvalidation() {
 
   // This LayoutScrollbarPart is a scroll corner or a resizer.
   DCHECK_EQ(part_, kNoPart);
-  if (FrameView* frame_view = View()->GetFrameView()) {
+  if (LocalFrameView* frame_view = View()->GetFrameView()) {
     if (frame_view->IsFrameViewScrollCorner(this)) {
       frame_view->SetScrollCornerNeedsPaintInvalidation();
       return;

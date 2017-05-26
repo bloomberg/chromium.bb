@@ -71,9 +71,9 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMPoint.h"
@@ -220,7 +220,7 @@ static ScrollableArea* ScrollableAreaForNode(Node* node) {
 
   if (node->IsDocumentNode()) {
     // This can be removed after root layer scrolling is enabled.
-    if (FrameView* frame_view = ToDocument(node)->View())
+    if (LocalFrameView* frame_view = ToDocument(node)->View())
       return frame_view->LayoutViewportScrollableArea();
   }
 
@@ -1111,7 +1111,7 @@ void Internals::setFrameViewPosition(Document* document,
     return;
   }
 
-  FrameView* frame_view = document->View();
+  LocalFrameView* frame_view = document->View();
   bool scrollbars_suppressed_old_value = frame_view->ScrollbarsSuppressed();
 
   frame_view->SetScrollbarsSuppressed(false);
@@ -1878,7 +1878,7 @@ StaticNodeList* Internals::nodesFromRect(
   }
 
   LocalFrame* frame = document->GetFrame();
-  FrameView* frame_view = document->View();
+  LocalFrameView* frame_view = document->View();
   LayoutViewItem layout_view_item = document->GetLayoutViewItem();
 
   if (layout_view_item.IsNull())
@@ -2042,7 +2042,7 @@ String Internals::elementLayerTreeAsText(
     Element* element,
     ExceptionState& exception_state) const {
   DCHECK(element);
-  FrameView* frame_view = element->GetDocument().View();
+  LocalFrameView* frame_view = element->GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
 
   return elementLayerTreeAsText(element, 0, exception_state);
@@ -2431,7 +2431,7 @@ void Internals::startStoringCompositedLayerDebugInfo(
     return;
   }
 
-  FrameView* frame_view = document->View();
+  LocalFrameView* frame_view = document->View();
   frame_view->SetIsStoringCompositedLayerDebugInfo(true);
   frame_view->UpdateAllLifecyclePhases();
 }
@@ -2446,7 +2446,7 @@ void Internals::stopStoringCompositedLayerDebugInfo(
     return;
   }
 
-  FrameView* frame_view = document->View();
+  LocalFrameView* frame_view = document->View();
   frame_view->SetIsStoringCompositedLayerDebugInfo(false);
   frame_view->UpdateAllLifecyclePhases();
 }
@@ -2460,7 +2460,7 @@ void Internals::startTrackingRepaints(Document* document,
     return;
   }
 
-  FrameView* frame_view = document->View();
+  LocalFrameView* frame_view = document->View();
   frame_view->UpdateAllLifecyclePhases();
   frame_view->SetTracksPaintInvalidations(true);
 }
@@ -2474,7 +2474,7 @@ void Internals::stopTrackingRepaints(Document* document,
     return;
   }
 
-  FrameView* frame_view = document->View();
+  LocalFrameView* frame_view = document->View();
   frame_view->UpdateAllLifecyclePhases();
   frame_view->SetTracksPaintInvalidations(false);
 }

@@ -13,14 +13,14 @@
 
 namespace blink {
 
-class FrameView;
+class LocalFrameView;
 
 class FrameViewAutoSizeInfo final
     : public GarbageCollected<FrameViewAutoSizeInfo> {
   WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
 
  public:
-  static FrameViewAutoSizeInfo* Create(FrameView* frame_view) {
+  static FrameViewAutoSizeInfo* Create(LocalFrameView* frame_view) {
     return new FrameViewAutoSizeInfo(frame_view);
   }
 
@@ -30,9 +30,9 @@ class FrameViewAutoSizeInfo final
   DECLARE_TRACE();
 
  private:
-  explicit FrameViewAutoSizeInfo(FrameView*);
+  explicit FrameViewAutoSizeInfo(LocalFrameView*);
 
-  Member<FrameView> frame_view_;
+  Member<LocalFrameView> frame_view_;
 
   // The lower bound on the size when autosizing.
   IntSize min_auto_size_;

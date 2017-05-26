@@ -9,7 +9,7 @@
 #include "core/events/TouchEvent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandlingUtil.h"
 #include "core/input/TouchActionUtil.h"

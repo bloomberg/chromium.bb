@@ -49,10 +49,10 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/frame/ContentSettingsClient.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -1071,7 +1071,7 @@ void FrameLoader::RestoreScrollPositionAndViewState() {
 
 void FrameLoader::RestoreScrollPositionAndViewStateForLoadType(
     FrameLoadType load_type) {
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view || !view->LayoutViewportScrollableArea() ||
       !state_machine_.CommittedFirstRealDocumentLoad()) {
     return;
@@ -1187,7 +1187,7 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
 void FrameLoader::ProcessFragment(const KURL& url,
                                   FrameLoadType frame_load_type,
                                   LoadStartType load_start_type) {
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view)
     return;
 
@@ -1217,8 +1217,8 @@ void FrameLoader::ProcessFragment(const KURL& url,
              kScrollRestorationManual));
 
   view->ProcessUrlFragment(url, should_scroll_to_fragment
-                                    ? FrameView::kUrlFragmentScroll
-                                    : FrameView::kUrlFragmentDontScroll);
+                                    ? LocalFrameView::kUrlFragmentScroll
+                                    : LocalFrameView::kUrlFragmentDontScroll);
 
   if (boundary_frame && boundary_frame->IsLocalFrame())
     ToLocalFrame(boundary_frame)

@@ -49,8 +49,8 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/FragmentainerIterator.h"
 #include "core/layout/HitTestRequest.h"
@@ -437,7 +437,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
     MarkAncestorChainForDescendantDependentFlagsUpdate();
   }
 
-  if (FrameView* frame_view = GetLayoutObject().GetDocument().View())
+  if (LocalFrameView* frame_view = GetLayoutObject().GetDocument().View())
     frame_view->SetNeedsUpdateGeometries();
 }
 
@@ -1751,7 +1751,7 @@ void PaintLayer::CollectFragments(
 }
 
 static inline LayoutRect FrameVisibleRect(LayoutObject& layout_object) {
-  FrameView* frame_view = layout_object.GetDocument().View();
+  LocalFrameView* frame_view = layout_object.GetDocument().View();
   if (!frame_view)
     return LayoutRect();
 
@@ -2588,7 +2588,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
     // layout viewport. In non-RLS mode, it is the union of the layout viewport
     // and the document's layout overflow rect.
     IntRect result = IntRect();
-    if (FrameView* frame_view = GetLayoutObject().GetFrameView())
+    if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
       result = IntRect(IntPoint(), frame_view->VisibleContentSize());
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
       result.Unite(GetLayoutObject().View()->DocumentRect());

@@ -25,8 +25,8 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
@@ -406,7 +406,7 @@ float HybridDistanceFunction(const IntPoint& touch_hotspot,
   return hybrid_score;
 }
 
-FloatPoint ContentsToRootFrame(FrameView* view, FloatPoint pt) {
+FloatPoint ContentsToRootFrame(LocalFrameView* view, FloatPoint pt) {
   int x = static_cast<int>(pt.X() + 0.5f);
   int y = static_cast<int>(pt.Y() + 0.5f);
   IntPoint adjusted = view->ContentsToRootFrame(IntPoint(x, y));
@@ -431,7 +431,7 @@ bool SnapTo(const SubtargetGeometry& geom,
             const IntPoint& touch_point,
             const IntRect& touch_area,
             IntPoint& adjusted_point) {
-  FrameView* view = geom.GetNode()->GetDocument().View();
+  LocalFrameView* view = geom.GetNode()->GetDocument().View();
   FloatQuad quad = geom.Quad();
 
   if (quad.IsRectilinear()) {

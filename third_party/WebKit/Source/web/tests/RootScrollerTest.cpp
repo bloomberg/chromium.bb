@@ -5,7 +5,7 @@
 #include "bindings/core/v8/NodeOrString.h"
 #include "core/dom/ClientRect.h"
 #include "core/frame/BrowserControls.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -108,7 +108,7 @@ class RootScrollerTest : public ::testing::Test {
 
   WebLocalFrame* MainWebFrame() const { return GetWebView()->MainFrameImpl(); }
 
-  FrameView* MainFrameView() const {
+  LocalFrameView* MainFrameView() const {
     return GetWebView()->MainFrameImpl()->GetFrame()->View();
   }
 
@@ -256,7 +256,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   }
 
   {
-    // Make sure we're actually scrolling the DIV and not the FrameView.
+    // Make sure we're actually scrolling the DIV and not the LocalFrameView.
     GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -100));
     EXPECT_FLOAT_EQ(100, container->scrollTop());
@@ -528,7 +528,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   NonThrowableExceptionState non_throw;
 
   // No root scroller set, the documentElement should be the effective root
-  // and the main FrameView's scroll layer should be the layer to use.
+  // and the main LocalFrameView's scroll layer should be the layer to use.
   {
     EXPECT_EQ(
         main_controller.RootScrollerLayer(),
@@ -791,8 +791,8 @@ TEST_F(RootScrollerTest, DocumentElementHasNoLayoutObject) {
 }
 
 // On Android, the main scrollbars are owned by the visual viewport and the
-// FrameView's disabled. This functionality should extend to a rootScroller
-// that isn't the main FrameView.
+// LocalFrameView's disabled. This functionality should extend to a rootScroller
+// that isn't the main LocalFrameView.
 TEST_F(RootScrollerTest, UseVisualViewportScrollbars) {
   Initialize("root-scroller.html");
 
@@ -812,7 +812,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbars) {
 }
 
 // On Android, the main scrollbars are owned by the visual viewport and the
-// FrameView's disabled. This functionality should extend to a rootScroller
+// LocalFrameView's disabled. This functionality should extend to a rootScroller
 // that's a nested iframe.
 TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
   Initialize("root-scroller-iframe.html");
@@ -995,7 +995,7 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
 
   // Remove the <iframe> and make sure the layout viewport reverts to the
-  // FrameView without a layout.
+  // LocalFrameView without a layout.
   iframe->remove();
 
   EXPECT_EQ(MainFrameView()->LayoutViewportScrollableArea(),

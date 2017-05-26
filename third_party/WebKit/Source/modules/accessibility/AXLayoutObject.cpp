@@ -43,9 +43,9 @@
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/FrameOwner.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -391,7 +391,7 @@ bool AXLayoutObject::IsOffScreen() const {
   DCHECK(layout_object_);
   IntRect content_rect =
       PixelSnappedIntRect(layout_object_->AbsoluteVisualRect());
-  FrameView* view = layout_object_->GetFrame()->View();
+  LocalFrameView* view = layout_object_->GetFrame()->View();
   IntRect view_rect = view->VisibleContentRect();
   view_rect.Intersect(content_rect);
   return view_rect.IsEmpty();
@@ -827,7 +827,7 @@ RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
 
   // If we still have some transparency, blend in the document base color.
   if (blended_color.HasAlpha()) {
-    FrameView* view = DocumentFrameView();
+    LocalFrameView* view = DocumentFrameView();
     if (view) {
       Color document_base_color = view->BaseBackgroundColor();
       blended_color = document_base_color.Blend(blended_color);
@@ -1675,11 +1675,11 @@ Document* AXLayoutObject::GetDocument() const {
   return &GetLayoutObject()->GetDocument();
 }
 
-FrameView* AXLayoutObject::DocumentFrameView() const {
+LocalFrameView* AXLayoutObject::DocumentFrameView() const {
   if (!GetLayoutObject())
     return nullptr;
 
-  // this is the LayoutObject's Document's LocalFrame's FrameView
+  // this is the LayoutObject's Document's LocalFrame's LocalFrameView
   return GetLayoutObject()->GetDocument().View();
 }
 

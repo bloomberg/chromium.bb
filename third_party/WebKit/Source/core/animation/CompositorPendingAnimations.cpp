@@ -33,7 +33,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/page/Page.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 

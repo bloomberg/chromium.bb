@@ -54,9 +54,9 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
@@ -270,8 +270,8 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   if (frame_->GetPage()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (frame_ != &main_frame) {
-      FrameView* frame_view = frame_->View();
-      FrameView* main_view = main_frame.View();
+      LocalFrameView* frame_view = frame_->View();
+      LocalFrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
         IntPoint main_frame_point = main_view->RootFrameToContents(
             frame_view->ContentsToRootFrame(RoundedIntPoint(point)));
@@ -341,7 +341,7 @@ static LocalFrame* SubframeForTargetNode(Node* node) {
   if (!layout_object || !layout_object->IsLayoutPart())
     return nullptr;
 
-  FrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
+  LocalFrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
   if (!frame_view)
     return nullptr;
 
@@ -381,7 +381,7 @@ void EventHandler::UpdateCursor() {
   // cursor update could be occluded by a different frame.
   DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
 
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view || !view->ShouldSetCursor())
     return;
 
@@ -668,7 +668,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       mev.Event(), Vector<WebMouseEvent>());
 
   if (event_result == WebInputEventResult::kNotHandled && frame_->View()) {
-    FrameView* view = frame_->View();
+    LocalFrameView* view = frame_->View();
     PaintLayer* layer =
         mev.InnerNode()->GetLayoutObject()
             ? mev.InnerNode()->GetLayoutObject()->EnclosingLayer()
@@ -767,7 +767,7 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
       layer_scrollable_area->MouseMovedInContentArea();
   }
 
-  if (FrameView* frame_view = frame_->View())
+  if (LocalFrameView* frame_view = frame_->View())
     frame_view->MouseMovedInContentArea();
 
   hovered_node.SetToShadowHostIfInRestrictedShadowRoot();
@@ -885,8 +885,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
         mev.Event());
 
     // Event dispatch in sendMouseAndPointerBoundaryEvents may have caused the
-    // subframe of the target node to be detached from its FrameView, in which
-    // case the event should not be passed.
+    // subframe of the target node to be detached from its LocalFrameView, in
+    // which case the event should not be passed.
     if (new_subframe->View()) {
       event_result = PassMouseMoveEventToSubframe(mev, coalesced_events,
                                                   new_subframe, hovered_node);
@@ -897,7 +897,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
       // scrollbar hovering.
       scrollbar->MouseMoved(mev.Event());
     }
-    if (FrameView* view = frame_->View()) {
+    if (LocalFrameView* view = frame_->View()) {
       OptionalCursor optional_cursor = SelectCursor(mev.GetHitTestResult());
       if (optional_cursor.IsCursorChange()) {
         view->SetCursor(optional_cursor.GetCursor());
@@ -1270,7 +1270,7 @@ WebInputEventResult EventHandler::HandleWheelEvent(
   if (doc->GetLayoutViewItem().IsNull())
     return WebInputEventResult::kNotHandled;
 
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
 
@@ -1775,7 +1775,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
 WebInputEventResult EventHandler::SendContextMenuEvent(
     const WebMouseEvent& event,
     Node* override_target_node) {
-  FrameView* v = frame_->View();
+  LocalFrameView* v = frame_->View();
   if (!v)
     return WebInputEventResult::kNotHandled;
 
@@ -1813,7 +1813,7 @@ static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
 WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     Element* override_target_element,
     WebMenuSourceType source_type) {
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
 
@@ -1949,7 +1949,7 @@ void EventHandler::HoverTimerFired(TimerBase*) {
   DCHECK(frame_->GetDocument());
 
   if (LayoutViewItem layout_item = frame_->ContentLayoutItem()) {
-    if (FrameView* view = frame_->View()) {
+    if (LocalFrameView* view = frame_->View()) {
       HitTestRequest request(HitTestRequest::kMove);
       HitTestResult result(request,
                            view->RootFrameToContents(

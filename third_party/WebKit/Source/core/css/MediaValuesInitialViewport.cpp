@@ -5,8 +5,8 @@
 #include "core/css/MediaValuesInitialViewport.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {

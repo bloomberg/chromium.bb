@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/dom/ClientRect.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"

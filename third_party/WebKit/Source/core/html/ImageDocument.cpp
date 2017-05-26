@@ -31,10 +31,10 @@
 #include "core/events/EventListener.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/ContentSettingsClient.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
@@ -299,7 +299,7 @@ float ImageDocument::Scale() const {
   if (!image_element_ || image_element_->GetDocument() != this)
     return 1.0f;
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return 1.0f;
 

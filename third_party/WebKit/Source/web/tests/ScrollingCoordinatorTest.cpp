@@ -27,7 +27,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetList.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutPart.h"
@@ -142,7 +142,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   ForceFullCompositingUpdate();
 
   // Make sure the scrolling coordinator is active.
-  FrameView* frame_view = GetFrame()->View();
+  LocalFrameView* frame_view = GetFrame()->View();
   Page* page = GetFrame()->GetPage();
   ASSERT_TRUE(page->GetScrollingCoordinator());
   ASSERT_TRUE(page->GetScrollingCoordinator()->CoordinatesScrollingForFrameView(
@@ -173,7 +173,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
   ForceFullCompositingUpdate();
 
   // Make sure the scrolling coordinator is active.
-  FrameView* frame_view = GetFrame()->View();
+  LocalFrameView* frame_view = GetFrame()->View();
   Page* page = GetFrame()->GetPage();
   ASSERT_TRUE(page->GetScrollingCoordinator());
   ASSERT_TRUE(page->GetScrollingCoordinator()->CoordinatesScrollingForFrameView(
@@ -671,7 +671,7 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
   LayoutPart* layout_part = ToLayoutPart(layout_object);
   ASSERT_TRUE(layout_part);
 
-  FrameView* inner_frame_view = layout_part->ChildFrameView();
+  LocalFrameView* inner_frame_view = layout_part->ChildFrameView();
   ASSERT_TRUE(inner_frame_view);
 
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
@@ -723,7 +723,7 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
   LayoutPart* layout_part = ToLayoutPart(layout_object);
   ASSERT_TRUE(layout_part);
 
-  FrameView* inner_frame_view = layout_part->ChildFrameView();
+  LocalFrameView* inner_frame_view = layout_part->ChildFrameView();
   ASSERT_TRUE(inner_frame_view);
 
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
@@ -795,7 +795,7 @@ TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
   NavigateTo(base_url_ + "wide_document.html");
   ForceFullCompositingUpdate();
 
-  FrameView* frame_view = GetFrame()->View();
+  LocalFrameView* frame_view = GetFrame()->View();
   ASSERT_TRUE(frame_view);
 
   GraphicsLayer* scrollbar_graphics_layer =
@@ -901,7 +901,7 @@ TEST_P(ScrollingCoordinatorTest,
   LayoutPart* layout_part = ToLayoutPart(layout_object);
   ASSERT_TRUE(layout_part);
 
-  FrameView* inner_frame_view = layout_part->ChildFrameView();
+  LocalFrameView* inner_frame_view = layout_part->ChildFrameView();
   ASSERT_TRUE(inner_frame_view);
 
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
@@ -1085,7 +1085,7 @@ class NonCompositedMainThreadScrollingReasonTest
         scrollable_area2->GetNonCompositedMainThreadScrollingReasons() &
         reason);
 
-    FrameView* frame_view = GetFrame()->View();
+    LocalFrameView* frame_view = GetFrame()->View();
     ASSERT_TRUE(frame_view);
     EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
 
@@ -1165,7 +1165,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
               clip_reason);
 
-  FrameView* frame_view = GetFrame()->View();
+  LocalFrameView* frame_view = GetFrame()->View();
   ASSERT_TRUE(frame_view);
   EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
 

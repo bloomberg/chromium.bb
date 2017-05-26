@@ -25,7 +25,7 @@
 
 #include "core/layout/LayoutMedia.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/media/MediaControls.h"
@@ -144,7 +144,7 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
 
   Page* page = GetDocument().GetPage();
   LocalFrame* main_frame = page->DeprecatedLocalMainFrame();
-  FrameView* page_view = main_frame ? main_frame->View() : nullptr;
+  LocalFrameView* page_view = main_frame ? main_frame->View() : nullptr;
   if (!main_frame || !page_view)
     return media_rect.Width();
 

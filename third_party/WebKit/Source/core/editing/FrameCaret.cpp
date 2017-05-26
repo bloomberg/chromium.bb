@@ -30,8 +30,8 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionEditor.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/TextControlElement.h"
 #include "core/layout/LayoutBlock.h"
@@ -225,7 +225,7 @@ void FrameCaret::CaretBlinkTimerFired(TimerBase*) {
 }
 
 void FrameCaret::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
-  if (FrameView* frame_view = frame_->View())
+  if (LocalFrameView* frame_view = frame_->View())
     frame_view->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 

@@ -123,7 +123,7 @@ bool RemoteFrame::ShouldClose() {
 
 void RemoteFrame::SetView(RemoteFrameView* view) {
   // Oilpan: as RemoteFrameView performs no finalization actions,
-  // no explicit dispose() of it needed here. (cf. FrameView::dispose().)
+  // no explicit Dispose() of it needed here. (cf. LocalFrameView::Dispose().)
   view_ = view;
 }
 

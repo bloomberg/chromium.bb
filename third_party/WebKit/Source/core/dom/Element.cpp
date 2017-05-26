@@ -91,10 +91,10 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/EventDispatcher.h"
 #include "core/events/FocusEvent.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -1099,7 +1099,7 @@ bool Element::HasNonEmptyLayoutSize() const {
 IntRect Element::BoundsInViewport() const {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
 
-  FrameView* view = GetDocument().View();
+  LocalFrameView* view = GetDocument().View();
   if (!view)
     return IntRect();
 

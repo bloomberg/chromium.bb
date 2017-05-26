@@ -41,9 +41,9 @@
 #include "core/editing/InputMethodController.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameClient.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
@@ -1150,8 +1150,8 @@ void FocusController::SetActive(bool active) {
       return;
     // Invalidate all custom scrollbars because they support the CSS
     // window-active attribute. This should be applied to the entire page so
-    // we invalidate from the root FrameView instead of just the focused.
-    if (FrameView* view = document->View())
+    // we invalidate from the root LocalFrameView instead of just the focused.
+    if (LocalFrameView* view = document->View())
       view->InvalidateAllCustomScrollbarsOnActiveChanged();
     ToLocalFrame(frame)->Selection().PageActivationChanged();
   }

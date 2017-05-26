@@ -4,9 +4,10 @@
 
 #include "core/layout/LayoutTheme.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -14,7 +15,6 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/Color.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

@@ -7,7 +7,7 @@
 
 #if DCHECK_IS_ON()
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
@@ -17,8 +17,8 @@ namespace blink {
 // This file contains two scope classes for catching cases where paint
 // properties needed an update but were not marked as such. If paint properties
 // will change, the object must be marked as needing a paint property update
-// using {FrameView, LayoutObject}::setNeedsPaintPropertyUpdate() or by forcing
-// a subtree update (see:
+// using {LocalFrameView, LayoutObject}::SetNeedsPaintPropertyUpdate() or by
+// forcing a subtree update (see:
 // PaintPropertyTreeBuilderContext::force_subtree_update).
 //
 // Both scope classes work by recording the paint property state of an object
@@ -46,11 +46,11 @@ namespace blink {
   } while (0)
 
 #define DCHECK_FRAMEVIEW_PROPERTY_EQ(original, updated) \
-  CHECK_PROPERTY_EQ("the FrameView", original, updated)
+  CHECK_PROPERTY_EQ("the LocalFrameView", original, updated)
 
 class FindFrameViewPropertiesNeedingUpdateScope {
  public:
-  FindFrameViewPropertiesNeedingUpdateScope(FrameView* frame_view,
+  FindFrameViewPropertiesNeedingUpdateScope(LocalFrameView* frame_view,
                                             bool force_subtree_update)
       : frame_view_(frame_view),
         needed_paint_property_update_(frame_view->NeedsPaintPropertyUpdate()),
@@ -77,8 +77,8 @@ class FindFrameViewPropertiesNeedingUpdateScope {
 
     // If these checks fail, the paint properties changed unexpectedly. This is
     // due to missing one of these paint property invalidations:
-    // 1) The FrameView should have been marked as needing an update with
-    //    FrameView::setNeedsPaintPropertyUpdate().
+    // 1) The LocalFrameView should have been marked as needing an update with
+    //    LocalFrameView::SetNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
     //    PaintPropertyTreeBuilderContext::force_subtree_update).
     DCHECK_FRAMEVIEW_PROPERTY_EQ(original_pre_translation_,
@@ -93,7 +93,7 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   }
 
  private:
-  Persistent<FrameView> frame_view_;
+  Persistent<LocalFrameView> frame_view_;
   bool needed_paint_property_update_;
   bool needed_forced_subtree_update_;
   RefPtr<const TransformPaintPropertyNode> original_pre_translation_;

@@ -54,8 +54,8 @@
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
@@ -111,7 +111,7 @@ namespace blink {
 
 // Public methods --------------------------------------------------------------
 
-FrameView* WebPluginContainerImpl::ParentFrameView() const {
+LocalFrameView* WebPluginContainerImpl::ParentFrameView() const {
   if (!is_attached_)
     return nullptr;
 
@@ -143,7 +143,7 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
                                    const CullRect& cull_rect) const {
-  FrameView* parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   if (!parent)
     return;
 
@@ -184,7 +184,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
 }
 
 void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
-  FrameView* parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   if (!parent)
     return;
 
@@ -447,7 +447,7 @@ void WebPluginContainerImpl::ScheduleAnimation() {
 }
 
 void WebPluginContainerImpl::ReportGeometry() {
-  FrameView* parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   // We cannot compute geometry without a parent or layoutObject.
   if (!parent || !element_ || !element_->GetLayoutObject() || !web_plugin_)
     return;
@@ -592,7 +592,7 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
   if (Page* page = element_->GetDocument().GetPage()) {
     if (ScrollingCoordinator* scrolling_coordinator =
             page->GetScrollingCoordinator()) {
-      FrameView* parent = ParentFrameView();
+      LocalFrameView* parent = ParentFrameView();
       if (parent)
         scrolling_coordinator->NotifyGeometryChanged();
     }
@@ -601,7 +601,7 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
 
 WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
     const WebPoint& point_in_root_frame) {
-  FrameView* parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   if (!parent)
     return point_in_root_frame;
   WebPoint point_in_content = parent->RootFrameToContents(point_in_root_frame);
@@ -611,7 +611,7 @@ WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
 
 WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
     const WebPoint& point_in_local) {
-  FrameView* parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   if (!parent)
     return point_in_local;
   IntPoint absolute_point =
@@ -725,9 +725,9 @@ DEFINE_TRACE(WebPluginContainerImpl) {
 }
 
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
-  // We cache the parent FrameView here as the plugin widget could be deleted
-  // in the call to HandleEvent. See http://b/issue?id=1362948
-  FrameView* parent = ParentFrameView();
+  // We cache the parent LocalFrameView here as the plugin widget could be
+  // deleted in the call to HandleEvent. See http://b/issue?id=1362948
+  LocalFrameView* parent = ParentFrameView();
 
   // TODO(dtapuska): Move WebMouseEventBuilder into the anonymous namespace
   // in this class.
@@ -789,7 +789,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent* event) {
   WebFloatPoint absolute_location = event->NativeEvent().PositionInRootFrame();
 
   // Translate the root frame position to content coordinates.
-  if (FrameView* parent = ParentFrameView())
+  if (LocalFrameView* parent = ParentFrameView())
     absolute_location = parent->RootFrameToContents(absolute_location);
 
   IntPoint local_point =
@@ -853,7 +853,7 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     WebFloatPoint absolute_location = transformed_event.touches[i].position;
 
     // Translate the root frame position to content coordinates.
-    if (FrameView* parent = ParentFrameView())
+    if (LocalFrameView* parent = ParentFrameView())
       absolute_location = parent->RootFrameToContents(absolute_location);
 
     IntPoint local_point =
@@ -934,7 +934,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent* event) {
 }
 
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent* event) {
-  FrameView* parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   WebMouseEventBuilder web_event(
       parent, LayoutItem(element_->GetLayoutObject()), *event);
   if (web_event.GetType() == WebInputEvent::kUndefined)

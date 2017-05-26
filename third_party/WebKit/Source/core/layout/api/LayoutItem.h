@@ -12,9 +12,9 @@
 
 namespace blink {
 
-class FrameView;
 class LayoutAPIShim;
 class LocalFrame;
+class LocalFrameView;
 class LayoutViewItem;
 class Node;
 class ObjectPaintProperties;
@@ -119,7 +119,7 @@ class LayoutItem {
 
   LayoutViewItem View() const;
 
-  FrameView* GetFrameView() const {
+  LocalFrameView* GetFrameView() const {
     return layout_object_->GetDocument().View();
   }
 

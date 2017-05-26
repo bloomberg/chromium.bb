@@ -59,8 +59,8 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/MouseEvent.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -1192,7 +1192,7 @@ TEST_P(ParameterizedWebFrameTest,
   LocalFrame* main_frame =
       ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame());
   Document* document = main_frame->GetDocument();
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   document->GetSettings()->SetTextAutosizingEnabled(true);
   EXPECT_TRUE(document->GetSettings()->TextAutosizingEnabled());
@@ -2043,7 +2043,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin) {
   EXPECT_EQ(22, child_document->FirstBodyElement()->GetIntegralAttribute(
                     HTMLNames::marginheightAttr));
 
-  FrameView* frame_view = local_frame->GetFrameView();
+  LocalFrameView* frame_view = local_frame->GetFrameView();
   // Expect scrollbars to be enabled by default.
   EXPECT_NE(nullptr, frame_view->HorizontalScrollbar());
   EXPECT_NE(nullptr, frame_view->VerticalScrollbar());
@@ -2077,7 +2077,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling) {
   EXPECT_EQ(0, child_document->FirstBodyElement()->GetIntegralAttribute(
                    HTMLNames::marginheightAttr));
 
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       static_cast<WebLocalFrameBase*>(local_frame)->GetFrameView();
   EXPECT_EQ(nullptr, frame_view->HorizontalScrollbar());
   EXPECT_EQ(nullptr, frame_view->VerticalScrollbar());
@@ -2329,7 +2329,8 @@ TEST_P(ParameterizedWebFrameTest, OverflowHiddenDisablesScrolling) {
                               base_url_ + "body-overflow-hidden.html");
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_FALSE(view->UserInputScrollable(kVerticalScrollbar));
   EXPECT_FALSE(view->UserInputScrollable(kHorizontalScrollbar));
 }
@@ -2349,7 +2350,8 @@ TEST_P(ParameterizedWebFrameTest,
                               base_url_ + "body-overflow-hidden-short.html");
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_FALSE(view->UserInputScrollable(kVerticalScrollbar));
   EXPECT_FALSE(view->UserInputScrollable(kHorizontalScrollbar));
 
@@ -2375,7 +2377,8 @@ TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk) {
                               base_url_ + "body-overflow-hidden.html");
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_TRUE(view->UserInputScrollable(kVerticalScrollbar));
 }
 
@@ -2538,7 +2541,8 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView) {
                                     &client, nullptr, EnableViewportSettings);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   int viewport_width_minus_scrollbar = viewport_width;
   int viewport_height_minus_scrollbar = viewport_height;
 
@@ -3034,7 +3038,8 @@ TEST_P(ParameterizedWebFrameTest, AtViewportWithViewportLengths) {
   FrameTestHelpers::LoadFrame(web_view_helper.WebView()->MainFrame(),
                               base_url_ + "viewport-lengths.html");
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_EQ(400, view->GetLayoutSize().Width());
   EXPECT_EQ(300, view->GetLayoutSize().Height());
 
@@ -3190,7 +3195,8 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorUpdatesScrollbars) {
                                     EnableViewportSettings);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_EQ(view->ScrollSize(kHorizontalScrollbar),
             view->ContentsSize().Width() - view->VisibleContentRect().Width());
   EXPECT_EQ(
@@ -3237,7 +3243,7 @@ TEST_P(ParameterizedWebFrameTest, CanOverrideScaleLimits) {
   EXPECT_EQ(2.0f, web_view_helper.WebView()->MaximumPageScaleFactor());
 }
 
-// Android doesn't have scrollbars on the main FrameView
+// Android doesn't have scrollbars on the main LocalFrameView
 #if OS(ANDROID)
 TEST_F(WebFrameTest, DISABLED_updateOverlayScrollbarLayers)
 #else
@@ -3261,7 +3267,8 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
   FrameTestHelpers::LoadFrame(web_view_helper.WebView()->MainFrame(),
                               base_url_ + "large-div.html");
 
-  FrameView* view = web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_TRUE(
       view->GetLayoutViewItem().Compositor()->LayerForHorizontalScrollbar());
   EXPECT_TRUE(
@@ -5195,7 +5202,7 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks) {
   EXPECT_TRUE(client.FindResultsAreReady());
 
   // Get the tickmarks for the original find request.
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   Scrollbar* scrollbar = frame_view->CreateScrollbar(kHorizontalScrollbar);
   Vector<IntRect> original_tickmarks;
@@ -7113,10 +7120,11 @@ class TestScrolledFrameClient : public FrameTestHelpers::TestWebFrameClient {
     if (Frame()->Parent())
       return;
     EXPECT_FALSE(did_scroll_frame_);
-    FrameView* view = ToWebLocalFrameBase(Frame())->GetFrameView();
-    // FrameView can be scrolled in FrameView::setFixedVisibleContentRect which
-    // is called from LocalFrame::createView (before the frame is associated
-    // with the the view).
+    LocalFrameView* view = ToWebLocalFrameBase(Frame())->GetFrameView();
+    // LocalFrameView can be scrolled in
+    // LocalFrameView::SetFixedVisibleContentRect which is called from
+    // LocalFrame::CreateView (before the frame is associated with the the
+    // view).
     if (view)
       did_scroll_frame_ = true;
   }
@@ -7927,7 +7935,7 @@ TEST_P(ParameterizedWebFrameTest, FrameViewMoveWithSetFrameRect) {
   web_view_helper.Resize(WebSize(200, 200));
   web_view_helper.WebView()->UpdateAllLifecyclePhases();
 
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), frame_view->FrameRect());
   frame_view->SetFrameRect(IntRect(100, 100, 200, 200));
@@ -7943,7 +7951,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
                                     ConfigureAndroid);
 
   WebViewBase* web_view = web_view_helper.WebView();
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
 
   float browser_controls_height = 40;
@@ -8027,7 +8035,7 @@ TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.WebView()->UpdateAllLifecyclePhases();
 
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   EXPECT_LT(frame_view->MaximumScrollOffset().Width(), 0);
 }
@@ -8106,7 +8114,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the viewports are nonscrollable.
-  FrameView* frame_view =
+  LocalFrameView* frame_view =
       web_view_helper.WebView()->MainFrameImpl()->GetFrameView();
   WebLayer* layout_viewport_scroll_layer =
       web_view_impl->Compositor()->ScrollLayer()->PlatformLayer();
@@ -11029,7 +11037,7 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
   web_view->UpdateAllLifecyclePhases();
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
-  FrameView* frame_view = web_view->MainFrameImpl()->GetFrameView();
+  LocalFrameView* frame_view = web_view->MainFrameImpl()->GetFrameView();
   PaintLayerCompositor* compositor =
       frame_view->GetLayoutViewItem().Compositor();
 
@@ -11125,7 +11133,7 @@ TEST_F(WebFrameTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
       "</div>");
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
-  FrameView* frame_view = web_view->MainFrameImpl()->GetFrameView();
+  LocalFrameView* frame_view = web_view->MainFrameImpl()->GetFrameView();
   Element* scroller = document->getElementById("scroller");
   ScrollableArea* scroller_area =
       ToLayoutBox(scroller->GetLayoutObject())->GetScrollableArea();

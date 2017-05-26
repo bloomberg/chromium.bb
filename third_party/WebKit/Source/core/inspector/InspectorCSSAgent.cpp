@@ -60,8 +60,8 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/VoidCallback.h"
@@ -2271,7 +2271,7 @@ Response InspectorCSSAgent::getBackgroundColors(
     return Response::OK();
 
   Vector<Color> colors;
-  FrameView* view = element->GetDocument().View();
+  LocalFrameView* view = element->GetDocument().View();
   if (!view)
     return Response::Error("No view.");
   Document& document = element->GetDocument();

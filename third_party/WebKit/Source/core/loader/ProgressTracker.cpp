@@ -25,9 +25,9 @@
 
 #include "core/loader/ProgressTracker.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

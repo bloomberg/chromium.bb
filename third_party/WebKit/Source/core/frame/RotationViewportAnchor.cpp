@@ -6,8 +6,8 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
@@ -84,7 +84,7 @@ void MoveIntoRect(FloatRect& inner, const IntRect& outer) {
 }  // namespace
 
 RotationViewportAnchor::RotationViewportAnchor(
-    FrameView& root_frame_view,
+    LocalFrameView& root_frame_view,
     VisualViewport& visual_viewport,
     const FloatSize& anchor_in_inner_view_coords,
     PageScaleConstraintsSet& page_scale_constraints_set)
@@ -142,7 +142,7 @@ void RotationViewportAnchor::SetAnchor() {
 
   // Note, we specifically convert to the rootFrameView contents here, rather
   // than the layout viewport. That's because hit testing works from the
-  // FrameView's content coordinates even if it's not the layout viewport.
+  // LocalFrameView's content coordinates even if it's not the layout viewport.
   const FloatPoint anchor_point_in_contents = root_frame_view_->FrameToContents(
       visual_viewport_->ViewportToRootFrame(anchor_offset));
 

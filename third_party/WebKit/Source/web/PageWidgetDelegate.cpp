@@ -31,8 +31,8 @@
 #include "web/PageWidgetDelegate.h"
 
 #include "core/events/WebInputEventConversion.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/AutoscrollController.h"
@@ -84,7 +84,7 @@ static void PaintInternal(Page& page,
     TransformRecorder scale_recorder(paint_context, builder, scale);
 
     IntRect dirty_rect(rect);
-    FrameView* view = root.View();
+    LocalFrameView* view = root.View();
     view->UpdateAllLifecyclePhasesExceptPaint();
     if (view) {
       ClipRecorder clip_recorder(paint_context, builder,

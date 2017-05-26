@@ -32,6 +32,7 @@
 #include "core/dom/DocumentLifecycle.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/PositionWithAffinity.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/MapCoordinatesFlags.h"
 #include "core/layout/ScrollAlignment.h"
@@ -884,7 +885,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const ComputedStyle* parent_style = nullptr) const;
 
   LayoutView* View() const { return GetDocument().GetLayoutView(); }
-  FrameView* GetFrameView() const { return GetDocument().View(); }
+  LocalFrameView* GetFrameView() const { return GetDocument().View(); }
 
   bool IsRooted() const;
 

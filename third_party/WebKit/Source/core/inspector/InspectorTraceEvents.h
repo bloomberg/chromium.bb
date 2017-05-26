@@ -35,7 +35,6 @@ class Element;
 class Event;
 class ExecutionContext;
 struct FetchInitiatorInfo;
-class FrameView;
 class GraphicsLayer;
 class HitTestLocation;
 class HitTestRequest;
@@ -46,6 +45,7 @@ class LayoutImage;
 class LayoutObject;
 class LayoutRect;
 class LocalFrame;
+class LocalFrameView;
 class Node;
 class PaintLayer;
 class QualifiedName;
@@ -115,7 +115,7 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
 };
 
 namespace InspectorLayoutEvent {
-std::unique_ptr<TracedValue> BeginData(FrameView*);
+std::unique_ptr<TracedValue> BeginData(LocalFrameView*);
 std::unique_ptr<TracedValue> EndData(LayoutObject* root_for_this_layout);
 }
 
