@@ -57061,6 +57061,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.ProtocolUsed" enum="PrinterProtocol">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    Records the protocol for a selected printer in Chrome OS.  Used to track
+    usage of the various printer protocols.  Since a selection occurs when print
+    preview is opened, this will count at least one every time that happens if a
+    CUPS printer was selected.
+  </summary>
+</histogram>
+
 <histogram name="PrintPreview.DestinationAction"
     enum="PrintPreviewPrintDestinationBuckets">
   <owner>vitalybuka@chromium.org</owner>

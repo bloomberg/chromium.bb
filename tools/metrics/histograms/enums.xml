@@ -29130,6 +29130,17 @@ from previous Chrome versions.
   <int value="1" label="The user chose to reload the full page."/>
 </enum>
 
+<enum name="PrinterProtocol" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Universal Serial Bus (usb)"/>
+  <int value="2" label="Internet Print Protocol (ipp)"/>
+  <int value="3" label="Internet Print Protocol Secure (ipps)"/>
+  <int value="4" label="HyperText Transfer Protocol (http)"/>
+  <int value="5" label="HyperText Transfer Protocol Secure (https)"/>
+  <int value="6" label="App Socket (socket)"/>
+  <int value="7" label="Line Print Daemon (lpd)"/>
+</enum>
+
 <enum name="PrinterServiceEventType" type="int">
   <int value="0" label="Printer added"/>
   <int value="1" label="Page displayed (Deprecated)"/>
