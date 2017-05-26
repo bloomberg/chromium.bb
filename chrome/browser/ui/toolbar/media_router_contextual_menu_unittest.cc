@@ -123,6 +123,16 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   }
 }
 
+// Note that "Manage devices" is always disabled on Linux.
+TEST_F(MediaRouterContextualMenuUnitTest, ManageDevicesDisabledInIncognito) {
+  // Create the MediaRouterAction under an incognito profile.
+  profile()->ForceIncognito(true);
+  action_ = base::MakeUnique<MediaRouterAction>(
+      browser(), browser_action_test_util_->GetToolbarActionsBar());
+  model_ = static_cast<ui::SimpleMenuModel*>(action_->GetContextMenu());
+  EXPECT_EQ(-1, model_->GetIndexOfCommandId(IDC_MEDIA_ROUTER_MANAGE_DEVICES));
+}
+
 // Tests whether the cloud services item is correctly toggled. This menu item
 // is only availble on official Chrome builds.
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
