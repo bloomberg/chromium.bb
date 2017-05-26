@@ -324,12 +324,12 @@ class HomePrefNotificationBridge {
             initWithString:base::SysUTF16ToNSString(displayText)]);
 
     if (originUrl.has_path()) {
-      size_t pathLength = originUrl.path().length() - 1;
+      size_t pathIndex = originUrl.GetWithEmptyPath().spec().length();
       [attributedString
           addAttribute:NSForegroundColorAttributeName
                  value:OmniboxViewMac::BaseTextColor(true)
-                 range:NSMakeRange([attributedString length] - pathLength,
-                                   pathLength)];
+                 range:NSMakeRange(pathIndex,
+                                   [attributedString length] - pathIndex)];
     }
 
     [touchBarItem
