@@ -47,6 +47,19 @@ Polymer({
     configProperties_: Object,
 
     /**
+     * Reference to the EAP properties for the current type or null if all EAP
+     * properties should be hidden (e.g. WiFi networks with non EAP Security).
+     * Note: even though this references an entry in configProperties_, we
+     * need to send a separate notification when it changes for data binding
+     * (e.g. by using 'set').
+     * @private {?chrome.networkingPrivate.EAPProperties}
+     */
+    eapProperties_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
      * The title to display (network name or type).
      * @private
      */
@@ -74,6 +87,7 @@ Polymer({
      * Dictionary of boolean values determining which EAP properties to show,
      * or null to hide all EAP settings.
      * @type {?{
+     *   Outer: boolean,
      *   Inner: boolean,
      *   ServerCA: boolean,
      *   SubjectMatch: boolean,
@@ -166,7 +180,8 @@ Polymer({
   observers: [
     'updateConfigProperties_(networkProperties_)',
     'updateWiFiSecurity_(configProperties_.WiFi.Security)',
-    'updateWiFiEapOuter_(configProperties_.WiFi.EAP.Outer)',
+    'updateEapOuter_(eapProperties_.Outer)',
+    'updateShowEap_(eapProperties_.*)',
   ],
 
   /** @const */
@@ -180,6 +195,10 @@ Polymer({
   currentRouteChanged: function(route) {
     if (route != settings.Route.NETWORK_CONFIG)
       return;
+
+    this.propertiesSent_ = false;
+    this.savedSecurity_ = '';
+    this.showEap_ = null;
 
     var queryParams = settings.getQueryParameters();
     this.guid_ = queryParams.get('guid') || '';
@@ -224,8 +243,8 @@ Polymer({
 
     // Set the current shareNetwork_ value when porperties are received.
     var source = this.networkProperties_.Source;
-    this.shareNetwork_ = source == CrOnc.Source.DEVICE ||
-        source == CrOnc.Source.DEVICE_POLICY;
+    this.shareNetwork_ =
+        source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
   },
 
   /**
@@ -254,12 +273,11 @@ Polymer({
       if (properties.WiFi) {
         configProperties.WiFi = {
           AutoConnect: properties.WiFi.AutoConnect,
-          EAP: properties.WiFi.EAP,
+          EAP: Object.assign({}, properties.WiFi.EAP),
           Passphrase: properties.WiFi.Passphrase,
           SSID: properties.WiFi.SSID,
           Security: properties.WiFi.Security
         };
-        this.savedSecurity_ = properties.WiFi.Security || '';
       } else {
         configProperties.WiFi = {
           AutoConnect: false,
@@ -267,8 +285,37 @@ Polymer({
           Security: CrOnc.Security.NONE,
         };
       }
+      // updateWiFiSecurity_ will ensure that EAP properties are set correctly.
+    } else if (properties.Type == CrOnc.Type.ETHERNET) {
+      if (properties.Ethernet) {
+        configProperties.Ethernet = {
+          AutoConnect: properties.Ethernet.AutoConnect,
+          EAP: Object.assign({}, properties.Ethernet.EAP),
+        };
+        configProperties.Ethernet.EAP.Outer =
+            configProperties.Ethernet.EAP.Outer || CrOnc.EAPType.LEAP;
+      } else {
+        configProperties.Ethernet = {
+          AutoConnect: false,
+        };
+      }
+    } else if (properties.Type == CrOnc.Type.WI_MAX) {
+      if (properties.WiMAX) {
+        configProperties.WiMAX = {
+          AutoConnect: properties.WiMAX.AutoConnect,
+          EAP: Object.assign({}, properties.WiMAX.EAP),
+        };
+        // WiMAX has no EAP.Outer property, only Identity and Password.
+      } else {
+        configProperties.WiMAX = {
+          AutoConnect: false,
+        };
+      }
     }
     this.configProperties_ = configProperties;
+    this.set('eapProperties_', this.getEap_(this.configProperties_));
+    if (!this.eapProperties_)
+      this.showEap_ = null;
   },
 
   /**
@@ -277,11 +324,12 @@ Polymer({
    * @private
    */
   updateWiFiSecurity_: function() {
-    assert(this.configProperties_.WiFi);
+    if (!this.configProperties_.WiFi)
+      return;  // May get called when clearing the property.
     var security = this.configProperties_.WiFi.Security || CrOnc.Security.NONE;
     if (security == this.savedSecurity_)
       return;
-    this.savedSecurity_ = security || '';
+    this.savedSecurity_ = security;
 
     if (!this.guid_) {
       // Set the default share state for new configurations.
@@ -289,10 +337,15 @@ Polymer({
       this.shareNetwork_ = security == CrOnc.Security.NONE;
     }
 
-    if (security == CrOnc.Security.WPA_EAP)
-      this.set('configProperties_.WiFi.EAP', {Outer: CrOnc.EAPType.LEAP});
-    else
+    if (security == CrOnc.Security.WPA_EAP) {
+      var eap = this.configProperties_.WiFi.EAP || {};
+      eap.Outer = eap.Outer || CrOnc.EAPType.LEAP;
+      this.configProperties_.WiFi.EAP = eap;
+      this.set('eapProperties_', this.configProperties_.WiFi.EAP);
+    } else {
       delete this.configProperties_.WiFi.EAP;
+      this.eapProperties_ = null;
+    }
   },
 
   /**
@@ -300,18 +353,52 @@ Polymer({
    * the EAP.Outer property changes.
    * @private
    */
-  updateWiFiEapOuter_: function() {
-    var eap = this.configProperties_.WiFi.EAP;
+  updateEapOuter_: function() {
+    var eap = this.eapProperties_;
     if (!eap || !eap.Outer)
       return;
     var innerItems = this.getEapInnerItems_(eap.Outer);
     if (innerItems.length > 0) {
       if (!eap.Inner || innerItems.indexOf(eap.Inner) < 0)
-        this.set('configProperties_.WiFi.EAP.Inner', innerItems[0]);
+        this.set('eapProperties_.Inner', innerItems[0]);
     } else {
-      delete eap.Inner;
+      this.set('eapProperties_.Inner', undefined);
     }
-    this.setShowEap_(this.configProperties_.WiFi.EAP);
+  },
+
+  /** @private */
+  updateShowEap_: function() {
+    if (!this.eapProperties_) {
+      this.showEap_ = null;
+      return;
+    }
+    var type = this.configProperties_.Type;
+    var outer = this.eapProperties_.Outer;
+    this.showEap_ = {
+      Outer: type != CrOnc.Type.WI_MAX,
+      Inner: outer == CrOnc.EAPType.PEAP || outer == CrOnc.EAPType.EAP_TTLS,
+      ServerCA: type != CrOnc.Type.WI_MAX && outer != CrOnc.EAPType.LEAP,
+      SubjectMatch: outer == CrOnc.EAPType.EAP_TLS,
+      UserCert: outer == CrOnc.EAPType.EAP_TLS,
+      Password: outer != CrOnc.EAPType.EAP_TLS,
+      AnonymousIdentity:
+          outer == CrOnc.EAPType.PEAP || outer == CrOnc.EAPType.EAP_TTLS,
+    };
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties
+   * @return {?chrome.networkingPrivate.EAPProperties}
+   * @private
+   */
+  getEap_: function(properties) {
+    if (properties.WiFi)
+      return properties.WiFi.EAP || null;
+    if (properties.Ethernet)
+      return properties.Ethernet.EAP || null;
+    if (properties.WiMAX)
+      return properties.WiMAX.EAP || null;
+    return null;
   },
 
   /**
@@ -444,23 +531,6 @@ Polymer({
     var security = this.get('WiFi.Security', this.configProperties_);
     return security == CrOnc.Security.WEP_PSK ||
         security == CrOnc.Security.WPA_PSK;
-  },
-
-  /**
-   * Sets the EAP properties for |eap|, which may be WiFi.EAP, Ethernet.EAP etc.
-   * @private
-   */
-  setShowEap_: function(eap) {
-    var outer = eap.Outer;
-    this.showEap_ = {
-      Inner: outer == CrOnc.EAPType.PEAP || outer == CrOnc.EAPType.EAP_TTLS,
-      ServerCA: outer != CrOnc.EAPType.LEAP,
-      SubjectMatch: outer == CrOnc.EAPType.EAP_TLS,
-      UserCert: outer == CrOnc.EAPType.EAP_TLS,
-      Password: outer != CrOnc.EAPType.EAP_TLS,
-      AnonymousIdentity:
-          outer == CrOnc.EAPType.PEAP || outer == CrOnc.EAPType.EAP_TTLS,
-    };
   },
 
   /**
