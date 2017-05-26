@@ -1172,6 +1172,8 @@ source_set("common_unittests") {
     "laser/laser_pointer_points_unittest.cc",
     "laser/laser_segment_utils_unittest.cc",
     "login/lock_screen_controller_unittest.cc",
+    "login/mock_lock_screen_client.cc",
+    "login/mock_lock_screen_client.h",
     "metrics/desktop_task_switch_metric_recorder_unittest.cc",
     "metrics/pointer_metrics_recorder_unittest.cc",
     "metrics/task_switch_metrics_recorder_unittest.cc",
