@@ -13,7 +13,7 @@
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -202,7 +202,7 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
 }
 
-// The visibility of the size button is updated when tablet mode is toggled.
+// The visibility of the size button is updated when maximize mode is toggled.
 // Verify that the layout of the HeaderView is updated for the size button's
 // new visibility.
 TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
@@ -211,12 +211,14 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
 
   const gfx::Rect initial =
       delegate->GetFrameCaptionButtonContainerViewBounds();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   delegate->EndFrameCaptionButtonContainerViewAnimations();
-  const gfx::Rect tablet_mode_bounds =
+  const gfx::Rect maximize_mode_bounds =
       delegate->GetFrameCaptionButtonContainerViewBounds();
-  EXPECT_GT(initial.width(), tablet_mode_bounds.width());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_GT(initial.width(), maximize_mode_bounds.width());
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   delegate->EndFrameCaptionButtonContainerViewAnimations();
   const gfx::Rect after_restore =
       delegate->GetFrameCaptionButtonContainerViewBounds();

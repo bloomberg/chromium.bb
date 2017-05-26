@@ -9,7 +9,7 @@
 #include "ash/frame/header_painter.h"
 #include "ash/shell.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -263,9 +263,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 }
 
 // Tests that FrameCaptionButtonContainer has been relaid out in response to
-// tablet mode being toggled.
+// maximize mode being toggled.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
-                       ToggleTabletModeRelayout) {
+                       ToggleMaximizeModeRelayout) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
   // We know we're using Ash, so static cast.
@@ -274,16 +274,18 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
           widget->non_client_view()->frame_view());
 
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      true);
+  ash::Shell::Get()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   ash::FrameCaptionButtonContainerView::TestApi test(frame_view->
                                                      caption_button_container_);
   test.EndAnimations();
   const gfx::Rect during_maximize = frame_view->caption_button_container_->
       bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      false);
+  ash::Shell::Get()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
   test.EndAnimations();
   const gfx::Rect after_restore = frame_view->caption_button_container_->
       bounds();

@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/screen_pinning_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
@@ -101,7 +102,7 @@ gfx::Rect GetRestoreBounds(wm::WindowState* window_state) {
 }  // namespace
 
 // static
-void TabletModeWindowState::UpdateWindowPosition(
+void MaximizeModeWindowState::UpdateWindowPosition(
     wm::WindowState* window_state) {
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
   if (bounds_in_parent == window_state->window()->bounds())
@@ -109,8 +110,9 @@ void TabletModeWindowState::UpdateWindowPosition(
   window_state->SetBoundsDirect(bounds_in_parent);
 }
 
-TabletModeWindowState::TabletModeWindowState(aura::Window* window,
-                                             TabletModeWindowManager* creator)
+MaximizeModeWindowState::MaximizeModeWindowState(
+    aura::Window* window,
+    MaximizeModeWindowManager* creator)
     : window_(window),
       creator_(creator),
       current_state_type_(wm::GetWindowState(window)->GetStateType()),
@@ -120,17 +122,17 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
                        .release());
 }
 
-TabletModeWindowState::~TabletModeWindowState() {
+MaximizeModeWindowState::~MaximizeModeWindowState() {
   creator_->WindowStateDestroyed(window_);
 }
 
-void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state) {
+void MaximizeModeWindowState::LeaveMaximizeMode(wm::WindowState* window_state) {
   // Note: When we return we will destroy ourselves with the |our_reference|.
   std::unique_ptr<wm::WindowState::State> our_reference =
       window_state->SetStateObject(std::move(old_state_));
 }
 
-void TabletModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
+void MaximizeModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
   if (defer_bounds_updates_ == defer_bounds_updates)
     return;
 
@@ -139,8 +141,8 @@ void TabletModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
     UpdateBounds(wm::GetWindowState(window_), true);
 }
 
-void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
-                                      const wm::WMEvent* event) {
+void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
+                                        const wm::WMEvent* event) {
   // Ignore events that are sent during the exit transition.
   if (ignore_wm_events_) {
     return;
@@ -227,11 +229,11 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
   }
 }
 
-wm::WindowStateType TabletModeWindowState::GetType() const {
+wm::WindowStateType MaximizeModeWindowState::GetType() const {
   return current_state_type_;
 }
 
-void TabletModeWindowState::AttachState(
+void MaximizeModeWindowState::AttachState(
     wm::WindowState* window_state,
     wm::WindowState::State* previous_state) {
   current_state_type_ = previous_state->GetType();
@@ -257,16 +259,16 @@ void TabletModeWindowState::AttachState(
   window_state->set_can_be_dragged(false);
 }
 
-void TabletModeWindowState::DetachState(wm::WindowState* window_state) {
+void MaximizeModeWindowState::DetachState(wm::WindowState* window_state) {
   // From now on, we can use the default session restore mechanism again.
   SetWindowRestoreOverrides(window_state->window(), gfx::Rect(),
                             ui::SHOW_STATE_NORMAL);
   window_state->set_can_be_dragged(true);
 }
 
-void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
-                                         wm::WindowStateType target_state,
-                                         bool animated) {
+void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
+                                           wm::WindowStateType target_state,
+                                           bool animated) {
   DCHECK(target_state == wm::WINDOW_STATE_TYPE_MINIMIZED ||
          target_state == wm::WINDOW_STATE_TYPE_MAXIMIZED ||
          target_state == wm::WINDOW_STATE_TYPE_PINNED ||
@@ -305,7 +307,7 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
       old_state_type == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED ||
       target_state == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
-        window_state->window());
+        WmWindow::Get(window_state->window()));
   }
 
   if ((window_state->window()->layer()->GetTargetVisibility() ||
@@ -317,14 +319,14 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
   }
 }
 
-wm::WindowStateType TabletModeWindowState::GetMaximizedOrCenteredWindowType(
+wm::WindowStateType MaximizeModeWindowState::GetMaximizedOrCenteredWindowType(
     wm::WindowState* window_state) {
   return window_state->CanMaximize() ? wm::WINDOW_STATE_TYPE_MAXIMIZED
                                      : wm::WINDOW_STATE_TYPE_NORMAL;
 }
 
-void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
-                                         bool animated) {
+void MaximizeModeWindowState::UpdateBounds(wm::WindowState* window_state,
+                                           bool animated) {
   if (defer_bounds_updates_)
     return;
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
@@ -336,7 +338,7 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         !window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
-      // If we animate (to) tablet mode, we want to use the cross fade to
+      // If we animate (to) maximized mode, we want to use the cross fade to
       // avoid flashing.
       if (window_state->IsMaximized())
         window_state->SetBoundsDirectCrossFade(bounds_in_parent);

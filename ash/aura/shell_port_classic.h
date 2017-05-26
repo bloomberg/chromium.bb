@@ -62,7 +62,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
       wm::WindowState* window_state) override;
   std::unique_ptr<WindowCycleEventFilter> CreateWindowCycleEventFilter()
       override;
-  std::unique_ptr<wm::TabletModeEventHandler> CreateTabletModeEventHandler()
+  std::unique_ptr<wm::MaximizeModeEventHandler> CreateMaximizeModeEventHandler()
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) override;

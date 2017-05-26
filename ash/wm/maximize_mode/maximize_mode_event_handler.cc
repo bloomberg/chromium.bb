@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
+#include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm_window.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -21,11 +22,11 @@ const int kLeaveFullScreenAreaHeightInPixel = 2;
 
 }  // namespace
 
-TabletModeEventHandler::TabletModeEventHandler() {}
+MaximizeModeEventHandler::MaximizeModeEventHandler() {}
 
-TabletModeEventHandler::~TabletModeEventHandler() {}
+MaximizeModeEventHandler::~MaximizeModeEventHandler() {}
 
-bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
+bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   if (event.type() != ui::ET_TOUCH_PRESSED)
     return false;
 
@@ -37,18 +38,18 @@ bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   }
 
   // Find the active window (from the primary screen) to un-fullscreen.
-  aura::Window* window = GetActiveWindow();
+  WmWindow* window = WmWindow::Get(GetActiveWindow());
   if (!window)
     return false;
 
-  WindowState* window_state = GetWindowState(window);
+  WindowState* window_state = window->GetWindowState();
   if (!window_state->IsFullscreen() || window_state->in_immersive_fullscreen())
     return false;
 
   // Test that the touch happened in the top or bottom lines.
   int y = event.y();
   if (y >= kLeaveFullScreenAreaHeightInPixel &&
-      y < (window->bounds().height() - kLeaveFullScreenAreaHeightInPixel)) {
+      y < (window->GetBounds().height() - kLeaveFullScreenAreaHeightInPixel)) {
     return false;
   }
 
@@ -57,7 +58,7 @@ bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
     return false;
 
   WMEvent toggle_fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
-  GetWindowState(window)->OnWMEvent(&toggle_fullscreen);
+  window->GetWindowState()->OnWMEvent(&toggle_fullscreen);
   return true;
 }
 

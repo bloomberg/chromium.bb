@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_H_
-#define ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_H_
+#ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_EVENT_HANDLER_H_
+#define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_EVENT_HANDLER_H_
 
 #include "base/macros.h"
 
@@ -14,13 +14,13 @@ class TouchEvent;
 namespace ash {
 namespace wm {
 
-// TabletModeEventHandler handles toggling fullscreen when appropriate.
-// TabletModeEventHandler installs event handlers in an environment specific
+// MaximizeModeEventHandler handles toggling fullscreen when appropriate.
+// MaximizeModeEventHandler installs event handlers in an environment specific
 // way, e.g. EventHandler for aura.
-class TabletModeEventHandler {
+class MaximizeModeEventHandler {
  public:
-  TabletModeEventHandler();
-  virtual ~TabletModeEventHandler();
+  MaximizeModeEventHandler();
+  virtual ~MaximizeModeEventHandler();
 
  protected:
   // Subclasses call this to toggle fullscreen. If a toggle happened returns
@@ -28,10 +28,10 @@ class TabletModeEventHandler {
   bool ToggleFullscreen(const ui::TouchEvent& event);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabletModeEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(MaximizeModeEventHandler);
 };
 
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_H_
+#endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_EVENT_HANDLER_H_

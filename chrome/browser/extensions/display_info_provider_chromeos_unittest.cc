@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/screen_orientation_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,9 +31,10 @@ namespace {
 using DisplayUnitInfoList = DisplayInfoProvider::DisplayUnitInfoList;
 using DisplayLayoutList = DisplayInfoProvider::DisplayLayoutList;
 
-void EnableTabletMode(bool enable) {
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      enable);
+void EnableMaximizeMode(bool enable) {
+  ash::Shell::Get()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(enable);
 }
 
 class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
@@ -1023,9 +1024,9 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
             secondary.id());
 }
 
-// Tests that rotation changes made before entering tablet mode are restored
-// upon exiting tablet mode, and that a rotation lock is not set.
-TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeTabletMode) {
+// Tests that rotation changes made before entering maximize mode are restored
+// upon exiting maximize mode, and that a rotation lock is not set.
+TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
   ash::ScreenOrientationController* screen_orientation_controller =
       ash::Shell::Get()->screen_orientation_controller();
   api::system_display::DisplayProperties info;
@@ -1041,10 +1042,10 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeTabletMode) {
   EXPECT_TRUE(error.empty());
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
 
-  // Entering tablet mode enables accelerometer screen rotations.
-  EnableTabletMode(true);
+  // Entering maximize mode enables accelerometer screen rotations.
+  EnableMaximizeMode(true);
   // Rotation lock should not activate because DisplayInfoProvider::SetInfo()
-  // was called when not in tablet mode.
+  // was called when not in maximize mode.
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
 
   // ScreenOrientationController rotations override display info.
@@ -1054,16 +1055,16 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeTabletMode) {
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
-  // Exiting tablet mode should restore the initial rotation
-  EnableTabletMode(false);
+  // Exiting maximize mode should restore the initial rotation
+  EnableMaximizeMode(false);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
-// Tests that rotation changes made during tablet mode lock the display
+// Tests that rotation changes made during maximize mode lock the display
 // against accelerometer rotations, and is set as user rotation locked.
-TEST_F(DisplayInfoProviderChromeosTest, SetRotationDuringTabletMode) {
-  // Entering tablet mode enables accelerometer screen rotations.
-  EnableTabletMode(true);
+TEST_F(DisplayInfoProviderChromeosTest, SetRotationDuringMaximizeMode) {
+  // Entering maximize mode enables accelerometer screen rotations.
+  EnableMaximizeMode(true);
 
   ASSERT_FALSE(
       ash::Shell::Get()->screen_orientation_controller()->rotation_locked());

@@ -20,7 +20,7 @@
 #include "ash/test/screen_orientation_controller_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
@@ -56,8 +56,9 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
   return info;
 }
 
-void EnableTabletMode(bool enable) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
+void EnableMaximizeMode(bool enable) {
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      enable);
 }
 
 bool RotationLocked() {
@@ -359,7 +360,7 @@ TEST_F(ScreenOrientationControllerTest, WindowDestructionRemovesLock) {
 // Tests that accelerometer readings in each of the screen angles will trigger a
 // rotation of the internal display.
 TEST_F(ScreenOrientationControllerTest, DisplayRotation) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   // Now test rotating in all directions.
   TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
@@ -374,7 +375,7 @@ TEST_F(ScreenOrientationControllerTest, DisplayRotation) {
 // Tests that low angles are ignored by the accelerometer (i.e. when the device
 // is almost laying flat).
 TEST_F(ScreenOrientationControllerTest, RotationIgnoresLowAngles) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, -kMeanGravity));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(-2.0f, 0.0f, -kMeanGravity));
@@ -390,7 +391,7 @@ TEST_F(ScreenOrientationControllerTest, RotationIgnoresLowAngles) {
 // Tests that the display will stick to the current orientation beyond the
 // halfway point, preventing frequent updates back and forth.
 TEST_F(ScreenOrientationControllerTest, RotationSticky) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   gfx::Vector3dF gravity(0.0f, -kMeanGravity, 0.0f);
   TriggerLidUpdate(gravity);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
@@ -422,7 +423,7 @@ TEST_F(ScreenOrientationControllerTest, RotationSticky) {
 // Tests that the display will stick to its current orientation when the
 // rotation lock has been set.
 TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   SetUserRotationLocked(true);
 
   // Turn past the threshold for rotation.
@@ -443,7 +444,7 @@ TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
 // Tests that the screen rotation notifications are suppressed when
 // triggered by the accelerometer.
 TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
       true);
   display::test::DisplayManagerTestApi(display_manager())
@@ -456,7 +457,7 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   EXPECT_FALSE(message_center->HasPopupNotifications());
 
   // Make sure notifications are still displayed when
-  // adjusting the screen rotation directly when in tablet mode
+  // adjusting the screen rotation directly when in maximize mode
   ASSERT_NE(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   SetSystemRotationLocked(false);
@@ -471,7 +472,7 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   EXPECT_FALSE(message_center->HasPopupNotifications());
 
   // Make sure notifications are blocked when adjusting the screen rotation
-  // via the accelerometer while in tablet mode
+  // via the accelerometer while in maximize mode
   // Rotate the screen 90 degrees
   ASSERT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
@@ -480,8 +481,8 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   EXPECT_FALSE(message_center->HasPopupNotifications());
 
   // Make sure notifications are still displayed when
-  // adjusting the screen rotation directly when not in tablet mode
-  EnableTabletMode(false);
+  // adjusting the screen rotation directly when not in maximize mode
+  EnableMaximizeMode(false);
   // Reset the screen rotation.
   SetInternalDisplayRotation(display::Display::ROTATE_0);
   // Clear all notifications
@@ -497,18 +498,18 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
 }
 
 // Tests that if a user has set a display rotation that it is restored upon
-// exiting tablet mode.
+// exiting maximize mode.
 TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 
   SetInternalDisplayRotation(display::Display::ROTATE_90);
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
 
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 
-  EnableTabletMode(false);
+  EnableMaximizeMode(false);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
@@ -516,22 +517,22 @@ TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
 // becomes locked.
 TEST_F(ScreenOrientationControllerTest,
        NonAccelerometerRotationChangesLockRotation) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   ASSERT_FALSE(RotationLocked());
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   EXPECT_TRUE(RotationLocked());
 }
 
 // Tests that if a user changes the display rotation, while rotation is locked,
-// that the updates are recorded. Upon exiting tablet mode the latest user
+// that the updates are recorded. Upon exiting maximize mode the latest user
 // rotation should be applied.
 TEST_F(ScreenOrientationControllerTest, UpdateUserRotationWhileRotationLocked) {
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   // User sets rotation to the same rotation that the display was at when
-  // tablet mode was activated.
+  // maximize mode was activated.
   SetInternalDisplayRotation(display::Display::ROTATE_0);
-  EnableTabletMode(false);
+  EnableMaximizeMode(false);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -540,7 +541,7 @@ TEST_F(ScreenOrientationControllerTest, UpdateUserRotationWhileRotationLocked) {
 TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
@@ -563,7 +564,7 @@ TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
 TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
@@ -586,7 +587,7 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
 TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(),
@@ -608,7 +609,7 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
 TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
@@ -623,7 +624,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
-// Tests that when TabletMode is triggered before the internal display is
+// Tests that when MaximizeMode is triggered before the internal display is
 // ready, that ScreenOrientationController still begins listening to events,
 // which require an internal display to be acted upon.
 TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
@@ -633,7 +634,7 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
   int64_t internal_display_id = display::Display::InternalDisplayId();
   display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
 
-  EnableTabletMode(true);
+  EnableMaximizeMode(true);
 
   // Should not crash, even though there is no internal display.
   SetDisplayRotationById(internal_display_id, display::Display::ROTATE_180);

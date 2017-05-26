@@ -98,6 +98,8 @@
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/immersive_handler_factory_ash.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -108,8 +110,6 @@
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
@@ -487,19 +487,19 @@ void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
   }
 }
 
-void Shell::NotifyTabletModeStarted() {
+void Shell::NotifyMaximizeModeStarted() {
   for (auto& observer : shell_observers_)
-    observer.OnTabletModeStarted();
+    observer.OnMaximizeModeStarted();
 }
 
-void Shell::NotifyTabletModeEnding() {
+void Shell::NotifyMaximizeModeEnding() {
   for (auto& observer : shell_observers_)
-    observer.OnTabletModeEnding();
+    observer.OnMaximizeModeEnding();
 }
 
-void Shell::NotifyTabletModeEnded() {
+void Shell::NotifyMaximizeModeEnded() {
   for (auto& observer : shell_observers_)
-    observer.OnTabletModeEnded();
+    observer.OnMaximizeModeEnded();
 }
 
 void Shell::NotifyOverviewModeStarting() {
@@ -647,14 +647,14 @@ Shell::~Shell() {
   screen_orientation_controller_.reset();
   screen_layout_observer_.reset();
 
-  // Destroy the virtual keyboard controller before the tablet mode controller
+  // Destroy the virtual keyboard controller before the maximize mode controller
   // since the latters destructor triggers events that the former is listening
   // to but no longer cares about.
   virtual_keyboard_controller_.reset();
 
-  // Destroy tablet mode controller early on since it has some observers which
+  // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
-  tablet_mode_controller_.reset();
+  maximize_mode_controller_.reset();
 
   // Destroy the keyboard before closing the shelf, since it will invoke a shelf
   // layout.
@@ -949,7 +949,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
-  tablet_mode_controller_ = base::MakeUnique<TabletModeController>();
+  maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());

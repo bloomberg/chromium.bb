@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/display/manager/display_manager.h"
@@ -100,10 +100,10 @@ void WMHelperAsh::RemovePostTargetHandler(ui::EventHandler* handler) {
   ash::Shell::Get()->RemovePostTargetHandler(handler);
 }
 
-bool WMHelperAsh::IsTabletModeWindowManagerEnabled() const {
+bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
   return ash::Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+      ->maximize_mode_controller()
+      ->IsMaximizeModeWindowManagerEnabled();
 }
 
 void WMHelperAsh::OnWindowActivated(
@@ -126,16 +126,16 @@ void WMHelperAsh::OnCursorSetChanged(ui::CursorSetType cursor_set) {
   NotifyCursorSetChanged(cursor_set);
 }
 
-void WMHelperAsh::OnTabletModeStarted() {
-  NotifyTabletModeStarted();
+void WMHelperAsh::OnMaximizeModeStarted() {
+  NotifyMaximizeModeStarted();
 }
 
-void WMHelperAsh::OnTabletModeEnding() {
-  NotifyTabletModeEnding();
+void WMHelperAsh::OnMaximizeModeEnding() {
+  NotifyMaximizeModeEnding();
 }
 
-void WMHelperAsh::OnTabletModeEnded() {
-  NotifyTabletModeEnded();
+void WMHelperAsh::OnMaximizeModeEnded() {
+  NotifyMaximizeModeEnded();
 }
 
 void WMHelperAsh::OnDisplayConfigurationChanged() {

@@ -57,8 +57,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // ash::ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
@@ -75,7 +75,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
-                           ToggleTabletModeRelayout);
+                           ToggleMaximizeModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
   friend class BrowserHeaderPainterAsh;
