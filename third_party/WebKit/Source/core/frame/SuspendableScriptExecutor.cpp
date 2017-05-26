@@ -114,7 +114,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
     std::unique_ptr<UserGestureIndicator> gesture_indicator;
     if (gesture_token_) {
       gesture_indicator =
-          WTF::WrapUnique(new UserGestureIndicator(gesture_token_.Release()));
+          WTF::WrapUnique(new UserGestureIndicator(std::move(gesture_token_)));
     }
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
                                      frame->GetDocument(),

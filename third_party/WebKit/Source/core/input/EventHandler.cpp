@@ -983,9 +983,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
           .GetEventHandler()
           .last_mouse_down_user_gesture_token_) {
     gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
-        frame_->LocalFrameRoot()
-            .GetEventHandler()
-            .last_mouse_down_user_gesture_token_.Release()));
+        std::move(frame_->LocalFrameRoot()
+                      .GetEventHandler()
+                      .last_mouse_down_user_gesture_token_)));
   } else {
     gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
         DocumentUserGestureToken::Create(frame_->GetDocument())));

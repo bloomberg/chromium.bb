@@ -1143,7 +1143,7 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
   }
 
   if (shape)
-    return ShapeValue::CreateShapeValue(shape.Release(), css_box);
+    return ShapeValue::CreateShapeValue(std::move(shape), css_box);
 
   DCHECK_NE(css_box, kBoxMissing);
   return ShapeValue::CreateBoxShapeValue(css_box);

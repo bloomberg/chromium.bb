@@ -265,7 +265,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(const WebInputEvent& event) {
     case WebInputEvent::kMouseUp:
       event_type = EventTypeNames::mouseup;
       gesture_indicator = WTF::WrapUnique(
-          new UserGestureIndicator(pointer_lock_gesture_token_.Release()));
+          new UserGestureIndicator(std::move(pointer_lock_gesture_token_)));
       break;
     case WebInputEvent::kMouseMove:
       event_type = EventTypeNames::mousemove;

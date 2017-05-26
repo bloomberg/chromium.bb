@@ -51,13 +51,13 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
                           unsigned length) {
     RefPtr<WTFTypedArray> buffer_view =
         WTFTypedArray::Create(buffer->Buffer(), byte_offset, length);
-    return new ThisType(buffer_view.Release(), buffer);
+    return new ThisType(std::move(buffer_view), buffer);
   }
 
   static ThisType* CreateOrNull(unsigned length) {
     RefPtr<WTF::ArrayBuffer> buffer =
         WTF::ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
-    return buffer ? Create(buffer.Release(), 0, length) : nullptr;
+    return buffer ? Create(std::move(buffer), 0, length) : nullptr;
   }
 
   const WTFTypedArray* View() const {
