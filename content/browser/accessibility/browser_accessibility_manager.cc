@@ -48,9 +48,6 @@ base::LazyInstance<AXTreeIDMap>::DestructorAtExit g_ax_tree_id_map =
 base::LazyInstance<base::Closure>::DestructorAtExit
     g_focus_change_callback_for_testing = LAZY_INSTANCE_INITIALIZER;
 
-// A flag for use in tests to ensure focus events aren't suppressed.
-bool g_never_suppress_focus_events_for_testing = false;
-
 }  // namespace
 
 ui::AXTreeUpdate MakeAXTreeUpdate(
@@ -187,6 +184,11 @@ void BrowserAccessibilityManager::Initialize(
   }
 }
 
+// A flag for use in tests to ensure events aren't suppressed or delayed.
+// static
+bool BrowserAccessibilityManager::never_suppress_or_delay_events_for_testing_ =
+    false;
+
 // static
 ui::AXTreeUpdate
 BrowserAccessibilityManager::GetEmptyDocument() {
@@ -211,7 +213,7 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded(
 
   // Don't fire focus events if the window itself doesn't have focus.
   // Bypass this check for some tests.
-  if (!g_never_suppress_focus_events_for_testing &&
+  if (!never_suppress_or_delay_events_for_testing_ &&
       !g_focus_change_callback_for_testing.Get()) {
     if (delegate_ && !delegate_->AccessibilityViewHasFocus())
       focus = nullptr;
@@ -617,8 +619,8 @@ void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
 }
 
 // static
-void BrowserAccessibilityManager::NeverSuppressFocusEventsForTesting() {
-  g_never_suppress_focus_events_for_testing = true;
+void BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting() {
+  never_suppress_or_delay_events_for_testing_ = true;
 }
 
 void BrowserAccessibilityManager::Decrement(

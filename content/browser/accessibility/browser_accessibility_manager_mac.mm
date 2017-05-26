@@ -222,8 +222,6 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       BrowserAccessibility* focus = GetFocus();
       if (!focus)
         break;  // Just fire a notification on the root.
-      NSAccessibilityPostNotification(ToBrowserAccessibilityCocoa(focus),
-                                      mac_notification);
 
       if (base::mac::IsAtLeastOS10_11()) {
         // |NSAccessibilityPostNotificationWithUserInfo| should be used on OS X
@@ -242,6 +240,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         NSAccessibilityPostNotificationWithUserInfo(
             ToBrowserAccessibilityCocoa(root), mac_notification, user_info);
         return;
+      } else {
+        NSAccessibilityPostNotification(ToBrowserAccessibilityCocoa(focus),
+                                        mac_notification);
       }
       break;
     }
@@ -288,6 +289,13 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       // Voiceover seems to drop live region changed notifications if they come
       // too soon after a live region created notification.
       // TODO(nektar): Limit the number of changed notifications as well.
+
+      if (never_suppress_or_delay_events_for_testing_) {
+        NSAccessibilityPostNotification(
+            native_node, NSAccessibilityLiveRegionChangedNotification);
+        return;
+      }
+
       base::scoped_nsobject<BrowserAccessibilityCocoa> retained_node(
           [native_node retain]);
       BrowserThread::PostDelayedTask(

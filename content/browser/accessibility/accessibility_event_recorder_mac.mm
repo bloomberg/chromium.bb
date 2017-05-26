@@ -77,18 +77,22 @@ AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
     LOG(FATAL) << "Failed to create AXUIElement for application.";
 
   // Add the notifications we care about to the observer.
+  AddNotification(@"AXAutocorrectionOccurred");
+  AddNotification(@"AXExpandedChanged");
+  AddNotification(@"AXInvalidStatusChanged");
+  AddNotification(@"AXLiveRegionChanged");
+  AddNotification(@"AXLiveRegionCreated");
+  AddNotification(@"AXLoadComplete");
+  AddNotification(@"AXMenuItemSelected");
+  AddNotification(@"AXRowCollapsed");
+  AddNotification(@"AXRowExpanded");
   AddNotification(NSAccessibilityFocusedUIElementChangedNotification);
+  AddNotification(NSAccessibilityRowCollapsedNotification);
   AddNotification(NSAccessibilityRowCountChangedNotification);
   AddNotification(NSAccessibilitySelectedChildrenChangedNotification);
   AddNotification(NSAccessibilitySelectedRowsChangedNotification);
   AddNotification(NSAccessibilitySelectedTextChangedNotification);
   AddNotification(NSAccessibilityValueChangedNotification);
-  AddNotification(@"AXExpandedChanged");
-  AddNotification(@"AXLayoutComplete");
-  AddNotification(@"AXLiveRegionChanged");
-  AddNotification(@"AXLoadComplete");
-  AddNotification(@"AXRowCollapsed");
-  AddNotification(@"AXRowExpanded");
 
   // Add the observer to the current message loop.
   observer_run_loop_source_ = AXObserverGetRunLoopSource(observer_ref_.get());

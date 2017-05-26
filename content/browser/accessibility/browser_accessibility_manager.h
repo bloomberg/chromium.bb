@@ -184,10 +184,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
 
   // Normally we avoid firing accessibility focus events when the containing
-  // native window isn't focused. However, this can lead to test flakiness
-  // because we can't control when a window loses focus, so this provides a
-  // way to disable that check for tests.
-  static void NeverSuppressFocusEventsForTesting();
+  // native window isn't focused, and we also delay some other events like
+  // live region events to improve screen reader compatibility.
+  // However, this can lead to test flakiness, so for testing, simplify
+  // this behavior and just fire all events with no delay as if the window
+  // had focus.
+  static void NeverSuppressOrDelayEventsForTesting();
 
   // Accessibility actions. All of these are implemented asynchronously
   // by sending a message to the renderer to perform the respective action
@@ -491,6 +493,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // For testing only: If true, the manually-set device scale factor will be
   // used and it won't be updated from the delegate.
   bool use_custom_device_scale_factor_for_testing_;
+
+  // Fire all events regardless of focus and with no delay, to avoid test
+  // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.
+  static bool never_suppress_or_delay_events_for_testing_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
