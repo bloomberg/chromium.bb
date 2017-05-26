@@ -672,6 +672,22 @@ world (note that the DOM object is shared among multiple worlds), it leaks the S
 to the world. ScriptState must be carefully maintained in a way that doesn't leak
 to another world.
 
+### [ContextEnabled] _(i)_
+
+Summary: `[ContextEnabled]` renders the generated interface bindings unavailable by default, but also generates code which allows individual script contexts opt into installing the bindings.
+
+Usage: `[ContextEnabled=FeatureName]`. FeatureName is an arbitrary name used to identify the feature at runtime.
+
+```webidl
+[
+    ContextEnabled=MojoJS
+] interface Mojo { ... };
+```
+
+When applied to an interface, the generated code for the relevant global object will include a public `installFeatureName()` method which can be called to install the interface on the global object.
+
+Note that `[ContextEnabled]` is not mututally exclusive to `[RuntimeEnabled]`, and a feature which may be enabled by either mechanism will be enabled if the appropriate `[RuntimeEnabled]` feature is enabled; _or_ if the appropriate `[ContextEnabled]` feature is enabled; _or_ if both are enabled.
+
 ### [Custom] _(i, m, s, a, f)_
 
 Summary: They allow you to write bindings code manually as you like: full bindings for methods and attributes, certain functions for interfaces.

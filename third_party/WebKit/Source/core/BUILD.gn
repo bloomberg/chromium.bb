@@ -173,6 +173,7 @@ component("core") {
   deps = [
     "//third_party/WebKit/Source/core/animation",
     "//third_party/WebKit/Source/core/clipboard",
+    "//third_party/WebKit/Source/core/context_features",
     "//third_party/WebKit/Source/core/css",
     "//third_party/WebKit/Source/core/dom",
     "//third_party/WebKit/Source/core/editing",

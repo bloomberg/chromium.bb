@@ -124,6 +124,7 @@ def attribute_context(interface, attribute, interfaces):
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
         'cached_attribute_validation_method': cached_attribute_validation_method,
         'constructor_type': constructor_type,
+        'context_enabled_feature_name': v8_utilities.context_enabled_feature_name(attribute),
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
@@ -213,6 +214,7 @@ def filter_accessors(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
                  attribute['secure_context_test'] or
+                 attribute['context_enabled_feature_name'] or
                  attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_feature_name']) and
             not attribute['is_data_type_property']]
@@ -221,6 +223,7 @@ def filter_accessors(attributes):
 def is_data_attribute(attribute):
     return (not (attribute['exposed_test'] or
                  attribute['secure_context_test'] or
+                 attribute['context_enabled_feature_name'] or
                  attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_feature_name']) and
             attribute['is_data_type_property'])

@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8HTMLLinkElement.h"
 #include "bindings/core/v8/V8Navigator.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/context_features/ContextFeatureSettings.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/origin_trials/OriginTrials.h"
@@ -38,7 +39,17 @@ void InstallConditionalFeaturesCore(const WrapperTypeInfo* wrapper_type_info,
     return;
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
-  if (wrapper_type_info == &V8HTMLLinkElement::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
+    auto* settings = ContextFeatureSettings::From(
+        execution_context,
+        ContextFeatureSettings::CreationMode::kDontCreateIfNotExists);
+    if (settings && settings->isMojoJSEnabled()) {
+      v8::Local<v8::Object> instance_object =
+          script_state->GetContext()->Global();
+      V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
+                              interface_object);
+    }
+  } else if (wrapper_type_info == &V8HTMLLinkElement::wrapperTypeInfo) {
     if (OriginTrials::linkServiceWorkerEnabled(execution_context)) {
       V8HTMLLinkElement::installLinkServiceWorker(
           isolate, world, v8::Local<v8::Object>(), prototype_object,

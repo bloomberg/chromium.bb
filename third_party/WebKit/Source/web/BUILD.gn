@@ -117,6 +117,7 @@ component("web") {
     "UserMediaClientImpl.cpp",
     "UserMediaClientImpl.h",
     "WebAXObject.cpp",
+    "WebContextFeatures.cpp",
     "WebDOMMessageEvent.cpp",
     "WebDevToolsAgentImpl.cpp",
     "WebDevToolsAgentImpl.h",

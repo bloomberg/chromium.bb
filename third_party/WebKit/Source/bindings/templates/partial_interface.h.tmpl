@@ -10,7 +10,7 @@
 
 namespace blink {
 
-{% if origin_trial_features %}
+{% if optional_features %}
 class ScriptState;
 {% endif %}
 
@@ -33,7 +33,7 @@ class {{v8_class_or_partial}} {
   static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
   {% endif %}
 
-  {% for feature in origin_trial_features %}
+  {% for feature in optional_features %}
   static void install{{feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
   static void install{{feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
   {% if not feature.needs_instance %}
