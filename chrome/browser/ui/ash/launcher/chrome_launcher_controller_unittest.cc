@@ -2304,7 +2304,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   // input.
   std::string png_data;
   EXPECT_TRUE(arc_test_.app_instance()->GenerateAndSendIcon(
-      arc_test_.fake_apps()[0], arc::mojom::ScaleFactor::SCALE_FACTOR_300P,
+      arc_test_.fake_apps()[0], arc::mojom::ScaleFactor::SCALE_FACTOR_100P,
       &png_data));
   EXPECT_FALSE(png_data.empty());
   // Some input that represents invalid png content.

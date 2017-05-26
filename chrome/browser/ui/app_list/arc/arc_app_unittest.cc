@@ -52,6 +52,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 namespace {
 
@@ -1404,6 +1405,81 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
 
   // No new icon update requests on restart. Icons were invalidated and updated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
+}
+
+TEST_P(ArcAppModelBuilderTest, IconLoadNonSupportedScales) {
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported_scale_factors(
+      supported_scale_factors);
+
+  // Initialize one ARC app.
+  const arc::mojom::AppInfo& app = fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
+      fake_apps().begin(), fake_apps().begin() + 1));
+
+  FakeAppIconLoaderDelegate delegate;
+  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
+  icon_loader.FetchImage(app_id);
+  // Expected 1 update with default image and 2 representations should be
+  // allocated.
+  EXPECT_EQ(1U, delegate.update_image_cnt());
+  gfx::ImageSkia app_icon = delegate.image();
+  EXPECT_EQ(2U, app_icon.image_reps().size());
+  EXPECT_TRUE(app_icon.HasRepresentation(1.0f));
+  EXPECT_TRUE(app_icon.HasRepresentation(2.0f));
+
+  // Request non-supported scales. Cached supported representations with
+  // default image should be used. 1.0 is used to scale 1.15 and
+  // 2.0 is used to scale 1.25.
+  app_icon.GetRepresentation(1.15f);
+  app_icon.GetRepresentation(1.25f);
+  EXPECT_EQ(1U, delegate.update_image_cnt());
+  EXPECT_EQ(4U, app_icon.image_reps().size());
+  EXPECT_TRUE(app_icon.HasRepresentation(1.0f));
+  EXPECT_TRUE(app_icon.HasRepresentation(2.0f));
+  EXPECT_TRUE(app_icon.HasRepresentation(1.15f));
+  EXPECT_TRUE(app_icon.HasRepresentation(1.25f));
+
+  // Keep default images for reference.
+  const SkBitmap bitmap_1_0 = app_icon.GetRepresentation(1.0f).sk_bitmap();
+  const SkBitmap bitmap_1_15 = app_icon.GetRepresentation(1.15f).sk_bitmap();
+  const SkBitmap bitmap_1_25 = app_icon.GetRepresentation(1.25f).sk_bitmap();
+  const SkBitmap bitmap_2_0 = app_icon.GetRepresentation(2.0f).sk_bitmap();
+
+  // Send icon image for 100P. 1.0 and 1.15 should be updated.
+  std::string png_data;
+  EXPECT_TRUE(app_instance()->GenerateAndSendIcon(
+      app, arc::mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data));
+  delegate.WaitForIconUpdates(1);
+
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(1.0f).sk_bitmap(), bitmap_1_0));
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(1.15f).sk_bitmap(), bitmap_1_15));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(1.25f).sk_bitmap(), bitmap_1_25));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(2.0f).sk_bitmap(), bitmap_2_0));
+
+  // Send icon image for 200P. 2.0 and 1.25 should be updated.
+  EXPECT_TRUE(app_instance()->GenerateAndSendIcon(
+      app, arc::mojom::ScaleFactor::SCALE_FACTOR_200P, &png_data));
+  delegate.WaitForIconUpdates(1);
+
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(1.0f).sk_bitmap(), bitmap_1_0));
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(1.15f).sk_bitmap(), bitmap_1_15));
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(1.25f).sk_bitmap(), bitmap_1_25));
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(
+      app_icon.GetRepresentation(2.0f).sk_bitmap(), bitmap_2_0));
 }
 
 TEST_P(ArcAppModelBuilderTest, AppLauncher) {

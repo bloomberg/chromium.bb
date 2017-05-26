@@ -213,11 +213,7 @@ void ArcAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
     return;
   }
 
-  gfx::ImageSkia image_skia;
-  image_skia.AddRepresentation(gfx::ImageSkiaRep(
-      bitmap,
-      ui::GetScaleForScaleFactor(scale_factor_)));
-  host_->Update(&image_skia);
+  host_->Update(scale_factor_, bitmap);
   host_->DiscardDecodeRequest(this);
 }
 
@@ -359,17 +355,15 @@ void ArcAppIcon::OnIconRead(
   }
 }
 
-void ArcAppIcon::Update(const gfx::ImageSkia* image) {
+void ArcAppIcon::Update(ui::ScaleFactor scale_factor, const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  CHECK(image && !image->isNull());
 
-  std::vector<gfx::ImageSkiaRep> reps = image->image_reps();
-  for (const auto& image_rep : reps) {
-    if (ui::IsSupportedScale(image_rep.scale())) {
-      image_skia_.RemoveRepresentation(image_rep.scale());
-      image_skia_.AddRepresentation(image_rep);
-    }
-  }
+  gfx::ImageSkiaRep image_rep(bitmap, ui::GetScaleForScaleFactor(scale_factor));
+  DCHECK(ui::IsSupportedScale(image_rep.scale()));
+
+  image_skia_.RemoveRepresentation(image_rep.scale());
+  image_skia_.AddRepresentation(image_rep);
+  image_skia_.RemoveUnsupportedRepresentationsForScale(image_rep.scale());
 
   observer_->OnIconUpdated(this);
 }

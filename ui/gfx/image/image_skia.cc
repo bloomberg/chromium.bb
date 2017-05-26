@@ -41,6 +41,17 @@ std::vector<float>* g_supported_scales = NULL;
 // the image to 1.25.
 const float kFallbackToSmallerScaleDiff = 0.20f;
 
+// Maps to the closest supported scale. Returns an exact match, a smaller
+// scale within 0.2 units, the nearest larger scale, or the min/max
+// supported scale.
+float MapToSupportedScale(float scale) {
+  for (float supported_scale : *g_supported_scales) {
+    if (supported_scale + kFallbackToSmallerScaleDiff >= scale)
+      return supported_scale;
+  }
+  return g_supported_scales->back();
+}
+
 }  // namespace
 
 namespace internal {
@@ -219,18 +230,8 @@ std::vector<ImageSkiaRep>::iterator ImageSkiaStorage::FindRepresentation(
 
     ImageSkiaRep image;
     float resource_scale = scale;
-    if (!HasRepresentationAtAllScales() && g_supported_scales) {
-      if (g_supported_scales->back() <= scale) {
-        resource_scale = g_supported_scales->back();
-      } else {
-        for (size_t i = 0; i < g_supported_scales->size(); ++i) {
-          if ((*g_supported_scales)[i] + kFallbackToSmallerScaleDiff >= scale) {
-            resource_scale = (*g_supported_scales)[i];
-            break;
-          }
-        }
-      }
-    }
+    if (!HasRepresentationAtAllScales() && g_supported_scales)
+      resource_scale = MapToSupportedScale(scale);
     if (scale != resource_scale) {
       std::vector<ImageSkiaRep>::iterator iter =
           FindRepresentation(resource_scale, fetch_new_image);
@@ -478,6 +479,14 @@ void ImageSkia::EnsureRepsForSupportedScales() const {
     for (std::vector<float>::const_iterator it = g_supported_scales->begin();
          it != g_supported_scales->end(); ++it)
       storage_->FindRepresentation(*it, true);
+  }
+}
+
+void ImageSkia::RemoveUnsupportedRepresentationsForScale(float scale) {
+  for (const ImageSkiaRep& image_rep_to_test : image_reps()) {
+    const float test_scale = image_rep_to_test.scale();
+    if (test_scale != scale && MapToSupportedScale(test_scale) == scale)
+      RemoveRepresentation(test_scale);
   }
 }
 
