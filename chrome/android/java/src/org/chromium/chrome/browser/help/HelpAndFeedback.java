@@ -62,6 +62,18 @@ public class HelpAndFeedback {
     }
 
     /**
+     * Starts an activity prompting the user to enter feedback.
+     *
+     * @param activity The activity to use for starting the feedback activity and to take a
+     *                 screenshot of.
+     * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
+     */
+    protected void showFeedback(Activity activity, @Nonnull FeedbackCollector collector) {
+        Log.d(TAG, "Feedback data: " + collector.getBundle());
+        launchFallbackSupportUri(activity);
+    }
+
+    /**
      * Starts an activity showing a help page for the specified context ID.
      *
      * @param activity The activity to use for starting the help activity and to take a
@@ -73,12 +85,36 @@ public class HelpAndFeedback {
      */
     public void show(final Activity activity, final String helpContext, Profile profile,
             @Nullable String url) {
-        FeedbackCollector.create(activity, profile, url, new FeedbackCollector.FeedbackResult() {
-            @Override
-            public void onResult(FeedbackCollector collector) {
-                show(activity, helpContext, collector);
-            }
-        });
+        FeedbackCollector.create(activity, profile, url, true /* takeScreenshot */,
+                new FeedbackCollector.FeedbackResult() {
+                    @Override
+                    public void onResult(FeedbackCollector collector) {
+                        show(activity, helpContext, collector);
+                    }
+                });
+    }
+
+    /**
+     * Starts an activity prompting the user to enter feedback.
+     *
+     * @param activity The activity to use for starting the feedback activity and to take a
+     *                 screenshot of.
+     * @param profile the current profile.
+     * @param url the current URL. May be null.
+     * @param categoryTag The category that this feedback report falls under.
+     */
+    public void showFeedback(final Activity activity, Profile profile, @Nullable String url,
+            @Nullable final String categoryTag) {
+        FeedbackCollector.create(activity, profile, url, false /* takeScreenshot */,
+                new FeedbackCollector.FeedbackResult() {
+                    @Override
+                    public void onResult(FeedbackCollector collector) {
+                        if (categoryTag != null) {
+                            collector.setCategoryTag(categoryTag);
+                        }
+                        showFeedback(activity, collector);
+                    }
+                });
     }
 
     /**
