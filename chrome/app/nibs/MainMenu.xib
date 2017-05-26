@@ -72,7 +72,7 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="149"/>
-                            <menuItem title="^IDS_CONFIRM_TO_QUIT_OPTION" id="687">
+                            <menuItem title="Warn Before Quitting (⌘Q)" id="687">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="toggleConfirmToQuit:" target="483" id="688"/>
