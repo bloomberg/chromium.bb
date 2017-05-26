@@ -63,10 +63,14 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // output only.
   std::string AsHumanReadableString() const;
 
+  // Sets the number of channels if |channel_layout_| is CHANNEL_LAYOUT_DISCRETE
+  void SetChannelsForDiscrete(int channels);
+
   AudioCodec codec() const { return codec_; }
   int bits_per_channel() const { return bytes_per_channel_ * 8; }
   int bytes_per_channel() const { return bytes_per_channel_; }
   ChannelLayout channel_layout() const { return channel_layout_; }
+  int channels() const { return channels_; }
   int samples_per_second() const { return samples_per_second_; }
   SampleFormat sample_format() const { return sample_format_; }
   int bytes_per_frame() const { return bytes_per_frame_; }
@@ -96,6 +100,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   SampleFormat sample_format_;
   int bytes_per_channel_;
   ChannelLayout channel_layout_;
+  int channels_;
   int samples_per_second_;
   int bytes_per_frame_;
   std::vector<uint8_t> extra_data_;

@@ -324,8 +324,22 @@ bool AVCodecContextToAudioDecoderConfig(
   SampleFormat sample_format = AVSampleFormatToSampleFormat(
       codec_context->sample_fmt, codec_context->codec_id);
 
-  ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
-      codec_context->channel_layout, codec_context->channels);
+  // Opus packets coded with channel mapping 2 are Ambisonics signals. If there
+  // is no WebAudio renderer attached, default up/downmixing is applied for
+  // <= 8 channels to enable previewing of content. Currently, mixing is not
+  // supported for > 8 channels.
+  // TODO (flim): Use mixing matrices that are more optimal for previewing
+  // Ambisonics content, and support > 8 channels.
+  bool is_opus_discrete = false;
+  if (codec == kCodecOpus && codec_context->extradata_size >= 19) {
+    int mapping_family = codec_context->extradata[18];
+    is_opus_discrete = mapping_family == 2;
+  }
+  ChannelLayout channel_layout =
+      is_opus_discrete && codec_context->channels > 8
+          ? CHANNEL_LAYOUT_DISCRETE
+          : ChannelLayoutToChromeChannelLayout(codec_context->channel_layout,
+                                               codec_context->channels);
 
   int sample_rate = codec_context->sample_rate;
   switch (codec) {
@@ -371,6 +385,8 @@ bool AVCodecContextToAudioDecoderConfig(
   config->Initialize(codec, sample_format, channel_layout, sample_rate,
                      extra_data, encryption_scheme, seek_preroll,
                      codec_context->delay);
+  if (channel_layout == CHANNEL_LAYOUT_DISCRETE)
+    config->SetChannelsForDiscrete(codec_context->channels);
 
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   // These are bitstream formats unknown to ffmpeg, so they don't have
@@ -419,8 +435,7 @@ void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
 
   // TODO(scherkus): should we set |channel_layout|? I'm not sure if FFmpeg uses
   // said information to decode.
-  codec_context->channels =
-      ChannelLayoutToChannelCount(config.channel_layout());
+  codec_context->channels = config.channels();
   codec_context->sample_rate = config.samples_per_second();
 
   if (config.extra_data().empty()) {

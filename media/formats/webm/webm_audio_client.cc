@@ -50,7 +50,14 @@ bool WebMAudioClient::InitializeConfig(
   if (channels_ == -1)
     channels_ = 1;
 
-  ChannelLayout channel_layout =  GuessChannelLayout(channels_);
+  bool is_opus_discrete = false;
+  if (audio_codec == kCodecOpus && codec_private.size() >= 19) {
+    int mapping_family = codec_private[18];
+    is_opus_discrete = mapping_family == 2;
+  }
+  ChannelLayout channel_layout = is_opus_discrete && channels_ > 8
+                                     ? CHANNEL_LAYOUT_DISCRETE
+                                     : GuessChannelLayout(channels_);
 
   if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
     MEDIA_LOG(ERROR, media_log_) << "Unsupported channel count " << channels_;
@@ -82,6 +89,7 @@ bool WebMAudioClient::InitializeConfig(
                      base::TimeDelta::FromMicroseconds(
                          (seek_preroll != -1 ? seek_preroll : 0) / 1000),
                      codec_delay_in_frames);
+  config->SetChannelsForDiscrete(channels_);
   return config->IsValidConfig();
 }
 
