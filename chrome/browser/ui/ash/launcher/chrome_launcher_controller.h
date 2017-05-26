@@ -120,11 +120,6 @@ class ChromeLauncherController
   // Adds or removes an item as needed to respect the running and pinned state.
   void SetV1AppStatus(const std::string& app_id, ash::ShelfItemStatus status);
 
-  // Requests that the shelf item controller specified by |id| open a new
-  // instance of the app.  |event_flags| holds the flags of the event which
-  // triggered this command.
-  void Launch(const ash::ShelfID& id, int event_flags);
-
   // Closes the specified item.
   void Close(const ash::ShelfID& id);
 
@@ -135,10 +130,12 @@ class ChromeLauncherController
   bool IsPlatformApp(const ash::ShelfID& id);
 
   // Opens a new instance of the application identified by the ShelfID.
-  // Used by the app-list, and by pinned-app shelf items.
+  // Used by the app-list, and by pinned-app shelf items. |display_id| is id of
+  // the display from which the app is launched.
   void LaunchApp(const ash::ShelfID& id,
                  ash::ShelfLaunchSource source,
-                 int event_flags);
+                 int event_flags,
+                 int64_t display_id);
 
   // If |app_id| is running, reactivates the app's most recently active window,
   // otherwise launches and activates the app.

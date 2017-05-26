@@ -15,6 +15,7 @@
 #include "extensions/common/extension.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/display/types/display_constants.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh(
     app_list::AppListPresenterImpl* app_list_presenter)
@@ -96,7 +97,8 @@ void AppListControllerDelegateAsh::ActivateApp(
   // Platform apps treat activations as a launch. The app can decide whether to
   // show a new window or focus an existing window as it sees fit.
   if (extension->is_platform_app()) {
-    LaunchApp(profile, extension, source, event_flags);
+    LaunchApp(profile, extension, source, event_flags,
+              display::kInvalidDisplayId);
     return;
   }
 
@@ -112,10 +114,11 @@ void AppListControllerDelegateAsh::LaunchApp(
     Profile* profile,
     const extensions::Extension* extension,
     AppListSource source,
-    int event_flags) {
+    int event_flags,
+    int64_t display_id) {
   ChromeLauncherController::instance()->LaunchApp(
       ash::ShelfID(extension->id()), AppListSourceToLaunchSource(source),
-      event_flags);
+      event_flags, display_id);
   DismissView();
 }
 

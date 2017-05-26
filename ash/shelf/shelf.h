@@ -118,6 +118,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Activates the shelf item specified by the index in the list of shelf items.
   static void ActivateShelfItem(int item_index);
 
+  // Activates the shelf item specified by the index in the list of shelf items
+  // on the display identified by |display_id|.
+  static void ActivateShelfItemOnDisplay(int item_index, int64_t display_id);
+
   // Handles a gesture |event| coming from a source outside the shelf widget
   // (e.g. the status area widget). Allows support for behaviors like toggling
   // auto-hide with a swipe, even if that gesture event hits another window.

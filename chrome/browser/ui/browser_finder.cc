@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -32,6 +34,7 @@ const int kMatchAny                     = 0;
 const int kMatchOriginalProfile         = 1 << 0;
 const int kMatchCanSupportWindowFeature = 1 << 1;
 const int kMatchTabbed                  = 1 << 2;
+const int kMatchDisplayId               = 1 << 3;
 
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
@@ -44,7 +47,8 @@ const int kMatchTabbed                  = 1 << 2;
 bool BrowserMatches(Browser* browser,
                     Profile* profile,
                     Browser::WindowFeature window_feature,
-                    uint32_t match_types) {
+                    uint32_t match_types,
+                    int64_t display_id) {
   if ((match_types & kMatchCanSupportWindowFeature) &&
       !browser->CanSupportWindowFeature(window_feature)) {
     return false;
@@ -85,8 +89,14 @@ bool BrowserMatches(Browser* browser,
 #endif
   }
 
-  if (match_types & kMatchTabbed)
-    return browser->is_type_tabbed();
+  if ((match_types & kMatchTabbed) && !browser->is_type_tabbed())
+    return false;
+
+  if (match_types & kMatchDisplayId) {
+    return display::Screen::GetScreen()
+               ->GetDisplayNearestWindow(browser->window()->GetNativeWindow())
+               .id() == display_id;
+  }
 
   return true;
 }
@@ -99,17 +109,20 @@ Browser* FindBrowserMatching(const T& begin,
                              const T& end,
                              Profile* profile,
                              Browser::WindowFeature window_feature,
-                             uint32_t match_types) {
+                             uint32_t match_types,
+                             int64_t display_id = display::kInvalidDisplayId) {
   for (T i = begin; i != end; ++i) {
-    if (BrowserMatches(*i, profile, window_feature, match_types))
+    if (BrowserMatches(*i, profile, window_feature, match_types, display_id))
       return *i;
   }
   return NULL;
 }
 
-Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
-                                        bool match_tabbed,
-                                        bool match_original_profiles) {
+Browser* FindBrowserWithTabbedOrAnyType(
+    Profile* profile,
+    bool match_tabbed,
+    bool match_original_profiles,
+    int64_t display_id = display::kInvalidDisplayId) {
   BrowserList* browser_list_impl = BrowserList::GetInstance();
   if (!browser_list_impl)
     return NULL;
@@ -118,27 +131,29 @@ Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
     match_types |= kMatchTabbed;
   if (match_original_profiles)
     match_types |= kMatchOriginalProfile;
-  Browser* browser = FindBrowserMatching(browser_list_impl->begin_last_active(),
-                                         browser_list_impl->end_last_active(),
-                                         profile,
-                                         Browser::FEATURE_NONE,
-                                         match_types);
+  if (display_id != display::kInvalidDisplayId)
+    match_types |= kMatchDisplayId;
+  Browser* browser =
+      FindBrowserMatching(browser_list_impl->begin_last_active(),
+                          browser_list_impl->end_last_active(), profile,
+                          Browser::FEATURE_NONE, match_types, display_id);
   // Fall back to a forward scan of all Browsers if no active one was found.
-  return browser ? browser : FindBrowserMatching(browser_list_impl->begin(),
-                                                 browser_list_impl->end(),
-                                                 profile,
-                                                 Browser::FEATURE_NONE,
-                                                 match_types);
+  return browser ? browser
+                 : FindBrowserMatching(
+                       browser_list_impl->begin(), browser_list_impl->end(),
+                       profile, Browser::FEATURE_NONE, match_types, display_id);
 }
 
 size_t GetBrowserCountImpl(Profile* profile,
-                           uint32_t match_types) {
+                           uint32_t match_types,
+                           int64_t display_id = display::kInvalidDisplayId) {
   BrowserList* browser_list_impl = BrowserList::GetInstance();
   size_t count = 0;
   if (browser_list_impl) {
     for (BrowserList::const_iterator i = browser_list_impl->begin();
          i != browser_list_impl->end(); ++i) {
-      if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, match_types))
+      if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, match_types,
+                         display_id))
         count++;
     }
   }
@@ -150,8 +165,10 @@ size_t GetBrowserCountImpl(Profile* profile,
 namespace chrome {
 
 Browser* FindTabbedBrowser(Profile* profile,
-                           bool match_original_profiles) {
-  return FindBrowserWithTabbedOrAnyType(profile, true, match_original_profiles);
+                           bool match_original_profiles,
+                           int64_t display_id) {
+  return FindBrowserWithTabbedOrAnyType(profile, true, match_original_profiles,
+                                        display_id);
 }
 
 Browser* FindAnyBrowser(Profile* profile,

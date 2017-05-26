@@ -13,6 +13,7 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -28,7 +29,8 @@ struct AppLaunchParams {
                   extensions::LaunchContainer container,
                   WindowOpenDisposition disposition,
                   extensions::AppLaunchSource source,
-                  bool set_playstore_status = false);
+                  bool set_playstore_status = false,
+                  int64_t display_id = display::kInvalidDisplayId);
 
   AppLaunchParams(const AppLaunchParams& other);
 
@@ -71,6 +73,11 @@ struct AppLaunchParams {
 
   // Status of ARC on this device.
   extensions::api::app_runtime::PlayStoreStatus play_store_status;
+
+  // The id of the display from which the app is launched.
+  // display::kInvalidDisplayId means that the display does not exist or is not
+  // set.
+  int64_t display_id;
 };
 
 // Helper to create AppLaunchParams using extensions::GetLaunchContainer with
@@ -83,11 +90,13 @@ AppLaunchParams CreateAppLaunchParamsUserContainer(
 
 // Helper to create AppLaunchParams using event flags that allows user to
 // override the user-configured container using modifier keys, falling back to
-// extensions::GetLaunchContainer() with no modifiers.
+// extensions::GetLaunchContainer() with no modifiers. |display_id| is the id of
+// the display from which the app is launched.
 AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     Profile* profile,
     const extensions::Extension* extension,
     int event_flags,
-    extensions::AppLaunchSource source);
+    extensions::AppLaunchSource source,
+    int64_t display_id);
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_LAUNCH_PARAMS_H_

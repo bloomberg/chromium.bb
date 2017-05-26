@@ -924,6 +924,97 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchPinned) {
   EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
 }
 
+// Tests behavior of launching app from shelf in the first display while the
+// second display has the focus. Initially, Browsers exists in the first
+// display.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchAppFromDisplayWithoutFocus0) {
+  // Updates the display configuration to add a secondary display.
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  display::test::DisplayManagerTestApi(display_manager)
+      .UpdateDisplay("0+0-800x800,801+0-800x800");
+  display::Displays displays = display_manager->active_display_list();
+  aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
+  EXPECT_EQ(displays.size(), 2U);
+  EXPECT_EQ(roots.size(), 2U);
+  EXPECT_EQ(
+      displays[0].id(),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(roots[0]).id());
+  EXPECT_EQ(
+      displays[1].id(),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(roots[1]).id());
+
+  // Ensures that display 0 has one browser with focus and display 1 has two
+  // browsers. Each browser only has one tab.
+  BrowserList* browser_list = BrowserList::GetInstance();
+  Browser* browser0 = browser();
+  Browser* browser1 = CreateBrowser(browser()->profile());
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  browser0->window()->SetBounds(displays[0].work_area());
+  browser1->window()->SetBounds(displays[1].work_area());
+  browser2->window()->SetBounds(displays[1].work_area());
+  // Ensures browser 2 is above browser 1 in display 1.
+  browser_list->SetLastActive(browser2);
+  browser_list->SetLastActive(browser0);
+  EXPECT_EQ(browser_list->size(), 3U);
+  EXPECT_EQ(browser0->window()->GetNativeWindow()->GetRootWindow(), roots[0]);
+  EXPECT_EQ(browser1->window()->GetNativeWindow()->GetRootWindow(), roots[1]);
+  EXPECT_EQ(browser2->window()->GetNativeWindow()->GetRootWindow(), roots[1]);
+  EXPECT_EQ(browser0->tab_strip_model()->count(), 1);
+  EXPECT_EQ(browser1->tab_strip_model()->count(), 1);
+  EXPECT_EQ(browser2->tab_strip_model()->count(), 1);
+
+  // Launches an app from the shelf of display 0 and expects a new tab is opened
+  // in the uppermost browser in display 0.
+  ash::ShelfID shortcut_id = CreateShortcut("app1");
+  Shelf::ActivateShelfItemOnDisplay(model_->ItemIndexByID(shortcut_id),
+                                      displays[1].id());
+  EXPECT_EQ(browser0->tab_strip_model()->count(), 1);
+  EXPECT_EQ(browser1->tab_strip_model()->count(), 1);
+  EXPECT_EQ(browser2->tab_strip_model()->count(), 2);
+}
+
+// Tests behavior of launching app from shelf in the first display while the
+// second display has the focus. Initially, No browser exists in the first
+// display.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchAppFromDisplayWithoutFocus1) {
+  // Updates the display configuration to add a secondary display.
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  display::test::DisplayManagerTestApi(display_manager)
+      .UpdateDisplay("800x800,801+0-800x800");
+  display::Displays displays = display_manager->active_display_list();
+  aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
+  EXPECT_EQ(displays.size(), 2U);
+  EXPECT_EQ(roots.size(), 2U);
+  EXPECT_EQ(
+      displays[0].id(),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(roots[0]).id());
+  EXPECT_EQ(
+      displays[1].id(),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(roots[1]).id());
+
+  // Ensures that display 0 has one browser with focus and display 1 has no
+  // browser. The browser only has one tab.
+  BrowserList* browser_list = BrowserList::GetInstance();
+  Browser* browser0 = browser();
+  browser0->window()->SetBounds(displays[0].work_area());
+  EXPECT_EQ(browser_list->size(), 1U);
+  EXPECT_EQ(browser0->window()->GetNativeWindow()->GetRootWindow(), roots[0]);
+  EXPECT_EQ(browser0->tab_strip_model()->count(), 1);
+
+  // Launches an app from the shelf of display 0 and expects a new browser with
+  // one tab is opened in display 0.
+  ash::ShelfID shortcut_id = CreateShortcut("app1");
+  Shelf::ActivateShelfItemOnDisplay(model_->ItemIndexByID(shortcut_id),
+                                      displays[1].id());
+  Browser* browser1 = browser_list->GetLastActive();
+  EXPECT_EQ(browser_list->size(), 2U);
+  EXPECT_NE(browser1, browser0);
+  EXPECT_EQ(browser0->tab_strip_model()->count(), 1);
+  EXPECT_EQ(browser1->tab_strip_model()->count(), 1);
+}
+
 // Launch the app first and then create the shortcut.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -950,7 +1041,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
                          WindowOpenDisposition::NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   controller_->LaunchApp(ash::ShelfID(last_loaded_extension_id()),
-                         ash::LAUNCH_FROM_UNKNOWN, 0);
+                         ash::LAUNCH_FROM_UNKNOWN, 0,
+                         display::kInvalidDisplayId);
 }
 
 // Confirm that clicking a icon for an app running in one of 2 maxmized windows
@@ -1001,9 +1093,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::ShelfID id(LoadExtension(test_data_dir_.AppendASCII("app1"))->id());
-  controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0);
+  controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0,
+                         display::kInvalidDisplayId);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0);
+  controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0,
+                         display::kInvalidDisplayId);
   EXPECT_EQ(++tab_count, tab_strip->count());
 }
 

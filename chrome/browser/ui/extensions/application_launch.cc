@@ -228,7 +228,8 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
   Profile* const profile = launch_params.profile;
   WindowOpenDisposition disposition = launch_params.disposition;
 
-  Browser* browser = chrome::FindTabbedBrowser(profile, false);
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile, false, launch_params.display_id);
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
