@@ -242,6 +242,10 @@ void OmniboxViewIOS::SetWindowTextAndCaretPos(const base::string16& text,
     model()->OnChanged();
 }
 
+// TODO(crbug.com/726702): Implement this and have |SetWindowTextAndCaretPos()|
+// call it.
+void OmniboxViewIOS::SetCaretPos(size_t caret_pos) {}
+
 void OmniboxViewIOS::RevertAll() {
   ignore_popup_updates_ = true;
   OmniboxView::RevertAll();

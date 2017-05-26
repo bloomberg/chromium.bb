@@ -49,6 +49,7 @@ class TestingOmniboxView : public OmniboxView {
                                 bool notify_text_changed) override {
     text_ = text;
   }
+  void SetCaretPos(size_t caret_pos) override {}
   void EnterKeywordModeForDefaultSearchProvider() override {}
   bool IsSelectAll() const override { return false; }
   bool DeleteAtEndPressed() override { return false; }
