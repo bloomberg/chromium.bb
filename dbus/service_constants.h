@@ -234,6 +234,12 @@ const char kBluetoothPluginInterface[] = "org.chromium.BluetoothDevice";
 // Bluetooth Device plugin methods.
 const char kGetConnInfo[] = "GetConnInfo";
 const char kSetLEConnectionParameters[] = "SetLEConnectionParameters";
+// Valid connection parameters that can be passed to the
+// SetLEConnectionParameters API as dictionary keys.
+const char kLEConnectionParameterMinimumConnectionInterval[] =
+    "MinimumConnectionInterval";
+const char kLEConnectionParameterMaximumConnectionInterval[] =
+    "MaximumConnectionInterval";
 }  // namespace bluetooth_plugin_device
 
 namespace bluetooth_adapter {
