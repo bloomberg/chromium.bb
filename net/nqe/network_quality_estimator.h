@@ -341,6 +341,10 @@ class NET_EXPORT NetworkQualityEstimator
       const std::map<nqe::internal::NetworkID,
                      nqe::internal::CachedNetworkQuality> read_prefs);
 
+  // Returns the current transport RTT estimate. If the estimate is unavailable,
+  // the returned optional has no value.
+  base::Optional<base::TimeDelta> GetTransportRTT() const;
+
  protected:
   // A protected constructor for testing that allows setting the value of
   // |add_default_platform_observations_|.

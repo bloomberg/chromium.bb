@@ -1767,6 +1767,15 @@ void NetworkQualityEstimator::OnPrefsRead(
   }
 }
 
+base::Optional<base::TimeDelta> NetworkQualityEstimator::GetTransportRTT()
+    const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (network_quality_.transport_rtt() == nqe::internal::InvalidRTT())
+    return base::Optional<base::TimeDelta>();
+  return network_quality_.transport_rtt();
+}
+
 void NetworkQualityEstimator::MaybeUpdateNetworkQualityFromCache(
     const nqe::internal::NetworkID& network_id,
     const nqe::internal::CachedNetworkQuality& cached_network_quality) {
