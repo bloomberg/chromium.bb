@@ -18,7 +18,7 @@ class FrameSwapMessageQueueTest : public testing::Test {
       : first_message_(41, 1, IPC::Message::PRIORITY_NORMAL),
         second_message_(42, 2, IPC::Message::PRIORITY_NORMAL),
         third_message_(43, 3, IPC::Message::PRIORITY_NORMAL),
-        queue_(new FrameSwapMessageQueue(0)) {}
+        queue_(new FrameSwapMessageQueue()) {}
 
  protected:
   void QueueNextSwapMessage(std::unique_ptr<IPC::Message> msg) {
