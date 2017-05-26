@@ -4,6 +4,7 @@
 
 #include "chrome/browser/translate/chrome_translate_client.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
@@ -29,6 +31,8 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
+#include "components/sync/user_events/user_event_service.h"
 #include "components/translate/core/browser/language_model.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -39,6 +43,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/variations/service/variations_service.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -62,6 +67,49 @@ metrics::TranslateEventProto::EventType BubbleResultToTranslateEvent(
     default:
       NOTREACHED();
       return metrics::TranslateEventProto::UNKNOWN;
+  }
+}
+
+std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
+    const int entry_id,
+    const translate::LanguageDetectionDetails& details) {
+  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
+  specifics->set_event_time_usec(base::Time::Now().ToInternalValue());
+
+  // TODO(renjieliu): Revisit this field when the best way to identify
+  // navigations is determined.
+  specifics->set_navigation_id(base::Time::Now().ToInternalValue());
+
+  sync_pb::LanguageDetection lang_detection;
+  auto* const lang = lang_detection.add_detected_languages();
+  lang->set_language_code(details.cld_language);
+  lang->set_is_reliable(details.is_cld_reliable);
+  // Only set adopted_language when it's different from cld_language.
+  if (details.adopted_language != details.cld_language) {
+    lang_detection.set_adopted_language_code(details.adopted_language);
+  }
+  *specifics->mutable_language_detection() = lang_detection;
+  return specifics;
+}
+
+void LogLanguageDetectionEvent(
+    const content::WebContents* const web_contents,
+    const translate::LanguageDetectionDetails& details) {
+  auto* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  syncer::UserEventService* const user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(profile);
+
+  const auto* const entry =
+      web_contents->GetController().GetLastCommittedEntry();
+
+  // If entry is null, we don't record the page.
+  // The navigation entry can be null in situations like download or initial
+  // blank page.
+  if (entry != nullptr) {
+    user_event_service->RecordUserEvent(
+        ConstructLanguageDetectionEvent(entry->GetUniqueID(), details));
   }
 }
 
@@ -309,6 +357,7 @@ void ChromeTranslateClient::OnLanguageDetermined(
       content::Source<content::WebContents>(web_contents()),
       content::Details<const translate::LanguageDetectionDetails>(&details));
 
+  LogLanguageDetectionEvent(web_contents(), details);
   // Unless we have no language model (e.g., in incognito), notify the model
   // about detected language of every page visited.
   if (language_model_ && details.is_cld_reliable)
