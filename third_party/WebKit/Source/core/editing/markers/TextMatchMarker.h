@@ -75,7 +75,11 @@ class TextMatchMarker final : public DocumentMarker {
   State state_;
 };
 
-DEFINE_TYPE_CASTS(TextMatchMarker, DocumentMarker, marker, true, true);
+DEFINE_TYPE_CASTS(TextMatchMarker,
+                  DocumentMarker,
+                  marker,
+                  marker->GetType() == DocumentMarker::kTextMatch,
+                  marker.GetType() == DocumentMarker::kTextMatch);
 
 }  // namespace blink
 
