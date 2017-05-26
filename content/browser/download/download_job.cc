@@ -5,14 +5,15 @@
 #include "content/browser/download/download_job.h"
 
 #include "base/bind_helpers.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
 
 DownloadJob::DownloadJob(DownloadItemImpl* download_item)
-    : download_item_(download_item), is_paused_(false) {}
+    : download_item_(download_item),
+      is_paused_(false),
+      weak_ptr_factory_(this) {}
 
 DownloadJob::~DownloadJob() = default;
 
@@ -24,8 +25,25 @@ void DownloadJob::Resume(bool resume_request) {
   is_paused_ = false;
 }
 
-void DownloadJob::StartDownload() const {
-  download_item_->StartDownload();
+void DownloadJob::Start(DownloadFile* download_file_,
+                        const DownloadFile::InitializeCallback& callback,
+                        const DownloadItem::ReceivedSlices& received_slices) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFile::Initialize,
+                 // Safe because we control download file lifetime.
+                 base::Unretained(download_file_),
+                 base::Bind(&DownloadJob::OnDownloadFileInitialized,
+                            weak_ptr_factory_.GetWeakPtr(), callback),
+                 base::Bind(&DownloadJob::CancelRequestWithOffset,
+                            weak_ptr_factory_.GetWeakPtr()),
+                 received_slices, IsParallelizable()));
+}
+
+void DownloadJob::OnDownloadFileInitialized(
+    const DownloadFile::InitializeCallback& callback,
+    DownloadInterruptReason result) {
+  callback.Run(result);
 }
 
 bool DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
