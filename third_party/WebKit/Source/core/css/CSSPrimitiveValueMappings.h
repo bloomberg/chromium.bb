@@ -2055,31 +2055,6 @@ inline TextRenderingMode CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ESpeak e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case ESpeak::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case ESpeak::kNormal:
-      value_id_ = CSSValueNormal;
-      break;
-    case ESpeak::kSpellOut:
-      value_id_ = CSSValueSpellOut;
-      break;
-    case ESpeak::kDigits:
-      value_id_ = CSSValueDigits;
-      break;
-    case ESpeak::kLiteralPunctuation:
-      value_id_ = CSSValueLiteralPunctuation;
-      break;
-    case ESpeak::kNoPunctuation:
-      value_id_ = CSSValueNoPunctuation;
-      break;
-  }
-}
-
-template <>
 inline EOrder CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueLogical:
@@ -2105,29 +2080,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(EOrder e)
       value_id_ = CSSValueVisual;
       break;
   }
-}
-
-template <>
-inline ESpeak CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueNone:
-      return ESpeak::kNone;
-    case CSSValueNormal:
-      return ESpeak::kNormal;
-    case CSSValueSpellOut:
-      return ESpeak::kSpellOut;
-    case CSSValueDigits:
-      return ESpeak::kDigits;
-    case CSSValueLiteralPunctuation:
-      return ESpeak::kLiteralPunctuation;
-    case CSSValueNoPunctuation:
-      return ESpeak::kNoPunctuation;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return ESpeak::kNormal;
 }
 
 template <>

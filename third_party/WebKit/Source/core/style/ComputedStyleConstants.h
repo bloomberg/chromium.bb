@@ -281,15 +281,6 @@ enum ELineClampType { kLineClampLineCount, kLineClampPercentage };
 
 enum class Hyphens { kNone, kManual, kAuto };
 
-enum class ESpeak {
-  kNone,
-  kNormal,
-  kSpellOut,
-  kDigits,
-  kLiteralPunctuation,
-  kNoPunctuation
-};
-
 enum class TextEmphasisFill { kFilled, kOpen };
 
 enum TextEmphasisMark {
