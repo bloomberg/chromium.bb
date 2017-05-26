@@ -5,7 +5,7 @@
 #include "core/css/invalidation/StyleInvalidator.h"
 
 #include "core/dom/StyleEngine.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"

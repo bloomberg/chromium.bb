@@ -30,8 +30,8 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -146,10 +146,10 @@ static bool IsRectInDirection(WebFocusType type,
 // document. In case it is, one can scroll in direction or take any different
 // desired action later on.
 bool HasOffscreenRect(Node* node, WebFocusType type) {
-  // Get the FrameView in which |node| is (which means the current viewport if
-  // |node| is not in an inner document), so we can check if its content rect is
-  // visible before we actually move the focus to it.
-  FrameView* frame_view = node->GetDocument().View();
+  // Get the LocalFrameView in which |node| is (which means the current viewport
+  // if |node| is not in an inner document), so we can check if its content rect
+  // is visible before we actually move the focus to it.
+  LocalFrameView* frame_view = node->GetDocument().View();
   if (!frame_view)
     return true;
 
@@ -242,7 +242,7 @@ bool ScrollInDirection(Node* container, WebFocusType type) {
     int dx = 0;
     int dy = 0;
     // TODO(leviw): Why are these values truncated (toInt) instead of rounding?
-    FrameView* frame_view = container->GetDocument().View();
+    LocalFrameView* frame_view = container->GetDocument().View();
     int pixels_per_line_step = ScrollableArea::PixelsPerLineStep(
         frame_view ? frame_view->GetChromeClient() : nullptr);
     switch (type) {

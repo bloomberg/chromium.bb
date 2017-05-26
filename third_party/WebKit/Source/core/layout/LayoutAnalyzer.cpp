@@ -4,12 +4,12 @@
 
 #include "core/layout/LayoutAnalyzer.h"
 
-#include "core/frame/FrameView.h"
+#include <memory>
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include <memory>
 
 namespace blink {
 

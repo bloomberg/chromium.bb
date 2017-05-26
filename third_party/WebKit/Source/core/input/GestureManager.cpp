@@ -8,7 +8,7 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/SelectionController.h"
 #include "core/events/GestureEvent.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
@@ -134,7 +134,7 @@ WebInputEventResult GestureManager::HandleGestureTapDown(
 
 WebInputEventResult GestureManager::HandleGestureTap(
     const GestureEventWithHitTestResults& targeted_event) {
-  FrameView* frame_view(frame_->View());
+  LocalFrameView* frame_view(frame_->View());
   const WebGestureEvent& gesture_event = targeted_event.Event();
   HitTestRequest::HitTestRequestType hit_type =
       GetHitTypeForGestureType(gesture_event.GetType());
@@ -412,12 +412,12 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
 WebInputEventResult GestureManager::HandleGestureShowPress() {
   last_show_press_timestamp_ = TimeTicks::Now();
 
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
   if (ScrollAnimatorBase* scroll_animator = view->ExistingScrollAnimator())
     scroll_animator->CancelAnimation();
-  const FrameView::ScrollableAreaSet* areas = view->ScrollableAreas();
+  const LocalFrameView::ScrollableAreaSet* areas = view->ScrollableAreas();
   if (!areas)
     return WebInputEventResult::kNotHandled;
   for (const ScrollableArea* scrollable_area : *areas) {

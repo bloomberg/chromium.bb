@@ -9,8 +9,9 @@
 
 namespace blink {
 
-// PlatformFrameView is a base class for core/frame/FrameView. PlatformFrameView
-// is needed to let the platform/ layer access functionalities of FrameView.
+// PlatformFrameView is a base class for core/frame/LocalFrameView.
+// PlatformFrameView is needed to let the platform/ layer access functionalities
+// of LocalFrameView.
 class PLATFORM_EXPORT PlatformFrameView {
  public:
   PlatformFrameView() {}

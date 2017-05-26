@@ -29,8 +29,8 @@
 
 #include "core/page/AutoscrollController.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
@@ -104,7 +104,7 @@ void AutoscrollController::StopAutoscroll() {
 
   if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled() &&
       MiddleClickAutoscrollInProgress()) {
-    if (FrameView* view = scrollable->GetFrame()->View()) {
+    if (LocalFrameView* view = scrollable->GetFrame()->View()) {
       view->SetCursor(PointerCursor());
     }
   }
@@ -334,7 +334,7 @@ void AutoscrollController::Animate(double) {
         StopAutoscroll();
         return;
       }
-      if (FrameView* view = autoscroll_layout_object_->GetFrame()->View())
+      if (LocalFrameView* view = autoscroll_layout_object_->GetFrame()->View())
         UpdateMiddleClickAutoscrollState(
             view, event_handler.LastKnownMousePosition());
       FloatSize delta = CalculateAutoscrollDelta();
@@ -376,7 +376,7 @@ void AutoscrollController::StartAutoscroll() {
 }
 
 void AutoscrollController::UpdateMiddleClickAutoscrollState(
-    FrameView* view,
+    LocalFrameView* view,
     const IntPoint& last_known_mouse_position) {
   DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
   // At the original click location we draw a 4 arrowed icon. Over this icon

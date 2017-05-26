@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"

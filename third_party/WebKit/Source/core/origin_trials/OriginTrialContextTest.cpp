@@ -7,7 +7,7 @@
 #include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/testing/DummyPageHolder.h"

@@ -33,8 +33,8 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/EventListener.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -474,7 +474,7 @@ AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
       // performs the same operation as
       // Document::adjustFloatRectForScrollAndAbsoluteZoom, but in
       // transformation matrix form.)
-      if (FrameView* view = GetDocument().View()) {
+      if (LocalFrameView* view = GetDocument().View()) {
         LayoutRect visible_content_rect(view->VisibleContentRect());
         transform.Translate(-visible_content_rect.X(),
                             -visible_content_rect.Y());
@@ -504,8 +504,8 @@ AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
 
 bool SVGSVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   // FIXME: We should respect display: none on the documentElement svg element
-  // but many things in FrameView and SVGImage depend on the LayoutSVGRoot when
-  // they should instead depend on the LayoutView.
+  // but many things in LocalFrameView and SVGImage depend on the LayoutSVGRoot
+  // when they should instead depend on the LayoutView.
   // https://bugs.webkit.org/show_bug.cgi?id=103493
   if (GetDocument().documentElement() == this)
     return true;

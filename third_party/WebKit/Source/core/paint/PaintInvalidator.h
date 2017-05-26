@@ -114,7 +114,7 @@ struct PaintInvalidatorContext {
 
 class PaintInvalidator {
  public:
-  void InvalidatePaint(FrameView&,
+  void InvalidatePaint(LocalFrameView&,
                        const PaintPropertyTreeBuilderContext*,
                        PaintInvalidatorContext&);
   void InvalidatePaint(const LayoutObject&,

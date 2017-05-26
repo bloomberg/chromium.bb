@@ -82,8 +82,8 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -2010,7 +2010,7 @@ void StyleResolver::ComputeFont(ComputedStyle* style,
 }
 
 void StyleResolver::UpdateMediaType() {
-  if (FrameView* view = GetDocument().View()) {
+  if (LocalFrameView* view = GetDocument().View()) {
     bool was_print = print_media_type_;
     print_media_type_ =
         DeprecatedEqualIgnoringCase(view->MediaType(), MediaTypeNames::print);

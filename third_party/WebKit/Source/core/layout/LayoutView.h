@@ -36,9 +36,9 @@
 
 namespace blink {
 
-class FrameView;
-class PaintLayerCompositor;
 class LayoutQuote;
+class LocalFrameView;
+class PaintLayerCompositor;
 class ViewFragmentationContext;
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
@@ -92,8 +92,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
 
-  // Based on FrameView::layoutSize, but:
-  // - checks for null FrameView
+  // Based on LocalFrameView::LayoutSize, but:
+  // - checks for null LocalFrameView
   // - returns 0x0 if using printing layout
   // - scrollbar exclusion is compatible with root layer scrolling
   IntSize GetLayoutSize(IncludeScrollbarsInRect = kExcludeScrollbars) const;
@@ -114,7 +114,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   float ZoomFactor() const;
 
-  FrameView* GetFrameView() const { return frame_view_; }
+  LocalFrameView* GetFrameView() const { return frame_view_; }
 
   void UpdateAfterLayout() override;
 
@@ -240,8 +240,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     return false;
   }
 
-  // The rootLayerScrolls setting will ultimately determine whether FrameView
-  // or PaintLayerScrollableArea handle the scroll.
+  // The rootLayerScrolls setting will ultimately determine whether
+  // LocalFrameView or PaintLayerScrollableArea handle the scroll.
   ScrollResult Scroll(ScrollGranularity, const FloatSize&) override;
 
   LayoutRect DebugRect() const override;
@@ -278,7 +278,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
-  UntracedMember<FrameView> frame_view_;
+  UntracedMember<LocalFrameView> frame_view_;
 
   // The page logical height.
   // This is only used during printing to split the content into pages.

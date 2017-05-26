@@ -42,15 +42,16 @@
 namespace blink {
 
 class Document;
-class LocalFrame;
-class FrameView;
 class InterfaceProvider;
 class IntSize;
+class LocalFrame;
+class LocalFrameView;
 class Settings;
 
 typedef void (*FrameSettingOverrideFunction)(Settings&);
 
-// Creates a dummy Page, LocalFrame, and FrameView whose clients are all no-op.
+// Creates a dummy Page, LocalFrame, and LocalFrameView whose clients are all
+// no-op.
 //
 // This class can be used when you write unit tests for components which do not
 // work correctly without layoutObjects.  To make sure the layoutObjects are
@@ -58,9 +59,9 @@ typedef void (*FrameSettingOverrideFunction)(Settings&);
 // |document()|.
 //
 // Since DummyPageHolder stores empty clients in it, it must outlive the Page,
-// LocalFrame, FrameView and any other objects created by it. DummyPageHolder's
-// destructor ensures this condition by checking remaining references to the
-// LocalFrame.
+// LocalFrame, LocalFrameView and any other objects created by it.
+// DummyPageHolder's destructor ensures this condition by checking remaining
+// references to the LocalFrame.
 
 class DummyPageHolder {
   WTF_MAKE_NONCOPYABLE(DummyPageHolder);
@@ -77,7 +78,7 @@ class DummyPageHolder {
 
   Page& GetPage() const;
   LocalFrame& GetFrame() const;
-  FrameView& GetFrameView() const;
+  LocalFrameView& GetFrameView() const;
   Document& GetDocument() const;
 
  private:

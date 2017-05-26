@@ -5,7 +5,7 @@
 #include "web/tests/sim/SimCompositor.h"
 
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -49,11 +49,11 @@ SimCompositor::SimCompositor()
       has_selection_(false),
       web_view_(0),
       last_frame_time_monotonic_(0) {
-  FrameView::SetInitialTracksPaintInvalidationsForTesting(true);
+  LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
 }
 
 SimCompositor::~SimCompositor() {
-  FrameView::SetInitialTracksPaintInvalidationsForTesting(false);
+  LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(false);
 }
 
 void SimCompositor::SetWebView(WebViewBase& web_view) {

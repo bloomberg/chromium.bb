@@ -28,18 +28,18 @@
 
 #include "core/loader/DocumentWriter.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include <memory>
 
 namespace blink {
 
@@ -62,7 +62,7 @@ DocumentWriter::DocumentWriter(Document* document,
       // document.open).
       parser_(document_->ImplicitOpen(parser_sync_policy)) {
   if (document_->GetFrame()) {
-    if (FrameView* view = document_->GetFrame()->View())
+    if (LocalFrameView* view = document_->GetFrame()->View())
       view->SetContentsSize(IntSize());
   }
 }

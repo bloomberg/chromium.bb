@@ -30,8 +30,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/PseudoElement.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -509,7 +509,7 @@ void Write(TextStream& ts,
   }
 
   if (o.IsLayoutPart()) {
-    FrameView* frame_view = ToLayoutPart(o).ChildFrameView();
+    LocalFrameView* frame_view = ToLayoutPart(o).ChildFrameView();
     if (frame_view) {
       LayoutViewItem root_item = frame_view->GetLayoutViewItem();
       if (!root_item.IsNull()) {

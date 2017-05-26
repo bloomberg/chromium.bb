@@ -4,11 +4,13 @@
 
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 
+#include <memory>
+#include <utility>
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
@@ -17,8 +19,6 @@
 #include "platform/ScopedOrientationChangeIndicator.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 

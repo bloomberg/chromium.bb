@@ -4,7 +4,7 @@
 
 #include "core/layout/compositing/CompositingReasonFinder.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/HTMLNames.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"

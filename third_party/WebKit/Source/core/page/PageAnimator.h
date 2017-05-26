@@ -29,7 +29,7 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   // DO NOT use this outside of crbug.com/704763.
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
 
-  // See documents of methods with the same names in FrameView class.
+  // See documents of methods with the same names in LocalFrameView class.
   void UpdateAllLifecyclePhases(LocalFrame& root_frame);
   AnimationClock& Clock() { return animation_clock_; }
 

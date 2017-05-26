@@ -30,8 +30,8 @@
 
 #include "core/layout/ImageQualityController.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/ChromeClient.h"

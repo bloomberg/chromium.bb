@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 
 #include <memory>
 
@@ -147,9 +147,9 @@ TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
 }
 
 // This test addresses http://crbug.com/696173, in which a call to
-// FrameView::updateLayersAndCompositingAfterScrollIfNeeded during layout caused
-// a crash as the code was incorrectly assuming that the ancestor overflow layer
-// would always be valid.
+// LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded during layout
+// caused a crash as the code was incorrectly assuming that the ancestor
+// overflow layer would always be valid.
 TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
   GetDocument().body()->setInnerHTML(
       "<style>.container { height: 200%; }"

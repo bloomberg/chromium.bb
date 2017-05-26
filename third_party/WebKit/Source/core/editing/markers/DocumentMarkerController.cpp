@@ -40,7 +40,7 @@
 #include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/editing/markers/SpellingMarkerListImpl.h"
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 
 #ifndef NDEBUG
@@ -430,7 +430,7 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
 }
 
 static void InvalidatePaintForTickmarks(const Node& node) {
-  if (FrameView* frame_view = node.GetDocument().View())
+  if (LocalFrameView* frame_view = node.GetDocument().View())
     frame_view->InvalidatePaintForTickmarks();
 }
 

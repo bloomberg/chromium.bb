@@ -4,7 +4,7 @@
 
 #include "core/css/MediaValuesInitialViewport.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +24,7 @@ class MediaValuesInitialViewportTest : public ::testing::Test {
 };
 
 TEST_F(MediaValuesInitialViewportTest, InitialViewportSize) {
-  FrameView* view = GetDocument().View();
+  LocalFrameView* view = GetDocument().View();
   ASSERT_TRUE(view);
   EXPECT_TRUE(view->LayoutSizeFixedToFrameSize());
 

@@ -31,7 +31,7 @@
 #include "core/editing/iterators/CharacterIterator.h"
 
 #include "core/editing/EditingTestBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 
 namespace blink {
 

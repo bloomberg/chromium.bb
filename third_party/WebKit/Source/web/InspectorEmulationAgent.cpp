@@ -5,7 +5,7 @@
 #include "web/InspectorEmulationAgent.h"
 
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/inspector/protocol/DOM.h"

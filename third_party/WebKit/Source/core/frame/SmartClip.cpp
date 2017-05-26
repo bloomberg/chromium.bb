@@ -33,8 +33,8 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
@@ -44,7 +44,7 @@ namespace blink {
 
 static IntRect ConvertToContentCoordinatesWithoutCollapsingToZero(
     const IntRect& rect_in_viewport,
-    const FrameView* view) {
+    const LocalFrameView* view) {
   IntRect rect_in_contents = view->ViewportToContents(rect_in_viewport);
   if (rect_in_viewport.Width() > 0 && !rect_in_contents.Width())
     rect_in_contents.SetWidth(1);

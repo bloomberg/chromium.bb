@@ -38,7 +38,7 @@
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLDListElement.h"
 #include "core/html/HTMLDivElement.h"

@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"

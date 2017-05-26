@@ -147,9 +147,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
       "<style>body { margin: 0; }</style>"
       "<div id='forceScroll' style='height: 8888px;'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  FrameView* parent = GetDocument().View();
+  LocalFrameView* parent = GetDocument().View();
   EXPECT_TRUE(FrameScroll(parent)->HasBackgroundAttachmentFixedDescendants());
-  FrameView* child = ChildDocument().View();
+  LocalFrameView* child = ChildDocument().View();
   EXPECT_TRUE(FrameScroll(child)->HasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
@@ -183,9 +183,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
       "<div id='forceScroll' style='height: 8888px;'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  FrameView* parent = GetDocument().View();
+  LocalFrameView* parent = GetDocument().View();
   EXPECT_FALSE(FrameScroll(parent)->HasBackgroundAttachmentFixedDescendants());
-  FrameView* child = ChildDocument().View();
+  LocalFrameView* child = ChildDocument().View();
   EXPECT_TRUE(FrameScroll(child)->HasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
@@ -286,7 +286,7 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
       "<style>body { margin: 0; }</style><div id='transform' style='transform: "
       "translate3d(4px, 5px, 6px); width: 100px; height: 200px'></div>");
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
 
   LayoutObject* div_with_transform =
@@ -322,7 +322,7 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
 
   // A child frame marked as needing a paint property update should not be
   // skipped if the owning layout tree does not need an update.
-  FrameView* child_frame_view = ChildDocument().View();
+  LocalFrameView* child_frame_view = ChildDocument().View();
   child_frame_view->SetNeedsPaintPropertyUpdate();
   EXPECT_TRUE(
       GetDocument().GetLayoutView()->DescendantNeedsPaintPropertyUpdate());
@@ -528,10 +528,10 @@ TEST_P(PaintPropertyTreeUpdateTest,
       "<style>body { margin: 0; }</style>"
       "<div id='forceScroll' style='height: 3000px;'></div>");
 
-  FrameView* frame_view = GetDocument().View();
+  LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(nullptr, FrameScroll(frame_view));
-  FrameView* child_frame_view = ChildDocument().View();
+  LocalFrameView* child_frame_view = ChildDocument().View();
   EXPECT_NE(nullptr, FrameScroll(child_frame_view));
 
   auto* iframe_container = GetDocument().getElementById("iframeContainer");

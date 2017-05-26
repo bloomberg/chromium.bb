@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/api/LayoutAPIShim.h"

@@ -29,7 +29,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTableCell.h"

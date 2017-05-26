@@ -43,7 +43,7 @@
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"

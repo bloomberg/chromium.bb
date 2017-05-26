@@ -38,7 +38,7 @@
 //    |           WebFrame
 //    |              O
 //    |              |
-//   Page O------- LocalFrame (m_mainFrame) O-------O FrameView
+//   Page O------- LocalFrame (main_frame_) O-------O LocalFrameView
 //                   ||
 //                   ||
 //               FrameLoader
@@ -53,13 +53,13 @@
 // corresponding LocalFrame in blink.
 //
 // Oilpan: the middle objects + Page in the above diagram are Oilpan heap
-// allocated, WebView and FrameView are currently not. In terms of ownership
-// and control, the relationships stays the same, but the references from the
-// off-heap WebView to the on-heap Page is handled by a Persistent<>, not a
-// RefPtr<>. Similarly, the mutual strong references between the on-heap
-// LocalFrame and the off-heap FrameView is through a RefPtr (from LocalFrame
-// to FrameView), and a Persistent refers to the LocalFrame in the other
-// direction.
+// allocated, WebView and LocalFrameView are currently not. In terms of
+// ownership and control, the relationships stays the same, but the references
+// from the off-heap WebView to the on-heap Page is handled by a Persistent<>,
+// not a RefPtr<>. Similarly, the mutual strong references between the on-heap
+// LocalFrame and the off-heap LocalFrameView is through a RefPtr (from
+// LocalFrame to LocalFrameView), and a Persistent refers to the LocalFrame in
+// the other direction.
 //
 // From the embedder's point of view, the use of Oilpan brings no changes.
 // close() must still be used to signal that the embedder is through with the
@@ -124,8 +124,8 @@
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/ScreenOrientationController.h"
@@ -562,7 +562,7 @@ void WebLocalFrameImpl::SetSharedWorkerRepositoryClient(
 }
 
 ScrollableArea* WebLocalFrameImpl::LayoutViewportScrollableArea() const {
-  if (FrameView* view = GetFrameView())
+  if (LocalFrameView* view = GetFrameView())
     return view->LayoutViewportScrollableArea();
   return nullptr;
 }
@@ -590,7 +590,7 @@ void WebLocalFrameImpl::SetScrollOffset(const WebSize& offset) {
 }
 
 WebSize WebLocalFrameImpl::ContentsSize() const {
-  if (FrameView* view = GetFrameView())
+  if (LocalFrameView* view = GetFrameView())
     return view->ContentsSize();
   return WebSize();
 }
@@ -602,13 +602,13 @@ bool WebLocalFrameImpl::HasVisibleContent() const {
     return false;
   }
 
-  if (FrameView* view = GetFrameView())
+  if (LocalFrameView* view = GetFrameView())
     return view->VisibleWidth() > 0 && view->VisibleHeight() > 0;
   return false;
 }
 
 WebRect WebLocalFrameImpl::VisibleContentRect() const {
-  if (FrameView* view = GetFrameView())
+  if (LocalFrameView* view = GetFrameView())
     return view->VisibleContentRect();
   return WebRect();
 }
@@ -1915,7 +1915,7 @@ void WebLocalFrameImpl::DidFinish() {
 }
 
 void WebLocalFrameImpl::SetCanHaveScrollbars(bool can_have_scrollbars) {
-  if (FrameView* view = GetFrameView())
+  if (LocalFrameView* view = GetFrameView())
     view->SetCanHaveScrollbars(can_have_scrollbars);
 }
 

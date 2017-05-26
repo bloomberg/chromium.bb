@@ -4,7 +4,7 @@
 
 #include "core/paint/BackgroundImageGeometry.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTableCell.h"
@@ -509,7 +509,7 @@ void BackgroundImageGeometry::Calculate(
     if (FixedBackgroundPaintsInLocalCoordinates(obj, global_paint_flags)) {
       viewport_rect.SetLocation(LayoutPoint());
     } else {
-      if (FrameView* frame_view = obj.View()->GetFrameView())
+      if (LocalFrameView* frame_view = obj.View()->GetFrameView())
         viewport_rect.SetLocation(IntPoint(frame_view->ScrollOffsetInt()));
       // Compensate the translations created by ScrollRecorders.
       // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.

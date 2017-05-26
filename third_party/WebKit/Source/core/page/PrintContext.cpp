@@ -22,8 +22,8 @@
 
 #include <utility>
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "platform/graphics/GraphicsContext.h"

@@ -81,9 +81,9 @@
 #include "core/events/UIEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -2245,7 +2245,7 @@ void Node::CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
   IntPoint location_in_frame_zoomed;
   if (view && view->GetFrame() && view->GetFrame()->View()) {
     LocalFrame* frame = view->GetFrame();
-    FrameView* frame_view = frame->View();
+    LocalFrameView* frame_view = frame->View();
     IntPoint location_in_contents = frame_view->RootFrameToContents(
         FlooredIntPoint(mouse_event.PositionInRootFrame()));
     location_in_frame_zoomed =

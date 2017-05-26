@@ -5,7 +5,7 @@
 #include "core/page/scrolling/ViewportScrollCallback.h"
 
 #include "core/frame/BrowserControls.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
 #include "core/page/scrolling/OverscrollController.h"

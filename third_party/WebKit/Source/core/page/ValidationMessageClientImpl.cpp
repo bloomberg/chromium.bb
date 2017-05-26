@@ -28,7 +28,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/page/ChromeClient.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/wtf/CurrentTime.h"
@@ -52,7 +52,7 @@ ValidationMessageClientImpl* ValidationMessageClientImpl::Create(
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl() {}
 
-FrameView* ValidationMessageClientImpl::CurrentView() {
+LocalFrameView* ValidationMessageClientImpl::CurrentView() {
   return current_anchor_->GetDocument().View();
 }
 

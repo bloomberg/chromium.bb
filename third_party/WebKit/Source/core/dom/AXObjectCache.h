@@ -36,12 +36,12 @@ typedef unsigned AXID;
 namespace blink {
 
 class AbstractInlineTextBox;
-class FrameView;
 class HTMLCanvasElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutMenuList;
 class LineLayoutItem;
+class LocalFrameView;
 
 class CORE_EXPORT AXObjectCache
     : public GarbageCollectedFinalized<AXObjectCache> {
@@ -136,7 +136,7 @@ class CORE_EXPORT AXObjectCache
   virtual void InlineTextBoxesUpdated(LineLayoutItem) = 0;
 
   // Called when the scroll offset changes.
-  virtual void HandleScrollPositionChanged(FrameView*) = 0;
+  virtual void HandleScrollPositionChanged(LocalFrameView*) = 0;
   virtual void HandleScrollPositionChanged(LayoutObject*) = 0;
 
   // Called when scroll bars are added / removed (as the view resizes).

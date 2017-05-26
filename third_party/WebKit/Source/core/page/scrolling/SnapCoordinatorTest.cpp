@@ -4,16 +4,16 @@
 
 #include "SnapCoordinator.h"
 
+#include <gtest/gtest.h>
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
-#include <gtest/gtest.h>
-#include <memory>
 
 namespace blink {
 

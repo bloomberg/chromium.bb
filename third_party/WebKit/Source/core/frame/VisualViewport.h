@@ -59,8 +59,8 @@ class Page;
 // Represents the visual viewport the user is currently seeing the page through.
 // This class corresponds to the InnerViewport on the compositor. It is a
 // ScrollableArea; it's offset is set through the GraphicsLayer <-> CC sync
-// mechanisms. Its contents is the page's main FrameView, which corresponds to
-// the outer viewport. The inner viewport is always contained in the outer
+// mechanisms. Its contents is the page's main LocalFrameView, which corresponds
+// to the outer viewport. The inner viewport is always contained in the outer
 // viewport and can pan within it.
 //
 // When attached, the tree will look like this:
@@ -147,7 +147,7 @@ class CORE_EXPORT VisualViewport final
   // The viewport rect relative to the document origin, in partial CSS pixels.
   FloatRect VisibleRectInDocument() const;
 
-  // Convert the given rect in the main FrameView's coordinates into a rect
+  // Convert the given rect in the main LocalFrameView's coordinates into a rect
   // in the viewport. The given and returned rects are in CSS pixels, meaning
   // scale isn't applied.
   FloatPoint ViewportCSSPixelsToRootFrame(const FloatPoint&) const;
@@ -157,12 +157,12 @@ class CORE_EXPORT VisualViewport final
   IntPoint ClampDocumentOffsetAtScale(const IntPoint& offset, float scale);
 
   // FIXME: This is kind of a hack. Ideally, we would just resize the
-  // viewports to account for browser controls. However, FrameView includes much
-  // more than just scrolling so we can't simply resize it without incurring
-  // all sorts of side-effects. Until we can seperate out the scrollability
-  // aspect from FrameView, we use this method to let VisualViewport make the
-  // necessary adjustments so that we don't incorrectly clamp scroll offsets
-  // coming from the compositor. crbug.com/422328
+  // viewports to account for browser controls. However, LocalFrameView includes
+  // much more than just scrolling so we can't simply resize it without
+  // incurring all sorts of side-effects. Until we can seperate out the
+  // scrollability aspect from LocalFrameView, we use this method to let
+  // VisualViewport make the necessary adjustments so that we don't incorrectly
+  // clamp scroll offsets coming from the compositor. crbug.com/422328
   void SetBrowserControlsAdjustment(float);
   float BrowserControlsAdjustment() const;
 

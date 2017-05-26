@@ -51,9 +51,9 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
@@ -146,7 +146,7 @@ void PaintLayerScrollableArea::Dispose() {
   }
 
   if (LocalFrame* frame = Box().GetFrame()) {
-    if (FrameView* frame_view = frame->View()) {
+    if (LocalFrameView* frame_view = frame->View()) {
       frame_view->RemoveScrollableArea(this);
       frame_view->RemoveAnimatingScrollableArea(this);
     }
@@ -165,7 +165,7 @@ void PaintLayerScrollableArea::Dispose() {
   }
 
   if (LocalFrame* frame = Box().GetFrame()) {
-    if (FrameView* frame_view = frame->View())
+    if (LocalFrameView* frame_view = frame->View())
       frame_view->RemoveResizerArea(Box());
   }
 
@@ -386,7 +386,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   LocalFrame* frame = Box().GetFrame();
   DCHECK(frame);
 
-  FrameView* frame_view = Box().GetFrameView();
+  LocalFrameView* frame_view = Box().GetFrameView();
 
   TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data",
                InspectorScrollLayerEvent::Data(&Box()));
@@ -454,7 +454,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     // The scrollOffsetTranslation paint property depends on the scroll offset.
-    // (see: PaintPropertyTreeBuilder.updateProperties(FrameView&,...) and
+    // (see: PaintPropertyTreeBuilder.updateProperties(LocalFrameView&,...) and
     // PaintPropertyTreeBuilder.updateScrollAndScrollTranslation).
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
         Layer()->IsRootLayer()) {
@@ -516,7 +516,7 @@ IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
   TopDocumentRootScrollerController& controller =
       page->GlobalRootScrollerController();
 
-  // The global root scroller should be clipped by the top FrameView rather
+  // The global root scroller should be clipped by the top LocalFrameView rather
   // than it's overflow clipping box. This is to ensure that content exposed by
   // hiding the URL bar at the bottom of the screen is visible.
   if (this == controller.RootScrollerArea())
@@ -648,14 +648,14 @@ IntRect PaintLayerScrollableArea::ScrollableAreaBoundingBox() const {
 
 void PaintLayerScrollableArea::RegisterForAnimation() {
   if (LocalFrame* frame = Box().GetFrame()) {
-    if (FrameView* frame_view = frame->View())
+    if (LocalFrameView* frame_view = frame->View())
       frame_view->AddAnimatingScrollableArea(this);
   }
 }
 
 void PaintLayerScrollableArea::DeregisterForAnimation() {
   if (LocalFrame* frame = Box().GetFrame()) {
-    if (FrameView* frame_view = frame->View())
+    if (LocalFrameView* frame_view = frame->View())
       frame_view->RemoveAnimatingScrollableArea(this);
   }
 }
@@ -1573,7 +1573,7 @@ void PaintLayerScrollableArea::UpdateResizerAreaSet() {
   LocalFrame* frame = Box().GetFrame();
   if (!frame)
     return;
-  FrameView* frame_view = frame->View();
+  LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return;
   if (Box().CanResize())
@@ -1762,7 +1762,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet(bool has_overflow) {
   if (!frame)
     return;
 
-  FrameView* frame_view = frame->View();
+  LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return;
 

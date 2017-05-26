@@ -54,9 +54,9 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -846,7 +846,7 @@ void FrameSelection::NotifyTextControlOfSelectionChange(
 }
 
 // Helper function that tells whether a particular node is an element that has
-// an entire LocalFrame and FrameView, a <frame>, <iframe>, or <object>.
+// an entire LocalFrame and LocalFrameView, a <frame>, <iframe>, or <object>.
 static bool IsFrameElement(const Node* n) {
   if (!n)
     return false;
@@ -921,7 +921,7 @@ String FrameSelection::SelectedTextForClipboard() const {
 }
 
 LayoutRect FrameSelection::Bounds() const {
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view)
     return LayoutRect();
 
@@ -930,7 +930,7 @@ LayoutRect FrameSelection::Bounds() const {
 }
 
 LayoutRect FrameSelection::UnclippedBounds() const {
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   LayoutViewItem layout_view = frame_->ContentLayoutItem();
 
   if (!view || layout_view.IsNull())
@@ -1046,7 +1046,7 @@ void FrameSelection::ScheduleVisualUpdate() const {
 }
 
 void FrameSelection::ScheduleVisualUpdateForPaintInvalidationIfNeeded() const {
-  if (FrameView* frame_view = frame_->View())
+  if (LocalFrameView* frame_view = frame_->View())
     frame_view->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 

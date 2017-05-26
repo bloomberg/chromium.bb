@@ -35,9 +35,9 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -222,7 +222,7 @@ HTMLFrameOwnerElement* FindContainerForDescendant(const Document& doc,
 }
 
 // Fullscreen status affects scroll paint properties through
-// FrameView::userInputScrollable().
+// LocalFrameView::userInputScrollable().
 void SetNeedsPaintPropertyUpdate(Document* document) {
   if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ||
       RuntimeEnabledFeatures::rootLayerScrollingEnabled())
@@ -235,7 +235,7 @@ void SetNeedsPaintPropertyUpdate(Document* document) {
   if (!frame)
     return;
 
-  if (FrameView* frame_view = frame->View())
+  if (LocalFrameView* frame_view = frame->View())
     frame_view->SetNeedsPaintPropertyUpdate();
 }
 

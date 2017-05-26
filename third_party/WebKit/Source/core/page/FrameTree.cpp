@@ -22,8 +22,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameClient.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/UseCounter.h"
@@ -270,7 +270,7 @@ static void printFrames(const blink::Frame* frame,
     printIndent(indent);
   }
 
-  blink::FrameView* view =
+  blink::LocalFrameView* view =
       frame->IsLocalFrame() ? ToLocalFrame(frame)->View() : 0;
   printf("Frame %p %dx%d\n", frame, view ? view->Width() : 0,
          view ? view->Height() : 0);

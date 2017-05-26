@@ -44,10 +44,10 @@
 namespace blink {
 
 class ContainerNode;
-class DocumentFragment;
 class Document;
+class DocumentFragment;
 class Element;
-class FrameView;
+class LocalFrameView;
 class Text;
 
 class XMLParserContext : public RefCounted<XMLParserContext> {
@@ -71,7 +71,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
 
  public:
-  static XMLDocumentParser* Create(Document& document, FrameView* view) {
+  static XMLDocumentParser* Create(Document& document, LocalFrameView* view) {
     return new XMLDocumentParser(document, view);
   }
   static XMLDocumentParser* Create(DocumentFragment* fragment,
@@ -116,7 +116,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   void SetScriptStartPosition(TextPosition);
 
  private:
-  explicit XMLDocumentParser(Document&, FrameView* = 0);
+  explicit XMLDocumentParser(Document&, LocalFrameView* = 0);
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
 
   // From DocumentParser

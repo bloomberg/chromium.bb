@@ -26,8 +26,8 @@
 #include "core/css/MediaQueryListListener.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

@@ -9,7 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/URLSearchParams.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/forms/FormController.h"

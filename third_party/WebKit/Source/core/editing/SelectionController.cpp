@@ -38,8 +38,8 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -182,7 +182,7 @@ bool SelectionController::HandleSingleClick(
 
   // Don't restart the selection when the mouse is pressed on an
   // existing selection so we can allow for text dragging.
-  if (FrameView* view = frame_->View()) {
+  if (LocalFrameView* view = frame_->View()) {
     const LayoutPoint v_point = view->RootFrameToContents(
         FlooredIntPoint(event.Event().PositionInRootFrame()));
     if (!extend_selection && this->Selection().Contains(v_point)) {
@@ -867,7 +867,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
     Node* mouse_press_node,
     const LayoutPoint& drag_start_pos,
     const IntPoint& last_known_mouse_position) {
-  FrameView* view = frame_->View();
+  LocalFrameView* view = frame_->View();
   if (!view)
     return;
   LayoutViewItem layout_item = frame_->ContentLayoutItem();

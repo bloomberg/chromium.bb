@@ -28,8 +28,8 @@
 
 #include "core/events/EventDispatcher.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -178,7 +178,7 @@ void LogTouchTargetHistogram(EventTarget* event_target,
   }
 
   if (document) {
-    FrameView* view = document->View();
+    LocalFrameView* view = document->View();
     if (view && view->IsScrollable())
       result += kTouchTargetHistogramScrollableDocumentOffset;
   }

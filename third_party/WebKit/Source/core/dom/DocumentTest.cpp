@@ -35,7 +35,7 @@
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"

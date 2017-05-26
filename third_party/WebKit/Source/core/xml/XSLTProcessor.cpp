@@ -26,10 +26,10 @@
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/serializers/Serialization.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/xml/DocumentXSLT.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -78,11 +78,11 @@ Document* XSLTProcessor::CreateDocumentFromSource(
   if (frame) {
     Document* old_document = frame->GetDocument();
     // Before parsing, we need to save & detach the old document and get the new
-    // document in place. Document::shutdown() tears down the FrameView, so
+    // document in place. Document::Shutdown() tears down the LocalFrameView, so
     // remember whether or not there was one.
     bool has_view = frame->View();
     old_document->Shutdown();
-    // Re-create the FrameView if needed.
+    // Re-create the LocalFrameView if needed.
     if (has_view)
       frame->Loader().Client()->TransitionToCommittedForNewPage();
     result = frame->DomWindow()->InstallNewDocument(source_mime_type, init,

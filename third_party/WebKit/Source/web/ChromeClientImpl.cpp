@@ -43,7 +43,7 @@
 #include "core/exported/WebFileChooserCompletionImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
@@ -565,7 +565,7 @@ void ChromeClientImpl::ScheduleAnimation(
     const PlatformFrameView* platform_frame_view) {
   DCHECK(platform_frame_view->IsFrameView());
   LocalFrame& frame =
-      ToFrameView(platform_frame_view)->GetFrame().LocalFrameRoot();
+      ToLocalFrameView(platform_frame_view)->GetFrame().LocalFrameRoot();
   // If the frame is still being created, it might not yet have a WebWidget.
   // FIXME: Is this the right thing to do? Is there a way to avoid having
   // a local frame root that doesn't have a WebWidget? During initialization
@@ -581,7 +581,7 @@ IntRect ChromeClientImpl::ViewportToScreen(
   WebRect screen_rect(rect_in_viewport);
 
   DCHECK(platform_frame_view->IsFrameView());
-  const FrameView* view = ToFrameView(platform_frame_view);
+  const LocalFrameView* view = ToLocalFrameView(platform_frame_view);
   LocalFrame& frame = view->GetFrame().LocalFrameRoot();
 
   WebWidgetClient* client =

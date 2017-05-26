@@ -352,7 +352,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   WebViewBase* ViewImpl() const override;
 
-  FrameView* GetFrameView() const override {
+  LocalFrameView* GetFrameView() const override {
     return GetFrame() ? GetFrame()->View() : 0;
   }
 

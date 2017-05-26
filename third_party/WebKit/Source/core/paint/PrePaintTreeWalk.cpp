@@ -5,8 +5,8 @@
 #include "core/paint/PrePaintTreeWalk.h"
 
 #include "core/dom/DocumentLifecycle.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
@@ -60,7 +60,7 @@ struct PrePaintTreeWalkContext {
   PaintLayer* ancestor_transformed_or_root_paint_layer;
 };
 
-void PrePaintTreeWalk::Walk(FrameView& root_frame) {
+void PrePaintTreeWalk::Walk(LocalFrameView& root_frame) {
   DCHECK(root_frame.GetFrame().GetDocument()->Lifecycle().GetState() ==
          DocumentLifecycle::kInPrePaint);
 
@@ -76,7 +76,7 @@ void PrePaintTreeWalk::Walk(FrameView& root_frame) {
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();
 }
 
-void PrePaintTreeWalk::Walk(FrameView& frame_view,
+void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
                             const PrePaintTreeWalkContext& parent_context) {
   if (frame_view.ShouldThrottleRendering()) {
     // Skip the throttled frame. Will update it when it becomes unthrottled.
@@ -267,7 +267,7 @@ bool PrePaintTreeWalk::InvalidatePaintLayerOptimizationsForFragment(
 }
 
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
-    const FrameView& frame_view,
+    const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
   return frame_view.NeedsPaintPropertyUpdate() ||
          (frame_view.GetLayoutView() &&
@@ -333,7 +333,7 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
 
   if (object.IsLayoutPart()) {
     const LayoutPart& layout_part = ToLayoutPart(object);
-    FrameView* frame_view = layout_part.ChildFrameView();
+    LocalFrameView* frame_view = layout_part.ChildFrameView();
     if (frame_view) {
       if (context.tree_builder_context) {
         context.tree_builder_context->fragments[0].current.paint_offset +=

@@ -5,8 +5,8 @@
 #include "core/frame/RemoteFrameView.h"
 
 #include "core/dom/IntersectionObserverEntry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameClient.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -22,7 +22,7 @@ RemoteFrameView::RemoteFrameView(RemoteFrame* remote_frame)
 
 RemoteFrameView::~RemoteFrameView() {}
 
-FrameView* RemoteFrameView::ParentFrameView() const {
+LocalFrameView* RemoteFrameView::ParentFrameView() const {
   if (!is_attached_)
     return nullptr;
 
@@ -57,7 +57,7 @@ void RemoteFrameView::UpdateRemoteViewportIntersection() {
   if (!remote_frame_->OwnerLayoutObject())
     return;
 
-  FrameView* local_root_view =
+  LocalFrameView* local_root_view =
       ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
   if (!local_root_view)
     return;
@@ -124,7 +124,7 @@ void RemoteFrameView::FrameRectsChanged() {
   // any remote frames, if any, is accounted for by the embedder.
   IntRect new_rect = frame_rect_;
 
-  if (FrameView* parent = ParentFrameView())
+  if (LocalFrameView* parent = ParentFrameView())
     new_rect = parent->ConvertToRootFrame(parent->ContentsToFrame(new_rect));
   remote_frame_->Client()->FrameRectsChanged(new_rect);
 }
@@ -152,7 +152,7 @@ void RemoteFrameView::SetParentVisible(bool visible) {
 
 IntRect RemoteFrameView::ConvertFromRootFrame(
     const IntRect& rect_in_root_frame) const {
-  if (FrameView* parent = ParentFrameView()) {
+  if (LocalFrameView* parent = ParentFrameView()) {
     IntRect parent_rect = parent->ConvertFromRootFrame(rect_in_root_frame);
     parent_rect.SetLocation(
         parent->ConvertSelfToChild(*this, parent_rect.Location()));

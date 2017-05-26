@@ -35,8 +35,8 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
@@ -219,7 +219,7 @@ WebView* TouchActionTest::SetupTest(
   return web_view;
 }
 
-IntRect WindowClipRect(const FrameView& frame_view) {
+IntRect WindowClipRect(const LocalFrameView& frame_view) {
   LayoutRect clip_rect(
       LayoutPoint(),
       LayoutSize(frame_view.VisibleContentSize(kExcludeScrollbars)));
@@ -302,7 +302,7 @@ void TouchActionTest::RunTestOnTree(
 
       LocalFrame* main_frame =
           ToLocalFrame(WebFrame::ToCoreFrame(*web_view->MainFrame()));
-      FrameView* main_frame_view = main_frame->View();
+      LocalFrameView* main_frame_view = main_frame->View();
       IntRect visible_rect = WindowClipRect(*main_frame_view);
       ASSERT_TRUE(visible_rect.Contains(window_point))
           << failure_context_pos

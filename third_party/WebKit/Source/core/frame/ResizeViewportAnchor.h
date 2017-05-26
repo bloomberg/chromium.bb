@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class FrameView;
+class LocalFrameView;
 
 // This class scrolls the viewports to compensate for bounds clamping caused by
 // viewport size changes.
@@ -47,7 +47,7 @@ class CORE_EXPORT ResizeViewportAnchor final
  private:
   void BeginScope() { scope_count_++; }
   void EndScope();
-  FrameView* RootFrameView();
+  LocalFrameView* RootFrameView();
 
   // The amount of resize-induced clamping drift accumulated during the
   // ResizeScope.  Note that this should NOT include other kinds of scrolling

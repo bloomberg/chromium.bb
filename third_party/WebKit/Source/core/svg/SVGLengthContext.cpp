@@ -26,7 +26,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
@@ -124,7 +124,7 @@ static inline float DimensionForViewportUnit(const SVGElement* context,
     return 0;
 
   const Document& document = context->GetDocument();
-  FrameView* view = document.View();
+  LocalFrameView* view = document.View();
   if (!view)
     return 0;
 

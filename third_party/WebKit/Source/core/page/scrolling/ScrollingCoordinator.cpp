@@ -29,8 +29,8 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
@@ -206,7 +206,7 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
     touch_event_target_rects_are_dirty_ = false;
   }
 
-  FrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
   bool frame_is_scrollable =
       frame_view && frame_view->LayoutViewportScrollableArea()->IsScrollable();
   if (should_scroll_on_main_thread_dirty_ ||
@@ -259,7 +259,7 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
          child = child->Tree().NextSibling()) {
       if (!child->IsLocalFrame())
         continue;
-      FrameView* frame_view = ToLocalFrame(child)->View();
+      LocalFrameView* frame_view = ToLocalFrame(child)->View();
       if (!frame_view || frame_view->ShouldThrottleRendering())
         continue;
       if (WebLayer* scroll_layer = toWebLayer(frame_view->LayerForScrolling()))
@@ -544,11 +544,12 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     page_->GetChromeClient().RegisterViewportLayers();
 
   CompositorAnimationTimeline* timeline;
-  // FrameView::compositorAnimationTimeline() can indirectly return
+  // LocalFrameView::CompositorAnimationTimeline() can indirectly return
   // m_programmaticScrollAnimatorTimeline if it does not have its own
   // timeline.
   if (scrollable_area->IsFrameView()) {
-    timeline = ToFrameView(scrollable_area)->GetCompositorAnimationTimeline();
+    timeline =
+        ToLocalFrameView(scrollable_area)->GetCompositorAnimationTimeline();
   } else if (scrollable_area->IsPaintLayerScrollableArea()) {
     timeline = ToPaintLayerScrollableArea(scrollable_area)
                    ->GetCompositorAnimationTimeline();
@@ -917,7 +918,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
 
 void ScrollingCoordinator::LayerTreeViewInitialized(
     WebLayerTreeView& layer_tree_view,
-    FrameView* view) {
+    LocalFrameView* view) {
   if (Platform::Current()->IsThreadedAnimationEnabled() &&
       layer_tree_view.CompositorAnimationHost()) {
     std::unique_ptr<CompositorAnimationTimeline> timeline =
@@ -941,7 +942,7 @@ void ScrollingCoordinator::LayerTreeViewInitialized(
 
 void ScrollingCoordinator::WillCloseLayerTreeView(
     WebLayerTreeView& layer_tree_view,
-    FrameView* view) {
+    LocalFrameView* view) {
   if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
     view->GetCompositorAnimationHost()->RemoveTimeline(
         *view->GetCompositorAnimationTimeline());
@@ -966,7 +967,7 @@ void ScrollingCoordinator::WillBeDestroyed() {
 }
 
 bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
-    FrameView* frame_view) const {
+    LocalFrameView* frame_view) const {
   DCHECK(IsMainThread());
 
   // We currently only support composited mode.
@@ -979,16 +980,16 @@ bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
 Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     const LocalFrame* frame) const {
   Region should_handle_scroll_gesture_on_main_thread_region;
-  FrameView* frame_view = frame->View();
+  LocalFrameView* frame_view = frame->View();
   if (!frame_view || frame_view->ShouldThrottleRendering() ||
       !frame_view->IsVisible())
     return should_handle_scroll_gesture_on_main_thread_region;
 
-  if (const FrameView::ScrollableAreaSet* scrollable_areas =
+  if (const LocalFrameView::ScrollableAreaSet* scrollable_areas =
           frame_view->ScrollableAreas()) {
     for (const ScrollableArea* scrollable_area : *scrollable_areas) {
       if (scrollable_area->IsFrameView() &&
-          ToFrameView(scrollable_area)->ShouldThrottleRendering())
+          ToLocalFrameView(scrollable_area)->ShouldThrottleRendering())
         continue;
       // Composited scrollable areas can be scrolled off the main thread.
       if (scrollable_area->UsesCompositedScrolling())
@@ -1002,7 +1003,7 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
   // mark these small resizer areas as non-fast-scrollable to allow the scroll
   // gestures to be passed to main thread if they are targeting the resizer
   // area. (Resizing is done in EventHandler.cpp on main thread).
-  if (const FrameView::ResizerAreaSet* resizer_areas =
+  if (const LocalFrameView::ResizerAreaSet* resizer_areas =
           frame_view->ResizerAreas()) {
     for (const LayoutBox* box : *resizer_areas) {
       PaintLayerScrollableArea* scrollable_area =
@@ -1147,7 +1148,7 @@ void ScrollingCoordinator::ComputeTouchEventTargetRects(
 
 void ScrollingCoordinator::
     FrameViewHasBackgroundAttachmentFixedObjectsDidChange(
-        FrameView* frame_view) {
+        LocalFrameView* frame_view) {
   DCHECK(IsMainThread());
   DCHECK(page_);
 
@@ -1158,7 +1159,7 @@ void ScrollingCoordinator::
 }
 
 void ScrollingCoordinator::FrameViewFixedObjectsDidChange(
-    FrameView* frame_view) {
+    LocalFrameView* frame_view) {
   DCHECK(IsMainThread());
   DCHECK(page_);
 
@@ -1190,7 +1191,8 @@ bool ScrollingCoordinator::IsForMainFrame(
   return scrollable_area == page_->DeprecatedLocalMainFrame()->View();
 }
 
-void ScrollingCoordinator::FrameViewRootLayerDidChange(FrameView* frame_view) {
+void ScrollingCoordinator::FrameViewRootLayerDidChange(
+    LocalFrameView* frame_view) {
   DCHECK(IsMainThread());
   DCHECK(page_);
 
@@ -1201,9 +1203,9 @@ void ScrollingCoordinator::FrameViewRootLayerDidChange(FrameView* frame_view) {
 }
 
 bool ScrollingCoordinator::FrameScrollerIsDirty() const {
-  FrameView* frame_view = page_->MainFrame()->IsLocalFrame()
-                              ? page_->DeprecatedLocalMainFrame()->View()
-                              : nullptr;
+  LocalFrameView* frame_view = page_->MainFrame()->IsLocalFrame()
+                                   ? page_->DeprecatedLocalMainFrame()->View()
+                                   : nullptr;
   bool frame_is_scrollable =
       frame_view && frame_view->LayoutViewportScrollableArea()->IsScrollable();
   if (frame_is_scrollable != was_frame_scrollable_)

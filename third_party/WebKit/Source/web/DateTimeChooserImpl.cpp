@@ -31,7 +31,7 @@
 #include "web/DateTimeChooserImpl.h"
 
 #include "core/InputTypeNames.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"

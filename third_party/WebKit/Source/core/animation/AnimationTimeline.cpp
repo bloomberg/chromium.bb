@@ -34,7 +34,7 @@
 #include "core/animation/AnimationClock.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"

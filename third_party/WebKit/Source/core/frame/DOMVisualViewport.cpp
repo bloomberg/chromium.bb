@@ -27,9 +27,9 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
@@ -81,7 +81,7 @@ float DOMVisualViewport::pageLeft() const {
   if (!frame)
     return 0;
 
-  FrameView* view = frame->View();
+  LocalFrameView* view = frame->View();
   if (!view)
     return 0;
 
@@ -95,7 +95,7 @@ float DOMVisualViewport::pageTop() const {
   if (!frame)
     return 0;
 
-  FrameView* view = frame->View();
+  LocalFrameView* view = frame->View();
   if (!view)
     return 0;
 

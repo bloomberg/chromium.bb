@@ -55,10 +55,10 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/External.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/Screen.h"
 #include "core/frame/ScrollToOptions.h"
@@ -968,7 +968,7 @@ FloatSize LocalDOMWindow::GetViewportSize(
   if (!GetFrame())
     return FloatSize();
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return FloatSize();
 
@@ -1059,7 +1059,7 @@ double LocalDOMWindow::scrollX() const {
   if (!GetFrame()->GetPage()->GetSettings().GetInertVisualViewport())
     return view_->pageLeft();
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return 0;
 
@@ -1077,7 +1077,7 @@ double LocalDOMWindow::scrollY() const {
   if (!GetFrame()->GetPage()->GetSettings().GetInertVisualViewport())
     return view_->pageTop();
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return 0;
 
@@ -1206,7 +1206,7 @@ void LocalDOMWindow::scrollBy(double x,
 
   document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return;
 
@@ -1246,7 +1246,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return;
 
@@ -1275,7 +1275,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  FrameView* view = GetFrame()->View();
+  LocalFrameView* view = GetFrame()->View();
   if (!view)
     return;
 

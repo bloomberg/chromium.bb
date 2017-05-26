@@ -43,7 +43,7 @@ class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class LayoutBox;
 class LocalFrame;
-class FrameView;
+class LocalFrameView;
 class GraphicsLayer;
 class Page;
 class PaintLayer;
@@ -64,18 +64,19 @@ class CORE_EXPORT ScrollingCoordinator final
   ~ScrollingCoordinator();
   DECLARE_TRACE();
 
-  // The FrameView argument is optional, nullptr causes the the scrolling
+  // The LocalFrameView argument is optional, nullptr causes the the scrolling
   // animation host and timeline to be owned by the ScrollingCoordinator. When
-  // not null, the host and timeline are attached to the specified FrameView.
-  // A FrameView only needs to own them when it is the view for an OOPIF.
-  void LayerTreeViewInitialized(WebLayerTreeView&, FrameView*);
-  void WillCloseLayerTreeView(WebLayerTreeView&, FrameView*);
+  // not null, the host and timeline are attached to the specified
+  // LocalFrameView. A LocalFrameView only needs to own them when it is the view
+  // for an OOPIF.
+  void LayerTreeViewInitialized(WebLayerTreeView&, LocalFrameView*);
+  void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
 
   void WillBeDestroyed();
 
   // Return whether this scrolling coordinator handles scrolling for the given
   // frame view.
-  bool CoordinatesScrollingForFrameView(FrameView*) const;
+  bool CoordinatesScrollingForFrameView(LocalFrameView*) const;
 
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged();
@@ -95,13 +96,13 @@ class CORE_EXPORT ScrollingCoordinator final
 
   // Should be called whenever the slow repaint objects counter changes between
   // zero and one.
-  void FrameViewHasBackgroundAttachmentFixedObjectsDidChange(FrameView*);
+  void FrameViewHasBackgroundAttachmentFixedObjectsDidChange(LocalFrameView*);
 
   // Should be called whenever the set of fixed objects changes.
-  void FrameViewFixedObjectsDidChange(FrameView*);
+  void FrameViewFixedObjectsDidChange(LocalFrameView*);
 
   // Should be called whenever the root layer for the given frame view changes.
-  void FrameViewRootLayerDidChange(FrameView*);
+  void FrameViewRootLayerDidChange(LocalFrameView*);
 
   std::unique_ptr<WebScrollbarLayer> CreateSolidColorScrollbarLayer(
       ScrollbarOrientation,

@@ -4,11 +4,11 @@
 
 #include "core/html/HTMLImageElement.h"
 
+#include <memory>
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

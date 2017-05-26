@@ -36,9 +36,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -882,7 +882,7 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setClientHeight(visible_contents.Height())
                              .build();
 
-  FrameView* frame_view = main_frame->View();
+  LocalFrameView* frame_view = main_frame->View();
   ScrollOffset page_offset = frame_view->GetScrollableArea()->GetScrollOffset();
   float page_zoom = main_frame->PageZoomFactor();
   FloatRect visible_rect = visual_viewport.VisibleRect();

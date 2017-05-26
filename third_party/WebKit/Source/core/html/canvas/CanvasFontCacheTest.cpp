@@ -4,8 +4,9 @@
 
 #include "core/html/canvas/CanvasFontCache.h"
 
+#include <memory>
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/loader/EmptyClients.h"
@@ -13,7 +14,6 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 using ::testing::Mock;
 

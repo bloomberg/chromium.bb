@@ -7,7 +7,7 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/EmptyClients.h"

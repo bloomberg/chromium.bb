@@ -5,7 +5,7 @@
 #include "core/frame/LocalFrame.h"
 
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"

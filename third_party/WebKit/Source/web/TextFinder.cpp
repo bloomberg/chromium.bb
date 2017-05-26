@@ -40,7 +40,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextAutosizer.h"

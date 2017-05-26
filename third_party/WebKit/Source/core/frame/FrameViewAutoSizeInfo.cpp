@@ -4,8 +4,8 @@
 
 #include "core/frame/FrameViewAutoSizeInfo.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -13,7 +13,7 @@
 
 namespace blink {
 
-FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(FrameView* view)
+FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(LocalFrameView* view)
     : frame_view_(view), in_auto_size_(false), did_run_autosize_(false) {
   DCHECK(frame_view_);
 }

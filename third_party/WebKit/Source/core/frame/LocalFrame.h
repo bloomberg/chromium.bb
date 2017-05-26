@@ -59,7 +59,6 @@ class FetchParameters;
 class FloatSize;
 class FrameConsole;
 class FrameSelection;
-class FrameView;
 class InputMethodController;
 class CoreProbeSink;
 class InterfaceProvider;
@@ -69,6 +68,7 @@ class IntSize;
 class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;
+class LocalFrameView;
 class LocalWindowProxy;
 class LocalFrameClient;
 class NavigationScheduler;
@@ -100,7 +100,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
                             InterfaceRegistry* = nullptr);
 
   void Init();
-  void SetView(FrameView*);
+  void SetView(LocalFrameView*);
   void CreateView(const IntSize&,
                   const Color&,
                   ScrollbarMode = kScrollbarAuto,
@@ -134,7 +134,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   LocalWindowProxy* WindowProxy(DOMWrapperWorld&);
   LocalDOMWindow* DomWindow() const;
   void SetDOMWindow(LocalDOMWindow*);
-  FrameView* View() const;
+  LocalFrameView* View() const;
   Document* GetDocument() const;
   void SetPagePopupOwner(Element&);
   Element* PagePopupOwner() const { return page_popup_owner_.Get(); }
@@ -277,7 +277,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Cleared by LocalFrame::detach(), so as to keep the observable lifespan
   // of LocalFrame::view().
-  Member<FrameView> view_;
+  Member<LocalFrameView> view_;
   // Usually 0. Non-null if this is the top frame of PagePopup.
   Member<Element> page_popup_owner_;
 
@@ -312,7 +312,7 @@ inline NavigationScheduler& LocalFrame::GetNavigationScheduler() const {
   return *navigation_scheduler_.Get();
 }
 
-inline FrameView* LocalFrame::View() const {
+inline LocalFrameView* LocalFrame::View() const {
   return view_.Get();
 }
 

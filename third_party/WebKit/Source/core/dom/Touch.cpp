@@ -25,8 +25,8 @@
 
 #include "core/dom/Touch.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "platform/geometry/FloatPoint.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 static FloatPoint ContentsOffset(LocalFrame* frame) {
   if (!frame)
     return FloatPoint();
-  FrameView* frame_view = frame->View();
+  LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return FloatPoint();
   float scale = 1.0f / frame->PageZoomFactor();

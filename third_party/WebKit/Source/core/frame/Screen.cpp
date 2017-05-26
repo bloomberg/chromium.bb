@@ -28,8 +28,8 @@
 
 #include "core/frame/Screen.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

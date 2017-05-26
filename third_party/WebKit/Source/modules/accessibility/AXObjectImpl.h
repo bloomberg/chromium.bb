@@ -49,10 +49,10 @@ namespace blink {
 class AXObjectImpl;
 class AXObjectCacheImpl;
 class Element;
-class FrameView;
 class IntPoint;
-class Node;
 class LayoutObject;
+class LocalFrameView;
+class Node;
 class ScrollableArea;
 
 enum class AOMBooleanProperty;
@@ -740,7 +740,7 @@ class MODULES_EXPORT AXObjectImpl
   virtual Element* GetElement() const;  // Same as GetNode, if it's an Element.
   virtual LayoutObject* GetLayoutObject() const { return nullptr; }
   virtual Document* GetDocument() const;
-  virtual FrameView* DocumentFrameView() const;
+  virtual LocalFrameView* DocumentFrameView() const;
   virtual Element* AnchorElement() const { return nullptr; }
   virtual Element* ActionElement() const { return nullptr; }
   String Language() const;

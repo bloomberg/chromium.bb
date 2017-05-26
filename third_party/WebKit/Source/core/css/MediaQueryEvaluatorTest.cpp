@@ -9,7 +9,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/MediaValuesInitialViewport.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"

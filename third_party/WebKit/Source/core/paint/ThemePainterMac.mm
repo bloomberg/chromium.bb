@@ -20,7 +20,11 @@
 
 #import "core/paint/ThemePainterMac.h"
 
-#import "core/frame/FrameView.h"
+#import <AvailabilityMacros.h>
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
+#import <math.h>
+#import "core/frame/LocalFrameView.h"
 #import "core/layout/LayoutProgress.h"
 #import "core/layout/LayoutThemeMac.h"
 #import "core/layout/LayoutView.h"
@@ -36,10 +40,6 @@
 #import "platform/mac/LocalCurrentGraphicsContext.h"
 #import "platform/mac/ThemeMac.h"
 #import "platform/mac/WebCoreNSCellExtras.h"
-#import <AvailabilityMacros.h>
-#import <Carbon/Carbon.h>
-#import <Cocoa/Cocoa.h>
-#import <math.h>
 
 // The methods in this file are specific to the Mac OS X platform.
 

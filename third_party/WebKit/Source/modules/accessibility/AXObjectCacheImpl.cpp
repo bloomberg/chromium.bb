@@ -34,8 +34,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -1197,7 +1197,8 @@ void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
   PostPlatformNotification(obj, kAXScrolledToAnchor);
 }
 
-void AXObjectCacheImpl::HandleScrollPositionChanged(FrameView* frame_view) {
+void AXObjectCacheImpl::HandleScrollPositionChanged(
+    LocalFrameView* frame_view) {
   AXObjectImpl* target_ax_object =
       GetOrCreate(frame_view->GetFrame().GetDocument());
   PostPlatformNotification(target_ax_object, kAXScrollPositionChanged);

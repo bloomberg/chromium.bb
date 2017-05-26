@@ -32,9 +32,9 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -454,7 +454,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
                                                         const KURL& url,
                                                         PaintCanvas* canvas) {
   DCHECK(page_);
-  FrameView* view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* view = ToLocalFrame(page_->MainFrame())->View();
   view->Resize(ContainerSize());
 
   // Always call processUrlFragment, even if the url is empty, because
@@ -599,7 +599,7 @@ void SVGImage::ServiceAnimations(double monotonic_animation_start_time) {
   // actually generating painted output, not only for performance reasons,
   // but to preserve correct coherence of the cache of the output with
   // the needsRepaint bits of the PaintLayers in the image.
-  FrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
   frame_view->UpdateAllLifecyclePhasesExceptPaint();
 
   // For SPv2 we run updateAnimations after the paint phase, but per above
@@ -738,7 +738,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
       DCHECK(!frame_client_);
       frame_client_ = new SVGImageLocalFrameClient(this);
       frame = LocalFrame::Create(frame_client_, *page, 0);
-      frame->SetView(FrameView::Create(*frame));
+      frame->SetView(LocalFrameView::Create(*frame));
       frame->Init();
     }
 

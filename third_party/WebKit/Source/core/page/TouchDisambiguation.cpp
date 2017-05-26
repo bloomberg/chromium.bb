@@ -30,18 +30,18 @@
 
 #include "core/page/TouchDisambiguation.h"
 
+#include <algorithm>
+#include <cmath>
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlock.h"
-#include <algorithm>
-#include <cmath>
 
 namespace blink {
 

@@ -14,9 +14,9 @@
 
 namespace blink {
 
-class FrameView;
 class LayoutBoxModelObject;
 class LayoutObject;
+class LocalFrameView;
 class ObjectPaintProperties;
 
 // The context for PaintPropertyTreeBuilder.
@@ -127,7 +127,7 @@ class PaintPropertyTreeBuilder {
  public:
   // Update the paint properties for a frame and ensure the context is up to
   // date.
-  void UpdateProperties(FrameView&, PaintPropertyTreeBuilderContext&);
+  void UpdateProperties(LocalFrameView&, PaintPropertyTreeBuilderContext&);
 
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date. Also

@@ -109,7 +109,6 @@ class FloatQuad;
 class FloatRect;
 class FormController;
 class FrameRequestCallback;
-class FrameView;
 class HTMLAllCollection;
 class HTMLBodyElement;
 class HTMLCollection;
@@ -132,6 +131,7 @@ class LiveNodeListBase;
 class LocalDOMWindow;
 class Locale;
 class LocalFrame;
+class LocalFrameView;
 class Location;
 class MediaQueryListListener;
 class MediaQueryMatcher;
@@ -478,7 +478,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentState* FormElementsState() const;
   void SetStateForNewFormElements(const Vector<String>&);
 
-  FrameView* View() const;                         // can be null
+  LocalFrameView* View() const;                    // can be null
   LocalFrame* GetFrame() const { return frame_; }  // can be null
   Page* GetPage() const;                           // can be null
   Settings* GetSettings() const;                   // can be null

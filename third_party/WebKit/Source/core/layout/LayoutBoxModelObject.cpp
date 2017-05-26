@@ -25,8 +25,8 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBlock.h"
@@ -248,7 +248,7 @@ void LayoutBoxModelObject::WillBeDestroyed() {
     // Don't use this->view() because the document's layoutView has been set to
     // 0 during destruction.
     if (LocalFrame* frame = this->GetFrame()) {
-      if (FrameView* frame_view = frame->View()) {
+      if (LocalFrameView* frame_view = frame->View()) {
         if (Style()->HasViewportConstrainedPosition())
           frame_view->RemoveViewportConstrainedObject(*this);
       }
@@ -431,7 +431,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (FrameView* frame_view = View()->GetFrameView()) {
+  if (LocalFrameView* frame_view = View()->GetFrameView()) {
     bool new_style_is_viewport_constained =
         Style()->GetPosition() == EPosition::kFixed;
     bool old_style_is_viewport_constrained =

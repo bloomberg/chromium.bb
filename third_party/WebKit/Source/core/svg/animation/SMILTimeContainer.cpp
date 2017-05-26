@@ -25,16 +25,16 @@
 
 #include "core/svg/animation/SMILTimeContainer.h"
 
+#include <algorithm>
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTime.h"
 #include "core/svg/animation/SVGSMILElement.h"
-#include <algorithm>
 
 namespace blink {
 

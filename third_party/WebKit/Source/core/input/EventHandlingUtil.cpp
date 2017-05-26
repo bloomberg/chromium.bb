@@ -4,8 +4,8 @@
 
 #include "core/input/EventHandlingUtil.h"
 
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -107,7 +107,7 @@ ContainerNode* ParentForClickEvent(const Node& node) {
 
 LayoutPoint ContentPointFromRootFrame(LocalFrame* frame,
                                       const IntPoint& point_in_root_frame) {
-  FrameView* view = frame->View();
+  LocalFrameView* view = frame->View();
   // FIXME: Is it really OK to use the wrong coordinates here when view is 0?
   // Historically the code would just crash; this is clearly no worse than that.
   return view ? view->RootFrameToContents(point_in_root_frame)

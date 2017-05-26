@@ -4,11 +4,11 @@
 
 #include "core/events/PointerEventFactory.h"
 
-#include "core/frame/FrameView.h"
+#include <gtest/gtest.h>
+#include <climits>
+#include "core/frame/LocalFrameView.h"
 #include "core/page/Page.h"
 #include "public/platform/WebPointerProperties.h"
-#include <climits>
-#include <gtest/gtest.h>
 
 namespace blink {
 

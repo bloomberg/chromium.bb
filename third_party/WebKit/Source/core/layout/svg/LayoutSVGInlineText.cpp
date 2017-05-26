@@ -28,7 +28,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"

@@ -29,8 +29,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/probe/CoreProbes.h"
@@ -201,7 +201,7 @@ void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
   if (!document_)
     return;
 
-  if (FrameView* frame_view = document_->View())
+  if (LocalFrameView* frame_view = document_->View())
     frame_view->ScheduleAnimation();
 }
 

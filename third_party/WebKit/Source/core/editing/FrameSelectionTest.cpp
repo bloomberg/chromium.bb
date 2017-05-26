@@ -12,7 +12,7 @@
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameCaret.h"
 #include "core/editing/SelectionController.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBlock.h"
@@ -106,7 +106,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   int start_count = LayoutCount();
   {
     // To force layout in next updateLayout calling, widen view.
-    FrameView& frame_view = GetDummyPageHolder().GetFrameView();
+    LocalFrameView& frame_view = GetDummyPageHolder().GetFrameView();
     IntRect frame_rect = frame_view.FrameRect();
     frame_rect.SetWidth(frame_rect.Width() + 1);
     frame_rect.SetHeight(frame_rect.Height() + 1);

@@ -7,7 +7,7 @@
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/commands/TypingCommand.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/FocusController.h"
 #include "platform/LayoutTestSupport.h"

@@ -9,7 +9,7 @@
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
 #include "core/exported/WebViewBase.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"

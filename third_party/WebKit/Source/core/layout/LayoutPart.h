@@ -50,11 +50,11 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   void Ref() { ++ref_count_; }
   void Deref();
 
-  // LayoutPart::ChildFrameView returns the FrameView associated with
+  // LayoutPart::ChildFrameView returns the LocalFrameView associated with
   // the current Node, if Node is HTMLFrameOwnerElement.
   // This is different to LayoutObject::GetFrameView which returns
-  // the FrameView associated with the root Document Frame.
-  FrameView* ChildFrameView() const;
+  // the LocalFrameView associated with the root Document Frame.
+  LocalFrameView* ChildFrameView() const;
   PluginView* Plugin() const;
   FrameOrPlugin* GetFrameOrPlugin() const;
 

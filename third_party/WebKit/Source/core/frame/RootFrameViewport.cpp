@@ -4,7 +4,7 @@
 
 #include "core/frame/RootFrameViewport.h"
 
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/ScrollAnchor.h"
 #include "platform/geometry/DoubleRect.h"
@@ -38,12 +38,12 @@ ScrollableArea& RootFrameViewport::LayoutViewport() const {
 }
 
 LayoutRect RootFrameViewport::RootContentsToLayoutViewportContents(
-    FrameView& root_frame_view,
+    LocalFrameView& root_frame_view,
     const LayoutRect& rect) const {
   LayoutRect ret(rect);
 
-  // If the root FrameView is the layout viewport then coordinates in the
-  // root FrameView's content space are already in the layout viewport's
+  // If the root LocalFrameView is the layout viewport then coordinates in the
+  // root LocalFrameView's content space are already in the layout viewport's
   // content space.
   if (root_frame_view.LayoutViewportScrollableArea() == &LayoutViewport())
     return ret;
@@ -72,11 +72,11 @@ void RootFrameViewport::RestoreToAnchor(const ScrollOffset& target_offset) {
 
   delta = target_offset - GetScrollOffset();
 
-  // Since the main thread FrameView has integer scroll offsets, scroll it to
-  // the next pixel and then we'll scroll the visual viewport again to
+  // Since the main thread LocalFrameView has integer scroll offsets, scroll it
+  // to the next pixel and then we'll scroll the visual viewport again to
   // compensate for the sub-pixel offset. We need this "overscroll" to ensure
   // the pixel of which we want to be partially in appears fully inside the
-  // FrameView since the VisualViewport is bounded by the FrameView.
+  // LocalFrameView since the VisualViewport is bounded by the LocalFrameView.
   IntSize layout_delta = IntSize(
       delta.Width() < 0 ? floor(delta.Width()) : ceil(delta.Width()),
       delta.Height() < 0 ? floor(delta.Height()) : ceil(delta.Height()));

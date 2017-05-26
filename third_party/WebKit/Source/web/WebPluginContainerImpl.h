@@ -51,6 +51,7 @@ class HTMLFrameOwnerElement;
 class HTMLPlugInElement;
 class IntRect;
 class KeyboardEvent;
+class LocalFrameView;
 class MouseEvent;
 class ResourceError;
 class ResourceResponse;
@@ -186,7 +187,7 @@ class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void Dispose() override;
 
  private:
-  FrameView* ParentFrameView() const;
+  LocalFrameView* ParentFrameView() const;
   // Sets |windowRect| to the content rect of the plugin in screen space.
   // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to
   // the visible screen of the root frame, in local space of the plugin.

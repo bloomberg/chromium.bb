@@ -8,7 +8,7 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/events/GestureEvent.h"
 #include "core/frame/BrowserControls.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
@@ -455,7 +455,7 @@ WebInputEventResult ScrollManager::PassScrollGestureEvent(
       !layout_object->IsLayoutPart())
     return WebInputEventResult::kNotHandled;
 
-  FrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
+  LocalFrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
 
   if (!frame_view)
     return WebInputEventResult::kNotHandled;
@@ -494,7 +494,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
     if (document->GetLayoutViewItem().IsNull())
       return WebInputEventResult::kNotHandled;
 
-    FrameView* view = frame_->View();
+    LocalFrameView* view = frame_->View();
     LayoutPoint view_point = view->RootFrameToContents(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     HitTestRequest request(HitTestRequest::kReadOnly);

@@ -6,8 +6,8 @@
 
 #include "core/editing/Editor.h"
 #include "core/editing/spellcheck/SpellCheckTestBase.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
 
@@ -22,7 +22,7 @@ class SpellCheckerTest : public SpellCheckTestBase {
 };
 
 void SpellCheckerTest::ForceLayout() {
-  FrameView& frame_view = Page().GetFrameView();
+  LocalFrameView& frame_view = Page().GetFrameView();
   IntRect frame_rect = frame_view.FrameRect();
   frame_rect.SetWidth(frame_rect.Width() + 1);
   frame_rect.SetHeight(frame_rect.Height() + 1);

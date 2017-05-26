@@ -35,8 +35,8 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -1384,14 +1384,14 @@ Element* AXObjectImpl::GetElement() const {
 }
 
 Document* AXObjectImpl::GetDocument() const {
-  FrameView* frame_view = DocumentFrameView();
+  LocalFrameView* frame_view = DocumentFrameView();
   if (!frame_view)
     return 0;
 
   return frame_view->GetFrame().GetDocument();
 }
 
-FrameView* AXObjectImpl::DocumentFrameView() const {
+LocalFrameView* AXObjectImpl::DocumentFrameView() const {
   const AXObjectImpl* object = this;
   while (object && !object->IsAXLayoutObject())
     object = object->ParentObject();

@@ -34,7 +34,7 @@
 #include "core/frame/DOMTimer.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
@@ -336,7 +336,7 @@ void Page::SetDefaultPageScaleLimits(float min_scale, float max_scale) {
   if (!MainFrame() || !MainFrame()->IsLocalFrame())
     return;
 
-  FrameView* root_view = DeprecatedLocalMainFrame()->View();
+  LocalFrameView* root_view = DeprecatedLocalMainFrame()->View();
 
   if (!root_view)
     return;
@@ -354,7 +354,7 @@ void Page::SetUserAgentPageScaleConstraints(
   if (!MainFrame() || !MainFrame()->IsLocalFrame())
     return;
 
-  FrameView* root_view = DeprecatedLocalMainFrame()->View();
+  LocalFrameView* root_view = DeprecatedLocalMainFrame()->View();
 
   if (!root_view)
     return;
@@ -569,7 +569,7 @@ void Page::UpdateAcceleratedCompositingSettings() {
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
-    if (FrameView* view = ToLocalFrame(frame)->View())
+    if (LocalFrameView* view = ToLocalFrame(frame)->View())
       view->UpdateAcceleratedCompositingSettings();
   }
 }
@@ -635,13 +635,13 @@ DEFINE_TRACE(Page) {
 }
 
 void Page::LayerTreeViewInitialized(WebLayerTreeView& layer_tree_view,
-                                    FrameView* view) {
+                                    LocalFrameView* view) {
   if (GetScrollingCoordinator())
     GetScrollingCoordinator()->LayerTreeViewInitialized(layer_tree_view, view);
 }
 
 void Page::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view,
-                                  FrameView* view) {
+                                  LocalFrameView* view) {
   if (scrolling_coordinator_)
     scrolling_coordinator_->WillCloseLayerTreeView(layer_tree_view, view);
 }

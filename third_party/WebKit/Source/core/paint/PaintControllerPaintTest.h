@@ -5,7 +5,8 @@
 #ifndef PaintControllerPaintTest_h
 #define PaintControllerPaintTest_h
 
-#include "core/frame/FrameView.h"
+#include <gtest/gtest.h>
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
@@ -13,7 +14,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

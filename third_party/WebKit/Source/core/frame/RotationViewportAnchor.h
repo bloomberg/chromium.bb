@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class FrameView;
+class LocalFrameView;
 class Node;
 class PageScaleConstraintsSet;
 class ScrollableArea;
@@ -32,7 +32,7 @@ class CORE_EXPORT RotationViewportAnchor {
   STACK_ALLOCATED();
 
  public:
-  RotationViewportAnchor(FrameView& root_frame_view,
+  RotationViewportAnchor(LocalFrameView& root_frame_view,
                          VisualViewport&,
                          const FloatSize& anchor_in_inner_view_coords,
                          PageScaleConstraintsSet&);
@@ -49,7 +49,7 @@ class CORE_EXPORT RotationViewportAnchor {
                       FloatPoint& visual_viewport_offset) const;
   ScrollableArea& LayoutViewport() const;
 
-  Member<FrameView> root_frame_view_;
+  Member<LocalFrameView> root_frame_view_;
   Member<VisualViewport> visual_viewport_;
 
   float old_page_scale_factor_;
