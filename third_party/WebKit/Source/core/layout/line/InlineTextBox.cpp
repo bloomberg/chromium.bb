@@ -490,7 +490,7 @@ bool InlineTextBox::GetEmphasisMarkPosition(
     TextEmphasisPosition& emphasis_position) const {
   // This function returns true if there are text emphasis marks and they are
   // suppressed by ruby text.
-  if (style.GetTextEmphasisMark() == kTextEmphasisMarkNone)
+  if (style.GetTextEmphasisMark() == TextEmphasisMark::kNone)
     return false;
 
   emphasis_position = style.GetTextEmphasisPosition();

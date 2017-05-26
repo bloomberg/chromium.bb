@@ -1626,24 +1626,24 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisMark mark)
     : CSSValue(kIdentifierClass) {
   switch (mark) {
-    case kTextEmphasisMarkDot:
+    case TextEmphasisMark::kDot:
       value_id_ = CSSValueDot;
       break;
-    case kTextEmphasisMarkCircle:
+    case TextEmphasisMark::kCircle:
       value_id_ = CSSValueCircle;
       break;
-    case kTextEmphasisMarkDoubleCircle:
+    case TextEmphasisMark::kDoubleCircle:
       value_id_ = CSSValueDoubleCircle;
       break;
-    case kTextEmphasisMarkTriangle:
+    case TextEmphasisMark::kTriangle:
       value_id_ = CSSValueTriangle;
       break;
-    case kTextEmphasisMarkSesame:
+    case TextEmphasisMark::kSesame:
       value_id_ = CSSValueSesame;
       break;
-    case kTextEmphasisMarkNone:
-    case kTextEmphasisMarkAuto:
-    case kTextEmphasisMarkCustom:
+    case TextEmphasisMark::kNone:
+    case TextEmphasisMark::kAuto:
+    case TextEmphasisMark::kCustom:
       NOTREACHED();
       value_id_ = CSSValueNone;
       break;
@@ -1654,23 +1654,23 @@ template <>
 inline TextEmphasisMark CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
-      return kTextEmphasisMarkNone;
+      return TextEmphasisMark::kNone;
     case CSSValueDot:
-      return kTextEmphasisMarkDot;
+      return TextEmphasisMark::kDot;
     case CSSValueCircle:
-      return kTextEmphasisMarkCircle;
+      return TextEmphasisMark::kCircle;
     case CSSValueDoubleCircle:
-      return kTextEmphasisMarkDoubleCircle;
+      return TextEmphasisMark::kDoubleCircle;
     case CSSValueTriangle:
-      return kTextEmphasisMarkTriangle;
+      return TextEmphasisMark::kTriangle;
     case CSSValueSesame:
-      return kTextEmphasisMarkSesame;
+      return TextEmphasisMark::kSesame;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextEmphasisMarkNone;
+  return TextEmphasisMark::kNone;
 }
 
 template <>

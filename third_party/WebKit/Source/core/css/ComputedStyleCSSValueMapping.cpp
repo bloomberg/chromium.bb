@@ -2856,18 +2856,18 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(style.GetTextEmphasisPosition());
     case CSSPropertyWebkitTextEmphasisStyle:
       switch (style.GetTextEmphasisMark()) {
-        case kTextEmphasisMarkNone:
+        case TextEmphasisMark::kNone:
           return CSSIdentifierValue::Create(CSSValueNone);
-        case kTextEmphasisMarkCustom:
+        case TextEmphasisMark::kCustom:
           return CSSStringValue::Create(style.TextEmphasisCustomMark());
-        case kTextEmphasisMarkAuto:
+        case TextEmphasisMark::kAuto:
           NOTREACHED();
         // Fall through
-        case kTextEmphasisMarkDot:
-        case kTextEmphasisMarkCircle:
-        case kTextEmphasisMarkDoubleCircle:
-        case kTextEmphasisMarkTriangle:
-        case kTextEmphasisMarkSesame: {
+        case TextEmphasisMark::kDot:
+        case TextEmphasisMark::kCircle:
+        case TextEmphasisMark::kDoubleCircle:
+        case TextEmphasisMark::kTriangle:
+        case TextEmphasisMark::kSesame: {
           CSSValueList* list = CSSValueList::CreateSpaceSeparated();
           list->Append(
               *CSSIdentifierValue::Create(style.GetTextEmphasisFill()));
