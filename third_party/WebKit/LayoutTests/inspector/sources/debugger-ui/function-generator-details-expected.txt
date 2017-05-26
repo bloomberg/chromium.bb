@@ -44,7 +44,6 @@ iterClosed: type = object, subtype = generator
 lineNumber = 13
 columnNumber = 13
 script is valid: yes
-[[Scopes]] = Scopes[2]
 
 Running: testIterObjGenerator
 iterObjGenerator: type = object, subtype = generator
