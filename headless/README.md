@@ -131,6 +131,7 @@ Bug tracker: [Internals>Headless](https://bugs.chromium.org/p/chromium/issues/li
 
 [File a new bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Internals%3EHeadless) ([bit.ly/2pP6SBb](https://bit.ly/2pP6SBb))
 
+* [Runtime headless mode on Windows OS](https://docs.google.com/document/d/12c3bSEbmpeGevuyFHcvEKw9br6CkFJSS2saQynBjIzE)
 * [BeginFrame sequence numbers + acknowledgements](https://docs.google.com/document/d/1nxaunQ0cYWxhtS6Zzfwa99nae74F7gxanbuT5JRpI6Y/edit#)
 * [Deterministic page loading for Blink](https://docs.google.com/document/d/19s2g4fPP9p9qmMZvwPX8uDGbb-39rgR9k56B4B-ueG8/edit#)
 * [Crash dumps for Headless Chrome](https://docs.google.com/document/d/1l6AGOOBLk99PaAKoZQW_DVhM8FQ6Fut27lD938CRbTM/edit)
