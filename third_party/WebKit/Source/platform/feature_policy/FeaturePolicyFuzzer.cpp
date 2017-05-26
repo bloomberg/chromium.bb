@@ -14,14 +14,12 @@
 #include "platform/wtf/text/WTFString.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static blink::BlinkFuzzerTestSupport test_support =
+      blink::BlinkFuzzerTestSupport();
   WTF::Vector<WTF::String> messages;
+  // TODO(csharrison): Be smarter about parsing this origin for performance.
   RefPtr<blink::SecurityOrigin> origin =
       blink::SecurityOrigin::CreateFromString("https://example.com/");
   blink::ParseFeaturePolicy(WTF::String(data, size), origin.Get(), &messages);
-  return 0;
-}
-
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  blink::InitializeBlinkFuzzTest(argc, argv);
   return 0;
 }

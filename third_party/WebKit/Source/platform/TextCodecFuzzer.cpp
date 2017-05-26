@@ -25,13 +25,10 @@ WTF::UnencodableHandling kUnencodableHandlingOptions[] = {
     WTF::kCSSEncodedEntitiesForUnencodables};
 
 class TextCodecFuzzHarness {};
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  InitializeBlinkFuzzTest(argc, argv);
-  return 0;
-}
 
 // Fuzzer for WTF::TextCodec.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static BlinkFuzzerTestSupport test_support = BlinkFuzzerTestSupport();
   // The fuzzer picks 3 bytes off the end of the data to initialize metadata, so
   // abort if the input is smaller than that.
   if (size < 3)
