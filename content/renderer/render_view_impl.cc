@@ -1279,7 +1279,8 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
     if (focused_frame) {
       input_handler_->set_handling_input_event(true);
       blink::WebRange initial_range = focused_frame->SelectionRange();
-      did_select = focused_frame->SelectWordAroundCaret();
+      if (!initial_range.IsNull())
+        did_select = focused_frame->SelectWordAroundCaret();
       if (did_select) {
         blink::WebRange adjusted_range = focused_frame->SelectionRange();
         start_adjust =
