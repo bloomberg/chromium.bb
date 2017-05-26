@@ -69,68 +69,65 @@ public class NQETest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testNotEnabled() throws Exception {
-        ExperimentalCronetEngine.Builder mCronetEngineBuilder =
+        ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
+        final ExperimentalCronetEngine cronetEngine = cronetEngineBuilder.build();
         Executor networkQualityExecutor = Executors.newSingleThreadExecutor();
         TestNetworkQualityRttListener rttListener =
                 new TestNetworkQualityRttListener(networkQualityExecutor);
         TestNetworkQualityThroughputListener throughputListener =
                 new TestNetworkQualityThroughputListener(networkQualityExecutor);
         try {
-            testFramework.mCronetEngine.addRttListener(rttListener);
+            cronetEngine.addRttListener(rttListener);
             fail("Should throw an exception.");
         } catch (IllegalStateException e) {
         }
         try {
-            testFramework.mCronetEngine.addThroughputListener(throughputListener);
+            cronetEngine.addThroughputListener(throughputListener);
             fail("Should throw an exception.");
         } catch (IllegalStateException e) {
         }
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
-                mUrl, callback, callback.getExecutor());
+        UrlRequest.Builder builder =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
 
         urlRequest.start();
         callback.blockForDone();
         assertEquals(0, rttListener.rttObservationCount());
         assertEquals(0, throughputListener.throughputObservationCount());
-        testFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testListenerRemoved() throws Exception {
-        ExperimentalCronetEngine.Builder mCronetEngineBuilder =
+        ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
         TestExecutor networkQualityExecutor = new TestExecutor();
         TestNetworkQualityRttListener rttListener =
                 new TestNetworkQualityRttListener(networkQualityExecutor);
-        mCronetEngineBuilder.enableNetworkQualityEstimator(true);
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
-        testFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true, false);
+        cronetEngineBuilder.enableNetworkQualityEstimator(true);
+        final ExperimentalCronetEngine cronetEngine = cronetEngineBuilder.build();
+        cronetEngine.configureNetworkQualityEstimatorForTesting(true, true, false);
 
-        testFramework.mCronetEngine.addRttListener(rttListener);
-        testFramework.mCronetEngine.removeRttListener(rttListener);
+        cronetEngine.addRttListener(rttListener);
+        cronetEngine.removeRttListener(rttListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
-                mUrl, callback, callback.getExecutor());
+        UrlRequest.Builder builder =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
         networkQualityExecutor.runAllTasks();
         assertEquals(0, rttListener.rttObservationCount());
-        testFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
     }
 
     // Returns whether a file contains a particular string.
     @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
     private boolean fileContainsString(String filename, String content) throws IOException {
-        File file =
-                new File(CronetTestFramework.getTestStorage(getContext()) + "/prefs/" + filename);
+        File file = new File(getTestStorage(getContext()) + "/prefs/" + filename);
         FileInputStream fileInputStream = new FileInputStream(file);
         byte[] data = new byte[(int) file.length()];
         fileInputStream.read(data);
@@ -142,7 +139,7 @@ public class NQETest extends CronetTestBase {
     @Feature({"Cronet"})
     @DisabledTest(message = "Disabled due to flaky assert. See crbug.com/710626")
     public void testQuicDisabled() throws Exception {
-        ExperimentalCronetEngine.Builder mCronetEngineBuilder =
+        ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
         assert RttThroughputValues.INVALID_RTT_THROUGHPUT < 0;
         Executor listenersExecutor = Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
@@ -150,15 +147,13 @@ public class NQETest extends CronetTestBase {
                 new TestNetworkQualityRttListener(listenersExecutor);
         TestNetworkQualityThroughputListener throughputListener =
                 new TestNetworkQualityThroughputListener(listenersExecutor);
-        mCronetEngineBuilder.enableNetworkQualityEstimator(true).enableHttp2(true).enableQuic(
-                false);
-        mCronetEngineBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
-        testFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true, true);
+        cronetEngineBuilder.enableNetworkQualityEstimator(true).enableHttp2(true).enableQuic(false);
+        cronetEngineBuilder.setStoragePath(getTestStorage(getContext()));
+        final ExperimentalCronetEngine cronetEngine = cronetEngineBuilder.build();
+        cronetEngine.configureNetworkQualityEstimatorForTesting(true, true, true);
 
-        testFramework.mCronetEngine.addRttListener(rttListener);
-        testFramework.mCronetEngine.addThroughputListener(throughputListener);
+        cronetEngine.addRttListener(rttListener);
+        cronetEngine.addThroughputListener(throughputListener);
 
         HistogramDelta writeCountHistogram = new HistogramDelta("NQE.Prefs.WriteCount", 1);
         assertEquals(0, writeCountHistogram.getDelta()); // Sanity check.
@@ -167,8 +162,8 @@ public class NQETest extends CronetTestBase {
         assertEquals(0, readCountHistogram.getDelta()); // Sanity check.
 
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
-                mUrl, callback, callback.getExecutor());
+        UrlRequest.Builder builder =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
@@ -205,14 +200,14 @@ public class NQETest extends CronetTestBase {
 
         // Verify that effective connection type callback is received and
         // effective connection type is correctly set.
-        assertTrue(testFramework.mCronetEngine.getEffectiveConnectionType()
-                != EffectiveConnectionType.TYPE_UNKNOWN);
+        assertTrue(
+                cronetEngine.getEffectiveConnectionType() != EffectiveConnectionType.TYPE_UNKNOWN);
 
         // Verify that the HTTP RTT, transport RTT and downstream throughput
         // estimates are available.
-        assertTrue(testFramework.mCronetEngine.getHttpRttMs() >= 0);
-        assertTrue(testFramework.mCronetEngine.getTransportRttMs() >= 0);
-        assertTrue(testFramework.mCronetEngine.getDownstreamThroughputKbps() >= 0);
+        assertTrue(cronetEngine.getHttpRttMs() >= 0);
+        assertTrue(cronetEngine.getTransportRttMs() >= 0);
+        assertTrue(cronetEngine.getDownstreamThroughputKbps() >= 0);
 
         // Verify that the cached estimates were written to the prefs.
         while (true) {
@@ -229,7 +224,7 @@ public class NQETest extends CronetTestBase {
         }
         assertTrue(fileContainsString("local_prefs.json", "network_qualities"));
 
-        testFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
         assertTrue(writeCountHistogram.getDelta() > 0);
     }
 }

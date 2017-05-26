@@ -4,26 +4,45 @@
 
 package org.chromium.net;
 
+import android.content.Context;
 import android.test.AndroidTestCase;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.net.impl.CronetEngineBase;
 import org.chromium.net.impl.JavaCronetEngine;
 import org.chromium.net.impl.JavaCronetProvider;
 import org.chromium.net.impl.UserAgent;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 
 /**
  * Base test class for all CronetTest based tests.
  */
 public class CronetTestBase extends AndroidTestCase {
+    /**
+     * Creates and holds pointer to CronetEngine.
+     */
+    public static class CronetTestFramework {
+        public CronetEngineBase mCronetEngine;
+
+        public CronetTestFramework(Context context) {
+            mCronetEngine = (CronetEngineBase) new ExperimentalCronetEngine.Builder(context)
+                                    .enableQuic(true)
+                                    .build();
+            // Start collecting metrics.
+            mCronetEngine.getGlobalMetricsDeltas();
+        }
+    }
+
     /**
      * Name of the file that contains the test server certificate in PEM format.
      */
@@ -38,6 +57,8 @@ public class CronetTestBase extends AndroidTestCase {
     private static final String LOOPBACK_ADDRESS = "127.0.0.1";
 
     private CronetTestFramework mCronetTestFramework;
+    private URLStreamHandlerFactory mStreamHandlerFactory;
+
     // {@code true} when test is being run against system HttpURLConnection implementation.
     private boolean mTestingSystemHttpURLConnection;
     private boolean mTestingJavaImpl = false;
@@ -48,50 +69,14 @@ public class CronetTestBase extends AndroidTestCase {
         System.loadLibrary("cronet_tests");
         ContextUtils.initApplicationContext(getContext().getApplicationContext());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        CronetTestFramework.prepareTestStorage(getContext());
+        prepareTestStorage(getContext());
     }
 
     /**
      * Starts the CronetTest framework.
      */
     protected CronetTestFramework startCronetTestFramework() {
-        return startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, null);
-    }
-
-    /**
-     * Starts the CronetTest framework and loads the given URL. The URL can be
-     * null.
-     */
-    protected CronetTestFramework startCronetTestFrameworkWithUrl(String url) {
-        return startCronetTestFrameworkWithUrlAndCronetEngineBuilder(url, null);
-    }
-
-    /**
-     * Starts the CronetTest framework using the provided CronetEngine.Builder
-     * and loads the given URL. The URL can be null.
-     */
-    protected CronetTestFramework startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
-            String url, ExperimentalCronetEngine.Builder builder) {
-        mCronetTestFramework = new CronetTestFramework(url, null, getContext(), builder);
-        return mCronetTestFramework;
-    }
-
-    /**
-     * Starts the CronetTest framework appending the provided command line
-     * arguments and loads the given URL. The URL can be null.
-     */
-    protected CronetTestFramework startCronetTestFrameworkWithUrlAndCommandLineArgs(
-            String url, String[] commandLineArgs) {
-        mCronetTestFramework = new CronetTestFramework(url, commandLineArgs, getContext(), null);
-        return mCronetTestFramework;
-    }
-
-    // Helper method to tell the framework to skip library init during construction.
-    protected CronetTestFramework startCronetTestFrameworkAndSkipLibraryInit() {
-        String[] commandLineArgs = {
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.NONE};
-        mCronetTestFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
+        mCronetTestFramework = new CronetTestFramework(getContext());
         return mCronetTestFramework;
     }
 
@@ -123,11 +108,11 @@ public class CronetTestBase extends AndroidTestCase {
                     super.runTest();
                     // Use Cronet's implementation, and run the same test.
                     mTestingSystemHttpURLConnection = false;
-                    URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
+                    URL.setURLStreamHandlerFactory(mStreamHandlerFactory);
                     super.runTest();
                 } else if (method.isAnnotationPresent(OnlyRunCronetHttpURLConnection.class)) {
                     // Run only with Cronet's implementation.
-                    URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
+                    URL.setURLStreamHandlerFactory(mStreamHandlerFactory);
                     super.runTest();
                 } else {
                     // For all other tests.
@@ -178,7 +163,7 @@ public class CronetTestBase extends AndroidTestCase {
         assertEquals(expected.getUrlChain(), actual.getUrlChain());
         assertEquals(expected.getUrl(), actual.getUrl());
         // Transferred bytes and proxy server are not supported in pure java
-        if (!(mCronetTestFramework.mCronetEngine instanceof JavaCronetEngine)) {
+        if (!testingJavaImpl()) {
             assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
             assertEquals(expected.getProxyServer(), actual.getProxyServer());
             // This is a place where behavior intentionally differs between native and java
@@ -194,6 +179,20 @@ public class CronetTestBase extends AndroidTestCase {
         }
     }
 
+    public CronetEngine.Builder enableDiskCache(CronetEngine.Builder cronetEngineBuilder) {
+        cronetEngineBuilder.setStoragePath(getTestStorage(getContext()));
+        cronetEngineBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
+        return cronetEngineBuilder;
+    }
+
+    /**
+     * Sets the {@link URLStreamHandlerFactory} from {@code cronetEngine}.  This should be called
+     * during setUp() and is installed by {@link runTest()} as the default when Cronet is tested.
+     */
+    public void setStreamHandlerFactory(CronetEngine cronetEngine) {
+        mStreamHandlerFactory = cronetEngine.createURLStreamHandlerFactory();
+    }
+
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface CompareDefaultWithCronet {
@@ -207,4 +206,54 @@ public class CronetTestBase extends AndroidTestCase {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface OnlyRunNativeCronet {}
+
+    /**
+     * Prepares the path for the test storage (http cache, QUIC server info).
+     */
+    public static void prepareTestStorage(Context context) {
+        File storage = new File(getTestStorageDirectory());
+        if (storage.exists()) {
+            assertTrue(recursiveDelete(storage));
+        }
+        ensureTestStorageExists();
+    }
+
+    /**
+     * Returns the path for the test storage (http cache, QUIC server info).
+     * NOTE: Does not ensure it exists; tests should use {@link #getTestStorage}.
+     */
+    private static String getTestStorageDirectory() {
+        return PathUtils.getDataDirectory() + "/test_storage";
+    }
+
+    /**
+     * Ensures test storage directory exists, i.e. creates one if it does not exist.
+     */
+    private static void ensureTestStorageExists() {
+        File storage = new File(getTestStorageDirectory());
+        if (!storage.exists()) {
+            assertTrue(storage.mkdir());
+        }
+    }
+
+    /**
+     * Returns the path for the test storage (http cache, QUIC server info).
+     * Also ensures it exists.
+     */
+    static String getTestStorage(Context context) {
+        ensureTestStorageExists();
+        return getTestStorageDirectory();
+    }
+
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+    private static boolean recursiveDelete(File path) {
+        if (path.isDirectory()) {
+            for (File c : path.listFiles()) {
+                if (!recursiveDelete(c)) {
+                    return false;
+                }
+            }
+        }
+        return path.delete();
+    }
 }
