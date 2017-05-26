@@ -239,14 +239,15 @@ class MultibufferDataSourceTest : public testing::Test {
 
   void InitializeWithCORS(const char* url,
                           bool expected,
-                          UrlData::CORSMode cors_mode) {
+                          UrlData::CORSMode cors_mode,
+                          size_t file_size = kFileSize) {
     GURL gurl(url);
     data_source_.reset(new MockMultibufferDataSource(
         gurl, cors_mode, message_loop_.task_runner(), url_index_,
         view_->MainFrame()->ToWebLocalFrame(), &host_));
     data_source_->SetPreload(preload_);
 
-    response_generator_.reset(new TestResponseGenerator(gurl, kFileSize));
+    response_generator_.reset(new TestResponseGenerator(gurl, file_size));
     EXPECT_CALL(*this, OnInitialize(expected));
     data_source_->Initialize(base::Bind(
         &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
@@ -256,8 +257,10 @@ class MultibufferDataSourceTest : public testing::Test {
     EXPECT_EQ(data_source_->downloading(), false);
   }
 
-  void Initialize(const char* url, bool expected) {
-    InitializeWithCORS(url, expected, UrlData::CORS_UNSPECIFIED);
+  void Initialize(const char* url,
+                  bool expected,
+                  size_t file_size = kFileSize) {
+    InitializeWithCORS(url, expected, UrlData::CORS_UNSPECIFIED, file_size);
   }
 
   // Helper to initialize tests with a valid 200 response.
@@ -272,8 +275,8 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
   // Helper to initialize tests with a valid 206 response.
-  void InitializeWith206Response() {
-    Initialize(kHttpUrl, true);
+  void InitializeWith206Response(size_t file_size = kFileSize) {
+    Initialize(kHttpUrl, true, file_size);
 
     EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
     Respond(response_generator_->Generate206(0));
@@ -1515,7 +1518,7 @@ TEST_F(MultibufferDataSourceTest, EtagTest) {
 }
 
 TEST_F(MultibufferDataSourceTest, CheckBufferSizes) {
-  InitializeWith206Response();
+  InitializeWith206Response(1 << 30);  // 1 gb
 
   data_source_->SetBitrate(1 << 20);  // 1 mbit / s
   base::RunLoop().RunUntilIdle();
@@ -1561,6 +1564,28 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizes) {
   EXPECT_EQ(51 << 20, max_buffer_forward());
   EXPECT_EQ(20 << 20, max_buffer_backward());
   EXPECT_EQ(71 << 20, buffer_size());
+}
+
+TEST_F(MultibufferDataSourceTest, CheckBufferSizeForSmallFiles) {
+  InitializeWith206Response();
+
+  data_source_->SetBitrate(1 << 20);  // 1 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1 << 20, data_source_bitrate());
+  EXPECT_EQ(2 << 20, preload_low());
+  EXPECT_EQ(3 << 20, preload_high());
+  EXPECT_EQ(25 << 20, max_buffer_forward());
+  EXPECT_EQ(kFileSize * 2, max_buffer_backward());
+  EXPECT_EQ(5013504 /* file size rounted up to blocks size */, buffer_size());
+
+  data_source_->SetBitrate(80 << 20);  // 80 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(80 << 20, data_source_bitrate());
+  EXPECT_EQ(50 << 20, preload_low());
+  EXPECT_EQ(51 << 20, preload_high());
+  EXPECT_EQ(51 << 20, max_buffer_forward());
+  EXPECT_EQ(20 << 20, max_buffer_backward());
+  EXPECT_EQ(5013504 /* file size rounted up to blocks size */, buffer_size());
 }
 
 // Provoke an edge case where the loading state may not end up transitioning

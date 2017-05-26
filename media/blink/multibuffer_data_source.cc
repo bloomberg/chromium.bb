@@ -505,6 +505,8 @@ void MultibufferDataSource::StartCallback() {
   render_task_runner_->PostTask(
       FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
 
+  UpdateBufferSizes();
+
   // Even if data is cached, say that we're loading at this point for
   // compatibility.
   UpdateLoadingState_Locked(true);
@@ -610,6 +612,17 @@ void MultibufferDataSource::UpdateBufferSizes() {
       std::min((kTargetSecondsBufferedAhead + kTargetSecondsBufferedBehind) *
                    bytes_per_second,
                preload_high + pin_backward);
+
+  if (url_data_->FullyCached() ||
+      (url_data_->length() != kPositionNotSpecified &&
+       url_data_->length() < kDefaultPinSize)) {
+    // We just make pin_forwards/backwards big enough to encompass the
+    // whole file regardless of where we are, with some extra margins.
+    pin_forward = std::max(pin_forward, url_data_->length() * 2);
+    pin_backward = std::max(pin_backward, url_data_->length() * 2);
+    buffer_size = url_data_->length();
+  }
+
   reader_->SetMaxBuffer(buffer_size);
   reader_->SetPinRange(pin_backward, pin_forward);
 
