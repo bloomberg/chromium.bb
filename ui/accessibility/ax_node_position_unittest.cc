@@ -153,7 +153,6 @@ void AXPositionTest::SetUp() {
   static_text1_.role = AX_ROLE_STATIC_TEXT;
   static_text1_.AddState(AX_STATE_EDITABLE);
   static_text1_.SetName("Line 1");
-  static_text1_.AddIntAttribute(AX_ATTR_NEXT_ON_LINE_ID, line_break_.id);
   static_text1_.child_ids.push_back(inline_box1_.id);
 
   inline_box1_.role = AX_ROLE_INLINE_TEXT_BOX;
@@ -163,7 +162,6 @@ void AXPositionTest::SetUp() {
                                    std::vector<int32_t>{0, 5});
   inline_box1_.AddIntListAttribute(AX_ATTR_WORD_ENDS,
                                    std::vector<int32_t>{4, 6});
-  inline_box1_.AddIntAttribute(AX_ATTR_NEXT_ON_LINE_ID, line_break_.id);
 
   line_break_.role = AX_ROLE_LINE_BREAK;
   line_break_.AddState(AX_STATE_EDITABLE);
@@ -362,6 +360,82 @@ TEST_F(AXPositionTest, AtEndOfAnchorWithTextPosition) {
       AX_TEXT_AFFINITY_DOWNSTREAM);
   ASSERT_NE(nullptr, text_position);
   EXPECT_FALSE(text_position->AtEndOfAnchor());
+}
+
+TEST_F(AXPositionTest, AtStartOfLineWithTextPosition) {
+  // An upstream affinity should not affect the outcome since there is no soft
+  // line break.
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* text_offset */,
+      AX_TEXT_AFFINITY_UPSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->AtStartOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 1 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtStartOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 0 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtStartOfLine());
+
+  // An "after text" position anchored at the line break should visually be the
+  // same as a text position at the start of the next line.
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->AtStartOfLine());
+
+  // An upstream affinity should not affect the outcome since there is no soft
+  // line break.
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 0 /* text_offset */,
+      AX_TEXT_AFFINITY_UPSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->AtStartOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 1 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtStartOfLine());
+}
+
+TEST_F(AXPositionTest, AtEndOfLineWithTextPosition) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 5 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtEndOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 6 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->AtEndOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 0 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtEndOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 5 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtEndOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 6 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->AtEndOfLine());
 }
 
 TEST_F(AXPositionTest, LowestCommonAncestor) {

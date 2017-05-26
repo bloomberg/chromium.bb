@@ -881,8 +881,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Search forwards (direction == 1) or backwards (direction == -1)
   // from the given offset until the given boundary is found, and
   // return the offset of that boundary.
-  LONG FindBoundary(const base::string16& text,
-                    IA2TextBoundaryType ia2_boundary,
+  LONG FindBoundary(IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);
 
