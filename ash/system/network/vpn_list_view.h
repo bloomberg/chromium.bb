@@ -43,6 +43,10 @@ class VPNListView : public NetworkStateListDetailedView,
   VPNListView(SystemTrayItem* owner, LoginStatus login);
   ~VPNListView() override;
 
+  // Make following functions publicly accessible for VPNListNetworkEntry.
+  using NetworkStateListDetailedView::SetupConnectedScrollListItem;
+  using NetworkStateListDetailedView::SetupConnectingScrollListItem;
+
   // NetworkStateListDetailedView:
   void UpdateNetworkList() override;
   bool IsNetworkEntry(views::View* view, std::string* guid) const override;

@@ -331,24 +331,11 @@ class BluetoothDetailedView : public TrayDetailsView {
       HoverHighlightView* container =
           AddScrollListItem(icon, device.display_name);
       if (device.connected)
-        SetupConnectedItem(container);
+        SetupConnectedScrollListItem(container);
       else if (device.connecting)
-        SetupConnectingItem(container);
+        SetupConnectingScrollListItem(container);
       device_map_[container] = device.address;
     }
-  }
-
-  void SetupConnectedItem(HoverHighlightView* container) {
-    container->SetSubText(l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
-    style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
-    style.SetupLabel(container->sub_text_label());
-  }
-
-  void SetupConnectingItem(HoverHighlightView* container) {
-    container->SetSubText(l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
   }
 
   // Returns true if the device with |device_id| is found in |device_list|.
@@ -368,7 +355,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     if (FoundDevice(device_id, paired_not_connected_devices_)) {
       HoverHighlightView* container =
           static_cast<HoverHighlightView*>(item_container);
-      SetupConnectingItem(container);
+      SetupConnectingScrollListItem(container);
       scroll_content()->SizeToPreferredSize();
       scroller()->Layout();
     }
