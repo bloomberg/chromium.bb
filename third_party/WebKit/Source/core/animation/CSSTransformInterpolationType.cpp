@@ -129,17 +129,17 @@ InterpolationValue ConvertTransform(const TransformOperations& transform) {
   return ConvertTransform(TransformOperations(transform));
 }
 
-class InheritedTransformChecker : public InterpolationType::ConversionChecker {
+class InheritedTransformChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedTransformChecker> Create(
       const TransformOperations& inherited_transform) {
     return WTF::WrapUnique(new InheritedTransformChecker(inherited_transform));
   }
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    return inherited_transform_ ==
-           environment.GetState().ParentStyle()->Transform();
+    return inherited_transform_ == state.ParentStyle()->Transform();
   }
 
  private:

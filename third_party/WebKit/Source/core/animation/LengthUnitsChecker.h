@@ -6,14 +6,14 @@
 #define LengthUnitsChecker_h
 
 #include <memory>
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
-class LengthUnitsChecker : public InterpolationType::ConversionChecker {
+class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<LengthUnitsChecker> MaybeCreate(
       CSSLengthArray&& length_array,
@@ -34,14 +34,14 @@ class LengthUnitsChecker : public InterpolationType::ConversionChecker {
         new LengthUnitsChecker(std::move(length_array), last_index));
   }
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     for (size_t i = 0; i <= last_index_; i++) {
       if (i == CSSPrimitiveValue::kUnitTypePercentage ||
           !length_array_.type_flags.Get(i))
         continue;
       if (length_array_.values[i] !=
-          LengthUnit(i, environment.GetState().CssToLengthConversionData()))
+          LengthUnit(i, state.CssToLengthConversionData()))
         return false;
     }
     return true;

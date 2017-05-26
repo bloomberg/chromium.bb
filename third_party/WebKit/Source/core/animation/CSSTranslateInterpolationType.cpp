@@ -23,7 +23,8 @@ bool IsNoneValue(const InterpolationValue& value) {
   return ToInterpolableList(*value.interpolable_value).length() == 0;
 }
 
-class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
+class InheritedTranslateChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   ~InheritedTranslateChecker() {}
 
@@ -33,10 +34,10 @@ class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
         new InheritedTranslateChecker(std::move(inherited_translate)));
   }
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     const TransformOperation* inherited_translate =
-        environment.GetState().ParentStyle()->Translate();
+        state.ParentStyle()->Translate();
     if (inherited_translate_ == inherited_translate)
       return true;
     if (!inherited_translate_ || !inherited_translate)

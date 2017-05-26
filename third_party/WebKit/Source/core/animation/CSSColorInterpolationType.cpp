@@ -158,7 +158,8 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
                   round(alpha));
 }
 
-class InheritedColorChecker : public InterpolationType::ConversionChecker {
+class InheritedColorChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedColorChecker> Create(
       CSSPropertyID property,
@@ -170,10 +171,10 @@ class InheritedColorChecker : public InterpolationType::ConversionChecker {
   InheritedColorChecker(CSSPropertyID property, const OptionalStyleColor& color)
       : property_(property), color_(color) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return color_ == ColorPropertyFunctions::GetUnvisitedColor(
-                         property_, *environment.GetState().ParentStyle());
+                         property_, *state.ParentStyle());
   }
 
   const CSSPropertyID property_;

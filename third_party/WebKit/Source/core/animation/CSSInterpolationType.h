@@ -17,6 +17,18 @@ class CSSInterpolationType : public InterpolationType {
  public:
   void SetCustomPropertyRegistration(const PropertyRegistration&);
 
+  class CSSConversionChecker : public ConversionChecker {
+   public:
+    bool IsValid(const InterpolationEnvironment& environment,
+                 const InterpolationValue& underlying) const final {
+      return IsValid(environment.GetState(), underlying);
+    }
+
+   protected:
+    virtual bool IsValid(const StyleResolverState&,
+                         const InterpolationValue& underlying) const = 0;
+  };
+
  protected:
   CSSInterpolationType(PropertyHandle);
 

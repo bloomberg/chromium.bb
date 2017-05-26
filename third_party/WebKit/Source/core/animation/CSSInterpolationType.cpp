@@ -22,7 +22,8 @@
 
 namespace blink {
 
-class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
+class ResolvedVariableChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<ResolvedVariableChecker> Create(
       CSSPropertyID property,
@@ -40,15 +41,14 @@ class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
         variable_reference_(variable_reference),
         resolved_value_(resolved_value) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     // TODO(alancutter): Just check the variables referenced instead of doing a
     // full CSSValue resolve.
     bool omit_animation_tainted = false;
     const CSSValue* resolved_value =
         CSSVariableResolver::ResolveVariableReferences(
-            environment.GetState(), property_, *variable_reference_,
-            omit_animation_tainted);
+            state, property_, *variable_reference_, omit_animation_tainted);
     return DataEquivalent(resolved_value_.Get(), resolved_value);
   }
 
@@ -58,7 +58,7 @@ class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
 };
 
 class InheritedCustomPropertyChecker
-    : public InterpolationType::ConversionChecker {
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedCustomPropertyChecker> Create(
       const AtomicString& property,
@@ -79,11 +79,11 @@ class InheritedCustomPropertyChecker
         inherited_value_(inherited_value),
         initial_value_(initial_value) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     const CSSValue* inherited_value =
-        environment.GetState().ParentStyle()->GetRegisteredVariable(
-            name_, is_inherited_property_);
+        state.ParentStyle()->GetRegisteredVariable(name_,
+                                                   is_inherited_property_);
     if (!inherited_value) {
       inherited_value = initial_value_.Get();
     }
