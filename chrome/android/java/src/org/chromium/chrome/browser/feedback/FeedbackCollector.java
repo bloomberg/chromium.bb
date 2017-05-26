@@ -186,6 +186,7 @@ public class FeedbackCollector
     }
 
     private boolean shouldWaitForScreenshot() {
+        // We should always wait for the screenshot unless we're not taking one.
         return mTakeScreenshot && !mScreenshotTaskFinished;
     }
 

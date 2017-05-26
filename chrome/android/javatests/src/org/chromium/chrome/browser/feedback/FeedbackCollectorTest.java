@@ -367,13 +367,8 @@ public class FeedbackCollectorTest {
         Assert.assertFalse("Result should not be ready directly after creation.", hasResult.get());
         ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
         mCollector.onResult(feedbackData);
-        Assert.assertFalse("Result should not be ready after connectivity data.", hasResult.get());
-
-        // This timeout task should trigger the callback since we shouldn't wait for the screenshot.
-        mCollector.setTimedOut(true);
-        mCollector.maybePostResult();
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        // Wait until the callback has been called.
+        // The result from the connectivity task should trigger the callback since we shouldn't be
+        // waiting for the screenshot.
         Assert.assertTrue(
                 "Failed to acquire semaphore.", semaphore.tryAcquire(5, TimeUnit.SECONDS));
         Assert.assertTrue("Result should be ready after retrieving all data.", hasResult.get());
