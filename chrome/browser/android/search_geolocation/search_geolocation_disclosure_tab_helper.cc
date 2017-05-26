@@ -204,7 +204,13 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
     return;
 
   // All good, let's show the disclosure and increment the shown count.
-  SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(GetProfile());
+  const TemplateURL* template_url =
+      template_url_service->GetDefaultSearchProvider();
+  base::string16 search_engine_name = template_url->short_name();
+  SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl,
+                                                     search_engine_name);
   shown_count++;
   prefs->SetInteger(prefs::kSearchGeolocationDisclosureShownCount, shown_count);
   prefs->SetInt64(prefs::kSearchGeolocationDisclosureLastShowDate,

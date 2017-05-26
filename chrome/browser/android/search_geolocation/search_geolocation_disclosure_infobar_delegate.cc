@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/android_theme_resources.h"
@@ -38,14 +40,15 @@ SearchGeolocationDisclosureInfoBarDelegate::
 // static
 void SearchGeolocationDisclosureInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    const GURL& search_url) {
+    const GURL& search_url,
+    const base::string16& search_engine_name) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   // Add the new delegate.
   infobar_service->AddInfoBar(
       base::MakeUnique<SearchGeolocationDisclosureInfoBar>(
           base::WrapUnique(new SearchGeolocationDisclosureInfoBarDelegate(
-              web_contents, search_url))));
+              web_contents, search_url, search_engine_name))));
 }
 
 // static
@@ -74,7 +77,8 @@ void SearchGeolocationDisclosureInfoBarDelegate::RecordSettingsClicked() {
 SearchGeolocationDisclosureInfoBarDelegate::
     SearchGeolocationDisclosureInfoBarDelegate(
         content::WebContents* web_contents,
-        const GURL& search_url)
+        const GURL& search_url,
+        const base::string16& search_engine_name)
     : infobars::InfoBarDelegate(),
       search_url_(search_url),
       result_(DisclosureResult::IGNORED),
@@ -83,10 +87,11 @@ SearchGeolocationDisclosureInfoBarDelegate::
                       ->GetPrefs();
   base::string16 link = l10n_util::GetStringUTF16(
       IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_SETTINGS_LINK_TEXT);
-  size_t offset;
-  message_text_ = l10n_util::GetStringFUTF16(
-      IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT, link, &offset);
-  inline_link_range_ = gfx::Range(offset, offset + link.length());
+  std::vector<size_t> offsets;
+  message_text_ =
+      l10n_util::GetStringFUTF16(IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT,
+                                 search_engine_name, link, &offsets);
+  inline_link_range_ = gfx::Range(offsets[1], offsets[1] + link.length());
 }
 
 void SearchGeolocationDisclosureInfoBarDelegate::InfoBarDismissed() {
