@@ -90,7 +90,7 @@ MediaQuery::MediaQuery(RestrictorType restrictor,
                        String media_type,
                        ExpressionHeapVector expressions)
     : restrictor_(restrictor),
-      media_type_(AttemptStaticStringCreation(media_type.DeprecatedLower())),
+      media_type_(AttemptStaticStringCreation(media_type.LowerASCII())),
       expressions_(std::move(expressions)) {
   NonCopyingSort(expressions_.begin(), expressions_.end(), ExpressionCompare);
 

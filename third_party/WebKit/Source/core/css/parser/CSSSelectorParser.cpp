@@ -239,7 +239,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
       compound_pseudo_element = compound_selector->GetPseudoType();
   }
   if (context_->IsHTMLDocument())
-    element_name = element_name.DeprecatedLower();
+    element_name = element_name.LowerASCII();
 
   while (std::unique_ptr<CSSParserSelector> simple_selector =
              ConsumeSimpleSelector(range)) {
@@ -388,7 +388,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
   block.ConsumeWhitespace();
 
   if (context_->IsHTMLDocument())
-    attribute_name = attribute_name.DeprecatedLower();
+    attribute_name = attribute_name.LowerASCII();
 
   AtomicString namespace_uri = DetermineNamespace(namespace_prefix);
   if (namespace_uri.IsNull())
