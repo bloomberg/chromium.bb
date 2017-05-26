@@ -36,6 +36,10 @@ class PostProcessingPipeline;
 // MixAndFilter() is called (they must be added each time data is queried).
 class FilterGroup {
  public:
+  // |num_channels| indicates number of input audio channels.
+  // |mix_to_mono| enables mono mixing in the pipeline. The number of audio
+  //    output channels will be 1 if it is set to true, otherwise it remains
+  //    same as |num_channels|.
   // |name| is used for debug printing
   // |filter_list| is a list of {"processor": LIBRARY_NAME, "configs": CONFIG}
   //    that is used to create PostProcessingPipeline.
@@ -47,6 +51,7 @@ class FilterGroup {
   // FilterGroups currently use either InputQueues OR FilterGroups as inputs,
   //   but there is no technical limitation preventing mixing input classes.
   FilterGroup(int num_channels,
+              bool mix_to_mono,
               const std::string& name,
               const base::ListValue* filter_list,
               const std::unordered_set<std::string>& device_ids,
@@ -85,10 +90,14 @@ class FilterGroup {
 
   std::string name() const { return name_; }
 
+  // Returns number of audio output channels from the filter group.
+  int GetOutputChannelCount() const;
+
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
 
   const int num_channels_;
+  bool mix_to_mono_;
   const std::string name_;
   const std::unordered_set<std::string> device_ids_;
   std::vector<FilterGroup*> mixed_inputs_;

@@ -91,6 +91,11 @@ const char kAlsaMuteDeviceName[] = "alsa-mute-device-name";
 // Calibrated max output volume dBa for voice content at 1 meter, if known.
 const char kMaxOutputVolumeDba1m[] = "max-output-volume-dba1m";
 
+// Number of audio output channels. This will be used to send audio buffer with
+// specific number of channels to ALSA and generate loopback audio. Default
+// value is 2.
+const char kAudioOutputChannels[] = "audio-output-channels";
+
 // Some platforms typically have very little 'free' memory, but plenty is
 // available in buffers+cached.  For such platforms, configure this amount
 // as the portion of buffers+cached memory that should be treated as
