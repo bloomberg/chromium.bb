@@ -51,7 +51,7 @@ class ScreenManagerForwarding : public ScreenManager,
       const RelinquishDisplayControlCallback& callback) override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
   void Configure(int64_t display_id,
-                 std::unique_ptr<display::DisplayMode> mode,
+                 base::Optional<std::unique_ptr<display::DisplayMode>> mode,
                  const gfx::Point& origin,
                  const ConfigureCallback& callback) override;
   void GetHDCPState(int64_t display_id,

@@ -36,7 +36,7 @@ interface NativeDisplayDelegate {
   // positions the display to |origin| in the framebuffer. |mode| can be null,
   // which represents disabling the display.
   Configure(int64 display_id,
-            DisplayMode mode,
+            DisplayMode? mode,
             gfx.mojom.Point origin) => (bool status);
 
   // Gets HDCP state of output.
