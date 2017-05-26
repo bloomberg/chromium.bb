@@ -25,6 +25,7 @@ class PointerWatcherEventRouter;
 namespace ash {
 
 class AcceleratorControllerDelegateAura;
+class DisplaySynchronizer;
 class PointerWatcherAdapter;
 class RootWindowController;
 
@@ -159,6 +160,8 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   std::unique_ptr<MusSpecificState> mus_state_;
 
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
+
+  std::unique_ptr<DisplaySynchronizer> display_synchronizer_;
 
   bool added_display_observer_ = false;
   base::ObserverList<WmDisplayObserver> display_observers_;

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "services/ui/display/screen_manager_delegate.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
@@ -37,6 +38,23 @@ class DisplayManager : public UserIdTrackerObserver,
   DisplayManager(WindowServer* window_server, UserIdTracker* user_id_tracker);
   ~DisplayManager() override;
 
+  // Called once WindowServer::display_creation_config() has been determined.
+  void OnDisplayCreationConfigSet();
+
+  // Indicates the display configuration is valid. Set to true when the
+  // display_creation_config() has been determined and the config is
+  // AUTOMATIC, or MANUAL and the SetDisplayConfiguration() has been called.
+  bool got_initial_config_from_window_manager() const {
+    return got_initial_config_from_window_manager_;
+  }
+
+  // Sets the display configuration from the window manager. Returns true
+  // on success, false if the arguments aren't valid.
+  bool SetDisplayConfiguration(
+      const std::vector<display::Display>& displays,
+      std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+      int64_t primary_display_id);
+
   // Returns the UserDisplayManager for |user_id|. DisplayManager owns the
   // return value.
   UserDisplayManager* GetUserDisplayManager(const UserId& user_id);
@@ -48,8 +66,9 @@ class DisplayManager : public UserIdTrackerObserver,
   // TODO(sky): make add take a scoped_ptr.
   void AddDisplay(Display* display);
   // Called when the window manager explicitly adds a new display.
-  void AddDisplayForWindowManager(const display::Display& display,
-                                  const display::ViewportMetrics& metrics);
+  Display* AddDisplayForWindowManager(bool is_primary_display,
+                                      const display::Display& display,
+                                      const display::ViewportMetrics& metrics);
   void DestroyDisplay(Display* display);
   void DestroyAllDisplays();
   const std::set<Display*>& displays() { return displays_; }
@@ -73,7 +92,9 @@ class DisplayManager : public UserIdTrackerObserver,
   WindowManagerDisplayRoot* GetWindowManagerDisplayRoot(
       const ServerWindow* window);
 
-  bool has_displays() const { return !displays_.empty(); }
+  bool IsReady() const {
+    return !displays_.empty() && got_initial_config_from_window_manager_;
+  }
   bool has_active_or_pending_displays() const {
     return !displays_.empty() || !pending_displays_.empty();
   }
@@ -93,6 +114,11 @@ class DisplayManager : public UserIdTrackerObserver,
   void OnActiveUserIdChanged(const UserId& previously_active_id,
                              const UserId& active_id) override;
 
+  void CreateDisplay(const display::Display& display,
+                     const display::ViewportMetrics& metrics);
+
+  // NOTE: these functions are *not* called when the WindowManager manually
+  // creates roots.
   // display::ScreenManagerDelegate:
   void OnDisplayAdded(const display::Display& display,
                       const display::ViewportMetrics& metrics) override;
@@ -119,6 +145,8 @@ class DisplayManager : public UserIdTrackerObserver,
 
   // ID to use for next root node.
   ClientSpecificId next_root_id_;
+
+  bool got_initial_config_from_window_manager_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

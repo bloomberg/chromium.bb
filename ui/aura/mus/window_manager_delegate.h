@@ -91,6 +91,13 @@ class AURA_EXPORT WindowManagerClient {
   // DisplayInitParams on the returned object.
   virtual WindowTreeHostMusInitParams CreateInitParamsForNewDisplay() = 0;
 
+  // Configures the displays. This is used when the window manager manually
+  // configures display roots.
+  virtual void SetDisplayConfiguration(
+      const std::vector<display::Display>& displays,
+      std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+      int64_t primary_display_id) = 0;
+
  protected:
   virtual ~WindowManagerClient() {}
 };

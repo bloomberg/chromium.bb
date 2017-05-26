@@ -57,7 +57,7 @@ class WindowServerDelegate {
   // WindowManagerWindowTreeFactory. |automatically_create_display_roots|
   // mirrors that of CreateWindowTree(). See it for details.
   virtual void OnWillCreateTreeForWindowManager(
-      bool automatically_create_display_roots);
+      bool automatically_create_display_roots) = 0;
 
  protected:
   virtual ~WindowServerDelegate() {}

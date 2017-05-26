@@ -11,8 +11,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/ui/common/task_runner_test_base.h"
 #include "services/ui/common/types.h"
 #include "services/ui/common/util.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -25,6 +27,7 @@
 #include "services/ui/ws/test_change_tracker.h"
 #include "services/ui/ws/test_server_window_delegate.h"
 #include "services/ui/ws/test_utils.h"
+#include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_manager_display_root.h"
 #include "services/ui/ws/window_server.h"
@@ -121,6 +124,19 @@ class TestMoveLoopWindowManager : public TestWindowManager {
   DISALLOW_COPY_AND_ASSIGN(TestMoveLoopWindowManager);
 };
 
+// This creates a WindowTree similar to how connecting via WindowTreeFactory
+// creates a tree.
+WindowTree* CreateTreeViaFactory(WindowServer* window_server,
+                                 const UserId& user_id,
+                                 TestWindowTreeBinding** binding) {
+  WindowTree* tree = new WindowTree(window_server, user_id, nullptr,
+                                    base::MakeUnique<DefaultAccessPolicy>());
+  *binding = new TestWindowTreeBinding(tree);
+  window_server->AddTree(base::WrapUnique(tree), base::WrapUnique(*binding),
+                         nullptr);
+  return tree;
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -180,13 +196,7 @@ class WindowTreeTest : public testing::Test {
   // a WindowTreeFactory does.
   WindowTree* CreateNewTree(const UserId& user_id,
                             TestWindowTreeBinding** binding) {
-    WindowTree* tree =
-        new WindowTree(window_server(), user_id, nullptr,
-                       base::WrapUnique(new DefaultAccessPolicy));
-    *binding = new TestWindowTreeBinding(tree);
-    window_server()->AddTree(base::WrapUnique(tree), base::WrapUnique(*binding),
-                             nullptr);
-    return tree;
+    return CreateTreeViaFactory(window_server(), user_id, binding);
   }
 
  protected:
@@ -1516,7 +1526,7 @@ TEST_F(WindowTreeShutdownTest, DontSendMessagesDuringShutdown) {
 }
 
 // Used to test the window manager configured to manually create displays roots.
-class WindowTreeManualDisplayTest : public testing::Test {
+class WindowTreeManualDisplayTest : public TaskRunnerTestBase {
  public:
   WindowTreeManualDisplayTest() {}
   ~WindowTreeManualDisplayTest() override {}
@@ -1533,6 +1543,7 @@ class WindowTreeManualDisplayTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
+    TaskRunnerTestBase::SetUp();
     screen_manager_.Init(window_server()->display_manager());
     window_server()->user_id_tracker()->AddUserId(kTestUserId1);
   }
@@ -1548,6 +1559,7 @@ TEST_F(WindowTreeManualDisplayTest, ClientCreatesDisplayRoot) {
   const bool automatically_create_display_roots = false;
   AddWindowManager(window_server(), kTestUserId1,
                    automatically_create_display_roots);
+
   WindowManagerState* window_manager_state =
       window_server()->GetWindowManagerStateForUser(kTestUserId1);
   ASSERT_TRUE(window_manager_state);
@@ -1591,6 +1603,143 @@ TEST_F(WindowTreeManualDisplayTest, ClientCreatesDisplayRoot) {
   EXPECT_TRUE(WindowManagerStateTestApi(window_manager_state)
                   .window_manager_display_roots()
                   .empty());
+}
+
+TEST_F(WindowTreeManualDisplayTest,
+       DisplayManagerObserverNotifiedWithManualRoots) {
+  const bool automatically_create_display_roots = false;
+  AddWindowManager(window_server(), kTestUserId1,
+                   automatically_create_display_roots);
+
+  TestDisplayManagerObserver display_manager_observer;
+  DisplayManager* display_manager = window_server()->display_manager();
+  UserDisplayManager* user_display_manager =
+      display_manager->GetUserDisplayManager(kTestUserId1);
+  ASSERT_TRUE(user_display_manager);
+  user_display_manager->AddObserver(display_manager_observer.GetPtr());
+
+  // Observer should not have been notified yet.
+  //
+  // NOTE: the RunUntilIdle() calls are necessary anytime the calls are checked
+  // as the observer is called via mojo, which is async.
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+
+  // Set frame decorations, again observer should not be notified.
+  WindowManagerState* window_manager_state =
+      window_server()->GetWindowManagerStateForUser(kTestUserId1);
+  ASSERT_TRUE(window_manager_state);
+  WindowTree* window_manager_tree = window_manager_state->window_tree();
+  window_manager_state->SetFrameDecorationValues(
+      mojom::FrameDecorationValues::New());
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+
+  // Create a window for the windowmanager and set it as the root.
+  ClientWindowId display_root_id = BuildClientWindowId(window_manager_tree, 10);
+  ASSERT_TRUE(window_manager_tree->NewWindow(display_root_id,
+                                             ServerWindow::Properties()));
+  ServerWindow* display_root =
+      window_manager_tree->GetWindowByClientId(display_root_id);
+  ASSERT_TRUE(display_root);
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+
+  // Add a new display.
+  display::Display display1 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  const int64_t display_id1 = 101;
+  display1.set_id(display_id1);
+  mojom::WmViewportMetrics metrics1;
+  metrics1.bounds_in_pixels = display1.bounds();
+  metrics1.device_scale_factor = 1.5;
+  metrics1.ui_scale_factor = 2.5;
+  const bool is_primary_display = true;
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSetDisplayRoot(display1, metrics1, is_primary_display,
+                                         display_root_id));
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+
+  // Configure the displays.
+  std::vector<display::Display> displays;
+  displays.push_back(display1);
+  std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics;
+  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
+  ASSERT_TRUE(display_manager->SetDisplayConfiguration(
+      displays, std::move(viewport_metrics), display_id1));
+  RunUntilIdle();
+  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1),
+            display_manager_observer.GetAndClearObserverCalls());
+
+  // Create a window for the windowmanager and set it as the root.
+  ClientWindowId display_root_id2 =
+      BuildClientWindowId(window_manager_tree, 11);
+  ASSERT_TRUE(window_manager_tree->NewWindow(display_root_id2,
+                                             ServerWindow::Properties()));
+  ServerWindow* display_root2 =
+      window_manager_tree->GetWindowByClientId(display_root_id);
+  ASSERT_TRUE(display_root2);
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+
+  // Add another display.
+  display::Display display2 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  const int64_t display_id2 = 102;
+  display2.set_id(display_id2);
+  mojom::WmViewportMetrics metrics2;
+  metrics2.bounds_in_pixels = display2.bounds();
+  metrics2.device_scale_factor = 1.5;
+  metrics2.ui_scale_factor = 2.5;
+  ASSERT_TRUE(
+      WindowTreeTestApi(window_manager_tree)
+          .ProcessSetDisplayRoot(display2, metrics2, false, display_root_id2));
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+
+  // Make |display2| the default, and resize both displays.
+  display1.set_bounds(gfx::Rect(0, 0, 1024, 1280));
+  metrics1.bounds_in_pixels = display1.bounds();
+  displays.clear();
+  displays.push_back(display1);
+
+  display2.set_bounds(gfx::Rect(0, 0, 500, 600));
+  metrics2.bounds_in_pixels = display2.bounds();
+  displays.push_back(display2);
+
+  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
+  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics2));
+  ASSERT_TRUE(display_manager->SetDisplayConfiguration(
+      displays, std::move(viewport_metrics), display_id2));
+  RunUntilIdle();
+  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
+                std::to_string(display_id2),
+            display_manager_observer.GetAndClearObserverCalls());
+
+  // Delete the second display, no notification should be sent.
+  EXPECT_TRUE(window_manager_tree->DeleteWindow(display_root_id2));
+  RunUntilIdle();
+  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_FALSE(display_manager->GetDisplayById(display_id2));
+
+  // Set the config back to only the first.
+  displays.clear();
+  displays.push_back(display1);
+
+  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
+  ASSERT_TRUE(display_manager->SetDisplayConfiguration(
+      displays, std::move(viewport_metrics), display_id1));
+  RunUntilIdle();
+  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1),
+            display_manager_observer.GetAndClearObserverCalls());
+
+  // The display list should not have display2.
+  display::DisplayList& display_list =
+      display::ScreenManager::GetInstance()->GetScreen()->display_list();
+  EXPECT_TRUE(display_list.FindDisplayById(display_id2) ==
+              display_list.displays().end());
+  ASSERT_TRUE(display_list.GetPrimaryDisplayIterator() !=
+              display_list.displays().end());
+  EXPECT_EQ(display_id1, display_list.GetPrimaryDisplayIterator()->id());
 }
 
 }  // namespace test

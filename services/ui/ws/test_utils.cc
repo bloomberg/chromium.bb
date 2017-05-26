@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "cc/output/copy_output_request.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/display_binding.h"
+#include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_manager_window_tree_factory.h"
@@ -524,6 +526,17 @@ bool TestWindowServerDelegate::IsTestConfig() const {
   return true;
 }
 
+void TestWindowServerDelegate::OnWillCreateTreeForWindowManager(
+    bool automatically_create_display_roots) {
+  if (window_server_->display_creation_config() !=
+      DisplayCreationConfig::UNKNOWN) {
+    return;
+  }
+  window_server_->SetDisplayCreationConfig(
+      automatically_create_display_roots ? DisplayCreationConfig::AUTOMATIC
+                                         : DisplayCreationConfig::MANUAL);
+}
+
 // WindowServerTestHelper  ---------------------------------------------------
 
 WindowServerTestHelper::WindowServerTestHelper()
@@ -620,6 +633,42 @@ void WindowEventTargetingHelper::SetTaskRunner(
 }
 
 // ----------------------------------------------------------------------------
+
+TestDisplayManagerObserver::TestDisplayManagerObserver() : binding_(this) {}
+
+TestDisplayManagerObserver::~TestDisplayManagerObserver() = default;
+
+mojom::DisplayManagerObserverPtr TestDisplayManagerObserver::GetPtr() {
+  return binding_.CreateInterfacePtrAndBind();
+}
+
+std::string TestDisplayManagerObserver::GetAndClearObserverCalls() {
+  std::string result;
+  std::swap(observer_calls_, result);
+  return result;
+}
+
+std::string TestDisplayManagerObserver::DisplayIdsToString(
+    const std::vector<mojom::WsDisplayPtr>& wm_displays) {
+  std::string display_ids;
+  for (const auto& wm_display : wm_displays) {
+    if (!display_ids.empty())
+      display_ids += " ";
+    display_ids += base::Int64ToString(wm_display->display.id());
+  }
+  return display_ids;
+}
+
+void TestDisplayManagerObserver::OnDisplaysChanged(
+    std::vector<mojom::WsDisplayPtr> displays,
+    int64_t primary_display_id,
+    int64_t internal_display_id) {
+  if (!observer_calls_.empty())
+    observer_calls_ += "\n";
+  observer_calls_ += "OnDisplaysChanged " + DisplayIdsToString(displays);
+}
+
+// -----------------------------------------------------------------------------
 
 void AddWindowManager(WindowServer* window_server,
                       const UserId& user_id,

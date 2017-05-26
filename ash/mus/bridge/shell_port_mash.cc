@@ -20,6 +20,7 @@
 #include "ash/mus/ash_window_tree_host_mus.h"
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
+#include "ash/mus/display_synchronizer.h"
 #include "ash/mus/drag_window_resizer.h"
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/screen_mus.h"
@@ -161,6 +162,8 @@ aura::WindowTreeClient* ShellPortMash::window_tree_client() {
 }
 
 void ShellPortMash::Shutdown() {
+  display_synchronizer_.reset();
+
   if (added_display_observer_)
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
@@ -525,8 +528,7 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
 
 std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
     const AshWindowTreeHostInitParams& init_params) {
-  // TODO(sky): make this work for mash too.
-  if (GetAshConfig() != Config::MUS)
+  if (!Shell::ShouldEnableSimplifiedDisplayManagement())
     return nullptr;
 
   std::unique_ptr<aura::DisplayInitParams> display_params =
@@ -544,7 +546,6 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
     display_params->display =
         base::MakeUnique<display::Display>(mirrored_display);
   }
-  // TODO: wire update is_primary_display correctly.
   display_params->is_primary_display = true;
   aura::WindowTreeHostMusInitParams aura_init_params =
       window_manager_->window_manager_client()->CreateInitParamsForNewDisplay();
@@ -576,8 +577,10 @@ void ShellPortMash::CreatePrimaryHost() {
 }
 
 void ShellPortMash::InitHosts(const ShellInitParams& init_params) {
-  if (GetAshConfig() == Config::MUS) {
+  if (Shell::ShouldEnableSimplifiedDisplayManagement()) {
     Shell::Get()->window_tree_host_manager()->InitHosts();
+    display_synchronizer_ = base::MakeUnique<DisplaySynchronizer>(
+        window_manager_->window_manager_client());
   } else {
     window_manager_->CreatePrimaryRootWindowController(
         base::WrapUnique(init_params.primary_window_tree_host));

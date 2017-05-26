@@ -159,6 +159,8 @@ class Display : public PlatformDisplayDelegate,
   // Updates the size of display root ServerWindow and WM root ServerWindow(s).
   void OnViewportMetricsChanged(const display::ViewportMetrics& metrics);
 
+  void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels);
+
   // Returns the root window of the active user.
   ServerWindow* GetActiveRootWindow();
 

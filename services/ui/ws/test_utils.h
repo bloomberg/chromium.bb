@@ -597,6 +597,8 @@ class TestWindowServerDelegate : public WindowServerDelegate {
       mojom::WindowTreeRequest* tree_request,
       mojom::WindowTreeClientPtr* client) override;
   bool IsTestConfig() const override;
+  void OnWillCreateTreeForWindowManager(
+      bool automatically_create_display_roots) override;
 
  private:
   WindowServer* window_server_ = nullptr;
@@ -686,6 +688,32 @@ class WindowEventTargetingHelper {
   ClientSpecificId next_primary_tree_window_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
+};
+
+// -----------------------------------------------------------------------------
+
+class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
+ public:
+  TestDisplayManagerObserver();
+  ~TestDisplayManagerObserver() override;
+
+  mojom::DisplayManagerObserverPtr GetPtr();
+
+  std::string GetAndClearObserverCalls();
+
+ private:
+  std::string DisplayIdsToString(
+      const std::vector<mojom::WsDisplayPtr>& wm_displays);
+
+  // mojom::DisplayManagerObserver:
+  void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
+                         int64_t primary_display_id,
+                         int64_t internal_display_id) override;
+
+  mojo::Binding<mojom::DisplayManagerObserver> binding_;
+  std::string observer_calls_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerObserver);
 };
 
 // -----------------------------------------------------------------------------

@@ -29,6 +29,11 @@ class UserDisplayManager : public mojom::DisplayManager {
                      const UserId& user_id);
   ~UserDisplayManager() override;
 
+  void DisableAutomaticNotification();
+
+  // Unconditionally calls OnDisplayChanged() on observers.
+  void CallOnDisplaysChanged();
+
   // Called when the frame decorations for this user change.
   void OnFrameDecorationValuesChanged();
 
@@ -77,6 +82,12 @@ class UserDisplayManager : public mojom::DisplayManager {
   // WARNING: only use these once |got_valid_frame_decorations_| is true.
   mojo::InterfacePtrSet<mojom::DisplayManagerObserver>
       display_manager_observers_;
+
+  // If true DisplayManagerObservers are notified any time there is a display
+  // change. If false, observers are only notified when CallOnDisplaysChanged()
+  // is explicitly called. This value is true in automatic display creation and
+  // false when in manual mode.
+  bool notify_automatically_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManager);
 };

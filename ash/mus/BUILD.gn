@@ -32,6 +32,8 @@ source_set("lib") {
     "context_menu_mus.h",
     "disconnected_app_handler.cc",
     "disconnected_app_handler.h",
+    "display_synchronizer.cc",
+    "display_synchronizer.h",
     "drag_window_resizer.cc",
     "drag_window_resizer.h",
     "frame/detached_title_area_renderer.cc",

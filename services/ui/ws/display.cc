@@ -190,6 +190,8 @@ void Display::RemoveWindowManagerDisplayRoot(
        it != window_manager_display_root_map_.end(); ++it) {
     if (it->second == display_root) {
       window_manager_display_root_map_.erase(it);
+      if (window_manager_display_root_map_.empty())
+        display_manager()->DestroyDisplay(this);
       return;
     }
   }
@@ -299,10 +301,14 @@ void Display::OnViewportMetricsChanged(
     const display::ViewportMetrics& metrics) {
   platform_display_->UpdateViewportMetrics(metrics);
 
-  if (root_->bounds().size() == metrics.bounds_in_pixels.size())
+  SetBoundsInPixels(metrics.bounds_in_pixels);
+}
+
+void Display::SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) {
+  if (root_->bounds().size() == bounds_in_pixels.size())
     return;
 
-  gfx::Rect new_bounds(metrics.bounds_in_pixels.size());
+  gfx::Rect new_bounds(bounds_in_pixels.size());
   root_->SetBounds(new_bounds, allocator_.GenerateId());
   for (auto& pair : window_manager_display_root_map_)
     pair.second->root()->SetBounds(new_bounds, allocator_.GenerateId());
