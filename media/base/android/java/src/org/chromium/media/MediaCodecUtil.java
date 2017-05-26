@@ -87,7 +87,13 @@ class MediaCodecUtil {
         @SuppressWarnings("deprecation")
         private int getCodecCount() {
             if (hasNewMediaCodecList()) return mCodecList.length;
-            return MediaCodecList.getCodecCount();
+            try {
+                return MediaCodecList.getCodecCount();
+            } catch (RuntimeException e) {
+                // Swallow the exception due to bad Android implementation and pretend
+                // MediaCodecList is not supported.
+                return 0;
+            }
         }
 
         @SuppressWarnings("deprecation")
