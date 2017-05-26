@@ -43,7 +43,7 @@
     [RuntimeEnabled=MediaStreamSpeech] attribute MediaStreamTrack? audioTrack;
 
     // methods to drive the speech interaction
-    [RaisesException] void start();
+    [RaisesException, Measure] void start();
     [ImplementedAs=stopFunction] void stop();
     void abort();
 
