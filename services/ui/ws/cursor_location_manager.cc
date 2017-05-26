@@ -14,9 +14,9 @@ CursorLocationManager::CursorLocationManager() {}
 CursorLocationManager::~CursorLocationManager() {}
 
 void CursorLocationManager::OnMouseCursorLocationChanged(
-    const gfx::Point& point) {
+    const gfx::Point& point_in_dip) {
   current_cursor_location_ = static_cast<base::subtle::Atomic32>(
-      (point.x() & 0xFFFF) << 16 | (point.y() & 0xFFFF));
+      (point_in_dip.x() & 0xFFFF) << 16 | (point_in_dip.y() & 0xFFFF));
   if (cursor_location_memory()) {
     base::subtle::NoBarrier_Store(cursor_location_memory(),
                                   current_cursor_location_);

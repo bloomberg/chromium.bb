@@ -178,15 +178,6 @@ gfx::AcceleratedWidget PlatformDisplayDefault::GetAcceleratedWidget() const {
   return widget_;
 }
 
-void PlatformDisplayDefault::UpdateEventRootLocation(ui::LocatedEvent* event) {
-  // TODO(riajiang): This is broken for HDPI because it mixes PPs and DIPs. See
-  // http://crbug.com/701036 for details.
-  const display::Display& display = delegate_->GetDisplay();
-  gfx::Point location = event->location();
-  location.Offset(display.bounds().x(), display.bounds().y());
-  event->set_root_location(location);
-}
-
 void PlatformDisplayDefault::OnBoundsChanged(const gfx::Rect& new_bounds) {
   // We only care if the window size has changed.
   if (new_bounds.size() == metrics_.bounds_in_pixels.size())
@@ -202,9 +193,8 @@ void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
-  if (event->IsLocatedEvent())
-    UpdateEventRootLocation(event->AsLocatedEvent());
-
+  // Event location and event root location are the same, and both in pixels
+  // and display coordinates.
   if (event->IsScrollEvent()) {
     // TODO(moshayedi): crbug.com/602859. Dispatch scroll events as
     // they are once we have proper support for scroll events.

@@ -19,7 +19,6 @@ namespace ui {
 
 class EventSink;
 class ImageCursors;
-class LocatedEvent;
 class PlatformWindow;
 
 namespace ws {
@@ -52,13 +51,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   FrameGenerator* GetFrameGenerator() override;
 
  private:
-  // Update the root_location of located events to be relative to the origin
-  // of this display. For example, if the origin of this display is (1800, 0)
-  // and the location of the event is (100, 200) then the root_location will be
-  // updated to be (1900, 200).
-  // TODO(riajiang): This is totally broken with HDPI.
-  void UpdateEventRootLocation(ui::LocatedEvent* event);
-
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
   void OnDamageRect(const gfx::Rect& damaged_region) override;

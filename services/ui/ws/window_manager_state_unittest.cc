@@ -47,6 +47,7 @@ class WindowManagerStateTest : public testing::Test {
                            ServerWindow** server_window);
 
   void DispatchInputEventToWindow(ServerWindow* target,
+                                  const int64_t display_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator);
   void OnEventAckTimeout(ClientSpecificId client_id);
@@ -138,11 +139,13 @@ void WindowManagerStateTest::CreateSecondaryTree(
 
 void WindowManagerStateTest::DispatchInputEventToWindow(
     ServerWindow* target,
+    const int64_t display_id,
     const ui::Event& event,
     Accelerator* accelerator) {
   WindowManagerStateTestApi test_api(window_manager_state_);
   ClientSpecificId client_id = test_api.GetEventTargetClientId(target, false);
-  test_api.DispatchInputEventToWindow(target, client_id, event, accelerator);
+  test_api.DispatchInputEventToWindow(target, client_id, display_id, event,
+                                      accelerator);
 }
 
 void WindowManagerStateTest::OnEventAckTimeout(
@@ -182,8 +185,10 @@ TEST_F(WindowManagerStateTest, NullAccelerator) {
   EXPECT_TRUE(state);
 
   ServerWindow* target = window();
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  DispatchInputEventToWindow(target, key, nullptr);
+  DispatchInputEventToWindow(target, display->GetId(), key, nullptr);
   WindowTree* target_tree = window_tree();
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
@@ -201,7 +206,9 @@ TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
   std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
 
   ServerWindow* target = window();
-  DispatchInputEventToWindow(target, key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -350,7 +357,9 @@ TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
   std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
 
   ServerWindow* target = window();
-  DispatchInputEventToWindow(target, key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -368,7 +377,9 @@ TEST_F(WindowManagerStateTest, AcceleratorDeleted) {
   std::unique_ptr<Accelerator> accelerator(CreateAccelerator());
 
   ServerWindow* target = window();
-  DispatchInputEventToWindow(target, key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -387,7 +398,9 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   std::unique_ptr<Accelerator> accelerator(CreateAccelerator());
 
   ServerWindow* target = window();
-  DispatchInputEventToWindow(target, key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -401,7 +414,8 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   uint32_t accelerator_id = 2;
   std::unique_ptr<Accelerator> accelerator2(
       new Accelerator(accelerator_id, *matcher));
-  DispatchInputEventToWindow(target, key2, accelerator2.get());
+  DispatchInputEventToWindow(target, display->GetId(), key2,
+                             accelerator2.get());
   EXPECT_TRUE(tracker->changes()->empty());
 
   WindowTreeTestApi(window_tree()).AckOldestEvent();
@@ -418,7 +432,9 @@ TEST_F(WindowManagerStateTest, DeleteTree) {
   std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
 
   ServerWindow* target = window();
-  DispatchInputEventToWindow(target, key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -441,7 +457,9 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
   std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
-  DispatchInputEventToWindow(target, key, accelerator.get());
+  const Display* display = target_tree->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = embed_connection->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=2,1 event_action=7",
@@ -459,10 +477,12 @@ TEST_F(WindowManagerStateTest, DontSendQueuedEventsToADeadTree) {
   ServerWindow* target = window();
   TestChangeTracker* tracker = window_tree_client()->tracker();
 
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
                        base::TimeTicks(), EF_LEFT_MOUSE_BUTTON,
                        EF_LEFT_MOUSE_BUTTON);
-  DispatchInputEventToWindow(target, press, nullptr);
+  DispatchInputEventToWindow(target, display->GetId(), press, nullptr);
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=1",
             ChangesToDescription1(*tracker->changes())[0]);
@@ -474,7 +494,7 @@ TEST_F(WindowManagerStateTest, DontSendQueuedEventsToADeadTree) {
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(5, 5),
                          gfx::Point(5, 5), base::TimeTicks(),
                          EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON);
-  DispatchInputEventToWindow(target, release, nullptr);
+  DispatchInputEventToWindow(target, display->GetId(), release, nullptr);
   EXPECT_EQ(0u, tracker->changes()->size());
 
   // Destroying a window tree with an event in queue shouldn't crash.
@@ -485,7 +505,10 @@ TEST_F(WindowManagerStateTest, DontSendQueuedEventsToADeadTree) {
 TEST_F(WindowManagerStateTest, AckTimeout) {
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
   std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
-  DispatchInputEventToWindow(window(), key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(window());
+  DCHECK(display);
+  DispatchInputEventToWindow(window(), display->GetId(), key,
+                             accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -520,9 +543,12 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
     ASSERT_TRUE(embed_client_proxy);
 
     // Send an event to the embed window. It should go to the embedded client.
+    const Display* display = embed_tree->GetDisplay(embedder_window);
+    DCHECK(display);
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          base::TimeTicks(), 0, 0);
-    DispatchInputEventToWindow(embedder_window, mouse, nullptr);
+    DispatchInputEventToWindow(embedder_window, display->GetId(), mouse,
+                               nullptr);
     ASSERT_EQ(1u, embed_client_proxy->tracker()->changes()->size());
     EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT,
               (*embed_client_proxy->tracker()->changes())[0].type);
@@ -543,9 +569,12 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
 
     // Send an event to the embed window. But this time, it should reach the
     // embedder.
+    const Display* display = embed_tree->GetDisplay(embedder_window);
+    DCHECK(display);
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          base::TimeTicks(), 0, 0);
-    DispatchInputEventToWindow(embedder_window, mouse, nullptr);
+    DispatchInputEventToWindow(embedder_window, display->GetId(), mouse,
+                               nullptr);
     ASSERT_EQ(0u, embed_client_proxy->tracker()->changes()->size());
     ASSERT_EQ(1u, embedder_client->tracker()->changes()->size());
     EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT,
@@ -577,7 +606,8 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
     DCHECK(nested_embed_window->parent());
     mouse = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                            base::TimeTicks(), 0, 0);
-    DispatchInputEventToWindow(nested_embed_window, mouse, nullptr);
+    DispatchInputEventToWindow(nested_embed_window, display->GetId(), mouse,
+                               nullptr);
     ASSERT_EQ(0u, nested_embed_client_proxy->tracker()->changes()->size());
     ASSERT_EQ(0u, embed_client_proxy->tracker()->changes()->size());
 
@@ -597,7 +627,10 @@ TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
                                ui::EF_CONTROL_DOWN);
   std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
   ServerWindow* target = window();
-  DispatchInputEventToWindow(target, accelerator_key, accelerator.get());
+  const Display* display = window_tree()->GetDisplay(target);
+  DCHECK(display);
+  DispatchInputEventToWindow(target, display->GetId(), accelerator_key,
+                             accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
@@ -610,7 +643,8 @@ TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
   // shouldn't be called.
   ui::KeyEvent non_accelerator_key(ui::ET_KEY_PRESSED, ui::VKEY_T,
                                    ui::EF_CONTROL_DOWN);
-  DispatchInputEventToWindow(target, non_accelerator_key, nullptr);
+  DispatchInputEventToWindow(target, display->GetId(), non_accelerator_key,
+                             nullptr);
   ASSERT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
