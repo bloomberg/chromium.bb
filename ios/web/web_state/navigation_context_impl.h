@@ -35,12 +35,14 @@ class NavigationContextImpl : public NavigationContext {
   const GURL& GetUrl() const override;
   ui::PageTransition GetPageTransition() const override;
   bool IsSameDocument() const override;
+  bool IsPost() const override;
   NSError* GetError() const override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
   ~NavigationContextImpl() override;
 
   // Setters for navigation context data members.
   void SetIsSameDocument(bool is_same_document);
+  void SetIsPost(bool is_post);
   void SetError(NSError* error);
   void SetResponseHeaders(
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
@@ -58,6 +60,7 @@ class NavigationContextImpl : public NavigationContext {
   GURL url_;
   ui::PageTransition page_transition_;
   bool is_same_document_ = false;
+  bool is_post_ = false;
   base::scoped_nsobject<NSError> error_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   int navigation_item_unique_id_ = -1;

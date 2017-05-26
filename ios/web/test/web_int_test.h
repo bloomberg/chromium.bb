@@ -51,6 +51,9 @@ class WebIntTest : public WebTest {
   // Navigates |web_state_| to |url| and waits for the page to be loaded.
   void LoadUrl(const GURL& url);
 
+  // Navigates |web_state_| using |params| and waits for the page to be loaded.
+  void LoadWithParams(const NavigationManager::WebLoadParams& params);
+
   // Synchronously removes data from |data_store|.
   // |websiteDataTypes| is from the constants defined in
   // "WebKit/WKWebsiteDataRecord".

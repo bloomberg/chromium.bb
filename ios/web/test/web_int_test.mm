@@ -102,10 +102,16 @@ void WebIntTest::ExecuteBlockAndWaitForLoad(const GURL& url,
 }
 
 void WebIntTest::LoadUrl(const GURL& url) {
-  ExecuteBlockAndWaitForLoad(url, ^{
-    web::NavigationManager::WebLoadParams params(url);
-    params.transition_type = ui::PageTransition::PAGE_TRANSITION_TYPED;
-    navigation_manager()->LoadURLWithParams(params);
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PageTransition::PAGE_TRANSITION_TYPED;
+  LoadWithParams(params);
+}
+
+void WebIntTest::LoadWithParams(
+    const NavigationManager::WebLoadParams& params) {
+  NavigationManager::WebLoadParams block_params(params);
+  ExecuteBlockAndWaitForLoad(params.url, ^{
+    navigation_manager()->LoadURLWithParams(block_params);
   });
 }
 

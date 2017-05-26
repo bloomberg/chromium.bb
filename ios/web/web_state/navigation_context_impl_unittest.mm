@@ -55,12 +55,21 @@ TEST_F(NavigationContextImplTest, Setters) {
   ASSERT_TRUE(context);
 
   ASSERT_FALSE(context->IsSameDocument());
+  ASSERT_FALSE(context->IsPost());
   ASSERT_FALSE(context->GetError());
   ASSERT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetSameDocument
   context->SetIsSameDocument(true);
   EXPECT_TRUE(context->IsSameDocument());
+  ASSERT_FALSE(context->IsPost());
+  EXPECT_FALSE(context->GetError());
+  EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
+
+  // SetPost
+  context->SetIsPost(true);
+  EXPECT_TRUE(context->IsSameDocument());
+  ASSERT_TRUE(context->IsPost());
   EXPECT_FALSE(context->GetError());
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
 
@@ -68,12 +77,14 @@ TEST_F(NavigationContextImplTest, Setters) {
   NSError* error = [[[NSError alloc] init] autorelease];
   context->SetError(error);
   EXPECT_TRUE(context->IsSameDocument());
+  ASSERT_TRUE(context->IsPost());
   EXPECT_EQ(error, context->GetError());
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetResponseHeaders
   context->SetResponseHeaders(response_headers_);
   EXPECT_TRUE(context->IsSameDocument());
+  ASSERT_TRUE(context->IsPost());
   EXPECT_EQ(error, context->GetError());
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
 }

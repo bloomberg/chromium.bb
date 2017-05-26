@@ -1541,6 +1541,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     item = self.navigationManagerImpl->GetLastCommittedItem();
   }
   context->SetNavigationItemUniqueID(item->GetUniqueID());
+  context->SetIsPost([self isCurrentNavigationItemPOST]);
   _webStateImpl->SetIsLoading(true);
   _webStateImpl->OnNavigationStarted(context.get());
   return context;

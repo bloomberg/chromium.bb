@@ -42,6 +42,15 @@ class NavigationContext {
   // * same document history navigation
   virtual bool IsSameDocument() const = 0;
 
+  // Whether the initial navigation is done using HTTP POST method. This will
+  // not change during the navigation (even after encountering a server
+  // redirect).
+  //
+  // Note: page and frame navigations can only be done using POST or GET
+  // methods Therefore API exposes only |bool IsPost()| as opposed to
+  // |const std::string& GetMethod()| method.
+  virtual bool IsPost() const = 0;
+
   // Returns error if the navigation has failed.
   virtual NSError* GetError() const = 0;
 
