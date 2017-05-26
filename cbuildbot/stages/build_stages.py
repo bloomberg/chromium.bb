@@ -451,10 +451,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     self._portage_extra_env['GOMA_DIR'] = os.path.join(
         '/home', os.environ.get('USER'), 'goma')
 
-    # Set USE flag so that chrome is built with goma.
-    useflags = self._portage_extra_env.get('USE', '').split()
-    useflags.append('goma')
-    self._portage_extra_env['USE'] = ' '.join(useflags)
+    # Set USE_GOMA env var so that chrome is built with goma.
+    self._portage_extra_env['USE_GOMA'] = 'true'
 
     if self._run.options.goma_client_json:
       chroot_args.extend([
