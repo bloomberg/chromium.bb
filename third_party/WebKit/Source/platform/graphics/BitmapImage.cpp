@@ -604,6 +604,9 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
   // Stop the animation.
   StopAnimation();
 
+  if (!GetImageObserver())
+    return false;
+
   // See if anyone is still paying attention to this animation.  If not, we
   // don't advance, and will remain suspended at the current frame until the
   // animation is resumed.
@@ -654,7 +657,8 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
 }
 
 void BitmapImage::NotifyObserversOfAnimationAdvance(TimerBase*) {
-  GetImageObserver()->AnimationAdvanced(this);
+  if (GetImageObserver())
+    GetImageObserver()->AnimationAdvanced(this);
 }
 
 }  // namespace blink
