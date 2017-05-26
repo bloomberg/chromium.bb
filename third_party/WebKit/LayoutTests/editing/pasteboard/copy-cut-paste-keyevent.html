@@ -25,7 +25,7 @@ test(function() {
     txt.value = '123';
     txt.select();
     eventSender.keyDown('Copy');
-    assert_equals(txt.value, '123', 'Copy shouldnt modify selection');
+    assert_equals(txt.value, '123', 'Copy shouldn\'t modify selection');
     eventSender.keyDown('Paste');
     eventSender.keyDown('Paste');
     assert_equals(txt.value, '123123', 'Should Paste twice');
