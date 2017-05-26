@@ -626,10 +626,6 @@ const char kMainFrameResizesAreOrientationChanges[] =
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 
-// Sample memory usage with high frequency and store the results to the
-// Renderer.Memory histogram. Used in memory tests.
-const char kMemoryMetrics[]                 = "memory-metrics";
-
 // Sets options for MHTML generator to skip no-store resources:
 //   "skip-nostore-main" - fails to save a page if main frame is 'no-store'
 //   "skip-nostore-all" - also skips no-store subresources.

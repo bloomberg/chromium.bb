@@ -2149,7 +2149,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMainFrameResizesAreOrientationChanges,
     switches::kMaxUntiledLayerWidth,
     switches::kMaxUntiledLayerHeight,
-    switches::kMemoryMetrics,
     switches::kMojoLocalStorage,
     switches::kMSEAudioBufferSizeLimit,
     switches::kMSEVideoBufferSizeLimit,

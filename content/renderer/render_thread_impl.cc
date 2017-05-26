@@ -60,7 +60,6 @@
 #include "content/child/blob_storage/blob_message_filter.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_resource_message_filter.h"
-#include "content/child/content_child_helpers.h"
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
@@ -421,22 +420,6 @@ void CreateSingleSampleMetricsProvider(
 }
 
 }  // namespace
-
-// For measuring memory usage after each task. Behind a command line flag.
-class MemoryObserver : public base::MessageLoop::TaskObserver {
- public:
-  MemoryObserver() {}
-  ~MemoryObserver() override {}
-
-  void WillProcessTask(const base::PendingTask& pending_task) override {}
-
-  void DidProcessTask(const base::PendingTask& pending_task) override {
-    LOCAL_HISTOGRAM_MEMORY_KB("Memory.RendererUsed", GetMemoryUsageKB());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryObserver);
-};
 
 RenderThreadImpl::HistogramCustomizer::HistogramCustomizer() {
   custom_histograms_.insert("V8.MemoryExternalFragmentationTotal");
@@ -1242,11 +1225,6 @@ void RenderThreadImpl::InitializeWebKit(
   // Hook up blink's codecs so skia can call them
   SkGraphics::SetImageGeneratorFromEncodedDataFactory(
       blink::WebImageGenerator::Create);
-
-  if (command_line.HasSwitch(switches::kMemoryMetrics)) {
-    memory_observer_.reset(new MemoryObserver());
-    message_loop()->AddTaskObserver(memory_observer_.get());
-  }
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =
