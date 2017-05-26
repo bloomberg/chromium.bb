@@ -77,6 +77,11 @@ ASH_EXPORT void SetSnapsChildrenToPhysicalPixelBoundary(
 ASH_EXPORT int GetNonClientComponent(aura::Window* window,
                                      const gfx::Point& location);
 
+// When set, the child windows should get a slightly larger hit region to make
+// resizing easier.
+ASH_EXPORT void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window);
+ASH_EXPORT bool ShouldUseExtendedHitRegionForWindow(const aura::Window* window);
+
 // Requests the |window| to close and destroy itself. This is intended to
 // forward to an associated widget.
 ASH_EXPORT void CloseWidgetForWindow(aura::Window* window);

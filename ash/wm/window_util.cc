@@ -31,6 +31,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -143,6 +144,27 @@ int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {
   return window->delegate()
              ? window->delegate()->GetNonClientComponent(location)
              : HTNOWHERE;
+}
+
+void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
+  window->SetProperty(kChildrenUseExtendedHitRegion, true);
+  gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize);
+  gfx::Insets touch_extend =
+      mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
+  // TODO: EasyResizeWindowTargeter makes it so children get events outside
+  // their bounds. This only works in mash when mash is providing the non-client
+  // frame. Mus needs to support an api for the WindowManager that enables
+  // events to be dispatched to windows outside the windows bounds that this
+  // function calls into. http://crbug.com/679056.
+  window->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
+      window, mouse_extend, touch_extend));
+}
+
+bool ShouldUseExtendedHitRegionForWindow(const aura::Window* window) {
+  const aura::Window* parent = window->parent();
+  return parent && parent->GetProperty(kChildrenUseExtendedHitRegion);
 }
 
 void CloseWidgetForWindow(aura::Window* window) {

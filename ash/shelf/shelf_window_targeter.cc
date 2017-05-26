@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -24,13 +23,11 @@ gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
 
 }  // namespace
 
-ShelfWindowTargeter::ShelfWindowTargeter(WmWindow* container, Shelf* shelf)
-    : ::wm::EasyResizeWindowTargeter(WmWindow::GetAuraWindow(container),
-                                     gfx::Insets(),
-                                     gfx::Insets()),
+ShelfWindowTargeter::ShelfWindowTargeter(aura::Window* container, Shelf* shelf)
+    : ::wm::EasyResizeWindowTargeter(container, gfx::Insets(), gfx::Insets()),
       shelf_(shelf) {
   WillChangeVisibilityState(shelf_->GetVisibilityState());
-  container->aura_window()->AddObserver(this);
+  container->AddObserver(this);
   shelf_->AddObserver(this);
 }
 
