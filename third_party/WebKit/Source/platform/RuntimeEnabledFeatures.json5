@@ -946,7 +946,7 @@
     },
     {
       name: "StorageEstimate",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "StyleSharing",

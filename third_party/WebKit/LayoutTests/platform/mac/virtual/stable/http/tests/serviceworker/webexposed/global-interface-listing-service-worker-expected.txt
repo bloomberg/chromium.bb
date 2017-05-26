@@ -615,6 +615,7 @@ interface SharedArrayBuffer
 interface StorageManager
     attribute @@toStringTag
     method constructor
+    method estimate
     method persisted
 interface SubtleCrypto
     attribute @@toStringTag
