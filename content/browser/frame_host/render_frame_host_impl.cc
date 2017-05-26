@@ -2185,6 +2185,11 @@ void RenderFrameHostImpl::OnBeginNavigation(
 
   CommonNavigationParams validated_params = common_params;
   GetProcess()->FilterURL(false, &validated_params.url);
+  if (!validated_params.base_url_for_data_url.is_empty()) {
+    // Kills the process. http://crbug.com/726142
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED);
+  }
 
   BeginNavigationParams validated_begin_params = begin_params;
   GetProcess()->FilterURL(true, &validated_begin_params.searchable_form_url);
