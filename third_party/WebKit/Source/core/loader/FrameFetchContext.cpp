@@ -169,7 +169,7 @@ WebCachePolicy DetermineFrameWebCachePolicy(Frame* frame,
 }  // namespace
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
-    : BaseFetchContext(document), document_loader_(loader) {
+    : document_loader_(loader), document_(document) {
   DCHECK(GetFrame());
 }
 
@@ -177,7 +177,7 @@ void FrameFetchContext::ProvideDocumentToContext(FetchContext& context,
                                                  Document* document) {
   DCHECK(document);
   CHECK(context.IsFrameFetchContext());
-  static_cast<FrameFetchContext&>(context).execution_context_ = document;
+  static_cast<FrameFetchContext&>(context).document_ = document;
 }
 
 FrameFetchContext::~FrameFetchContext() {
@@ -195,7 +195,7 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
 }
 
 Document* FrameFetchContext::GetDocument() const {
-  return ToDocument(execution_context_.Get());
+  return document_;
 }
 
 LocalFrame* FrameFetchContext::GetFrame() const {
@@ -599,6 +599,10 @@ void FrameFetchContext::AddConsoleMessage(const String& message,
     GetFrame()->Console().AddMessage(console_message);
 }
 
+SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
+  return document_ ? document_->GetSecurityOrigin() : nullptr;
+}
+
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   // Record the latest requiredCSP value that will be used when sending this
   // request.
@@ -686,10 +690,9 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
   // `isNull()` check. https://crbug.com/625969
   if (request.GetFrameType() == WebURLRequest::kFrameTypeNone &&
       request.RequestorOrigin()->IsUnique()) {
-    request.SetRequestorOrigin(
-        GetDocument()->IsSandboxed(kSandboxOrigin)
-            ? SecurityOrigin::Create(execution_context_->Url())
-            : execution_context_->GetSecurityOrigin());
+    request.SetRequestorOrigin(GetDocument()->IsSandboxed(kSandboxOrigin)
+                                   ? SecurityOrigin::Create(document_->Url())
+                                   : document_->GetSecurityOrigin());
   }
 }
 
@@ -724,12 +727,6 @@ Settings* FrameFetchContext::GetSettings() const {
 SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
   DocumentLoader* document_loader = MasterDocumentLoader();
   return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
-}
-
-SecurityContext* FrameFetchContext::GetParentSecurityContext() const {
-  if (Frame* parent = GetFrame()->Tree().Parent())
-    return parent->GetSecurityContext();
-  return nullptr;
 }
 
 bool FrameFetchContext::ShouldBlockRequestByInspector(
@@ -771,6 +768,39 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
   return MixedContentChecker::ShouldBlockFetch(GetFrame(), resource_request,
                                                url, reporting_policy);
 }
+ReferrerPolicy FrameFetchContext::GetReferrerPolicy() const {
+  return document_->GetReferrerPolicy();
+}
+
+String FrameFetchContext::GetOutgoingReferrer() const {
+  return document_->OutgoingReferrer();
+}
+
+const KURL& FrameFetchContext::Url() const {
+  return document_->Url();
+}
+
+const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
+  Frame* parent = GetFrame()->Tree().Parent();
+  DCHECK(parent);
+  return parent->GetSecurityContext()->GetSecurityOrigin();
+}
+
+Optional<WebAddressSpace> FrameFetchContext::GetAddressSpace() const {
+  if (!document_)
+    return WTF::nullopt;
+  ExecutionContext* context = document_;
+  return WTF::make_optional(context->GetSecurityContext().AddressSpace());
+}
+
+const ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicy()
+    const {
+  return document_ ? document_->GetContentSecurityPolicy() : nullptr;
+}
+
+void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
+  return document_->AddConsoleMessage(message);
+}
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader() {
   return GetFrame()->CreateURLLoader();
@@ -778,6 +808,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader() {
 
 DEFINE_TRACE(FrameFetchContext) {
   visitor->Trace(document_loader_);
+  visitor->Trace(document_);
   BaseFetchContext::Trace(visitor);
 }
 

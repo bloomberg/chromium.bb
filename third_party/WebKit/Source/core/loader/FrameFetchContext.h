@@ -129,6 +129,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void SendImagePing(const KURL&) override;
   void AddConsoleMessage(const String&,
                          LogMessageType = kLogErrorMessage) const override;
+  SecurityOrigin* GetSecurityOrigin() const override;
 
   void PopulateResourceRequest(const KURL&,
                                Resource::Type,
@@ -171,7 +172,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   ContentSettingsClient* GetContentSettingsClient() const override;
   Settings* GetSettings() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
-  SecurityContext* GetParentSecurityContext() const override;
   bool ShouldBlockRequestByInspector(const ResourceRequest&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
@@ -184,8 +184,19 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceRequest&,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
+  ReferrerPolicy GetReferrerPolicy() const override;
+  String GetOutgoingReferrer() const override;
+  const KURL& Url() const override;
+  const SecurityOrigin* GetParentSecurityOrigin() const override;
+  Optional<WebAddressSpace> GetAddressSpace() const override;
+  const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
+  void AddConsoleMessage(ConsoleMessage*) const override;
 
   Member<DocumentLoader> document_loader_;
+  // FIXME: Oilpan: Ideally this should just be a traced Member but that will
+  // currently leak because ComputedStyle and its data are not on the heap.
+  // See crbug.com/383860 for details.
+  WeakMember<Document> document_;
 };
 
 }  // namespace blink

@@ -78,8 +78,7 @@ WorkerFetchContext* WorkerFetchContext::Create(
 WorkerFetchContext::WorkerFetchContext(
     WorkerGlobalScope& worker_global_scope,
     std::unique_ptr<WebWorkerFetchContext> web_context)
-    : BaseFetchContext(&worker_global_scope),
-      worker_global_scope_(worker_global_scope),
+    : worker_global_scope_(worker_global_scope),
       web_context_(std::move(web_context)),
       loading_task_runner_(Platform::Current()
                                ->CurrentThread()
@@ -112,14 +111,6 @@ Settings* WorkerFetchContext::GetSettings() const {
 
 SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
   // TODO(horo): Implement this.
-  return nullptr;
-}
-
-SecurityContext* WorkerFetchContext::GetParentSecurityContext() const {
-  // This method was introduced to check the parent frame's security context
-  // while loading iframe document resources. So this method is not suitable for
-  // workers.
-  NOTREACHED();
   return nullptr;
 }
 
@@ -163,6 +154,44 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
   // MixedContentChecker::ShouldBlockFetch().
   return MixedContentChecker::IsMixedContent(
       worker_global_scope_->GetSecurityOrigin(), url);
+}
+
+ReferrerPolicy WorkerFetchContext::GetReferrerPolicy() const {
+  return worker_global_scope_->GetReferrerPolicy();
+}
+
+String WorkerFetchContext::GetOutgoingReferrer() const {
+  return worker_global_scope_->OutgoingReferrer();
+}
+
+const KURL& WorkerFetchContext::Url() const {
+  return worker_global_scope_->Url();
+}
+
+const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
+  // This method was introduced to check the parent frame's security context
+  // while loading iframe document resources. So this method is not suitable for
+  // workers.
+  NOTREACHED();
+  return nullptr;
+}
+
+Optional<WebAddressSpace> WorkerFetchContext::GetAddressSpace() const {
+  return WTF::make_optional(
+      worker_global_scope_->GetSecurityContext().AddressSpace());
+}
+
+const ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy()
+    const {
+  return worker_global_scope_->GetContentSecurityPolicy();
+}
+
+void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
+  return worker_global_scope_->AddConsoleMessage(message);
+}
+
+SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
+  return worker_global_scope_->GetSecurityOrigin();
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader() {
