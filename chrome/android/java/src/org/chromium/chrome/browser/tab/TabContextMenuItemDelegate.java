@@ -226,9 +226,6 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
         chromeIntent.setPackage(mTab.getApplicationContext().getPackageName());
         chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // For "Open in Chrome" from the context menu in FullscreenActivity we want to bypass
-        // CustomTab, and this flag ensures we open in TabbedChrome.
-        chromeIntent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
 
         boolean activityStarted = false;
         if (pageUrl != null) {
