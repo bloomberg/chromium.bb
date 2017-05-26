@@ -317,6 +317,13 @@ const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     {flag_descriptions::kReaderModeHeuristicsAlwaysOff,
      switches::kReaderModeHeuristics, switches::reader_mode_heuristics::kNone},
 };
+
+const FeatureEntry::Choice kChromeHomeSwipeLogicChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kChromeHomeSwipeLogicRestrictArea,
+     switches::kChromeHomeSwipeLogicType, "restrict-area"},
+};
+
 #endif  // OS_ANDROID
 
 const FeatureEntry::Choice kNumRasterThreadsChoices[] = {
@@ -1762,6 +1769,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeHomeExpandButtonName,
      flag_descriptions::kChromeHomeExpandButtonDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeExpandButton)},
+    {"chrome-home-swipe-logic", flag_descriptions::kChromeHomeSwipeLogicName,
+     flag_descriptions::kChromeHomeSwipeLogicDescription, kOsAndroid,
+     MULTI_VALUE_TYPE(kChromeHomeSwipeLogicChoices)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-iph-demo-mode", flag_descriptions::kEnableIphDemoModeName,

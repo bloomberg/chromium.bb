@@ -889,6 +889,9 @@ const char kLocalNtpReload[]                = "local-ntp-reload";
 // Android authentication account type for SPNEGO authentication
 const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
 
+// Android authentication account type for SPNEGO authentication
+const char kChromeHomeSwipeLogicType[] = "chrome-home-swipe-logic";
+
 // Disables Contextual Search.
 const char kDisableContextualSearch[] = "disable-contextual-search";
 

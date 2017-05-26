@@ -47,6 +47,7 @@ public class FeatureUtilities {
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
     private static Boolean sChromeHomeEnabled;
+    private static String sChromeHomeSwipeLogicType;
 
     private static String sCachedHerbFlavor;
     private static boolean sIsHerbFlavorCached;
@@ -268,6 +269,20 @@ public class FeatureUtilities {
      */
     public static boolean isChromeHomeExpandButtonEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
+    }
+
+    /**
+     * @return The type of swipe logic used for opening the bottom sheet in Chrome Home. Null is
+     *         returned if the command line is not initialized or no experiment is specified.
+     */
+    public static String getChromeHomeSwipeLogicType() {
+        if (sChromeHomeSwipeLogicType == null && CommandLine.isInitialized()) {
+            CommandLine instance = CommandLine.getInstance();
+            sChromeHomeSwipeLogicType =
+                    instance.getSwitchValue(ChromeSwitches.CHROME_HOME_SWIPE_LOGIC);
+        }
+
+        return sChromeHomeSwipeLogicType;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

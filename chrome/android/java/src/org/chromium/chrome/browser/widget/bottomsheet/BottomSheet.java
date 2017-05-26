@@ -33,6 +33,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
@@ -112,6 +113,9 @@ public class BottomSheet
     /** The height ratio for the sheet in the SHEET_STATE_HALF state. */
     private static final float HALF_HEIGHT_RATIO = 0.55f;
 
+    /** The fraction of the width of the screen that, when swiped, will cause the sheet to move. */
+    private static final float SWIPE_ALLOWED_FRACTION = 0.2f;
+
     /**
      * Information about the different scroll states of the sheet. Order is important for these,
      * they go from smallest to largest.
@@ -128,6 +132,9 @@ public class BottomSheet
 
     /** This is a cached array for getting the window location of different views. */
     private final int[] mLocationArray = new int[2];
+
+    /** The visible rect for the screen taking the keyboard into account. */
+    private final Rect mVisibleViewportRect = new Rect();
 
     /** The minimum distance between half and full states to allow the half state. */
     private final float mMinHalfFullDistance;
@@ -280,7 +287,7 @@ public class BottomSheet
     private class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
-            return true;
+            return isTouchInSwipableXRange(e);
         }
 
         @Override
@@ -294,6 +301,8 @@ public class BottomSheet
                 setSheetState(SHEET_STATE_PEEK, false);
                 return false;
             }
+
+            if (!isTouchInSwipableXRange(e2)) return false;
 
             // Only start scrolling if the scroll is up or down. If the user is already scrolling,
             // continue moving the sheet.
@@ -349,6 +358,8 @@ public class BottomSheet
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if (!isTouchInSwipableXRange(e2)) return false;
+
             cancelAnimation();
             boolean wasOpenBeforeSwipe = mIsSheetOpen;
 
@@ -390,6 +401,29 @@ public class BottomSheet
                 assert false;
                 return false;
         }
+    }
+
+    /**
+     * Check if a touch event is in the swipable x-axis range of the toolbar when in peeking mode.
+     * If the "chrome-home-swipe-logic" flag is not set to "restrict-area" or the sheet is open,
+     * this function returns true.
+     * @param e The touch event.
+     * @return True if the touch is inside the swipable area of the toolbar.
+     */
+    private boolean isTouchInSwipableXRange(MotionEvent e) {
+        // If the sheet is already open or the experiment is not enabled, no need to restrict the
+        // swipe area.
+        if (mActivity == null || isSheetOpen()
+                || !ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA.equals(
+                           FeatureUtilities.getChromeHomeSwipeLogicType())) {
+            return true;
+        }
+
+        // Determine an area in the middle of the toolbar that is swipable.
+        float allowedSwipeWidth = mContainerWidth * SWIPE_ALLOWED_FRACTION;
+        float startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
+        float endX = startX + allowedSwipeWidth;
+        return e.getRawX() > startX && e.getRawX() < endX;
     }
 
     /**
@@ -581,9 +615,9 @@ public class BottomSheet
                 // Compute the new height taking the keyboard into account.
                 // TODO(mdjones): Share this logic with LocationBarLayout: crbug.com/725725.
                 int decorHeight = mActivity.getWindow().getDecorView().getHeight();
-                Rect displayFrame = new Rect();
-                mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(displayFrame);
-                int heightMinusKeyboard = Math.min(decorHeight, displayFrame.height());
+                mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(
+                        mVisibleViewportRect);
+                int heightMinusKeyboard = Math.min(decorHeight, mVisibleViewportRect.height());
 
                 boolean keyboardHeightChanged = heightMinusKeyboard != mHeightMinusKeyboard;
 

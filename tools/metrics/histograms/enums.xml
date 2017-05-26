@@ -22527,6 +22527,7 @@ from previous Chrome versions.
   <int value="1612974229" label="allow-insecure-localhost"/>
   <int value="1617187093" label="enable-improved-a2hs"/>
   <int value="1622131033" label="ozone-test-single-overlay-support"/>
+  <int value="1633456034" label="chrome-home-swipe-logic"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
