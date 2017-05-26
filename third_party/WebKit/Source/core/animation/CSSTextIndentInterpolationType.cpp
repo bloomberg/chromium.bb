@@ -71,14 +71,14 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSTextIndentNonInterpolableValue);
 namespace {
 
 class UnderlyingIndentModeChecker
-    : public InterpolationType::ConversionChecker {
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<UnderlyingIndentModeChecker> Create(
       const IndentMode& mode) {
     return WTF::WrapUnique(new UnderlyingIndentModeChecker(mode));
   }
 
-  bool IsValid(const InterpolationEnvironment&,
+  bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return mode_ == ToCSSTextIndentNonInterpolableValue(
                         *underlying.non_interpolable_value)
@@ -91,16 +91,17 @@ class UnderlyingIndentModeChecker
   const IndentMode mode_;
 };
 
-class InheritedIndentModeChecker : public InterpolationType::ConversionChecker {
+class InheritedIndentModeChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedIndentModeChecker> Create(
       const IndentMode& mode) {
     return WTF::WrapUnique(new InheritedIndentModeChecker(mode));
   }
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
-    return mode_ == IndentMode(*environment.GetState().ParentStyle());
+    return mode_ == IndentMode(*state.ParentStyle());
   }
 
  private:

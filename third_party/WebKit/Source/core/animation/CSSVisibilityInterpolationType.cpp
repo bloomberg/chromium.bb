@@ -49,7 +49,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSVisibilityNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSVisibilityNonInterpolableValue);
 
 class UnderlyingVisibilityChecker
-    : public InterpolationType::ConversionChecker {
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   ~UnderlyingVisibilityChecker() final {}
 
@@ -62,7 +62,7 @@ class UnderlyingVisibilityChecker
   UnderlyingVisibilityChecker(EVisibility visibility)
       : visibility_(visibility) {}
 
-  bool IsValid(const InterpolationEnvironment&,
+  bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     double underlying_fraction =
         ToInterpolableNumber(*underlying.interpolable_value).Value();
@@ -75,7 +75,8 @@ class UnderlyingVisibilityChecker
   const EVisibility visibility_;
 };
 
-class InheritedVisibilityChecker : public InterpolationType::ConversionChecker {
+class InheritedVisibilityChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedVisibilityChecker> Create(
       EVisibility visibility) {
@@ -86,9 +87,9 @@ class InheritedVisibilityChecker : public InterpolationType::ConversionChecker {
   InheritedVisibilityChecker(EVisibility visibility)
       : visibility_(visibility) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    return visibility_ == environment.GetState().ParentStyle()->Visibility();
+    return visibility_ == state.ParentStyle()->Visibility();
   }
 
   const EVisibility visibility_;

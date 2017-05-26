@@ -29,7 +29,8 @@ InterpolationValue CSSPaintInterpolationType::MaybeConvertInitial(
       CSSColorInterpolationType::CreateInterpolableColor(initial_color));
 }
 
-class InheritedPaintChecker : public InterpolationType::ConversionChecker {
+class InheritedPaintChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedPaintChecker> Create(
       CSSPropertyID property,
@@ -46,11 +47,11 @@ class InheritedPaintChecker : public InterpolationType::ConversionChecker {
   InheritedPaintChecker(CSSPropertyID property, const StyleColor& color)
       : property_(property), valid_color_(true), color_(color) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     StyleColor parent_color;
-    if (!PaintPropertyFunctions::GetColor(
-            property_, *environment.GetState().ParentStyle(), parent_color))
+    if (!PaintPropertyFunctions::GetColor(property_, *state.ParentStyle(),
+                                          parent_color))
       return !valid_color_;
     return valid_color_ && parent_color == color_;
   }

@@ -12,7 +12,8 @@
 
 namespace blink {
 
-class UnderlyingSizeListChecker : public InterpolationType::ConversionChecker {
+class UnderlyingSizeListChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   ~UnderlyingSizeListChecker() final {}
 
@@ -25,7 +26,7 @@ class UnderlyingSizeListChecker : public InterpolationType::ConversionChecker {
   UnderlyingSizeListChecker(const NonInterpolableList& underlying_list)
       : underlying_list_(&underlying_list) {}
 
-  bool IsValid(const InterpolationEnvironment&,
+  bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     const auto& underlying_list =
         ToNonInterpolableList(*underlying.non_interpolable_value);
@@ -45,7 +46,8 @@ class UnderlyingSizeListChecker : public InterpolationType::ConversionChecker {
   RefPtr<const NonInterpolableList> underlying_list_;
 };
 
-class InheritedSizeListChecker : public InterpolationType::ConversionChecker {
+class InheritedSizeListChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   ~InheritedSizeListChecker() final {}
 
@@ -61,11 +63,10 @@ class InheritedSizeListChecker : public InterpolationType::ConversionChecker {
                            const SizeList& inherited_size_list)
       : property_(property), inherited_size_list_(inherited_size_list) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
-    return inherited_size_list_ ==
-           SizeListPropertyFunctions::GetSizeList(
-               property_, *environment.GetState().ParentStyle());
+    return inherited_size_list_ == SizeListPropertyFunctions::GetSizeList(
+                                       property_, *state.ParentStyle());
   }
 
   CSSPropertyID property_;

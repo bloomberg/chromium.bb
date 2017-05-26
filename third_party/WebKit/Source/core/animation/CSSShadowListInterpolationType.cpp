@@ -47,7 +47,8 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertInitial(
       ShadowListPropertyFunctions::GetInitialShadowList(CssProperty()), 1);
 }
 
-class InheritedShadowListChecker : public InterpolationType::ConversionChecker {
+class InheritedShadowListChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedShadowListChecker> Create(
       CSSPropertyID property,
@@ -61,11 +62,11 @@ class InheritedShadowListChecker : public InterpolationType::ConversionChecker {
                              PassRefPtr<ShadowList> shadow_list)
       : property_(property), shadow_list_(std::move(shadow_list)) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     const ShadowList* inherited_shadow_list =
-        ShadowListPropertyFunctions::GetShadowList(
-            property_, *environment.GetState().ParentStyle());
+        ShadowListPropertyFunctions::GetShadowList(property_,
+                                                   *state.ParentStyle());
     if (!inherited_shadow_list && !shadow_list_)
       return true;
     if (!inherited_shadow_list || !shadow_list_)

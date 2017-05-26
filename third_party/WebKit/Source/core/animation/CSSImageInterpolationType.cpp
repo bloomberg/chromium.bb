@@ -129,7 +129,8 @@ bool CSSImageInterpolationType::EqualNonInterpolableValues(
       ToCSSImageNonInterpolableValue(*b));
 }
 
-class UnderlyingImageChecker : public InterpolationType::ConversionChecker {
+class UnderlyingImageChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   ~UnderlyingImageChecker() final {}
 
@@ -142,7 +143,7 @@ class UnderlyingImageChecker : public InterpolationType::ConversionChecker {
   UnderlyingImageChecker(const InterpolationValue& underlying)
       : underlying_(underlying.Clone()) {}
 
-  bool IsValid(const InterpolationEnvironment&,
+  bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     if (!underlying && !underlying_)
       return true;
@@ -172,7 +173,8 @@ InterpolationValue CSSImageInterpolationType::MaybeConvertInitial(
       ImagePropertyFunctions::GetInitialStyleImage(CssProperty()), true);
 }
 
-class InheritedImageChecker : public InterpolationType::ConversionChecker {
+class InheritedImageChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   ~InheritedImageChecker() final {}
 
@@ -187,10 +189,10 @@ class InheritedImageChecker : public InterpolationType::ConversionChecker {
   InheritedImageChecker(CSSPropertyID property, StyleImage* inherited_image)
       : property_(property), inherited_image_(inherited_image) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    const StyleImage* inherited_image = ImagePropertyFunctions::GetStyleImage(
-        property_, *environment.GetState().ParentStyle());
+    const StyleImage* inherited_image =
+        ImagePropertyFunctions::GetStyleImage(property_, *state.ParentStyle());
     if (!inherited_image_ && !inherited_image)
       return true;
     if (!inherited_image_ || !inherited_image)

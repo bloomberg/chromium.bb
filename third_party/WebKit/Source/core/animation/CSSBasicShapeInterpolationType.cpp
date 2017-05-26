@@ -18,7 +18,7 @@ namespace blink {
 namespace {
 
 class UnderlyingCompatibilityChecker
-    : public InterpolationType::ConversionChecker {
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<UnderlyingCompatibilityChecker> Create(
       PassRefPtr<NonInterpolableValue> underlying_non_interpolable_value) {
@@ -32,7 +32,7 @@ class UnderlyingCompatibilityChecker
       : underlying_non_interpolable_value_(
             std::move(underlying_non_interpolable_value)) {}
 
-  bool IsValid(const InterpolationEnvironment&,
+  bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return BasicShapeInterpolationFunctions::ShapesAreCompatible(
         *underlying_non_interpolable_value_,
@@ -42,7 +42,8 @@ class UnderlyingCompatibilityChecker
   RefPtr<NonInterpolableValue> underlying_non_interpolable_value_;
 };
 
-class InheritedShapeChecker : public InterpolationType::ConversionChecker {
+class InheritedShapeChecker
+    : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedShapeChecker> Create(
       CSSPropertyID property,
@@ -56,12 +57,11 @@ class InheritedShapeChecker : public InterpolationType::ConversionChecker {
                         PassRefPtr<BasicShape> inherited_shape)
       : property_(property), inherited_shape_(std::move(inherited_shape)) {}
 
-  bool IsValid(const InterpolationEnvironment& environment,
+  bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
-    return DataEquivalent(
-        inherited_shape_.Get(),
-        BasicShapePropertyFunctions::GetBasicShape(
-            property_, *environment.GetState().ParentStyle()));
+    return DataEquivalent(inherited_shape_.Get(),
+                          BasicShapePropertyFunctions::GetBasicShape(
+                              property_, *state.ParentStyle()));
   }
 
   const CSSPropertyID property_;
