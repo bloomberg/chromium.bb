@@ -92,7 +92,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
   // payments::PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateExtraView() override {
     std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
-        instrument_->icon_resource_id(), instrument_->label());
+        instrument_->icon_resource_id(), instrument_->GetLabel());
     card_icon_view->SetImageSize(gfx::Size(32, 20));
     return std::move(card_icon_view);
   }
@@ -109,12 +109,12 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     card_info_container->SetLayoutManager(box_layout.release());
 
-    if (!instrument_->label().empty())
-      card_info_container->AddChildView(new views::Label(instrument_->label()));
-    if (!instrument_->sublabel().empty()) {
-      card_info_container->AddChildView(
-          new views::Label(instrument_->sublabel()));
-    }
+    base::string16 label = instrument_->GetLabel();
+    if (!label.empty())
+      card_info_container->AddChildView(new views::Label(label));
+    base::string16 sublabel = instrument_->GetSublabel();
+    if (!sublabel.empty())
+      card_info_container->AddChildView(new views::Label(sublabel));
     if (!instrument_->IsCompleteForPayment()) {
       std::unique_ptr<views::Label> missing_info_label =
           base::MakeUnique<views::Label>(instrument_->GetMissingInfoLabel(),

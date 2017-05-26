@@ -571,6 +571,57 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+                       ChangeCardHolderName) {
+  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(billing_profile);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  // Don't set billing address yet, so we can simply click on list view to edit.
+  card.set_billing_address_id("");
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+
+  // One instrument is available, it is not selected, but is properly named.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(nullptr, request->state()->selected_instrument());
+  EXPECT_EQ(
+      card.GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
+                   request->state()->GetApplicationLocale()),
+      request->state()->available_instruments()[0]->GetSublabel());
+
+  OpenPaymentMethodScreen();
+
+  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW);
+  // Change the name.
+  SetEditorTextfieldValue(base::ASCIIToUTF16("Bob the second"),
+                          autofill::CREDIT_CARD_NAME_FULL);
+  // Make the card valid.
+  SelectBillingAddress(billing_profile.guid());
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  data_loop.Run();
+
+  // One instrument is available, is selected, and is properly named.
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_NE(nullptr, request->state()->selected_instrument());
+  EXPECT_EQ(base::ASCIIToUTF16("Bob the second"),
+            request->state()->selected_instrument()->GetSublabel());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        CreateNewBillingAddress) {
   autofill::CreditCard card = autofill::test::GetCreditCard();
   // Make sure to clear billing address and have none available.
