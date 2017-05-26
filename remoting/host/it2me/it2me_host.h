@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
+#include "remoting/protocol/port_range.h"
 #include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
@@ -105,6 +107,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   base::WeakPtr<It2MeHost::Observer> observer() { return observer_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(It2MeHostTest, HostUdpPortRangePolicy_ValidRange);
+  FRIEND_TEST_ALL_PREFIXES(It2MeHostTest, HostUdpPortRangePolicy_NoRange);
+
   // Updates state of the host. Can be called only on the network thread.
   void SetState(It2MeHostState state, const std::string& error_message);
 
@@ -132,6 +137,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void UpdateHostDomainListPolicy(std::vector<std::string> host_domain_list);
   void UpdateClientDomainListPolicy(
       std::vector<std::string> client_domain_list);
+  void UpdateHostUdpPortRangePolicy(const std::string& port_range_string);
 
   void DisconnectOnNetworkThread();
 
@@ -168,6 +174,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // The client and host domain policy setting.
   std::vector<std::string> required_client_domain_list_;
   std::vector<std::string> required_host_domain_list_;
+
+  // The host port range policy setting.
+  PortRange udp_port_range_;
 
   // Tracks the JID of the remote user when in a connecting state.
   std::string connecting_jid_;

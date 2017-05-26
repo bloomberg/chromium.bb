@@ -191,13 +191,19 @@ void It2MeHost::FinishConnect() {
   // Beyond this point nothing can fail, so save the config and request.
   register_request_ = std::move(register_request);
 
-  // If NAT traversal is off then limit port range to allow firewall pin-holing.
   HOST_LOG << "NAT state: " << nat_traversal_enabled_;
+
   protocol::NetworkSettings network_settings(
      nat_traversal_enabled_ ?
      protocol::NetworkSettings::NAT_TRAVERSAL_FULL :
      protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED);
-  if (!nat_traversal_enabled_) {
+
+  if (!udp_port_range_.is_null()) {
+    network_settings.port_range = udp_port_range_;
+  } else if (!nat_traversal_enabled_) {
+    // For legacy reasons we have to restrict the port range to a set of default
+    // values when nat traversal is disabled, even if the port range was not
+    // set in policy.
     network_settings.port_range.min_port =
         protocol::NetworkSettings::kDefaultMinPort;
     network_settings.port_range.max_port =
@@ -330,6 +336,12 @@ void It2MeHost::OnPolicyUpdate(
     UpdateClientDomainListPolicy(std::move(client_domain_list_vector));
   }
 
+  std::string port_range_string;
+  if (policies->GetString(policy::key::kRemoteAccessHostUdpPortRange,
+                          &port_range_string)) {
+    UpdateHostUdpPortRangePolicy(port_range_string);
+  }
+
   policy_received_ = true;
 
   if (!pending_connect_.is_null()) {
@@ -384,6 +396,22 @@ void It2MeHost::UpdateClientDomainListPolicy(
   }
 
   required_client_domain_list_ = std::move(client_domain_list);
+}
+
+void It2MeHost::UpdateHostUdpPortRangePolicy(
+    const std::string& port_range_string) {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
+  VLOG(2) << "UpdateHostUdpPortRangePolicy: " << port_range_string;
+
+  if (IsRunning()) {
+    DisconnectOnNetworkThread();
+  }
+
+  if (!PortRange::Parse(port_range_string, &udp_port_range_)) {
+    // PolicyWatcher verifies that the value is formatted correctly.
+    LOG(FATAL) << "Invalid port range: " << port_range_string;
+  }
 }
 
 void It2MeHost::SetState(It2MeHostState state,
