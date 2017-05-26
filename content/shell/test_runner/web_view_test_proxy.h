@@ -197,10 +197,6 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
     return Base::CreateView(creator, request, features, frame_name, policy,
                             suppress_opener);
   }
-  void SetStatusText(const blink::WebString& text) override {
-    view_test_client()->SetStatusText(text);
-    Base::SetStatusText(text);
-  }
   void PrintPage(blink::WebLocalFrame* frame) override {
     view_test_client()->PrintPage(frame);
   }

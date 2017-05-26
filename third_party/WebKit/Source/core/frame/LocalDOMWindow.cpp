@@ -1123,28 +1123,10 @@ void LocalDOMWindow::setName(const AtomicString& name) {
 
 void LocalDOMWindow::setStatus(const String& string) {
   status_ = string;
-
-  if (!GetFrame())
-    return;
-
-  Page* page = GetFrame()->GetPage();
-  if (!page)
-    return;
-
-  page->GetChromeClient().SetStatusbarText(status_);
 }
 
 void LocalDOMWindow::setDefaultStatus(const String& string) {
   default_status_ = string;
-
-  if (!GetFrame())
-    return;
-
-  Page* page = GetFrame()->GetPage();
-  if (!page)
-    return;
-
-  page->GetChromeClient().SetStatusbarText(default_status_);
 }
 
 String LocalDOMWindow::origin() const {

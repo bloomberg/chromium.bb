@@ -61,7 +61,6 @@ void LayoutTestRuntimeFlags::Reset() {
   set_can_open_windows(false);
 
   set_dump_create_view(false);
-  set_dump_window_status_changes(false);
   set_dump_spell_check_callbacks(false);
   set_dump_javascript_dialogs(true);
 

@@ -183,7 +183,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                             const String& message,
                             const String& default_value,
                             String& result);
-  virtual void SetStatusbarText(const String&) = 0;
   virtual bool TabsToLinks() = 0;
 
   virtual void* WebView() const = 0;

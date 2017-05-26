@@ -108,7 +108,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
                                     const String& message,
                                     const String& default_value,
                                     String& result) override;
-  void SetStatusbarText(const String& message) override;
   bool TabsToLinks() override;
   void InvalidateRect(const IntRect&) override;
   void ScheduleAnimation(const PlatformFrameView*) override;

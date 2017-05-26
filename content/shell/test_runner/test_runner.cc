@@ -155,7 +155,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpSpellCheckCallbacks();
   void DumpTitleChanges();
   void DumpUserGestureInFrameLoadCallbacks();
-  void DumpWindowStatusChanges();
   void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
   void EvaluateInWebInspector(int call_id, const std::string& script);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
@@ -439,10 +438,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
       .SetMethod("dumpSpellCheckCallbacks",
                  &TestRunnerBindings::DumpSpellCheckCallbacks)
-
-      // Used at fast/dom/assign-to-window-status.html
-      .SetMethod("dumpStatusCallbacks",
-                 &TestRunnerBindings::DumpWindowStatusChanges)
       .SetMethod("dumpTitleChanges", &TestRunnerBindings::DumpTitleChanges)
       .SetMethod("dumpUserGestureInFrameLoadCallbacks",
                  &TestRunnerBindings::DumpUserGestureInFrameLoadCallbacks)
@@ -1201,11 +1196,6 @@ void TestRunnerBindings::DumpPermissionClientCallbacks() {
     runner_->DumpPermissionClientCallbacks();
 }
 
-void TestRunnerBindings::DumpWindowStatusChanges() {
-  if (runner_)
-    runner_->DumpWindowStatusChanges();
-}
-
 void TestRunnerBindings::DumpSpellCheckCallbacks() {
   if (runner_)
     runner_->DumpSpellCheckCallbacks();
@@ -1880,10 +1870,6 @@ WebTextCheckClient* TestRunner::GetWebTextCheckClient() const {
 
 void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
   web_view->SetCredentialManagerClient(credential_manager_client_.get());
-}
-
-bool TestRunner::shouldDumpStatusCallbacks() const {
-  return layout_test_runtime_flags_.dump_window_status_changes();
 }
 
 bool TestRunner::shouldDumpSpellCheckCallbacks() const {
@@ -2562,11 +2548,6 @@ void TestRunner::SetDisallowedSubresourcePathSuffixes(
   DCHECK(main_view_);
   main_view_->MainFrame()->DataSource()->SetSubresourceFilter(
       new MockWebDocumentSubresourceFilter(suffixes));
-}
-
-void TestRunner::DumpWindowStatusChanges() {
-  layout_test_runtime_flags_.set_dump_window_status_changes(true);
-  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpSpellCheckCallbacks() {
