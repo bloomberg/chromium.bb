@@ -931,6 +931,9 @@ bool ChromeClientImpl::HasOpenedPopup() const {
 
 PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
+  if (frame.GetDocument()->GetSettings()->GetPagePopupsSuppressed())
+    return nullptr;
+
   NotifyPopupOpeningObservers();
   if (WebViewBase::UseExternalPopupMenus())
     return new ExternalPopupMenu(frame, select, *web_view_);

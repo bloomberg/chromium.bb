@@ -29,6 +29,7 @@
  */
 
 #include "core/exported/WebViewBase.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/html/forms/DateTimeChooserClient.h"
@@ -353,6 +354,11 @@ class PagePopupSuppressionTest : public testing::Test {
                                                       params);
   }
 
+  bool CanOpenPopupMenu() {
+    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    return !!chrome_client_impl_->OpenPopupMenu(*frame, *select_);
+  }
+
   Settings* GetSettings() {
     LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
     return frame->GetDocument()->GetSettings();
@@ -372,6 +378,7 @@ class PagePopupSuppressionTest : public testing::Test {
         new FakeColorChooserClient(frame->GetDocument()->documentElement());
     date_time_chooser_client_ =
         new FakeDateTimeChooserClient(frame->GetDocument()->documentElement());
+    select_ = HTMLSelectElement::Create(*(frame->GetDocument()));
   }
 
   void TearDown() override { web_view_->Close(); }
@@ -384,6 +391,7 @@ class PagePopupSuppressionTest : public testing::Test {
   Persistent<ChromeClientImpl> chrome_client_impl_;
   Persistent<FakeColorChooserClient> color_chooser_client_;
   Persistent<FakeDateTimeChooserClient> date_time_chooser_client_;
+  Persistent<HTMLSelectElement> select_;
 };
 
 TEST_F(PagePopupSuppressionTest, SuppressColorChooser) {
@@ -410,6 +418,19 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 
   settings->SetPagePopupsSuppressed(false);
   EXPECT_TRUE(CanOpenDateTimeChooser());
+}
+
+TEST_F(PagePopupSuppressionTest, SuppressPopupMenu) {
+  // By default, the popup should be shown.
+  EXPECT_TRUE(CanOpenPopupMenu());
+
+  Settings* settings = GetSettings();
+  settings->SetPagePopupsSuppressed(true);
+
+  EXPECT_FALSE(CanOpenPopupMenu());
+
+  settings->SetPagePopupsSuppressed(false);
+  EXPECT_TRUE(CanOpenPopupMenu());
 }
 
 }  // namespace blink
