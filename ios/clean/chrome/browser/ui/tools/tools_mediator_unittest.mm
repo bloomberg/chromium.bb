@@ -8,6 +8,7 @@
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator_private.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -81,7 +82,7 @@ TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherNonIncognito) {
                                      andConfiguration:configuration];
 
   ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
-  EXPECT_EQ(@"Close All Incognito Tabs", closeAllTabsItem.title);
+  EXPECT_NSEQ(@"Close All Incognito Tabs", closeAllTabsItem.title);
   EXPECT_EQ(5ul, [mediator_.menuItemsArray count]);
 }
 
@@ -95,7 +96,7 @@ TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherIncognito) {
                                      andConfiguration:configuration];
 
   ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
-  EXPECT_EQ(@"Close All Tabs", closeAllTabsItem.title);
+  EXPECT_NSEQ(@"Close All Tabs", closeAllTabsItem.title);
   EXPECT_EQ(5ul, [mediator_.menuItemsArray count]);
 }
 
