@@ -671,6 +671,9 @@ void DocumentMarkerController::ShowMarkers() const {
     MarkerLists* markers = markers_.at(node);
     for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
       DocumentMarkerList* const list = ListForType(markers, type);
+      if (!list)
+        continue;
+
       const HeapVector<Member<DocumentMarker>>& markers_in_list =
           list->GetMarkers();
       for (const DocumentMarker* marker : markers_in_list) {
