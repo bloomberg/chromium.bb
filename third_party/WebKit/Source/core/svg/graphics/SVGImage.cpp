@@ -577,6 +577,9 @@ bool SVGImage::MaybeAnimated() {
 }
 
 void SVGImage::ServiceAnimations(double monotonic_animation_start_time) {
+  if (!GetImageObserver())
+    return;
+
   // If none of our observers (sic!) are visible, or for some other reason
   // does not want us to keep running animations, stop them until further
   // notice (next paint.)
