@@ -32,7 +32,8 @@ struct ActivationState {
            (filtering_disabled_for_document ||
             generic_blocking_rules_disabled ==
                 rhs.generic_blocking_rules_disabled) &&
-           measure_performance == rhs.measure_performance;
+           measure_performance == rhs.measure_performance &&
+           enable_logging == rhs.enable_logging;
   }
 
   bool operator!=(const ActivationState& rhs) const { return !operator==(rhs); }

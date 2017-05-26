@@ -82,9 +82,15 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
   ActivationState state = ActivationState(activation_options_.activation_level);
   state.measure_performance = ShouldMeasurePerformanceForPageLoad(
       activation_options_.performance_measurement_rate);
-  // TODO(csharrison): Set state.enable_logging based on metadata returns from
-  // the safe browsing filter, when it is available. Add tests for this
-  // behavior.
+
+  // TODO(csharrison): Also use metadata returned from the safe browsing filter,
+  // when it is available to set enable_logging. Add tests for this behavior.
+  state.enable_logging =
+      activation_options_.activation_level == ActivationLevel::ENABLED &&
+      !activation_options_.should_suppress_notifications &&
+      base::FeatureList::IsEnabled(
+          kSafeBrowsingSubresourceFilterExperimentalUI);
+
   SubresourceFilterObserverManager::FromWebContents(web_contents())
       ->NotifyPageActivationComputed(navigation_handle, activation_decision_,
                                      state);
