@@ -32,7 +32,7 @@ CommandBufferDirect::CommandBufferDirect(
     AsyncAPIInterface* handler,
     const MakeCurrentCallback& callback,
     SyncPointManager* sync_point_manager)
-    : service_(transfer_buffer_manager, handler),
+    : service_(this, transfer_buffer_manager, handler),
       make_current_callback_(callback),
       sync_point_manager_(sync_point_manager),
       command_buffer_id_(
@@ -132,6 +132,13 @@ scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBuffer(size_t size,
 void CommandBufferDirect::DestroyTransferBuffer(int32_t id) {
   service_.DestroyTransferBuffer(id);
 }
+
+CommandBufferServiceClient::CommandBatchProcessedResult
+CommandBufferDirect::OnCommandBatchProcessed() {
+  return kContinueExecution;
+}
+
+void CommandBufferDirect::OnParseError() {}
 
 gpu::CommandBufferNamespace CommandBufferDirect::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::IN_PROCESS;

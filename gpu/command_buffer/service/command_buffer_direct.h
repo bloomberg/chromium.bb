@@ -20,7 +20,8 @@ class SyncPointManager;
 class SyncPointOrderData;
 struct SyncToken;
 
-class GPU_EXPORT CommandBufferDirect : public CommandBuffer {
+class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
+                                       public CommandBufferServiceClient {
  public:
   using MakeCurrentCallback = base::Callback<bool()>;
 
@@ -46,6 +47,10 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer {
   void SetGetBuffer(int32_t transfer_buffer_id) override;
   scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
+
+  // CommandBufferServiceBase implementation:
+  CommandBatchProcessedResult OnCommandBatchProcessed() override;
+  void OnParseError() override;
 
   CommandBufferNamespace GetNamespaceID() const;
   CommandBufferId GetCommandBufferID() const;

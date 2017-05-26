@@ -54,6 +54,7 @@ class SyncPointClientState;
 class GPU_EXPORT GpuCommandBufferStub
     : public IPC::Listener,
       public IPC::Sender,
+      public CommandBufferServiceClient,
       public ImageTransportSurfaceDelegate,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
@@ -89,6 +90,10 @@ class GPU_EXPORT GpuCommandBufferStub
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
+
+  // CommandBufferServiceClient implementation:
+  CommandBatchProcessedResult OnCommandBatchProcessed() override;
+  void OnParseError() override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -193,8 +198,6 @@ class GPU_EXPORT GpuCommandBufferStub
   void OnCreateStreamTexture(uint32_t texture_id,
                              int32_t stream_id,
                              bool* succeeded);
-  void OnCommandProcessed();
-  void OnParseError();
 
   void ReportState();
 

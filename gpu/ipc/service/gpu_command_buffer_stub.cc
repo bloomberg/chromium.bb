@@ -637,20 +637,11 @@ bool GpuCommandBufferStub::Initialize(
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
 
   command_buffer_.reset(new CommandBufferService(
-      context_group_->transfer_buffer_manager(), decoder_.get()));
+      this, context_group_->transfer_buffer_manager(), decoder_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
-
-  if (channel_->scheduler()) {
-    command_buffer_->SetPauseExecutionCallback(
-        base::Bind(&Scheduler::ShouldYield,
-                   base::Unretained(channel_->scheduler()), sequence_id_));
-  } else if (channel_->preempted_flag()) {
-    command_buffer_->SetPauseExecutionCallback(
-        base::Bind(&PreemptionFlag::IsSet, channel_->preempted_flag()));
-  }
 
   decoder_->set_command_buffer_service(command_buffer_.get());
 
@@ -802,14 +793,6 @@ bool GpuCommandBufferStub::Initialize(
       base::Bind(&GpuCommandBufferStub::OnRescheduleAfterFinished,
                  base::Unretained(this)));
 
-  command_buffer_->SetParseErrorCallback(
-      base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
-
-  if (channel_->watchdog()) {
-    command_buffer_->SetCommandProcessedCallback(base::Bind(
-        &GpuCommandBufferStub::OnCommandProcessed, base::Unretained(this)));
-  }
-
   const size_t kSharedStateSize = sizeof(CommandBufferSharedState);
   if (!shared_state_shm->Map(kSharedStateSize)) {
     DLOG(ERROR) << "Failed to map shared state buffer.";
@@ -869,6 +852,19 @@ void GpuCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
 void GpuCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
                                                bool is_lost) {
   decoder_->ReturnFrontBuffer(mailbox, is_lost);
+}
+
+CommandBufferServiceClient::CommandBatchProcessedResult
+GpuCommandBufferStub::OnCommandBatchProcessed() {
+  if (channel_->watchdog())
+    channel_->watchdog()->CheckArmed();
+  bool pause = false;
+  if (channel_->scheduler()) {
+    pause = channel_->scheduler()->ShouldYield(sequence_id_);
+  } else if (channel_->preempted_flag()) {
+    pause = channel_->preempted_flag()->IsSet();
+  }
+  return pause ? kPauseExecution : kContinueExecution;
 }
 
 void GpuCommandBufferStub::OnParseError() {
@@ -1012,11 +1008,6 @@ void GpuCommandBufferStub::OnDestroyTransferBuffer(int32_t id) {
 
   if (command_buffer_)
     command_buffer_->DestroyTransferBuffer(id);
-}
-
-void GpuCommandBufferStub::OnCommandProcessed() {
-  DCHECK(channel_->watchdog());
-  channel_->watchdog()->CheckArmed();
 }
 
 void GpuCommandBufferStub::ReportState() {

@@ -46,6 +46,24 @@ class GPU_EXPORT CommandBufferServiceBase {
   virtual void SetContextLostReason(error::ContextLostReason) = 0;
 };
 
+class GPU_EXPORT CommandBufferServiceClient {
+ public:
+  enum CommandBatchProcessedResult {
+    kContinueExecution,
+    kPauseExecution,
+  };
+
+  virtual ~CommandBufferServiceClient() {}
+
+  // Called every time a batch of commands was processed by the
+  // CommandBufferService. The return value indicates whether the
+  // CommandBufferService should continue execution of commands or pause it.
+  virtual CommandBatchProcessedResult OnCommandBatchProcessed() = 0;
+
+  // Called when the CommandBufferService gets into an error state.
+  virtual void OnParseError() = 0;
+};
+
 union CommandBufferEntry;
 
 // An object that implements a shared memory command buffer and a synchronous
@@ -53,9 +71,9 @@ union CommandBufferEntry;
 class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
  public:
   static const int kParseCommandsSlice = 20;
-  using PauseExecutionCallback = base::Callback<bool(void)>;
 
-  CommandBufferService(TransferBufferManager* transfer_buffer_manager,
+  CommandBufferService(CommandBufferServiceClient* client,
+                       TransferBufferManager* transfer_buffer_manager,
                        AsyncAPIInterface* handler);
   ~CommandBufferService() override;
 
@@ -66,10 +84,6 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   void SetToken(int32_t token) override;
   void SetParseError(error::Error error) override;
   void SetContextLostReason(error::ContextLostReason) override;
-
-  void SetPauseExecutionCallback(const PauseExecutionCallback& callback);
-  void SetCommandProcessedCallback(const base::Closure& callback);
-  void SetParseErrorCallback(const base::Closure& callback);
 
   // Setup the shared memory that shared state should be copied into.
   void SetSharedStateBuffer(std::unique_ptr<BufferBacking> shared_state_buffer);
@@ -109,9 +123,9 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   int32_t put_offset() const { return put_offset_; }
 
  private:
-  bool PauseExecution();
   error::Error ProcessCommands(int num_commands);
 
+  CommandBufferServiceClient* client_;
   TransferBufferManager* transfer_buffer_manager_;
   AsyncAPIInterface* handler_;
 
@@ -125,11 +139,6 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
 
   std::unique_ptr<BufferBacking> shared_state_buffer_;
   CommandBufferSharedState* shared_state_ = nullptr;
-
-  // If this callback returns true, exit FlushHelper early.
-  PauseExecutionCallback pause_execution_callback_;
-  base::Closure command_processed_callback_;
-  base::Closure parse_error_callback_;
 
   // Whether the scheduler is currently able to process more commands.
   bool scheduled_ = true;
