@@ -33,6 +33,9 @@ _log = logging.getLogger(__name__)
 
 class MockUser(object):
 
+    DEFAULT_YES = 'y'
+    DEFAULT_NO = 'n'
+
     @classmethod
     def prompt(cls, message, repeat=1, raw_input=raw_input):
         return 'Mock user response'
