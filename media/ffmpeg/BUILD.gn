@@ -21,6 +21,7 @@ source_set("ffmpeg") {
     "//media:shared_memory_support",
     "//media/base",
     "//third_party/ffmpeg",
+    "//third_party/ffmpeg:ffmpeg_features",
   ]
 }
 

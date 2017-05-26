@@ -34,12 +34,7 @@ static inline bool IsEndOfStream(int result,
 
 // Return the number of channels from the data in |frame|.
 static inline int DetermineChannels(AVFrame* frame) {
-#if defined(CHROMIUM_NO_AVFRAME_CHANNELS)
-  // When use_system_ffmpeg==1, libav's AVFrame doesn't have channels field.
-  return av_get_channel_layout_nb_channels(frame->channel_layout);
-#else
   return frame->channels;
-#endif
 }
 
 // Called by FFmpeg's allocation routine to allocate a buffer. Uses

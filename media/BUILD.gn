@@ -284,6 +284,7 @@ component("media") {
     public_deps += [ "//media/ffmpeg" ]
     deps += [
       "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
       "//third_party/opus",
     ]
     sources += [
