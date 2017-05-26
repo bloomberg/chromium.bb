@@ -182,8 +182,9 @@ class PickleTest : public testing::Test {
 
 }  // namespace
 
-#if _MSC_FULL_VER == 191025017
-// Disabled due to this VS 2017 RTM code-gen bug:
+#if _MSC_FULL_VER == 191025017 || _MSC_FULL_VER == 191125303
+// Disabled due to this VS 2017 RTM code-gen bug, still present in Update 3
+// Preview 1:
 // https://developercommunity.visualstudio.com/content/problem/40904/bad-code-gen-in-chromes-mojo-public-bindings-unitt.html
 #define MAYBE_ChromiumProxyToChromiumService \
   DISABLED_ChromiumProxyToChromiumService
