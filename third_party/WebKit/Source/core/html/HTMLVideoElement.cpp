@@ -508,21 +508,18 @@ void HTMLVideoElement::MediaRemotingStarted() {
 }
 
 void HTMLVideoElement::MediaRemotingStopped() {
-  // Early return because this was already called when media remoting was
-  // disabled.
-  if (media_remoting_status_ == MediaRemotingStatus::kDisabled)
-    return;
-  DCHECK(media_remoting_status_ == MediaRemotingStatus::kStarted);
+  DCHECK(media_remoting_status_ == MediaRemotingStatus::kDisabled ||
+         media_remoting_status_ == MediaRemotingStatus::kStarted);
+  if (media_remoting_status_ != MediaRemotingStatus::kDisabled)
+    media_remoting_status_ = MediaRemotingStatus::kNotStarted;
   DCHECK(remoting_interstitial_);
-  media_remoting_status_ = MediaRemotingStatus::kNotStarted;
   remoting_interstitial_->Hide();
 }
 
 void HTMLVideoElement::DisableMediaRemoting() {
+  media_remoting_status_ = MediaRemotingStatus::kDisabled;
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->RequestRemotePlaybackDisabled(true);
-  media_remoting_status_ = MediaRemotingStatus::kDisabled;
-  MediaRemotingStopped();
 }
 
 }  // namespace blink
