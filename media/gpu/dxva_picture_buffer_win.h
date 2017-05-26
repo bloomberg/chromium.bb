@@ -48,6 +48,7 @@ class DXVAPictureBuffer {
 
   bool available() const { return state_ == UNUSED; }
   State state() const { return state_; }
+  const PictureBuffer& picture_buffer() const { return picture_buffer_; }
 
   int id() const { return picture_buffer_.id(); }
 
@@ -66,6 +67,10 @@ class DXVAPictureBuffer {
   // support.
   virtual bool AllowOverlay() const = 0;
 
+  // Returns true if BindSampleToTexture should be used. Otherwise
+  // CopyOutputSampleDataToPicture should be used.
+  virtual bool CanBindSamples() const = 0;
+
   bool waiting_to_reuse() const { return state_ == WAITING_TO_REUSE; }
   virtual gl::GLFence* reuse_fence();
 
@@ -73,7 +78,8 @@ class DXVAPictureBuffer {
   // |dest_surface|
   virtual bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                                    IDirect3DSurface9* dest_surface);
-  virtual bool BindSampleToTexture(base::win::ScopedComPtr<IMFSample> sample);
+  virtual bool BindSampleToTexture(DXVAVideoDecodeAccelerator* decoder,
+                                   base::win::ScopedComPtr<IMFSample> sample);
 
  protected:
   explicit DXVAPictureBuffer(const PictureBuffer& buffer);
@@ -108,6 +114,7 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                            IDirect3DSurface9* dest_surface) override;
   bool AllowOverlay() const override;
+  bool CanBindSamples() const override;
 
  protected:
   EGLSurface decoding_surface_;
@@ -149,8 +156,30 @@ class EGLStreamPictureBuffer : public DXVAPictureBuffer {
 
   bool Initialize();
   bool ReusePictureBuffer() override;
-  bool BindSampleToTexture(base::win::ScopedComPtr<IMFSample> sample) override;
+  bool BindSampleToTexture(DXVAVideoDecodeAccelerator* decoder,
+                           base::win::ScopedComPtr<IMFSample> sample) override;
   bool AllowOverlay() const override;
+  bool CanBindSamples() const override;
+
+ private:
+  EGLStreamKHR stream_;
+
+  base::win::ScopedComPtr<IMFSample> current_d3d_sample_;
+  base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture_;
+};
+
+// Shares the decoded texture with ANGLE without copying by using an EGL stream.
+class EGLStreamDelayedCopyPictureBuffer : public DXVAPictureBuffer {
+ public:
+  explicit EGLStreamDelayedCopyPictureBuffer(const PictureBuffer& buffer);
+  ~EGLStreamDelayedCopyPictureBuffer() override;
+
+  bool Initialize(const DXVAVideoDecodeAccelerator& decoder);
+  bool ReusePictureBuffer() override;
+  bool BindSampleToTexture(DXVAVideoDecodeAccelerator* decoder,
+                           base::win::ScopedComPtr<IMFSample> sample) override;
+  bool AllowOverlay() const override;
+  bool CanBindSamples() const override;
 
  private:
   EGLStreamKHR stream_;
@@ -175,6 +204,7 @@ class EGLStreamCopyPictureBuffer : public DXVAPictureBuffer {
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                            IDirect3DSurface9* dest_surface) override;
   bool AllowOverlay() const override;
+  bool CanBindSamples() const override;
 
  private:
   EGLStreamKHR stream_;

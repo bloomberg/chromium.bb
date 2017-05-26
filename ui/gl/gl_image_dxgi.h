@@ -5,10 +5,10 @@
 #include <d3d11.h>
 
 #include "base/win/scoped_comptr.h"
-#include "third_party/khronos/EGL/egl.h"
-#include "third_party/khronos/EGL/eglext.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
+
+typedef void* EGLStreamKHR;
 
 namespace gl {
 
@@ -48,12 +48,42 @@ class GL_EXPORT GLImageDXGI : public GLImage {
  protected:
   ~GLImageDXGI() override;
 
- private:
   gfx::Size size_;
 
   EGLStreamKHR stream_;
 
   base::win::ScopedComPtr<ID3D11Texture2D> texture_;
   size_t level_ = 0;
+};
+
+// This copies to a new texture on bind.
+class GL_EXPORT CopyingGLImageDXGI : public GLImageDXGI {
+ public:
+  CopyingGLImageDXGI(const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+                     const gfx::Size& size,
+                     EGLStreamKHR stream);
+
+  bool Initialize();
+  bool InitializeVideoProcessor(
+      const base::win::ScopedComPtr<ID3D11VideoProcessor>& video_processor,
+      const base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>&
+          enumerator);
+  void UnbindFromTexture();
+
+  // GLImage implementation.
+  bool BindTexImage(unsigned target) override;
+
+ private:
+  ~CopyingGLImageDXGI() override;
+
+  bool copied_ = false;
+
+  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
+  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
+  base::win::ScopedComPtr<ID3D11VideoProcessor> d3d11_processor_;
+  base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
+  base::win::ScopedComPtr<ID3D11Texture2D> decoder_copy_texture_;
+  base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> output_view_;
 };
 }
