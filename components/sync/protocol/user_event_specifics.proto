@@ -34,9 +34,9 @@ message LanguageDetection {
   // we're not confident about, we may log up to 3 top languages in descending
   // order.
   repeated Language detected_languages = 1;
-  // Adopted language is the final determined language.
+  // Adopted language code is the code of final determined language.
   // It will be stored only if it's different from the first detected language.
-  optional string adopted_language = 2;
+  optional string adopted_language_code = 2;
 }
 
 message UserEventSpecifics {

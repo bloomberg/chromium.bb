@@ -547,7 +547,7 @@ VISIT_PROTO_FIELDS(const sync_pb::LanguageDetection::Language& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::LanguageDetection& proto) {
   VISIT_REP(detected_languages);
-  VISIT(adopted_language);
+  VISIT(adopted_language_code);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::LinkedAppIconInfo& proto) {
