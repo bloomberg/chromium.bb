@@ -458,6 +458,8 @@ def map_and_run(
   # make the constant_run_path an exposed flag.
   if constant_run_path and root_dir:
     run_dir = os.path.join(root_dir, ISOLATED_RUN_DIR)
+    if os.path.isdir(run_dir):
+      file_path.rmtree(run_dir)
     os.mkdir(run_dir)
   else:
     run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
