@@ -400,13 +400,10 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
   return color;
 }
 
-void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
-    const cc::BeginFrameArgs& args) {
+void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame() {
   needs_flush_input_ = false;
   render_widget_host_->OnBeginFrame();
   UpdateNeedsBeginFramesInternal();
-  render_widget_host_->Send(
-      new ViewMsg_BeginFrame(render_widget_host_->GetRoutingID(), args));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

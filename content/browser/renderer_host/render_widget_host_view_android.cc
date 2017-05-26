@@ -1627,9 +1627,12 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(cc::BeginFrameArgs args) {
   // switches to Surfaces and the Browser's commit isn't in the critical path.
   args.deadline = sync_compositor_ ? base::TimeTicks()
   : args.frame_time + (args.interval * 0.6);
-  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
-  if (sync_compositor_)
+  if (sync_compositor_) {
+    host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
     sync_compositor_->DidSendBeginFrame(view_.GetWindowAndroid());
+  } else if (renderer_compositor_frame_sink_) {
+    renderer_compositor_frame_sink_->OnBeginFrame(args);
+  }
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {

@@ -26,8 +26,7 @@ class BrowserCompositorMacClient {
  public:
   virtual NSView* BrowserCompositorMacGetNSView() const = 0;
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
-  virtual void BrowserCompositorMacSendBeginFrame(
-      const cc::BeginFrameArgs& args) = 0;
+  virtual void BrowserCompositorMacOnBeginFrame() = 0;
 };
 
 // This class owns a DelegatedFrameHost, and will dynamically attach and
@@ -103,7 +102,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   bool DelegatedFrameCanCreateResizeLock() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void OnBeginFrame() override;
   bool IsAutoResizeEnabled() const override;
 
  private:

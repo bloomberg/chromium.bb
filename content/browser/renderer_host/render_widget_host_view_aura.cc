@@ -655,12 +655,10 @@ void RenderWidgetHostViewAura::OnSetNeedsFlushInput() {
   UpdateNeedsBeginFramesInternal();
 }
 
-void RenderWidgetHostViewAura::OnBeginFrame(
-    const cc::BeginFrameArgs& args) {
+void RenderWidgetHostViewAura::OnBeginFrame() {
   needs_flush_input_ = false;
   host_->OnBeginFrame();
   UpdateNeedsBeginFramesInternal();
-  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
 }
 
 RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {

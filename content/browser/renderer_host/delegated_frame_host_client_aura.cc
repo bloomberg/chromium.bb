@@ -73,9 +73,8 @@ DelegatedFrameHostClientAura::DelegatedFrameHostCreateResizeLock() {
   return base::MakeUnique<CompositorResizeLock>(this, desired_size);
 }
 
-void DelegatedFrameHostClientAura::OnBeginFrame(
-    const cc::BeginFrameArgs& args) {
-  render_widget_host_view_->OnBeginFrame(args);
+void DelegatedFrameHostClientAura::OnBeginFrame() {
+  render_widget_host_view_->OnBeginFrame();
 }
 
 bool DelegatedFrameHostClientAura::IsAutoResizeEnabled() const {

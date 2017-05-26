@@ -697,7 +697,7 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
-  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
+  renderer_compositor_frame_sink_->OnBeginFrame(args);
 }
 
 void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
