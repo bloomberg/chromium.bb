@@ -141,7 +141,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // not always clearly control the iteration progress. Should consider removing
   // the return values and control the iteration in a cleaner way.
   bool HandleTextNode();
-  bool HandlePreFormattedTextNode();
+  void HandlePreFormattedTextNode();
   bool HandleReplacedElement();
   bool HandleNonTextNode();
 
@@ -250,6 +250,8 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
 
   const TextIteratorBehavior behavior_;
 
+  // Remember if we are in the middle of handling a pre-formatted text node.
+  bool needs_handle_pre_formatted_text_node_;
   // Used when deciding text fragment created by :first-letter should be looked
   // into.
   bool handled_first_letter_;

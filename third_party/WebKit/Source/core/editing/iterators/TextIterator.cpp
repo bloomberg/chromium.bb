@@ -170,6 +170,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       last_text_node_ended_with_collapsed_space_(false),
       sorted_text_boxes_position_(0),
       behavior_(AdjustBehaviorFlags<Strategy>(behavior)),
+      needs_handle_pre_formatted_text_node_(false),
       handled_first_letter_(false),
       should_stop_(false),
       handle_shadow_root_(false),
@@ -274,6 +275,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
   text_state_.ResetRunInformation();
 
+  // TODO(xiaochengh): Wrap the following code into HandleRememberedProgress().
+
   // handle remembered node that needed a newline after the text node's newline
   if (needs_another_newline_) {
     // Emit the extra newline, and position it *inside* m_node, after m_node's
@@ -291,9 +294,15 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
   if (ShouldProceedToRemainingText())
     ProceedToRemainingText();
-  // handle remembered text box
+  // Handle remembered text box
   if (text_box_) {
     HandleTextBox();
+    if (text_state_.PositionNode())
+      return;
+  }
+  // Handle remembered pre-formatted text node.
+  if (needs_handle_pre_formatted_text_node_) {
+    HandlePreFormattedTextNode();
     if (text_state_.PositionNode())
       return;
   }
@@ -516,18 +525,21 @@ bool TextIteratorAlgorithm<Strategy>::ShouldHandleFirstLetter(
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
+void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
   // TODO(xiaochengh): Get rid of repeated computation of these fields.
   Text* const text_node = ToText(node_);
   LayoutText* const layout_object = text_node->GetLayoutObject();
   const String str = layout_object->GetText();
+
+  needs_handle_pre_formatted_text_node_ = false;
 
   if (last_text_node_ended_with_collapsed_space_ &&
       HasVisibleTextNode(layout_object)) {
     if (!behavior_.CollapseTrailingSpace() ||
         (offset_ > 0 && str[offset_ - 1] == ' ')) {
       SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
-      return false;
+      needs_handle_pre_formatted_text_node_ = true;
+      return;
     }
   }
   if (ShouldHandleFirstLetter(*layout_object)) {
@@ -544,16 +556,18 @@ bool TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
       first_letter_text_ = nullptr;
       text_box_ = 0;
       offset_ = run_end;
-      return stops_in_first_letter;
+      if (!stops_in_first_letter)
+        needs_handle_pre_formatted_text_node_ = true;
+      return;
     }
     // We are here only if the DOM and/or layout trees are broken.
     // For robustness, we should stop processing this node.
     NOTREACHED();
-    return false;
+    return;
   }
   if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
       !IgnoresStyleVisibility())
-    return false;
+    return;
   DCHECK_GE(static_cast<unsigned>(offset_), layout_object->TextStartOffset());
   const unsigned run_start = offset_ - layout_object->TextStartOffset();
   const unsigned str_length = str.length();
@@ -563,10 +577,9 @@ bool TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
   const unsigned run_end = std::min(str_length, end);
 
   if (run_start >= run_end)
-    return true;
+    return;
 
   EmitText(text_node, text_node->GetLayoutObject(), run_start, run_end);
-  return true;
 }
 
 template <typename Strategy>
@@ -579,6 +592,9 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
       return true;
   }
 
+  DCHECK_NE(last_text_node_, node_)
+      << "We should never call HandleTextNode on the same node twice";
+
   Text* text_node = ToText(node_);
   LayoutText* layout_object = text_node->GetLayoutObject();
 
@@ -586,8 +602,10 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   String str = layout_object->GetText();
 
   // handle pre-formatted text
-  if (!layout_object->Style()->CollapseWhiteSpace())
-    return HandlePreFormattedTextNode();
+  if (!layout_object->Style()->CollapseWhiteSpace()) {
+    HandlePreFormattedTextNode();
+    return true;
+  }
 
   if (layout_object->FirstTextBox())
     text_box_ = layout_object->FirstTextBox();
