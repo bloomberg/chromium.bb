@@ -152,19 +152,60 @@ class ContentData;
 
 typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 
-// ComputedStyle stores the final style for an element and provides the
-// interface between the style engine and the rest of Blink.
+// ComputedStyle stores the computed value [1] for every CSS property on an
+// element and provides the interface between the style engine and the rest of
+// Blink. It acts as a container where the computed value of every CSS property
+// can be stored and retrieved:
 //
-// It contains all the resolved styles for an element, and is densely packed and
-// optimized for memory and performance. Enums and small fields are packed in
-// bit fields, while large fields are stored in pointers and shared where not
-// modified from their parent value (see the DataRef class).
+//   auto style = ComputedStyle::Create();
+//   style->SetDisplay(EDisplay::kNone); //'display' keyword property
+//   style->Display();
 //
-// Currently, ComputedStyle is hand-written and ComputedStyleBase is generated.
-// Over time, methods will be moved to ComputedStyleBase and the generator will
-// be expanded to handle more and more types of properties. Eventually, all
-// methods will be on ComputedStyleBase (with custom methods defined in a class
-// such as ComputedStyleBase.cpp) and ComputedStyle will be removed.
+// In addition to storing the computed value of every CSS property,
+// ComputedStyle also contains various internal style information. Examples
+// include cached_pseudo_styles_ (for storing pseudo element styles), unique_
+// (for style sharing) and has_simple_underline_ (cached indicator flag of
+// text-decoration). These are stored on ComputedStyle for two reasons:
+//
+//  1) They share the same lifetime as ComputedStyle, so it is convenient to
+//  store them in the same object rather than a separate object that have to be
+//  passed around as well.
+//
+//  2) Many of these data members can be packed as bit fields, so we use less
+//  memory by packing them in this object with other bit fields.
+//
+// STORAGE:
+//
+// ComputedStyle is optimized for memory and performance. The data is not
+// actually stored directly in ComputedStyle, but rather in a generated parent
+// class ComputedStyleBase. This separation of concerns allows us to optimise
+// the memory layout without affecting users of ComputedStyle. ComputedStyle
+// inherits from ComputedStyleBase, which in turn takes ComputedStyle as a
+// template argument so that ComputedStyleBase can access methods declared on
+// ComputedStyle. For more about the memory layout, there is documentation in
+// ComputedStyleBase and make_computed_style_base.py.
+//
+// INTERFACE:
+//
+// For most CSS properties, ComputedStyle provides a consistent interface which
+// includes a getter, setter, initial method (the computed value when the
+// property is to 'initial'), and resetter (that resets the computed value to
+// its initial value). Exceptions include vertical-align, which has a separate
+// set of accessors for its length and its keyword components. Apart from
+// accessors, ComputedStyle also has a wealth of helper functions.
+//
+// Because ComputedStyleBase defines simple accessors to every CSS property,
+// ComputedStyle inherits these and so they are not redeclared in this file.
+// This means that the interface to ComputedStyle is split between this file and
+// ComputedStyleBase.h.
+//
+// [1] https://developer.mozilla.org/en-US/docs/Web/CSS/computed_value
+//
+// NOTE:
+//
+// Currently, some properties are stored in ComputedStyle and some in
+// ComputedStyleBase. Eventually, the storage of all properties (except SVG
+// ones) will be in ComputedStyleBase.
 class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                                   public RefCounted<ComputedStyle> {
   // Used by Web Animations CSS. Sets the color styles.
