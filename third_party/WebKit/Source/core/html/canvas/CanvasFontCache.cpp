@@ -15,7 +15,9 @@
 namespace {
 
 const unsigned CanvasFontCacheMaxFonts = 50;
+const unsigned CanvasFontCacheMaxFontsLowEnd = 5;
 const unsigned CanvasFontCacheHardMaxFonts = 250;
+const unsigned CanvasFontCacheHardMaxFontsLowEnd = 20;
 const unsigned CanvasFontCacheHiddenMaxFonts = 1;
 const int defaultFontSize = 10;
 const char defaultFontFamily[] = "sans-serif";
@@ -45,12 +47,15 @@ CanvasFontCache::~CanvasFontCache() {
 }
 
 unsigned CanvasFontCache::MaxFonts() {
-  return CanvasFontCacheMaxFonts;
+  return MemoryCoordinator::IsLowEndDevice() ? CanvasFontCacheMaxFontsLowEnd
+                                             : CanvasFontCacheMaxFonts;
 }
 
 unsigned CanvasFontCache::HardMaxFonts() {
   return document_->hidden() ? CanvasFontCacheHiddenMaxFonts
-                             : CanvasFontCacheHardMaxFonts;
+                             : (MemoryCoordinator::IsLowEndDevice()
+                                    ? CanvasFontCacheHardMaxFontsLowEnd
+                                    : CanvasFontCacheHardMaxFonts);
 }
 
 bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
