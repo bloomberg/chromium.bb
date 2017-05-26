@@ -141,6 +141,8 @@ class DialogClientViewTest : public test::WidgetTest,
 
   DialogClientView* client_view() { return client_view_; }
 
+  Widget* widget() { return widget_; }
+
  private:
   // The dialog Widget.
   Widget* widget_ = nullptr;
@@ -434,6 +436,33 @@ TEST_F(DialogClientViewTest, ButtonPosition) {
             client_view()->ok_button()->bounds().right());
   EXPECT_EQ(contents_height + button_row_inset,
             height() + client_view()->ok_button()->y());
+}
+
+// Ensures that the focus of the button remains after a dialog update.
+TEST_F(DialogClientViewTest, FocusUpdate) {
+  // Test with just an ok button.
+  widget()->Show();
+  SetDialogButtons(ui::DIALOG_BUTTON_OK);
+  EXPECT_FALSE(client_view()->ok_button()->HasFocus());
+  client_view()->ok_button()->RequestFocus();  // Set focus.
+  EXPECT_TRUE(client_view()->ok_button()->HasFocus());
+  client_view()->UpdateDialogButtons();
+  EXPECT_TRUE(client_view()->ok_button()->HasFocus());
+}
+
+// Ensures that the focus of the button remains after a dialog update that
+// contains multiple buttons.
+TEST_F(DialogClientViewTest, FocusMultipleButtons) {
+  // Test with ok and cancel buttons.
+  widget()->Show();
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK);
+  EXPECT_FALSE(client_view()->ok_button()->HasFocus());
+  EXPECT_FALSE(client_view()->cancel_button()->HasFocus());
+  client_view()->cancel_button()->RequestFocus();  // Set focus.
+  EXPECT_FALSE(client_view()->ok_button()->HasFocus());
+  EXPECT_TRUE(client_view()->cancel_button()->HasFocus());
+  client_view()->UpdateDialogButtons();
+  EXPECT_TRUE(client_view()->cancel_button()->HasFocus());
 }
 
 }  // namespace views
