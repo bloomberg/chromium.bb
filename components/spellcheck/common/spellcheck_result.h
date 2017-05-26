@@ -6,6 +6,7 @@
 #define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_RESULT_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/strings/string16.h"
 
@@ -22,16 +23,25 @@ struct SpellCheckResult {
     GRAMMAR = 1 << 2,
   };
 
-  explicit SpellCheckResult(Decoration d = SPELLING,
-                            int loc = 0,
-                            int len = 0,
-                            const base::string16& rep = base::string16())
-      : decoration(d), location(loc), length(len), replacement(rep) {}
+  // Default values are so we have a default constructor for IPC::ReadParam()
+  explicit SpellCheckResult(
+      Decoration d = SPELLING,
+      int loc = 0,
+      int len = 0,
+      const std::vector<base::string16>& rep = std::vector<base::string16>());
+
+  explicit SpellCheckResult(Decoration d,
+                            int loc,
+                            int len,
+                            const base::string16& rep);
+
+  ~SpellCheckResult();
+  SpellCheckResult(const SpellCheckResult&);
 
   Decoration decoration;
   int location;
   int length;
-  base::string16 replacement;
+  std::vector<base::string16> replacements;
 };
 
 #endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_RESULT_H_

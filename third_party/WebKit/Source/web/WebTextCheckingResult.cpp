@@ -39,12 +39,18 @@ WebTextCheckingResult::operator TextCheckingResult() const {
   result.decoration = static_cast<TextDecorationType>(decoration);
   result.location = location;
   result.length = length;
-  result.replacement = replacement;
+
+  Vector<String> replacements_vec;
+  for (const WebString& replacement : replacements) {
+    replacements_vec.push_back(replacement);
+  }
+  result.replacements = replacements_vec;
+
   if (result.decoration == kTextDecorationTypeGrammar) {
     GrammarDetail detail;
     detail.location = 0;
     detail.length = length;
-    detail.user_description = replacement;
+    detail.user_description = replacements.empty() ? "" : replacements[0];
     result.details.push_back(detail);
   }
 
