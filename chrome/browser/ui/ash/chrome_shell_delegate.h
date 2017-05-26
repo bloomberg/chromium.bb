@@ -35,7 +35,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   bool IsMultiProfilesEnabled() const override;
   bool IsIncognitoAllowed() const override;
   bool IsRunningInForcedAppMode() const override;
-  bool CanShowWindowForUser(ash::WmWindow* window) const override;
+  bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;

@@ -15,6 +15,10 @@
 class GURL;
 class PrefService;
 
+namespace aura {
+class Window;
+}
+
 namespace gfx {
 class Image;
 }
@@ -41,7 +45,6 @@ class Shelf;
 struct ShelfItem;
 class SystemTrayDelegate;
 class WallpaperDelegate;
-class WmWindow;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -64,7 +67,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
-  virtual bool CanShowWindowForUser(WmWindow* window) const = 0;
+  virtual bool CanShowWindowForUser(aura::Window* window) const = 0;
 
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses

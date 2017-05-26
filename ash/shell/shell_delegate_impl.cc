@@ -102,7 +102,7 @@ bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
 }
 
-bool ShellDelegateImpl::CanShowWindowForUser(WmWindow* window) const {
+bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
