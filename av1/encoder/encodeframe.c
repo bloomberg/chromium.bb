@@ -5537,6 +5537,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #endif  // !CONFIG_REF_ADAPT
       }
     }
+#if CONFIG_EXT_INTER
+    make_consistent_compound_tools(cm);
+#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_VAR_TX
     if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
