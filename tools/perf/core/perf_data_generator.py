@@ -692,7 +692,9 @@ BENCHMARK_SWARMING_TIMEOUTS = {
 
 # Devices which are broken right now. Tests will not be scheduled on them.
 # Please add a comment with a bug for replacing the device.
-BLACKLISTED_DEVICES = []
+BLACKLISTED_DEVICES = [
+  'build75-b1--device1',  # crbug.com/726874
+]
 
 
 # List of benchmarks that are to never be run with reference builds.
