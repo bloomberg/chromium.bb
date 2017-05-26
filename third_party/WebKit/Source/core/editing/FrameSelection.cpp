@@ -443,6 +443,12 @@ bool FrameSelection::SelectionHasFocus() const {
   if (focused_element->IsTextControl())
     return focused_element->ContainsIncludingHostElements(*current);
 
+  if (ComputeVisibleSelectionInFlatTree().IsNone()) {
+    // TODO(editing-dev): We should avoid any case where VSInFlatTree is none
+    // but VSInDOMTree is not none.
+    DLOG(FATAL) << ComputeVisibleSelectionInDOMTree();
+  }
+
   // Selection has focus if it contains the focused element.
   const PositionInFlatTree& focused_position =
       PositionInFlatTree::FirstPositionInNode(focused_element);
