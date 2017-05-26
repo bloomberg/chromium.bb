@@ -143,6 +143,10 @@ void DriveAppConverter::Start() {
     return;
   }
 
+  VLOG(1) << "Start installing drive app: ID " << drive_app_info_.app_id
+          << ", product ID " << drive_app_info_.product_id << ", name "
+          << drive_app_info_.app_name;
+
   web_app_.title = base::UTF8ToUTF16(drive_app_info_.app_name);
   web_app_.app_url = drive_app_info_.create_url;
 

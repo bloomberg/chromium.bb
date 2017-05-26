@@ -360,6 +360,7 @@ extern const char kEnableNewAppMenuIcon[];
 #endif
 
 bool ExtensionsDisabled(const base::CommandLine& command_line);
+bool ExtensionsDisabled();
 bool MdFeedbackEnabled();
 bool MdPolicyPageEnabled();
 bool SettingsWindowEnabled();

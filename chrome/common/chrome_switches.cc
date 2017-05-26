@@ -1161,6 +1161,10 @@ bool ExtensionsDisabled(const base::CommandLine& command_line) {
          command_line.HasSwitch(switches::kDisableExtensionsExcept);
 }
 
+bool ExtensionsDisabled() {
+  return ExtensionsDisabled(*base::CommandLine::ForCurrentProcess());
+}
+
 bool MdFeedbackEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignFeedback);
