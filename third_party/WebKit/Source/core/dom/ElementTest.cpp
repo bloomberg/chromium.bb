@@ -239,4 +239,12 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   EXPECT_TRUE(great_grandchild->StyleRef().SubtreeIsSticky());
 }
 
+TEST_F(ElementTest, GetElementsByClassNameCrash) {
+  // Test for a crash in NodeListsNodeData::AddCache().
+  ASSERT_TRUE(GetDocument().InQuirksMode());
+  GetDocument().body()->getElementsByClassName("ABC DEF");
+  GetDocument().body()->getElementsByClassName("ABC DEF");
+  // The test passes if no crash happens.
+}
+
 }  // namespace blink
