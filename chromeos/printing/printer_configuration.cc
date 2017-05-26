@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/strings/string_piece.h"
 
 namespace chromeos {
 
@@ -28,6 +29,33 @@ Printer::~Printer() {}
 
 bool Printer::IsIppEverywhere() const {
   return ppd_reference_.autoconf;
+}
+
+Printer::PrinterProtocol Printer::GetProtocol() const {
+  const base::StringPiece uri(uri_);
+
+  if (uri.starts_with("usb:"))
+    return PrinterProtocol::kUsb;
+
+  if (uri.starts_with("ipp:"))
+    return PrinterProtocol::kIpp;
+
+  if (uri.starts_with("ipps:"))
+    return PrinterProtocol::kIpps;
+
+  if (uri.starts_with("http:"))
+    return PrinterProtocol::kHttp;
+
+  if (uri.starts_with("https:"))
+    return PrinterProtocol::kHttps;
+
+  if (uri.starts_with("socket:"))
+    return PrinterProtocol::kSocket;
+
+  if (uri.starts_with("lpd:"))
+    return PrinterProtocol::kLpd;
+
+  return PrinterProtocol::kUnknown;
 }
 
 }  // namespace chromeos

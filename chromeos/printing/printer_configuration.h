@@ -47,6 +47,20 @@ class CHROMEOS_EXPORT Printer {
     SRC_POLICY,
   };
 
+  // An enumeration of printer protocols.  Do not change these values as they
+  // are used in enums.xml.
+  enum PrinterProtocol {
+    kUnknown = 0,
+    kUsb = 1,
+    kIpp = 2,
+    kIpps = 3,
+    kHttp = 4,
+    kHttps = 5,
+    kSocket = 6,
+    kLpd = 7,
+    kProtocolMax
+  };
+
   // Constructs a printer object that is completely empty.
   Printer();
 
@@ -93,6 +107,9 @@ class CHROMEOS_EXPORT Printer {
   // IPP Everywhere.  Computed using information from |ppd_reference_| and
   // |uri_|.
   bool IsIppEverywhere() const;
+
+  // Returns the printer protocol the printer is configured with.
+  Printer::PrinterProtocol GetProtocol() const;
 
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }

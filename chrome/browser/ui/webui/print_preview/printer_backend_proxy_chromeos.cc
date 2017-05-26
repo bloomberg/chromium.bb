@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
@@ -122,6 +123,11 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
                                        base::Bind(cb, nullptr));
       return;
     }
+
+    // Log printer configuration for selected printer.
+    UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.ProtocolUsed",
+                              printer->GetProtocol(),
+                              chromeos::Printer::kProtocolMax);
 
     if (prefs_->IsConfigurationCurrent(*printer)) {
       // Skip setup if the printer is already installed.
