@@ -1545,13 +1545,6 @@ SequencedWorkerPool::GetTaskRunnerWithShutdownBehavior(
   return new SequencedWorkerPoolTaskRunner(this, shutdown_behavior);
 }
 
-bool SequencedWorkerPool::PostWorkerTask(
-    const tracked_objects::Location& from_here,
-    OnceClosure task) {
-  return inner_->PostTask(NULL, SequenceToken(), BLOCK_SHUTDOWN, from_here,
-                          std::move(task), TimeDelta());
-}
-
 bool SequencedWorkerPool::PostWorkerTaskWithShutdownBehavior(
     const tracked_objects::Location& from_here,
     OnceClosure task,
