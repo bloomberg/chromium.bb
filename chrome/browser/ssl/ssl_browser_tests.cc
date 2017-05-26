@@ -768,7 +768,11 @@ class SSLUITestIgnoreLocalhostCertErrors : public SSLUITest {
 
 class SSLUITestWithExtendedReporting : public SSLUITest {
  public:
-  SSLUITestWithExtendedReporting() : SSLUITest() {}
+  SSLUITestWithExtendedReporting() : SSLUITest() {
+    // Certificate reports are only sent from official builds, unless this has
+    // been called.
+    CertReportHelper::SetFakeOfficialBuildForTesting();
+  }
 };
 
 // Visits a regular page over http.

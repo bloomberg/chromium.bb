@@ -48,6 +48,10 @@ class CertReportHelper {
 
   virtual ~CertReportHelper();
 
+  // This method can be called by tests to fake an official build (reports are
+  // only sent from official builds).
+  static void SetFakeOfficialBuildForTesting();
+
   // Populates data that JavaScript code on the interstitial uses to show
   // the checkbox.
   void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);

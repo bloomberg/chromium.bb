@@ -29,6 +29,10 @@
 
 namespace {
 
+// Certificate reports are only sent from official builds, but this flag can be
+// set by tests.
+static bool g_is_fake_official_build_for_testing = false;
+
 // Returns a pointer to the Profile associated with |web_contents|.
 Profile* GetProfile(content::WebContents* web_contents) {
   return Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -63,6 +67,11 @@ CertReportHelper::CertReportHelper(
       metrics_helper_(metrics_helper) {}
 
 CertReportHelper::~CertReportHelper() {
+}
+
+// static
+void CertReportHelper::SetFakeOfficialBuildForTesting() {
+  g_is_fake_official_build_for_testing = true;
 }
 
 void CertReportHelper::PopulateExtendedReportingOption(
@@ -149,6 +158,15 @@ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
 
 bool CertReportHelper::ShouldReportCertificateError() {
   DCHECK(ShouldShowCertificateReporterCheckbox());
+
+  bool is_official_build = g_is_fake_official_build_for_testing;
+#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+  is_official_build = true;
+#endif
+
+  if (!is_official_build)
+    return false;
+
   // Even in case the checkbox was shown, we don't send error reports
   // for all of these users. Check the Finch configuration for a sending
   // threshold and only send reports in case the threshold isn't exceeded.
