@@ -204,7 +204,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     // calling AttachObserver() again. Otherwise they will use-after-free the
     // observer_.
     observer_ = MetricsWebContentsObserver::CreateForWebContents(
-        web_contents(), base::WrapUnique(embedder_interface_));
+        web_contents(), base::nullopt, base::WrapUnique(embedder_interface_));
     observer_->WasShown();
   }
 

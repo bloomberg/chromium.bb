@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
@@ -45,7 +46,6 @@ class RenderFrameHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
-class WebContents;
 class WebContentsImpl;
 struct ColorSuggestion;
 struct ContextMenuParams;
@@ -331,12 +331,14 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Notifies the delegate about the creation of a new WebContents. This
   // typically happens when popups are created.
-  virtual void WebContentsCreated(WebContents* source_contents,
-                                  int opener_render_process_id,
-                                  int opener_render_frame_id,
-                                  const std::string& frame_name,
-                                  const GURL& target_url,
-                                  WebContents* new_contents) {}
+  virtual void WebContentsCreated(
+      WebContents* source_contents,
+      int opener_render_process_id,
+      int opener_render_frame_id,
+      const std::string& frame_name,
+      const GURL& target_url,
+      WebContents* new_contents,
+      const base::Optional<WebContents::CreateParams>& create_params) {}
 
   // Notification that the tab is hung.
   virtual void RendererUnresponsive(

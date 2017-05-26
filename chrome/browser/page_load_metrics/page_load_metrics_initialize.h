@@ -14,7 +14,8 @@ class WebContents;
 namespace chrome {
 
 void InitializePageLoadMetricsForWebContents(
-    content::WebContents* web_contents);
+    content::WebContents* web_contents,
+    const base::Optional<content::WebContents::CreateParams>& create_params);
 
 }  // namespace chrome
 

@@ -2299,9 +2299,9 @@ void WebContentsImpl::CreateNewWindow(
   }
 
   if (delegate_) {
-    delegate_->WebContentsCreated(this, render_process_id,
-                                  opener->GetRoutingID(), params.frame_name,
-                                  params.target_url, new_contents);
+    delegate_->WebContentsCreated(
+        this, render_process_id, opener->GetRoutingID(), params.frame_name,
+        params.target_url, new_contents, create_params);
   }
 
   if (opener) {

@@ -219,7 +219,8 @@ void WebContentsDelegateAndroid::WebContentsCreated(
     int opener_render_frame_id,
     const std::string& frame_name,
     const GURL& target_url,
-    WebContents* new_contents) {
+    WebContents* new_contents,
+    const base::Optional<content::WebContents::CreateParams>& create_params) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
