@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/http_server.h"
@@ -38,6 +39,7 @@ ACTION_P3(VerifyNewPageStartedContext, web_state, url, context) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   ASSERT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -58,11 +60,53 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   ASSERT_TRUE((*context)->GetResponseHeaders());
   std::string mime_type;
   (*context)->GetResponseHeaders()->GetMimeType(&mime_type);
   EXPECT_EQ(kExpectedMimeType, mime_type);
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_EQ(url, item->GetURL());
+}
+
+// Verifies correctness of |NavigationContext| (|arg0|) for navigations via POST
+// HTTP methods passed to |DidStartNavigation|. Stores |NavigationContext| in
+// |context| pointer.
+ACTION_P3(VerifyPostStartedContext, web_state, url, context) {
+  *context = arg0;
+  ASSERT_TRUE(*context);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  ASSERT_FALSE((*context)->GetResponseHeaders());
+  // TODO(crbug.com/676129): Reload does not create a pending item. Remove this
+  // workaround once the bug is fixed.
+  if (!ui::PageTransitionTypeIncludingQualifiersIs(
+          ui::PageTransition::PAGE_TRANSITION_RELOAD,
+          (*context)->GetPageTransition())) {
+    NavigationManager* navigation_manager = web_state->GetNavigationManager();
+    NavigationItem* item = navigation_manager->GetPendingItem();
+    EXPECT_EQ(url, item->GetURL());
+  }
+}
+
+// Verifies correctness of |NavigationContext| (|arg0|) for navigations via POST
+// HTTP methods passed to |DidFinishNavigation|. Stores |NavigationContext| in
+// |context| pointer.
+ACTION_P3(VerifyPostFinishedContext, web_state, url, context) {
+  ASSERT_EQ(*context, arg0);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  ASSERT_TRUE((*context));
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
@@ -84,6 +128,7 @@ ACTION_P4(VerifySameDocumentStartedContext,
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
 }
@@ -103,6 +148,7 @@ ACTION_P4(VerifySameDocumentFinishedContext,
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -123,6 +169,7 @@ ACTION_P3(VerifyNewNativePageStartedContext, web_state, url, context) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -142,6 +189,7 @@ ACTION_P3(VerifyNewNativePageFinishedContext, web_state, url, context) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -402,6 +450,133 @@ TEST_F(StartAndFinishNavigationTest, NativeContentReload) {
       .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context,
                                             false /* is_web_page */));
   navigation_manager()->Reload(ReloadType::NORMAL, false /*check_for_repost*/);
+}
+
+// Tests successful navigation to a new page with post HTTP method.
+TEST_F(StartAndFinishNavigationTest, UserInitiatedPostNavigation) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, std::string> responses;
+  responses[url] = "Chromium Test";
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(*observer_, DidStartNavigation(_))
+      .WillOnce(VerifyPostStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_))
+      .WillOnce(VerifyPostFinishedContext(web_state(), url, &context));
+
+  // Load request using POST HTTP method.
+  web::NavigationManager::WebLoadParams params(url);
+  params.post_data.reset(
+      [[@"foo" dataUsingEncoding:NSUTF8StringEncoding] retain]);
+  params.extra_headers.reset([@{ @"Content-Type" : @"text/html" } retain]);
+  LoadWithParams(params);
+}
+
+// Tests successful navigation to a new page with post HTTP method.
+TEST_F(StartAndFinishNavigationTest, RendererInitiatedPostNavigation) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, std::string> responses;
+  responses[url] = "<form method='post' id='form'></form>";
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  LoadUrl(url);
+
+  // Submit the form using JavaScript.
+  EXPECT_CALL(*observer_, DidStartNavigation(_))
+      .WillOnce(VerifyPostStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_))
+      .WillOnce(VerifyPostFinishedContext(web_state(), url, &context));
+  ExecuteJavaScript(@"window.document.getElementById('form').submit();");
+}
+
+// Tests successful reload of a page returned for post request.
+TEST_F(StartAndFinishNavigationTest, ReloadPostNavigation) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, std::string> responses;
+  const GURL action = HttpServer::MakeUrl("http://action.test");
+  responses[url] =
+      base::StringPrintf("<form method='post' id='form' action='%s'></form>",
+                         action.spec().c_str());
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  LoadUrl(url);
+
+  // Submit the form using JavaScript.
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  ExecuteBlockAndWaitForLoad(action, ^{
+    ExecuteJavaScript(@"window.document.getElementById('form').submit();");
+  });
+
+  // Reload the page.
+  EXPECT_CALL(*observer_, DidStartNavigation(_))
+      .WillOnce(VerifyPostStartedContext(web_state(), action, &context));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_))
+      .WillOnce(VerifyPostFinishedContext(web_state(), action, &context));
+  // TODO(crbug.com/700958): ios/web ignores |check_for_repost| flag and current
+  // delegate does not run callback for ShowRepostFormWarningDialog. Clearing
+  // the delegate will allow form resubmission. Remove this workaround (clearing
+  // the delegate, once |check_for_repost| is supported).
+  web_state()->SetDelegate(nullptr);
+  ExecuteBlockAndWaitForLoad(action, ^{
+    navigation_manager()->Reload(ReloadType::NORMAL,
+                                 false /*check_for_repost*/);
+  });
+}
+
+// Tests going forward to a page rendered from post response.
+TEST_F(StartAndFinishNavigationTest, ForwardPostNavigation) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, std::string> responses;
+  const GURL action = HttpServer::MakeUrl("http://action.test");
+  responses[url] =
+      base::StringPrintf("<form method='post' id='form' action='%s'></form>",
+                         action.spec().c_str());
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  LoadUrl(url);
+
+  // Submit the form using JavaScript.
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  ExecuteBlockAndWaitForLoad(action, ^{
+    ExecuteJavaScript(@"window.document.getElementById('form').submit();");
+  });
+
+  // Go Back.
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  ExecuteBlockAndWaitForLoad(url, ^{
+    navigation_manager()->GoBack();
+  });
+
+  // Go forward.
+  EXPECT_CALL(*observer_, DidStartNavigation(_))
+      .WillOnce(VerifyPostStartedContext(web_state(), action, &context));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_))
+      .WillOnce(VerifyPostFinishedContext(web_state(), action, &context));
+  // TODO(crbug.com/700958): ios/web ignores |check_for_repost| flag and current
+  // delegate does not run callback for ShowRepostFormWarningDialog. Clearing
+  // the delegate will allow form resubmission. Remove this workaround (clearing
+  // the delegate, once |check_for_repost| is supported).
+  web_state()->SetDelegate(nullptr);
+  ExecuteBlockAndWaitForLoad(action, ^{
+    navigation_manager()->GoForward();
+  });
 }
 
 }  // namespace web

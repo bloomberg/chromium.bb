@@ -363,6 +363,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       context->GetPageTransition(), actual_context->GetPageTransition()));
   EXPECT_FALSE(actual_context->IsSameDocument());
+  EXPECT_FALSE(actual_context->IsPost());
   EXPECT_FALSE(actual_context->GetError());
   EXPECT_FALSE(actual_context->GetResponseHeaders());
 
@@ -376,6 +377,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       context->GetPageTransition(), actual_context->GetPageTransition()));
   EXPECT_FALSE(actual_context->IsSameDocument());
+  EXPECT_FALSE(actual_context->IsPost());
   EXPECT_FALSE(actual_context->GetError());
   EXPECT_FALSE(actual_context->GetResponseHeaders());
 

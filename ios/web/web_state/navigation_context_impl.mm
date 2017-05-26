@@ -48,6 +48,10 @@ bool NavigationContextImpl::IsSameDocument() const {
   return is_same_document_;
 }
 
+bool NavigationContextImpl::IsPost() const {
+  return is_post_;
+}
+
 NSError* NavigationContextImpl::GetError() const {
   return error_;
 }
@@ -58,6 +62,10 @@ net::HttpResponseHeaders* NavigationContextImpl::GetResponseHeaders() const {
 
 void NavigationContextImpl::SetIsSameDocument(bool is_same_document) {
   is_same_document_ = is_same_document;
+}
+
+void NavigationContextImpl::SetIsPost(bool is_post) {
+  is_post_ = is_post;
 }
 
 void NavigationContextImpl::SetError(NSError* error) {
