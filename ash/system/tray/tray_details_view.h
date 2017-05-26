@@ -85,6 +85,12 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   HoverHighlightView* AddScrollListCheckableItem(const base::string16& text,
                                                  bool checked);
 
+  // Adds connected sub label to the |view| with appropriate style.
+  void SetupConnectedScrollListItem(HoverHighlightView* view);
+
+  // Adds connecting sub label to the |view| with appropriate style.
+  void SetupConnectingScrollListItem(HoverHighlightView* view);
+
   // Adds a sticky sub header to |scroll_content_| containing |icon| and a text
   // represented by |text_id| resource id.
   TriView* AddScrollListSubHeader(const gfx::VectorIcon& icon, int text_id);

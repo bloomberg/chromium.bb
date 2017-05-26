@@ -338,6 +338,23 @@ HoverHighlightView* TrayDetailsView::AddScrollListCheckableItem(
   return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked);
 }
 
+void TrayDetailsView::SetupConnectedScrollListItem(HoverHighlightView* view) {
+  DCHECK(view->is_populated());
+
+  view->SetSubText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
+  style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
+  style.SetupLabel(view->sub_text_label());
+}
+
+void TrayDetailsView::SetupConnectingScrollListItem(HoverHighlightView* view) {
+  DCHECK(view->is_populated());
+
+  view->SetSubText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
+}
+
 TriView* TrayDetailsView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
                                                  int text_id) {
   TriView* header = TrayPopupUtils::CreateSubHeaderRowView(!icon.is_empty());

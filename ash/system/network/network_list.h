@@ -71,11 +71,7 @@ class NetworkListView : public NetworkStateListDetailedView,
   // being used.
   TriView* CreateConnectionWarning();
 
-  // Creates and returns a View with the information in |info|.
-  HoverHighlightView* CreateViewForNetwork(const NetworkInfo& info);
-
-  // Updates |view| with the information in |info|. Note that |view| is
-  // guaranteed to be a View returned from |CreateViewForNetwork()|.
+  // Updates |view| with the information in |info|.
   void UpdateViewForNetwork(HoverHighlightView* view, const NetworkInfo& info);
 
   // Creates the view of an extra icon appearing next to the network name
