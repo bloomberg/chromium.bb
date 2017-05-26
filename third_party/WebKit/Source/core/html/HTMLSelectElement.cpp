@@ -1949,6 +1949,9 @@ void HTMLSelectElement::ShowPopup() {
   if (!popup_)
     popup_ = GetDocument().GetPage()->GetChromeClient().OpenPopupMenu(
         *GetDocument().GetFrame(), *this);
+  if (!popup_)
+    return;
+
   popup_is_visible_ = true;
   ObserveTreeMutation();
 
