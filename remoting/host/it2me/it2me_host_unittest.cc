@@ -21,9 +21,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/policy_constants.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +51,8 @@ const char kMatchingDomain[] = "gmail.com";
 const char kMismatchedDomain1[] = "similar_to_gmail.com";
 const char kMismatchedDomain2[] = "gmail_at_the_beginning.com";
 const char kMismatchedDomain3[] = "not_even_close.com";
+// Note that this is intentionally different from the default port range.
+const char kPortRange[] = "12401-12408";
 
 }  // namespace
 
@@ -165,6 +169,8 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   // Used to set ConfirmationDialog behavior.
   FakeIt2MeDialogFactory* dialog_factory_ = nullptr;
 
+  scoped_refptr<It2MeHost> it2me_host_;
+
  private:
   void StartupHostStateHelper(const base::Closure& quit_closure);
 
@@ -173,8 +179,6 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
-
-  scoped_refptr<It2MeHost> it2me_host_;
 
   base::WeakPtrFactory<It2MeHostTest> weak_factory_;
 
@@ -504,6 +508,27 @@ TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_NoMatch) {
   ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, HostUdpPortRangePolicy_ValidRange) {
+  PortRange port_range_actual;
+  ASSERT_TRUE(PortRange::Parse(kPortRange, &port_range_actual));
+  SetPolicies(
+      {{policy::key::kRemoteAccessHostUdpPortRange, base::Value(kPortRange)}});
+  StartHost();
+  PortRange port_range = it2me_host_->host_->transport_context_for_tests()
+                             ->network_settings()
+                             .port_range;
+  ASSERT_EQ(port_range_actual.min_port, port_range.min_port);
+  ASSERT_EQ(port_range_actual.max_port, port_range.max_port);
+}
+
+TEST_F(It2MeHostTest, HostUdpPortRangePolicy_NoRange) {
+  StartHost();
+  PortRange port_range = it2me_host_->host_->transport_context_for_tests()
+                             ->network_settings()
+                             .port_range;
+  ASSERT_TRUE(port_range.is_null());
 }
 
 TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Accept) {
