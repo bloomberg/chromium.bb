@@ -122,10 +122,18 @@ void MojoFrameSinkManager::OnSurfaceCreated(
 }
 
 void MojoFrameSinkManager::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+                                            const cc::BeginFrameAck& ack,
                                             bool* changed) {}
 
 void MojoFrameSinkManager::OnSurfaceDiscarded(const cc::SurfaceId& surface_id) {
 }
+
+void MojoFrameSinkManager::OnSurfaceDestroyed(const cc::SurfaceId& surface_id) {
+}
+
+void MojoFrameSinkManager::OnSurfaceDamageExpected(
+    const cc::SurfaceId& surface_id,
+    const cc::BeginFrameArgs& args) {}
 
 void MojoFrameSinkManager::OnClientConnectionLost(
     const cc::FrameSinkId& frame_sink_id,

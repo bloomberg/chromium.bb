@@ -244,8 +244,4 @@ TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
   EXPECT_TRUE(view_->has_frame());
 }
 
-// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
-// RenderWidgetHostViewChildFrame and CompositorFrameSinkSupport when we add
-// plumbing of BeginFrameAcks through SurfaceObservers.
-
 }  // namespace content

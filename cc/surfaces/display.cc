@@ -383,34 +383,64 @@ void Display::DidReceiveTextureInUseResponses(
 
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
-  if (scheduler_)
-    scheduler_->SurfaceDamaged(current_surface_id_);
+  if (scheduler_) {
+    BeginFrameAck ack;
+    ack.has_damage = true;
+    scheduler_->SurfaceDamaged(current_surface_id_, ack, true);
+  }
 }
 
-void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {
-  if (aggregator_ &&
-      aggregator_->previous_contained_surfaces().count(surface_id)) {
-    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-    if (surface) {
-      if (!surface->HasActiveFrame() ||
-          surface->GetActiveFrame().resource_list.empty()) {
-        aggregator_->ReleaseResources(surface_id);
+void Display::OnSurfaceDamaged(const SurfaceId& surface_id,
+                               const BeginFrameAck& ack,
+                               bool* changed) {
+  if (ack.has_damage) {
+    if (aggregator_ &&
+        aggregator_->previous_contained_surfaces().count(surface_id)) {
+      Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+      if (surface) {
+        DCHECK(surface->HasActiveFrame());
+        if (surface->GetActiveFrame().resource_list.empty())
+          aggregator_->ReleaseResources(surface_id);
       }
+      *changed = true;
+    } else if (surface_id == current_surface_id_) {
+      *changed = true;
     }
-    if (scheduler_)
-      scheduler_->SurfaceDamaged(surface_id);
-    *changed = true;
-  } else if (surface_id == current_surface_id_) {
-    if (scheduler_)
-      scheduler_->SurfaceDamaged(surface_id);
-    *changed = true;
   }
+
+  if (scheduler_)
+    scheduler_->SurfaceDamaged(surface_id, ack, *changed);
 
   if (surface_id == current_surface_id_)
     UpdateRootSurfaceResourcesLocked();
 }
 
-void Display::OnSurfaceCreated(const SurfaceInfo& surface_info) {}
+bool Display::SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const {
+  if (!surface_manager_)
+    return false;
+
+  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+  if (!surface)
+    return false;
+
+  return surface->HasUndrawnActiveFrame();
+}
+
+void Display::OnSurfaceCreated(const SurfaceInfo& surface_info) {
+  if (scheduler_)
+    scheduler_->SurfaceCreated(surface_info);
+}
+
+void Display::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+  if (scheduler_)
+    scheduler_->SurfaceDestroyed(surface_id);
+}
+
+void Display::OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                                      const BeginFrameArgs& args) {
+  if (scheduler_)
+    scheduler_->SurfaceDamageExpected(surface_id, args);
+}
 
 void Display::OnSurfaceDiscarded(const SurfaceId& surface_id) {
   if (aggregator_)
