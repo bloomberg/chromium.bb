@@ -16,8 +16,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.h"
@@ -98,17 +98,15 @@ TEST_F(OverviewButtonTrayTest, BasicConstruction) {
   EXPECT_TRUE(GetImageView(GetTray()) != NULL);
 }
 
-// Test that maximize mode toggle changes visibility.
-// OverviewButtonTray should only be visible when MaximizeMode is enabled.
-// By default the system should not have MaximizeMode enabled.
-TEST_F(OverviewButtonTrayTest, MaximizeModeObserverOnMaximizeModeToggled) {
+// Test that tablet mode toggle changes visibility.
+// OverviewButtonTray should only be visible when TabletMode is enabled.
+// By default the system should not have TabletMode enabled.
+TEST_F(OverviewButtonTrayTest, TabletModeObserverOnTabletModeToggled) {
   ASSERT_FALSE(GetTray()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
 
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -190,36 +188,31 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
 }
 
 // Tests that a second OverviewButtonTray has been created, and only shows
-// when MaximizeMode has been enabled,  when we are using multiple displays.
+// when TabletMode has been enabled,  when we are using multiple displays.
 // By default the DisplayManger is in extended mode.
 TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
   UpdateDisplay("400x400,200x200");
   EXPECT_FALSE(GetTray()->visible());
   EXPECT_FALSE(GetSecondaryTray()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
   EXPECT_TRUE(GetSecondaryTray()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
 
 // Tests if Maximize Mode is enabled before a secondary display is attached
 // that the second OverviewButtonTray should be created in a visible state.
 TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetSecondaryTray()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
 
 // Tests that the tray loses visibility when a user logs out, and that it
 // regains visibility when a user logs back in.
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   SetUserLoggedIn(false);
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   EXPECT_FALSE(GetTray()->visible());
@@ -233,8 +226,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   SetUserAddingScreenRunning(false);
   NotifySessionStateChanged();
   EXPECT_TRUE(GetTray()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
 
 // Tests that the tray only renders as active while selection is ongoing. Any
@@ -264,8 +256,7 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   // Long duration for hide animation, to allow it to be interrupted.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> hide_duration(
@@ -287,8 +278,8 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
 }
 
 // Tests that the overview button becomes visible when the user enters
-// maximize mode with a system modal window open, and that it hides once
-// the user exits maximize mode.
+// tablet mode with a system modal window open, and that it hides once
+// the user exits tablet mode.
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   // TODO(jonross): When CreateTestWindow*() have been unified, use the
   // appropriate method to replace this setup. (crbug.com/483503)
@@ -300,11 +291,9 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   ParentWindowInPrimaryRootWindow(window.get());
 
   ASSERT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_FALSE(GetTray()->visible());
 }
 

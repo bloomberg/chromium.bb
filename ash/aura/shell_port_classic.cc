@@ -26,10 +26,10 @@
 #include "ash/touch/touch_uma.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler_aura.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
@@ -42,12 +42,12 @@
 #include "ui/display/types/native_display_delegate.h"
 
 #if defined(USE_X11)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
+#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 #include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #endif
 
 #if defined(USE_OZONE)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
+#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -185,9 +185,9 @@ ShellPortClassic::CreateWindowCycleEventFilter() {
   return base::MakeUnique<WindowCycleEventFilterAura>();
 }
 
-std::unique_ptr<wm::MaximizeModeEventHandler>
-ShellPortClassic::CreateMaximizeModeEventHandler() {
-  return base::WrapUnique(new wm::MaximizeModeEventHandlerAura);
+std::unique_ptr<wm::TabletModeEventHandler>
+ShellPortClassic::CreateTabletModeEventHandler() {
+  return base::WrapUnique(new wm::TabletModeEventHandlerAura);
 }
 
 std::unique_ptr<WorkspaceEventHandler>

@@ -88,7 +88,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   int NonClientHitTest(const gfx::Point& point) const;
 
   // Updates the size button's visibility based on whether |frame_| can be
-  // maximized and if maximize mode is enabled. A parent view should relayout
+  // maximized and if tablet mode is enabled. A parent view should relayout
   // to reflect the change in visibility.
   void UpdateSizeButtonVisibility();
 
@@ -115,7 +115,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
                      CaptionButtonIcon icon,
                      Animate animate);
 
-  // Returns true if maximize mode is not enabled, and |frame_| widget delegate
+  // Returns true if tablet mode is not enabled, and |frame_| widget delegate
   // can be maximized.
   bool ShouldSizeButtonBeVisible() const;
 
@@ -148,7 +148,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // Animation that affects the position of |minimize_button_| and the
   // visibility of |size_button_|.
-  std::unique_ptr<gfx::SlideAnimation> maximize_mode_animation_;
+  std::unique_ptr<gfx::SlideAnimation> tablet_mode_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };

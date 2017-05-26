@@ -18,7 +18,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "ash/test/screen_orientation_controller_test_api.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -3027,8 +3027,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
 
   EXPECT_EQ(0, test_observer.countAndReset());
   // Just enabling will not save the lock.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(1, test_observer.countAndReset());
 
   EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
@@ -3070,15 +3069,13 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   EXPECT_EQ(0, test_observer.countAndReset());
 
   // Exit tablet mode reset to clamshell's rotation, which is 90.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_EQ(1, test_observer.countAndReset());
   EXPECT_EQ(display::Display::ROTATE_90,
             screen->GetPrimaryDisplay().rotation());
   // Activate Any.
   wm::ActivateWindow(window_a);
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(1, test_observer.countAndReset());
   // Entering with active ANY will lock again to landscape.
   EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
@@ -3123,8 +3120,7 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
   display::Screen* screen = display::Screen::GetScreen();
 
   // Just enabling will not save the lock.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   orientation_controller->LockOrientationForWindow(
       window, blink::kWebScreenOrientationLockPortrait,
@@ -3171,8 +3167,7 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   wm::ActivateWindow(window_a);
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
 
