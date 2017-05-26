@@ -477,6 +477,10 @@ class AURA_EXPORT WindowTreeClient
   void RequestClose(Window* window) override;
   bool WaitForInitialDisplays() override;
   WindowTreeHostMusInitParams CreateInitParamsForNewDisplay() override;
+  void SetDisplayConfiguration(
+      const std::vector<display::Display>& displays,
+      std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+      int64_t primary_display_id) override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,

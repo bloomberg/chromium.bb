@@ -36,52 +36,6 @@ namespace {
 
 const char kUserId1[] = "123";
 
-class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
- public:
-  TestDisplayManagerObserver() : binding_(this) {}
-  ~TestDisplayManagerObserver() override {}
-
-  mojom::DisplayManagerObserverPtr GetPtr() {
-    return binding_.CreateInterfacePtrAndBind();
-  }
-
-  std::string GetAndClearObserverCalls() {
-    std::string result;
-    std::swap(observer_calls_, result);
-    return result;
-  }
-
- private:
-  void AddCall(const std::string& call) {
-    if (!observer_calls_.empty())
-      observer_calls_ += "\n";
-    observer_calls_ += call;
-  }
-
-  std::string DisplayIdsToString(
-      const std::vector<mojom::WsDisplayPtr>& wm_displays) {
-    std::string display_ids;
-    for (const auto& wm_display : wm_displays) {
-      if (!display_ids.empty())
-        display_ids += " ";
-      display_ids += base::Int64ToString(wm_display->display.id());
-    }
-    return display_ids;
-  }
-
-  // mojom::DisplayManagerObserver:
-  void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
-                         int64_t primary_display_id,
-                         int64_t internal_display_id) override {
-    AddCall("OnDisplaysChanged " + DisplayIdsToString(displays));
-  }
-
-  mojo::Binding<mojom::DisplayManagerObserver> binding_;
-  std::string observer_calls_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerObserver);
-};
-
 mojom::FrameDecorationValuesPtr CreateDefaultFrameDecorationValues() {
   return mojom::FrameDecorationValues::New();
 }

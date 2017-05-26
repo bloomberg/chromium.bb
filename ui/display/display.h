@@ -209,6 +209,8 @@ class DISPLAY_EXPORT Display final {
   Rotation rotation_ = ROTATE_0;
   TouchSupport touch_support_ = TOUCH_SUPPORT_UNKNOWN;
   gfx::Size maximum_cursor_size_;
+  // NOTE: this is not currently written to the mojom as it is not used in
+  // aura.
   gfx::ICCProfile icc_profile_;
   int color_depth_;
   int depth_per_component_;

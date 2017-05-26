@@ -13,6 +13,7 @@
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/cursor_location_manager.h"
 #include "services/ui/ws/display.h"
+#include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/server_window.h"
@@ -154,9 +155,14 @@ void WindowManagerState::SetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
   got_frame_decoration_values_ = true;
   frame_decoration_values_ = values.Clone();
-  display_manager()
-      ->GetUserDisplayManager(user_id())
-      ->OnFrameDecorationValuesChanged();
+  UserDisplayManager* user_display_manager =
+      display_manager()->GetUserDisplayManager(user_id());
+  user_display_manager->OnFrameDecorationValuesChanged();
+  if (window_server()->display_creation_config() ==
+          DisplayCreationConfig::MANUAL &&
+      display_manager()->got_initial_config_from_window_manager()) {
+    user_display_manager->CallOnDisplaysChanged();
+  }
 }
 
 bool WindowManagerState::SetCapture(ServerWindow* window,

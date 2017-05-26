@@ -193,6 +193,12 @@ void DispatchEventToTarget(ui::Event* event, WindowMus* target) {
   GetWindowTreeHostMus(target)->SendEventToSink(event);
 }
 
+// Use for acks from mus that are expected to always succeed and if they don't
+// a crash is triggered.
+void OnAckMustSucceed(bool success) {
+  CHECK(success);
+}
+
 }  // namespace
 
 WindowTreeClient::WindowTreeClient(
@@ -1867,6 +1873,18 @@ void WindowTreeClient::RequestClose(Window* window) {
   DCHECK(window);
   if (window_manager_client_)
     window_manager_client_->WmRequestClose(WindowMus::Get(window)->server_id());
+}
+
+void WindowTreeClient::SetDisplayConfiguration(
+    const std::vector<display::Display>& displays,
+    std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+    int64_t primary_display_id) {
+  DCHECK_EQ(displays.size(), viewport_metrics.size());
+  if (window_manager_client_) {
+    window_manager_client_->SetDisplayConfiguration(
+        displays, std::move(viewport_metrics), primary_display_id,
+        base::Bind(&OnAckMustSucceed));
+  }
 }
 
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(

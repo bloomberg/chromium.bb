@@ -42,6 +42,8 @@ class WindowServerDelegate;
 class WindowTree;
 class WindowTreeBinding;
 
+enum class DisplayCreationConfig;
+
 // WindowServer manages the set of clients of the window server (all the
 // WindowTrees) as well as providing the root of the hierarchy.
 class WindowServer : public ServerWindowDelegate,
@@ -65,6 +67,11 @@ class WindowServer : public ServerWindowDelegate,
   }
 
   GpuHost* gpu_host() { return gpu_host_.get(); }
+
+  void SetDisplayCreationConfig(DisplayCreationConfig config);
+  DisplayCreationConfig display_creation_config() const {
+    return display_creation_config_;
+  }
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
@@ -387,6 +394,8 @@ class WindowServer : public ServerWindowDelegate,
   mojo::Binding<cc::mojom::FrameSinkManagerClient>
       frame_sink_manager_client_binding_;
   cc::mojom::FrameSinkManagerPtr frame_sink_manager_;
+
+  DisplayCreationConfig display_creation_config_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

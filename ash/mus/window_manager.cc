@@ -126,29 +126,21 @@ void WindowManager::Init(
   DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
   ash::Shell::set_window_tree_client(window_tree_client_.get());
 
-  // TODO(sky): remove and use MUS code.
+  // TODO(sky): remove and use MUS code. This should really be
+  // ShouldEnableSimplifiedDisplayManagement(), but as ShellPort hasn't been
+  // created yet it can't be used here.
   if (config_ == Config::MASH) {
     // |connector_| is null in some tests.
     if (connector_)
       connector_->BindInterface(ui::mojom::kServiceName, &display_controller_);
     screen_ = base::MakeUnique<ScreenMus>(display_controller_.get());
     display::Screen::SetScreenInstance(screen_.get());
+    InstallFrameDecorationValues();
   }
 
   pointer_watcher_event_router_ =
       base::MakeUnique<views::PointerWatcherEventRouter>(
           window_tree_client_.get());
-
-  ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
-      ui::mojom::FrameDecorationValues::New();
-  const gfx::Insets client_area_insets =
-      NonClientFrameController::GetPreferredClientAreaInsets();
-  frame_decoration_values->normal_client_area_insets = client_area_insets;
-  frame_decoration_values->maximized_client_area_insets = client_area_insets;
-  frame_decoration_values->max_title_bar_button_width =
-      NonClientFrameController::GetMaxTitleBarButtonWidth();
-  window_manager_client_->SetFrameDecorationValues(
-      std::move(frame_decoration_values));
 
   // Notify PointerWatcherEventRouter and CaptureSynchronizer that the capture
   // client has been set.
@@ -261,6 +253,19 @@ void WindowManager::CreateAndRegisterRootWindowController(
   root_window_controllers_.insert(std::move(root_window_controller));
 }
 
+void WindowManager::InstallFrameDecorationValues() {
+  ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
+      ui::mojom::FrameDecorationValues::New();
+  const gfx::Insets client_area_insets =
+      NonClientFrameController::GetPreferredClientAreaInsets();
+  frame_decoration_values->normal_client_area_insets = client_area_insets;
+  frame_decoration_values->maximized_client_area_insets = client_area_insets;
+  frame_decoration_values->max_title_bar_button_width =
+      NonClientFrameController::GetMaxTitleBarButtonWidth();
+  window_manager_client_->SetFrameDecorationValues(
+      std::move(frame_decoration_values));
+}
+
 void WindowManager::DestroyRootWindowController(
     RootWindowController* root_window_controller,
     bool in_shutdown) {
@@ -341,6 +346,7 @@ void WindowManager::OnWmConnected() {
   CreateShell(nullptr);
   if (show_primary_host_on_connect_)
     Shell::GetPrimaryRootWindow()->GetHost()->Show();
+  InstallFrameDecorationValues();
 }
 
 void WindowManager::OnWmSetBounds(aura::Window* window,

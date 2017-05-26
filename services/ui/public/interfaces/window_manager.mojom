@@ -280,6 +280,16 @@ interface WindowManagerClient {
                  uint32 window_id) =>
       (cc.mojom.LocalSurfaceId? local_surface_id);
 
+  // Configures the metrics for the displays and notifies observers. This is
+  // only applicable when WindowTree was created with a value of false for
+  // |automatically_create_display_roots|. This *must* be called after any
+  // display related changes to inform observers, for example, after calling
+  // SetDisplayRoot() this must be called to inform observers of the display
+  // changes.
+  SetDisplayConfiguration(array<display.mojom.Display> displays,
+                          array<WmViewportMetrics> viewport_metrics,
+                          int64 primary_display_id) => (bool success);
+
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
 

@@ -33,6 +33,18 @@ UserDisplayManager::UserDisplayManager(UserDisplayManagerDelegate* delegate,
 
 UserDisplayManager::~UserDisplayManager() {}
 
+void UserDisplayManager::DisableAutomaticNotification() {
+  DCHECK(notify_automatically_);
+  notify_automatically_ = false;
+}
+
+void UserDisplayManager::CallOnDisplaysChanged() {
+  display_manager_observers_.ForAllPtrs(
+      [this](mojom::DisplayManagerObserver* observer) {
+        CallOnDisplaysChanged(observer);
+      });
+}
+
 void UserDisplayManager::OnFrameDecorationValuesChanged() {
   got_valid_frame_decorations_ = true;
   CallOnDisplaysChangedIfNecessary();
@@ -100,13 +112,10 @@ bool UserDisplayManager::ShouldCallOnDisplaysChanged() const {
 }
 
 void UserDisplayManager::CallOnDisplaysChangedIfNecessary() {
-  if (!ShouldCallOnDisplaysChanged())
+  if (!notify_automatically_ || !ShouldCallOnDisplaysChanged())
     return;
 
-  display_manager_observers_.ForAllPtrs(
-      [this](mojom::DisplayManagerObserver* observer) {
-        CallOnDisplaysChanged(observer);
-      });
+  CallOnDisplaysChanged();
 }
 
 void UserDisplayManager::CallOnDisplaysChanged(

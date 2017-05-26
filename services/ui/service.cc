@@ -29,6 +29,7 @@
 #include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/ws/accessibility_manager.h"
 #include "services/ui/ws/display_binding.h"
+#include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/user_activity_monitor.h"
@@ -288,15 +289,19 @@ bool Service::IsTestConfig() const {
 
 void Service::OnWillCreateTreeForWindowManager(
     bool automatically_create_display_roots) {
-  if (screen_manager_config_ != ScreenManagerConfig::UNKNOWN)
+  if (window_server_->display_creation_config() !=
+      ws::DisplayCreationConfig::UNKNOWN) {
     return;
+  }
 
   DVLOG(3) << "OnWillCreateTreeForWindowManager "
            << automatically_create_display_roots;
-  screen_manager_config_ = automatically_create_display_roots
-                               ? ScreenManagerConfig::INTERNAL
-                               : ScreenManagerConfig::FORWARDING;
-  if (screen_manager_config_ == ScreenManagerConfig::FORWARDING) {
+  ws::DisplayCreationConfig config = automatically_create_display_roots
+                                         ? ws::DisplayCreationConfig::AUTOMATIC
+                                         : ws::DisplayCreationConfig::MANUAL;
+  window_server_->SetDisplayCreationConfig(config);
+  if (window_server_->display_creation_config() ==
+      ws::DisplayCreationConfig::MANUAL) {
 #if defined(USE_OZONE) && defined(OS_CHROMEOS)
     screen_manager_ = base::MakeUnique<display::ScreenManagerForwarding>();
 #else
@@ -334,8 +339,9 @@ void Service::BindClipboardRequest(
 void Service::BindDisplayManagerRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::DisplayManagerRequest request) {
-  // DisplayManagerObservers generally expect there to be at least one display.
-  if (!window_server_->display_manager()->has_displays()) {
+  // Wait for the DisplayManager to be configured before binding display
+  // requests. Otherwise the client sees no displays.
+  if (!window_server_->display_manager()->IsReady()) {
     std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->source_info = source_info;
     pending_request->dm_request.reset(
@@ -392,7 +398,7 @@ void Service::BindWindowTreeFactoryRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::WindowTreeFactoryRequest request) {
   AddUserIfNecessary(source_info.identity);
-  if (!window_server_->display_manager()->has_displays()) {
+  if (!window_server_->display_manager()->IsReady()) {
     std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->source_info = source_info;
     pending_request->wtf_request.reset(

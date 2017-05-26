@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "services/ui/ws/display.h"
+#include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/gpu_host.h"
@@ -69,7 +70,8 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       next_wm_change_id_(0),
       gpu_host_(new GpuHost(this)),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
-      frame_sink_manager_client_binding_(this) {
+      frame_sink_manager_client_binding_(this),
+      display_creation_config_(DisplayCreationConfig::UNKNOWN) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
   gpu_host_->CreateFrameSinkManager(
@@ -92,6 +94,13 @@ WindowServer::~WindowServer() {
     DestroyTree(tree_map_.begin()->second.get());
 
   display_manager_.reset();
+}
+
+void WindowServer::SetDisplayCreationConfig(DisplayCreationConfig config) {
+  DCHECK(tree_map_.empty());
+  DCHECK_EQ(DisplayCreationConfig::UNKNOWN, display_creation_config_);
+  display_creation_config_ = config;
+  display_manager_->OnDisplayCreationConfigSet();
 }
 
 ServerWindow* WindowServer::CreateServerWindow(
@@ -150,6 +159,9 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
     mojom::WindowTreeRequest window_tree_request,
     mojom::WindowTreeClientPtr window_tree_client,
     bool automatically_create_display_roots) {
+  delegate_->OnWillCreateTreeForWindowManager(
+      automatically_create_display_roots);
+
   std::unique_ptr<WindowTree> window_tree(new WindowTree(
       this, user_id, nullptr, base::WrapUnique(new WindowManagerAccessPolicy)));
   std::unique_ptr<WindowTreeBinding> window_tree_binding =

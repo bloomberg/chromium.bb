@@ -44,6 +44,12 @@ void TestWindowManagerClient::SetDisplayRoot(
     Id window_id,
     const SetDisplayRootCallback& callback) {}
 
+void TestWindowManagerClient::SetDisplayConfiguration(
+    const std::vector<display::Display>& displays,
+    std::vector<::ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+    int64_t primary_display_id,
+    const SetDisplayConfigurationCallback& callback) {}
+
 void TestWindowManagerClient::WmResponse(uint32_t change_id, bool response) {}
 
 void TestWindowManagerClient::WmSetBoundsResponse(uint32_t change_id) {}

@@ -283,8 +283,7 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
   DCHECK(window_manager_state_);  // Only called for window manager.
   DVLOG(3) << "SetDisplayRoot client=" << id_
            << " global window_id=" << client_window_id.id;
-  Display* display =
-      window_server_->display_manager()->GetDisplayById(display_to_create.id());
+  Display* display = display_manager()->GetDisplayById(display_to_create.id());
   if (display) {
     DVLOG(1) << "SetDisplayRoot called with existing display "
              << display_to_create.id();
@@ -310,23 +309,14 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
     return nullptr;
   }
 
-  const display::DisplayList::Type display_type =
-      is_primary_display ? display::DisplayList::Type::PRIMARY
-                         : display::DisplayList::Type::NOT_PRIMARY;
-  display::ScreenManager::GetInstance()->GetScreen()->display_list().AddDisplay(
-      display_to_create, display_type);
   display::ViewportMetrics viewport_metrics;
   viewport_metrics.bounds_in_pixels =
       transport_viewport_metrics.bounds_in_pixels;
   viewport_metrics.device_scale_factor =
       transport_viewport_metrics.device_scale_factor;
   viewport_metrics.ui_scale_factor = transport_viewport_metrics.ui_scale_factor;
-  window_server_->display_manager()->AddDisplayForWindowManager(
-      display_to_create, viewport_metrics);
-
-  // OnDisplayAdded() should trigger creation of the Display.
-  display =
-      window_server_->display_manager()->GetDisplayById(display_to_create.id());
+  display = display_manager()->AddDisplayForWindowManager(
+      is_primary_display, display_to_create, viewport_metrics);
   DCHECK(display);
   WindowManagerDisplayRoot* display_root =
       display->GetWindowManagerDisplayRootForUser(
@@ -1155,7 +1145,7 @@ void WindowTree::RemoveRoot(ServerWindow* window, RemoveRootReason reason) {
   roots_.erase(window);
 
   if (window->id().client_id == id_) {
-    // This cllient created the window. If this client is the window manager and
+    // This client created the window. If this client is the window manager and
     // display roots are manually created, then |window| is a display root and
     // needs be cleaned.
     if (window_manager_state_ && !automatically_create_display_roots_) {
@@ -1980,7 +1970,7 @@ void WindowTree::GetWindowManagerClient(
 
 void WindowTree::GetCursorLocationMemory(
     const GetCursorLocationMemoryCallback& callback) {
-  callback.Run(window_server_->display_manager()
+  callback.Run(display_manager()
                    ->GetCursorLocationManager(user_id_)
                    ->GetCursorLocationMemory());
 }
@@ -2202,7 +2192,7 @@ void WindowTree::ActivateNextWindow() {
     return;
   }
   // Use the first display.
-  std::set<Display*> displays = window_server_->display_manager()->displays();
+  std::set<Display*> displays = display_manager()->displays();
   if (displays.empty())
     return;
 
@@ -2238,6 +2228,15 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
   }
   display_root->parent()->SetVisible(true);
   callback.Run(display_root->current_local_surface_id());
+}
+
+void WindowTree::SetDisplayConfiguration(
+    const std::vector<display::Display>& displays,
+    std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+    int64_t primary_display_id,
+    const SetDisplayConfigurationCallback& callback) {
+  callback.Run(display_manager()->SetDisplayConfiguration(
+      displays, std::move(viewport_metrics), primary_display_id));
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

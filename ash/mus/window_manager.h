@@ -138,6 +138,9 @@ class WindowManager : public aura::WindowManagerDelegate,
       const display::Display& display,
       ash::RootWindowController::RootWindowType root_window_type);
 
+  // Sets the frame decoration values on the server.
+  void InstallFrameDecorationValues();
+
   // Deletes the specified RootWindowController. Called when a display is
   // removed. |in_shutdown| is true if called from Shutdown().
   void DestroyRootWindowController(RootWindowController* root_window_controller,

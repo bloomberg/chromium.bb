@@ -33,6 +33,7 @@ static_library("lib") {
     "display.h",
     "display_binding.cc",
     "display_binding.h",
+    "display_creation_config.h",
     "display_manager.cc",
     "display_manager.h",
     "drag_controller.cc",
