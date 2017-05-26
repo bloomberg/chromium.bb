@@ -30,7 +30,7 @@ class HTMLIFrameElementSandbox final : public DOMTokenList,
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
   // DOMTokenListObserver.
-  void ValueWasSet() override;
+  void ValueWasSet(const AtomicString&) override;
 
   Member<HTMLIFrameElement> element_;
 };

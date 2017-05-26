@@ -630,7 +630,8 @@ void HTMLMediaElement::ParseAttribute(
     UseCounter::Count(GetDocument(),
                       UseCounter::kHTMLMediaElementControlsListAttribute);
     if (params.old_value != params.new_value) {
-      controls_list_->setValue(params.new_value);
+      controls_list_->DidUpdateAttributeValue(params.old_value,
+                                              params.new_value);
       if (GetMediaControls())
         GetMediaControls()->OnControlsListUpdated();
     }
@@ -2440,13 +2441,8 @@ HTMLMediaElementControlsList* HTMLMediaElement::ControlsListInternal() const {
   return controls_list_.Get();
 }
 
-void HTMLMediaElement::ControlsListValueWasSet() {
-  if (FastGetAttribute(controlslistAttr) == controls_list_->value())
-    return;
-
-  SetSynchronizedLazyAttribute(controlslistAttr, controls_list_->value());
-  if (GetMediaControls())
-    GetMediaControls()->OnControlsListUpdated();
+void HTMLMediaElement::ControlsListValueWasSet(const AtomicString& value) {
+  setAttribute(controlslistAttr, value);
 }
 
 double HTMLMediaElement::volume() const {

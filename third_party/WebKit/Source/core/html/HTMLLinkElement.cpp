@@ -68,7 +68,7 @@ void HTMLLinkElement::ParseAttribute(
   const AtomicString& value = params.new_value;
   if (name == relAttr) {
     rel_attribute_ = LinkRelAttribute(value);
-    rel_list_->SetRelValues(value);
+    rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
   } else if (name == hrefAttr) {
     // Log href attribute before logging resource fetching in process().
@@ -89,7 +89,13 @@ void HTMLLinkElement::ParseAttribute(
                         UseCounter::kHTMLLinkElementReferrerPolicyAttribute);
     }
   } else if (name == sizesAttr) {
-    sizes_->setValue(value);
+    sizes_->DidUpdateAttributeValue(params.old_value, value);
+    WebVector<WebSize> web_icon_sizes =
+        WebIconSizesParser::ParseIconSizes(value);
+    icon_sizes_.resize(web_icon_sizes.size());
+    for (size_t i = 0; i < web_icon_sizes.size(); ++i)
+      icon_sizes_[i] = web_icon_sizes[i];
+    Process();
   } else if (name == mediaAttr) {
     media_ = value.DeprecatedLower();
     Process();
@@ -263,14 +269,8 @@ RefPtr<WebTaskRunner> HTMLLinkElement::GetLoadingTaskRunner() {
   return TaskRunnerHelper::Get(TaskType::kNetworking, &GetDocument());
 }
 
-void HTMLLinkElement::ValueWasSet() {
-  SetSynchronizedLazyAttribute(HTMLNames::sizesAttr, sizes_->value());
-  WebVector<WebSize> web_icon_sizes =
-      WebIconSizesParser::ParseIconSizes(sizes_->value());
-  icon_sizes_.resize(web_icon_sizes.size());
-  for (size_t i = 0; i < web_icon_sizes.size(); ++i)
-    icon_sizes_[i] = web_icon_sizes[i];
-  Process();
+void HTMLLinkElement::ValueWasSet(const AtomicString& value) {
+  setAttribute(HTMLNames::sizesAttr, value);
 }
 
 bool HTMLLinkElement::SheetLoaded() {

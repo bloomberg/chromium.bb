@@ -63,9 +63,9 @@ bool HTMLIFrameElementAllow::ValidateTokenValue(const AtomicString& token_value,
   return GetDefaultFeatureNameMap().Contains(token_value.GetString());
 }
 
-void HTMLIFrameElementAllow::ValueWasSet() {
+void HTMLIFrameElementAllow::ValueWasSet(const AtomicString& value) {
   DCHECK(element_);
-  element_->AllowValueWasSet();
+  element_->AllowValueWasSet(value);
 }
 
 }  // namespace blink

@@ -151,7 +151,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
 
   // From DOMTokenListObserver
-  void ValueWasSet() final;
+  void ValueWasSet(const AtomicString&) final;
 
   Member<LinkResource> link_;
   Member<LinkLoader> link_loader_;

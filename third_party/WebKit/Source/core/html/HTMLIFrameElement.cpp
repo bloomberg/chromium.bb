@@ -124,7 +124,16 @@ void HTMLIFrameElement::ParseAttribute(
     if (name_ != old_name)
       FrameOwnerPropertiesChanged();
   } else if (name == sandboxAttr) {
-    sandbox_->setValue(value);
+    sandbox_->DidUpdateAttributeValue(params.old_value, value);
+    String invalid_tokens;
+    SetSandboxFlags(value.IsNull() ? kSandboxNone
+                                   : ParseSandboxPolicy(sandbox_->Tokens(),
+                                                        invalid_tokens));
+    if (!invalid_tokens.IsNull()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kErrorMessageLevel,
+          "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
+    }
     UseCounter::Count(GetDocument(), UseCounter::kSandboxViaIFrame);
   } else if (name == referrerpolicyAttr) {
     referrer_policy_ = kReferrerPolicyDefault;
@@ -172,7 +181,16 @@ void HTMLIFrameElement::ParseAttribute(
       FrameOwnerPropertiesChanged();
   } else if (RuntimeEnabledFeatures::featurePolicyEnabled() &&
              name == allowAttr) {
-    allow_->setValue(value);
+    allow_->DidUpdateAttributeValue(params.old_value, value);
+    String invalid_tokens;
+    allowed_features_ = allow_->ParseAllowedFeatureNames(invalid_tokens);
+    if (!invalid_tokens.IsNull()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kErrorMessageLevel,
+          "Error while parsing the 'allow' attribute: " + invalid_tokens));
+    }
+    FrameOwnerPropertiesChanged();
+    UpdateContainerPolicy();
   } else {
     if (name == srcAttr)
       LogUpdateAttributeIfIsolatedWorldAndInDocument("iframe", params);
@@ -209,29 +227,12 @@ bool HTMLIFrameElement::IsInteractiveContent() const {
   return true;
 }
 
-void HTMLIFrameElement::SandboxValueWasSet() {
-  String invalid_tokens;
-  SetSandboxFlags(sandbox_->value().IsNull()
-                      ? kSandboxNone
-                      : ParseSandboxPolicy(sandbox_->Tokens(), invalid_tokens));
-  if (!invalid_tokens.IsNull())
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kErrorMessageLevel,
-        "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
-  SetSynchronizedLazyAttribute(sandboxAttr, sandbox_->value());
+void HTMLIFrameElement::SandboxValueWasSet(const AtomicString& value) {
+  setAttribute(sandboxAttr, value);
 }
 
-void HTMLIFrameElement::AllowValueWasSet() {
-  String invalid_tokens;
-  allowed_features_ = allow_->ParseAllowedFeatureNames(invalid_tokens);
-  if (!invalid_tokens.IsNull()) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kErrorMessageLevel,
-        "Error while parsing the 'allow' attribute: " + invalid_tokens));
-  }
-  SetSynchronizedLazyAttribute(allowAttr, allow_->value());
-  FrameOwnerPropertiesChanged();
-  UpdateContainerPolicy();
+void HTMLIFrameElement::AllowValueWasSet(const AtomicString& value) {
+  setAttribute(allowAttr, value);
 }
 
 ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {

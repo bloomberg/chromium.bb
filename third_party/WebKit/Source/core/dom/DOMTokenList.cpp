@@ -27,6 +27,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "platform/wtf/AutoReset.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -95,6 +96,8 @@ void DOMTokenList::add(const Vector<String>& tokens,
   if (!ValidateTokens(tokens, exception_state))
     return;
 
+  // TODO(tkent): Add a member function for AutoReset + setValue.
+  AutoReset<bool> updating(&is_in_update_step_, true);
   setValue(AddTokens(tokens));
 }
 
@@ -117,6 +120,8 @@ void DOMTokenList::remove(const Vector<String>& tokens,
   // See https://github.com/whatwg/dom/issues/462
   if (value().IsNull())
     return;
+  // TODO(tkent): Add a member function for AutoReset + setValue.
+  AutoReset<bool> updating(&is_in_update_step_, true);
   setValue(RemoveTokens(tokens));
 }
 
@@ -153,8 +158,11 @@ bool DOMTokenList::supports(const AtomicString& token,
 }
 
 void DOMTokenList::AddInternal(const AtomicString& token) {
-  if (!ContainsInternal(token))
-    setValue(AddToken(token));
+  if (ContainsInternal(token))
+    return;
+  // TODO(tkent): Add a member function for AutoReset + setValue.
+  AutoReset<bool> updating(&is_in_update_step_, true);
+  setValue(AddToken(token));
 }
 
 void DOMTokenList::RemoveInternal(const AtomicString& token) {
@@ -162,6 +170,8 @@ void DOMTokenList::RemoveInternal(const AtomicString& token) {
   // of character by character testing.
   if (!ContainsInternal(token))
     return;
+  // TODO(tkent): Add a member function for AutoReset + setValue.
+  AutoReset<bool> updating(&is_in_update_step_, true);
   setValue(RemoveToken(token));
 }
 
@@ -221,12 +231,17 @@ AtomicString DOMTokenList::SerializeSet(const SpaceSplitString& token_set) {
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
-  bool value_changed = value_ != value;
-  value_ = value;
-  if (value_changed)
-    tokens_.Set(value);
   if (observer_)
-    observer_->ValueWasSet();
+    observer_->ValueWasSet(value);
+}
+
+void DOMTokenList::DidUpdateAttributeValue(const AtomicString& old_value,
+                                           const AtomicString& new_value) {
+  value_ = new_value;
+  if (is_in_update_step_)
+    return;
+  if (old_value != new_value)
+    tokens_.Set(new_value);
 }
 
 bool DOMTokenList::ContainsInternal(const AtomicString& token) const {

@@ -40,7 +40,7 @@ class CORE_EXPORT DOMTokenListObserver : public GarbageCollectedMixin {
  public:
   // Called when the value property is set, even if the tokens in
   // the set have not changed.
-  virtual void ValueWasSet() = 0;
+  virtual void ValueWasSet(const AtomicString& value) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
@@ -70,7 +70,14 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   bool supports(const AtomicString&, ExceptionState&);
 
   virtual const AtomicString& value() const { return value_; }
+  // DOMTokenListObserver::ValueWasSet or setValue override should update the
+  // associated attribute value.
   virtual void setValue(const AtomicString&);
+
+  // This function should be called when the associated attribute value was
+  // updated.
+  void DidUpdateAttributeValue(const AtomicString& old_value,
+                               const AtomicString& new_value);
 
   const SpaceSplitString& Tokens() const { return tokens_; }
   void SetObserver(DOMTokenListObserver* observer) { observer_ = observer; }
@@ -100,6 +107,7 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   SpaceSplitString tokens_;
   AtomicString value_;
   WeakMember<DOMTokenListObserver> observer_;
+  bool is_in_update_step_ = false;
 };
 
 }  // namespace blink
