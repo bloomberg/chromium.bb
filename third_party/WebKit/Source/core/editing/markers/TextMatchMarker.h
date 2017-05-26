@@ -83,6 +83,4 @@ DEFINE_TYPE_CASTS(TextMatchMarker,
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::TextMatchMarker);
-
 #endif
