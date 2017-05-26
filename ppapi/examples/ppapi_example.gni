@@ -18,7 +18,7 @@ template("ppapi_example") {
       }
 
       sources = invoker.sources
-      deps = invoker.deps
+      deps = invoker.deps + [ "//build/config:exe_and_shlib_deps" ]
     }
   } else {
     mac_plugin_bundle(target_name) {
