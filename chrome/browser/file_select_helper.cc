@@ -354,6 +354,14 @@ void FileSelectHelper::CleanUp() {
   }
 }
 
+bool FileSelectHelper::AbortIfWebContentsDestroyed() {
+  if (render_frame_host_ && web_contents_)
+    return false;
+
+  RunFileChooserEnd();
+  return true;
+}
+
 std::unique_ptr<ui::SelectFileDialog::FileTypeInfo>
 FileSelectHelper::GetFileTypesFromAcceptType(
     const std::vector<base::string16>& accept_types) {
@@ -496,13 +504,18 @@ void FileSelectHelper::GetFileTypesOnFileThread(
 
 void FileSelectHelper::GetSanitizedFilenameOnUIThread(
     std::unique_ptr<FileChooserParams> params) {
+  if (AbortIfWebContentsDestroyed())
+    return;
+
   base::FilePath default_file_path = profile_->last_selected_directory().Append(
       GetSanitizedFileName(params->default_file_name));
 #if defined(FULL_SAFE_BROWSING)
-  CheckDownloadRequestWithSafeBrowsing(default_file_path, std::move(params));
-#else
-  RunFileChooserOnUIThread(default_file_path, std::move(params));
+  if (params->mode == FileChooserParams::Save) {
+    CheckDownloadRequestWithSafeBrowsing(default_file_path, std::move(params));
+    return;
+  }
 #endif
+  RunFileChooserOnUIThread(default_file_path, std::move(params));
 }
 
 #if defined(FULL_SAFE_BROWSING)
@@ -557,13 +570,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     const base::FilePath& default_file_path,
     std::unique_ptr<FileChooserParams> params) {
   DCHECK(params);
-  if (!render_frame_host_ || !web_contents_ || !IsValidProfile(profile_) ||
-      !web_contents_->GetNativeView()) {
-    // If the renderer was destroyed before we started, just cancel the
-    // operation.
-    RunFileChooserEnd();
+  if (AbortIfWebContentsDestroyed())
     return;
-  }
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents_));
@@ -615,9 +623,9 @@ void FileSelectHelper::RunFileChooserOnUIThread(
   select_file_types_.reset();
 }
 
-// This method is called when we receive the last callback from the file
-// chooser dialog. Perform any cleanup and release the reference we added
-// in RunFileChooser().
+// This method is called when we receive the last callback from the file chooser
+// dialog or if the renderer was destroyed. Perform any cleanup and release the
+// reference we added in RunFileChooser().
 void FileSelectHelper::RunFileChooserEnd() {
   // If there are temporary files, then this instance needs to stick around
   // until web_contents_ is destroyed, so that this instance can delete the

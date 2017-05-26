@@ -453,4 +453,27 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
   RunTestViaHTTP("FileChooser_SaveAsDangerousExtensionListDisallowed");
 }
 
+IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
+                       FileChooser_Open_NotBlockedBySafeBrowsing) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  const char kContents[] = "Hello from browser";
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath existing_filename = temp_dir.GetPath().AppendASCII("foo");
+  ASSERT_EQ(
+      static_cast<int>(sizeof(kContents) - 1),
+      base::WriteFile(existing_filename, kContents, sizeof(kContents) - 1));
+
+  safe_browsing_test_configuration_.default_result =
+      DownloadProtectionService::DANGEROUS;
+
+  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  file_info_list.push_back(
+      ui::SelectedFileInfo(existing_filename, existing_filename));
+  TestSelectFileDialogFactory test_dialog_factory(
+      TestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
+  RunTestViaHTTP("FileChooser_OpenSimple");
+}
+
 #endif  // FULL_SAFE_BROWSING
