@@ -1047,7 +1047,8 @@ void SelectionController::SendContextMenuEvent(
   AutoReset<bool> mouse_down_may_start_select_change(
       &mouse_down_may_start_select_, true);
 
-  if (HitTestResultIsMisspelled(mev.GetHitTestResult()))
+  if (!mev.Event().FromTouch() &&
+      HitTestResultIsMisspelled(mev.GetHitTestResult()))
     return SelectClosestMisspellingFromMouseEvent(mev);
 
   if (!frame_->GetEditor().Behavior().ShouldSelectOnContextualMenuClick())

@@ -83,6 +83,7 @@
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -1862,10 +1863,10 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
     host_->MoveCaret(point);
 }
 
-void RenderWidgetHostViewAndroid::ShowContextMenuAtPoint(
+void RenderWidgetHostViewAndroid::ShowContextMenuAtTouchHandle(
     const gfx::Point& point) {
   if (host_)
-    host_->ShowContextMenuAtPoint(point);
+    host_->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_TOUCH_HANDLE);
 }
 
 void RenderWidgetHostViewAndroid::DismissTextHandles() {

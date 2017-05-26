@@ -568,8 +568,8 @@ import java.util.UUID;
     }
 
     @Override
-    public void showContextMenuAtPoint(int x, int y) {
-        nativeShowContextMenuAtPoint(mNativeWebContentsAndroid, x, y);
+    public void showContextMenuAtTouchHandle(int x, int y) {
+        nativeShowContextMenuAtTouchHandle(mNativeWebContentsAndroid, x, y);
     }
 
     @Override
@@ -671,7 +671,8 @@ import java.util.UUID;
             String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback);
     private native void nativeDismissTextHandles(long nativeWebContentsAndroid);
-    private native void nativeShowContextMenuAtPoint(long nativeWebContentsAndroid, int x, int y);
+    private native void nativeShowContextMenuAtTouchHandle(
+            long nativeWebContentsAndroid, int x, int y);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);

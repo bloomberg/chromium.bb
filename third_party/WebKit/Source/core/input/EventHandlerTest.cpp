@@ -462,6 +462,32 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
+TEST_F(EventHandlerTest, MisspellingContextMenuEvent) {
+  if (GetDocument()
+          .GetFrame()
+          ->GetEditor()
+          .Behavior()
+          .ShouldSelectOnContextualMenuClick())
+    return;
+
+  SetHtmlInnerHTML("<textarea cols=50 rows=50>Mispellinggg</textarea>");
+
+  TapEventBuilder single_tap_event(IntPoint(10, 10), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
+
+  ASSERT_TRUE(
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
+
+  GetDocument().GetFrame()->GetEventHandler().ShowNonLocatedContextMenu(
+      nullptr, kMenuSourceTouchHandle);
+
+  ASSERT_TRUE(
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
+}
+
 TEST_F(EventHandlerTest, dragEndInNewDrag) {
   SetHtmlInnerHTML(
       "<style>.box { width: 100px; height: 100px; display: block; }</style>"

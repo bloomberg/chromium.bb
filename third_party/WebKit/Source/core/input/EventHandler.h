@@ -48,6 +48,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
+#include "public/web/WebMenuSourceType.h"
 
 namespace blink {
 
@@ -194,7 +195,8 @@ class CORE_EXPORT EventHandler final
       const WebMouseEvent&,
       Node* override_target_node = nullptr);
   WebInputEventResult ShowNonLocatedContextMenu(
-      Element* override_target_element = nullptr);
+      Element* override_target_element = nullptr,
+      WebMenuSourceType = kMenuSourceNone);
 
   // Returns whether pointerId is active or not
   bool IsPointerEventActive(int);

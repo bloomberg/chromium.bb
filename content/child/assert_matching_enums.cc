@@ -12,8 +12,10 @@
 #include "third_party/WebKit/public/platform/WebTextInputType.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
+#include "third_party/WebKit/public/web/WebMenuSourceType.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ui_base_types.h"
 
 namespace content {
 
@@ -87,5 +89,16 @@ STATIC_ASSERT_ENUM(blink::kWebTextInputTypeContentEditable,
                    ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE);
 STATIC_ASSERT_ENUM(blink::kWebTextInputTypeDateTimeField,
                    ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD);
+
+// WebMenuSourceType
+STATIC_ASSERT_ENUM(blink::kMenuSourceNone, ui::MENU_SOURCE_NONE);
+STATIC_ASSERT_ENUM(blink::kMenuSourceMouse, ui::MENU_SOURCE_MOUSE);
+STATIC_ASSERT_ENUM(blink::kMenuSourceKeyboard, ui::MENU_SOURCE_KEYBOARD);
+STATIC_ASSERT_ENUM(blink::kMenuSourceTouch, ui::MENU_SOURCE_TOUCH);
+STATIC_ASSERT_ENUM(blink::kMenuSourceTouchEditMenu,
+                   ui::MENU_SOURCE_TOUCH_EDIT_MENU);
+STATIC_ASSERT_ENUM(blink::kMenuSourceLongPress, ui::MENU_SOURCE_LONG_PRESS);
+STATIC_ASSERT_ENUM(blink::kMenuSourceLongTap, ui::MENU_SOURCE_LONG_TAP);
+STATIC_ASSERT_ENUM(blink::kMenuSourceTouchHandle, ui::MENU_SOURCE_TOUCH_HANDLE);
 
 } // namespace content

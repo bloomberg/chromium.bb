@@ -19,6 +19,7 @@
 #include "content/public/common/content_features.h"
 #include "media/base/video_frame.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -218,7 +219,7 @@ void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
     impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
 
   if (impl)
-    impl->ShowContextMenuAtPoint(point);
+    impl->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
 }
 
 gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(

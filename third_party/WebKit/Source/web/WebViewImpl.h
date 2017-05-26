@@ -230,7 +230,7 @@ class WEB_EXPORT WebViewImpl final
                           unsigned inactive_background_color,
                           unsigned inactive_foreground_color) override;
   void PerformCustomContextMenuAction(unsigned action) override;
-  void ShowContextMenu() override;
+  void ShowContextMenu(WebMenuSourceType) override;
   void DidCloseContextMenu() override;
   void HidePopups() override;
   void SetPageOverlayColor(WebColor) override;

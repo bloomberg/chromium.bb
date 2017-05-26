@@ -31,6 +31,8 @@
 #ifndef WebView_h
 #define WebView_h
 
+#include "WebMenuSourceType.h"
+#include "WebWidget.h"
 #include "public/platform/WebColor.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebDragOperation.h"
@@ -38,7 +40,6 @@
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
-#include "WebWidget.h"
 
 namespace gfx {
 class ICCProfile;
@@ -389,7 +390,7 @@ class WebView : protected WebWidget {
   virtual void PerformCustomContextMenuAction(unsigned action) = 0;
 
   // Shows a context menu for the currently focused element.
-  virtual void ShowContextMenu() = 0;
+  virtual void ShowContextMenu(WebMenuSourceType) = 0;
 
   // Notify that context menu has been closed.
   virtual void DidCloseContextMenu() = 0;
