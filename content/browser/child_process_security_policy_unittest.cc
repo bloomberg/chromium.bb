@@ -893,4 +893,29 @@ TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
   p->Remove(kRendererID);
 }
 
+// Verifies parsing logic that extracts origins from --isolate-origins.
+TEST_F(ChildProcessSecurityPolicyTest, IsolateOriginsFromCommandLine) {
+  // Invalid and unique origins are not permitted.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddIsolatedOriginsFromCommandLine("foo");
+  policy->AddIsolatedOriginsFromCommandLine("");
+  policy->AddIsolatedOriginsFromCommandLine("about:blank");
+  EXPECT_EQ(0U, policy->isolated_origins_.size());
+
+  policy->AddIsolatedOriginsFromCommandLine("http://isolated.foo.com");
+  EXPECT_EQ(1U, policy->isolated_origins_.size());
+  EXPECT_TRUE(
+      policy->IsIsolatedOrigin(url::Origin(GURL("http://isolated.foo.com"))));
+
+  policy->AddIsolatedOriginsFromCommandLine(
+      "http://a.com,https://b.com,,https://c.com:8000");
+  EXPECT_EQ(4U, policy->isolated_origins_.size());
+  EXPECT_TRUE(
+      policy->IsIsolatedOrigin(url::Origin(GURL("http://isolated.foo.com"))));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin(GURL("http://a.com"))));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin(GURL("https://b.com"))));
+  EXPECT_TRUE(
+      policy->IsIsolatedOrigin(url::Origin(GURL("https://c.com:8000"))));
+}
+
 }  // namespace content

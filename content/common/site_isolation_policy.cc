@@ -19,7 +19,7 @@ bool SiteIsolationPolicy::AreCrossProcessFramesPossible() {
 // investigated.
 #if defined(OS_ANDROID)
   return UseDedicatedProcessesForAllSites() ||
-         IsTopDocumentIsolationEnabled() ||
+         IsTopDocumentIsolationEnabled() || AreIsolatedOriginsEnabled() ||
          GetContentClient()->IsSupplementarySiteIsolationModeEnabled() ||
          base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames);
 #else
@@ -40,6 +40,16 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
     return false;
 
   return base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
+}
+
+// static
+bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
+  // TODO(alexmos): This currently assumes that isolated origins are only added
+  // via the command-line switch, which may not be true in the future.  Remove
+  // this function when AreCrossProcessFramesPossible becomes true on Android
+  // above.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIsolateOrigins);
 }
 
 }  // namespace content

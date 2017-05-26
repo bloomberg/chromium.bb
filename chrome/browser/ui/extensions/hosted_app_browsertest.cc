@@ -22,6 +22,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -399,4 +400,79 @@ IN_PROC_BROWSER_TEST_F(HostedAppVsTdiTest, ProcessAllocation) {
     // placement can be problematic (if |app| tries to synchronously script
     // |diff_dir| and/or |same_site|).
   }
+}
+
+class HostedAppWithIsolatedOriginsTest : public HostedAppTest {
+ public:
+  HostedAppWithIsolatedOriginsTest() {}
+  ~HostedAppWithIsolatedOriginsTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    std::string origin_list =
+        embedded_test_server()->GetURL("isolated.foo.com", "/").spec();
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+  }
+
+  void SetUpOnMainThread() override {
+    HostedAppTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HostedAppWithIsolatedOriginsTest);
+};
+
+// Verify that when navigating to an isolated origin which is also part of
+// a hosted app's web extent, the isolated origin takes precedence for
+// SiteInstance determination and still ends up in a dedicated process.
+IN_PROC_BROWSER_TEST_F(HostedAppWithIsolatedOriginsTest,
+                       IsolatedOriginTakesPrecedence) {
+  // Launch a hosted app which covers an isolated origin in its web extent.
+  GURL url = embedded_test_server()->GetURL("app.foo.com", "/iframe.html");
+  extensions::TestExtensionDir test_app_dir;
+  test_app_dir.WriteManifest(base::StringPrintf(
+      R"( { "name": "Hosted App vs IsolatedOrigins Test",
+            "version": "1",
+            "manifest_version": 2,
+            "app": {
+              "launch": {
+                "web_url": "%s"
+              },
+              "urls": ["*://app.foo.com", "*://isolated.foo.com/"]
+            }
+          } )",
+      url.spec().c_str()));
+  SetupApp(test_app_dir.UnpackedPath(), false);
+
+  content::WebContents* app_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(app_contents);
+
+  content::RenderFrameHost* app = app_contents->GetMainFrame();
+
+  // A subframe on an app for an isolated origin should be kicked out to its
+  // own process.
+  GURL isolated_url =
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html");
+  EXPECT_TRUE(NavigateIframeToURL(app_contents, "test", isolated_url));
+
+  content::RenderFrameHost* app_subframe = content::ChildFrameAt(app, 0);
+  EXPECT_EQ(isolated_url, app_subframe->GetLastCommittedURL());
+  EXPECT_TRUE(app_subframe->IsCrossProcessSubframe());
+  EXPECT_NE(app->GetSiteInstance(), app_subframe->GetSiteInstance());
+  EXPECT_EQ(isolated_url.GetOrigin(),
+            app_subframe->GetSiteInstance()->GetSiteURL());
+
+  // Navigating a regular tab to an isolated origin which is also part of an
+  // app's web extent should use the isolated origin's SiteInstance and not the
+  // app's.
+  ui_test_utils::NavigateToURL(browser(), isolated_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(isolated_url.GetOrigin(),
+            web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_NE(web_contents->GetMainFrame()->GetSiteInstance(),
+            app->GetSiteInstance());
 }

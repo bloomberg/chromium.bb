@@ -20,6 +20,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/resource_type.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -184,12 +185,41 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if sending system exclusive messages is allowed.
   bool CanSendMidiSysExMessage(int child_id);
 
+  // Add an origin to the list of origins that require process isolation.
+  // When making process model decisions for such origins, the full
+  // scheme+host+port tuple rather than scheme and eTLD+1 will be used.
+  // SiteInstances for these origins will also use the full origin as site URL.
+  //
+  // Note that |origin| must not be unique.  URLs that render with
+  // unique origins, such as data: URLs, are not supported.  Suborigins (see
+  // https://w3c.github.io/webappsec-suborigins/ -- not to be confused with
+  // subdomains) and non-standard schemes are also not supported.  Sandboxed
+  // frames (e.g., <iframe sandbox>)
+  // *are* supported, since process placement decisions will be based on the
+  // URLs such frames navigate to, and not the origin of committed documents
+  // (which might be unique).  If an isolated origin opens an about:blank
+  // popup, it will stay in the isolated origin's process. Nested URLs
+  // (filesystem: and blob:) retain process isolation behavior of their inner
+  // origin.
+  void AddIsolatedOrigin(const url::Origin& origin);
+
+  // Register a set of isolated origins as specified on the command line with
+  // the --isolate-origins flag.  |origin_list| is the flag's value, which
+  // contains the list of comma-separated scheme-host-port origins. See
+  // AddIsolatedOrigin for definition of an isolated origin.
+  void AddIsolatedOriginsFromCommandLine(const std::string& origin_list);
+
+  // Helper to check whether an origin requires origin-wide process isolation.
+  bool IsIsolatedOrigin(const url::Origin& origin);
+
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
   friend class ChildProcessSecurityPolicyTest;
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,
                            NoLeak);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, FilePermissions);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
+                           IsolateOriginsFromCommandLine);
 
   class SecurityState;
 
@@ -279,6 +309,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   WorkerToMainProcessMap worker_map_;
 
   FileSystemPermissionPolicyMap file_system_policy_map_;
+
+  // Tracks origins for which the entire origin should be treated as a site
+  // when making process model decisions, rather than the origin's scheme and
+  // eTLD+1. Each of these origins requires a dedicated process.  This set is
+  // protected by |lock_|.
+  std::set<url::Origin> isolated_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };
