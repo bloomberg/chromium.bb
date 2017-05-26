@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/cpp/client_compositor_frame_sink.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace cc {

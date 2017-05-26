@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_WINDOW_COMPOSITOR_FRAME_SINK_H_
-#define SERVICES_UI_PUBLIC_CPP_WINDOW_COMPOSITOR_FRAME_SINK_H_
+#ifndef COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_
+#define COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_
 
 #include "base/macros.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
@@ -14,7 +14,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace ui {
+namespace viz {
 
 class ClientCompositorFrameSink
     : public cc::CompositorFrameSink,
@@ -56,12 +56,12 @@ class ClientCompositorFrameSink
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
   std::unique_ptr<mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>>
       client_binding_;
-  std::unique_ptr<base::ThreadChecker> thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   const bool enable_surface_synchronization_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSink);
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_COMPOSITOR_FRAME_SINK_H_
+#endif  // COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_

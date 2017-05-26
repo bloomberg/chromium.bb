@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "cc/base/switches.h"
-#include "services/ui/public/cpp/client_compositor_frame_sink.h"
+#include "components/viz/client/client_compositor_frame_sink.h"
 
 namespace content {
 
@@ -85,7 +85,7 @@ void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
   bool enable_surface_synchronization =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableSurfaceSynchronization);
-  auto frame_sink = base::MakeUnique<ui::ClientCompositorFrameSink>(
+  auto frame_sink = base::MakeUnique<viz::ClientCompositorFrameSink>(
       std::move(context_provider), gpu_memory_buffer_manager,
       std::move(sink_info), std::move(client_request),
       enable_surface_synchronization);

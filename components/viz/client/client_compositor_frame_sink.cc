@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/client_compositor_frame_sink.h"
+#include "components/viz/client/client_compositor_frame_sink.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -10,7 +10,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 
-namespace ui {
+namespace viz {
 
 ClientCompositorFrameSink::ClientCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
@@ -24,7 +24,9 @@ ClientCompositorFrameSink::ClientCompositorFrameSink(
                               nullptr),
       compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
       client_request_(std::move(client_request)),
-      enable_surface_synchronization_(enable_surface_synchronization) {}
+      enable_surface_synchronization_(enable_surface_synchronization) {
+  DETACH_FROM_THREAD(thread_checker_);
+}
 
 ClientCompositorFrameSink::~ClientCompositorFrameSink() {}
 
@@ -33,8 +35,7 @@ bool ClientCompositorFrameSink::BindToClient(
   if (!cc::CompositorFrameSink::BindToClient(client))
     return false;
 
-  DCHECK(!thread_checker_);
-  thread_checker_.reset(new base::ThreadChecker());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   compositor_frame_sink_.Bind(std::move(compositor_frame_sink_info_));
   client_binding_.reset(
       new mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>(
@@ -63,8 +64,7 @@ void ClientCompositorFrameSink::SetLocalSurfaceId(
 
 void ClientCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
-  DCHECK(thread_checker_);
-  DCHECK(thread_checker_->CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!compositor_frame_sink_)
     return;
 
@@ -92,8 +92,7 @@ void ClientCompositorFrameSink::DidNotProduceFrame(
 
 void ClientCompositorFrameSink::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
-  DCHECK(thread_checker_);
-  DCHECK(thread_checker_->CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!client_)
     return;
   client_->ReclaimResources(resources);
@@ -107,8 +106,7 @@ void ClientCompositorFrameSink::OnBeginFrame(
 
 void ClientCompositorFrameSink::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
-  DCHECK(thread_checker_);
-  DCHECK(thread_checker_->CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!client_)
     return;
   client_->ReclaimResources(resources);
@@ -118,4 +116,4 @@ void ClientCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
-}  // namespace ui
+}  // namespace viz

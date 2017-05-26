@@ -157,6 +157,7 @@ component("aura") {
     "//cc/surfaces",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
+    "//components/viz/client",
     "//gpu/ipc/client",
     "//mojo/public/cpp/system",
     "//net",
