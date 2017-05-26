@@ -46,8 +46,8 @@ bool HTMLIFrameElementSandbox::ValidateTokenValue(
   return IsTokenSupported(token_value);
 }
 
-void HTMLIFrameElementSandbox::ValueWasSet() {
-  element_->SandboxValueWasSet();
+void HTMLIFrameElementSandbox::ValueWasSet(const AtomicString& value) {
+  element_->SandboxValueWasSet(value);
 }
 
 }  // namespace blink

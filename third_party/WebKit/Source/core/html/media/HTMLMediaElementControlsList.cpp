@@ -41,8 +41,8 @@ bool HTMLMediaElementControlsList::ValidateTokenValue(
   return false;
 }
 
-void HTMLMediaElementControlsList::ValueWasSet() {
-  element_->ControlsListValueWasSet();
+void HTMLMediaElementControlsList::ValueWasSet(const AtomicString& value) {
+  element_->ControlsListValueWasSet(value);
 }
 
 bool HTMLMediaElementControlsList::ShouldHideDownload() const {

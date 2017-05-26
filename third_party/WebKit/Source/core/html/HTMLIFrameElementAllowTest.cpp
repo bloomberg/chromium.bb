@@ -16,7 +16,8 @@ namespace blink {
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesValid) {
   Document* document = Document::Create();
   HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
-  HTMLIFrameElementAllow* allow = HTMLIFrameElementAllow::Create(iframe);
+  HTMLIFrameElementAllow* allow =
+      static_cast<HTMLIFrameElementAllow*>(iframe->allow());
   String error_message;
   Vector<WebFeaturePolicyFeature> result;
 
@@ -38,7 +39,8 @@ TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesValid) {
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesInvalid) {
   Document* document = Document::Create();
   HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
-  HTMLIFrameElementAllow* allow = HTMLIFrameElementAllow::Create(iframe);
+  HTMLIFrameElementAllow* allow =
+      static_cast<HTMLIFrameElementAllow*>(iframe->allow());
   String error_message;
   Vector<WebFeaturePolicyFeature> result;
 

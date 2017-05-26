@@ -17,9 +17,6 @@ class RelList final : public DOMTokenList {
   static RelList* Create(Element* element) { return new RelList(element); }
 
   unsigned length() const override;
-  const AtomicString item(unsigned index) const override;
-
-  void SetRelValues(const AtomicString&);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -28,7 +25,6 @@ class RelList final : public DOMTokenList {
 
   bool ContainsInternal(const AtomicString&) const override;
 
-  SpaceSplitString& MutableSet() override { return rel_values_; }
   const AtomicString& value() const override {
     return element_->getAttribute(HTMLNames::relAttr);
   }
@@ -39,7 +35,6 @@ class RelList final : public DOMTokenList {
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
   Member<Element> element_;
-  SpaceSplitString rel_values_;
 };
 
 }  // namespace blink

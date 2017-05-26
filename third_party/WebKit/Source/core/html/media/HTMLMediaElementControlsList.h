@@ -36,7 +36,7 @@ class HTMLMediaElementControlsList final : public DOMTokenList,
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
   // DOMTokenListObserver.
-  void ValueWasSet() override;
+  void ValueWasSet(const AtomicString&) override;
 
   Member<HTMLMediaElement> element_;
 };

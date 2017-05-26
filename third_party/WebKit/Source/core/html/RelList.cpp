@@ -16,23 +16,12 @@ using namespace HTMLNames;
 RelList::RelList(Element* element) : DOMTokenList(nullptr), element_(element) {}
 
 unsigned RelList::length() const {
-  return !element_->FastGetAttribute(relAttr).IsEmpty() ? rel_values_.size()
-                                                        : 0;
-}
-
-const AtomicString RelList::item(unsigned index) const {
-  if (index >= length())
-    return AtomicString();
-  return rel_values_[index];
+  return !element_->FastGetAttribute(relAttr).IsEmpty() ? Tokens().size() : 0;
 }
 
 bool RelList::ContainsInternal(const AtomicString& token) const {
   return !element_->FastGetAttribute(relAttr).IsEmpty() &&
-         rel_values_.Contains(token);
-}
-
-void RelList::SetRelValues(const AtomicString& value) {
-  rel_values_.Set(value);
+         Tokens().Contains(token);
 }
 
 static HashSet<AtomicString>& SupportedTokens() {

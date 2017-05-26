@@ -47,8 +47,8 @@ class CORE_EXPORT HTMLIFrameElement final
   DOMTokenList* sandbox() const;
   DOMTokenList* allow() const;
 
-  void SandboxValueWasSet();
-  void AllowValueWasSet();
+  void SandboxValueWasSet(const AtomicString&);
+  void AllowValueWasSet(const AtomicString&);
 
  private:
   explicit HTMLIFrameElement(Document&);
