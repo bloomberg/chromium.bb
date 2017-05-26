@@ -17,10 +17,12 @@
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/console_message_level.h"
 #include "net/base/net_errors.h"
 
 namespace subresource_filter {
@@ -102,19 +104,25 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
     ongoing_activation_throttles_.erase(throttle);
   }
 
+  content::RenderFrameHost* frame_host =
+      navigation_handle->GetRenderFrameHost();
   if (navigation_handle->IsInMainFrame()) {
     current_committed_load_has_notified_disallowed_load_ = false;
     statistics_.reset();
     if (filter) {
       statistics_ =
           base::MakeUnique<PageLoadStatistics>(filter->activation_state());
+      if (filter->activation_state().enable_logging) {
+        DCHECK(filter->activation_state().activation_level !=
+               ActivationLevel::DISABLED);
+        frame_host->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
+                                        kActivationConsoleMessage);
+      }
     }
   }
 
   // Make sure |activated_frame_hosts_| is updated or cleaned up depending on
   // this navigation's activation state.
-  content::RenderFrameHost* frame_host =
-      navigation_handle->GetRenderFrameHost();
   if (filter) {
     filter->set_first_disallowed_load_callback(base::Bind(
         &ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad,

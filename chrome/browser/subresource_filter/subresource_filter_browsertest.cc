@@ -50,6 +50,7 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
@@ -464,6 +465,9 @@ class SubresourceFilterWebSocketBrowserTest
 // Tests -----------------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
@@ -476,6 +480,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
+  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
+
   // The main frame document should never be filtered.
   SetRulesetToDisallowURLsWithPathSuffix("frame_with_included_script.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -485,6 +491,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
 #if defined(GOOGLE_CHROME_BUILD)
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        MainFrameActivation_SubresourceFilterList) {
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsSubresourceFilterOnlyURL(url);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
@@ -502,6 +511,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
 
   // The main frame document should never be filtered.
   SetRulesetToDisallowURLsWithPathSuffix("frame_with_included_script.html");
@@ -619,6 +630,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        HistoryNavigationActivation) {
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
   GURL url_with_activation(GetTestUrl(kTestFrameSetPath));
   GURL url_without_activation(
       embedded_test_server()->GetURL("a.com", kTestFrameSetPath));
@@ -636,9 +650,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
       kSubframeNames, kExpectScriptInFrameToLoadWithoutActivation));
 
+  // No message should be displayed for navigating to URL without activation.
+  EXPECT_TRUE(console_observer.message().empty());
+
   ui_test_utils::NavigateToURL(browser(), url_with_activation);
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
       kSubframeNames, kExpectScriptInFrameToLoadWithActivation));
+
+  // Console message should now be displayed.
+  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
 
   ASSERT_TRUE(web_contents()->GetController().CanGoBack());
   content::WindowedNotificationObserver back_navigation_stop_observer(
@@ -697,6 +717,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 // dynamically inserting a subframe afterwards, and still expecting activation.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        PageLevelActivationOutlivesSameDocumentNavigation) {
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
   GURL url(GetTestUrl(kTestFrameSetPath));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -713,6 +736,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   content::RenderFrameHost* dynamic_frame = FindFrameByName("dynamic");
   ASSERT_TRUE(dynamic_frame);
   EXPECT_FALSE(WasParsedScriptElementLoaded(dynamic_frame));
+
+  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
 }
 
 // If a navigation starts but aborts before commit, page level activation should
@@ -869,12 +894,19 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, PageLoadMetrics) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
+
   // Force a navigation to another page, which flushes page load metrics for the
   // previous page load.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   histogram_tester.ExpectTotalCount(internal::kHistogramSubresourceFilterCount,
                                     1);
+
+  // No message should be displayed for about blank URL.
+  EXPECT_TRUE(console_observer.message().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -989,6 +1021,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
+
   // Simulate an explicity whitelisting via content settings.
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
@@ -998,6 +1034,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // No message for whitelisted url.
+  EXPECT_TRUE(console_observer.message().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
