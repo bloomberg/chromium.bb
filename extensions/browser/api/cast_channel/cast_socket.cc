@@ -56,18 +56,6 @@
 #define LOG_WITH_CONNECTION(level) LOG(level) << CONNECTION_INFO()
 
 namespace extensions {
-static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<api::cast_channel::CastSocket>>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
-
-// static
-template <>
-BrowserContextKeyedAPIFactory<
-    ApiResourceManager<api::cast_channel::CastSocket>>*
-ApiResourceManager<api::cast_channel::CastSocket>::GetFactoryInstance() {
-  return g_factory.Pointer();
-}
-
 namespace api {
 namespace cast_channel {
 namespace {
@@ -97,14 +85,6 @@ class FakeCertVerifier : public net::CertVerifier {
 
 }  // namespace
 
-CastSocket::CastSocket(const std::string& owner_extension_id)
-    : ApiResource(owner_extension_id) {
-}
-
-bool CastSocket::IsPersistent() const {
-  return true;
-}
-
 CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                const net::IPEndPoint& ip_endpoint,
                                ChannelAuthType channel_auth,
@@ -132,9 +112,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                const scoped_refptr<Logger>& logger,
                                uint64_t device_capabilities,
                                const AuthContext& auth_context)
-    : CastSocket(owner_extension_id),
-      owner_extension_id_(owner_extension_id),
-      channel_id_(0),
+    : channel_id_(0),
       ip_endpoint_(ip_endpoint),
       channel_auth_(channel_auth),
       net_log_(net_log),

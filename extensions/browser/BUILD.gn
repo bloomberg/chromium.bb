@@ -406,6 +406,7 @@ source_set("unit_tests") {
     "api/cast_channel/cast_auth_util_unittest.cc",
     "api/cast_channel/cast_channel_api_unittest.cc",
     "api/cast_channel/cast_framer_unittest.cc",
+    "api/cast_channel/cast_socket_service_unittest.cc",
     "api/cast_channel/cast_socket_unittest.cc",
     "api/cast_channel/cast_transport_unittest.cc",
     "api/cast_channel/keep_alive_delegate_unittest.cc",

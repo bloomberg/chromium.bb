@@ -21,6 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/cast_socket_service.h"
+#include "extensions/browser/api/cast_channel/cast_socket_service_factory.h"
 #include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/event_router.h"
@@ -165,15 +167,16 @@ std::unique_ptr<base::Timer> CastChannelAPI::GetInjectedTimeoutTimerForTest() {
 
 CastChannelAPI::~CastChannelAPI() {}
 
-CastChannelAsyncApiFunction::CastChannelAsyncApiFunction() {
-}
+CastChannelAsyncApiFunction::CastChannelAsyncApiFunction()
+    : cast_socket_service_(nullptr) {}
 
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
 bool CastChannelAsyncApiFunction::PrePrepare() {
-  DCHECK(ApiResourceManager<CastSocket>::Get(browser_context()));
-  sockets_ = ApiResourceManager<CastSocket>::Get(browser_context())->data_;
-  DCHECK(sockets_);
+  cast_socket_service_ =
+      api::cast_channel::CastSocketServiceFactory::GetInstance()
+          ->GetForBrowserContext(browser_context());
+  DCHECK(cast_socket_service_);
   return true;
 }
 
@@ -192,17 +195,14 @@ CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(
   return socket;
 }
 
-int CastChannelAsyncApiFunction::AddSocket(CastSocket* socket) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(socket);
-  const int id = sockets_->Add(socket);
-  socket->set_id(id);
-  return id;
+int CastChannelAsyncApiFunction::AddSocket(std::unique_ptr<CastSocket> socket) {
+  auto* sockets = cast_socket_service_->GetOrCreateSocketRegistry();
+  return sockets->AddSocket(std::move(socket));
 }
 
 void CastChannelAsyncApiFunction::RemoveSocket(int channel_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  sockets_->Remove(extension_->id(), channel_id);
+  auto* sockets = cast_socket_service_->GetOrCreateSocketRegistry();
+  sockets->RemoveSocket(channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromSocket(
@@ -230,8 +230,8 @@ void CastChannelAsyncApiFunction::SetResultFromError(int channel_id,
 }
 
 CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return sockets_->Get(extension_->id(), channel_id);
+  auto* sockets = cast_socket_service_->GetOrCreateSocketRegistry();
+  return sockets->GetSocket(channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
@@ -318,13 +318,14 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         connect_info.capabilities.get() ? *connect_info.capabilities
                                         : CastDeviceCapability::NONE);
   }
-  new_channel_id_ = AddSocket(socket);
+  new_channel_id_ = AddSocket(base::WrapUnique(socket));
 
   // Construct read delegates.
   std::unique_ptr<api::cast_channel::CastTransport::Delegate> delegate(
       base::MakeUnique<CastMessageHandler>(
-          base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr()), socket,
-          api_->GetLogger()));
+          base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr(),
+                     extension_->id()),
+          socket, api_->GetLogger()));
   if (socket->keep_alive()) {
     // Wrap read delegate in a KeepAliveDelegate for timeout handling.
     api::cast_channel::KeepAliveDelegate* keep_alive =
@@ -496,8 +497,7 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
       events::CAST_CHANNEL_ON_ERROR, OnError::kEventName, std::move(results)));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(ui_dispatch_cb_, socket_->owner_extension_id(),
-                 base::Passed(std::move(event))));
+      base::Bind(ui_dispatch_cb_, base::Passed(std::move(event))));
 }
 
 void CastChannelOpenFunction::CastMessageHandler::OnMessage(
@@ -518,8 +518,7 @@ void CastChannelOpenFunction::CastMessageHandler::OnMessage(
                                          std::move(results)));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(ui_dispatch_cb_, socket_->owner_extension_id(),
-                 base::Passed(std::move(event))));
+      base::Bind(ui_dispatch_cb_, base::Passed(std::move(event))));
 }
 
 void CastChannelOpenFunction::CastMessageHandler::Start() {
