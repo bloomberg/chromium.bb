@@ -17,12 +17,20 @@ test(function() {
     'implies that toCSSValue supports all keywords including custom identifiers');
 
 test(function() {
-  assert_equals(new CSSKeywordValue('initial').keywordValue, 'initial');
-  assert_equals(new CSSKeywordValue('center').keywordValue, 'center');
-  assert_equals(new CSSKeywordValue('customLemon').keywordValue, 'customLemon');
-  assert_equals(new CSSKeywordValue(' Hello World').keywordValue, ' Hello World');
-  assert_equals(new CSSKeywordValue('3').keywordValue, '3');
-}, 'keywordValue returns a string equal to the string used in the constructor');
+  assert_equals(new CSSKeywordValue('initial').value, 'initial');
+  assert_equals(new CSSKeywordValue('center').value, 'center');
+  assert_equals(new CSSKeywordValue('customLemon').value, 'customLemon');
+  assert_equals(new CSSKeywordValue(' Hello World').value, ' Hello World');
+  assert_equals(new CSSKeywordValue('3').value, '3');
+}, 'value returns a string equal to the string used in the constructor');
+
+test(function() {
+  let keywordValue = new CSSKeywordValue('foo');
+  assert_equals(keywordValue.value, 'foo');
+
+  keywordValue.value = 'bar';
+  assert_equals(keywordValue.value, 'bar');
+}, 'The keyword used in KeywordValue can be updated');
 
 </script>
 <body>

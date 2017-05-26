@@ -7,8 +7,9 @@ CONSOLE MESSAGE: line 147:     getter intrinsicRatio
 CONSOLE MESSAGE: line 147:     getter intrinsicWidth
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSKeywordValue : CSSStyleValue
-CONSOLE MESSAGE: line 147:     getter keywordValue
+CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMatrixComponent : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter matrix
 CONSOLE MESSAGE: line 147:     method constructor
