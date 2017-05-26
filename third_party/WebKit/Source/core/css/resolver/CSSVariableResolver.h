@@ -58,20 +58,25 @@ class CSSVariableResolver {
   bool ResolveTokenRange(CSSParserTokenRange,
                          bool disallow_animation_tainted,
                          Vector<CSSParserToken>& result,
+                         Vector<String>& result_backing_strings,
                          bool& result_is_animation_tainted);
   // Resolves the fallback (if present) of a var() reference, starting from the
   // comma.
   bool ResolveFallback(CSSParserTokenRange,
                        bool disallow_animation_tainted,
                        Vector<CSSParserToken>& result,
+                       Vector<String>& result_backing_strings,
                        bool& result_is_animation_tainted);
   // Resolves the contents of a var() reference.
   bool ResolveVariableReference(CSSParserTokenRange,
                                 bool disallow_animation_tainted,
                                 Vector<CSSParserToken>& result,
+                                Vector<String>& result_backing_strings,
                                 bool& result_is_animation_tainted);
   // Consumes and resolves an @apply rule.
-  void ResolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
+  void ResolveApplyAtRule(CSSParserTokenRange&,
+                          Vector<CSSParserToken>& result,
+                          Vector<String>& result_backing_strings);
 
   // These return null if the custom property is invalid.
 
