@@ -122,6 +122,8 @@ crbug.com/724567 fast/spatial-navigation/snav-z-index.html [ Pass Failure ]
 # ====== Paint team owned tests to here ======
 
 #### external/wpt/css/css-position-3
+crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tfoot-bottom.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-thead-top.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tr-top.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tr-bottom.html [ Failure ]
 
