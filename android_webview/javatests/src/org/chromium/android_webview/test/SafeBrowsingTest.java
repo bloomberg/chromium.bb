@@ -427,16 +427,20 @@ public class SafeBrowsingTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-    public void testSafeBrowsingShowsNetworkErrorForOddSizedViews() throws Throwable {
+    public void testSafeBrowsingShowsQuietInterstitialForOddSizedViews() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
+        loadGreenPage();
+        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
-        int errorCount = errorHelper.getCallCount();
         loadUrlAsync(mAwContents, responseUrl);
-        errorHelper.waitForCallback(errorCount);
-        assertEquals(
-                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
-        assertEquals("Network error is for the malicious page", responseUrl,
-                errorHelper.getRequest().url);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
+        assertTrue("Original page should not be showing",
+                GREEN_PAGE_BACKGROUND_COLOR
+                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
+                                   mAwContents, mContainerView));
+        assertTrue("Target page should not be visible",
+                MALWARE_PAGE_BACKGROUND_COLOR
+                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
+                                   mAwContents, mContainerView));
     }
 }

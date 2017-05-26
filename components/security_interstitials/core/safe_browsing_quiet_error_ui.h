@@ -44,6 +44,8 @@ class SafeBrowsingQuietErrorUI
   // tests.
   void SetGiantWebViewForTesting(bool is_giant_webview);
 
+  int GetHTMLTemplateId() const override;
+
  private:
   bool is_giant_webview_;
 

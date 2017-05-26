@@ -53,6 +53,8 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // interstitial_page_ will now have a value.
   virtual void AfterShow() {}
 
+  virtual int GetHTMLTemplateId();
+
   // InterstitialPageDelegate method:
   std::string GetHTMLContents() override;
 

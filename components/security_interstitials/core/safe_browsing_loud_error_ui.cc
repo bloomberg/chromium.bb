@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/strings/grit/components_strings.h"
@@ -303,5 +304,9 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
   load_time_data->SetBoolean(security_interstitials::kBoxChecked,
                              is_extended_reporting_enabled());
 }
+
+int SafeBrowsingLoudErrorUI::GetHTMLTemplateId() const {
+  return IDR_SECURITY_INTERSTITIAL_HTML;
+};
 
 }  // security_interstitials

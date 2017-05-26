@@ -1397,12 +1397,20 @@ void AwContents::DidDetachInterstitialPage() {
   browser_view_renderer_.SetActiveCompositorID(compositor_id);
 }
 
-bool AwContents::CanShowBigInterstitial() {
+bool AwContents::CanShowInterstitial() {
   JNIEnv* env = AttachCurrentThread();
   const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_AwContents_canShowBigInterstitial(env, obj);
+  return Java_AwContents_canShowInterstitial(env, obj);
+}
+
+int AwContents::GetErrorUiType() {
+  JNIEnv* env = AttachCurrentThread();
+  const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+  return Java_AwContents_getErrorUiType(env, obj);
 }
 
 void AwContents::CallProceedOnInterstitialForTesting(
