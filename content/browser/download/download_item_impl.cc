@@ -57,6 +57,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -235,6 +236,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       last_modified_time_(info.last_modified),
       etag_(info.etag),
       net_log_(net_log),
+      initiator_(info.initiator),
       weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_ACTIVE_DOWNLOAD);
@@ -1404,7 +1406,27 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
 
   target_path_ = target_path;
   target_disposition_ = disposition;
-  SetDangerType(danger_type);
+  if (danger_type != DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
+    SetDangerType(danger_type);
+
+  // Even if the delegate didn't flag the download as dangerous, we might have
+  // to mark it as dangerous if it's cross origin but doesn't have a content
+  // disposition header.
+  if (!IsDangerous() && danger_type_ != DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
+    if (!url_chain_.back().SchemeIsBlob() &&
+        !url_chain_.back().SchemeIs(url::kAboutScheme) &&
+        !url_chain_.back().SchemeIs(url::kDataScheme) &&
+        initiator_.has_value() &&
+        initiator_->GetURL() != url_chain_.back().GetOrigin() &&
+        (content_disposition_.empty() ||
+         !net::HttpContentDisposition(content_disposition_, std::string())
+              .is_attachment())) {
+      SetDangerType(DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+      RecordDownloadCount(CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
+      DVLOG(20) << __func__ << "() updating danger level to " << danger_type
+                << " for cross origin download";
+    }
+  }
 
   // This was an interrupted download that was looking for a filename. Resolve
   // early without performing the intermediate rename. If there is a

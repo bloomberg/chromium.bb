@@ -606,10 +606,13 @@ class DownloadContentTest : public ContentBrowserTest {
   // Create a DownloadTestObserverTerminal that will wait for the
   // specified number of downloads to finish.
   DownloadTestObserver* CreateWaiter(
-      Shell* shell, int num_downloads) {
+      Shell* shell,
+      int num_downloads,
+      DownloadTestObserver::DangerousDownloadAction dangerous_download_action =
+          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL) {
     DownloadManager* download_manager = DownloadManagerForShell(shell);
     return new DownloadTestObserverTerminal(download_manager, num_downloads,
-        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+                                            dangerous_download_action);
   }
 
   void WaitForInterrupt(DownloadItem* download) {
@@ -656,8 +659,11 @@ class DownloadContentTest : public ContentBrowserTest {
   void NavigateToURLAndWaitForDownload(
       Shell* shell,
       const GURL& url,
-      DownloadItem::DownloadState expected_terminal_state) {
-    std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell, 1));
+      DownloadItem::DownloadState expected_terminal_state,
+      DownloadTestObserver::DangerousDownloadAction dangerous_download_action =
+          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL) {
+    std::unique_ptr<DownloadTestObserver> observer(
+        CreateWaiter(shell, 1, dangerous_download_action));
     NavigateToURL(shell, url);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(expected_terminal_state));
@@ -2301,6 +2307,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
           .append(request_handler.url().spec()));
 
   DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(
+      shell(), 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   WaitForInterrupt(download);
 
   download->Resume();
@@ -2399,7 +2407,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   origin_two.StartAcceptingConnections();
 
   NavigateToURLAndWaitForDownload(
-      shell(), referrer_url, DownloadItem::COMPLETE);
+      shell(), referrer_url, DownloadItem::COMPLETE,
+      DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
 
   std::vector<DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
@@ -2407,6 +2416,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   EXPECT_EQ(FILE_PATH_LITERAL("download"),
             downloads[0]->GetTargetFilePath().BaseName().value());
+  EXPECT_EQ(DOWNLOAD_DANGER_TYPE_USER_VALIDATED, downloads[0]->GetDangerType());
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
@@ -2572,6 +2582,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
       embedded_test_server()->GetURL(
           kOriginTwo, std::string("/download/download-attribute.html?target=") +
                           echo_cookie_url.spec()));
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(
+      shell(), 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   WaitForCompletion(download);
 
   ASSERT_TRUE(
@@ -2669,6 +2681,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   GURL document_url =
       origin_two.GetURL("/iframe-host.html?target=" + frame_url.spec());
   DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(
+      shell(), 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   WaitForCompletion(download);
 
   EXPECT_STREQ(FILE_PATH_LITERAL("download-test.lib"),

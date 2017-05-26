@@ -114,6 +114,9 @@ enum DownloadCountTypes {
   // bytes are received when resuming the download.
   NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
 
+  // A cross origin download with a content disposition header.
+  CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
