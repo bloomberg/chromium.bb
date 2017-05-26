@@ -31,6 +31,8 @@ source_set("preferences") {
     "persistent_pref_store_impl.h",
     "pref_store_manager_impl.cc",
     "pref_store_manager_impl.h",
+    "scoped_pref_connection_builder.cc",
+    "scoped_pref_connection_builder.h",
   ]
 }
 
