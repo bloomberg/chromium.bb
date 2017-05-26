@@ -28297,9 +28297,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>KeyError event count using the Widevine key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Widevine.KeyStatusSystemCode" units="system code">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    System code count associated with key status using the Widevine key system.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Widevine.SystemCode" units="system code">
   <owner>xhwang@chromium.org</owner>
-  <summary>System code count using the Widevine key system.</summary>
+  <summary>
+    System code count in promise rejection using the Widevine key system.
+  </summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.TimeTo" units="ms">
