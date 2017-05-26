@@ -455,28 +455,22 @@ VisiblePosition SelectionModifier::ModifyExtendingBackward(
 
 VisiblePosition SelectionModifier::ModifyMovingLeft(
     TextGranularity granularity) {
-  VisiblePosition pos;
   switch (granularity) {
     case kCharacterGranularity:
-      if (selection_.IsRange()) {
-        if (DirectionOfSelection() == TextDirection::kLtr)
-          pos =
-              CreateVisiblePosition(selection_.Start(), selection_.Affinity());
-        else
-          pos = CreateVisiblePosition(selection_.end(), selection_.Affinity());
-      } else {
-        pos = LeftPositionOf(
+      if (!selection_.IsRange()) {
+        return LeftPositionOf(
             CreateVisiblePosition(selection_.Extent(), selection_.Affinity()));
       }
-      break;
+      if (DirectionOfSelection() == TextDirection::kLtr)
+        return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
+      return CreateVisiblePosition(selection_.end(), selection_.Affinity());
     case kWordGranularity: {
-      bool skips_space_when_moving_right =
+      const bool skips_space_when_moving_right =
           GetFrame() &&
           GetFrame()->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight();
-      pos = LeftWordPosition(
+      return LeftWordPosition(
           CreateVisiblePosition(selection_.Extent(), selection_.Affinity()),
           skips_space_when_moving_right);
-      break;
     }
     case kSentenceGranularity:
     case kLineGranularity:
@@ -485,13 +479,13 @@ VisiblePosition SelectionModifier::ModifyMovingLeft(
     case kParagraphBoundary:
     case kDocumentBoundary:
       // FIXME: Implement all of the above.
-      pos = ModifyMovingBackward(granularity);
-      break;
+      return ModifyMovingBackward(granularity);
     case kLineBoundary:
-      pos = LeftBoundaryOfLine(StartForPlatform(), DirectionOfEnclosingBlock());
-      break;
+      return LeftBoundaryOfLine(StartForPlatform(),
+                                DirectionOfEnclosingBlock());
   }
-  return pos;
+  NOTREACHED() << granularity;
+  return VisiblePosition();
 }
 
 VisiblePosition SelectionModifier::ModifyMovingBackward(
