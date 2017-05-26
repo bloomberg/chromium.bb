@@ -124,4 +124,20 @@ public class CompositorVisibilityTest {
             }
         });
     }
+
+    // CompositorView placeholder initial visibility should be true to show white placeholder when
+    // needed, but SurfaceView initial visibility should be false to delay
+    // surfaceChanged/surfaceCreated calls.
+    @Test
+    @SmallTest
+    public void testInitialVisibility() throws Throwable {
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mCompositorView = new CompositorView(mActivityTestRule.getActivity(), mRenderHost);
+                Assert.assertEquals(View.VISIBLE, mCompositorView.getVisibility());
+                Assert.assertEquals(View.INVISIBLE, mCompositorView.getChildAt(0).getVisibility());
+            }
+        });
+    }
 }

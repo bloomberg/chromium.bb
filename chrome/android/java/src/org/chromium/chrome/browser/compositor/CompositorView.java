@@ -94,7 +94,11 @@ public class CompositorView
 
         mCompositorSurfaceManager = new CompositorSurfaceManager(this, this);
 
-        setVisibility(View.INVISIBLE);
+        // Cover the black surface before it has valid content.  Set this placeholder view to
+        // visible, but don't yet make SurfaceView visible, in order to delay
+        // surfaceCreate/surfaceChanged calls until the native library is loaded.
+        setBackgroundColor(Color.WHITE);
+        super.setVisibility(View.VISIBLE);
 
         // Request the opaque surface.  We might need the translucent one, but
         // we don't know yet.  We'll switch back later if we discover that
@@ -195,8 +199,6 @@ public class CompositorView
         // re-request the surface now.
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
 
-        // Cover the black surface before it has valid content.
-        setBackgroundColor(Color.WHITE);
         setVisibility(View.VISIBLE);
 
         mFramePresentationDelay = 0;

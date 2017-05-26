@@ -65,7 +65,7 @@ class CompositorSurfaceManager implements SurfaceHolder.Callback2 {
         public SurfaceState(Context context, int format, SurfaceHolder.Callback2 callback) {
             surfaceView = new SurfaceView(context);
             surfaceView.setZOrderMediaOverlay(true);
-            surfaceView.setVisibility(View.VISIBLE);
+            surfaceView.setVisibility(View.INVISIBLE);
             surfaceHolder().setFormat(format);
             surfaceHolder().addCallback(callback);
 
