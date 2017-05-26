@@ -77039,6 +77039,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.InfobarShown" enum="BooleanHit">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    The number of times the translate infobar was shown in the UI on Android.
+    Only true is recorded.
+  </summary>
+</histogram>
+
 <histogram name="Translate.InitiationStatus" enum="TranslateInitiationStatus">
   <obsolete>
     Deprecated as of 11/2013, and replaced by Translate.InitiationStatus.v2.
