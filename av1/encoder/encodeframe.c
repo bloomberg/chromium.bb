@@ -6147,7 +6147,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
 #if CONFIG_VAR_TX
       mbmi->min_tx_size = get_min_tx_size(intra_tx_size);
-      if (intra_tx_size != max_txsize_lookup[bsize]) ++x->txb_split_count;
+      if (intra_tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
 #endif
     }
 
