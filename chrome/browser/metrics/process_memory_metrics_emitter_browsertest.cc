@@ -86,19 +86,12 @@ void CheckMemoryMetric(const std::string& name,
 
 void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                            int count) {
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_LINUX) || \
-    defined(OS_ANDROID)
-  bool private_footprint_implemented = true;
-#else
-  bool private_footprint_implemented = false;
-#endif
-
   CheckMemoryMetric("Memory.Experimental.Browser2.Malloc", histogram_tester,
                     count, true);
   CheckMemoryMetric("Memory.Experimental.Browser2.Resident", histogram_tester,
                     count, true);
   CheckMemoryMetric("Memory.Experimental.Browser2.PrivateMemoryFootprint",
-                    histogram_tester, count, private_footprint_implemented);
+                    histogram_tester, count, true);
   CheckMemoryMetric("Memory.Experimental.Renderer2.Malloc", histogram_tester,
                     count, true);
   CheckMemoryMetric("Memory.Experimental.Renderer2.Resident", histogram_tester,
@@ -110,7 +103,9 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
   CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester, count,
                     true);
   CheckMemoryMetric("Memory.Experimental.Renderer2.PrivateMemoryFootprint",
-                    histogram_tester, count, private_footprint_implemented);
+                    histogram_tester, count, true);
+  CheckMemoryMetric("Memory.Experimental.Total2.PrivateMemoryFootprint",
+                    histogram_tester, count, true);
 }
 
 }  // namespace
