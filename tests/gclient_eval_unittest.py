@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
 import logging
 import os
 import sys
@@ -57,6 +58,13 @@ class GClientEvalTest(unittest.TestCase):
       gclient_eval._gclient_eval('[x for x in [1, 2, 3]]', {})
     self.assertIn(
         'unexpected AST node: <_ast.ListComp object', str(cm.exception))
+
+  def test_dict_ordered(self):
+    for test_case in itertools.permutations(range(4)):
+      input_data = ['{'] + ['"%s": "%s",' % (n, n) for n in test_case] + ['}']
+      expected = [(str(n), str(n)) for n in test_case]
+      result = gclient_eval._gclient_eval(''.join(input_data), {})
+      self.assertEqual(expected, result.items())
 
 
 class GClientExecTest(unittest.TestCase):

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import ast
+import collections
 
 from third_party import schema
 
@@ -115,8 +116,9 @@ def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
     elif isinstance(node, ast.List):
       return list(map(_convert, node.elts))
     elif isinstance(node, ast.Dict):
-      return dict((_convert(k), _convert(v))
-                  for k, v in zip(node.keys, node.values))
+      return collections.OrderedDict(
+          (_convert(k), _convert(v))
+          for k, v in zip(node.keys, node.values))
     elif isinstance(node, ast.Name):
       if node.id not in _allowed_names:
         raise ValueError(
