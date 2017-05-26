@@ -517,6 +517,11 @@ void ExistingUserController::PerformLogin(
   }
   SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
+  if (!time_init_.is_null()) {
+    base::TimeDelta delta = base::Time::Now() - time_init_;
+    UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToLoginTime", delta);
+    time_init_ = base::Time();  // Reset to null.
+  }
 }
 
 void ExistingUserController::ContinuePerformLogin(
