@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/input/direct_input_strategy.h"
+#include "remoting/client/input/direct_touch_input_strategy.h"
 
 #include "remoting/client/ui/desktop_viewport.h"
 
@@ -15,19 +15,20 @@ const float kDragFeedbackRadius = 55.f;
 
 }  // namespace
 
-DirectInputStrategy::DirectInputStrategy() {}
+DirectTouchInputStrategy::DirectTouchInputStrategy() {}
 
-DirectInputStrategy::~DirectInputStrategy() {}
+DirectTouchInputStrategy::~DirectTouchInputStrategy() {}
 
-void DirectInputStrategy::HandleZoom(const ViewMatrix::Point& pivot,
-                                     float scale,
-                                     DesktopViewport* viewport) {
+void DirectTouchInputStrategy::HandleZoom(const ViewMatrix::Point& pivot,
+                                          float scale,
+                                          DesktopViewport* viewport) {
   viewport->ScaleDesktop(pivot.x, pivot.y, scale);
 }
 
-bool DirectInputStrategy::HandlePan(const ViewMatrix::Vector2D& translation,
-                                    Gesture simultaneous_gesture,
-                                    DesktopViewport* viewport) {
+bool DirectTouchInputStrategy::HandlePan(
+    const ViewMatrix::Vector2D& translation,
+    Gesture simultaneous_gesture,
+    DesktopViewport* viewport) {
   if (simultaneous_gesture == DRAG) {
     // If the user is dragging something, we should synchronize the movement
     // with the object that the user is trying to move on the desktop, rather
@@ -42,8 +43,9 @@ bool DirectInputStrategy::HandlePan(const ViewMatrix::Vector2D& translation,
   return false;
 }
 
-bool DirectInputStrategy::TrackTouchInput(const ViewMatrix::Point& touch_point,
-                                          const DesktopViewport& viewport) {
+bool DirectTouchInputStrategy::TrackTouchInput(
+    const ViewMatrix::Point& touch_point,
+    const DesktopViewport& viewport) {
   ViewMatrix::Point new_position =
       viewport.GetTransformation().Invert().MapPoint(touch_point);
   if (!viewport.IsPointWithinDesktopBounds(new_position)) {
@@ -53,28 +55,29 @@ bool DirectInputStrategy::TrackTouchInput(const ViewMatrix::Point& touch_point,
   return true;
 }
 
-ViewMatrix::Point DirectInputStrategy::GetCursorPosition() const {
+ViewMatrix::Point DirectTouchInputStrategy::GetCursorPosition() const {
   return cursor_position_;
 }
 
-ViewMatrix::Vector2D DirectInputStrategy::MapScreenVectorToDesktop(
+ViewMatrix::Vector2D DirectTouchInputStrategy::MapScreenVectorToDesktop(
     const ViewMatrix::Vector2D& delta,
     const DesktopViewport& viewport) const {
   return viewport.GetTransformation().Invert().MapVector(delta);
 }
 
-float DirectInputStrategy::GetFeedbackRadius(InputFeedbackType type) const {
+float DirectTouchInputStrategy::GetFeedbackRadius(
+    TouchFeedbackType type) const {
   switch (type) {
-    case InputFeedbackType::TAP_FEEDBACK:
+    case TouchFeedbackType::TAP_FEEDBACK:
       return kTapFeedbackRadius;
-    case InputFeedbackType::DRAG_FEEDBACK:
+    case TouchFeedbackType::DRAG_FEEDBACK:
       return kDragFeedbackRadius;
   }
   NOTREACHED();
   return 0.f;
 }
 
-bool DirectInputStrategy::IsCursorVisible() const {
+bool DirectTouchInputStrategy::IsCursorVisible() const {
   return false;
 }
 

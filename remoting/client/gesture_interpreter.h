@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "remoting/client/input/input_strategy.h"
+#include "remoting/client/input/touch_input_strategy.h"
 #include "remoting/client/ui/desktop_viewport.h"
 #include "remoting/client/ui/fling_animation.h"
 #include "remoting/proto/event.pb.h"
@@ -91,21 +91,21 @@ class GestureInterpreter {
 
   void InjectCursorPosition(float x, float y);
 
-  void SetGestureInProgress(InputStrategy::Gesture gesture,
+  void SetGestureInProgress(TouchInputStrategy::Gesture gesture,
                             bool is_in_progress);
 
   // Starts the given feedback at (cursor_x, cursor_y) if the feedback radius
   // is non-zero.
   void StartInputFeedback(float cursor_x,
                           float cursor_y,
-                          InputStrategy::InputFeedbackType feedback_type);
+                          TouchInputStrategy::TouchFeedbackType feedback_type);
 
   InputMode input_mode_ = UNDEFINED_INPUT_MODE;
-  std::unique_ptr<InputStrategy> input_strategy_;
+  std::unique_ptr<TouchInputStrategy> input_strategy_;
   DesktopViewport viewport_;
   RendererProxy* renderer_;
   ChromotingSession* input_stub_;
-  InputStrategy::Gesture gesture_in_progress_;
+  TouchInputStrategy::Gesture gesture_in_progress_;
 
   FlingAnimation pan_animation_;
   FlingAnimation scroll_animation_;

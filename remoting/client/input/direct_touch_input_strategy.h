@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_INPUT_DIRECT_INPUT_STRATEGY_H_
-#define REMOTING_CLIENT_INPUT_DIRECT_INPUT_STRATEGY_H_
+#ifndef REMOTING_CLIENT_INPUT_DIRECT_TOUCH_INPUT_STRATEGY_H_
+#define REMOTING_CLIENT_INPUT_DIRECT_TOUCH_INPUT_STRATEGY_H_
 
-#include "remoting/client/input/input_strategy.h"
+#include "remoting/client/input/touch_input_strategy.h"
 
 namespace remoting {
 
 // This strategy directly translates all operations on the OpenGL view into
 // corresponding operations on the desktop. It doesn't maintain the cursor
 // positions separately -- the positions come from the location of the touch.
-class DirectInputStrategy : public InputStrategy {
+class DirectTouchInputStrategy : public TouchInputStrategy {
  public:
-  DirectInputStrategy();
-  ~DirectInputStrategy() override;
+  DirectTouchInputStrategy();
+  ~DirectTouchInputStrategy() override;
 
-  // InputStrategy overrides.
+  // TouchInputStrategy overrides.
 
   void HandleZoom(const ViewMatrix::Point& pivot,
                   float scale,
@@ -36,7 +36,7 @@ class DirectInputStrategy : public InputStrategy {
       const ViewMatrix::Vector2D& delta,
       const DesktopViewport& viewport) const override;
 
-  float GetFeedbackRadius(InputFeedbackType type) const override;
+  float GetFeedbackRadius(TouchFeedbackType type) const override;
 
   bool IsCursorVisible() const override;
 
@@ -44,9 +44,9 @@ class DirectInputStrategy : public InputStrategy {
   ViewMatrix::Point cursor_position_{0.f, 0.f};
 
   // TouchInputStrategy is neither copyable nor movable.
-  DirectInputStrategy(const DirectInputStrategy&) = delete;
-  DirectInputStrategy& operator=(const DirectInputStrategy&) = delete;
+  DirectTouchInputStrategy(const DirectTouchInputStrategy&) = delete;
+  DirectTouchInputStrategy& operator=(const DirectTouchInputStrategy&) = delete;
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_INPUT_DIRECT_INPUT_STRATEGY_H_
+#endif  // REMOTING_CLIENT_INPUT_DIRECT_TOUCH_INPUT_STRATEGY_H_

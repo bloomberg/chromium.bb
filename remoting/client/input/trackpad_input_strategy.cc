@@ -73,11 +73,11 @@ ViewMatrix::Vector2D TrackpadInputStrategy::MapScreenVectorToDesktop(
   return delta;
 }
 
-float TrackpadInputStrategy::GetFeedbackRadius(InputFeedbackType type) const {
+float TrackpadInputStrategy::GetFeedbackRadius(TouchFeedbackType type) const {
   switch (type) {
-    case InputFeedbackType::TAP_FEEDBACK:
+    case TouchFeedbackType::TAP_FEEDBACK:
       return kTapFeedbackRadius;
-    case InputFeedbackType::DRAG_FEEDBACK:
+    case TouchFeedbackType::DRAG_FEEDBACK:
       return kDragFeedbackRadius;
   }
   NOTREACHED();

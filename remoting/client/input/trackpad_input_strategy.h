@@ -5,18 +5,18 @@
 #ifndef REMOTING_CLIENT_INPUT_TRACKPAD_INPUT_STRATEGY_H_
 #define REMOTING_CLIENT_INPUT_TRACKPAD_INPUT_STRATEGY_H_
 
-#include "remoting/client/input/input_strategy.h"
+#include "remoting/client/input/touch_input_strategy.h"
 
 namespace remoting {
 
 // This strategy simulate the trackpad's behavior. It keeps a visible cursor
 // with positions independent of the location of the touch events.
-class TrackpadInputStrategy : public InputStrategy {
+class TrackpadInputStrategy : public TouchInputStrategy {
  public:
   TrackpadInputStrategy(const DesktopViewport& viewport);
   ~TrackpadInputStrategy() override;
 
-  // InputStrategy overrides.
+  // TouchInputStrategy overrides.
   void HandleZoom(const ViewMatrix::Point& pivot,
                   float scale,
                   DesktopViewport* viewport) override;
@@ -34,7 +34,7 @@ class TrackpadInputStrategy : public InputStrategy {
       const ViewMatrix::Vector2D& delta,
       const DesktopViewport& viewport) const override;
 
-  float GetFeedbackRadius(InputFeedbackType type) const override;
+  float GetFeedbackRadius(TouchFeedbackType type) const override;
 
   bool IsCursorVisible() const override;
 
