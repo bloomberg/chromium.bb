@@ -53,7 +53,7 @@ class QueryResultManagerTest : public ::testing::Test {
 
   bool IsDefaultSourceForSink(const MediaSource* source,
                               const MediaSink& sink) {
-    return IsPreferredSourceForSink(MediaCastMode::DEFAULT, source, sink);
+    return IsPreferredSourceForSink(MediaCastMode::PRESENTATION, source, sink);
   }
 
   bool IsTabSourceForSink(const MediaSource* source, const MediaSink& sink) {
@@ -112,20 +112,20 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   CastModeSet cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_TRUE(cast_modes.empty());
   std::vector<MediaSource> actual_sources =
-      query_result_manager_.GetSourcesForCastMode(MediaCastMode::DEFAULT);
+      query_result_manager_.GetSourcesForCastMode(MediaCastMode::PRESENTATION);
   EXPECT_EQ(0u, actual_sources.size());
 
   MediaSource source(MediaSourceForPresentationUrl(GURL("http://foo.com")));
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
-  query_result_manager_.SetSourcesForCastMode(MediaCastMode::DEFAULT, {source},
-                                              url::Origin(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(
+      MediaCastMode::PRESENTATION, {source}, url::Origin(GURL(kOrigin)));
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
-  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::DEFAULT));
+  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::PRESENTATION));
   actual_sources =
-      query_result_manager_.GetSourcesForCastMode(MediaCastMode::DEFAULT);
+      query_result_manager_.GetSourcesForCastMode(MediaCastMode::PRESENTATION);
   EXPECT_EQ(1u, actual_sources.size());
   EXPECT_EQ(source, actual_sources[0]);
 
@@ -135,24 +135,25 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
-  query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::DEFAULT, {another_source}, url::Origin(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
+                                              {another_source},
+                                              url::Origin(GURL(kOrigin)));
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
-  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::DEFAULT));
+  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::PRESENTATION));
   actual_sources =
-      query_result_manager_.GetSourcesForCastMode(MediaCastMode::DEFAULT);
+      query_result_manager_.GetSourcesForCastMode(MediaCastMode::PRESENTATION);
   EXPECT_EQ(1u, actual_sources.size());
   EXPECT_EQ(another_source, actual_sources[0]);
 
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
-  query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::DEFAULT);
+  query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::PRESENTATION);
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_TRUE(cast_modes.empty());
   actual_sources =
-      query_result_manager_.GetSourcesForCastMode(MediaCastMode::DEFAULT);
+      query_result_manager_.GetSourcesForCastMode(MediaCastMode::PRESENTATION);
   EXPECT_EQ(0u, actual_sources.size());
 }
 
@@ -162,30 +163,30 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   MediaSink sink3("sinkId3", "Sink 3", MediaSink::IconType::CAST);
   MediaSink sink4("sinkId4", "Sink 4", MediaSink::IconType::CAST);
   MediaSink sink5("sinkId5", "Sink 5", MediaSink::IconType::CAST);
-  MediaSource default_source1 =
+  MediaSource presentation_source1 =
       MediaSourceForPresentationUrl(GURL("http://bar.com"));
-  MediaSource default_source2 =
+  MediaSource presentation_source2 =
       MediaSourceForPresentationUrl(GURL("http://baz.com"));
   MediaSource tab_source = MediaSourceForTab(123);
 
   query_result_manager_.AddObserver(&mock_observer_);
-  DiscoverSinks(MediaCastMode::DEFAULT, default_source1);
+  DiscoverSinks(MediaCastMode::PRESENTATION, presentation_source1);
   DiscoverSinks(MediaCastMode::TAB_MIRROR, tab_source);
 
   // Scenario (results in this order):
-  // Action: DEFAULT -> [1, 2, 3]
+  // Action: PRESENTATION -> [1, 2, 3]
   // Expected result:
-  // Sinks: [1 -> {DEFAULT}, 2 -> {DEFAULT}, 3 -> {DEFAULT}]
+  // Sinks: [1 -> {PRESENTATION}, 2 -> {PRESENTATION}, 3 -> {PRESENTATION}]
   std::vector<MediaSinkWithCastModes> expected_sinks;
   expected_sinks.push_back(MediaSinkWithCastModes(sink1));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::DEFAULT);
+  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
   expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::DEFAULT);
+  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
   expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::DEFAULT);
+  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
 
   const auto& sinks_observers = query_result_manager_.sinks_observers_;
-  auto sinks_observer_it = sinks_observers.find(default_source1);
+  auto sinks_observer_it = sinks_observers.find(presentation_source1);
   ASSERT_TRUE(sinks_observer_it != sinks_observers.end());
   ASSERT_TRUE(sinks_observer_it->second.get());
 
@@ -200,16 +201,16 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
 
   // Action: TAB_MIRROR -> [2, 3, 4]
   // Expected result:
-  // Sinks: [1 -> {DEFAULT}, 2 -> {DEFAULT, TAB_MIRROR},
-  //         3 -> {DEFAULT, TAB_MIRROR}, 4 -> {TAB_MIRROR}]
+  // Sinks: [1 -> {PRESENTATION}, 2 -> {PRESENTATION, TAB_MIRROR},
+  //         3 -> {PRESENTATION, TAB_MIRROR}, 4 -> {TAB_MIRROR}]
   expected_sinks.clear();
   expected_sinks.push_back(MediaSinkWithCastModes(sink1));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::DEFAULT);
+  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
   expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::DEFAULT);
+  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
   expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
   expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::DEFAULT);
+  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
   expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
   expected_sinks.push_back(MediaSinkWithCastModes(sink4));
   expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
@@ -227,7 +228,7 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   sinks_observer_it->second->OnSinksUpdated(sinks_query_result,
                                             {url::Origin(GURL(kOrigin))});
 
-  // Action: Update default presentation URL
+  // Action: Update presentation URL
   // Expected result:
   // Sinks: [2 -> {TAB_MIRROR}, 3 -> {TAB_MIRROR}, 4 -> {TAB_MIRROR}]
   expected_sinks.clear();
@@ -245,15 +246,16 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
       .WillOnce(Return(true));
   EXPECT_CALL(mock_observer_,
               OnResultsUpdated(VectorEquals(expected_sinks))).Times(1);
-  query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::DEFAULT, {default_source2}, url::Origin(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
+                                              {presentation_source2},
+                                              url::Origin(GURL(kOrigin)));
 
-  // Action: DEFAULT -> [1], origins don't match
+  // Action: PRESENTATION -> [1], origins don't match
   // Expected result: [2 -> {TAB_MIRROR}, 3 -> {TAB_MIRROR}, 4 -> {TAB_MIRROR}]
   // (No change)
   sinks_query_result.clear();
   sinks_query_result.push_back(sink1);
-  sinks_observer_it = sinks_observers.find(default_source2);
+  sinks_observer_it = sinks_observers.find(presentation_source2);
   ASSERT_TRUE(sinks_observer_it != sinks_observers.end());
   ASSERT_TRUE(sinks_observer_it->second.get());
   EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)))
@@ -270,7 +272,8 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
   query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::TAB_MIRROR);
 
-  // Remaining observers: DEFAULT observer, which will be removed on destruction
+  // Remaining observers: PRESENTATION observer, which will be removed on
+  // destruction
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
 }
 
@@ -287,8 +290,8 @@ TEST_F(QueryResultManagerTest, MultipleUrls) {
       MediaSourceForPresentationUrl(GURL("http://urlC.com")));
   const MediaSource source_tab(MediaSourceForTab(1));
   // The sources are in decreasing order of priority.
-  const std::vector<MediaSource> default_sources = {source_a, source_b,
-                                                    source_c};
+  const std::vector<MediaSource> presentation_sources = {source_a, source_b,
+                                                         source_c};
   const std::vector<MediaSource> tab_sources = {source_tab};
   const auto& sinks_observers = query_result_manager_.sinks_observers_;
 
@@ -296,8 +299,9 @@ TEST_F(QueryResultManagerTest, MultipleUrls) {
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .Times(4)
       .WillRepeatedly(Return(true));
-  query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::DEFAULT, default_sources, url::Origin(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
+                                              presentation_sources,
+                                              url::Origin(GURL(kOrigin)));
   query_result_manager_.SetSourcesForCastMode(
       MediaCastMode::TAB_MIRROR, tab_sources, url::Origin(GURL(kOrigin)));
 
@@ -379,7 +383,7 @@ TEST_F(QueryResultManagerTest, MultipleUrls) {
 
   // The observers for the four sources should get unregistered.
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(4);
-  query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::DEFAULT);
+  query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::PRESENTATION);
   query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::TAB_MIRROR);
 }
 
@@ -390,18 +394,20 @@ TEST_F(QueryResultManagerTest, AddInvalidSource) {
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .Times(1)
       .WillRepeatedly(Return(true));
-  query_result_manager_.SetSourcesForCastMode(MediaCastMode::DEFAULT, {source},
-                                              url::Origin(GURL(kOrigin)));
-  // |source| has already been registered with the default cast mode, so it
+  query_result_manager_.SetSourcesForCastMode(
+      MediaCastMode::PRESENTATION, {source}, url::Origin(GURL(kOrigin)));
+  // |source| has already been registered with the PRESENTATION cast mode, so it
   // shouldn't get registered with tab mirroring.
   query_result_manager_.SetSourcesForCastMode(
       MediaCastMode::TAB_MIRROR, {source}, url::Origin(GURL(kOrigin)));
 
   const auto& cast_mode_sources = query_result_manager_.cast_mode_sources_;
-  const auto& default_sources = cast_mode_sources.at(MediaCastMode::DEFAULT);
-  EXPECT_TRUE(base::ContainsKey(cast_mode_sources, MediaCastMode::DEFAULT));
-  EXPECT_EQ(default_sources.size(), 1u);
-  EXPECT_EQ(default_sources.at(0), source);
+  const auto& presentation_sources =
+      cast_mode_sources.at(MediaCastMode::PRESENTATION);
+  EXPECT_TRUE(
+      base::ContainsKey(cast_mode_sources, MediaCastMode::PRESENTATION));
+  EXPECT_EQ(presentation_sources.size(), 1u);
+  EXPECT_EQ(presentation_sources.at(0), source);
   EXPECT_FALSE(base::ContainsKey(cast_mode_sources, MediaCastMode::TAB_MIRROR));
 }
 

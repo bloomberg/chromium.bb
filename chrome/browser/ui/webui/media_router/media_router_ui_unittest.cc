@@ -214,7 +214,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
       CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), false))
       .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
-                                MediaCastMode::DEFAULT);
+                                MediaCastMode::PRESENTATION);
 
   std::string expected_title =
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
@@ -232,9 +232,9 @@ TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
   EXPECT_CALL(mock_router_, SearchSinks(_, _, _, _, _))
       .WillOnce(SaveArg<4>(&sink_callback));
 
-  // Use DEFAULT mode without setting a PresentationRequest.
-  media_router_ui_->SearchSinksAndCreateRoute("sinkId", "search input",
-                                              "domain", MediaCastMode::DEFAULT);
+  // Use PRESENTATION mode without setting a PresentationRequest.
+  media_router_ui_->SearchSinksAndCreateRoute(
+      "sinkId", "search input", "domain", MediaCastMode::PRESENTATION);
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
   EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
@@ -253,7 +253,7 @@ TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
       mock_router_,
       CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), true));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
-                                MediaCastMode::DEFAULT);
+                                MediaCastMode::PRESENTATION);
 }
 
 TEST_F(MediaRouterUITest, SortedSinks) {
@@ -604,7 +604,7 @@ TEST_F(MediaRouterUITest, RecordCastModeSelections) {
   // |url_1a| and |url_1b| have the same origin, so the selection made for
   // |url_1a| should be retrieved.
   EXPECT_TRUE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
-  media_router_ui_->RecordCastModeSelection(MediaCastMode::DEFAULT);
+  media_router_ui_->RecordCastModeSelection(MediaCastMode::PRESENTATION);
   EXPECT_FALSE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
 
   media_router_ui_->RecordCastModeSelection(MediaCastMode::TAB_MIRROR);
@@ -725,15 +725,15 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   // bug?
   CastModeSet expected_modes(
       {MediaCastMode::TAB_MIRROR, MediaCastMode::DESKTOP_MIRROR});
-  EXPECT_CALL(
-      *message_handler_,
-      UpdateCastModes(expected_modes, "",
-                      base::Optional<MediaCastMode>(MediaCastMode::DEFAULT)));
-  expected_modes.insert(MediaCastMode::DEFAULT);
-  EXPECT_CALL(
-      *message_handler_,
-      UpdateCastModes(expected_modes, "google.com",
-                      base::Optional<MediaCastMode>(MediaCastMode::DEFAULT)));
+  EXPECT_CALL(*message_handler_,
+              UpdateCastModes(
+                  expected_modes, "",
+                  base::Optional<MediaCastMode>(MediaCastMode::PRESENTATION)));
+  expected_modes.insert(MediaCastMode::PRESENTATION);
+  EXPECT_CALL(*message_handler_,
+              UpdateCastModes(
+                  expected_modes, "google.com",
+                  base::Optional<MediaCastMode>(MediaCastMode::PRESENTATION)));
   media_router_ui_->UIInitialized();
   media_router_ui_->InitForTest(&mock_router_, web_contents(),
                                 message_handler_.get(),

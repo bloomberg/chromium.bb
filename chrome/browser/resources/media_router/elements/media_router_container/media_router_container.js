@@ -661,7 +661,7 @@ Polymer({
    */
   computeCastModeIcon_: function(castMode) {
     switch (castMode.type) {
-      case media_router.CastModeType.DEFAULT:
+      case media_router.CastModeType.PRESENTATION:
         return 'media-router:web';
       case media_router.CastModeType.TAB_MIRROR:
         return 'media-router:tab';
@@ -674,13 +674,14 @@ Polymer({
 
   /**
    * @param {!Array<!media_router.CastMode>} castModeList The current list of
-   *      cast modes.
-   * @return {!Array<!media_router.CastMode>} The list of default cast modes.
+   *     cast modes.
+   * @return {!Array<!media_router.CastMode>} The list of PRESENTATION cast
+   *     modes.
    * @private
    */
-  computeDefaultCastModeList_: function(castModeList) {
+  computePresentationCastModeList_: function(castModeList) {
     return castModeList.filter(function(mode) {
-      return mode.type == media_router.CastModeType.DEFAULT;
+      return mode.type == media_router.CastModeType.PRESENTATION;
     });
   },
 
@@ -797,13 +798,13 @@ Polymer({
   /**
    * @param {!Array<!media_router.CastMode>} castModeList The current list of
    *     cast modes.
-   * @return {!Array<!media_router.CastMode>} The list of non-default cast
+   * @return {!Array<!media_router.CastMode>} The list of non-PRESENTATION cast
    *     modes.
    * @private
    */
-  computeNonDefaultCastModeList_: function(castModeList) {
+  computeNonPresentationCastModeList_: function(castModeList) {
     return castModeList.filter(function(mode) {
-      return mode.type != media_router.CastModeType.DEFAULT;
+      return mode.type != media_router.CastModeType.PRESENTATION;
     });
   },
 
@@ -875,7 +876,7 @@ Polymer({
    * @private
    */
   computeShareScreenSubheadingHidden_: function(castModeList) {
-    return this.computeNonDefaultCastModeList_(castModeList).length == 0;
+    return this.computeNonPresentationCastModeList_(castModeList).length == 0;
   },
 
   /**
@@ -1576,10 +1577,10 @@ Polymer({
    */
   onCastModeClick_: function(event) {
     // The clicked cast mode can come from one of two lists,
-    // defaultCastModeList and nonDefaultCastModeList.
+    // presentationCastModeList and nonPresentationCastModeList.
     var clickedMode =
-        this.$$('#defaultCastModeList').itemForElement(event.target) ||
-            this.$$('#nonDefaultCastModeList').itemForElement(event.target);
+        this.$$('#presentationCastModeList').itemForElement(event.target) ||
+        this.$$('#nonPresentationCastModeList').itemForElement(event.target);
 
     if (!clickedMode)
       return;

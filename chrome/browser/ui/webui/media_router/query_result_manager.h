@@ -42,7 +42,7 @@ class MediaSinksObserver;
 //   QueryResultManager::Observer* observer = ...;
 //   QueryResultManager result_manager(router);
 //   result_manager.AddObserver(observer);
-//   result_manager.SetSourcesForCastMode(MediaCastMode::DEFAULT,
+//   result_manager.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
 //       {MediaSourceForPresentationUrl("http://google.com")}, origin);
 //   result_manager.SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
 //       {MediaSourceForTab(123)}, origin);

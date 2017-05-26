@@ -65,7 +65,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   //              Must not be null.
   // |delegate|, as well as mirroring sources of that tab.
   // The contents of the UI will change as the default MediaSource changes.
-  // If there is a default MediaSource, then DEFAULT MediaCastMode will be
+  // If there is a default MediaSource, then PRESENTATION MediaCastMode will be
   // added to |cast_modes_|.
   // Init* methods can only be called once.
   // |delegate|: PresentationServiceDelegateImpl of the initiator tab.
@@ -135,7 +135,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // mode is MediaCastMode::DESKTOP_MIRROR.
   virtual void RecordCastModeSelection(MediaCastMode cast_mode);
 
-  // Returns the hostname of the default source's parent frame URL.
+  // Returns the hostname of the PresentationRequest's parent frame URL.
   std::string GetPresentationRequestSourceName() const;
   std::string GetTruncatedPresentationRequestSourceName() const;
   bool HasPendingRouteRequest() const {
@@ -319,7 +319,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // match the value of |routes_|.
   void UpdateRoutesToCastModesMapping();
 
-  // Returns the default presentation request's frame URL if there is one.
+  // Returns the default PresentationRequest's frame URL if there is one.
   // Otherwise returns an empty GURL.
   GURL GetFrameURL() const;
 

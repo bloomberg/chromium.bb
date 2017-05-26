@@ -52,16 +52,16 @@ cr.define('media_router_container_cast_mode_list', function() {
       var fakeCastModeList = [];
 
       /**
-       * The list of CastModes to show with non-default modes only.
+       * The list of CastModes to show with non-PRESENTATION modes only.
        * @type {!Array<!media_router.CastMode>}
        */
-      var fakeCastModeListWithNonDefaultModesOnly = [];
+      var fakeCastModeListWithNonPresentationModesOnly = [];
 
       /**
-       * The list of CastModes to show with default mode forced.
+       * The list of CastModes to show with PRESENTATION mode forced.
        * @type {!Array<!media_router.CastMode>}
        */
-      var fakeCastModeListWithDefaultModeForced = [];
+      var fakeCastModeListWithPresentationModeForced = [];
 
       /**
        * The blocking issue to show.
@@ -96,10 +96,10 @@ cr.define('media_router_container_cast_mode_list', function() {
         checkElementText = test_base.checkElementText;
         fakeBlockingIssue = test_base.fakeBlockingIssue;
         fakeCastModeList = test_base.fakeCastModeList;
-        fakeCastModeListWithNonDefaultModesOnly =
-            test_base.fakeCastModeListWithNonDefaultModesOnly;
-        fakeCastModeListWithDefaultModeForced =
-            test_base.fakeCastModeListWithDefaultModeForced;
+        fakeCastModeListWithNonPresentationModesOnly =
+            test_base.fakeCastModeListWithNonPresentationModesOnly;
+        fakeCastModeListWithPresentationModeForced =
+            test_base.fakeCastModeListWithPresentationModeForced;
         fakeNonBlockingIssue = test_base.fakeNonBlockingIssue;
         fakeSinkList = test_base.fakeSinkList;
 
@@ -132,7 +132,7 @@ cr.define('media_router_container_cast_mode_list', function() {
       // Tests that |container| returns to SINK_LIST view and arrow drop icon
       // toggles after a cast mode is selected.
       test('select cast mode', function(done) {
-        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
+        container.castModeList = fakeCastModeListWithNonPresentationModesOnly;
 
         MockInteractions.tap(container.$['container-header'].
             $['arrow-drop-icon']);
@@ -162,7 +162,7 @@ cr.define('media_router_container_cast_mode_list', function() {
       });
 
       // Tests the header text. Choosing a cast mode updates the header text.
-      test('header text with no default cast modes', function(done) {
+      test('header text with cast mode selected', function(done) {
         assertEquals(loadTimeData.getString('selectCastModeHeaderText'),
             container.i18n('selectCastModeHeaderText'));
 
@@ -173,7 +173,7 @@ cr.define('media_router_container_cast_mode_list', function() {
             container.headerText);
         assertFalse(container.userHasSelectedCastMode_);
 
-        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
+        container.castModeList = fakeCastModeListWithNonPresentationModesOnly;
 
         // Switch to cast mode list view.
         MockInteractions.tap(container.$['container-header'].
@@ -181,15 +181,15 @@ cr.define('media_router_container_cast_mode_list', function() {
         setTimeout(function() {
           var castModeList =
               container.$$('#cast-mode-list').querySelectorAll('paper-item');
-          assertEquals(fakeCastModeListWithNonDefaultModesOnly.length,
+          assertEquals(fakeCastModeListWithNonPresentationModesOnly.length,
               castModeList.length);
           for (var i = 0; i < castModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
             assertEquals(
-                fakeCastModeListWithNonDefaultModesOnly[i].description,
+                fakeCastModeListWithNonPresentationModesOnly[i].description,
                 container.headerText);
             checkElementText(
-                fakeCastModeListWithNonDefaultModesOnly[i].description,
+                fakeCastModeListWithNonPresentationModesOnly[i].description,
                 castModeList[i]);
           }
 
@@ -198,8 +198,8 @@ cr.define('media_router_container_cast_mode_list', function() {
       });
 
       // Tests the header text when updated with a cast mode list with a mix of
-      // default and non-default cast modes.
-      test('cast modes with one default mode', function(done) {
+      // PRESENTATION and non-PRESENTATION cast modes.
+      test('cast modes with one presentation mode', function(done) {
         container.castModeList = fakeCastModeList;
 
         // Switch to cast mode list view.
@@ -212,7 +212,7 @@ cr.define('media_router_container_cast_mode_list', function() {
           for (var i = 0; i < fakeCastModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
             if (fakeCastModeList[i].type ==
-                media_router.CastModeType.DEFAULT) {
+                media_router.CastModeType.PRESENTATION) {
               assertEquals(fakeCastModeList[i].description,
                   container.headerText);
 
@@ -343,11 +343,11 @@ cr.define('media_router_container_cast_mode_list', function() {
                                 media_router.SinkIconType.CAST,
                                 media_router.SinkStatus.ACTIVE, 0x2)
         ];
-        container.castModeList = fakeCastModeListWithDefaultModeForced;
+        container.castModeList = fakeCastModeListWithPresentationModeForced;
         MockInteractions.tap(container.$['container-header'].
                              $['arrow-drop-icon']);
         setTimeout(function() {
-          assertEquals(media_router.CastModeType.DEFAULT,
+          assertEquals(media_router.CastModeType.PRESENTATION,
                        container.shownCastModeValue_);
           assertEquals('Cast google.com', container.headerText);
           assertFalse(container.userHasSelectedCastMode_);
@@ -356,7 +356,8 @@ cr.define('media_router_container_cast_mode_list', function() {
               container.shadowRoot.getElementById('sink-list')
               .querySelectorAll('paper-item');
 
-          // The sink list contains only sinks compatible with DEFAULT mode.
+          // The sink list contains only sinks compatible with PRESENTATION
+          // mode.
           assertEquals(2, sinkList.length);
           checkElementText('Sink 1', sinkList[0]);
           checkElementText('Sink 2', sinkList[1]);
