@@ -85142,6 +85142,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Arc.boot_progress"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="AndroidBootTypes" separator=".">
+  <suffix name="FirstBoot" label="For the very first boot, aka opt-in."/>
+  <suffix name="FirstBootAfterUpdate"
+      label="For the first boot after Chrome OS update."/>
+  <suffix name="RegularBoot" label="For a regular boot."/>
+  <affected-histogram name="Arc.AndroidBootTime"/>
+  <affected-histogram name="Arc.boot_progress_ams_ready"/>
+  <affected-histogram name="Arc.boot_progress_enable_screen"/>
+  <affected-histogram name="Arc.boot_progress_pms_data_scan_start"/>
+  <affected-histogram name="Arc.boot_progress_pms_ready"/>
+  <affected-histogram name="Arc.boot_progress_pms_scan_end"/>
+  <affected-histogram name="Arc.boot_progress_pms_start"/>
+  <affected-histogram name="Arc.boot_progress_pms_system_scan_start"/>
+  <affected-histogram name="Arc.boot_progress_preload_end"/>
+  <affected-histogram name="Arc.boot_progress_preload_start"/>
+  <affected-histogram name="Arc.boot_progress_start"/>
+  <affected-histogram name="Arc.boot_progress_system_run"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="AndroidCrashUploadTypes" separator="_">
   <suffix name="Browser" label="Measures browser crash uploads."/>
   <suffix name="GPU" label="Measures GPU crash uploads."/>
