@@ -36,8 +36,12 @@ def GetHeadersFromNinja(out_dir, q):
     if return_code:
       raise subprocess.CalledProcessError(return_code, cmd)
 
-  ninja_out = NinjaSource()
-  q.put(ParseNinjaDepsOutput(ninja_out))
+  ans, err = set(), None
+  try:
+    ans = ParseNinjaDepsOutput(NinjaSource())
+  except Exception as e:
+    err = str(e)
+  q.put((ans, err))
 
 
 def ParseNinjaDepsOutput(ninja_out):
@@ -70,6 +74,7 @@ def GetHeadersFromGN(out_dir, q):
   """Return all the header files from GN"""
 
   tmp = None
+  ans, err = set(), None
   try:
     tmp = tempfile.mkdtemp()
     shutil.copy2(os.path.join(out_dir, 'args.gn'),
@@ -77,10 +82,13 @@ def GetHeadersFromGN(out_dir, q):
     # Do "gn gen" in a temp dir to prevent dirtying |out_dir|.
     subprocess.check_call(['gn', 'gen', tmp, '--ide=json', '-q'])
     gn_json = json.load(open(os.path.join(tmp, 'project.json')))
+    ans = ParseGNProjectJSON(gn_json, out_dir, tmp)
+  except Exception as e:
+    err = str(e)
   finally:
     if tmp:
       shutil.rmtree(tmp)
-  q.put(ParseGNProjectJSON(gn_json, out_dir, tmp))
+  q.put((ans, err))
 
 
 def ParseGNProjectJSON(gn, out_dir, tmp_out):
@@ -106,15 +114,18 @@ def ParseGNProjectJSON(gn, out_dir, tmp_out):
 
 def GetDepsPrefixes(q):
   """Return all the folders controlled by DEPS file"""
-  gclient_out = subprocess.check_output(
-      ['gclient', 'recurse', '--no-progress', '-j1',
-       'python', '-c', 'import os;print os.environ["GCLIENT_DEP_PATH"]'])
-  prefixes = set()
-  for i in gclient_out.split('\n'):
-    if i.startswith('src/'):
-      i = i[4:]
-      prefixes.add(i)
-  q.put(prefixes)
+  prefixes, err = set(), None
+  try:
+    gclient_out = subprocess.check_output(
+        ['gclient', 'recurse', '--no-progress', '-j1',
+         'python', '-c', 'import os;print os.environ["GCLIENT_DEP_PATH"]'])
+    for i in gclient_out.split('\n'):
+      if i.startswith('src/'):
+        i = i[4:]
+        prefixes.add(i)
+  except Exception as e:
+    err = str(e)
+  q.put((prefixes, err))
 
 
 def ParseWhiteList(whitelist):
@@ -165,12 +176,12 @@ def main():
   deps_p = Process(target=GetDepsPrefixes, args=(deps_q,))
   deps_p.start()
 
-  d = d_q.get()
-  gn = gn_q.get()
+  d, d_err = d_q.get()
+  gn, gn_err = gn_q.get()
   missing = d - gn
   nonexisting = GetNonExistingFiles(gn)
 
-  deps = deps_q.get()
+  deps, deps_err = deps_q.get()
   missing = FilterOutDepsedRepo(missing, deps)
   nonexisting = FilterOutDepsedRepo(nonexisting, deps)
 
@@ -178,6 +189,12 @@ def main():
   gn_p.join()
   deps_p.join()
 
+  if d_err:
+    parser.error(d_err)
+  if gn_err:
+    parser.error(gn_err)
+  if deps_err:
+    parser.error(deps_err)
   if len(GetNonExistingFiles(d)) > 0:
     parser.error('''Found non-existing files in ninja deps. You should
         build all in OUT_DIR.''')
