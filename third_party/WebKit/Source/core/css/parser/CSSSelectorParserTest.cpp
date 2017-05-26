@@ -364,4 +364,72 @@ TEST(CSSSelectorParserTest, InternalPseudo) {
   }
 }
 
+namespace {
+
+const auto TagLocalName = [](const CSSSelector* selector) {
+  return selector->TagQName().LocalName();
+};
+
+const auto AttributeLocalName = [](const CSSSelector* selector) {
+  return selector->Attribute().LocalName();
+};
+
+const auto SelectorValue = [](const CSSSelector* selector) {
+  return selector->Value();
+};
+
+struct ASCIILowerTestCase {
+  const char* input;
+  const char16_t* expected;
+  std::function<AtomicString(const CSSSelector*)> getter;
+};
+
+}  // namespace
+
+TEST(CSSSelectorParserTest, ASCIILowerHTMLStrict) {
+  const ASCIILowerTestCase test_cases[] = {
+      {"\\212a bd", u"\u212abd", TagLocalName},
+      {"[\\212alass]", u"\u212alass", AttributeLocalName},
+      {".\\212alass", u"\u212alass", SelectorValue},
+      {"#\\212alass", u"\u212alass", SelectorValue}};
+
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case.input);
+    CSSTokenizer tokenizer(test_case.input);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list =
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_TRUE(list.IsValid());
+    const CSSSelector* selector = list.First();
+    ASSERT_TRUE(selector);
+    EXPECT_EQ(AtomicString(test_case.expected), test_case.getter(selector));
+  }
+}
+
+TEST(CSSSelectorParserTest, ASCIILowerHTMLQuirks) {
+  const ASCIILowerTestCase test_cases[] = {
+      {"\\212a bd", u"\u212abd", TagLocalName},
+      {"[\\212alass]", u"\u212alass", AttributeLocalName},
+      {".\\212aLASS", u"\u212alass", SelectorValue},
+      {"#\\212aLASS", u"\u212alass", SelectorValue}};
+
+  CSSParserContext* context = CSSParserContext::Create(kHTMLQuirksMode);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case.input);
+    CSSTokenizer tokenizer(test_case.input);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list =
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_TRUE(list.IsValid());
+    const CSSSelector* selector = list.First();
+    ASSERT_TRUE(selector);
+    EXPECT_EQ(AtomicString(test_case.expected), test_case.getter(selector));
+  }
+}
+
 }  // namespace blink
