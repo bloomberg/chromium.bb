@@ -13,7 +13,6 @@
 namespace ash {
 
 class Shelf;
-class WmWindow;
 
 // ShelfWindowTargeter makes it easier to resize windows with the mouse when the
 // window-edge slightly overlaps with the shelf edge. The targeter also makes it
@@ -22,7 +21,7 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
                             public aura::WindowObserver,
                             public ShelfObserver {
  public:
-  ShelfWindowTargeter(WmWindow* container, Shelf* shelf);
+  ShelfWindowTargeter(aura::Window* container, Shelf* shelf);
   ~ShelfWindowTargeter() override;
 
  private:

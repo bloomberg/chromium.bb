@@ -298,7 +298,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   void InitLayoutManagers();
 
-  // Creates the containers (WmWindows) used by the shell.
+  // Creates the containers (aura::Windows) used by the shell.
   void CreateContainers();
 
   // Initializes |system_wallpaper_| and possibly also |boot_splash_screen_|.

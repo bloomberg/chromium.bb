@@ -87,9 +87,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
   aura::Window* aura_window() { return window_; }
   const aura::Window* aura_window() const { return window_; }
 
-  // See description of |children_use_extended_hit_region_|.
-  bool ShouldUseExtendedHitRegion() const;
-
   void Destroy();
 
   WmWindow* GetRootWindow() {
@@ -279,9 +276,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
   // the ancestor.
   void SnapToPixelBoundaryIfNecessary();
 
-  // Makes the hit region for children slightly larger for easier resizing.
-  void SetChildrenUseExtendedHitRegion();
-
   void AddTransientWindowObserver(WmTransientWindowObserver* observer);
   void RemoveTransientWindowObserver(WmTransientWindowObserver* observer);
 
@@ -298,10 +292,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
 
   bool added_transient_observer_ = false;
   base::ObserverList<WmTransientWindowObserver> transient_observers_;
-
-  // If true child windows should get a slightly larger hit region to make
-  // resizing easier.
-  bool children_use_extended_hit_region_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindow);
 };

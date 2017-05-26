@@ -97,13 +97,6 @@ const aura::Window* WmWindow::GetAuraWindow(const WmWindow* wm_window) {
                    : nullptr;
 }
 
-bool WmWindow::ShouldUseExtendedHitRegion() const {
-  const WmWindow* parent = Get(window_->parent());
-  return parent &&
-         static_cast<const WmWindow*>(parent)
-             ->children_use_extended_hit_region_;
-}
-
 void WmWindow::Destroy() {
   delete window_;
   // WARNING: this has been deleted.
@@ -513,22 +506,6 @@ void WmWindow::SetSnapsChildrenToPhysicalPixelBoundary() {
 
 void WmWindow::SnapToPixelBoundaryIfNecessary() {
   wm::SnapWindowToPixelBoundary(window_);
-}
-
-void WmWindow::SetChildrenUseExtendedHitRegion() {
-  children_use_extended_hit_region_ = true;
-  gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
-                           -kResizeOutsideBoundsSize,
-                           -kResizeOutsideBoundsSize);
-  gfx::Insets touch_extend =
-      mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
-  // TODO: EasyResizeWindowTargeter makes it so children get events outside
-  // their bounds. This only works in mash when mash is providing the non-client
-  // frame. Mus needs to support an api for the WindowManager that enables
-  // events to be dispatched to windows outside the windows bounds that this
-  // function calls into. http://crbug.com/679056.
-  window_->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
-      window_, mouse_extend, touch_extend));
 }
 
 void WmWindow::AddTransientWindowObserver(WmTransientWindowObserver* observer) {
