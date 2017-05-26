@@ -243,7 +243,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     /**
      * Whether an initial tab needs to be created during UI initialization.
      */
-    private boolean mCreateInitialTabDuringUiInit;
+    private Runnable mDelayedInitialTabBehaviorDuringUiInit;
 
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
@@ -319,12 +319,40 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         @Override
         public Tab launchUrl(
                 String url, TabModel.TabLaunchType type, Intent intent, long intentTimestamp) {
-            if (getBottomSheet() != null && NewTabPage.isNTPUrl(url)) {
-                getBottomSheet().displayNewTabUi(mIsIncognito);
-                return null;
-            }
-
+            if (openNtpBottomSheet(url)) return null;
             return super.launchUrl(url, type, intent, intentTimestamp);
+        }
+
+        @Override
+        public Tab createNewTab(
+                LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent, Intent intent) {
+            if (openNtpBottomSheet(loadUrlParams.getUrl())) return null;
+            return super.createNewTab(loadUrlParams, type, parent, intent);
+        }
+
+        /**
+         * Handles opening the NTP in the bottom sheet if supported.
+         *
+         * @param url The URL that is used to determine if this is an NTP being opened.
+         * @return Whether the NTP experience is opened in the bottom sheet without a corresponding
+         *         Tab associated with it.
+         */
+        private boolean openNtpBottomSheet(String url) {
+            if (getBottomSheet() != null && NewTabPage.isNTPUrl(url)) {
+                if (!mUIInitialized) {
+                    assert mDelayedInitialTabBehaviorDuringUiInit == null;
+                    mDelayedInitialTabBehaviorDuringUiInit = new Runnable() {
+                        @Override
+                        public void run() {
+                            getBottomSheet().displayNewTabUi(mIsIncognito);
+                        }
+                    };
+                } else {
+                    getBottomSheet().displayNewTabUi(mIsIncognito);
+                }
+                return true;
+            }
+            return false;
         }
     }
 
@@ -724,8 +752,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 bgViewWrapper.initialize();
             }
 
-            if (mCreateInitialTabDuringUiInit) {
-                getTabCreator(false).launchNTP();
+            if (mDelayedInitialTabBehaviorDuringUiInit != null) {
+                mDelayedInitialTabBehaviorDuringUiInit.run();
+                mDelayedInitialTabBehaviorDuringUiInit = null;
             } else {
                 mLayoutManager.hideOverview(false);
             }
@@ -961,11 +990,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private void createInitialTab() {
         String url = HomepageManager.getHomepageUri(getApplicationContext());
         if (TextUtils.isEmpty(url) || NewTabPage.isNTPUrl(url)) {
-            if (getBottomSheet() != null) {
-                mCreateInitialTabDuringUiInit = true;
-                return;
-            }
-
             url = UrlConstants.NTP_URL;
         }
 
@@ -1206,7 +1230,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // Create a new tab.
             Tab newTab =
                     launchIntent(url, referer, headers, externalAppId, forceNewTab, intent);
-            newTab.setIsAllowedToReturnToExternalApp(isAllowedToReturnToExternalApp);
+            if (newTab != null) {
+                newTab.setIsAllowedToReturnToExternalApp(isAllowedToReturnToExternalApp);
+            } else {
+                // TODO(twellington): This should only happen for NTPs created in Chrome Home.  See
+                //                    if we should be caching setIsAllowedToReturnToExternalApp
+                //                    in those cases.
+                assert NewTabPage.isNTPUrl(url);
+                assert getBottomSheet() != null;
+            }
             logMobileReceivedExternalIntent(externalAppId, intent);
         }
 
