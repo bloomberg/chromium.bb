@@ -16,10 +16,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
-#include "chrome/browser/ui/views/payments/preselected_combobox_model.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
@@ -50,12 +50,6 @@ namespace payments {
 
 namespace {
 
-// Number of years to be shown in the expiration year dropdown. If the card's
-// year is outside of the range of
-// [currentYear, currentYear+kNumberOfExpirationYears], then the UI shows an
-// additional entry for the card's expiration year.
-const int kNumberOfExpirationYears = 10;
-
 // Opacity of card network icons when they are not selected and are displayed
 // alongside a selected icon.
 const float kDimmedCardIconOpacity = 0.33f;
@@ -63,49 +57,6 @@ const float kDimmedCardIconOpacity = 0.33f;
 // This is not quite right but is the closest server type that wasn't already
 // used.
 const auto kBillingAddressType = autofill::ADDRESS_BILLING_LINE1;
-
-// Returns the items that are in the expiration month dropdown. Will return the
-// months in order starting at "01" until "12". Uses a clock so that the
-// |default_index| is set to the current month.
-std::vector<base::string16> GetExpirationMonthItems(int* default_index) {
-  std::vector<base::string16> months;
-  months.reserve(12);
-  for (int i = 1; i <= 12; i++)
-    months.push_back(base::UTF8ToUTF16(base::StringPrintf("%02d", i)));
-
-  base::Time::Exploded now_exploded;
-  autofill::AutofillClock::Now().LocalExplode(&now_exploded);
-  *default_index = now_exploded.month - 1;
-
-  return months;
-}
-
-// Returns the items that are in the expiration year dropdown.
-std::vector<base::string16> GetExpirationYearItems(
-    const autofill::CreditCard* card_to_edit) {
-  std::vector<base::string16> years;
-  years.reserve(kNumberOfExpirationYears + 1);
-
-  base::Time::Exploded now_exploded;
-  autofill::AutofillClock::Now().LocalExplode(&now_exploded);
-
-  if (card_to_edit && card_to_edit->expiration_year() < now_exploded.year) {
-    years.push_back(
-        base::UTF8ToUTF16(std::to_string(card_to_edit->expiration_year())));
-  }
-
-  for (int i = 0; i < kNumberOfExpirationYears; i++) {
-    years.push_back(base::UTF8ToUTF16(std::to_string(now_exploded.year + i)));
-  }
-
-  if (card_to_edit && card_to_edit->expiration_year() >=
-                          now_exploded.year + kNumberOfExpirationYears) {
-    years.push_back(
-        base::UTF8ToUTF16(std::to_string(card_to_edit->expiration_year())));
-  }
-
-  return years;
-}
 
 bool IsCardExpired(const base::string16& month,
                    const base::string16& year,
@@ -533,14 +484,11 @@ CreditCardEditorViewController::GetComboboxModelForType(
     const autofill::ServerFieldType& type) {
   switch (type) {
     case autofill::CREDIT_CARD_EXP_MONTH: {
-      int default_index = 0;
-      std::vector<base::string16> months =
-          GetExpirationMonthItems(&default_index);
-      return base::MakeUnique<PreselectedComboboxModel>(months, default_index);
+      return base::MakeUnique<autofill::MonthComboboxModel>();
     }
     case autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
-      return base::MakeUnique<ui::SimpleComboboxModel>(
-          GetExpirationYearItems(credit_card_to_edit_));
+      return base::MakeUnique<autofill::YearComboboxModel>(
+          credit_card_to_edit_ ? credit_card_to_edit_->expiration_year() : 0);
     case kBillingAddressType:
       // The combobox filled with potential billing addresses. It's fine to pass
       // empty string as the default selected guid if there are no cards being

@@ -215,14 +215,14 @@ class CreditCard : public AutofillDataModel {
   base::string16 GetLastUsedDateForDisplay(const std::string& app_locale) const;
   // Formatted expiration date (e.g., 05/2020).
   base::string16 ExpirationDateForDisplay() const;
+  // Expiration functions.
+  base::string16 ExpirationMonthAsString() const;
+  base::string16 Expiration4DigitYearAsString() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
 
-  // Private display functions.
-  base::string16 ExpirationMonthAsString() const;
-  base::string16 Expiration4DigitYearAsString() const;
   base::string16 Expiration2DigitYearAsString() const;
 
   // FormGroup:

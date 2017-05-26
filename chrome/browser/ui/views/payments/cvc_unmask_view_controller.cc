@@ -53,6 +53,7 @@ CvcUnmaskViewController::CvcUnmaskViewController(
         result_delegate,
     content::WebContents* web_contents)
     : PaymentRequestSheetController(spec, state, dialog),
+      year_combobox_model_(credit_card.expiration_year()),
       credit_card_(credit_card),
       web_contents_(web_contents),
       payments_client_(
@@ -205,11 +206,15 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
     auto month = base::MakeUnique<views::Combobox>(&month_combobox_model_);
     month->set_listener(this);
     month->set_id(static_cast<int>(DialogViewID::CVC_MONTH));
+    month->SelectValue(credit_card_.ExpirationMonthAsString());
+    month->SetInvalid(true);
     layout->AddView(month.release());
 
     auto year = base::MakeUnique<views::Combobox>(&year_combobox_model_);
     year->set_listener(this);
     year->set_id(static_cast<int>(DialogViewID::CVC_YEAR));
+    year->SelectValue(credit_card_.Expiration4DigitYearAsString());
+    year->SetInvalid(true);
     layout->AddView(year.release());
   }
 
@@ -342,6 +347,9 @@ void CvcUnmaskViewController::UpdatePayButtonState() {
 
       expiration_date_valid = autofill::IsValidCreditCardExpirationDate(
           year_value, month_value, autofill::AutofillClock::Now());
+
+      month->SetInvalid(!expiration_date_valid);
+      year->SetInvalid(!expiration_date_valid);
     }
   }
 

@@ -4744,7 +4744,6 @@ test("unit_tests") {
       "../browser/ui/views/global_error_bubble_view_unittest.cc",
       "../browser/ui/views/harmony/layout_provider_unittest.cc",
       "../browser/ui/views/page_info/page_info_bubble_view_unittest.cc",
-      "../browser/ui/views/payments/credit_card_editor_view_controller_unittest.cc",
       "../browser/ui/views/payments/payment_request_item_list_unittest.cc",
       "../browser/ui/views/payments/validating_textfield_unittest.cc",
       "../browser/ui/views/payments/view_stack_unittest.cc",

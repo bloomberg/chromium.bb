@@ -154,11 +154,11 @@ CreditCardCompletionStatus GetCompletionStatusForCard(
 
 base::string16 GetCompletionMessageForCard(CreditCardCompletionStatus status) {
   switch (status) {
+    // No message is shown for complete or expired card (which will be fixable)
+    // in the CVC screen.
     case CREDIT_CARD_COMPLETE:
-      return base::string16();
     case CREDIT_CARD_EXPIRED:
-      return l10n_util::GetStringUTF16(
-          IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED);
+      return base::string16();
     case CREDIT_CARD_NO_CARDHOLDER:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_NAME_ON_CARD_REQUIRED);
     case CREDIT_CARD_NO_NUMBER:

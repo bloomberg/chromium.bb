@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace autofill {
@@ -114,8 +115,6 @@ class MonthComboboxModel : public ui::ComboboxModel {
   MonthComboboxModel();
   ~MonthComboboxModel() override;
 
-  static base::string16 FormatMonth(int index);
-
   // ui::Combobox implementation:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
@@ -125,19 +124,15 @@ class MonthComboboxModel : public ui::ComboboxModel {
 };
 
 // A model for years between now and a decade hence.
-class YearComboboxModel : public ui::ComboboxModel {
+class YearComboboxModel : public ui::SimpleComboboxModel {
  public:
-  YearComboboxModel();
+  // If |additional_year| is not in the year range initially in this model
+  // [current year, current year + 9], this will add |additional_year| to the
+  // model. Passing 0 has no effect.
+  explicit YearComboboxModel(int additional_year = 0);
   ~YearComboboxModel() override;
 
-  // ui::Combobox implementation:
-  int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
-
  private:
-  // The current year (e.g., 2012).
-  int this_year_;
-
   DISALLOW_COPY_AND_ASSIGN(YearComboboxModel);
 };
 

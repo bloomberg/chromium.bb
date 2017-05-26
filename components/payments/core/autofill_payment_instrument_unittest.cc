@@ -170,16 +170,14 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment) {
   EXPECT_TRUE(instrument.GetMissingInfoLabel().empty());
 }
 
-// An expired local card is not a valid instrument for payment.
+// An expired local card is still a valid instrument for payment.
 TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_Expired) {
   autofill::CreditCard& card = local_credit_card();
   card.SetExpirationYear(2016);  // Expired.
   AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
                                        "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED),
-            instrument.GetMissingInfoLabel());
+  EXPECT_TRUE(instrument.IsCompleteForPayment());
+  EXPECT_EQ(base::string16(), instrument.GetMissingInfoLabel());
 }
 
 // A local card with no name is not a valid instrument for payment.
@@ -263,7 +261,7 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_MaskedCard) {
   EXPECT_TRUE(instrument.GetMissingInfoLabel().empty());
 }
 
-// An expired masked (server) card is not a valid instrument for payment.
+// An expired masked (server) card is still a valid instrument for payment.
 TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_ExpiredMaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   ASSERT_GT(billing_profiles().size(), 0UL);
@@ -271,10 +269,8 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_ExpiredMaskedCard) {
   card.SetExpirationYear(2016);  // Expired.
   AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
                                        "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED),
-            instrument.GetMissingInfoLabel());
+  EXPECT_TRUE(instrument.IsCompleteForPayment());
+  EXPECT_EQ(base::string16(), instrument.GetMissingInfoLabel());
 }
 
 // An expired card is a valid instrument for canMakePayment.
