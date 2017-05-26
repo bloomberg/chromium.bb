@@ -453,16 +453,25 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
 
   InvokePaymentRequestUI();
 
-  // One instrument is available, but it's not selected.
+  // One instrument is available, and it's selected because being expired can
+  // still select the instrument.
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
   EXPECT_EQ(1U, request->state()->available_instruments().size());
-  EXPECT_EQ(nullptr, request->state()->selected_instrument());
+  EXPECT_NE(nullptr, request->state()->selected_instrument());
 
   OpenPaymentMethodScreen();
 
+  // Opening the credit card editor by clicking the edit button.
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
+  EXPECT_TRUE(list_view);
+  EXPECT_EQ(1, list_view->child_count());
+
+  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
-  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
-                                DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW);
+  ClickOnDialogViewAndWait(edit_button);
 
   EXPECT_EQ(base::ASCIIToUTF16("Test User"),
             GetEditorTextfieldValue(autofill::CREDIT_CARD_NAME_FULL));
@@ -507,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
   EXPECT_EQ(base::ASCIIToUTF16("Test User"),
             credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
 
-  // Still have one instrument, but now it's selected.
+  // Still have one instrument, and it's still selected.
   EXPECT_EQ(1U, request->state()->available_instruments().size());
   EXPECT_EQ(request->state()->available_instruments().back().get(),
             request->state()->selected_instrument());

@@ -78,9 +78,11 @@ void AutofillPaymentInstrument::InvokePaymentApp(
 }
 
 bool AutofillPaymentInstrument::IsCompleteForPayment() {
+  // COMPLETE or EXPIRED cards are considered valid for payment. The user will
+  // be prompted to enter the new expiration at the CVC step.
   return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                              billing_profiles_) ==
-         autofill::CREDIT_CARD_COMPLETE;
+                                              billing_profiles_) <=
+         autofill::CREDIT_CARD_EXPIRED;
 }
 
 base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() {
