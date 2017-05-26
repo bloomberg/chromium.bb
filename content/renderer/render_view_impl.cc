@@ -1449,6 +1449,13 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
   WebUserGestureIndicator::ConsumeUserGesture();
 
+  // For Android WebView, we support a pop-up like behavior for window.open()
+  // even if the embedding app doesn't support multiple windows. In this case,
+  // window.open() will return "window" and navigate it to whatever URL was
+  // passed.
+  if (reply->route_id == GetRoutingID())
+    return webview();
+
   // While this view may be a background extension page, it can spawn a visible
   // render view. So we just assume that the new one is not another background
   // page instead of passing on our own value.
