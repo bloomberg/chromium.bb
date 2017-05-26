@@ -58,17 +58,23 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             self.trigger_try_jobs(builders_with_no_jobs)
             return 1
 
-        if not options.fill_missing and builders_with_no_jobs:
-            _log.error('The following builders have no jobs:')
-            for builder in builders_with_no_jobs:
-                _log.error('  %s', builder)
-            _log.error('Add --fill-missing to continue rebaselining anyway, '
-                       'filling in results for missing platforms.')
-            return 1
-
         jobs_to_results = self._fetch_results(jobs)
-        if not options.fill_missing and len(jobs_to_results) < len(jobs):
-            return 1
+        builders_with_results = {b.builder_name for b in jobs_to_results}
+        builders_without_results = set(self._try_bots()) - builders_with_results
+        if builders_without_results:
+            _log.info('There are some builders with no results:')
+            for builder in sorted(builders_without_results):
+                _log.info('  %s', builder)
+
+        if not options.fill_missing and builders_without_results:
+            options.fill_missing = self._tool.user.confirm(
+                'Would you like to try to fill in missing results with\n'
+                'available results? This assumes that layout test results\n'
+                'for the platforms with missing results are the same as\n'
+                'results on other platforms.', default=self._tool.user.DEFAULT_NO)
+            if not options.fill_missing:
+                _log.info('Aborting.')
+                return 1
 
         if args:
             test_baseline_set = self._make_test_baseline_set_for_tests(
