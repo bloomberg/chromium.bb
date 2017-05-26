@@ -138,6 +138,15 @@ class WebView {
   virtual Status DeleteCookie(const std::string& name,
                               const std::string& url) = 0;
 
+  virtual Status AddCookie(const std::string& name,
+                           const std::string& url,
+                           const std::string& value,
+                           const std::string& domain,
+                           const std::string& path,
+                           bool secure,
+                           bool httpOnly,
+                           double expiry) = 0;
+
   // Waits until all pending navigations have completed in the given frame.
   // If |frame_id| is "", waits for navigations on the main frame.
   // If a modal dialog appears while waiting, kUnexpectedAlertOpen will be

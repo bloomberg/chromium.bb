@@ -38,6 +38,9 @@ namespace {
 
 const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
 
+// Defaults to 20 years into the future when adding a cookie.
+const double kDefaultCookieExpiryTime = 20*365*24*60*60;
+
 Status GetMouseButton(const base::DictionaryValue& params,
                       MouseButton* button) {
   int button_num;
@@ -948,11 +951,30 @@ Status ExecuteAddCookie(Session* session,
   const base::DictionaryValue* cookie;
   if (!params.GetDictionary("cookie", &cookie))
     return Status(kUnknownError, "missing 'cookie'");
-  base::ListValue args;
-  args.Append(cookie->CreateDeepCopy());
-  std::unique_ptr<base::Value> result;
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(), kAddCookieScript, args, &result);
+  std::string name;
+  std::string cookie_value;
+  if (!cookie->GetString("name", &name))
+    return Status(kUnknownError, "missing 'name'");
+  if (!cookie->GetString("value", &cookie_value))
+    return Status(kUnknownError, "missing 'value'");
+  std::string url;
+  Status status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
+  if (status.IsError())
+    return status;
+  std::string domain;
+  cookie->GetString("domain", &domain);
+  std::string path;
+  cookie->GetString("path", &path);
+  bool secure = false;
+  cookie->GetBoolean("secure", &secure);
+  bool httpOnly = false;
+  cookie->GetBoolean("httpOnly", &httpOnly);
+  double expiry;
+  if (!cookie->GetDouble("expiry", &expiry))
+    expiry = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() +
+              kDefaultCookieExpiryTime;
+  return web_view->AddCookie(name, url, cookie_value, domain, path,
+      secure, httpOnly, expiry);
 }
 
 Status ExecuteDeleteCookie(Session* session,

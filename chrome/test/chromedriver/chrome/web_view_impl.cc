@@ -459,6 +459,26 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
   return client_->SendCommand("Page.deleteCookie", params);
 }
 
+Status WebViewImpl::AddCookie(const std::string& name,
+                              const std::string& url,
+                              const std::string& value,
+                              const std::string& domain,
+                              const std::string& path,
+                              bool secure,
+                              bool httpOnly,
+                              double expiry) {
+  base::DictionaryValue params;
+  params.SetString("name", name);
+  params.SetString("url", url);
+  params.SetString("value", value);
+  params.SetString("domain", domain);
+  params.SetString("path", path);
+  params.SetBoolean("secure", secure);
+  params.SetBoolean("httpOnly", httpOnly);
+  params.SetDouble("expirationDate", expiry);
+  return client_->SendCommand("Network.setCookie", params);
+}
+
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
                                               const Timeout& timeout,
                                               bool stop_load_on_timeout) {

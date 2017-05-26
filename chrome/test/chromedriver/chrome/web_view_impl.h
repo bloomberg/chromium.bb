@@ -86,6 +86,14 @@ class WebViewImpl : public WebView {
   Status DispatchKeyEvents(const std::list<KeyEvent>& events) override;
   Status GetCookies(std::unique_ptr<base::ListValue>* cookies) override;
   Status DeleteCookie(const std::string& name, const std::string& url) override;
+  Status AddCookie(const std::string& name,
+                   const std::string& url,
+                   const std::string& value,
+                   const std::string& domain,
+                   const std::string& path,
+                   bool secure,
+                   bool httpOnly,
+                   double expiry) override;
   Status WaitForPendingNavigations(const std::string& frame_id,
                                    const Timeout& timeout,
                                    bool stop_load_on_timeout) override;

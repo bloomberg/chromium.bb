@@ -119,6 +119,17 @@ Status StubWebView::DeleteCookie(const std::string& name,
   return Status(kOk);
 }
 
+Status StubWebView::AddCookie(const std::string& name,
+                              const std::string& url,
+                              const std::string& value,
+                              const std::string& domain,
+                              const std::string& path,
+                              bool secure,
+                              bool httpOnly,
+                              double expiry) {
+  return Status(kOk);
+}
+
 Status StubWebView::WaitForPendingNavigations(const std::string& frame_id,
                                               const Timeout& timeout,
                                               bool stop_load_on_timeout) {
