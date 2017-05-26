@@ -90,7 +90,7 @@ source_set("x11") {
   ]
 }
 
-target("executable", "remoting_native_messaging_host") {
+executable("remoting_native_messaging_host") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   sources = [
@@ -101,6 +101,7 @@ target("executable", "remoting_native_messaging_host") {
 
   deps = [
     "//base",
+    "//build/config:exe_and_shlib_deps",
     "//net",
     "//remoting/base:breakpad",
     "//remoting/host",
