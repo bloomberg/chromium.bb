@@ -148,9 +148,5 @@ TEST_F(DirectCompositorFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
-// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
-// DirectCompositorFrameSink and CompositorFrameSinkSupport when we add plumbing
-// of BeginFrameAcks through SurfaceObservers.
-
 }  // namespace
 }  // namespace cc

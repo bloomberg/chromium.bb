@@ -32,6 +32,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "cc/test/fake_surface_observer.h"
 #include "components/viz/display_compositor/gl_helper.h"
 #include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/browser_thread_impl.h"
@@ -278,17 +279,6 @@ class TestWindowObserver : public aura::WindowObserver {
   bool destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowObserver);
-};
-
-class FakeSurfaceObserver : public cc::SurfaceObserver {
- public:
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override {}
-
-  void OnSurfaceDamaged(const cc::SurfaceId& id, bool* changed) override {
-    *changed = true;
-  }
-
-  void OnSurfaceDiscarded(const cc::SurfaceId& id) override {}
 };
 
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
@@ -2313,7 +2303,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 // This test verifies that when the compositor_frame_sink_id changes, the old
 // resources are not returned.
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
-  FakeSurfaceObserver manager_observer;
+  cc::FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   cc::SurfaceManager* manager =
       factory->GetContextFactoryPrivate()->GetSurfaceManager();
@@ -3298,21 +3288,120 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
   view_->OnTouchEvent(&release);
 }
 
-namespace {
-class LastObserverTracker : public cc::FakeExternalBeginFrameSource::Client {
- public:
-  void OnAddObserver(cc::BeginFrameObserver* obs) override {
-    last_observer_ = obs;
+// Tests that BeginFrameAcks are forwarded correctly from the
+// SwapCompositorFrame and OnDidNotProduceFrame IPCs through DelegatedFrameHost
+// and its CompositorFrameSinkSupport.
+TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+
+  cc::FakeSurfaceObserver observer;
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  cc::SurfaceManager* surface_manager =
+      factory->GetContextFactoryPrivate()->GetSurfaceManager();
+  surface_manager->AddObserver(&observer);
+
+  view_->SetNeedsBeginFrames(true);
+  uint32_t source_id = 10;
+
+  {
+    // Ack from CompositorFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 5, 4, true);
+    cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    EXPECT_EQ(ack, observer.last_ack());
   }
-  void OnRemoveObserver(cc::BeginFrameObserver* obs) override {}
 
-  cc::BeginFrameObserver* last_observer_ = nullptr;
-};
-}  // namespace
+  {
+    // Explicit ack through OnDidNotProduceFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 6, 4, false);
+    view_->OnDidNotProduceFrame(ack);
+    EXPECT_EQ(ack, observer.last_ack());
+  }
 
-// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
-// RenderWidgetHostViewAura and CompositorFrameSinkSupport when we add plumbing
-// of BeginFrameAcks through SurfaceObservers.
+  // Lock the compositor. Now we should drop frames and, thus,
+  // latest_confirmed_sequence_number should not change.
+  view_rect = gfx::Rect(150, 150);
+  view_->SetSize(view_rect.size());
+
+  {
+    // Ack from CompositorFrame is forwarded with old
+    // latest_confirmed_sequence_number and without damage.
+    cc::BeginFrameAck ack(source_id, 7, 7, true);
+    gfx::Rect dropped_damage_rect(10, 20, 30, 40);
+    cc::CompositorFrame frame =
+        MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    ack.latest_confirmed_sequence_number = 4;
+    ack.has_damage = false;
+    EXPECT_EQ(ack, observer.last_ack());
+  }
+
+  // Change source_id known to the view. This should reset the
+  // latest_confirmed_sequence_number tracked by the view.
+  source_id = 20;
+
+  {
+    // Ack from CompositorFrame is forwarded with invalid
+    // latest_confirmed_sequence_number and without damage.
+    cc::BeginFrameAck ack(source_id, 10, 10, true);
+    gfx::Rect dropped_damage_rect(10, 20, 30, 40);
+    cc::CompositorFrame frame =
+        MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    ack.latest_confirmed_sequence_number =
+        cc::BeginFrameArgs::kInvalidFrameNumber;
+    ack.has_damage = false;
+    EXPECT_EQ(ack, observer.last_ack());
+  }
+
+  {
+    // Explicit ack through OnDidNotProduceFrame is forwarded with invalid
+    // latest_confirmed_sequence_number.
+    cc::BeginFrameAck ack(source_id, 11, 11, false);
+    view_->OnDidNotProduceFrame(ack);
+    ack.latest_confirmed_sequence_number =
+        cc::BeginFrameArgs::kInvalidFrameNumber;
+    EXPECT_EQ(ack, observer.last_ack());
+  }
+
+  // Unlock the compositor again with a new CompositorFrame of correct size.
+  frame_size = view_rect.size();
+  local_surface_id = local_surface_id_allocator_.GenerateId();
+
+  {
+    // Ack from CompositorFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 12, 12, true);
+    cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    EXPECT_EQ(ack, observer.last_ack());
+  }
+
+  {
+    // Explicit ack through OnDidNotProduceFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 13, 13, false);
+    view_->OnDidNotProduceFrame(ack);
+    EXPECT_EQ(ack, observer.last_ack());
+  }
+
+  surface_manager->RemoveObserver(&observer);
+  view_->SetNeedsBeginFrames(false);
+}
 
 class RenderWidgetHostViewAuraCopyRequestTest
     : public RenderWidgetHostViewAuraShutdownTest {

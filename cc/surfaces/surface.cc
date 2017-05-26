@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/local_surface_id_allocator.h"

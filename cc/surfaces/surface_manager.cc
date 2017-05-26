@@ -118,6 +118,8 @@ std::unique_ptr<Surface> SurfaceManager::CreateSurface(
 void SurfaceManager::DestroySurface(std::unique_ptr<Surface> surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
   surface->set_destroyed(true);
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceDestroyed(surface->surface_id());
   surfaces_to_destroy_.push_back(std::move(surface));
   GarbageCollectSurfaces();
 }
@@ -457,11 +459,12 @@ Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
   return it->second;
 }
 
-bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id) {
+bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id,
+                                     const BeginFrameAck& ack) {
   CHECK(thread_checker_.CalledOnValidThread());
   bool changed = false;
   for (auto& observer : observer_list_)
-    observer.OnSurfaceDamaged(surface_id, &changed);
+    observer.OnSurfaceDamaged(surface_id, ack, &changed);
   return changed;
 }
 
@@ -502,6 +505,13 @@ void SurfaceManager::SurfaceDiscarded(Surface* surface) {
     observer.OnSurfaceDiscarded(surface->surface_id());
   if (dependency_tracker_)
     dependency_tracker_->OnSurfaceDiscarded(surface);
+}
+
+void SurfaceManager::SurfaceDamageExpected(const SurfaceId& surface_id,
+                                           const BeginFrameArgs& args) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceDamageExpected(surface_id, args);
 }
 
 void SurfaceManager::UnregisterSurface(const SurfaceId& surface_id) {

@@ -40,7 +40,6 @@ class RendererSettings;
 class ResourceProvider;
 class SharedBitmapManager;
 class SoftwareRenderer;
-class SurfaceAggregator;
 class TextureMailboxDeleter;
 
 // A Display produces a surface that can be used to draw to a physical display
@@ -78,6 +77,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;
+  bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override;
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
@@ -86,9 +86,14 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
       const gpu::TextureInUseResponses& responses) override;
 
   // SurfaceObserver implementation.
-  void OnSurfaceDamaged(const SurfaceId& surface, bool* changed) override;
+  void OnSurfaceDamaged(const SurfaceId& surface,
+                        const BeginFrameAck& ack,
+                        bool* changed) override;
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
   void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                               const BeginFrameArgs& args) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }

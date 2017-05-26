@@ -6,10 +6,10 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_observer.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "cc/test/fake_surface_observer.h"
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,11 +45,11 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
 
 }  // namespace
 
-class SurfaceSynchronizationTest : public testing::Test,
-                                   public SurfaceObserver {
+class SurfaceSynchronizationTest : public testing::Test {
  public:
   SurfaceSynchronizationTest()
-      : surface_manager_(SurfaceManager::LifetimeType::REFERENCES) {}
+      : surface_manager_(SurfaceManager::LifetimeType::REFERENCES),
+        surface_observer_(false) {}
   ~SurfaceSynchronizationTest() override {}
 
   CompositorFrameSinkSupport& display_support() { return *supports_[0]; }
@@ -101,6 +101,8 @@ class SurfaceSynchronizationTest : public testing::Test,
     return begin_frame_source_.get();
   }
 
+  FakeSurfaceObserver& surface_observer() { return surface_observer_; }
+
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
@@ -110,7 +112,7 @@ class SurfaceSynchronizationTest : public testing::Test,
     dependency_tracker_ = base::MakeUnique<SurfaceDependencyTracker>(
         &surface_manager_, begin_frame_source_.get());
     surface_manager_.SetDependencyTracker(dependency_tracker_.get());
-    surface_manager_.AddObserver(this);
+    surface_manager_.AddObserver(&surface_observer_);
     supports_.push_back(CompositorFrameSinkSupport::Create(
         &support_client_, &surface_manager_, kDisplayFrameSink, kIsRoot,
         kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
@@ -133,7 +135,7 @@ class SurfaceSynchronizationTest : public testing::Test,
   }
 
   void TearDown() override {
-    surface_manager_.RemoveObserver(this);
+    surface_manager_.RemoveObserver(&surface_observer_);
     surface_manager_.SetDependencyTracker(nullptr);
     surface_manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
 
@@ -145,26 +147,15 @@ class SurfaceSynchronizationTest : public testing::Test,
 
     supports_.clear();
 
-    damaged_surfaces_.clear();
+    surface_observer_.Reset();
   }
-
-  bool IsSurfaceDamaged(const SurfaceId& surface_id) const {
-    return damaged_surfaces_.count(surface_id) > 0;
-  }
-
-  // SurfaceObserver implementation:
-  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
-  void OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) override {
-    damaged_surfaces_.insert(surface_id);
-  }
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override {}
 
  protected:
   testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;
 
  private:
-  base::flat_set<SurfaceId> damaged_surfaces_;
   SurfaceManager surface_manager_;
+  FakeSurfaceObserver surface_observer_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<SurfaceDependencyTracker> dependency_tracker_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
@@ -260,7 +251,7 @@ TEST_F(SurfaceSynchronizationTest, BlockedChain) {
   EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
   // The parent should not report damage until it activates.
-  EXPECT_FALSE(IsSurfaceDamaged(parent_id));
+  EXPECT_FALSE(surface_observer().IsSurfaceDamaged(parent_id));
 
   child_support1().SubmitCompositorFrame(
       child_id1.local_surface_id(),
@@ -274,8 +265,8 @@ TEST_F(SurfaceSynchronizationTest, BlockedChain) {
   EXPECT_THAT(child_surface1()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
   // The parent and child should not report damage until they activate.
-  EXPECT_FALSE(IsSurfaceDamaged(parent_id));
-  EXPECT_FALSE(IsSurfaceDamaged(child_id1));
+  EXPECT_FALSE(surface_observer().IsSurfaceDamaged(parent_id));
+  EXPECT_FALSE(surface_observer().IsSurfaceDamaged(child_id1));
 
   // The parent should still be blocked on |child_id1| because it's pending.
   EXPECT_THAT(parent_surface()->blocking_surfaces(),
@@ -302,9 +293,9 @@ TEST_F(SurfaceSynchronizationTest, BlockedChain) {
 
   // All three surfaces |parent_id|, |child_id1|, and |child_id2| should
   // now report damage. This would trigger a new display frame.
-  EXPECT_TRUE(IsSurfaceDamaged(parent_id));
-  EXPECT_TRUE(IsSurfaceDamaged(child_id1));
-  EXPECT_TRUE(IsSurfaceDamaged(child_id2));
+  EXPECT_TRUE(surface_observer().IsSurfaceDamaged(parent_id));
+  EXPECT_TRUE(surface_observer().IsSurfaceDamaged(child_id1));
+  EXPECT_TRUE(surface_observer().IsSurfaceDamaged(child_id2));
 }
 
 // parent_surface and child_surface1 are blocked on |child_id2|.
@@ -978,10 +969,6 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
 }
-
-// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
-// CompositorFrameSinkSupport when we add plumbing of BeginFrameAcks through
-// SurfaceObservers.
 
 // Checks that resources and ack are sent together if possible.
 TEST_F(SurfaceSynchronizationTest, ReturnResourcesWithAck) {

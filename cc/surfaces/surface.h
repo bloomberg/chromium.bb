@@ -18,8 +18,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
@@ -32,8 +32,9 @@ class LatencyInfo;
 
 namespace cc {
 
-class CompositorFrame;
+class CompositorFrameSinkSupport;
 class CopyOutputRequest;
+class SurfaceManager;
 
 class CC_SURFACES_EXPORT Surface {
  public:
@@ -120,6 +121,9 @@ class CC_SURFACES_EXPORT Surface {
 
   bool HasActiveFrame() const { return active_frame_data_.has_value(); }
   bool HasPendingFrame() const { return pending_frame_data_.has_value(); }
+  bool HasUndrawnActiveFrame() const {
+    return HasActiveFrame() && active_frame_data_->draw_callback;
+  }
 
   bool destroyed() const { return destroyed_; }
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }

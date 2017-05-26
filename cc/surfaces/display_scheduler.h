@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -19,12 +20,14 @@
 namespace cc {
 
 class BeginFrameSource;
+class SurfaceInfo;
 
 class CC_SURFACES_EXPORT DisplaySchedulerClient {
  public:
   virtual ~DisplaySchedulerClient() {}
 
   virtual bool DrawAndSwap() = 0;
+  virtual bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const = 0;
 };
 
 class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
@@ -41,7 +44,13 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   void ForceImmediateSwapIfPossible();
   virtual void DisplayResized();
   virtual void SetNewRootSurface(const SurfaceId& root_surface_id);
-  virtual void SurfaceDamaged(const SurfaceId& surface_id);
+  virtual void SurfaceDamaged(const SurfaceId& surface_id,
+                              const BeginFrameAck& ack,
+                              bool display_damaged);
+  void SurfaceCreated(const SurfaceInfo& surface_info);
+  void SurfaceDestroyed(const SurfaceId& surface_id);
+  void SurfaceDamageExpected(const SurfaceId& surface_id,
+                             const BeginFrameArgs& args);
 
   virtual void DidSwapBuffers();
   void DidReceiveSwapBuffersAck();
@@ -62,6 +71,8 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   void StopObservingBeginFrames();
   bool ShouldDraw();
   void DidFinishFrame(bool did_draw);
+  // Updates |has_pending_surfaces_| and returns whether its value changed.
+  bool UpdateHasPendingSurfaces();
 
   DisplaySchedulerClient* client_;
   BeginFrameSource* begin_frame_source_;
@@ -82,7 +93,13 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   bool inside_begin_frame_deadline_interval_;
   bool needs_draw_;
   bool expecting_root_surface_damage_because_of_resize_;
-  bool all_active_child_surfaces_ready_to_draw_;
+  bool has_pending_surfaces_;
+
+  struct SurfaceBeginFrameState {
+    BeginFrameArgs last_args;
+    BeginFrameAck last_ack;
+  };
+  base::flat_map<SurfaceId, SurfaceBeginFrameState> surface_states_;
 
   int next_swap_id_;
   int pending_swaps_;
@@ -91,12 +108,6 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   bool observing_begin_frame_source_;
 
   SurfaceId root_surface_id_;
-  bool root_surface_damaged_;
-  bool expect_damage_from_root_surface_;
-
-  std::set<SurfaceId> child_surface_ids_damaged_;
-  std::set<SurfaceId> child_surface_ids_damaged_prev_;
-  std::vector<SurfaceId> child_surface_ids_to_expect_damage_from_;
 
   base::WeakPtrFactory<DisplayScheduler> weak_ptr_factory_;
 

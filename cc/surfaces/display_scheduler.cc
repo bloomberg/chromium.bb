@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/output_surface.h"
+#include "cc/surfaces/surface_info.h"
 
 namespace cc {
 
@@ -25,13 +26,11 @@ DisplayScheduler::DisplayScheduler(base::SingleThreadTaskRunner* task_runner,
       inside_begin_frame_deadline_interval_(false),
       needs_draw_(false),
       expecting_root_surface_damage_because_of_resize_(false),
-      all_active_child_surfaces_ready_to_draw_(false),
+      has_pending_surfaces_(false),
       next_swap_id_(1),
       pending_swaps_(0),
       max_pending_swaps_(max_pending_swaps),
       observing_begin_frame_source_(false),
-      root_surface_damaged_(false),
-      expect_damage_from_root_surface_(false),
       weak_ptr_factory_(this) {
   begin_frame_deadline_closure_ = base::Bind(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
@@ -81,7 +80,6 @@ void DisplayScheduler::ForceImmediateSwapIfPossible() {
 
 void DisplayScheduler::DisplayResized() {
   expecting_root_surface_damage_because_of_resize_ = true;
-  expect_damage_from_root_surface_ = true;
   needs_draw_ = true;
   ScheduleBeginFrameDeadline();
 }
@@ -91,13 +89,17 @@ void DisplayScheduler::DisplayResized() {
 void DisplayScheduler::SetNewRootSurface(const SurfaceId& root_surface_id) {
   TRACE_EVENT0("cc", "DisplayScheduler::SetNewRootSurface");
   root_surface_id_ = root_surface_id;
-  SurfaceDamaged(root_surface_id);
+  BeginFrameAck ack;
+  ack.has_damage = true;
+  SurfaceDamaged(root_surface_id, ack, true);
 }
 
 // Indicates that there was damage to one of the surfaces.
 // Has some logic to wait for multiple active surfaces before
 // triggering the deadline.
-void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id) {
+void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id,
+                                      const BeginFrameAck& ack,
+                                      bool display_damaged) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamaged", "surface_id",
                surface_id.ToString());
 
@@ -106,21 +108,106 @@ void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id) {
   // happening with |inside_surface_damaged_|.
   base::AutoReset<bool> auto_reset(&inside_surface_damaged_, true);
 
-  needs_draw_ = true;
+  if (display_damaged) {
+    needs_draw_ = true;
 
-  if (surface_id == root_surface_id_) {
-    root_surface_damaged_ = true;
-    expecting_root_surface_damage_because_of_resize_ = false;
-  } else {
-    child_surface_ids_damaged_.insert(surface_id);
+    if (surface_id == root_surface_id_)
+      expecting_root_surface_damage_because_of_resize_ = false;
 
-    // TODO(mithro): Use hints from SetNeedsBeginFrames and SwapAborts.
-    all_active_child_surfaces_ready_to_draw_ = base::STLIncludes(
-        child_surface_ids_damaged_, child_surface_ids_to_expect_damage_from_);
+    StartObservingBeginFrames();
   }
 
-  StartObservingBeginFrames();
-  ScheduleBeginFrameDeadline();
+  // Update surface state.
+  bool valid_ack = ack.sequence_number != BeginFrameArgs::kInvalidFrameNumber;
+  if (valid_ack) {
+    auto it = surface_states_.find(surface_id);
+    if (it != surface_states_.end())
+      it->second.last_ack = ack;
+    else
+      valid_ack = false;
+  }
+
+  bool pending_surfaces_changed = false;
+  if (display_damaged || valid_ack)
+    pending_surfaces_changed = UpdateHasPendingSurfaces();
+
+  if (display_damaged || pending_surfaces_changed)
+    ScheduleBeginFrameDeadline();
+}
+
+void DisplayScheduler::SurfaceCreated(const SurfaceInfo& surface_info) {
+  SurfaceId surface_id = surface_info.id();
+  DCHECK(!base::ContainsKey(surface_states_, surface_id));
+  surface_states_[surface_id] = SurfaceBeginFrameState();
+}
+
+void DisplayScheduler::SurfaceDestroyed(const SurfaceId& surface_id) {
+  auto it = surface_states_.find(surface_id);
+  if (it == surface_states_.end())
+    return;
+  surface_states_.erase(it);
+  if (UpdateHasPendingSurfaces())
+    ScheduleBeginFrameDeadline();
+}
+
+void DisplayScheduler::SurfaceDamageExpected(const SurfaceId& surface_id,
+                                             const BeginFrameArgs& args) {
+  TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamageExpected", "surface_id",
+               surface_id.ToString());
+  auto it = surface_states_.find(surface_id);
+  if (it == surface_states_.end())
+    return;
+  it->second.last_args = args;
+  if (UpdateHasPendingSurfaces())
+    ScheduleBeginFrameDeadline();
+}
+
+bool DisplayScheduler::UpdateHasPendingSurfaces() {
+  // If we're not currently inside a deadline interval, we will call
+  // UpdateHasPendingSurfaces() again during OnBeginFrameImpl().
+  if (!inside_begin_frame_deadline_interval_ || !client_)
+    return false;
+
+  bool old_value = has_pending_surfaces_;
+
+  for (const std::pair<SurfaceId, SurfaceBeginFrameState>& entry :
+       surface_states_) {
+    const SurfaceId& surface_id = entry.first;
+    const SurfaceBeginFrameState& state = entry.second;
+
+    // Surface is ready if it hasn't received the current BeginFrame or receives
+    // BeginFrames from a different source and thus likely belongs to a
+    // different surface hierarchy.
+    uint32_t source_id = current_begin_frame_args_.source_id;
+    uint64_t sequence_number = current_begin_frame_args_.sequence_number;
+    if (!state.last_args.IsValid() || state.last_args.source_id != source_id ||
+        state.last_args.sequence_number != sequence_number) {
+      continue;
+    }
+
+    // Surface is ready if it has acknowledged the current BeginFrame.
+    if (state.last_ack.source_id == source_id &&
+        state.last_ack.sequence_number == sequence_number) {
+      continue;
+    }
+
+    // Surface is ready if there is an undrawn active CompositorFrame, because
+    // its producer is CompositorFrameAck throttled.
+    if (client_->SurfaceHasUndrawnFrame(entry.first))
+      continue;
+
+    has_pending_surfaces_ = true;
+    TRACE_EVENT_INSTANT2("cc", "DisplayScheduler::UpdateHasPendingSurfaces",
+                         TRACE_EVENT_SCOPE_THREAD, "has_pending_surfaces",
+                         has_pending_surfaces_, "pending_surface_id",
+                         surface_id.ToString());
+    return has_pending_surfaces_ != old_value;
+  }
+  has_pending_surfaces_ = false;
+  TRACE_EVENT_INSTANT1("cc", "DisplayScheduler::UpdateHasPendingSurfaces",
+                       TRACE_EVENT_SCOPE_THREAD, "has_pending_surfaces",
+                       has_pending_surfaces_);
+  return has_pending_surfaces_ != old_value;
 }
 
 void DisplayScheduler::OutputSurfaceLost() {
@@ -138,19 +225,7 @@ bool DisplayScheduler::DrawAndSwap() {
   if (!success)
     return false;
 
-  child_surface_ids_to_expect_damage_from_ =
-      base::STLSetIntersection<std::vector<SurfaceId>>(
-          child_surface_ids_damaged_, child_surface_ids_damaged_prev_);
-
-  child_surface_ids_damaged_prev_.swap(child_surface_ids_damaged_);
-  child_surface_ids_damaged_.clear();
-
   needs_draw_ = false;
-  all_active_child_surfaces_ready_to_draw_ =
-      child_surface_ids_to_expect_damage_from_.empty();
-
-  expect_damage_from_root_surface_ = root_surface_damaged_;
-  root_surface_damaged_ = false;
   return true;
 }
 
@@ -186,15 +261,15 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
 
   // If we get another BeginFrame before the previous deadline,
   // synchronously trigger the previous deadline before progressing.
-  if (inside_begin_frame_deadline_interval_) {
+  if (inside_begin_frame_deadline_interval_)
     OnBeginFrameDeadline();
-  }
 
   // Schedule the deadline.
   current_begin_frame_args_ = save_args;
   current_begin_frame_args_.deadline -=
       BeginFrameArgs::DefaultEstimatedParentDrawTime();
   inside_begin_frame_deadline_interval_ = true;
+  UpdateHasPendingSurfaces();
   ScheduleBeginFrameDeadline();
 
   return true;
@@ -243,7 +318,9 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
            current_begin_frame_args_.interval;
   }
 
-  if (!needs_draw_) {
+  bool all_surfaces_ready =
+      !has_pending_surfaces_ && root_surface_id_.is_valid();
+  if (!needs_draw_ && !all_surfaces_ready) {
     TRACE_EVENT_INSTANT0("cc", "No damage yet", TRACE_EVENT_SCOPE_THREAD);
     return current_begin_frame_args_.frame_time +
            current_begin_frame_args_.interval;
@@ -256,10 +333,7 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
            current_begin_frame_args_.interval;
   }
 
-  bool root_ready_to_draw =
-      !expect_damage_from_root_surface_ || root_surface_damaged_;
-
-  if (all_active_child_surfaces_ready_to_draw_ && root_ready_to_draw) {
+  if (all_surfaces_ready && !expecting_root_surface_damage_because_of_resize_) {
     TRACE_EVENT_INSTANT0("cc", "All active surfaces ready",
                          TRACE_EVENT_SCOPE_THREAD);
     return base::TimeTicks();
@@ -271,27 +345,6 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
                          TRACE_EVENT_SCOPE_THREAD);
     return current_begin_frame_args_.frame_time +
            current_begin_frame_args_.interval;
-  }
-
-  // Use an earlier deadline if we are only waiting for the root surface
-  // in case our expect_damage_from_root_surface heuristic is incorrect.
-  // TODO(mithro): Replace this with SetNeedsBeginFrame and SwapAbort
-  // logic.
-  if (all_active_child_surfaces_ready_to_draw_ &&
-      expect_damage_from_root_surface_) {
-    TRACE_EVENT_INSTANT0("cc", "Waiting for damage from root surface",
-                         TRACE_EVENT_SCOPE_THREAD);
-    // This adjusts the deadline by DefaultEstimatedParentDrawTime for
-    // a second time. The first one represented the Surfaces draw to display
-    // latency. This one represents root surface commit+raster+draw latency.
-    // We treat the root surface differently since it lives on the same thread
-    // as Surfaces and waiting for it too long may push out the Surfaces draw.
-    // If we also assume the root surface is fast to start a commit after the
-    // beginning of a frame, it'll have a chance to lock its resources, which
-    // will cause us to wait for it to unlock its resources above.
-    // TODO(mithro): Replace hard coded estimates.
-    return current_begin_frame_args_.deadline -
-           BeginFrameArgs::DefaultEstimatedParentDrawTime();
   }
 
   TRACE_EVENT_INSTANT0("cc", "More damage expected soon",
@@ -344,11 +397,9 @@ bool DisplayScheduler::AttemptDrawAndSwap() {
       return DrawAndSwap();
   } else {
     // We are going idle, so reset expectations.
-    child_surface_ids_to_expect_damage_from_.clear();
-    child_surface_ids_damaged_prev_.clear();
-    child_surface_ids_damaged_.clear();
-    all_active_child_surfaces_ready_to_draw_ = true;
-    expect_damage_from_root_surface_ = false;
+    // TODO(eseckler): Should we avoid going idle if
+    // |expecting_root_surface_damage_because_of_resize_| is true?
+    expecting_root_surface_damage_because_of_resize_ = false;
 
     StopObservingBeginFrames();
   }

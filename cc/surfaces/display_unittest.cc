@@ -61,9 +61,13 @@ class TestDisplayScheduler : public DisplayScheduler {
     has_new_root_surface = true;
   }
 
-  void SurfaceDamaged(const SurfaceId& surface_id) override {
-    damaged = true;
-    needs_draw_ = true;
+  void SurfaceDamaged(const SurfaceId& surface_id,
+                      const BeginFrameAck& ack,
+                      bool display_damaged) override {
+    if (display_damaged) {
+      damaged = true;
+      needs_draw_ = true;
+    }
   }
 
   void DidSwapBuffers() override { swapped = true; }

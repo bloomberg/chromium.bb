@@ -35,6 +35,9 @@
 #endif
 
 namespace cc {
+
+struct BeginFrameAck;
+struct BeginFrameArgs;
 class BeginFrameSource;
 class CompositorFrame;
 class FrameSinkManagerClient;
@@ -79,7 +82,12 @@ class CC_SURFACES_EXPORT SurfaceManager {
     observer_list_.RemoveObserver(obs);
   }
 
-  bool SurfaceModified(const SurfaceId& surface_id);
+  // Called when a Surface is modified, e.g. when a CompositorFrame is
+  // activated, its producer confirms that no CompositorFrame will be submitted
+  // in response to a BeginFrame, or a CopyOutputRequest is issued.
+  //
+  // |ack.sequence_number| is only valid if called in response to a BeginFrame.
+  bool SurfaceModified(const SurfaceId& surface_id, const BeginFrameAck& ack);
 
   // Called when a CompositorFrame is submitted to a CompositorFrameSinkSupport
   // for a given |surface_id| for the first time.
@@ -97,6 +105,11 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   // Called when |surface| is being destroyed.
   void SurfaceDiscarded(Surface* surface);
+
+  // Called when a Surface's CompositorFrame producer has received a BeginFrame
+  // and, thus, is expected to produce damage soon.
+  void SurfaceDamageExpected(const SurfaceId& surface_id,
+                             const BeginFrameArgs& args);
 
   // Require that the given sequence number must be satisfied (using
   // SatisfySequence) before the given surface can be destroyed.
