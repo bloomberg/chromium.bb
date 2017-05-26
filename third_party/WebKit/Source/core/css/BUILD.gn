@@ -348,6 +348,8 @@ blink_core_sources("css") {
     "parser/CSSParserIdioms.h",
     "parser/CSSParserImpl.cpp",
     "parser/CSSParserImpl.h",
+    "parser/CSSParserLocalContext.cpp",
+    "parser/CSSParserLocalContext.h",
     "parser/CSSParserMode.h",
     "parser/CSSParserObserver.h",
     "parser/CSSParserObserverWrapper.cpp",
