@@ -520,15 +520,20 @@ bool LinuxDumper::EnumerateMappings() {
             name = kLinuxGateLibraryName;
             offset = 0;
           }
-          // Merge adjacent mappings with the same name into one module,
-          // assuming they're a single library mapped by the dynamic linker
+          // Merge adjacent mappings into one module, assuming they're a single
+          // library mapped by the dynamic linker. Do this only if their name
+          // matches and either they have the same +x protection flag, or if the
+          // previous mapping is not executable and the new one is, to handle
+          // lld's output (see crbug.com/716484).
           if (name && !mappings_.empty()) {
             MappingInfo* module = mappings_.back();
             if ((start_addr == module->start_addr + module->size) &&
                 (my_strlen(name) == my_strlen(module->name)) &&
                 (my_strncmp(name, module->name, my_strlen(name)) == 0) &&
-                (exec == module->exec)) {
+                ((exec == module->exec) || (!module->exec && exec))) {
+              module->system_mapping_info.end_addr = end_addr;
               module->size = end_addr - module->start_addr;
+              module->exec |= exec;
               line_reader->PopLine(line_len);
               continue;
             }
