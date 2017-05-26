@@ -442,6 +442,9 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
   committed_load_ = std::move(tracker);
   committed_load_->Commit(navigation_handle);
   DCHECK(committed_load_->did_commit());
+
+  for (auto& observer : testing_observers_)
+    observer.OnCommit(committed_load_.get());
 }
 
 void MetricsWebContentsObserver::NavigationStopped() {
@@ -624,10 +627,6 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
   committed_load_->metrics_update_dispatcher()->UpdateMetrics(render_frame_host,
                                                               timing, metadata);
-
-  const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
-  for (auto& observer : testing_observers_)
-    observer.OnTimingUpdated(is_main_frame, timing, metadata);
 }
 
 void MetricsWebContentsObserver::OnUpdateTimingOverIPC(
