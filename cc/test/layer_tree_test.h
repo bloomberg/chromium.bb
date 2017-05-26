@@ -139,6 +139,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // be used (such as for pixel tests). Or override it and create your own
   // TestCompositorFrameSink to control how it is created.
   virtual std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+      const RendererSettings& renderer_settings,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
   // Override this and call the base class to change what ContextProvider will

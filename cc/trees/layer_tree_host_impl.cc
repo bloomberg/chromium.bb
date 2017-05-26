@@ -2492,7 +2492,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
       compositor_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.enable_color_correct_rasterization,
-      settings_.renderer_settings.buffer_to_texture_target_map);
+      settings_.buffer_to_texture_target_map);
 
   // Since the new context may be capable of MSAA, update status here. We don't
   // need to check the return value since we are recreating all resources
