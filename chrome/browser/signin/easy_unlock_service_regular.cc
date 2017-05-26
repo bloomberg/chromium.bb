@@ -99,6 +99,15 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
+  // This code path may be hit by:
+  //   1. New devices were synced on the lock screen.
+  //   2. The service was initialized while the login screen is still up.
+  if (proximity_auth::ScreenlockBridge::Get()->IsLocked()) {
+    PA_LOG(INFO) << "Deferring device load until screen is unlocked.";
+    deferring_device_load_ = true;
+    return;
+  }
+
   remote_device_loader_.reset(new cryptauth::RemoteDeviceLoader(
       GetCryptAuthDeviceManager()->GetUnlockKeys(),
       proximity_auth_client()->GetAccountId(),
@@ -434,6 +443,7 @@ void EasyUnlockServiceRegular::SetAutoPairingResult(
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {
+  PA_LOG(INFO) << "Initializing EasyUnlockService inside the user session.";
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
@@ -508,12 +518,7 @@ void EasyUnlockServiceRegular::OnSyncFinished(
       cryptauth::CryptAuthDeviceManager::DeviceChangeResult::CHANGED)
     return;
 
-  if (proximity_auth::ScreenlockBridge::Get()->IsLocked()) {
-    PA_LOG(INFO) << "Deferring device load until screen is unlocked.";
-    deferring_device_load_ = true;
-  } else {
-    LoadRemoteDevices();
-  }
+  LoadRemoteDevices();
 }
 
 void EasyUnlockServiceRegular::OnScreenDidLock(
@@ -536,8 +541,16 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
         base::Time::Now().ToJavaTime());
   }
 
-  // Notifications of signin screen unlock events can also reach this code path;
-  // disregard them.
+  // If we tried to load remote devices (e.g. after a sync) while the screen was
+  // locked, we can now load the new remote devices.
+  // Note: This codepath may be reachable when the login screen unlocks.
+  if (deferring_device_load_) {
+    PA_LOG(INFO) << "Loading deferred devices after screen unlock.";
+    deferring_device_load_ = false;
+    LoadRemoteDevices();
+  }
+
+  // Do not process events for the login screen.
   if (!is_lock_screen)
     return;
 
@@ -555,14 +568,6 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
   }
 
   will_unlock_using_easy_unlock_ = false;
-
-  // If we synced remote devices while the screen was locked, we can now load
-  // the new remote devices.
-  if (deferring_device_load_) {
-    PA_LOG(INFO) << "Loading deferred devices after screen unlock.";
-    deferring_device_load_ = false;
-    LoadRemoteDevices();
-  }
 }
 
 void EasyUnlockServiceRegular::OnFocusedUserChanged(

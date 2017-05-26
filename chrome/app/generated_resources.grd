@@ -11721,6 +11721,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when the user must enter their password instead of using EasyUnlock, because too much time has passed since their last password entry.">
         Smart Lock requires you to type your password at least once every 20 hours.
       </message>
+      <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REQUIRED_FOR_LOGIN" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when a password is required to login to the Chromebook.">
+        Smart Lock requires you to type your password for your initial sign in. Afterwards, you will be able to use your phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+      </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION" desc="Tooltip for the icon on user's lock screen pod shown by Easy Unlock when a phone set up to unlock the Chromebook is detected, but has an unsupported Android version. The user is asked to update the phone.">
         Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
       </message>
