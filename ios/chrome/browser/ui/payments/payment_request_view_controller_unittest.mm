@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -25,7 +24,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -202,14 +200,4 @@ TEST_F(PaymentRequestViewControllerTest, TestModelPendingState) {
   // The item should be of type StatusItem.
   id item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[StatusItem class]]);
-}
-
-TEST_F(PaymentRequestViewControllerTest, TestSignedInStringFormatting) {
-  const std::string unformattedString = l10n_util::GetStringUTF8(
-      IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN);
-  const std::string formattedString = l10n_util::GetStringFUTF8(
-      IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN,
-      base::ASCIIToUTF16("example@gmail.com"));
-
-  EXPECT_NE(unformattedString, formattedString);
 }
