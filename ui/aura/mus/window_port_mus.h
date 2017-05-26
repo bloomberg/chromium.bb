@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/surfaces/surface_info.h"
-#include "services/ui/public/cpp/client_compositor_frame_sink.h"
+#include "components/viz/client/client_compositor_frame_sink.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"

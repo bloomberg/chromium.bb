@@ -18,6 +18,7 @@ static_library("mus") {
   deps = [
     "//base",
     "//cc",
+    "//components/viz/client",
     "//content/common",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",

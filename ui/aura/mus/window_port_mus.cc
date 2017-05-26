@@ -103,7 +103,7 @@ WindowPortMus::RequestCompositorFrameSink(
   cc::mojom::MojoCompositorFrameSinkClientPtr client;
   cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
-  auto compositor_frame_sink = base::MakeUnique<ui::ClientCompositorFrameSink>(
+  auto compositor_frame_sink = base::MakeUnique<viz::ClientCompositorFrameSink>(
       std::move(context_provider), gpu_memory_buffer_manager,
       std::move(sink_info), std::move(client_request),
       window_tree_client_->enable_surface_synchronization_);
