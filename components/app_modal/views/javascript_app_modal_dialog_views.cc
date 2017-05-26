@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
