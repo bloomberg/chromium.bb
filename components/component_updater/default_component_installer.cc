@@ -11,7 +11,9 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -116,6 +118,11 @@ Result DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
   VLOG(1) << "Install: version=" << version.GetString()
           << " current version=" << current_version_.GetString();
 
+  // Take the ownership of the |unpack_path| to enforce its deletion.
+  DCHECK(DirectoryExists(unpack_path));
+  base::ScopedTempDir unpack_path_owner;
+  ignore_result(unpack_path_owner.Set(unpack_path));
+
   if (!version.IsValid())
     return Result(InstallError::INVALID_VERSION);
   if (current_version_.CompareTo(version) > 0)
@@ -134,6 +141,10 @@ Result DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
     base::DeleteFile(install_path, true);
     return result;
   }
+
+  // If install has been successful, the installer has deleted the unpack path.
+  DCHECK(!base::PathExists(unpack_path));
+
   current_version_ = version;
   current_install_dir_ = install_path;
   // TODO(ddorwin): Change parameter to std::unique_ptr<base::DictionaryValue>
