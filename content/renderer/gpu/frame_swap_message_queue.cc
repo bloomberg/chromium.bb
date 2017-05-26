@@ -112,10 +112,10 @@ class SwapQueue : public FrameSwapMessageSubQueue {
 
 }  // namespace
 
-FrameSwapMessageQueue::FrameSwapMessageQueue()
+FrameSwapMessageQueue::FrameSwapMessageQueue(int32_t routing_id)
     : visual_state_queue_(new VisualStateQueue()),
-      swap_queue_(new SwapQueue()) {
-}
+      swap_queue_(new SwapQueue()),
+      routing_id_(routing_id) {}
 
 FrameSwapMessageQueue::~FrameSwapMessageQueue() {
 }

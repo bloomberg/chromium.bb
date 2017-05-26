@@ -140,25 +140,7 @@ void RendererCompositorFrameSink::SubmitCompositorFrame(
     current_surface_properties_ = new_surface_properties;
   }
 
-  {
-    std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
-        send_message_scope =
-            frame_swap_message_queue_->AcquireSendMessageScope();
-    std::vector<std::unique_ptr<IPC::Message>> messages;
-    frame_swap_message_queue_->DrainMessages(&messages);
-    std::vector<IPC::Message> messages_to_send;
-    FrameSwapMessageQueue::TransferMessages(&messages, &messages_to_send);
-    uint32_t frame_token = 0;
-    if (!messages_to_send.empty())
-      frame_token = frame_swap_message_queue_->AllocateFrameToken();
-    frame.metadata.frame_token = frame_token;
-    sink_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
-    if (frame_token) {
-      message_sender_->Send(new ViewHostMsg_FrameSwapMessages(
-          routing_id_, frame_token, messages_to_send));
-    }
-    // ~send_message_scope.
-  }
+  sink_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
 }
 
 void RendererCompositorFrameSink::DidNotProduceFrame(
