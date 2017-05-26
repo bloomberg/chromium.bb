@@ -84,10 +84,14 @@ void TransformerHelper::SetRootWindowTransformer(
   aura::WindowTreeHost* host = ash_host_->AsWindowTreeHost();
   aura::Window* window = host->window();
   window->SetTransform(transformer_->GetTransform());
-  // If the layer is not animating, then we need to update the root window
-  // size immediately.
-  if (!window->layer()->GetAnimator()->is_animating())
+  // If the layer is not animating with a transform animation, then we need to
+  // update the root window size immediately.
+  ui::Layer* layer = window->layer();
+  ui::LayerAnimator* animator = layer->GetAnimator();
+  if (!animator->is_animating() ||
+      layer->transform() == animator->GetTargetTransform()) {
     host->UpdateRootWindowSizeInPixels(host->GetBoundsInPixels().size());
+  }
 }
 
 gfx::Transform TransformerHelper::GetTransform() const {
