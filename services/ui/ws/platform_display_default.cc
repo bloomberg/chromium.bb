@@ -261,6 +261,7 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
       std::move(compositor_frame_sink_client),
       mojo::MakeRequest(&display_private));
 
+  display_private->SetDisplayVisible(true);
   frame_generator_ = base::MakeUnique<FrameGenerator>();
   auto frame_sink_client_binding =
       base::MakeUnique<CompositorFrameSinkClientBinding>(
