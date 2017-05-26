@@ -807,8 +807,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     Shell::RegisterPrefs(pref_registry.get());
     prefs::ConnectToPrefService(
-        shell_delegate_->GetShellConnector(), std::move(pref_registry),
-        std::vector<PrefValueStore::PrefStoreType>(),
+        shell_delegate_->GetShellConnector(), std::move(pref_registry), {},
         base::Bind(&Shell::OnPrefServiceInitialized, base::Unretained(this)),
         prefs::mojom::kForwarderServiceName);
   }
