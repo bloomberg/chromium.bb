@@ -22,8 +22,11 @@
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
 #endif
-#if defined(OS_POSIX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 #include "base/message_loop/message_pump_libevent.h"
+#endif
+#if defined(OS_FUCHSIA)
+#include "base/message_loop/message_pump_fuchsia.h"
 #endif
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_pump_android.h"
@@ -46,13 +49,15 @@ MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;
 
 #if defined(OS_IOS)
 typedef MessagePumpIOSForIO MessagePumpForIO;
-#elif defined(OS_NACL_SFI) || defined(OS_FUCHSIA)
+#elif defined(OS_NACL_SFI)
 typedef MessagePumpDefault MessagePumpForIO;
+#elif defined(OS_FUCHSIA)
+typedef MessagePumpFuchsia MessagePumpForIO;
 #elif defined(OS_POSIX)
 typedef MessagePumpLibevent MessagePumpForIO;
 #endif
 
-#if !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
+#if !defined(OS_NACL_SFI)
 MessagePumpForIO* ToPumpIO(MessagePump* pump) {
   return static_cast<MessagePumpForIO*>(pump);
 }
@@ -166,15 +171,15 @@ std::unique_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
   typedef MessagePumpGlib MessagePumpForUI;
 #elif (defined(OS_LINUX) && !defined(OS_NACL)) || defined(OS_BSD)
   typedef MessagePumpLibevent MessagePumpForUI;
+#elif defined(OS_FUCHSIA)
+  typedef MessagePumpFuchsia MessagePumpForUI;
 #endif
 
 #if defined(OS_IOS) || defined(OS_MACOSX)
 #define MESSAGE_PUMP_UI std::unique_ptr<MessagePump>(MessagePumpMac::Create())
-#elif defined(OS_NACL) || defined(OS_AIX) || defined(OS_FUCHSIA)
+#elif defined(OS_NACL) || defined(OS_AIX)
 // Currently NaCl and AIX don't have a UI MessageLoop.
 // TODO(abarth): Figure out if we need this.
-// TODO(fuchsia): Fuchsia may require one once more UI-level things have been
-// ported. See https://crbug.com/706592.
 #define MESSAGE_PUMP_UI std::unique_ptr<MessagePump>()
 #else
 #define MESSAGE_PUMP_UI std::unique_ptr<MessagePump>(new MessagePumpForUI())
@@ -636,7 +641,7 @@ bool MessageLoopForIO::RegisterJobObject(HANDLE job, IOHandler* handler) {
 bool MessageLoopForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
   return ToPumpIO(pump_.get())->WaitForIOCompletion(timeout, filter);
 }
-#elif defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
 bool MessageLoopForIO::WatchFileDescriptor(int fd,
                                            bool persistent,
                                            Mode mode,

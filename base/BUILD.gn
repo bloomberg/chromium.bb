@@ -1245,6 +1245,9 @@ component("base") {
     sources += [
       "base_paths_fuchsia.cc",
       "debug/stack_trace_fuchsia.cc",
+      "files/file_path_watcher_fuchsia.cc",
+      "message_loop/message_pump_fuchsia.cc",
+      "message_loop/message_pump_fuchsia.h",
       "process/kill_fuchsia.cc",
       "process/launch_fuchsia.cc",
       "process/process_fuchsia.cc",
