@@ -28,6 +28,7 @@ class SequencedWorkerPool;
 namespace prefs {
 class PersistentPrefStoreImpl;
 class PrefStoreImpl;
+class ScopedPrefConnectionBuilder;
 
 // This class mediates the connection of clients who wants to read preferences
 // and the pref stores that store those preferences. Pref stores use the
@@ -49,8 +50,6 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   ~PrefStoreManagerImpl() override;
 
  private:
-  struct PendingConnect;
-
   // mojom::PrefStoreRegistry:
   void Register(PrefValueStore::PrefStoreType type,
                 mojom::PrefStorePtr pref_store_ptr) override;
@@ -85,16 +84,6 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   // Called when a PrefStore previously registered using |Register| disconnects.
   void OnPrefStoreDisconnect(PrefValueStore::PrefStoreType type);
 
-  // Have all the expected PrefStores connected?
-  bool AllConnected() const;
-
-  void ProcessPendingConnects();
-
-  void ConnectImpl(
-      mojom::PrefRegistryPtr pref_registry,
-      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-      ConnectCallback callback);
-
   void OnPersistentPrefStoreReady();
 
   // PrefStores that need to register before replying to any Connect calls. This
@@ -105,10 +94,6 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   std::unordered_map<PrefValueStore::PrefStoreType, mojom::PrefStorePtr>
       pref_store_ptrs_;
 
-  // We hold on to the connection request callbacks until all expected
-  // PrefStores have registered.
-  std::vector<PendingConnect> pending_connects_;
-
   mojo::BindingSet<mojom::PrefStoreConnector> connector_bindings_;
   mojo::BindingSet<mojom::PrefStoreRegistry> registry_bindings_;
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
@@ -116,6 +101,15 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
 
   const scoped_refptr<DefaultPrefStore> defaults_;
   const std::unique_ptr<PrefStoreImpl> defaults_wrapper_;
+
+  // The same |ScopedPrefConnectionBuilder| instance may appear multiple times
+  // in |pending_connections_|, once per type of pref store it's waiting for,
+  // and at most once in |pending_persistent_connections_|.
+  std::unordered_map<PrefValueStore::PrefStoreType,
+                     std::vector<scoped_refptr<ScopedPrefConnectionBuilder>>>
+      pending_connections_;
+  std::vector<scoped_refptr<ScopedPrefConnectionBuilder>>
+      pending_persistent_connections_;
 
   const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
