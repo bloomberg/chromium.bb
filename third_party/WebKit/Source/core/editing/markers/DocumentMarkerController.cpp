@@ -625,32 +625,13 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(Node* node,
   if (!markers)
     return false;
 
-  bool doc_dirty = false;
   DocumentMarkerList* const list =
       ListForType(markers, DocumentMarker::kTextMatch);
-
   if (!list)
     return false;
 
-  const HeapVector<Member<DocumentMarker>>& markers_in_list =
-      list->GetMarkers();
-  // TODO(rlanday): this assumes that the markers are stored in sorted order.
-  // This method should probably eventually be implemented by a
-  // TextMatch-specific marker list
-  const auto start_pos = std::upper_bound(
-      markers_in_list.begin(), markers_in_list.end(), start_offset,
-      [](size_t start_offset, const Member<DocumentMarker>& marker) {
-        return start_offset < marker->EndOffset();
-      });
-  for (auto marker = start_pos; marker != markers_in_list.end(); ++marker) {
-    // Markers are returned in order, so stop if we are now past the specified
-    // range.
-    if ((*marker)->StartOffset() >= end_offset)
-      break;
-
-    (*marker)->SetIsActiveMatch(active);
-    doc_dirty = true;
-  }
+  bool doc_dirty = ToTextMatchMarkerListImpl(list)->SetTextMatchMarkersActive(
+      start_offset, end_offset, active);
 
   // repaint the affected node
   if (doc_dirty && node->GetLayoutObject()) {

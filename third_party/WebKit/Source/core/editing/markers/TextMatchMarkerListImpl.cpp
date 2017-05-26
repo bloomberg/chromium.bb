@@ -81,4 +81,25 @@ Vector<IntRect> TextMatchMarkerListImpl::RenderedRects(const Node& node) const {
   return result;
 }
 
+bool TextMatchMarkerListImpl::SetTextMatchMarkersActive(unsigned start_offset,
+                                                        unsigned end_offset,
+                                                        bool active) {
+  bool doc_dirty = false;
+  const auto start = std::upper_bound(
+      markers_.begin(), markers_.end(), start_offset,
+      [](size_t start_offset, const Member<DocumentMarker>& marker) {
+        return start_offset < marker->EndOffset();
+      });
+  for (auto it = start; it != markers_.end(); ++it) {
+    DocumentMarker& marker = **it;
+    // Markers are returned in order, so stop if we are now past the specified
+    // range.
+    if (marker.StartOffset() >= end_offset)
+      break;
+    marker.SetIsActiveMatch(active);
+    doc_dirty = true;
+  }
+  return doc_dirty;
+}
+
 }  // namespace blink
