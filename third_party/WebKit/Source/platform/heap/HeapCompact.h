@@ -111,6 +111,17 @@ class PLATFORM_EXPORT HeapCompact final {
   // to the new value, returning old.
   static bool ScheduleCompactionGCForTesting(bool);
 
+  // Test-only: verify that one or more of the vector arenas are
+  // in the process of being compacted.
+  bool IsCompactingVectorArenas() {
+    for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kVector4ArenaIndex;
+         ++i) {
+      if (IsCompactingArena(i))
+        return true;
+    }
+    return false;
+  }
+
  private:
   class MovableObjectFixups;
 

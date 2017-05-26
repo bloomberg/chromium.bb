@@ -384,7 +384,7 @@ void HeapCompact::UpdateHeapResidency(ThreadState* thread_state) {
     if (!arena_size)
       continue;
     // Mark the arena as compactable.
-    compactable_arenas_ |= (0x1u << (BlinkGC::kVector1ArenaIndex + i));
+    compactable_arenas_ |= 0x1u << i;
   }
   LOG_HEAP_FREELIST("}\nTotal = %zu, Free = %zu\n", total_arena_size,
                     total_free_list_size);

@@ -504,10 +504,15 @@ void NormalPageArena::SweepAndCompact() {
     normal_page->SweepAndCompact(context);
   }
 
+  // All pages were empty; nothing to compact.
+  if (!context.current_page_) {
+    heap.Compaction()->FinishedArenaCompaction(this, 0, 0);
+    return;
+  }
+
   size_t freed_size = 0;
   size_t freed_page_count = 0;
 
-  DCHECK(context.current_page_);
   // If the current page hasn't been allocated into, add it to the available
   // list, for subsequent release below.
   size_t allocation_point = context.allocation_point_;
