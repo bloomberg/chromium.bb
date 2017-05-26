@@ -235,13 +235,17 @@ bool StyleRareNonInheritedData::operator==(
          transform_ == o.transform_ && will_change_ == o.will_change_ &&
          filter_ == o.filter_ && backdrop_filter_ == o.backdrop_filter_ &&
          grid_ == o.grid_ && grid_item_ == o.grid_item_ &&
-         scroll_snap_ == o.scroll_snap_ && ContentDataEquivalent(o) &&
-         CounterDataEquivalent(o) && ShadowDataEquivalent(o) &&
-         ReflectionDataEquivalent(o) && AnimationDataEquivalent(o) &&
-         TransitionDataEquivalent(o) && ShapeOutsideDataEquivalent(o) &&
-         mask_ == o.mask_ && mask_box_image_ == o.mask_box_image_ &&
-         page_size_ == o.page_size_ && shape_margin_ == o.shape_margin_ &&
-         outline_ == o.outline_ && ClipPathDataEquivalent(o) &&
+         scroll_snap_ == o.scroll_snap_ &&
+         DataEquivalent(content_, o.content_) &&
+         DataEquivalent(counter_directives_, o.counter_directives_) &&
+         DataEquivalent(box_shadow_, o.box_shadow_) &&
+         DataEquivalent(box_reflect_, o.box_reflect_) &&
+         DataEquivalent(animations_, o.animations_) &&
+         DataEquivalent(transitions_, o.transitions_) &&
+         DataEquivalent(shape_outside_, o.shape_outside_) && mask_ == o.mask_ &&
+         mask_box_image_ == o.mask_box_image_ && page_size_ == o.page_size_ &&
+         shape_margin_ == o.shape_margin_ && outline_ == o.outline_ &&
+         DataEquivalent(clip_path_, o.clip_path_) &&
          text_decoration_color_ == o.text_decoration_color_ &&
          visited_link_text_decoration_color_ ==
              o.visited_link_text_decoration_color_ &&
@@ -287,46 +291,6 @@ bool StyleRareNonInheritedData::operator==(
          has_compositor_proxy_ == o.has_compositor_proxy_ &&
          has_author_background_ == o.has_author_background_ &&
          has_author_border_ == o.has_author_border_;
-}
-
-bool StyleRareNonInheritedData::ContentDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(content_, o.content_);
-}
-
-bool StyleRareNonInheritedData::CounterDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(counter_directives_, o.counter_directives_);
-}
-
-bool StyleRareNonInheritedData::ShadowDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(box_shadow_, o.box_shadow_);
-}
-
-bool StyleRareNonInheritedData::ReflectionDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(box_reflect_, o.box_reflect_);
-}
-
-bool StyleRareNonInheritedData::AnimationDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(animations_, o.animations_);
-}
-
-bool StyleRareNonInheritedData::TransitionDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(transitions_, o.transitions_);
-}
-
-bool StyleRareNonInheritedData::ShapeOutsideDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(shape_outside_, o.shape_outside_);
-}
-
-bool StyleRareNonInheritedData::ClipPathDataEquivalent(
-    const StyleRareNonInheritedData& o) const {
-  return DataEquivalent(clip_path_, o.clip_path_);
 }
 
 }  // namespace blink

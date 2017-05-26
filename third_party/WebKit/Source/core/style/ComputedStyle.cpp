@@ -829,12 +829,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
             other.rare_non_inherited_data_->object_fit_ ||
         rare_non_inherited_data_->object_position_ !=
             other.rare_non_inherited_data_->object_position_ ||
-        !rare_non_inherited_data_->ShadowDataEquivalent(
-            *other.rare_non_inherited_data_.Get()) ||
-        !rare_non_inherited_data_->ShapeOutsideDataEquivalent(
-            *other.rare_non_inherited_data_.Get()) ||
-        !rare_non_inherited_data_->ClipPathDataEquivalent(
-            *other.rare_non_inherited_data_.Get()) ||
+        !BoxShadowDataEquivalent(other) || !ShapeOutsideDataEquivalent(other) ||
+        !ClipPathDataEquivalent(other) ||
         !rare_non_inherited_data_->outline_.VisuallyEqual(
             other.rare_non_inherited_data_->outline_) ||
         (VisitedLinkBorderLeftColor() != other.VisitedLinkBorderLeftColor() &&
@@ -942,14 +938,12 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
     if ((rare_non_inherited_data_->filter_ !=
          other.rare_non_inherited_data_->filter_) ||
-        !rare_non_inherited_data_->ReflectionDataEquivalent(
-            *other.rare_non_inherited_data_.Get()))
+        !ReflectionDataEquivalent(other))
       diff.SetFilterChanged();
   }
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (!rare_non_inherited_data_->ShadowDataEquivalent(
-            *other.rare_non_inherited_data_.Get()) ||
+    if (!BoxShadowDataEquivalent(other) ||
         !rare_non_inherited_data_->outline_.VisuallyEqual(
             other.rare_non_inherited_data_->outline_))
       diff.SetNeedsRecomputeOverflow();
