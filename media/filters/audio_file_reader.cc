@@ -180,12 +180,7 @@ int AudioFileReader::Read(
         break;
       }
 
-#ifdef CHROMIUM_NO_AVFRAME_CHANNELS
-      int channels =
-          av_get_channel_layout_nb_channels(av_frame->channel_layout);
-#else
       int channels = av_frame->channels;
-#endif
       if (av_frame->sample_rate != sample_rate_ || channels != channels_ ||
           av_frame->format != av_sample_format_) {
         DLOG(ERROR) << "Unsupported midstream configuration change!"
