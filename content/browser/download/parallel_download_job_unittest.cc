@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
+#include "content/browser/download/download_destination_observer.h"
+#include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/browser/download/parallel_download_utils.h"
@@ -15,7 +18,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::NiceMock;
+using ::testing::StrictMock;
 
 namespace content {
 
@@ -29,6 +34,31 @@ class MockDownloadRequestHandle : public DownloadRequestHandleInterface {
   MOCK_CONST_METHOD0(ResumeRequest, void());
   MOCK_CONST_METHOD0(CancelRequest, void());
   MOCK_CONST_METHOD0(DebugString, std::string());
+};
+
+class MockDownloadDestinationObserver : public DownloadDestinationObserver {
+ public:
+  MOCK_METHOD3(DestinationUpdate,
+               void(int64_t,
+                    int64_t,
+                    const std::vector<DownloadItem::ReceivedSlice>&));
+  void DestinationError(
+      DownloadInterruptReason reason,
+      int64_t bytes_so_far,
+      std::unique_ptr<crypto::SecureHash> hash_state) override {}
+  void DestinationCompleted(
+      int64_t total_bytes,
+      std::unique_ptr<crypto::SecureHash> hash_state) override {}
+  MOCK_METHOD2(CurrentUpdateStatus, void(int64_t, int64_t));
+};
+
+class MockByteStreamReader : public ByteStreamReader {
+ public:
+  MOCK_METHOD2(Read,
+               ByteStreamReader::StreamState(scoped_refptr<net::IOBuffer>*,
+                                             size_t*));
+  MOCK_CONST_METHOD0(GetStatus, int());
+  MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
 
 }  // namespace
@@ -106,6 +136,7 @@ class ParallelDownloadJobTest : public testing::Test {
     job_ = base::MakeUnique<ParallelDownloadJobForTest>(
         download_item_.get(), std::move(request_handle), info, request_count,
         min_slice_size, min_remaining_time);
+    file_initialized_ = false;
   }
 
   void DestroyParallelJob() {
@@ -138,10 +169,15 @@ class ParallelDownloadJobTest : public testing::Test {
     EXPECT_EQ(length, job_->workers_[offset]->length());
   }
 
+  void OnFileInitialized(DownloadInterruptReason result) {
+    file_initialized_ = true;
+  }
+
   content::TestBrowserThreadBundle browser_threads_;
   std::unique_ptr<DownloadItemImplDelegate> item_delegate_;
   std::unique_ptr<MockDownloadItemImpl> download_item_;
   std::unique_ptr<ParallelDownloadJobForTest> job_;
+  bool file_initialized_;
   // Request handle for the original request.
   MockDownloadRequestHandle* mock_request_handle_;
 };
@@ -317,6 +353,35 @@ TEST_F(ParallelDownloadJobTest, RemainingContentWillFinishSoon) {
   BuildParallelRequests();
   EXPECT_EQ(0, static_cast<int>(job_->workers().size()));
 
+  DestroyParallelJob();
+}
+
+// Test that parallel request is not created until download file is initialized.
+TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
+  auto save_info = base::MakeUnique<DownloadSaveInfo>();
+  StrictMock<MockByteStreamReader>* input_stream =
+      new StrictMock<MockByteStreamReader>();
+  auto observer =
+      base::MakeUnique<StrictMock<MockDownloadDestinationObserver>>();
+  base::WeakPtrFactory<DownloadDestinationObserver> observer_factory(
+      observer.get());
+  auto download_file = base::MakeUnique<DownloadFileImpl>(
+      std::move(save_info), base::FilePath(),
+      std::unique_ptr<ByteStreamReader>(input_stream), net::NetLogWithSource(),
+      observer_factory.GetWeakPtr());
+  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 0, 0);
+  job_->Start(download_file.get(),
+              base::Bind(&ParallelDownloadJobTest::OnFileInitialized,
+                         base::Unretained(this)),
+              DownloadItem::ReceivedSlices());
+  EXPECT_FALSE(file_initialized_);
+  EXPECT_EQ(0u, job_->workers().size());
+  EXPECT_CALL(*input_stream, RegisterCallback(_));
+  EXPECT_CALL(*input_stream, Read(_, _));
+  EXPECT_CALL(*(observer.get()), DestinationUpdate(_, _, _));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(file_initialized_);
+  EXPECT_EQ(1u, job_->workers().size());
   DestroyParallelJob();
 }
 

@@ -22,7 +22,6 @@ class CONTENT_EXPORT DownloadJobImpl : public DownloadJob {
   ~DownloadJobImpl() override;
 
   // DownloadJob implementation.
-  void Start() override;
   void Cancel(bool user_cancel) override;
   void Pause() override;
   void Resume(bool resume_request) override;

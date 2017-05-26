@@ -34,10 +34,12 @@ ParallelDownloadJob::ParallelDownloadJob(
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
-void ParallelDownloadJob::Start() {
-  DownloadJobImpl::Start();
-
-  BuildParallelRequestAfterDelay();
+void ParallelDownloadJob::OnDownloadFileInitialized(
+    const DownloadFile::InitializeCallback& callback,
+    DownloadInterruptReason result) {
+  DownloadJobImpl::OnDownloadFileInitialized(callback, result);
+  if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
+    BuildParallelRequestAfterDelay();
 }
 
 void ParallelDownloadJob::Cancel(bool user_cancel) {

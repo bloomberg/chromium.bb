@@ -30,13 +30,17 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   ~ParallelDownloadJob() override;
 
   // DownloadJobImpl implementation.
-  void Start() override;
   void Cancel(bool user_cancel) override;
   void Pause() override;
   void Resume(bool resume_request) override;
   void CancelRequestWithOffset(int64_t offset) override;
 
  protected:
+  // DownloadJobImpl implementation.
+  void OnDownloadFileInitialized(
+      const DownloadFile::InitializeCallback& callback,
+      DownloadInterruptReason result) override;
+
   // Virtual for testing.
   virtual int GetParallelRequestCount() const;
   virtual int64_t GetMinSliceSize() const;

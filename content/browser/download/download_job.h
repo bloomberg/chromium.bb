@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_JOB_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -26,7 +28,11 @@ class CONTENT_EXPORT DownloadJob {
   virtual ~DownloadJob();
 
   // Download operations.
-  virtual void Start() = 0;
+  // TODO(qinmin): Remove the |callback| and |download_file_| parameter if
+  // DownloadJob owns download file.
+  void Start(DownloadFile* download_file_,
+             const DownloadFile::InitializeCallback& callback,
+             const DownloadItem::ReceivedSlices& received_slices);
   virtual void Cancel(bool user_cancel) = 0;
   virtual void Pause();
   virtual void Resume(bool resume_request);
@@ -50,7 +56,10 @@ class CONTENT_EXPORT DownloadJob {
   virtual void CancelRequestWithOffset(int64_t offset);
 
  protected:
-  void StartDownload() const;
+  // Callback from file thread when we initialize the DownloadFile.
+  virtual void OnDownloadFileInitialized(
+      const DownloadFile::InitializeCallback& callback,
+      DownloadInterruptReason result);
 
   // Add a byte stream to the download sink. Return false if we start to
   // destroy download file.
@@ -63,6 +72,8 @@ class CONTENT_EXPORT DownloadJob {
  private:
   // If the download progress is paused by the user.
   bool is_paused_;
+
+  base::WeakPtrFactory<DownloadJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadJob);
 };
