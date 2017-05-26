@@ -194,10 +194,6 @@ enum ObjectFit {
   kObjectFitScaleDown
 };
 
-// Word Break Values. Matches WinIE and CSS3
-
-enum class EWordBreak { kNormal, kBreakAll, kKeepAll, kBreakWord };
-
 enum class LineBreak { kAuto, kLoose, kNormal, kStrict, kAfterWhiteSpace };
 
 enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };

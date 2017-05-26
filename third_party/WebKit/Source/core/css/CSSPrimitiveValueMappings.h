@@ -1444,44 +1444,6 @@ inline EVerticalAlign CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EWordBreak e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EWordBreak::kNormal:
-      value_id_ = CSSValueNormal;
-      break;
-    case EWordBreak::kBreakAll:
-      value_id_ = CSSValueBreakAll;
-      break;
-    case EWordBreak::kBreakWord:
-      value_id_ = CSSValueBreakWord;
-      break;
-    case EWordBreak::kKeepAll:
-      value_id_ = CSSValueKeepAll;
-      break;
-  }
-}
-
-template <>
-inline EWordBreak CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueBreakAll:
-      return EWordBreak::kBreakAll;
-    case CSSValueBreakWord:
-      return EWordBreak::kBreakWord;
-    case CSSValueNormal:
-      return EWordBreak::kNormal;
-    case CSSValueKeepAll:
-      return EWordBreak::kKeepAll;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EWordBreak::kNormal;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextCombine e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
