@@ -79,7 +79,7 @@ bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
 }
 
-bool TestShellDelegate::CanShowWindowForUser(WmWindow* window) const {
+bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 

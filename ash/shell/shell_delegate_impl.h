@@ -28,7 +28,7 @@ class ShellDelegateImpl : public ShellDelegate {
   bool IsIncognitoAllowed() const override;
   bool IsMultiProfilesEnabled() const override;
   bool IsRunningInForcedAppMode() const override;
-  bool CanShowWindowForUser(WmWindow* window) const override;
+  bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;

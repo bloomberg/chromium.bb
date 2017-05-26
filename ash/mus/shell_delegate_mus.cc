@@ -71,7 +71,7 @@ bool ShellDelegateMus::IsRunningInForcedAppMode() const {
   return false;
 }
 
-bool ShellDelegateMus::CanShowWindowForUser(WmWindow* window) const {
+bool ShellDelegateMus::CanShowWindowForUser(aura::Window* window) const {
   NOTIMPLEMENTED();
   return true;
 }

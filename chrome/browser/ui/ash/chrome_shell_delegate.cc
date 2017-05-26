@@ -432,9 +432,8 @@ bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
 }
 
-bool ChromeShellDelegate::CanShowWindowForUser(ash::WmWindow* window) const {
-  return ::CanShowWindowForUser(ash::WmWindow::GetAuraWindow(window),
-                                base::Bind(&GetActiveBrowserContext));
+bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
+  return ::CanShowWindowForUser(window, base::Bind(&GetActiveBrowserContext));
 }
 
 bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {

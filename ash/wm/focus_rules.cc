@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -38,8 +37,7 @@ bool IsWindowConsideredVisibleForActivation(aura::Window* window) {
   DCHECK(window);
   // If the |window| doesn't belong to the current active user and also doesn't
   // show for the current active user, then it should not be activated.
-  if (!Shell::Get()->shell_delegate()->CanShowWindowForUser(
-          WmWindow::Get(window)))
+  if (!Shell::Get()->shell_delegate()->CanShowWindowForUser(window))
     return false;
 
   if (window->IsVisible())
