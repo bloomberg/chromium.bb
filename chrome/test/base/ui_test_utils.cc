@@ -40,7 +40,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/find_in_page_observer.h"
-#include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -109,7 +108,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   AppModalDialogWaiter() : dialog_(nullptr) {}
   ~AppModalDialogWaiter() override {}
 
-  app_modal::AppModalDialog* Wait() {
+  app_modal::JavaScriptAppModalDialog* Wait() {
     if (dialog_)
       return dialog_;
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -119,7 +118,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
   // AppModalDialogObserver:
-  void Notify(app_modal::AppModalDialog* dialog) override {
+  void Notify(app_modal::JavaScriptAppModalDialog* dialog) override {
     DCHECK(!dialog_);
     dialog_ = dialog;
     CheckForHangMonitorDisabling(dialog);
@@ -127,17 +126,14 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
       message_loop_runner_->Quit();
   }
 
-  static void CheckForHangMonitorDisabling(app_modal::AppModalDialog* dialog) {
+  static void CheckForHangMonitorDisabling(
+      app_modal::JavaScriptAppModalDialog* dialog) {
     // If a test waits for a beforeunload dialog but hasn't disabled the
     // beforeunload hang timer before triggering it, there will be a race
     // between the dialog and the timer and the test will be flaky. We can't
     // disable the timer here, as it's too late, but we can tell when we've won
     // a race that we shouldn't have been in.
-    if (!dialog->IsJavaScriptModalDialog())
-      return;
-
-    auto* js_dialog = static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
-    if (!js_dialog->is_before_unload_dialog())
+    if (!dialog->is_before_unload_dialog())
       return;
 
     // Unfortunately we don't know which frame spawned this dialog and should
@@ -155,7 +151,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
  private:
-  app_modal::AppModalDialog* dialog_;
+  app_modal::JavaScriptAppModalDialog* dialog_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
@@ -336,7 +332,7 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
   return true;
 }
 
-app_modal::AppModalDialog* WaitForAppModalDialog() {
+app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog() {
   app_modal::AppModalDialogQueue* dialog_queue =
       app_modal::AppModalDialogQueue::GetInstance();
   if (dialog_queue->HasActiveDialog()) {

@@ -195,14 +195,12 @@ class UnloadTest : public InProcessBrowserTest {
   // If |accept| is true, simulates user clicking OK, otherwise simulates
   // clicking Cancel.
   void ClickModalDialogButton(bool accept) {
-    app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
-    ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
-    app_modal::JavaScriptAppModalDialog* js_dialog =
-        static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
+    app_modal::JavaScriptAppModalDialog* dialog =
+        ui_test_utils::WaitForAppModalDialog();
     if (accept)
-      js_dialog->native_dialog()->AcceptAppModalDialog();
+      dialog->native_dialog()->AcceptAppModalDialog();
     else
-      js_dialog->native_dialog()->CancelAppModalDialog();
+      dialog->native_dialog()->CancelAppModalDialog();
   }
 
   void PrepareForDialog(Browser* browser) {

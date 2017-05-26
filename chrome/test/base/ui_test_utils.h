@@ -33,7 +33,7 @@ class LocationBar;
 class Profile;
 
 namespace app_modal {
-class AppModalDialog;
+class JavaScriptAppModalDialog;
 }
 
 namespace base {
@@ -130,8 +130,8 @@ GURL GetTestUrl(const base::FilePath& dir, const base::FilePath& file);
 // Generate the path of the build directory, relative to the source root.
 bool GetRelativeBuildDirectory(base::FilePath* build_dir);
 
-// Blocks until an application modal dialog is showns and returns it.
-app_modal::AppModalDialog* WaitForAppModalDialog();
+// Blocks until an application modal dialog is shown and returns it.
+app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog();
 
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index

@@ -5,7 +5,7 @@
 #include "components/app_modal/app_modal_dialog_queue.h"
 
 #include "base/memory/singleton.h"
-#include "components/app_modal/app_modal_dialog.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 
 namespace app_modal {
 
@@ -14,7 +14,7 @@ AppModalDialogQueue* AppModalDialogQueue::GetInstance() {
   return base::Singleton<AppModalDialogQueue>::get();
 }
 
-void AppModalDialogQueue::AddDialog(AppModalDialog* dialog) {
+void AppModalDialogQueue::AddDialog(JavaScriptAppModalDialog* dialog) {
   if (!active_dialog_) {
     ShowModalDialog(dialog);
     return;
@@ -23,11 +23,11 @@ void AppModalDialogQueue::AddDialog(AppModalDialog* dialog) {
 }
 
 void AppModalDialogQueue::ShowNextDialog() {
-  AppModalDialog* dialog = GetNextDialog();
+  JavaScriptAppModalDialog* dialog = GetNextDialog();
   if (dialog)
     ShowModalDialog(dialog);
   else
-    active_dialog_ = NULL;
+    active_dialog_ = nullptr;
 }
 
 void AppModalDialogQueue::ActivateModalDialog() {
@@ -43,7 +43,7 @@ void AppModalDialogQueue::ActivateModalDialog() {
 }
 
 bool AppModalDialogQueue::HasActiveDialog() const {
-  return active_dialog_ != NULL;
+  return active_dialog_ != nullptr;
 }
 
 AppModalDialogQueue::AppModalDialogQueue()
@@ -54,11 +54,11 @@ AppModalDialogQueue::AppModalDialogQueue()
 AppModalDialogQueue::~AppModalDialogQueue() {
 }
 
-void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
+void AppModalDialogQueue::ShowModalDialog(JavaScriptAppModalDialog* dialog) {
   // Be sure and set the active_dialog_ field first, otherwise if
   // ShowModalDialog triggers a call back to the queue they'll get the old
   // dialog. Also, if the dialog calls |ShowNextDialog()| before returning, that
-  // would write NULL into |active_dialog_| and this function would then undo
+  // would write nullptr into |active_dialog_| and this function would then undo
   // that.
   active_dialog_ = dialog;
   showing_modal_dialog_ = true;
@@ -66,15 +66,15 @@ void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
   showing_modal_dialog_ = false;
 }
 
-AppModalDialog* AppModalDialogQueue::GetNextDialog() {
+JavaScriptAppModalDialog* AppModalDialogQueue::GetNextDialog() {
   while (!app_modal_dialog_queue_.empty()) {
-    AppModalDialog* dialog = app_modal_dialog_queue_.front();
+    JavaScriptAppModalDialog* dialog = app_modal_dialog_queue_.front();
     app_modal_dialog_queue_.pop_front();
     if (dialog->IsValid())
       return dialog;
     delete dialog;
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace app_modal
