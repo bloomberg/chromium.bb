@@ -3408,6 +3408,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Direct pixel write."/>
   <int value="4" label="Draw image of animated 2d canvas"/>
   <int value="5" label="Sub-pixel text anti-aliasing support (expect 0)"/>
+  <int value="6" label="drawImage called with a texture backed source image"/>
+  <int value="7" label="Running on low-end device"/>
 </enum>
 
 <enum name="CanvasHibernationEvent" type="int">

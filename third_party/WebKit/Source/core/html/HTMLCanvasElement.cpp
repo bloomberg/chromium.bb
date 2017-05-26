@@ -914,6 +914,9 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
     return nullptr;
   }
 
+  if (MemoryCoordinator::IsLowEndDevice())
+    surface->DisableDeferral(kDisableDeferralReasonLowEndDevice);
+
   CanvasMetrics::CountCanvasContextUsage(
       CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreated);
   return std::move(surface);

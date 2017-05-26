@@ -116,6 +116,7 @@ enum DisableDeferralReason {
   kDisableDeferralReasonDrawImageOfAnimated2dCanvas = 4,
   kDisableDeferralReasonSubPixelTextAntiAliasingSupport = 5,
   kDisableDeferralDrawImageWithTextureBackedSourceImage = 6,
+  kDisableDeferralReasonLowEndDevice = 7,
   kDisableDeferralReasonCount,
 };
 
