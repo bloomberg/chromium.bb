@@ -43,9 +43,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     virtual void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
                                             size_t frame_len) = 0;
 
-    // Called when data is available to be read.
-    virtual void OnDataAvailable() = 0;
-
     // Called when the stream is closed by the peer.
     virtual void OnClose() = 0;
 
@@ -75,6 +72,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // instead of calling OnClose() or OnError().
     int ReadInitialHeaders(SpdyHeaderBlock* header_block,
                            const CompletionCallback& callback);
+
+    // Reads at most |buffer_len| bytes of body into |buffer| and returns the
+    // number of bytes read. If body is not available, returns ERR_IO_PENDING
+    // and will invoke |callback| asynchronously when data arrive.
+    // TODO(rch): Invoke |callback| when there is a stream or connection error
+    // instead of calling OnClose() or OnError().
+    int ReadBody(IOBuffer* buffer,
+                 int buffer_len,
+                 const CompletionCallback& callback);
 
     // Writes |header_block| to the peer. Closes the write side if |fin| is
     // true. If non-null, |ack_notifier_delegate| will be notified when the
@@ -162,6 +168,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
     CompletionCallback read_headers_callback_;
     SpdyHeaderBlock* read_headers_buffer_;
+
+    CompletionCallback read_body_callback_;
+    IOBuffer* read_body_buffer_;
+    int read_body_buffer_len_;
 
     QuicStreamId id_;
     QuicErrorCode connection_error_;

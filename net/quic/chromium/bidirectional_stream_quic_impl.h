@@ -58,7 +58,6 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
  private:
   // QuicChromiumClientStream::Delegate implementation:
-  void OnDataAvailable() override;
   void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
                                   size_t frame_len) override;
   void OnClose() override;

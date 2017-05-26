@@ -357,14 +357,20 @@ int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
   if (!stream_)
     return GetResponseStatus();
 
-  int rv = ReadAvailableData(buf, buf_len);
-  if (rv != ERR_IO_PENDING)
+  int rv = stream_->ReadBody(buf, buf_len,
+                             base::Bind(&QuicHttpStream::OnReadBodyComplete,
+                                        weak_factory_.GetWeakPtr()));
+  if (rv == ERR_IO_PENDING) {
+    callback_ = callback;
+    user_buffer_ = buf;
+    user_buffer_len_ = buf_len;
+    return ERR_IO_PENDING;
+  }
+
+  if (rv < 0)
     return rv;
 
-  callback_ = callback;
-  user_buffer_ = buf;
-  user_buffer_len_ = buf_len;
-  return ERR_IO_PENDING;
+  return HandleReadComplete(rv);
 }
 
 void QuicHttpStream::Close(bool /*not_reusable*/) {
@@ -470,26 +476,6 @@ void QuicHttpStream::OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
     stream_->OnFinRead();
     SetResponseStatus(OK);
   }
-}
-
-void QuicHttpStream::OnDataAvailable() {
-  if (callback_.is_null()) {
-    // Data is available, but can't be delivered
-    return;
-  }
-
-  CHECK(user_buffer_.get());
-  CHECK_NE(0, user_buffer_len_);
-  int rv = ReadAvailableData(user_buffer_.get(), user_buffer_len_);
-  if (rv == ERR_IO_PENDING) {
-    // This was a spurrious notification. Wait for the next one.
-    return;
-  }
-
-  CHECK(!callback_.is_null());
-  user_buffer_ = nullptr;
-  user_buffer_len_ = 0;
-  DoCallback(rv);
 }
 
 void QuicHttpStream::OnClose() {
@@ -768,15 +754,15 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
   return OK;
 }
 
-int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
-  int rv = stream_->Read(buf, buf_len);
-  // TODO(rtenneti): Temporary fix for crbug.com/585591. Added a check for null
-  // |stream_| to fix crash bug. Delete |stream_| check and histogram after fix
-  // is merged.
-  bool null_stream = stream_ == nullptr;
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicReadAvailableData.NullStream", null_stream);
-  if (null_stream)
-    return rv;
+void QuicHttpStream::OnReadBodyComplete(int rv) {
+  CHECK(callback_);
+  user_buffer_ = nullptr;
+  user_buffer_len_ = 0;
+  rv = HandleReadComplete(rv);
+  DoCallback(rv);
+}
+
+int QuicHttpStream::HandleReadComplete(int rv) {
   if (stream_->IsDoneReading()) {
     stream_->ClearDelegate();
     stream_->OnFinRead();

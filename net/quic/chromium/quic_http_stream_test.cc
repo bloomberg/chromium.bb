@@ -110,7 +110,6 @@ class AutoClosingStream : public QuicHttpStream {
     Close(false);
   }
 
-  void OnDataAvailable() override { Close(false); }
 };
 
 // UploadDataStream that always returns errors on data read.

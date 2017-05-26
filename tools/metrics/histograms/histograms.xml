@@ -37667,6 +37667,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.QuicReadAvailableData.NullStream" enum="BooleanNullStream">
+  <obsolete>
+    Removed as of 05/2017.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The number of times QuicHttpStream's stream_ is a nullptr before
