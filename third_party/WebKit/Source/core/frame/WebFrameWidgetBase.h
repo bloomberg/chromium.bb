@@ -82,6 +82,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidAcquirePointerLock() override;
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
+  void ShowContextMenu(WebMenuSourceType) override;
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

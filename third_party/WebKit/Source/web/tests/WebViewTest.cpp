@@ -2457,7 +2457,7 @@ TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking is still suspended after showing context menu.
-  web_view->ShowContextMenu(kMenuSourceMouse);
+  web_view->GetWidget()->ShowContextMenu(kMenuSourceMouse);
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking will be resumed only after context menu is closed.

@@ -10,11 +10,14 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
+#include "core/page/ContextMenuController.h"
 #include "core/page/DragActions.h"
 #include "core/page/DragController.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
+#include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "platform/UserGestureIndicator.h"
@@ -281,6 +284,21 @@ void WebFrameWidgetBase::PointerLockMouseEvent(const WebInputEvent& event) {
         ToWebLocalFrameBase(LocalRoot())->GetFrameView(), mouse_event);
     GetPage()->GetPointerLockController().DispatchLockedMouseEvent(
         transformed_event, event_type);
+  }
+}
+
+void WebFrameWidgetBase::ShowContextMenu(WebMenuSourceType source_type) {
+  if (!GetPage())
+    return;
+
+  GetPage()->GetContextMenuController().ClearContextMenu();
+  {
+    ContextMenuAllowedScope scope;
+    if (LocalFrame* focused_frame =
+            GetPage()->GetFocusController().FocusedFrame()) {
+      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                                 source_type);
+    }
   }
 }
 

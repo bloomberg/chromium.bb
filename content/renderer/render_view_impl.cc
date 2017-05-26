@@ -1230,7 +1230,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupBitmap,
                         OnReleaseDisambiguationPopupBitmap)
     IPC_MESSAGE_HANDLER(ViewMsg_ResolveTapDisambiguation,
@@ -2412,20 +2411,6 @@ void RenderViewImpl::DismissDateTimeDialog() {
   date_time_picker_client_.reset(NULL);
 }
 
-#endif  // defined(OS_ANDROID)
-
-void RenderViewImpl::OnShowContextMenu(
-    ui::MenuSourceType source_type, const gfx::Point& location) {
-  input_handler_->set_context_menu_source_type(source_type);
-  has_host_context_menu_location_ = true;
-  host_context_menu_location_ = location;
-  if (webview())
-    webview()->ShowContextMenu(
-        static_cast<blink::WebMenuSourceType>(source_type));
-  has_host_context_menu_location_ = false;
-}
-
-#if defined(OS_ANDROID)
 bool RenderViewImpl::DidTapMultipleTargets(
     const WebSize& inner_viewport_offset,
     const WebRect& touch_rect,

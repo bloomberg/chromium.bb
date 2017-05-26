@@ -518,8 +518,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnClosePage();
   void OnClose();
 
-  void OnShowContextMenu(ui::MenuSourceType source_type,
-                         const gfx::Point& location);
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);

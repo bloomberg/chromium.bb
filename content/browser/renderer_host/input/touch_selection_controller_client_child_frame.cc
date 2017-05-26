@@ -187,9 +187,6 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
   anchor_point.Offset(-origin.x(), -origin.y());
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(rwhv_->GetRenderWidgetHost());
-  // TODO(wjmaclean): Probably this ViewMsg should be converted to a FrameMsg
-  // since it will need to go to a RenderFrame once the Blink-side plumbing for
-  // this is hooked up.
   host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(),
                                          ui::MENU_SOURCE_TOUCH_EDIT_MENU,
                                          gfx::ToRoundedPoint(anchor_point)));

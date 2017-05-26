@@ -507,6 +507,9 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestMoveAck();
+  // Request from browser to show context menu.
+  virtual void OnShowContextMenu(ui::MenuSourceType source_type,
+                                 const gfx::Point& location);
   virtual void OnImeSetComposition(
       const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
