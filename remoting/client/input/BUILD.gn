@@ -8,6 +8,8 @@ source_set("input") {
     "direct_input_strategy.cc",
     "direct_input_strategy.h",
     "input_strategy.h",
+    "key_event_mapper.cc",
+    "key_event_mapper.h",
     "keyboard_input_strategy.h",
     "keyboard_interpreter.cc",
     "keyboard_interpreter.h",
@@ -24,6 +26,7 @@ source_set("input") {
   ]
 
   deps = [
+    ":normalizing_input_filter",
     "//remoting/base",
     "//remoting/client/ui:ui_manipulation",
     "//third_party/webrtc/base:rtc_base_approved",
@@ -35,12 +38,61 @@ source_set("input") {
   }
 }
 
+source_set("normalizing_input_filter") {
+  # Disabled the source filters because there are _mac files that need to
+  # be compiled on all platforms.
+  set_sources_assignment_filter([])
+  sources = [
+    "normalizing_input_filter_cros.cc",
+    "normalizing_input_filter_cros.h",
+    "normalizing_input_filter_mac.cc",
+    "normalizing_input_filter_mac.h",
+    "normalizing_input_filter_win.cc",
+    "normalizing_input_filter_win.h",
+  ]
+  set_sources_assignment_filter(sources_assignment_filter)
+
+  deps = [
+    "//remoting/base",
+    "//third_party/webrtc/base:rtc_base_approved",
+    "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//ui/events:dom_keycode_converter",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "key_event_mapper_unittest.cc",
     "touch_input_scaler_unittest.cc",
   ]
+
+  configs += [
+    "//remoting/build/config:version",
+    "//remoting/build/config:enable_webrtc_remoting_client",
+  ]
+
+  deps = [
+    ":input",
+    ":normalizing_input_filter_unit_tests",
+    "//remoting/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/webrtc/base:rtc_base_approved",
+  ]
+}
+
+source_set("normalizing_input_filter_unit_tests") {
+  testonly = true
+
+  set_sources_assignment_filter([])
+  sources = [
+    "normalizing_input_filter_cros_unittest.cc",
+    "normalizing_input_filter_mac_unittest.cc",
+    "normalizing_input_filter_win_unittest.cc",
+  ]
+  set_sources_assignment_filter(sources_assignment_filter)
 
   configs += [
     "//remoting/build/config:version",

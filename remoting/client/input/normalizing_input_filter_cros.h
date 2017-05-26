@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
-#define REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
+#ifndef REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_CROS_H_
+#define REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_CROS_H_
 
 #include <stdint.h>
 
@@ -67,4 +67,4 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
+#endif  // REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_CROS_H_

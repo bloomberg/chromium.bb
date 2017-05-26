@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "remoting/client/normalizing_input_filter_win.h"
+#include "remoting/client/input/normalizing_input_filter_win.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"

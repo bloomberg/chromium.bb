@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/normalizing_input_filter_cros.h"
+#include "remoting/client/input/normalizing_input_filter_cros.h"
 
 #include <stdint.h>
 
@@ -67,14 +67,14 @@ TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, true)));
+                          ui::DomCode::META_RIGHT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, false)));
+                          ui::DomCode::META_RIGHT, false)));
   }
 
   // Inject press & release events for left & right OSKeys.
@@ -92,11 +92,11 @@ TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
-    EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
+                          ui::DomCode::META_LEFT, true)));
   }
 
   // Inject a press and repeats for the left OSKey, but don't release it, and
@@ -116,10 +116,10 @@ TEST(NormalizingInputFilterCrosTest, FunctionKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::F1, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::F1, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(ui::DomCode::F1, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::F1, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -139,9 +139,9 @@ TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::INSERT, true)));
+                          ui::DomCode::INSERT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::INSERT, false)));
+                          ui::DomCode::INSERT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -161,14 +161,14 @@ TEST(NormalizingInputFilterCrosTest, OtherKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
-    EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::TAB, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::TAB, false)));
+                          ui::DomCode::META_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::TAB, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::TAB, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -188,17 +188,17 @@ TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::INSERT, true)));
+                          ui::DomCode::INSERT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::INSERT, false)));
+                          ui::DomCode::INSERT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::TAB, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::TAB, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::TAB, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::TAB, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -217,11 +217,11 @@ TEST(NormalizingInputFilterCrosTest, MouseEvent) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
+                          ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseMoveEvent(0, 0)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -240,13 +240,13 @@ TEST(NormalizingInputFilterCrosTest, LeftAltClick) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::ALT_LEFT, true)));
+                          ui::DomCode::ALT_LEFT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_LEFT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_LEFT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::ALT_LEFT, false)));
+                          ui::DomCode::ALT_LEFT, false)));
   }
 
   // Hold the left alt key while left-clicking. ChromeOS will rewrite this as
@@ -269,13 +269,13 @@ TEST(NormalizingInputFilterCrosTest, RightAltClick) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::ALT_RIGHT, true)));
+                          ui::DomCode::ALT_RIGHT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_RIGHT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_RIGHT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::ALT_RIGHT, false)));
+                          ui::DomCode::ALT_RIGHT, false)));
   }
 
   // Hold the right alt key while left-clicking. ChromeOS will rewrite this as
@@ -297,39 +297,39 @@ TEST(NormalizingInputFilterCrosTest, UndoAltPlusArrowRemapping) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ALT_LEFT, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_UP, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_UP, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_DOWN, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_DOWN, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::BACKSPACE, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::BACKSPACE, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ALT_LEFT, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ALT_LEFT, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_UP, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_UP, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_DOWN, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_DOWN, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::BACKSPACE, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::BACKSPACE, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ALT_LEFT, false)));
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ALT_RIGHT, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_UP, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_UP, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_DOWN, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ARROW_DOWN, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::BACKSPACE, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::BACKSPACE, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
-        ui::DomCode::ALT_RIGHT, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ALT_RIGHT, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_UP, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_UP, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_DOWN, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ARROW_DOWN, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::BACKSPACE, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::BACKSPACE, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEvent(ui::DomCode::ALT_RIGHT, false)));
   }
 
   // Hold the left Alt key while pressing & releasing the PgUp, PgDown and

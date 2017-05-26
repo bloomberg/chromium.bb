@@ -3,13 +3,11 @@
 # found in the LICENSE file.
 
 static_library("client") {
-  # Disabled the source filters because there are _mac files that need to
-  # be compiled on all platforms.
-  set_sources_assignment_filter([])
-
   sources = [
     "audio_player.cc",
     "audio_player.h",
+    "audio_player_android.cc",
+    "audio_player_android.h",
     "chromoting_client.cc",
     "chromoting_client.h",
     "chromoting_session.cc",
@@ -29,14 +27,6 @@ static_library("client") {
     "empty_cursor_filter.h",
     "host_experiment_sender.cc",
     "host_experiment_sender.h",
-    "key_event_mapper.cc",
-    "key_event_mapper.h",
-    "normalizing_input_filter_cros.cc",
-    "normalizing_input_filter_cros.h",
-    "normalizing_input_filter_mac.cc",
-    "normalizing_input_filter_mac.h",
-    "normalizing_input_filter_win.cc",
-    "normalizing_input_filter_win.h",
     "queued_task_poster.cc",
     "queued_task_poster.h",
     "server_log_entry_client.cc",
@@ -44,7 +34,6 @@ static_library("client") {
     "software_video_renderer.cc",
     "software_video_renderer.h",
   ]
-  set_sources_assignment_filter(sources_assignment_filter)
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
@@ -54,7 +43,6 @@ static_library("client") {
 
   deps = [
     "//remoting/base",
-    "//remoting/client/input",
     "//remoting/codec:decoder",
     "//remoting/protocol",
     "//third_party/libyuv",
@@ -78,14 +66,11 @@ static_library("client") {
     ]
     deps += [
       "//remoting/client/display",
+      "//remoting/client/input",
       "//remoting/client/ui",
     ]
   }
   if (is_android) {
-    sources += [
-      "audio_player_android.cc",
-      "audio_player_android.h",
-    ]
     libs += [
       "android",
       "OpenSLES",
@@ -98,22 +83,16 @@ source_set("unit_tests") {
 
   # Disabled the source filters because there are _mac files that need to
   # be compiled on all platforms.
-  set_sources_assignment_filter([])
   sources = [
     "audio_player_unittest.cc",
     "chromoting_client_runtime_unittest.cc",
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
-    "key_event_mapper_unittest.cc",
-    "normalizing_input_filter_cros_unittest.cc",
-    "normalizing_input_filter_mac_unittest.cc",
-    "normalizing_input_filter_win_unittest.cc",
     "queued_task_poster_unittest.cc",
     "server_log_entry_client_unittest.cc",
     "software_video_renderer_unittest.cc",
   ]
-  set_sources_assignment_filter(sources_assignment_filter)
 
   configs += [
     "//remoting/build/config:version",

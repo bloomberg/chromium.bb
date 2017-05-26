@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/key_event_mapper.h"
+#include "remoting/client/input/key_event_mapper.h"
 
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
-KeyEventMapper::KeyEventMapper() {
-}
+KeyEventMapper::KeyEventMapper() {}
 
-KeyEventMapper::KeyEventMapper(InputStub* stub) : protocol::InputFilter(stub) {
-}
+KeyEventMapper::KeyEventMapper(InputStub* stub) : protocol::InputFilter(stub) {}
 
-KeyEventMapper::~KeyEventMapper() {
-}
+KeyEventMapper::~KeyEventMapper() {}
 
 void KeyEventMapper::SetTrapCallback(KeyTrapCallback callback) {
   trap_callback = callback;
