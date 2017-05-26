@@ -1514,10 +1514,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(RubyPosition position)
     : CSSValue(kIdentifierClass) {
   switch (position) {
-    case kRubyPositionBefore:
+    case RubyPosition::kBefore:
       value_id_ = CSSValueBefore;
       break;
-    case kRubyPositionAfter:
+    case RubyPosition::kAfter:
       value_id_ = CSSValueAfter;
       break;
   }
@@ -1527,15 +1527,15 @@ template <>
 inline RubyPosition CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueBefore:
-      return kRubyPositionBefore;
+      return RubyPosition::kBefore;
     case CSSValueAfter:
-      return kRubyPositionAfter;
+      return RubyPosition::kAfter;
     default:
       break;
   }
 
   NOTREACHED();
-  return kRubyPositionBefore;
+  return RubyPosition::kBefore;
 }
 
 template <>

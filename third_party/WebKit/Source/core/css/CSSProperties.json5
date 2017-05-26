@@ -2539,7 +2539,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "RubyPosition",
-      default_value: "kRubyPositionBefore",
+      default_value: "RubyPosition::kBefore",
       field_size: 1,
       field_group: "rare-inherited",
     },

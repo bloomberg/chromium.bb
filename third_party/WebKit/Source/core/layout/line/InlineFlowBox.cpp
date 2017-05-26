@@ -794,7 +794,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
         // been done as line layout and not done using inline-block.
         if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ==
             (curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
-             kRubyPositionAfter))
+             RubyPosition::kAfter))
           has_annotations_before = true;
         else
           has_annotations_after = true;
@@ -1513,7 +1513,7 @@ LayoutUnit InlineFlowBox::ComputeOverAnnotationAdjustment(
     if (curr->GetLineLayoutItem().IsAtomicInlineLevel() &&
         curr->GetLineLayoutItem().IsRubyRun() &&
         curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
-            kRubyPositionBefore) {
+            RubyPosition::kBefore) {
       LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
       LineLayoutRubyText ruby_text = ruby_run.RubyText();
       if (!ruby_text)
@@ -1584,7 +1584,7 @@ LayoutUnit InlineFlowBox::ComputeUnderAnnotationAdjustment(
     if (curr->GetLineLayoutItem().IsAtomicInlineLevel() &&
         curr->GetLineLayoutItem().IsRubyRun() &&
         curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
-            kRubyPositionAfter) {
+            RubyPosition::kAfter) {
       LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
       LineLayoutRubyText ruby_text = ruby_run.RubyText();
       if (!ruby_text)
