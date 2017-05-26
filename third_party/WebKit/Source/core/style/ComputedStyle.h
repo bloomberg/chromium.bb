@@ -37,6 +37,7 @@
 #include "core/style/AppliedTextDecorationList.h"
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style/ContentData.h"
 #include "core/style/CounterDirectives.h"
 #include "core/style/CursorData.h"
 #include "core/style/CursorList.h"
@@ -597,6 +598,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return rare_non_inherited_data_->box_shadow_.Get();
   }
   void SetBoxShadow(RefPtr<ShadowList>);
+  bool BoxShadowDataEquivalent(const ComputedStyle& other) const {
+    return DataEquivalent(BoxShadow(), other.BoxShadow());
+  }
 
   // clip
   static LengthBox InitialClip() { return LengthBox(); }
@@ -1420,6 +1424,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
       return;
     rare_non_inherited_data_.Access()->shape_outside_ = value;
   }
+  bool ShapeOutsideDataEquivalent(const ComputedStyle& other) const {
+    return DataEquivalent(ShapeOutside(), other.ShapeOutside());
+  }
 
   // size
   const FloatSize& PageSize() const {
@@ -1592,6 +1599,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   void SetClipPath(RefPtr<ClipPathOperation> operation) {
     if (rare_non_inherited_data_->clip_path_ != operation)
       rare_non_inherited_data_.Access()->clip_path_ = std::move(operation);
+  }
+  bool ClipPathDataEquivalent(const ComputedStyle& other) const {
+    return DataEquivalent(ClipPath(), other.ClipPath());
   }
 
   // Mask properties.
@@ -2328,8 +2338,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   bool HasBoxReflect() const { return BoxReflect(); }
   bool ReflectionDataEquivalent(const ComputedStyle& other) const {
-    return rare_non_inherited_data_->ReflectionDataEquivalent(
-        *other.rare_non_inherited_data_);
+    return DataEquivalent(BoxReflect(), other.BoxReflect());
   }
 
   // Mask utility functions.
@@ -3109,8 +3118,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Content utility functions.
   bool ContentDataEquivalent(const ComputedStyle& other) const {
-    return rare_non_inherited_data_->ContentDataEquivalent(
-        *other.rare_non_inherited_data_);
+    return DataEquivalent(GetContentData(), other.GetContentData());
   }
 
   // Contain utility functions.

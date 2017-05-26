@@ -96,15 +96,6 @@ class CORE_EXPORT StyleRareNonInheritedData
     return !(*this == o);
   }
 
-  bool ContentDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool CounterDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool ShadowDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool ReflectionDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool AnimationDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool TransitionDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool ShapeOutsideDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool ClipPathDataEquivalent(const StyleRareNonInheritedData&) const;
-
   float opacity;  // Whether or not we're transparent.
 
   float perspective_;
