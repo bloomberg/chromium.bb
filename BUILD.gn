@@ -5,6 +5,8 @@
 import("ffmpeg_options.gni")
 import("ffmpeg_generated.gni")
 
+import("//build/buildflag_header.gni")
+
 # Path to platform configuration files.
 platform_config_root =
     "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
@@ -148,6 +150,13 @@ config("ffmpegsumo_warnings") {
   }
 }
 
+buildflag_header("ffmpeg_features") {
+  header = "ffmpeg_features.h"
+  flags = [
+    "USE_SYSTEM_FFMPEG=false",
+  ]
+}
+
 if (is_component_ffmpeg) {
   link_target_type = "source_set"
 } else {
@@ -191,6 +200,7 @@ target(link_target_type, "ffmpeg_internal") {
   ldflags = []
   libs = []
   deps = [
+    ":ffmpeg_features",
     "//third_party/opus",
   ]
 

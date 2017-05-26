@@ -29,8 +29,10 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/bsf.c",
     "libavcodec/codec_desc.c",
     "libavcodec/d3d11va.c",
+    "libavcodec/decode.c",
     "libavcodec/dirac.c",
     "libavcodec/dv_profile.c",
+    "libavcodec/encode.c",
     "libavcodec/fft_fixed.c",
     "libavcodec/fft_fixed_32.c",
     "libavcodec/fft_float.c",
@@ -52,6 +54,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/mpeg12framerate.c",
     "libavcodec/mpeg4audio.c",
     "libavcodec/mpegaudiodata.c",
+    "libavcodec/null_bsf.c",
     "libavcodec/options.c",
     "libavcodec/opus.c",
     "libavcodec/opus_parser.c",
@@ -115,6 +118,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavutil/autorename_libavutil_cpu.c",
     "libavutil/autorename_libavutil_fixed_dsp.c",
     "libavutil/autorename_libavutil_float_dsp.c",
+    "libavutil/autorename_libavutil_imgutils.c",
     "libavutil/avstring.c",
     "libavutil/base64.c",
     "libavutil/bprint.c",
@@ -132,7 +136,6 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavutil/file_open.c",
     "libavutil/frame.c",
     "libavutil/hwcontext.c",
-    "libavutil/imgutils.c",
     "libavutil/integer.c",
     "libavutil/intmath.c",
     "libavutil/lfg.c",
@@ -223,6 +226,7 @@ if ((is_android && current_cpu == "x64") || (is_android && current_cpu == "x86")
     "libavutil/x86/autorename_libavutil_x86_cpu.c",
     "libavutil/x86/autorename_libavutil_x86_float_dsp_init.c",
     "libavutil/x86/fixed_dsp_init.c",
+    "libavutil/x86/imgutils_init.c",
     "libavutil/x86/lls_init.c",
   ]
 }
@@ -286,6 +290,7 @@ if ((is_android && current_cpu == "x64") || (is_linux && current_cpu == "x64") |
     "libavutil/x86/cpuid.asm",
     "libavutil/x86/fixed_dsp.asm",
     "libavutil/x86/float_dsp.asm",
+    "libavutil/x86/imgutils.asm",
     "libavutil/x86/lls.asm",
   ]
 }
@@ -647,6 +652,15 @@ if (is_linux && current_cpu == "mipsel" && ffmpeg_branding == "ChromeOS") {
     "libavcodec/mips/pixblockdsp_init_mips.c",
     "libavcodec/mips/qpeldsp_init_mips.c",
     "libavcodec/mips/xvididct_init_mips.c",
+  ]
+}
+
+if (is_linux && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") {
+  ffmpeg_c_sources += [
+    "libavcodec/aarch64/idctdsp_init_aarch64.c",
+  ]
+  ffmpeg_gas_sources += [
+    "libavcodec/aarch64/autorename_libavcodec_aarch64_simple_idct_neon.S",
   ]
 }
 
