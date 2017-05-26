@@ -170,8 +170,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
  private:
-  class MemoryObserver;
-
   void InitializeMainThread();
 
   // Called just before creating the threads
@@ -245,8 +243,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Android implementation of ScreenOrientationDelegate
   std::unique_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
-
-  std::unique_ptr<MemoryObserver> memory_observer_;
 
   // Members initialized in |InitStartupTracingForDuration()| ------------------
   base::FilePath startup_trace_file_;

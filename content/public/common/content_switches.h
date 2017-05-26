@@ -190,7 +190,6 @@ CONTENT_EXPORT extern const char kLogNetLog[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
 extern const char kMaxUntiledLayerHeight[];
 extern const char kMaxUntiledLayerWidth[];
-extern const char kMemoryMetrics[];
 CONTENT_EXPORT extern const char kMHTMLGeneratorOption[];
 CONTENT_EXPORT extern const char kMHTMLSkipNostoreMain[];
 CONTENT_EXPORT extern const char kMHTMLSkipNostoreAll[];

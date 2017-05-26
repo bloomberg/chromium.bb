@@ -504,26 +504,6 @@ BrowserMainLoop* g_current_browser_main_loop = NULL;
 bool g_browser_main_loop_shutting_down = false;
 #endif
 
-// For measuring memory usage after each task. Behind a command line flag.
-class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
- public:
-  MemoryObserver() {}
-  ~MemoryObserver() override {}
-
-  void WillProcessTask(const base::PendingTask& pending_task) override {}
-
-  void DidProcessTask(const base::PendingTask& pending_task) override {
-    std::unique_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateCurrentProcessMetrics());
-    size_t private_bytes;
-    process_metrics->GetMemoryBytes(&private_bytes, NULL);
-    LOCAL_HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", private_bytes >> 10);
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryObserver);
-};
-
-
 // BrowserMainLoop construction / destruction =============================
 
 BrowserMainLoop* BrowserMainLoop::GetInstance() {
@@ -785,12 +765,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     CHECK(BootstrapSandboxManager::GetInstance());
   }
 #endif
-
-  if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MemoryObserver");
-    memory_observer_.reset(new MemoryObserver());
-    base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
-  }
 
   if (parsed_command_line_.HasSwitch(
           switches::kEnableAggressiveDOMStorageFlushing)) {

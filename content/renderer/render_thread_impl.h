@@ -127,7 +127,6 @@ class DomStorageDispatcher;
 class FrameSwapMessageQueue;
 class IndexedDBDispatcher;
 class InputHandlerManager;
-class MemoryObserver;
 class MidiMessageFilter;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
@@ -722,7 +721,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  std::unique_ptr<MemoryObserver> memory_observer_;
   std::unique_ptr<ChildMemoryCoordinatorImpl> memory_coordinator_;
 
   std::unique_ptr<ui::Gpu> gpu_;
