@@ -1,6 +1,6 @@
 # liblouis: Hungarian Grade 1 table
 #
-#  Copyright (C) 2011-2016 Attila Hammer from IT Foundation for the Visually Impaired - Hungary. www.infoalap.hu
+#  Copyright (C) 2011-2017 Attila Hammer from IT Foundation for the Visually Impaired - Hungary. www.infoalap.hu
 #
 #  This file is part of liblouis.
 #
@@ -132,4 +132,8 @@ always ` 4
 always Æ 1
 always lyú 456-346
 always lysz 456-156
+space \x000c 0
+space \x001b 1b
+space \e 1b
+space \f 0
 undefined 26
