@@ -99,8 +99,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.build_branch = constants.ANDROID_NYC_BUILD_BRANCH
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.arc_bucket_url = 'gs://a'
-    self.targets = (cros_mark_android_as_stable
-                    .MakeBuildTargetDict(self.build_branch))
+    self.targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        self.build_branch)
 
     builds = {
         'ARM': [
