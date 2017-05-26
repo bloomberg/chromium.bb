@@ -70,7 +70,7 @@ class RefPtr {
   ALWAYS_INLINE T* Get() const { return ptr_; }
   T* LeakRef() WARN_UNUSED_RESULT;
   void Clear();
-  PassRefPtr<T> Release() {
+  PassRefPtr<T> Release() WARN_UNUSED_RESULT {
     PassRefPtr<T> tmp = AdoptRef(ptr_);
     ptr_ = nullptr;
     return tmp;
