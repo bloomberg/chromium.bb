@@ -40,9 +40,15 @@ class MemoryBufferBacking : public BufferBacking {
 }  // anonymous namespace
 
 CommandBufferService::CommandBufferService(
+    CommandBufferServiceClient* client,
     TransferBufferManager* transfer_buffer_manager,
     AsyncAPIInterface* handler)
-    : transfer_buffer_manager_(transfer_buffer_manager), handler_(handler) {
+    : client_(client),
+      transfer_buffer_manager_(transfer_buffer_manager),
+      handler_(handler) {
+  DCHECK(client_);
+  DCHECK(transfer_buffer_manager_);
+  DCHECK(handler_);
   state_.token = 0;
 }
 
@@ -69,12 +75,14 @@ void CommandBufferService::Flush(int32_t put_offset) {
 
   DCHECK(scheduled());
 
+  if (paused_) {
+    paused_ = false;
+    TRACE_COUNTER_ID1("gpu", "CommandBufferService::Paused", this, paused_);
+  }
+
   error::Error error = error::kNoError;
   handler_->BeginDecoding();
   while (put_offset_ != state_.get_offset) {
-    if (PauseExecution())
-      break;
-
     error = ProcessCommands(kParseCommandsSlice);
 
     if (error::IsError(error)) {
@@ -82,8 +90,12 @@ void CommandBufferService::Flush(int32_t put_offset) {
       break;
     }
 
-    if (!command_processed_callback_.is_null())
-      command_processed_callback_.Run();
+    if (client_->OnCommandBatchProcessed() ==
+        CommandBufferServiceClient::kPauseExecution) {
+      paused_ = true;
+      TRACE_COUNTER_ID1("gpu", "CommandBufferService::Paused", this, paused_);
+      break;
+    }
 
     if (!scheduled())
       break;
@@ -194,8 +206,7 @@ void CommandBufferService::SetToken(int32_t token) {
 void CommandBufferService::SetParseError(error::Error error) {
   if (state_.error == error::kNoError) {
     state_.error = error;
-    if (!parse_error_callback_.is_null())
-      parse_error_callback_.Run();
+    client_->OnParseError();
   }
 }
 
@@ -204,37 +215,10 @@ void CommandBufferService::SetContextLostReason(
   state_.context_lost_reason = reason;
 }
 
-void CommandBufferService::SetPauseExecutionCallback(
-    const PauseExecutionCallback& callback) {
-  pause_execution_callback_ = callback;
-}
-
-void CommandBufferService::SetCommandProcessedCallback(
-    const base::Closure& callback) {
-  command_processed_callback_ = callback;
-}
-
-void CommandBufferService::SetParseErrorCallback(
-    const base::Closure& callback) {
-  parse_error_callback_ = callback;
-}
-
 void CommandBufferService::SetScheduled(bool scheduled) {
   TRACE_EVENT2("gpu", "CommandBufferService:SetScheduled", "this", this,
                "scheduled", scheduled);
   scheduled_ = scheduled;
-}
-
-bool CommandBufferService::PauseExecution() {
-  if (pause_execution_callback_.is_null())
-    return false;
-
-  bool pause = pause_execution_callback_.Run();
-  if (paused_ != pause) {
-    TRACE_COUNTER_ID1("gpu", "CommandBufferService::Paused", this, pause);
-    paused_ = pause;
-  }
-  return pause;
 }
 
 error::Error CommandBufferService::ProcessCommands(int num_commands) {

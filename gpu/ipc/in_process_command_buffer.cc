@@ -309,9 +309,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
 
   command_buffer_ = base::MakeUnique<CommandBufferService>(
-      transfer_buffer_manager_.get(), decoder_.get());
-  command_buffer_->SetParseErrorCallback(base::Bind(
-      &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
+      this, transfer_buffer_manager_.get(), decoder_.get());
 
   decoder_->set_command_buffer_service(command_buffer_.get());
 
@@ -472,7 +470,12 @@ void InProcessCommandBuffer::CheckSequencedThread() {
   DCHECK(!sequence_checker_ || sequence_checker_->CalledOnValidSequence());
 }
 
-void InProcessCommandBuffer::OnContextLostOnGpuThread() {
+CommandBufferServiceClient::CommandBatchProcessedResult
+InProcessCommandBuffer::OnCommandBatchProcessed() {
+  return kContinueExecution;
+}
+
+void InProcessCommandBuffer::OnParseError() {
   if (!origin_task_runner_)
     return OnContextLost();  // Just kidding, we're on the client thread.
   origin_task_runner_->PostTask(

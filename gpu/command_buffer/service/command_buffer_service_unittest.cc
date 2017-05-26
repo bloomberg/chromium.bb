@@ -27,7 +27,8 @@ using testing::SetArgPointee;
 // Test fixture for CommandBufferService test - Creates a mock
 // AsyncAPIInterface, and a fixed size memory buffer. Also provides a simple API
 // to create a CommandBufferService.
-class CommandBufferServiceTest : public testing::Test {
+class CommandBufferServiceTest : public testing::Test,
+                                 public CommandBufferServiceClient {
  public:
   MOCK_METHOD0(OnCommandProcessed, void());
 
@@ -48,9 +49,7 @@ class CommandBufferServiceTest : public testing::Test {
   void MakeService(unsigned int entry_count) {
     transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
     command_buffer_service_ = base::MakeUnique<CommandBufferService>(
-        transfer_buffer_manager_.get(), api_mock());
-    command_buffer_service_->SetParseErrorCallback(base::Bind(
-        &CommandBufferServiceTest::OnParseError, base::Unretained(this)));
+        this, transfer_buffer_manager_.get(), api_mock());
     SetNewGetBuffer(entry_count * sizeof(CommandBufferEntry));
   }
 
@@ -92,6 +91,10 @@ class CommandBufferServiceTest : public testing::Test {
     Mock::VerifyAndClearExpectations(api_mock());
   }
 
+  // CommandBufferServiceBase implementation:
+  CommandBatchProcessedResult OnCommandBatchProcessed() override {
+    return kContinueExecution;
+  }
   MOCK_METHOD0(OnParseError, void());
 
  private:
@@ -397,16 +400,6 @@ TEST_F(CommandBufferServiceTest, CanSetParseError) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-TEST_F(CommandBufferServiceTest, CommandsProcessed) {
-  MakeService(3);
-  command_buffer_service()->SetCommandProcessedCallback(base::Bind(
-      &CommandBufferServiceTest::OnCommandProcessed, base::Unretained(this)));
-  AddDoCommandsExpect(error::kNoError, 2, 1);
-  AddDoCommandsExpect(error::kNoError, 1, 1);
-  EXPECT_CALL(*this, OnCommandProcessed()).Times(2);
-  EXPECT_EQ(error::kNoError, SetPutAndProcessAllCommands(2));
-}
-
 class CommandBufferServicePauseExecutionTest : public CommandBufferServiceTest {
  public:
   // Will pause the command buffer execution after 2 runs.
@@ -414,36 +407,35 @@ class CommandBufferServicePauseExecutionTest : public CommandBufferServiceTest {
                           const volatile void* buffer,
                           int num_entries,
                           int* entries_processed) {
-    ++calls_;
-    if (calls_ == 2)
-      pause_ = true;
     *entries_processed = 1;
     return error::kNoError;
   }
 
-  bool PauseExecution() { return pause_; }
+  CommandBatchProcessedResult OnCommandBatchProcessed() override {
+    ++calls_;
+    if (calls_ == 2)
+      pause_ = true;
+    return pause_ ? kPauseExecution : kContinueExecution;
+  }
 
  protected:
   int calls_ = 0;
   bool pause_ = false;
 };
 
+TEST_F(CommandBufferServicePauseExecutionTest, CommandsProcessed) {
+  MakeService(3);
+  AddDoCommandsExpect(error::kNoError, 2, 1);
+  AddDoCommandsExpect(error::kNoError, 1, 1);
+  EXPECT_EQ(error::kNoError, SetPutAndProcessAllCommands(2));
+  EXPECT_EQ(2, calls_);
+}
+
 TEST_F(CommandBufferServicePauseExecutionTest, PauseExecution) {
   MakeService(5);
-  command_buffer_service()->SetPauseExecutionCallback(
-      base::Bind(&CommandBufferServicePauseExecutionTest::PauseExecution,
-                 base::Unretained(this)));
-  EXPECT_CALL(*api_mock(), DoCommands(_, _, _, _))
-      .WillRepeatedly(
-          Invoke(this, &CommandBufferServicePauseExecutionTest::DoCommands));
   // Command buffer processing should stop after 2 commands.
-  EXPECT_EQ(error::kNoError, SetPutAndProcessAllCommands(4));
-  EXPECT_EQ(2, GetGet());
-  EXPECT_EQ(4, GetPut());
-  EXPECT_EQ(2, calls_);
-  EXPECT_TRUE(pause_);
-
-  // Processing shouldn't do anything while paused.
+  AddDoCommandsExpect(error::kNoError, 4, 1);
+  AddDoCommandsExpect(error::kNoError, 3, 1);
   EXPECT_EQ(error::kNoError, SetPutAndProcessAllCommands(4));
   EXPECT_EQ(2, GetGet());
   EXPECT_EQ(4, GetPut());
@@ -452,6 +444,8 @@ TEST_F(CommandBufferServicePauseExecutionTest, PauseExecution) {
 
   // Processing should continue after resume.
   pause_ = false;
+  AddDoCommandsExpect(error::kNoError, 2, 1);
+  AddDoCommandsExpect(error::kNoError, 1, 1);
   EXPECT_EQ(error::kNoError, SetPutAndProcessAllCommands(4));
   EXPECT_EQ(4, GetGet());
   EXPECT_EQ(4, GetPut());
