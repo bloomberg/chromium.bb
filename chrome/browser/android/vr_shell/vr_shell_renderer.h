@@ -233,8 +233,8 @@ class GradientQuadRenderer : public BaseQuadRenderer {
   ~GradientQuadRenderer() override;
 
   void Draw(const vr::Mat4f& view_proj_matrix,
-            const vr::Colorf& edge_color,
-            const vr::Colorf& center_color,
+            SkColor edge_color,
+            SkColor center_color,
             float opacity);
 
  private:
@@ -253,8 +253,8 @@ class GradientGridRenderer : public BaseRenderer {
   ~GradientGridRenderer() override;
 
   void Draw(const vr::Mat4f& view_proj_matrix,
-            const vr::Colorf& edge_color,
-            const vr::Colorf& center_color,
+            SkColor edge_color,
+            SkColor center_color,
             int gridline_count,
             float opacity);
 

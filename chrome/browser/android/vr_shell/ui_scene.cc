@@ -175,11 +175,11 @@ bool UiScene::HasVisibleHeadLockedElements() const {
   return !GetHeadLockedElements().empty();
 }
 
-void UiScene::SetBackgroundColor(const vr::Colorf& color) {
+void UiScene::SetBackgroundColor(const SkColor& color) {
   background_color_ = color;
 }
 
-const vr::Colorf& UiScene::GetBackgroundColor() const {
+const SkColor& UiScene::GetBackgroundColor() const {
   return background_color_;
 }
 

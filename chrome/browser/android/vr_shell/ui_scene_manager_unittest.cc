@@ -84,11 +84,6 @@ class UiSceneManagerTest : public testing::Test {
   std::unique_ptr<MockBrowserInterface> browser_;
   std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiSceneManager> manager_;
-
-  bool ColorEquals(vr::Colorf expected, vr::Colorf actual) {
-    return (expected.r == actual.r) && (expected.g == actual.g) &&
-           (expected.b == actual.b) && (expected.a == actual.a);
-  }
 };
 
 TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
@@ -158,7 +153,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  vr::Colorf initial_background = scene_->GetBackgroundColor();
+  SkColor initial_background = scene_->GetBackgroundColor();
 
   for (const auto& element : scene_->GetUiElements()) {
     SCOPED_TRACE(element->debug_id());
@@ -181,7 +176,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   {
     SCOPED_TRACE("Entered Fullsceen");
     // Make sure background has changed for fullscreen.
-    EXPECT_FALSE(ColorEquals(initial_background, scene_->GetBackgroundColor()));
+    EXPECT_NE(initial_background, scene_->GetBackgroundColor());
   }
 
   // Exit fullscreen.
@@ -196,7 +191,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   }
   {
     SCOPED_TRACE("Exited Fullsceen");
-    EXPECT_TRUE(ColorEquals(initial_background, scene_->GetBackgroundColor()));
+    EXPECT_EQ(initial_background, scene_->GetBackgroundColor());
   }
 }
 

@@ -364,8 +364,7 @@ void UiSceneManager::UpdateBackgroundColor() {
   floor_->set_center_color(color_scheme().floor);
   floor_->set_edge_color(color_scheme().horizon);
   floor_grid_->set_center_color(color_scheme().floor_grid);
-  vr::Colorf floor_grid_edge_color = color_scheme().floor_grid;
-  floor_grid_edge_color.a = 0.0;
+  SkColor floor_grid_edge_color = SkColorSetA(color_scheme().floor_grid, 0);
   floor_grid_->set_edge_color(floor_grid_edge_color);
 }
 

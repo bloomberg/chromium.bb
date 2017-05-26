@@ -262,6 +262,11 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
   }
 }
 
+void SetColorUniform(GLuint handle, SkColor c) {
+  glUniform4f(handle, SkColorGetR(c) / 255.0, SkColorGetG(c) / 255.0,
+              SkColorGetB(c) / 255.0, SkColorGetA(c) / 255.0);
+}
+
 }  // namespace
 
 namespace vr_shell {
@@ -692,8 +697,8 @@ GradientQuadRenderer::GradientQuadRenderer()
 }
 
 void GradientQuadRenderer::Draw(const vr::Mat4f& view_proj_matrix,
-                                const vr::Colorf& edge_color,
-                                const vr::Colorf& center_color,
+                                SkColor edge_color,
+                                SkColor center_color,
                                 float opacity) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
@@ -701,10 +706,8 @@ void GradientQuadRenderer::Draw(const vr::Mat4f& view_proj_matrix,
   glUniform1f(scene_radius_handle_, kHalfSize);
 
   // Set the edge color to the fog color so that it seems to fade out.
-  glUniform4f(edge_color_handle_, edge_color.r, edge_color.g, edge_color.b,
-              edge_color.a);
-  glUniform4f(center_color_handle_, center_color.r, center_color.g,
-              center_color.b, center_color.a);
+  SetColorUniform(edge_color_handle_, edge_color);
+  SetColorUniform(center_color_handle_, center_color);
   glUniform1f(opacity_handle_, opacity);
 
   glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
@@ -726,8 +729,8 @@ GradientGridRenderer::GradientGridRenderer()
 }
 
 void GradientGridRenderer::Draw(const vr::Mat4f& view_proj_matrix,
-                                const vr::Colorf& edge_color,
-                                const vr::Colorf& center_color,
+                                SkColor edge_color,
+                                SkColor center_color,
                                 int gridline_count,
                                 float opacity) {
   // In case the tile number changed we have to regenerate the grid lines.
@@ -745,10 +748,8 @@ void GradientGridRenderer::Draw(const vr::Mat4f& view_proj_matrix,
   glUniform1f(scene_radius_handle_, kHalfSize);
 
   // Set the edge color to the fog color so that it seems to fade out.
-  glUniform4f(edge_color_handle_, edge_color.r, edge_color.g, edge_color.b,
-              edge_color.a);
-  glUniform4f(center_color_handle_, center_color.r, center_color.g,
-              center_color.b, center_color.a);
+  SetColorUniform(edge_color_handle_, edge_color);
+  SetColorUniform(center_color_handle_, center_color);
   glUniform1f(opacity_handle_, opacity);
 
   // Draw the grid.

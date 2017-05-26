@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "device/vr/vr_types.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
 class TimeTicks;
@@ -205,13 +206,11 @@ class UiElement : public WorldRectangle {
   Fill fill() const { return fill_; }
   void set_fill(Fill fill) { fill_ = fill; }
 
-  vr::Colorf edge_color() const { return edge_color_; }
-  void set_edge_color(const vr::Colorf& edge_color) {
-    edge_color_ = edge_color;
-  }
+  SkColor edge_color() const { return edge_color_; }
+  void set_edge_color(const SkColor& edge_color) { edge_color_ = edge_color; }
 
-  vr::Colorf center_color() const { return center_color_; }
-  void set_center_color(const vr::Colorf& center_color) {
+  SkColor center_color() const { return center_color_; }
+  void set_center_color(const SkColor& center_color) {
     center_color_ = center_color;
   }
 
@@ -299,8 +298,8 @@ class UiElement : public WorldRectangle {
 
   Fill fill_ = Fill::NONE;
 
-  vr::Colorf edge_color_ = {1.0f, 1.0f, 1.0f, 1.0f};
-  vr::Colorf center_color_ = {1.0f, 1.0f, 1.0f, 1.0f};
+  SkColor edge_color_ = SK_ColorWHITE;
+  SkColor center_color_ = SK_ColorWHITE;
 
   int gridline_count_ = 1;
 

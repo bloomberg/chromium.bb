@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_COLOR_SCHEME_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_COLOR_SCHEME_H_
 
-#include "device/vr/vr_types.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace vr_shell {
 
@@ -21,12 +21,10 @@ struct ColorScheme {
 
   // These colors should be named generically, if possible, so that they can be
   // meaningfully reused by multiple elements.
-  // TODO(vollick): we should replace all use of vr::Colorf with SkColor (see
-  // crbug.com/726363).
-  vr::Colorf horizon;
-  vr::Colorf floor;
-  vr::Colorf ceiling;
-  vr::Colorf floor_grid;
+  SkColor horizon;
+  SkColor floor;
+  SkColor ceiling;
+  SkColor floor_grid;
 };
 
 }  // namespace vr_shell

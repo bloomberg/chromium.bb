@@ -25,13 +25,6 @@ typedef struct RotationAxisAngle {
   float angle;
 } RotationAxisAngle;
 
-typedef struct Colorf {
-  float r;
-  float g;
-  float b;
-  float a;
-} Colorf;
-
 // A floating point quaternion, in JPL format.
 typedef struct Quatf {
   /// qx, qy, qz are the vector component.

@@ -16,16 +16,16 @@ void InitializeColorSchemes() {
     return;
 
   ColorScheme& normal_scheme = kColorSchemes[ColorScheme::kModeNormal];
-  normal_scheme.horizon = {0.89, 0.89, 0.89, 1.0};
-  normal_scheme.floor = {0.811, 0.811, 0.811, 1.0};
-  normal_scheme.ceiling = {0.859, 0.859, 0.859, 1.0};
-  normal_scheme.floor_grid = {1.0, 1.0, 1.0, 1.0};
+  normal_scheme.horizon = 0xFFE3E3E3;
+  normal_scheme.floor = 0xFFCFCFCF;
+  normal_scheme.ceiling = 0xFFDBDBDB;
+  normal_scheme.floor_grid = SK_ColorWHITE;
 
   ColorScheme& fullscreen_scheme = kColorSchemes[ColorScheme::kModeFullscreen];
-  fullscreen_scheme.horizon = {0.039215686, 0.0, 0.082352941, 1.0};
-  fullscreen_scheme.floor = {0.02745098, 0.058823529, 0.109803922, 1.0};
-  fullscreen_scheme.ceiling = {0.015686275, 0.031372549, 0.058823529, 1.0};
-  fullscreen_scheme.floor_grid = {0.639215686, 0.878431373, 1.0, 0.5};
+  fullscreen_scheme.horizon = 0xFF0A0015;
+  fullscreen_scheme.floor = 0xFF070F1C;
+  fullscreen_scheme.ceiling = 0xFF04080F;
+  fullscreen_scheme.floor_grid = 0x80A3E0FF;
 
   initialized = true;
 }
