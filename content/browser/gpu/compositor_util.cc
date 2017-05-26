@@ -46,6 +46,7 @@ const char kRasterizationFeatureName[] = "rasterization";
 const char kMultipleRasterThreadsFeatureName[] = "multiple_raster_threads";
 const char kNativeGpuMemoryBuffersFeatureName[] = "native_gpu_memory_buffers";
 const char kWebGL2FeatureName[] = "webgl2";
+const char kCheckerImagingFeatureName[] = "checker_imaging";
 
 const int kMinRasterThreads = 1;
 const int kMaxRasterThreads = 4;
@@ -146,6 +147,9 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2),
      command_line.HasSwitch(switches::kDisableES3APIs),
      "WebGL2 has been disabled via blacklist or the command line.", false},
+    {kCheckerImagingFeatureName, false, !IsCheckerImagingEnabled(),
+     "Checker-imaging has been disabled via finch trial or the command line.",
+     false},
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);
@@ -280,6 +284,17 @@ bool IsMainFrameBeforeActivationEnabled() {
   return true;
 }
 
+bool IsCheckerImagingEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableCheckerImaging))
+    return true;
+
+  if (base::FeatureList::IsEnabled(features::kCheckerImaging))
+    return true;
+
+  return false;
+}
+
 base::DictionaryValue* GetFeatureStatus() {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;
@@ -322,6 +337,13 @@ base::DictionaryValue* GetFeatureStatus() {
       }
       if (gpu_feature_info.name == kMultipleRasterThreadsFeatureName)
         status += "_on";
+      if (gpu_feature_info.name == kCheckerImagingFeatureName) {
+        const base::CommandLine& command_line =
+            *base::CommandLine::ForCurrentProcess();
+        if (command_line.HasSwitch(cc::switches::kEnableCheckerImaging))
+          status += "_force";
+        status += "_on";
+      }
     }
     if (gpu_feature_info.name == kWebGLFeatureName &&
         (gpu_feature_info.blocked || gpu_access_blocked) &&

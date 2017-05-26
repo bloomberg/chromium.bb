@@ -93,6 +93,7 @@ cr.define('gpu', function() {
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
+        'checker_imaging': 'CheckerImaging',
       };
 
       var statusMap =  {

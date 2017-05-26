@@ -39,6 +39,9 @@ CONTENT_EXPORT int NumberOfRendererRasterThreads();
 // Returns true if main thread can be pipelined with activation.
 CONTENT_EXPORT bool IsMainFrameBeforeActivationEnabled();
 
+// Returns true if images can be decode asynchronously from rasterization.
+CONTENT_EXPORT bool IsCheckerImagingEnabled();
+
 CONTENT_EXPORT base::DictionaryValue* GetFeatureStatus();
 CONTENT_EXPORT base::Value* GetProblems();
 CONTENT_EXPORT std::vector<std::string> GetDriverBugWorkarounds();
