@@ -57811,6 +57811,65 @@
     "isolated_scripts": [
       {
         "args": [
+          "battor.steady_state",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "battor.steady_state",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "battor.steady_state",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "battor.steady_state.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "battor.trivial_pages",
           "-v",
           "--upload-results",
@@ -57988,6 +58047,65 @@
       },
       {
         "args": [
+          "blink_perf.css",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blink_perf.css",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "blink_perf.css",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blink_perf.css.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "blink_perf.dom",
           "-v",
           "--upload-results",
@@ -58035,6 +58153,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build4-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "blink_perf.events",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blink_perf.events",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "blink_perf.events",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blink_perf.events.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -58212,6 +58389,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build7-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "blink_perf.shadow_dom",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blink_perf.shadow_dom",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "blink_perf.shadow_dom",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blink_perf.shadow_dom.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -58814,6 +59050,65 @@
       },
       {
         "args": [
+          "kraken",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "kraken",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "kraken",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "kraken.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "loading.desktop",
           "-v",
           "--upload-results",
@@ -58873,6 +59168,65 @@
       },
       {
         "args": [
+          "media.mse_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "media.mse_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "media.mse_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "media.mse_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "media.tough_video_cases",
           "-v",
           "--upload-results",
@@ -58920,6 +59274,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build4-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "media.tough_video_cases_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "media.tough_video_cases_tbmv2",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "media.tough_video_cases_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "media.tough_video_cases_tbmv2.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -59038,6 +59451,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build6-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "memory.long_running_idle_gmail_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "memory.long_running_idle_gmail_tbmv2",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "memory.long_running_idle_gmail_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "memory.long_running_idle_gmail_tbmv2.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -59286,6 +59758,85 @@
       },
       {
         "args": [
+          "page_cycler_v2_site_isolation.basic_oopif",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "page_cycler_v2_site_isolation.basic_oopif",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "page_cycler_v2_site_isolation.basic_oopif",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "page_cycler_v2_site_isolation.basic_oopif.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "power.idle_platform",
           "-v",
           "--upload-results",
@@ -59421,6 +59972,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build4-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -59669,6 +60279,65 @@
       },
       {
         "args": [
+          "smoothness.desktop_tough_pinch_zoom_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.desktop_tough_pinch_zoom_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "smoothness.gpu_rasterization.tough_filters_cases",
           "-v",
           "--upload-results",
@@ -59716,6 +60385,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build7-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization.tough_path_rendering_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization.tough_path_rendering_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -59905,6 +60633,65 @@
       },
       {
         "args": [
+          "smoothness.maps",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.maps",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.maps",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.maps.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "smoothness.scrolling_tough_ad_cases",
           "-v",
           "--upload-results",
@@ -60070,6 +60857,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build4-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.tough_animation_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.tough_animation_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.tough_animation_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.tough_animation_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -60377,6 +61223,124 @@
       },
       {
         "args": [
+          "smoothness.tough_texture_upload_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.tough_texture_upload_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.tough_texture_upload_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.tough_texture_upload_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.tough_webgl_ad_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.tough_webgl_ad_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.tough_webgl_ad_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.tough_webgl_ad_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "smoothness.tough_webgl_cases",
           "-v",
           "--upload-results",
@@ -60613,6 +61577,65 @@
       },
       {
         "args": [
+          "start_with_ext.warm.blank_page",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "start_with_ext.warm.blank_page",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "start_with_ext.warm.blank_page",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "start_with_ext.warm.blank_page.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "startup.cold.blank_page",
           "-v",
           "--upload-results",
@@ -60660,6 +61683,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build4-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "startup.large_profile.cold.blank_page",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "startup.large_profile.cold.blank_page",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "startup.large_profile.cold.blank_page",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "startup.large_profile.cold.blank_page.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -60908,6 +61990,65 @@
       },
       {
         "args": [
+          "system_health.common_desktop",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "system_health.common_desktop",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "system_health.common_desktop",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "system_health.common_desktop.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "system_health.memory_desktop",
           "-v",
           "--upload-results",
@@ -60955,6 +62096,65 @@
             {
               "gpu": "8086:0d26",
               "id": "build4-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "system_health.webview_startup",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "system_health.webview_startup",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "system_health.webview_startup",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "system_health.webview_startup.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
@@ -61427,6 +62627,124 @@
             {
               "gpu": "8086:0d26",
               "id": "build7-b1",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "v8.infinite_scroll-classic_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "v8.infinite_scroll-classic_tbmv2",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "v8.infinite_scroll-classic_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "v8.infinite_scroll-classic_tbmv2.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "v8.infinite_scroll_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "v8.infinite_scroll_tbmv2",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
+              "os": "Mac-10.11",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "v8.infinite_scroll_tbmv2",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "v8.infinite_scroll_tbmv2.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0d26",
+              "id": "build30-b4",
               "os": "Mac-10.11",
               "pool": "Chrome-perf"
             }
