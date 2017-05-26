@@ -312,12 +312,18 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitch(switches::kEnableCrashReporter);
   }
 
-  // Renderer process command-line
+  // Command-line for different processes.
   if (process_type == switches::kRendererProcess) {
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
     if (browser_command_line->HasSwitch(switches::kAllowHiddenMediaPlayback))
       command_line->AppendSwitch(switches::kAllowHiddenMediaPlayback);
+  } else if (process_type == switches::kUtilityProcess) {
+    if (browser_command_line->HasSwitch(switches::kAudioOutputChannels)) {
+      command_line->AppendSwitchASCII(switches::kAudioOutputChannels,
+                                      browser_command_line->GetSwitchValueASCII(
+                                          switches::kAudioOutputChannels));
+    }
   }
 
 #if defined(OS_LINUX)

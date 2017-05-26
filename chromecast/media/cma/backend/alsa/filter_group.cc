@@ -17,17 +17,25 @@
 namespace chromecast {
 namespace media {
 FilterGroup::FilterGroup(int num_channels,
+                         bool mix_to_mono,
                          const std::string& name,
                          const base::ListValue* filter_list,
                          const std::unordered_set<std::string>& device_ids,
                          const std::vector<FilterGroup*>& mixed_inputs)
     : num_channels_(num_channels),
+      mix_to_mono_(mix_to_mono),
       name_(name),
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
       output_samples_per_second_(0),
       post_processing_pipeline_(
-          PostProcessingPipeline::Create(name_, filter_list, num_channels_)) {}
+          PostProcessingPipeline::Create(name_, filter_list, num_channels_)) {
+  for (auto* const m : mixed_inputs)
+    DCHECK_EQ(m->GetOutputChannelCount(), num_channels);
+  // Don't need mono mixer if input is single channel.
+  if (num_channels == 1)
+    mix_to_mono_ = false;
+}
 
 FilterGroup::~FilterGroup() = default;
 
@@ -108,6 +116,17 @@ float FilterGroup::MixAndFilter(int chunk_size) {
 
   delay_frames_ = post_processing_pipeline_->ProcessFrames(
       interleaved(), chunk_size, last_volume_, is_silence);
+
+  // Mono mixing after all processing if needed.
+  if (mix_to_mono_) {
+    for (int frame = 0; frame < chunk_size; ++frame) {
+      float sum = 0;
+      for (int c = 0; c < num_channels_; ++c)
+        sum += interleaved()[frame * num_channels_ + c];
+      interleaved()[frame] = sum / num_channels_;
+    }
+  }
+
   return last_volume_;
 }
 
@@ -118,6 +137,10 @@ int64_t FilterGroup::GetRenderingDelayMicroseconds() {
 
 void FilterGroup::ClearActiveInputs() {
   active_inputs_.clear();
+}
+
+int FilterGroup::GetOutputChannelCount() const {
+  return mix_to_mono_ ? 1 : num_channels_;
 }
 
 void FilterGroup::ResizeBuffersIfNecessary(int chunk_size) {

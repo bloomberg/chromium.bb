@@ -72,7 +72,7 @@ namespace media {
 namespace {
 
 const char kOutputDeviceDefaultName[] = "default";
-const int kNumOutputChannels = 2;
+const int kNumInputChannels = 2;
 
 const int kDefaultOutputBufferSizeFrames = 4096;
 const bool kPcmRecoverIsSilent = false;
@@ -245,6 +245,11 @@ StreamMixerAlsa::StreamMixerAlsa()
 
   fixed_output_samples_per_second_ = fixed_samples_per_second;
 
+  num_output_channels_ = GetSwitchValueNonNegativeInt(
+      switches::kAudioOutputChannels, kNumInputChannels);
+  DCHECK(num_output_channels_ == kNumInputChannels ||
+         num_output_channels_ == 1);
+
   low_sample_rate_cutoff_ =
       chromecast::GetSwitchValueBoolean(switches::kAlsaEnableUpsampling, false)
           ? kLowSampleRateCutoff
@@ -274,8 +279,8 @@ void StreamMixerAlsa::CreatePostProcessors(
           << pipeline_parser->GetFilePath() << ".";
     }
     filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-        kNumOutputChannels, *device_ids.begin() /* name */,
-        stream_pipeline.pipeline, device_ids,
+        kNumInputChannels, false /* mono_mixer */,
+        *device_ids.begin() /* name */, stream_pipeline.pipeline, device_ids,
         std::vector<FilterGroup*>() /* mixed_inputs */));
     if (device_ids.find(::media::AudioDeviceDescription::kDefaultDeviceId) !=
         device_ids.end()) {
@@ -288,8 +293,8 @@ void StreamMixerAlsa::CreatePostProcessors(
     std::string kDefaultDeviceId =
         ::media::AudioDeviceDescription::kDefaultDeviceId;
     filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-        kNumOutputChannels, kDefaultDeviceId /* name */, nullptr,
-        std::unordered_set<std::string>({kDefaultDeviceId}),
+        kNumInputChannels, false /* mono_mixer */, kDefaultDeviceId /* name */,
+        nullptr, std::unordered_set<std::string>({kDefaultDeviceId}),
         std::vector<FilterGroup*>() /* mixed_inputs */));
     default_filter_ = filter_groups_.back().get();
   }
@@ -299,13 +304,17 @@ void StreamMixerAlsa::CreatePostProcessors(
       filter_groups_.begin(), filter_groups_.end(), filter_group_ptrs.begin(),
       [](const std::unique_ptr<FilterGroup>& group) { return group.get(); });
 
+  // Enable Mono mixer in |mix_filter_| if necessary.
+  bool enabled_mono_mixer = (num_output_channels_ == 1);
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      kNumOutputChannels, "mix", pipeline_parser->GetMixPipeline(),
+      kNumInputChannels, enabled_mono_mixer, "mix",
+      pipeline_parser->GetMixPipeline(),
       std::unordered_set<std::string>() /* device_ids */, filter_group_ptrs));
   mix_filter_ = filter_groups_.back().get();
 
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      kNumOutputChannels, "linearize", pipeline_parser->GetLinearizePipeline(),
+      num_output_channels_, false /* mono_mixer */, "linearize",
+      pipeline_parser->GetLinearizePipeline(),
       std::unordered_set<std::string>() /* device_ids */,
       std::vector<FilterGroup*>({mix_filter_})));
   linearize_filter_ = filter_groups_.back().get();
@@ -443,7 +452,7 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
 
   RETURN_ERROR_CODE(PcmHwParamsSetFormat, pcm_, pcm_hw_params_, pcm_format_);
   RETURN_ERROR_CODE(PcmHwParamsSetChannels, pcm_, pcm_hw_params_,
-                    kNumOutputChannels);
+                    num_output_channels_);
 
   // Set output rate, allow resampling with a warning if the device doesn't
   // support the rate natively.
@@ -894,7 +903,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
 
 size_t StreamMixerAlsa::InterleavedSize(int frames) {
   return BytesPerOutputFormatSample() *
-         static_cast<size_t>(frames * kNumOutputChannels);
+         static_cast<size_t>(frames * num_output_channels_);
 }
 
 ssize_t StreamMixerAlsa::BytesPerOutputFormatSample() {
@@ -906,7 +915,7 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   CHECK_PCM_INITIALIZED();
 
   // Resize interleaved if necessary.
-  size_t interleaved_size = static_cast<size_t>(frames) * kNumOutputChannels *
+  size_t interleaved_size = static_cast<size_t>(frames) * num_output_channels_ *
                             BytesPerOutputFormatSample();
 
   int64_t expected_playback_time;
@@ -919,7 +928,7 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   }
 
   // Hard limit to [1.0, -1.0]
-  for (int i = 0; i < frames * kNumOutputChannels; ++i) {
+  for (int i = 0; i < frames * num_output_channels_; ++i) {
     mix_filter_->interleaved()[i] =
         std::min(1.0f, std::max(-1.0f, mix_filter_->interleaved()[i]));
   }
@@ -927,7 +936,7 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
     observer->OnLoopbackAudio(
         expected_playback_time, kSampleFormatF32, output_samples_per_second_,
-        kNumOutputChannels,
+        num_output_channels_,
         reinterpret_cast<uint8_t*>(mix_filter_->interleaved()),
         InterleavedSize(frames));
   }
@@ -935,7 +944,7 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   uint8_t* data;
   if (pcm_format_ == SND_PCM_FORMAT_FLOAT) {
     // Hard limit to [1.0, -1.0]. ToFixedPoint handles this for other cases.
-    for (int i = 0; i < frames * kNumOutputChannels; ++i) {
+    for (int i = 0; i < frames * num_output_channels_; ++i) {
       linearize_filter_->interleaved()[i] =
           std::min(1.0f, std::max(-1.0f, linearize_filter_->interleaved()[i]));
     }
@@ -944,8 +953,9 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
     if (interleaved_.size() < interleaved_size) {
       interleaved_.resize(interleaved_size);
     }
-    ToFixedPoint(linearize_filter_->interleaved(), frames * kNumOutputChannels,
-                 BytesPerOutputFormatSample(), interleaved_.data());
+    ToFixedPoint(linearize_filter_->interleaved(),
+                 frames * num_output_channels_, BytesPerOutputFormatSample(),
+                 interleaved_.data());
     data = interleaved_.data();
   }
 
@@ -967,7 +977,8 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
     }
     frames_left -= frames_or_error;
     DCHECK_GE(frames_left, 0);
-    data += frames_or_error * kNumOutputChannels * BytesPerOutputFormatSample();
+    data +=
+        frames_or_error * num_output_channels_ * BytesPerOutputFormatSample();
   }
   UpdateRenderingDelay(frames);
   MediaPipelineBackendAlsa::RenderingDelay common_rendering_delay =
