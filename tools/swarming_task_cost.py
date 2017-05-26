@@ -50,8 +50,9 @@ def do_bucket(items, bucket_type):
         gpu_tag = t[4:]
 
     if bucket_type in (MAJOR_OS, MAJOR_OS_ASAN):
-      os_tag = os_tag.split('-')[0]
-    tag = os_tag
+      if os_tag:
+        os_tag = os_tag.split('-')[0]
+    tag = os_tag or ''
     if bucket_type == MINOR_OS_GPU and gpu_tag and gpu_tag != 'none':
       tag += ' gpu:' + gpu_tag
     if bucket_type == MAJOR_OS_ASAN and is_asan:
@@ -126,7 +127,7 @@ def percentile(items, percent):
   rank = percent * .01 * (len(items) + 1)
   rank_int = int(rank)
   rest = rank - rank_int
-  if rest and rank_int <= len(items) - 1:
+  if rest and rank_int < len(items) - 1:
     return items[rank_int] + rest * (items[rank_int+1] - items[rank_int])
   return items[min(rank_int, len(items) - 1)]
 
@@ -139,7 +140,9 @@ def sp(dividend, divisor):
 
 
 def fetch_data(options):
-  """Fetches data from options.swarming and writes it to options.json."""
+  """Fetches TaskResultSummary as JSON from options.swarming and writes it to
+  options.json.
+  """
   if not options.start:
     # Defaults to 25 hours ago.
     options.start = datetime.datetime.utcnow() - datetime.timedelta(
@@ -160,23 +163,21 @@ def fetch_data(options):
     'query',
     '-S', options.swarming,
     '--json', options.json,
-    # Start chocking at 1b tasks. The chromium infrastructure is currently at
-    # around 200k tasks/day.
-    '--limit', '1000000000',
+    '--limit', '0',
     '--progress',
     url,
   ]
   if options.verbose:
-    cmd.append('--verbose')
-    cmd.append('--verbose')
-    cmd.append('--verbose')
+    cmd.extend(('--verbose', '--verbose', '--verbose'))
   logging.info('%s', ' '.join(cmd))
   subprocess.check_call(cmd)
   print('')
 
 
 def stats(tasks, show_cost):
-  """Calculates and prints statistics about the tasks."""
+  """Calculates and prints statistics about the tasks as a list of JSON encoded
+  TaskResultSummary.
+  """
   # Split tasks into 3 buckets.
   # - 'rn' means ran, not idempotent
   # - 'ri' means ran, idempotent
@@ -207,14 +208,14 @@ def stats(tasks, show_cost):
   cost_ri = sum(sum(i.get('costs_usd') or [0.]) for i in ri)
   cost_dd = sum(i.get('cost_saved_usd', 0.) for i in dd)
   cost_total = cost_rn + cost_ri + cost_dd
-  pendings = [
+  pendings = sorted(
     (parse_time(i['started_ts']) - parse_time(i['created_ts'])).total_seconds()
     for i in tasks if i.get('started_ts') and not i.get('deduped_from')
-  ]
-  pending_total = datetime.timedelta(seconds=round(sum(pendings)))
-  pending_avg = datetime.timedelta(seconds=round(average(pendings)))
-  pending_med = datetime.timedelta(seconds=round(median(pendings)))
-  pending_p99 = datetime.timedelta(seconds=round(percentile(pendings, 99)))
+  )
+  pending_total = datetime.timedelta(seconds=round(sum(pendings), 2))
+  pending_avg = datetime.timedelta(seconds=round(average(pendings), 2))
+  pending_med = datetime.timedelta(seconds=round(median(pendings), 2))
+  pending_p99 = datetime.timedelta(seconds=round(percentile(pendings, 99), 2))
 
   # Calculate percentages to understand load relativeness.
   percent_rn_nb_total = sp(len(rn), len(tasks))
@@ -302,7 +303,7 @@ def present_task_types(items, bucket_type, show_cost):
   for index, (bucket, tasks) in enumerate(sorted(buckets.iteritems())):
     if index:
       print('')
-    print('%s:' % (bucket))
+    print('%s:' % (bucket or '<None>'))
     stats(tasks, show_cost)
   if buckets:
     print('')
