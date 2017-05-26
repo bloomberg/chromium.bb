@@ -715,21 +715,26 @@ def current_benchmarks():
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
 
-def RemoveBlacklistedTests(tests, blacklist):
+def remove_blacklisted_device_tests(tests, blacklisted_devices):
   new_tests = []
+  blacklist_device_to_test = collections.defaultdict(list)
   for test in tests:
     if test.get('swarming', None):
       swarming = test['swarming']
       new_dimensions = []
 
       for dimension in swarming['dimension_sets']:
-        if dimension['id'] in blacklist:
+        if dimension['id'] in blacklisted_devices:
+          blacklist_device_to_test[dimension['id']].append(test['name'])
           continue
         new_dimensions.append(dimension)
       if not new_dimensions:
         continue
     new_tests.append(test)
-  return new_tests
+
+  return new_tests, {
+      device: sorted(tests) for device, tests
+      in blacklist_device_to_test.items()}
 
 
 def generate_all_tests(waterfall):
@@ -753,8 +758,15 @@ def generate_all_tests(waterfall):
       isolated_scripts += generate_cplusplus_isolate_script_test(
         config['swarming_dimensions'][0])
 
-    isolated_scripts = RemoveBlacklistedTests(
+    isolated_scripts, devices_to_test_skipped = remove_blacklisted_device_tests(
         isolated_scripts, BLACKLISTED_DEVICES)
+    if devices_to_test_skipped:
+      for device, skipped_tests in devices_to_test_skipped.items():
+        print (
+          'Device "%s" is blacklisted. These benchmarks are not scheduled:' % (
+              device))
+        for test in skipped_tests:
+          print ' * %s' % test
     tests[name] = {
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
     }
