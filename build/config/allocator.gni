@@ -28,8 +28,6 @@ declare_args() {
   # Memory allocator to use. Set to "none" to use default allocator.
   use_allocator = _default_allocator
 
-  # TODO(primiano): this should just become the default without having a flag,
-  # but we need to get there first. http://crbug.com/550886 .
   # Causes all the allocations to be routed via allocator_shim.cc.
   use_allocator_shim = _default_use_allocator_shim
 }

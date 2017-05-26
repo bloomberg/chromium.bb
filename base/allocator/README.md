@@ -15,14 +15,14 @@ Background
 ----------
 The `allocator` target defines at compile-time the platform-specific choice of
 the allocator and extra-hooks which services calls to malloc/new. The relevant
-build-time flags involved are `use_allocator` and `win_use_allocator_shim`.
+build-time flags involved are `use_allocator` and `use_allocator_shim`.
 
 The default choices are as follows:
 
 **Windows**  
 `use_allocator: winheap`, the default Windows heap.
 Additionally, `static_library` (i.e. non-component) builds have a shim
-layer wrapping malloc/new, which is controlled by `win_use_allocator_shim`.  
+layer wrapping malloc/new, which is controlled by `use_allocator_shim`.  
 The shim layer provides extra security features, such as preventing large
 allocations that can hit signed vs. unsigned bugs in third_party code.
 
