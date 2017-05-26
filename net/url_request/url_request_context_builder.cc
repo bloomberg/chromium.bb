@@ -192,8 +192,7 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() {}
 
 URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
-    : host_mapping_rules(nullptr),
-      ignore_certificate_errors(false),
+    : ignore_certificate_errors(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       enable_http2(true),

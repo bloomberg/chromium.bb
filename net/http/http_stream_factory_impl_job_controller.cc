@@ -892,8 +892,7 @@ void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
 GURL HttpStreamFactoryImpl::JobController::ApplyHostMappingRules(
     const GURL& url,
     HostPortPair* endpoint) {
-  const HostMappingRules* mapping_rules = session_->params().host_mapping_rules;
-  if (mapping_rules && mapping_rules->RewriteHost(endpoint)) {
+  if (session_->params().host_mapping_rules.RewriteHost(endpoint)) {
     url::Replacements<char> replacements;
     const std::string port_str = base::UintToString(endpoint->port());
     replacements.SetPort(port_str.c_str(), url::Component(0, port_str.size()));

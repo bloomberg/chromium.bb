@@ -219,7 +219,7 @@ void HttpStreamFactoryImpl::PreconnectStreams(
 }
 
 const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
-  return session_->params().host_mapping_rules;
+  return &session_->params().host_mapping_rules;
 }
 
 void HttpStreamFactoryImpl::OnNewSpdySessionReady(

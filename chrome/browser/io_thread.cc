@@ -649,15 +649,15 @@ void IOThread::Init() {
       net::ProxyService::CreateDirectWithNetLog(net_log_);
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
-  params_.host_mapping_rules = globals_->host_mapping_rules.get();
-  globals_->http_user_agent_settings.reset(
-      new net::StaticHttpUserAgentSettings(std::string(), GetUserAgent()));
   if (command_line.HasSwitch(switches::kHostRules)) {
     TRACE_EVENT_BEGIN0("startup", "IOThread::InitAsync:SetRulesFromString");
     globals_->host_mapping_rules->SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostRules));
     TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
   }
+  params_.host_mapping_rules = *globals_->host_mapping_rules.get();
+  globals_->http_user_agent_settings.reset(
+      new net::StaticHttpUserAgentSettings(std::string(), GetUserAgent()));
   globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
   params_.enable_token_binding =

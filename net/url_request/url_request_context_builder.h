@@ -94,7 +94,7 @@ class NET_EXPORT URLRequestContextBuilder {
     void ConfigureSessionParams(HttpNetworkSession::Params* params) const;
 
     // These fields mirror those in HttpNetworkSession::Params;
-    HostMappingRules* host_mapping_rules;
+    HostMappingRules host_mapping_rules;
     bool ignore_certificate_errors;
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
