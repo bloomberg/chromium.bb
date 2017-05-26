@@ -3115,6 +3115,11 @@ const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number af autocomplete matches displayed in the "
     "Omnibox UI.";
 
+const char kOmniboxUIVerticalLayoutName[] = "Omnibox UI Vertical Layout";
+
+const char kOmniboxUIVerticalLayoutDescription[] =
+    "Displays Omnibox sugestions in 2 lines - title over origin.";
+
 const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
 
 const char kOmniboxUIVerticalMarginDescription[] =

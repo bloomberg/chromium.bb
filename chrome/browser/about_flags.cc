@@ -2967,6 +2967,11 @@ const FeatureEntry kFeatureEntries[] = {
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
 
+    {"omnibox-ui-vertical-layout",
+     flag_descriptions::kOmniboxUIVerticalLayoutName,
+     flag_descriptions::kOmniboxUIVerticalLayoutDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentVerticalLayout)},
+
     {"omnibox-ui-vertical-margin",
      flag_descriptions::kOmniboxUIVerticalMarginName,
      flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,

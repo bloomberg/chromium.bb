@@ -17,6 +17,7 @@
 
 #include <algorithm>  // NOLINT
 
+#include "base/feature_list.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
@@ -303,6 +304,8 @@ gfx::Size OmniboxResultView::GetPreferredSize() const {
   int height = GetTextHeight() + (2 * GetVerticalMargin());
   if (match_.answer)
     height += GetAnswerHeight() + kVerticalPadding;
+  else if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
+    height += GetTextHeight() + kVerticalPadding;
   return gfx::Size(0, height);
 }
 
@@ -351,42 +354,57 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
   if (description)
     description->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   int contents_max_width, description_max_width;
+  bool description_on_separate_line =
+      match.answer != nullptr ||
+      base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout);
   OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents->GetContentWidth(),
-      separator_width_,
+      contents->GetContentWidth(), separator_width_,
       description ? description->GetContentWidth() : 0,
-      mirroring_context_->remaining_width(x),
-      match.answer != nullptr,
-      !AutocompleteMatch::IsSearchType(match.type),
-      &contents_max_width,
+      mirroring_context_->remaining_width(x), description_on_separate_line,
+      !AutocompleteMatch::IsSearchType(match.type), &contents_max_width,
       &description_max_width);
 
-  int after_contents_x = DrawRenderText(match, contents, CONTENTS, canvas,
-                                        x, y, contents_max_width);
-
-  if (description_max_width != 0) {
-    if (match.answer) {
-      y += GetTextHeight() + kVerticalPadding;
-      if (!answer_image_.isNull()) {
-        int answer_icon_size = GetAnswerHeight();
-        canvas->DrawImageInt(
-            answer_image_,
-            0, 0, answer_image_.width(), answer_image_.height(),
-            GetMirroredXInView(x), y, answer_icon_size, answer_icon_size, true);
-        // TODO(dschuyler): Perhaps this should be based on the font size
-        // instead of hardcoded to 2 dp (e.g. by adding a space in an
-        // appropriate font to the beginning of the description, then reducing
-        // the additional padding here to zero).
-        const int kAnswerIconToTextPadding = 2;
-        x += answer_icon_size + kAnswerIconToTextPadding;
-      }
-    } else {
-      x = DrawRenderText(match, separator_rendertext_.get(), SEPARATOR, canvas,
-                         after_contents_x, y, separator_width_);
+  // Answers in Suggest results.
+  if (match.answer && description_max_width != 0) {
+    DrawRenderText(match, contents, CONTENTS, canvas, x, y, contents_max_width);
+    y += GetTextHeight() + kVerticalPadding;
+    if (!answer_image_.isNull()) {
+      int answer_icon_size = GetAnswerHeight();
+      canvas->DrawImageInt(answer_image_, 0, 0, answer_image_.width(),
+                           answer_image_.height(), GetMirroredXInView(x), y,
+                           answer_icon_size, answer_icon_size, true);
+      // TODO(dschuyler): Perhaps this should be based on the font size
+      // instead of hardcoded to 2 dp (e.g. by adding a space in an
+      // appropriate font to the beginning of the description, then reducing
+      // the additional padding here to zero).
+      const int kAnswerIconToTextPadding = 2;
+      x += answer_icon_size + kAnswerIconToTextPadding;
     }
+    return;
+  }
 
-    DrawRenderText(match, description, DESCRIPTION, canvas, x, y,
-                   description_max_width);
+  // Regular results.
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout)) {
+    // For no description, shift down halfways to draw contents in middle.
+    if (description_max_width == 0)
+      y += (GetTextHeight() + kVerticalPadding) / 2;
+
+    DrawRenderText(match, contents, CONTENTS, canvas, x, y, contents_max_width);
+
+    if (description_max_width != 0) {
+      y += GetTextHeight() + kVerticalPadding;
+      DrawRenderText(match, description, DESCRIPTION, canvas, x, y,
+                     description_max_width);
+    }
+  } else {
+    x = DrawRenderText(match, contents, CONTENTS, canvas, x, y,
+                       contents_max_width);
+    if (description_max_width != 0) {
+      x = DrawRenderText(match, separator_rendertext_.get(), SEPARATOR, canvas,
+                         x, y, separator_width_);
+      DrawRenderText(match, description, DESCRIPTION, canvas, x, y,
+                     description_max_width);
+    }
   }
 }
 
@@ -599,8 +617,15 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
       contents_rendertext_ =
           CreateAnswerText(match_.answer->first_line(), font_list_);
     } else {
+      bool swap_match_text =
+          base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout) &&
+          !AutocompleteMatch::IsSearchType(match_.type) &&
+          !match_.description.empty();
+
       contents_rendertext_ = CreateClassifiedRenderText(
-          match_.contents, match_.contents_class, false);
+          swap_match_text ? match_.description : match_.contents,
+          swap_match_text ? match_.description_class : match_.contents_class,
+          false);
     }
   }
 }
@@ -617,8 +642,12 @@ void OmniboxResultView::Layout() {
   const int end_x = width() - start_x;
 
   const gfx::ImageSkia icon = GetIcon();
-  const int icon_y =
-      GetVerticalMargin() + (GetTextHeight() - icon.height()) / 2;
+
+  int row_height = GetTextHeight();
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
+    row_height += kVerticalPadding + GetTextHeight();
+
+  const int icon_y = GetVerticalMargin() + (row_height - icon.height()) / 2;
   icon_bounds_.SetRect(start_x, icon_y, icon.width(), icon.height());
 
   const int text_x = start_x + LocationBarView::kIconWidth + horizontal_padding;
@@ -660,8 +689,16 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
         description_rendertext_ =
             CreateAnswerText(match_.answer->second_line(), GetAnswerFont());
       } else if (!match_.description.empty()) {
+        // If the description is empty, we wouldn't swap with the contents --
+        // nor would we create the description RenderText object anyways.
+        bool swap_match_text = base::FeatureList::IsEnabled(
+                                   omnibox::kUIExperimentVerticalLayout) &&
+                               !AutocompleteMatch::IsSearchType(match_.type);
+
         description_rendertext_ = CreateClassifiedRenderText(
-            match_.description, match_.description_class, true);
+            swap_match_text ? match_.contents : match_.description,
+            swap_match_text ? match_.contents_class : match_.description_class,
+            false);
       }
     }
     PaintMatch(match_, contents_rendertext_.get(),
