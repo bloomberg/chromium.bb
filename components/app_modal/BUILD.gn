@@ -41,9 +41,6 @@ static_library("app_modal") {
       "views/javascript_app_modal_dialog_views.h",
     ]
 
-    deps += [
-      "//components/constrained_window",
-      "//ui/views",
-    ]
+    deps += [ "//ui/views" ]
   }
 }
