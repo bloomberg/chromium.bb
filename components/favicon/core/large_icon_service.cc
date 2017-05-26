@@ -311,6 +311,7 @@ LargeIconService::LargeIconService(
     : favicon_service_(favicon_service),
       background_task_runner_(background_task_runner),
       image_fetcher_(std::move(image_fetcher)) {
+  large_icon_types_.push_back(favicon_base::IconType::WEB_MANIFEST_ICON);
   large_icon_types_.push_back(favicon_base::IconType::FAVICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_ICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_PRECOMPOSED_ICON);

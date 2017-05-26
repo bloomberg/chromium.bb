@@ -23,6 +23,8 @@ favicon_base::IconType IconTypeFromWebIconType(
       return favicon_base::TOUCH_ICON;
     case web::FaviconURL::TOUCH_PRECOMPOSED_ICON:
       return favicon_base::TOUCH_PRECOMPOSED_ICON;
+    case web::FaviconURL::WEB_MANIFEST_ICON:
+      return favicon_base::WEB_MANIFEST_ICON;
     case web::FaviconURL::INVALID_ICON:
       return favicon_base::INVALID_ICON;
   }

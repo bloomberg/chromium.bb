@@ -103,12 +103,13 @@ void FaviconDriverImpl::OnUpdateCandidates(
   RecordCandidateMetrics(candidates);
   for (const std::unique_ptr<FaviconHandler>& handler : handlers_) {
     // We feed in the Web Manifest URL (if any) to the instance handling type
-    // FAVICON, because those compete which each other (i.e. manifest icons
-    // override inline favicons).
-    handler->OnUpdateCandidates(page_url, candidates,
-                                handler->icon_types() & favicon_base::FAVICON
-                                    ? manifest_url
-                                    : GURL::EmptyGURL());
+    // WEB_MANIFEST_ICON, because those compete which each other (i.e. manifest
+    // icons override inline touch icons).
+    handler->OnUpdateCandidates(
+        page_url, candidates,
+        handler->icon_types() & favicon_base::WEB_MANIFEST_ICON
+            ? manifest_url
+            : GURL::EmptyGURL());
   }
 }
 

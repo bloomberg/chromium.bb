@@ -38,6 +38,7 @@ using favicon_base::FAVICON;
 using favicon_base::FaviconRawBitmapResult;
 using favicon_base::TOUCH_ICON;
 using favicon_base::TOUCH_PRECOMPOSED_ICON;
+using favicon_base::WEB_MANIFEST_ICON;
 using testing::AnyNumber;
 using testing::Assign;
 using testing::Contains;
@@ -1491,13 +1492,14 @@ class FaviconHandlerManifestsEnabledTest : public FaviconHandlerTest {
 //   FaviconHandler::OnUpdateCandidates() is called.
 TEST_F(FaviconHandlerManifestsEnabledTest,
        GetFaviconFromManifestInHistoryIfCandidatesSlower) {
-  favicon_service_.fake()->Store(kPageURL, kManifestURL,
-                                 CreateRawBitmapResult(kManifestURL));
+  favicon_service_.fake()->Store(
+      kPageURL, kManifestURL,
+      CreateRawBitmapResult(kManifestURL, WEB_MANIFEST_ICON));
 
   EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(_)).Times(0);
 
   EXPECT_CALL(favicon_service_,
-              UpdateFaviconMappingsAndFetch(_, kManifestURL, FAVICON,
+              UpdateFaviconMappingsAndFetch(_, kManifestURL, WEB_MANIFEST_ICON,
                                             /*desired_size_in_dip=*/16, _, _));
   EXPECT_CALL(delegate_,
               OnFaviconUpdated(_, FaviconDriverObserver::NON_TOUCH_16_DIP,
@@ -1516,15 +1518,16 @@ TEST_F(FaviconHandlerManifestsEnabledTest,
 //   FaviconService::OnFaviconDataForManifestFromFaviconService() runs.
 TEST_F(FaviconHandlerManifestsEnabledTest,
        GetFaviconFromManifestInHistoryIfCandidatesFaster) {
-  favicon_service_.fake()->Store(kPageURL, kManifestURL,
-                                 CreateRawBitmapResult(kManifestURL));
+  favicon_service_.fake()->Store(
+      kPageURL, kManifestURL,
+      CreateRawBitmapResult(kManifestURL, WEB_MANIFEST_ICON));
   // Defer the database lookup completion to control the exact timing.
   favicon_service_.fake()->SetRunCallbackManuallyForUrl(kManifestURL);
 
   EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(_)).Times(0);
 
   EXPECT_CALL(favicon_service_,
-              UpdateFaviconMappingsAndFetch(_, kManifestURL, FAVICON,
+              UpdateFaviconMappingsAndFetch(_, kManifestURL, WEB_MANIFEST_ICON,
                                             /*desired_size_in_dip=*/16, _, _));
   EXPECT_CALL(delegate_,
               OnFaviconUpdated(_, FaviconDriverObserver::NON_TOUCH_16_DIP,
@@ -1554,7 +1557,8 @@ TEST_F(FaviconHandlerManifestsEnabledTest, GetFaviconFromUnknownManifest) {
 
   EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(_)).Times(0);
 
-  EXPECT_CALL(favicon_service_, SetFavicons(_, kManifestURL, FAVICON, _));
+  EXPECT_CALL(favicon_service_,
+              SetFavicons(_, kManifestURL, WEB_MANIFEST_ICON, _));
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kManifestURL, _, _));
 
   RunHandlerWithSimpleFaviconCandidates({kIconURL12x12}, kManifestURL);
@@ -1570,9 +1574,10 @@ TEST_F(FaviconHandlerManifestsEnabledTest, GetFaviconFromExpiredManifest) {
       FaviconURL(kIconURL64x64, FAVICON, kEmptySizes),
   };
 
-  favicon_service_.fake()->Store(kPageURL, kManifestURL,
-                                 CreateRawBitmapResult(kManifestURL, FAVICON,
-                                                       /*expired=*/true));
+  favicon_service_.fake()->Store(
+      kPageURL, kManifestURL,
+      CreateRawBitmapResult(kManifestURL, WEB_MANIFEST_ICON,
+                            /*expired=*/true));
   delegate_.fake_manifest_downloader().Add(kManifestURL, kManifestIcons);
 
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kManifestURL, _, _)).Times(2);
@@ -1594,9 +1599,10 @@ TEST_F(FaviconHandlerManifestsEnabledTest,
       FaviconURL(kIconURL64x64, FAVICON, kEmptySizes),
   };
 
-  favicon_service_.fake()->Store(kSomePreviousPageURL, kManifestURL,
-                                 CreateRawBitmapResult(kManifestURL, FAVICON,
-                                                       /*expired=*/true));
+  favicon_service_.fake()->Store(
+      kSomePreviousPageURL, kManifestURL,
+      CreateRawBitmapResult(kManifestURL, WEB_MANIFEST_ICON,
+                            /*expired=*/true));
   delegate_.fake_manifest_downloader().Add(kManifestURL, kManifestIcons);
 
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kManifestURL, _, _)).Times(2);
@@ -1853,8 +1859,9 @@ TEST_F(FaviconHandlerManifestsEnabledTest,
        AddKnownManifestViaJavascriptWhileImageDownload) {
   const GURL kSomePreviousPageURL("https://www.google.com/previous");
 
-  favicon_service_.fake()->Store(kSomePreviousPageURL, kManifestURL,
-                                 CreateRawBitmapResult(kManifestURL));
+  favicon_service_.fake()->Store(
+      kSomePreviousPageURL, kManifestURL,
+      CreateRawBitmapResult(kManifestURL, WEB_MANIFEST_ICON));
 
   // Defer the image download completion to control the exact timing.
   delegate_.fake_image_downloader().SetRunCallbackManuallyForUrl(kIconURL16x16);

@@ -31,7 +31,8 @@ void ExtractManifestIcons(
     const content::Manifest& manifest) {
   std::vector<FaviconURL> candidates;
   for (const content::Manifest::Icon& icon : manifest.icons) {
-    candidates.emplace_back(icon.src, favicon_base::FAVICON, icon.sizes);
+    candidates.emplace_back(icon.src, favicon_base::WEB_MANIFEST_ICON,
+                            icon.sizes);
   }
   callback.Run(candidates);
 }
