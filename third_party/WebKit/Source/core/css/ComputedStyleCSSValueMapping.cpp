@@ -1174,9 +1174,9 @@ static CSSValue* ValueForTextDecorationStyle(
 static CSSValue* ValueForTextDecorationSkip(
     TextDecorationSkip text_decoration_skip) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (text_decoration_skip & kTextDecorationSkipObjects)
+  if (EnumHasFlags(text_decoration_skip, TextDecorationSkip::kObjects))
     list->Append(*CSSIdentifierValue::Create(CSSValueObjects));
-  if (text_decoration_skip & kTextDecorationSkipInk)
+  if (EnumHasFlags(text_decoration_skip, TextDecorationSkip::kInk))
     list->Append(*CSSIdentifierValue::Create(CSSValueInk));
 
   DCHECK(list->length());

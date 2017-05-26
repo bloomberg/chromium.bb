@@ -1433,14 +1433,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // text-decoration-skip
   static TextDecorationSkip InitialTextDecorationSkip() {
-    return kTextDecorationSkipObjects;
+    return TextDecorationSkip::kObjects;
   }
   TextDecorationSkip GetTextDecorationSkip() const {
     return static_cast<TextDecorationSkip>(
         rare_inherited_data_->text_decoration_skip_);
   }
   void SetTextDecorationSkip(TextDecorationSkip v) {
-    SET_VAR(rare_inherited_data_, text_decoration_skip_, v);
+    SET_VAR(rare_inherited_data_, text_decoration_skip_,
+            static_cast<unsigned>(v));
   }
 
   // text-overflow

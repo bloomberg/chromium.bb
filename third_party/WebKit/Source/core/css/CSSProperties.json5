@@ -2040,7 +2040,7 @@
       runtime_flag: "CSS3TextDecorations",
       field_template: "storage_only",
       type_name: "TextDecorationSkip",
-      default_value: "kTextDecorationSkipObjects",
+      default_value: "TextDecorationSkip::kObjects",
       field_size: 3,
       field_group: "rare-inherited",
     },
