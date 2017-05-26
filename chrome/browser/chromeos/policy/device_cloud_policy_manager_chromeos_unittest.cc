@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -34,6 +35,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -172,13 +174,12 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   StrictMock<chromeos::attestation::MockAttestationFlow>*
   CreateAttestationFlow() {
-    StrictMock<chromeos::attestation::MockAttestationFlow>* mock =
-        new StrictMock<chromeos::attestation::MockAttestationFlow>();
+    mock_ = new StrictMock<chromeos::attestation::MockAttestationFlow>();
     if (ShouldRegisterWithCert()) {
-      EXPECT_CALL(*mock, GetCertificate(_, _, _, _, _))
+      EXPECT_CALL(*mock_, GetCertificate(_, _, _, _, _))
           .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
     }
-    return mock;
+    return mock_;
   }
 
   void TearDown() override {
@@ -264,6 +265,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
   ServerBackedStateKeysBroker state_keys_broker_;
+  StrictMock<chromeos::attestation::MockAttestationFlow>* mock_;
 
   DeviceCloudPolicyStoreChromeOS* store_;
   SchemaRegistry schema_registry_;
@@ -797,6 +799,22 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterFails) {
   manager_->Unregister(base::Bind(
       &DeviceCloudPolicyManagerChromeOSEnrollmentTest::OnUnregistered,
       base::Unretained(this)));
+}
+
+TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, DisableMachineCertReq) {
+  // Simulate the flag --disable-machine-cert-request being provided to Chrome.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kDisableMachineCertRequest);
+
+  // Set expecation that a request for a machine cert is never made.
+  EXPECT_CALL(*mock_, GetCertificate(
+                          chromeos::attestation::AttestationCertificateProfile::
+                              PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
+                          _, _, _, _))
+      .Times(0);
+
+  RunTest();
+  ExpectSuccessfulEnrollment();
 }
 
 // A subclass that runs with a blank system salt.

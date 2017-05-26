@@ -184,6 +184,9 @@ const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
+// Disables requests for an enterprise machine certificate during attestation.
+const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
+
 // Disables mtp write support.
 const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
 
