@@ -13,7 +13,6 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {

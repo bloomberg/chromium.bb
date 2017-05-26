@@ -112,11 +112,11 @@ bool ShellPortClassic::IsInUnifiedModeIgnoreMirroring() const {
          display::DisplayManager::UNIFIED;
 }
 
-void ShellPortClassic::SetDisplayWorkAreaInsets(WmWindow* window,
+void ShellPortClassic::SetDisplayWorkAreaInsets(aura::Window* window,
                                                 const gfx::Insets& insets) {
   Shell::Get()
       ->window_tree_host_manager()
-      ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
+      ->UpdateWorkAreaOfDisplayNearestWindow(window, insets);
 }
 
 std::unique_ptr<display::TouchTransformSetter>
@@ -191,7 +191,7 @@ ShellPortClassic::CreateTabletModeEventHandler() {
 }
 
 std::unique_ptr<WorkspaceEventHandler>
-ShellPortClassic::CreateWorkspaceEventHandler(WmWindow* workspace_window) {
+ShellPortClassic::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
   return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
 }
 

@@ -339,7 +339,7 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  shell_port_->SetDisplayWorkAreaInsets(WmWindow::Get(contains), insets);
+  shell_port_->SetDisplayWorkAreaInsets(contains, insets);
 }
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {

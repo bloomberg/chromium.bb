@@ -23,7 +23,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_switches.h"

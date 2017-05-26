@@ -197,9 +197,9 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
     item.id.launch_id = base::IntToString(id++);
   }
 
-  model_->SetShelfItemDelegate(item.id,
-                               base::MakeUnique<ShelfWindowWatcherItemDelegate>(
-                                   item.id, WmWindow::Get(window)));
+  model_->SetShelfItemDelegate(
+      item.id,
+      base::MakeUnique<ShelfWindowWatcherItemDelegate>(item.id, window));
   // Panels are inserted on the left so as not to push all existing panels over.
   model_->AddAt(item.type == TYPE_APP_PANEL ? 0 : model_->item_count(), item);
 }

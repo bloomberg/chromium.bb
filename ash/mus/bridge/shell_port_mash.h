@@ -71,7 +71,7 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   display::Display GetFirstDisplay() const override;
   bool IsInUnifiedMode() const override;
   bool IsInUnifiedModeIgnoreMirroring() const override;
-  void SetDisplayWorkAreaInsets(WmWindow* window,
+  void SetDisplayWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets) override;
   std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
       override;
@@ -93,7 +93,7 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   std::unique_ptr<wm::TabletModeEventHandler> CreateTabletModeEventHandler()
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
-      WmWindow* workspace_window) override;
+      aura::Window* workspace_window) override;
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() override;
   std::unique_ptr<ImmersiveFullscreenController>

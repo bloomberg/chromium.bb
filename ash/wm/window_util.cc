@@ -7,16 +7,21 @@
 #include <vector>
 
 #include "ash/ash_constants.h"
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -138,6 +143,36 @@ int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {
   return window->delegate()
              ? window->delegate()->GetNonClientComponent(location)
              : HTNOWHERE;
+}
+
+void CloseWidgetForWindow(aura::Window* window) {
+  if (Shell::GetAshConfig() == Config::MASH &&
+      window->GetProperty(kWidgetCreationTypeKey) ==
+          WidgetCreationType::FOR_CLIENT) {
+    // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
+    // with the window. Mash only creates widgets for top level windows if mash
+    // renders the non-client frame.
+    DCHECK(Shell::window_manager_client());
+    Shell::window_manager_client()->RequestClose(window);
+    return;
+  }
+  views::Widget* widget = GetInternalWidgetForWindow(window);
+  DCHECK(widget);
+  widget->Close();
+}
+
+void AddLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
+                                         aura::Window* window) {
+  // In mus AddPreTargetHandler() only works for windows created by this client.
+  DCHECK(Shell::GetAshConfig() != Config::MASH ||
+         Shell::window_tree_client()->WasCreatedByThisClient(
+             aura::WindowMus::Get(window)));
+  window->AddPreTargetHandler(handler);
+}
+
+void RemoveLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
+                                            aura::Window* window) {
+  window->RemovePreTargetHandler(handler);
 }
 
 }  // namespace wm

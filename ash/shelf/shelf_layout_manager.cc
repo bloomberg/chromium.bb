@@ -25,7 +25,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -452,8 +451,8 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // window.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
-    WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
-    ShellPort::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());
+    ShellPort::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
+                                               gfx::Insets());
   }
 }
 
@@ -642,8 +641,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // if keyboard is not shown.
       if (!state_.IsAddingSecondaryUser() || !keyboard_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
-      WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
-      ShellPort::Get()->SetDisplayWorkAreaInsets(shelf_window, insets);
+      ShellPort::Get()->SetDisplayWorkAreaInsets(
+          shelf_widget_->GetNativeWindow(), insets);
     }
   }
 

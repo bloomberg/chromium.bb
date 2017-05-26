@@ -4,19 +4,20 @@
 
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
 
-#include "ash/wm_window.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 
 namespace ash {
 
-WorkspaceEventHandlerAura::WorkspaceEventHandlerAura(WmWindow* workspace_window)
+WorkspaceEventHandlerAura::WorkspaceEventHandlerAura(
+    aura::Window* workspace_window)
     : workspace_window_(workspace_window) {
-  workspace_window_->AddLimitedPreTargetHandler(this);
+  wm::AddLimitedPreTargetHandlerForWindow(this, workspace_window_);
 }
 
 WorkspaceEventHandlerAura::~WorkspaceEventHandlerAura() {
-  workspace_window_->RemoveLimitedPreTargetHandler(this);
+  wm::RemoveLimitedPreTargetHandlerForWindow(this, workspace_window_);
 }
 
 void WorkspaceEventHandlerAura::OnMouseEvent(ui::MouseEvent* event) {

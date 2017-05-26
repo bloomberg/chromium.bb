@@ -17,10 +17,10 @@
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -36,8 +36,7 @@ const int kInitialAnimationDurationMS = 200;
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
-      event_handler_(ShellPort::Get()->CreateWorkspaceEventHandler(
-          WmWindow::Get(viewport))),
+      event_handler_(ShellPort::Get()->CreateWorkspaceEventHandler(viewport)),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
   viewport_->AddObserver(this);
   ::wm::SetWindowVisibilityAnimationTransition(viewport_, ::wm::ANIMATE_NONE);

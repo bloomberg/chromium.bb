@@ -112,7 +112,7 @@ class ASH_EXPORT ShellPort {
   bool IsForceMaximizeOnFirstRun();
 
   // Sets work area insets of the display containing |window|, pings observers.
-  virtual void SetDisplayWorkAreaInsets(WmWindow* window,
+  virtual void SetDisplayWorkAreaInsets(aura::Window* window,
                                         const gfx::Insets& insets) = 0;
 
   // Returns true if a system-modal dialog window is currently open.
@@ -171,7 +171,7 @@ class ASH_EXPORT ShellPort {
   CreateTabletModeEventHandler() = 0;
 
   virtual std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
-      WmWindow* workspace_window) = 0;
+      aura::Window* workspace_window) = 0;
 
   virtual std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() = 0;

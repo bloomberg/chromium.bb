@@ -261,15 +261,15 @@ bool ShellPortMash::IsInUnifiedModeIgnoreMirroring() const {
   return false;
 }
 
-void ShellPortMash::SetDisplayWorkAreaInsets(WmWindow* window,
+void ShellPortMash::SetDisplayWorkAreaInsets(aura::Window* window,
                                              const gfx::Insets& insets) {
   if (GetAshConfig() == Config::MUS) {
     Shell::Get()
         ->window_tree_host_manager()
-        ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
+        ->UpdateWorkAreaOfDisplayNearestWindow(window, insets);
     return;
   }
-  window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
+  window_manager_->screen()->SetWorkAreaInsets(window, insets);
 }
 
 std::unique_ptr<display::TouchTransformSetter>
@@ -401,12 +401,11 @@ ShellPortMash::CreateScopedDisableInternalMouseAndKeyboard() {
 }
 
 std::unique_ptr<WorkspaceEventHandler>
-ShellPortMash::CreateWorkspaceEventHandler(WmWindow* workspace_window) {
+ShellPortMash::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
   if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
 
-  return base::MakeUnique<WorkspaceEventHandlerMus>(
-      WmWindow::GetAuraWindow(workspace_window));
+  return base::MakeUnique<WorkspaceEventHandlerMus>(workspace_window);
 }
 
 std::unique_ptr<ImmersiveFullscreenController>

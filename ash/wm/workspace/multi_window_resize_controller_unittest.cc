@@ -13,7 +13,6 @@
 #include "ash/test/workspace_event_handler_test_helper.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"

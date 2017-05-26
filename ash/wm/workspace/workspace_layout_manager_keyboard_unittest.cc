@@ -22,7 +22,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
@@ -64,14 +63,13 @@ class WorkspaceLayoutManagerKeyboardTest2 : public test::AshTestBase {
     restore_work_area_insets_ =
         display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
     ShellPort::Get()->SetDisplayWorkAreaInsets(
-        WmWindow::Get(Shell::GetPrimaryRootWindow()),
+        Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
   }
 
   void HideKeyboard() {
-    ShellPort::Get()->SetDisplayWorkAreaInsets(
-        WmWindow::Get(Shell::GetPrimaryRootWindow()),
-        restore_work_area_insets_);
+    ShellPort::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
+                                               restore_work_area_insets_);
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 
