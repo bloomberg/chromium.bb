@@ -3485,7 +3485,13 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     root->test_properties()->AddChild(std::move(child));
   }
 
+  base::flat_set<SurfaceId> fallback_surfaces_set;
+  for (size_t i = 0; i < fallback_surfaces.size(); ++i) {
+    fallback_surfaces_set.insert(fallback_surfaces[i]);
+  }
+
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->SetSurfaceLayerIds(fallback_surfaces_set);
   DrawFrame();
 
   FakeCompositorFrameSink* fake_compositor_frame_sink =

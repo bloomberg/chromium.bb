@@ -1631,19 +1631,10 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
         IsActivelyScrolling() || mutator_host_->NeedsTickAnimations();
   }
 
-  for (LayerImpl* surface_layer : active_tree_->SurfaceLayers()) {
-    SurfaceLayerImpl* surface_layer_impl =
-        static_cast<SurfaceLayerImpl*>(surface_layer);
-    if (settings_.enable_surface_synchronization) {
-      if (surface_layer_impl->fallback_surface_info().is_valid()) {
-        metadata.referenced_surfaces.push_back(
-            surface_layer_impl->fallback_surface_info().id());
-      }
-    } else {
-      metadata.referenced_surfaces.push_back(
-          surface_layer_impl->primary_surface_info().id());
-    }
+  for (auto& surface_id : active_tree_->SurfaceLayerIds()) {
+    metadata.referenced_surfaces.push_back(surface_id);
   }
+
   if (!InnerViewportScrollLayer())
     return metadata;
 

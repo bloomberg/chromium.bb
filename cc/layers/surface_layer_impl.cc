@@ -17,13 +17,9 @@
 namespace cc {
 
 SurfaceLayerImpl::SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id) {
-  layer_tree_impl()->AddSurfaceLayer(this);
-}
+    : LayerImpl(tree_impl, id) {}
 
-SurfaceLayerImpl::~SurfaceLayerImpl() {
-  layer_tree_impl()->RemoveSurfaceLayer(this);
-}
+SurfaceLayerImpl::~SurfaceLayerImpl() {}
 
 std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

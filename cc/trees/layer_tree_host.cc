@@ -317,6 +317,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     PushPropertyTreesTo(sync_tree);
     sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
 
+    PushSurfaceIdsTo(sync_tree);
     TreeSynchronizer::PushLayerProperties(this, sync_tree);
     sync_tree->lifecycle().AdvanceTo(
         LayerTreeLifecycle::kSyncedLayerProperties);
@@ -1092,6 +1093,20 @@ bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
   return did_paint_content;
 }
 
+void LayerTreeHost::AddSurfaceLayerId(const SurfaceId& surface_id) {
+  surface_layer_ids_.insert(surface_id);
+  needs_surface_ids_sync_ = true;
+}
+
+void LayerTreeHost::RemoveSurfaceLayerId(const SurfaceId& surface_id) {
+  surface_layer_ids_.erase(surface_id);
+  needs_surface_ids_sync_ = true;
+}
+
+const base::flat_set<SurfaceId>& LayerTreeHost::SurfaceLayerIds() const {
+  return surface_layer_ids_;
+}
+
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
   layers_that_should_push_properties_.insert(layer);
 }
@@ -1221,6 +1236,15 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   DCHECK(!tree_impl->ViewportSizeInvalid());
 
   tree_impl->set_has_ever_been_drawn(false);
+}
+
+void LayerTreeHost::PushSurfaceIdsTo(LayerTreeImpl* tree_impl) {
+  if (needs_surface_ids_sync()) {
+    tree_impl->ClearSurfaceLayerIds();
+    tree_impl->SetSurfaceLayerIds(SurfaceLayerIds());
+    // Reset for next update
+    set_needs_surface_ids_sync(false);
+  }
 }
 
 void LayerTreeHost::PushLayerTreeHostPropertiesTo(

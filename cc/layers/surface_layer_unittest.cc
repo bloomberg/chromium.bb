@@ -159,11 +159,31 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
       1.f, gfx::Size(1, 1));
   layer->SetPrimarySurfaceInfo(primary_info);
 
+  // As surface synchronization is not enabled, the primary surface id should
+  // be recorded on the layer tree host.
+  EXPECT_FALSE(layer_tree_host_->GetSettings().enable_surface_synchronization);
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
+
+  // Verify that pending tree has no surface ids already.
+  EXPECT_FALSE(host_impl_.pending_tree()->needs_surface_ids_sync());
+  EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 0u);
+
   std::unique_ptr<SurfaceLayerImpl> layer_impl =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer->id());
-  layer->PushPropertiesTo(layer_impl.get());
+  TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
+                                        host_impl_.pending_tree());
+  layer_tree_host_->PushSurfaceIdsTo(host_impl_.pending_tree());
 
-  // Verify tha the primary SurfaceInfo is pushed through and that there is
+  // Verify that pending tree received the surface id and also has
+  // needs_surface_ids_sync set to true as it needs to sync with active tree.
+  EXPECT_TRUE(host_impl_.pending_tree()->needs_surface_ids_sync());
+  EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 1u);
+
+  // Verify we have reset the state on layer tree host.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+
+  // Verify that the primary SurfaceInfo is pushed through and that there is
   // no valid fallback SurfaceInfo.
   EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
   EXPECT_EQ(SurfaceInfo(), layer_impl->fallback_surface_info());
@@ -173,7 +193,17 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
                 LocalSurfaceId(2, base::UnguessableToken::Create())),
       2.f, gfx::Size(10, 10));
   layer->SetFallbackSurfaceInfo(fallback_info);
-  layer->PushPropertiesTo(layer_impl.get());
+
+  // Verify that fallback surface id is not recorded on the layer tree host as
+  // surface synchronization is not enabled.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
+
+  TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
+                                        host_impl_.pending_tree());
+  layer_tree_host_->PushSurfaceIdsTo(host_impl_.pending_tree());
+
+  EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 1u);
 
   // Verify that the primary SurfaceInfo stays the same and the new fallback
   // SurfaceInfo is pushed through.

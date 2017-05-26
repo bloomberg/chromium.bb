@@ -90,6 +90,7 @@ LayerTreeImpl::LayerTreeImpl(
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
+      needs_surface_ids_sync_(false),
       next_activation_forces_redraw_(false),
       has_ever_been_drawn_(false),
       handle_visibility_changed_(false),
@@ -421,10 +422,20 @@ void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
   target_tree->SetCurrentlyScrollingNode(scrolling_node);
 }
 
+void LayerTreeImpl::PushSurfaceIdsTo(LayerTreeImpl* target_tree) {
+  if (needs_surface_ids_sync()) {
+    target_tree->ClearSurfaceLayerIds();
+    target_tree->SetSurfaceLayerIds(SurfaceLayerIds());
+    // Reset for next update
+    set_needs_surface_ids_sync(false);
+  }
+}
+
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
+  PushSurfaceIdsTo(target_tree);
   target_tree->property_trees()->scroll_tree.PushScrollUpdatesFromPendingTree(
       &property_trees_, target_tree);
 
@@ -1218,6 +1229,22 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
+void LayerTreeImpl::SetSurfaceLayerIds(
+    const base::flat_set<SurfaceId>& surface_layer_ids) {
+  DCHECK(surface_layer_ids_.empty());
+  surface_layer_ids_ = surface_layer_ids;
+  needs_surface_ids_sync_ = true;
+}
+
+const base::flat_set<SurfaceId>& LayerTreeImpl::SurfaceLayerIds() const {
+  return surface_layer_ids_;
+}
+
+void LayerTreeImpl::ClearSurfaceLayerIds() {
+  surface_layer_ids_.clear();
+  needs_surface_ids_sync_ = true;
+}
+
 void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
   layers_that_should_push_properties_.insert(layer);
 }
@@ -1735,19 +1762,6 @@ void LayerTreeImpl::UnregisterScrollLayer(LayerImpl* layer) {
     return;
 
   clip_scroll_map_.erase(layer->scroll_clip_layer_id());
-}
-
-void LayerTreeImpl::AddSurfaceLayer(LayerImpl* layer) {
-  DCHECK(std::find(surface_layers_.begin(), surface_layers_.end(), layer) ==
-         surface_layers_.end());
-  surface_layers_.push_back(layer);
-}
-
-void LayerTreeImpl::RemoveSurfaceLayer(LayerImpl* layer) {
-  LayerImplList::iterator it =
-      std::find(surface_layers_.begin(), surface_layers_.end(), layer);
-  DCHECK(it != surface_layers_.end());
-  surface_layers_.erase(it);
 }
 
 static bool PointHitsRect(
