@@ -29,30 +29,14 @@
 
 #define IPC_MESSAGE_START ChromeExtensionMsgStart
 
+// TODO(crbug.com/725275): Remove these ipc enums once all ipc messages here are
+// converted to mojo.
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::api::webstore::InstallStage,
                           extensions::api::webstore::INSTALL_STAGE_INSTALLING)
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::webstore_install::Result,
                           extensions::webstore_install::RESULT_LAST)
 
 // Messages sent from the browser to the renderer.
-
-// Sent to the renderer if install stage updates were requested for an inline
-// install.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_InlineInstallStageChanged,
-                    extensions::api::webstore::InstallStage /* stage */)
-
-// Sent to the renderer if download progress updates were requested for an
-// inline install.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_InlineInstallDownloadProgress,
-                    int /* percent_downloaded */)
-
-// Send to renderer once the installation mentioned on
-// ExtensionHostMsg_InlineWebstoreInstall is complete.
-IPC_MESSAGE_ROUTED4(ExtensionMsg_InlineWebstoreInstallResponse,
-                    int32_t /* install id */,
-                    bool /* whether the install was successful */,
-                    std::string /* error */,
-                    extensions::webstore_install::Result /* result */)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::AXNodeData)
   IPC_STRUCT_TRAITS_MEMBER(id)
@@ -141,12 +125,3 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_AccessibilityEvent,
 IPC_MESSAGE_ROUTED1(ExtensionMsg_AccessibilityLocationChange,
                     ExtensionMsg_AccessibilityLocationChangeParams)
 
-// Messages sent from the renderer to the browser.
-
-
-// Sent by the renderer to implement chrome.webstore.install().
-IPC_MESSAGE_ROUTED4(ExtensionHostMsg_InlineWebstoreInstall,
-                    int32_t /* install id */,
-                    int32_t /* return route id */,
-                    std::string /* Web Store item ID */,
-                    int /* listeners_mask */)

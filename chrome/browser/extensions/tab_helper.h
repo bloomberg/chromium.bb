@@ -16,10 +16,12 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_reenabler.h"
+#include "chrome/common/extensions/mojom/inline_install.mojom.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -45,7 +47,8 @@ class TabHelper : public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate,
                   public ExtensionRegistryObserver,
                   public content::NotificationObserver,
-                  public content::WebContentsUserData<TabHelper> {
+                  public content::WebContentsUserData<TabHelper>,
+                  public mojom::InlineInstaller {
  public:
   ~TabHelper() override;
 
@@ -128,10 +131,11 @@ class TabHelper : public content::WebContentsObserver,
   };
 
   explicit TabHelper(content::WebContents* web_contents);
+
   friend class content::WebContentsUserData<TabHelper>;
 
   // Displays UI for completion of creating a bookmark hosted app.
-  void FinishCreateBookmarkApp(const extensions::Extension* extension,
+  void FinishCreateBookmarkApp(const Extension* extension,
                                const WebApplicationInfo& web_app_info);
 
   // content::WebContentsObserver overrides.
@@ -145,8 +149,8 @@ class TabHelper : public content::WebContentsObserver,
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) override;
 
-  // extensions::ExtensionFunctionDispatcher::Delegate overrides.
-  extensions::WindowController* GetExtensionWindowController() const override;
+  // ExtensionFunctionDispatcher::Delegate overrides.
+  WindowController* GetExtensionWindowController() const override;
   content::WebContents* GetAssociatedWebContents() const override;
 
   // ExtensionRegistryObserver:
@@ -154,13 +158,15 @@ class TabHelper : public content::WebContentsObserver,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
+  // mojom::InlineInstall:
+  void DoInlineInstall(
+      const std::string& webstore_item_id,
+      int listeners_mask,
+      mojom::InlineInstallProgressListenerPtr install_progress_listener,
+      DoInlineInstallCallback callback) override;
+
   // Message handlers.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& info);
-  void OnInlineWebstoreInstall(content::RenderFrameHost* host,
-                               int install_id,
-                               int return_route_id,
-                               const std::string& webstore_item_id,
-                               int listeners_mask);
   void OnGetAppInstallState(content::RenderFrameHost* host,
                             const GURL& requestor_url,
                             int return_route_id,
@@ -181,17 +187,13 @@ class TabHelper : public content::WebContentsObserver,
   void OnImageLoaded(const gfx::Image& image);
 
   // WebstoreStandaloneInstaller::Callback.
-  void OnInlineInstallComplete(int install_id,
-                               int return_route_id,
-                               const ExtensionId& extension_id,
+  void OnInlineInstallComplete(const ExtensionId& extension_id,
                                bool success,
                                const std::string& error,
                                webstore_install::Result result);
 
   // ExtensionReenabler::Callback.
-  void OnReenableComplete(int install_id,
-                          int return_route_id,
-                          const ExtensionId& extension_id,
+  void OnReenableComplete(const ExtensionId& extension_id,
                           ExtensionReenabler::ReenableResult result);
 
   // content::NotificationObserver.
@@ -260,8 +262,14 @@ class TabHelper : public content::WebContentsObserver,
   std::map<ExtensionId, std::unique_ptr<InlineInstallObserver>>
       install_observers_;
 
-  // The set of extension ids that are currently being installed.
-  std::set<ExtensionId> pending_inline_installations_;
+  // Map of function callbacks that are invoked when the inline installation for
+  // a particular extension (hence ExtensionId) completes.
+  std::map<ExtensionId, DoInlineInstallCallback> install_callbacks_;
+
+  content::WebContentsFrameBindingSet<mojom::InlineInstaller> bindings_;
+
+  std::map<ExtensionId, mojom::InlineInstallProgressListenerPtr>
+      inline_install_progress_listeners_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;

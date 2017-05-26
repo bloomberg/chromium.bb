@@ -7,38 +7,38 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/common/extensions/mojom/inline_install.mojom.h"
 #include "chrome/common/extensions/webstore_install_result.h"
-#include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 class WebLocalFrame;
 }
 
 namespace extensions {
+class ScriptContext;
 
 // A V8 extension that creates an object at window.chrome.webstore. This object
 // allows JavaScript to initiate inline installs of apps that are listed in the
 // Chrome Web Store (CWS).
 class WebstoreBindings : public ObjectBackedNativeHandler,
-                         public ChromeV8ExtensionHandler {
+                         public mojom::InlineInstallProgressListener {
  public:
   explicit WebstoreBindings(ScriptContext* context);
+  ~WebstoreBindings() override;
 
-  // IPC::Listener
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // mojom::InlineInstallProgressListener:
+  void InlineInstallStageChanged(api::webstore::InstallStage stage) override;
+  void InlineInstallDownloadProgress(int percent_downloaded) override;
 
  private:
+  void InlineInstallResponse(int install_id,
+                             bool success,
+                             const std::string& error,
+                             webstore_install::Result result);
   void Install(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  void OnInlineWebstoreInstallResponse(int install_id,
-                                       bool success,
-                                       const std::string& error,
-                                       webstore_install::Result result);
-
-  void OnInlineInstallStageChanged(int stage);
-
-  void OnInlineInstallDownloadProgress(int percent_downloaded);
 
   // Extracts a Web Store item ID from a <link rel="chrome-webstore-item"
   // href="https://chrome.google.com/webstore/detail/id"> node found in the
@@ -50,6 +50,11 @@ class WebstoreBindings : public ObjectBackedNativeHandler,
       const std::string& preferred_store_link_url,
       std::string* webstore_item_id,
       std::string* error);
+
+  mojom::InlineInstallerAssociatedPtr inline_installer_;
+
+  mojo::BindingSet<mojom::InlineInstallProgressListener>
+      install_progress_listener_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreBindings);
 };
