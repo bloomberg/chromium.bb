@@ -96,7 +96,8 @@ class WindowManagerState : public EventDispatcherDelegate,
   // Returns true if this is the WindowManager of the active user.
   bool IsActive() const;
 
-  void Activate(const gfx::Point& mouse_location_on_screen);
+  void Activate(const gfx::Point& mouse_location_on_display,
+                const int64_t display_id);
   void Deactivate();
 
   // Processes an event from PlatformDisplay.
@@ -221,6 +222,7 @@ class WindowManagerState : public EventDispatcherDelegate,
   // Dispatches the event to the appropriate client and starts the ack timer.
   void DispatchInputEventToWindowImpl(ServerWindow* target,
                                       ClientSpecificId client_id,
+                                      const int64_t display_id,
                                       const Event& event,
                                       base::WeakPtr<Accelerator> accelerator);
 
@@ -229,37 +231,51 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   // Finds the debug accelerator for |event| and if one is found calls
   // HandleDebugAccelerator().
-  void ProcessDebugAccelerator(const Event& event);
+  void ProcessDebugAccelerator(const Event& event, const int64_t display_id);
 
   // Runs the specified debug accelerator.
-  void HandleDebugAccelerator(DebugAcceleratorType type);
+  void HandleDebugAccelerator(DebugAcceleratorType type,
+                              const int64_t display_id);
 
   // Called when waiting for an event or accelerator to be processed by |tree|.
   void ScheduleInputEventTimeout(WindowTree* tree,
                                  ServerWindow* target,
+                                 const int64_t display_id,
                                  const Event& event,
                                  EventDispatchPhase phase);
 
+  // Helper function to convert |point| to be in screen coordinates. |point| as
+  // the input should be in display-physical-pixel space, and the output is in
+  // screen-dip space. Returns true if the |point| is successfully converted,
+  // false otherwise.
+  bool ConvertPointToScreen(const int64_t display_id, gfx::Point* point);
+
   // EventDispatcherDelegate:
   void OnAccelerator(uint32_t accelerator_id,
+                     const int64_t display_id,
                      const Event& event,
                      AcceleratorPhase phase) override;
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
-  ServerWindow* GetFocusedWindowForEventDispatcher() override;
+  ServerWindow* GetFocusedWindowForEventDispatcher(
+      const int64_t display_id) override;
   void SetNativeCapture(ServerWindow* window) override;
   void ReleaseNativeCapture() override;
   void UpdateNativeCursorFromDispatcher() override;
   void OnCaptureChanged(ServerWindow* new_capture,
                         ServerWindow* old_capture) override;
-  void OnMouseCursorLocationChanged(const gfx::Point& point) override;
+  void OnMouseCursorLocationChanged(const gfx::Point& point,
+                                    const int64_t display_id) override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   ClientSpecificId client_id,
+                                  const int64_t display_id,
                                   const Event& event,
                                   Accelerator* accelerator) override;
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override;
-  ServerWindow* GetRootWindowContaining(gfx::Point* location) override;
-  void OnEventTargetNotFound(const Event& event) override;
+  ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
+                                        int64_t* display_id) override;
+  void OnEventTargetNotFound(const Event& event,
+                             const int64_t display_id) override;
 
   // ServerWindowObserver:
   void OnWindowEmbeddedAppDisconnected(ServerWindow* window) override;
@@ -287,9 +303,6 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   // All the active WindowManagerDisplayRoots.
   WindowManagerDisplayRoots window_manager_display_roots_;
-
-  // Id of the display the current event being processed originated from.
-  int64_t event_processing_display_id_ = 0;
 
   // Set of WindowManagerDisplayRoots corresponding to Displays that have been
   // destroyed. WindowManagerDisplayRoots are not destroyed immediately when

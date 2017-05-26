@@ -23,6 +23,7 @@
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 namespace ui {
 namespace ws {
@@ -279,10 +280,12 @@ bool WindowManagerState::IsActive() const {
   return window_server()->user_id_tracker()->active_id() == user_id();
 }
 
-void WindowManagerState::Activate(const gfx::Point& mouse_location_on_screen) {
+void WindowManagerState::Activate(const gfx::Point& mouse_location_on_display,
+                                  const int64_t display_id) {
   SetAllRootWindowsVisible(true);
   event_dispatcher_.Reset();
-  event_dispatcher_.SetMousePointerScreenLocation(mouse_location_on_screen);
+  event_dispatcher_.SetMousePointerDisplayLocation(mouse_location_on_display,
+                                                   display_id);
 }
 
 void WindowManagerState::Deactivate() {
@@ -327,9 +330,9 @@ void WindowManagerState::OnAcceleratorAck(
     DCHECK(details->event->IsKeyEvent());
     if (!properties.empty())
       details->event->AsKeyEvent()->SetProperties(properties);
-    event_processing_display_id_ = details->display_id;
     event_dispatcher_.ProcessEvent(
-        *details->event, EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
+        *details->event, details->display_id,
+        EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
   } else {
     // We're not going to process the event any further, notify event observers.
     // We don't do this first to ensure we don't send an event twice to clients.
@@ -401,8 +404,8 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
 
   if (result == mojom::EventResult::UNHANDLED &&
       details->post_target_accelerator) {
-    OnAccelerator(details->post_target_accelerator->id(), *details->event,
-                  AcceleratorPhase::POST);
+    OnAccelerator(details->post_target_accelerator->id(), details->display_id,
+                  *details->event, AcceleratorPhase::POST);
   }
 
   ProcessNextEventFromQueue();
@@ -423,9 +426,8 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
 void WindowManagerState::ProcessEventImpl(const ui::Event& event,
                                           int64_t display_id) {
   // Debug accelerators are always checked and don't interfere with processing.
-  ProcessDebugAccelerator(event);
-  event_processing_display_id_ = display_id;
-  event_dispatcher_.ProcessEvent(event,
+  ProcessDebugAccelerator(event, display_id);
+  event_dispatcher_.ProcessEvent(event, display_id,
                                  EventDispatcher::AcceleratorMatchPhase::ANY);
 }
 
@@ -453,8 +455,8 @@ void WindowManagerState::ProcessNextEventFromQueue() {
     if (queued_event->processed_target->IsValid()) {
       DispatchInputEventToWindowImpl(
           queued_event->processed_target->window(),
-          queued_event->processed_target->client_id(), *queued_event->event,
-          queued_event->processed_target->accelerator());
+          queued_event->processed_target->client_id(), queued_event->display_id,
+          *queued_event->event, queued_event->processed_target->accelerator());
       return;
     }
   }
@@ -463,6 +465,7 @@ void WindowManagerState::ProcessNextEventFromQueue() {
 void WindowManagerState::DispatchInputEventToWindowImpl(
     ServerWindow* target,
     ClientSpecificId client_id,
+    const int64_t display_id,
     const ui::Event& event,
     base::WeakPtr<Accelerator> accelerator) {
   DCHECK(target);
@@ -476,7 +479,8 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
 
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
   DCHECK(tree);
-  ScheduleInputEventTimeout(tree, target, event, EventDispatchPhase::TARGET);
+  ScheduleInputEventTimeout(tree, target, display_id, event,
+                            EventDispatchPhase::TARGET);
   in_flight_event_details_->post_target_accelerator = accelerator;
 
   // Ignore |tree| because it will receive the event via normal dispatch.
@@ -497,20 +501,22 @@ void WindowManagerState::AddDebugAccelerators() {
   debug_accelerators_.push_back(accelerator);
 }
 
-void WindowManagerState::ProcessDebugAccelerator(const ui::Event& event) {
+void WindowManagerState::ProcessDebugAccelerator(const ui::Event& event,
+                                                 const int64_t display_id) {
   if (event.type() != ui::ET_KEY_PRESSED)
     return;
 
   const ui::KeyEvent& key_event = *event.AsKeyEvent();
   for (const DebugAccelerator& accelerator : debug_accelerators_) {
     if (accelerator.Matches(key_event)) {
-      HandleDebugAccelerator(accelerator.type);
+      HandleDebugAccelerator(accelerator.type, display_id);
       break;
     }
   }
 }
 
-void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
+void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type,
+                                                const int64_t display_id) {
 #if DCHECK_IS_ON()
   // Error so it will be collected in system logs.
   for (Display* display : display_manager()->displays()) {
@@ -521,7 +527,7 @@ void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
                  << display_root->root()->GetDebugWindowHierarchy();
     }
   }
-  ServerWindow* focused_window = GetFocusedWindowForEventDispatcher();
+  ServerWindow* focused_window = GetFocusedWindowForEventDispatcher(display_id);
   LOG(ERROR) << "Focused window: "
              << (focused_window ? focused_window->id().ToString() : "(null)");
 #endif
@@ -529,11 +535,12 @@ void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
 
 void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree,
                                                    ServerWindow* target,
+                                                   const int64_t display_id,
                                                    const Event& event,
                                                    EventDispatchPhase phase) {
   std::unique_ptr<InFlightEventDetails> details =
-      base::MakeUnique<InFlightEventDetails>(
-          this, tree, event_processing_display_id_, event, phase);
+      base::MakeUnique<InFlightEventDetails>(this, tree, display_id, event,
+                                             phase);
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
   const base::TimeDelta max_delay = base::debug::BeingDebugged()
@@ -546,10 +553,24 @@ void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree,
   in_flight_event_details_ = std::move(details);
 }
 
+bool WindowManagerState::ConvertPointToScreen(const int64_t display_id,
+                                              gfx::Point* point) {
+  Display* display = display_manager()->GetDisplayById(display_id);
+  if (display) {
+    const display::Display& originated_display = display->GetDisplay();
+    *point = gfx::ConvertPointToDIP(originated_display.device_scale_factor(),
+                                    *point);
+    *point += originated_display.bounds().origin().OffsetFromOrigin();
+    return true;
+  }
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcherDelegate:
 
 void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
+                                       const int64_t display_id,
                                        const ui::Event& event,
                                        AcceleratorPhase phase) {
   DCHECK(IsActive());
@@ -557,7 +578,7 @@ void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
   WindowTree::AcceleratorCallback ack_callback;
   if (needs_ack) {
     DCHECK(!in_flight_event_details_);
-    ScheduleInputEventTimeout(window_tree_, nullptr, event,
+    ScheduleInputEventTimeout(window_tree_, nullptr, display_id, event,
                               EventDispatchPhase::PRE_TARGET_ACCELERATOR);
     ack_callback =
         base::BindOnce(&WindowManagerState::OnAcceleratorAck,
@@ -572,14 +593,15 @@ void WindowManagerState::SetFocusedWindowFromEventDispatcher(
   window_server()->SetFocusedWindow(new_focused_window);
 }
 
-ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher() {
+ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher(
+    const int64_t display_id) {
   ServerWindow* focused_window = window_server()->GetFocusedWindow();
   if (focused_window)
     return focused_window;
 
   // When none of the windows have focus return the window manager's root.
   for (auto& display_root_ptr : window_manager_display_roots_) {
-    if (display_root_ptr->display()->GetId() == event_processing_display_id_)
+    if (display_root_ptr->display()->GetId() == display_id)
       return display_root_ptr->GetClientVisibleRoot();
   }
   if (!window_manager_display_roots_.empty())
@@ -617,15 +639,23 @@ void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,
   window_server()->ProcessCaptureChanged(new_capture, old_capture);
 }
 
-void WindowManagerState::OnMouseCursorLocationChanged(const gfx::Point& point) {
-  window_server()
-      ->display_manager()
-      ->GetCursorLocationManager(user_id())
-      ->OnMouseCursorLocationChanged(point);
+void WindowManagerState::OnMouseCursorLocationChanged(
+    const gfx::Point& point_in_display,
+    const int64_t display_id) {
+  gfx::Point point_in_screen(point_in_display);
+  if (ConvertPointToScreen(display_id, &point_in_screen)) {
+    window_server()
+        ->display_manager()
+        ->GetCursorLocationManager(user_id())
+        ->OnMouseCursorLocationChanged(point_in_screen);
+  }
+  // If the display the |point_in_display| is on has been deleted, keep the old
+  // cursor location.
 }
 
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
                                                     ClientSpecificId client_id,
+                                                    const int64_t display_id,
                                                     const ui::Event& event,
                                                     Accelerator* accelerator) {
   DCHECK(IsActive());
@@ -634,15 +664,15 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
   if (in_flight_event_details_) {
     std::unique_ptr<ProcessedEventTarget> processed_event_target(
         new ProcessedEventTarget(target, client_id, accelerator));
-    QueueEvent(event, std::move(processed_event_target),
-               event_processing_display_id_);
+    QueueEvent(event, std::move(processed_event_target), display_id);
     return;
   }
 
   base::WeakPtr<Accelerator> weak_accelerator;
   if (accelerator)
     weak_accelerator = accelerator->GetWeakPtr();
-  DispatchInputEventToWindowImpl(target, client_id, event, weak_accelerator);
+  DispatchInputEventToWindowImpl(target, client_id, display_id, event,
+                                 weak_accelerator);
 }
 
 ClientSpecificId WindowManagerState::GetEventTargetClientId(
@@ -674,16 +704,19 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
 }
 
 ServerWindow* WindowManagerState::GetRootWindowContaining(
-    gfx::Point* location) {
+    gfx::Point* location_in_display,
+    int64_t* display_id) {
   if (window_manager_display_roots_.empty())
     return nullptr;
 
-  // TODO(riajiang): This is broken for HDPI because it mixes PPs and DIPs. See
-  // http://crbug.com/701036 for details.
+  gfx::Point location_in_screen(*location_in_display);
+  if (!ConvertPointToScreen(*display_id, &location_in_screen))
+    return nullptr;
+
   WindowManagerDisplayRoot* target_display_root = nullptr;
   for (auto& display_root_ptr : window_manager_display_roots_) {
     if (display_root_ptr->display()->GetDisplay().bounds().Contains(
-            *location)) {
+            location_in_screen)) {
       target_display_root = display_root_ptr.get();
       break;
     }
@@ -692,22 +725,30 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
   // TODO(kylechar): Better handle locations outside the window. Overlapping X11
   // windows, dragging and touch sensors need to be handled properly.
   if (!target_display_root) {
-    DVLOG(1) << "Invalid event location " << location->ToString();
+    DVLOG(1) << "Invalid event location " << location_in_display->ToString()
+             << " / display id " << *display_id;
     target_display_root = window_manager_display_roots_.begin()->get();
   }
 
-  // Translate the location to be relative to the display instead of relative
-  // to the screen space.
-  gfx::Point origin =
-      target_display_root->display()->GetDisplay().bounds().origin();
-  *location -= origin.OffsetFromOrigin();
+  // Update |location_in_display| and |display_id| if the target display is
+  // different from the originated display, e.g. drag-and-drop.
+  if (*display_id != target_display_root->display()->GetId()) {
+    gfx::Point origin =
+        target_display_root->display()->GetDisplay().bounds().origin();
+    *location_in_display = location_in_screen - origin.OffsetFromOrigin();
+    *location_in_display = gfx::ConvertPointToPixel(
+        target_display_root->display()->GetDisplay().device_scale_factor(),
+        *location_in_display);
+    *display_id = target_display_root->display()->GetId();
+  }
+
   return target_display_root->GetClientVisibleRoot();
 }
 
-void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
+void WindowManagerState::OnEventTargetNotFound(const ui::Event& event,
+                                               const int64_t display_id) {
   window_server()->SendToPointerWatchers(event, user_id(), nullptr, /* window */
-                                         nullptr /* ignore_tree */,
-                                         event_processing_display_id_);
+                                         nullptr /* ignore_tree */, display_id);
   if (event.IsMousePointerEvent())
     UpdateNativeCursorFromDispatcher();
 }

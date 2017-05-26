@@ -207,9 +207,11 @@ class WindowManagerStateTestApi {
 
   void DispatchInputEventToWindow(ServerWindow* target,
                                   ClientSpecificId client_id,
+                                  const int64_t display_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator) {
-    wms_->DispatchInputEventToWindow(target, client_id, event, accelerator);
+    wms_->DispatchInputEventToWindow(target, client_id, display_id, event,
+                                     accelerator);
   }
 
   ClientSpecificId GetEventTargetClientId(ServerWindow* window,

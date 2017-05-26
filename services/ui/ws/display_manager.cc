@@ -304,17 +304,22 @@ void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
                                            const UserId& active_id) {
   WindowManagerState* previous_window_manager_state =
       window_server_->GetWindowManagerStateForUser(previously_active_id);
-  gfx::Point mouse_location_on_screen;
+  gfx::Point mouse_location_on_display;
+  int64_t mouse_display_id = 0;
   if (previous_window_manager_state) {
-    mouse_location_on_screen = previous_window_manager_state->event_dispatcher()
-                                   ->mouse_pointer_last_location();
+    mouse_location_on_display =
+        previous_window_manager_state->event_dispatcher()
+            ->mouse_pointer_last_location();
+    mouse_display_id = previous_window_manager_state->event_dispatcher()
+                           ->mouse_pointer_display_id();
     previous_window_manager_state->Deactivate();
   }
 
   WindowManagerState* current_window_manager_state =
       window_server_->GetWindowManagerStateForUser(active_id);
   if (current_window_manager_state)
-    current_window_manager_state->Activate(mouse_location_on_screen);
+    current_window_manager_state->Activate(mouse_location_on_display,
+                                           mouse_display_id);
 }
 
 void DisplayManager::CreateDisplay(const display::Display& display,
