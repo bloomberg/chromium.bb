@@ -825,12 +825,11 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
 
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.
-  settings_.renderer_settings.refresh_rate = 200.0;
   settings_.background_animation_rate = 200.0;
   // Disable latency recovery to make the scheduler more predictable in its
   // actions and less dependent on timings to make decisions.
   settings_.enable_latency_recovery = false;
-  settings_.renderer_settings.buffer_to_texture_target_map =
+  settings_.buffer_to_texture_target_map =
       DefaultBufferToTextureTargetMapForTesting();
   InitializeSettings(&settings_);
 
@@ -858,14 +857,20 @@ void LayerTreeTest::RequestNewCompositorFrameSink() {
   scoped_refptr<TestContextProvider> worker_context_provider =
       TestContextProvider::CreateWorker();
 
+  RendererSettings renderer_settings;
+  renderer_settings.refresh_rate = 200.0;
+  renderer_settings.buffer_to_texture_target_map =
+      DefaultBufferToTextureTargetMapForTesting();
   auto compositor_frame_sink = CreateCompositorFrameSink(
-      std::move(shared_context_provider), std::move(worker_context_provider));
+      renderer_settings, std::move(shared_context_provider),
+      std::move(worker_context_provider));
   compositor_frame_sink->SetClient(compositor_frame_sink_client_.get());
   layer_tree_host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
 std::unique_ptr<TestCompositorFrameSink>
 LayerTreeTest::CreateCompositorFrameSink(
+    const RendererSettings& renderer_settings,
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider) {
   constexpr bool disable_display_vsync = false;
@@ -874,9 +879,8 @@ LayerTreeTest::CreateCompositorFrameSink(
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
   return base::MakeUnique<TestCompositorFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
-      shared_bitmap_manager(), gpu_memory_buffer_manager(),
-      layer_tree_host()->GetSettings().renderer_settings, impl_task_runner_,
-      synchronous_composite, disable_display_vsync);
+      shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
+      impl_task_runner_, synchronous_composite, disable_display_vsync);
 }
 
 std::unique_ptr<OutputSurface>

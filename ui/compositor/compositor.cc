@@ -140,6 +140,9 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
+  settings.buffer_to_texture_target_map =
+      context_factory_->GetRendererSettings().buffer_to_texture_target_map;
+
   settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
   settings.gpu_memory_policy.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;

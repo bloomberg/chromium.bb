@@ -39,9 +39,10 @@ LayerTreePixelTest::LayerTreePixelTest()
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
 std::unique_ptr<TestCompositorFrameSink>
-    LayerTreePixelTest::CreateCompositorFrameSink(
-        scoped_refptr<ContextProvider>,
-        scoped_refptr<ContextProvider>) {
+LayerTreePixelTest::CreateCompositorFrameSink(
+    const RendererSettings& renderer_settings,
+    scoped_refptr<ContextProvider>,
+    scoped_refptr<ContextProvider>) {
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<TestInProcessContextProvider> worker_context_provider;
   if (test_type_ == PIXEL_TEST_GL) {

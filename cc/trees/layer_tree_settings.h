@@ -86,6 +86,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t decoded_image_cache_budget_bytes = 128 * 1024 * 1024;
   size_t decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
+  BufferToTextureTargetMap buffer_to_texture_target_map;
 
   bool enable_color_correct_rasterization = false;
 

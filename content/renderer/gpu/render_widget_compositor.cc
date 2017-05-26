@@ -388,7 +388,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       cmd.HasSwitch(switches::kEnableColorCorrectRendering);
   settings.renderer_settings.enable_color_correct_rendering =
       cmd.HasSwitch(switches::kEnableColorCorrectRendering);
-  settings.renderer_settings.buffer_to_texture_target_map =
+  settings.buffer_to_texture_target_map =
       compositor_deps->GetBufferToTextureTargetMap();
 
   // Build LayerTreeSettings from command line args.
