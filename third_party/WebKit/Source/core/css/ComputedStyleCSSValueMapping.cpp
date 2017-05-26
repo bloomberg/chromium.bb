@@ -2881,10 +2881,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       list->Append(*ZoomAdjustedPixelValueForLength(style.TextIndent(), style));
       if (RuntimeEnabledFeatures::css3TextEnabled() &&
           (style.GetTextIndentLine() == TextIndentLine::kEachLine ||
-           style.GetTextIndentType() == kTextIndentHanging)) {
+           style.GetTextIndentType() == TextIndentType::kHanging)) {
         if (style.GetTextIndentLine() == TextIndentLine::kEachLine)
           list->Append(*CSSIdentifierValue::Create(CSSValueEachLine));
-        if (style.GetTextIndentType() == kTextIndentHanging)
+        if (style.GetTextIndentType() == TextIndentType::kHanging)
           list->Append(*CSSIdentifierValue::Create(CSSValueHanging));
       }
       return list;
