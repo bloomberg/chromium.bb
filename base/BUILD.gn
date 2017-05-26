@@ -514,6 +514,8 @@ component("base") {
     "memory/shared_memory_mac.cc",
     "memory/shared_memory_nacl.cc",
     "memory/shared_memory_posix.cc",
+    "memory/shared_memory_tracker.cc",
+    "memory/shared_memory_tracker.h",
     "memory/shared_memory_win.cc",
     "memory/singleton.cc",
     "memory/singleton.h",
@@ -1647,13 +1649,6 @@ component("base") {
 
   if (is_posix && !is_mac && !is_ios && !is_android && !is_chromeos) {
     sources += [ "power_monitor/power_monitor_device_source_posix.cc" ]
-  }
-
-  if (is_posix && !is_mac && !is_nacl) {
-    sources += [
-      "memory/shared_memory_tracker.cc",
-      "memory/shared_memory_tracker.h",
-    ]
   }
 
   if (!use_glib) {
