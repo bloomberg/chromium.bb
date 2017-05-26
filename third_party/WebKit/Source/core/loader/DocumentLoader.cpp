@@ -995,41 +995,6 @@ void DocumentLoader::DidCommitNavigation() {
   frame_->GetPage()->DidCommitLoad(frame_);
 }
 
-void SetFeaturePolicy(Document* document, const String& feature_policy_header) {
-  if (!RuntimeEnabledFeatures::featurePolicyEnabled())
-    return;
-  LocalFrame* frame = document->GetFrame();
-  WebFeaturePolicy* parent_feature_policy =
-      frame->IsMainFrame()
-          ? nullptr
-          : frame->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy();
-  Vector<String> messages;
-  const WebParsedFeaturePolicy& parsed_header = ParseFeaturePolicy(
-      feature_policy_header, frame->GetSecurityContext()->GetSecurityOrigin(),
-      &messages);
-  WebParsedFeaturePolicy container_policy;
-  if (frame->Owner())
-    container_policy = frame->Owner()->ContainerPolicy();
-  // Check that if there is a parent frame, that its feature policy is
-  // correctly initialized. Crash if that is not the case. (Temporary crash for
-  // isolating the cause of https://crbug.com/722333)
-  // Note that even with this check removed, the process will stil crash in
-  // feature_policy.cc when it attempts to dereference parent_feature_policy.
-  // This check is to distinguish between two possible causes.
-  if (!container_policy.empty())
-    CHECK(frame->IsMainFrame() || parent_feature_policy);
-  frame->GetSecurityContext()->InitializeFeaturePolicy(
-      parsed_header, container_policy, parent_feature_policy);
-
-  for (auto& message : messages) {
-    document->AddConsoleMessage(
-        ConsoleMessage::Create(kOtherMessageSource, kErrorMessageLevel,
-                               "Error with Feature-Policy header: " + message));
-  }
-  if (!parsed_header.empty())
-    frame->Client()->DidSetFeaturePolicyHeader(parsed_header);
-}
-
 // static
 bool DocumentLoader::ShouldClearWindowName(
     const LocalFrame& frame,
@@ -1096,8 +1061,8 @@ void DocumentLoader::InstallNewDocument(
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
-  SetFeaturePolicy(document,
-                   response_.HttpHeaderField(HTTPNames::Feature_Policy));
+  document->SetFeaturePolicy(
+      response_.HttpHeaderField(HTTPNames::Feature_Policy));
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }

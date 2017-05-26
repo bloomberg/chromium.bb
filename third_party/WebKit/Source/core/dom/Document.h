@@ -1336,6 +1336,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   CoreProbeSink* GetProbeSink() final;
 
+  void SetFeaturePolicy(const String& feature_policy_header);
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 

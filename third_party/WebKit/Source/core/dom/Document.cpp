@@ -5644,6 +5644,48 @@ HTMLLinkElement* Document::LinkManifest() const {
   return 0;
 }
 
+void Document::SetFeaturePolicy(const String& feature_policy_header) {
+  if (!RuntimeEnabledFeatures::featurePolicyEnabled())
+    return;
+
+  WebFeaturePolicy* parent_feature_policy = nullptr;
+  WebParsedFeaturePolicy container_policy;
+  Vector<String> messages;
+  const WebParsedFeaturePolicy& parsed_header =
+      ParseFeaturePolicy(feature_policy_header, GetSecurityOrigin(), &messages);
+
+  // If this frame is not the main frame, then get the appropriate parent policy
+  // and container policy to construct the policy for this frame.
+  if (frame_) {
+    if (!frame_->IsMainFrame()) {
+      parent_feature_policy =
+          frame_->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy();
+    }
+    if (frame_->Owner())
+      container_policy = frame_->Owner()->ContainerPolicy();
+  }
+
+  // Check that if there is a parent frame, that its feature policy is
+  // correctly initialized. Crash if that is not the case. (Temporary crash for
+  // isolating the cause of https://crbug.com/722333)
+  // Note that even with this check removed, the process will stil crash in
+  // feature_policy.cc when it attempts to dereference parent_feature_policy.
+  // This check is to distinguish between two possible causes.
+  if (!container_policy.empty())
+    CHECK(frame_ && (frame_->IsMainFrame() || parent_feature_policy));
+
+  InitializeFeaturePolicy(parsed_header, container_policy,
+                          parent_feature_policy);
+
+  for (const auto& message : messages) {
+    AddConsoleMessage(
+        ConsoleMessage::Create(kOtherMessageSource, kErrorMessageLevel,
+                               "Error with Feature-Policy header: " + message));
+  }
+  if (frame_ && !parsed_header.empty())
+    frame_->Client()->DidSetFeaturePolicyHeader(parsed_header);
+}
+
 void Document::InitSecurityContext(const DocumentInit& initializer) {
   DCHECK(!GetSecurityOrigin());
 
@@ -5653,6 +5695,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     cookie_url_ = KURL(kParsedURLString, g_empty_string);
     SetSecurityOrigin(SecurityOrigin::CreateUnique());
     InitContentSecurityPolicy();
+    SetFeaturePolicy(g_empty_string);
     // Unique security origins cannot have a suborigin
     return;
   }
@@ -5753,6 +5796,8 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
 
   if (GetSecurityOrigin()->HasSuborigin())
     EnforceSuborigin(*GetSecurityOrigin()->GetSuborigin());
+
+  SetFeaturePolicy(g_empty_string);
 }
 
 void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp) {
