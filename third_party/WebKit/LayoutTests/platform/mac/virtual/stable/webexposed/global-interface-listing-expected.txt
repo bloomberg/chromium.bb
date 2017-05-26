@@ -5700,6 +5700,7 @@ interface StorageEvent : Event
 interface StorageManager
     attribute @@toStringTag
     method constructor
+    method estimate
     method persist
     method persisted
 interface StyleSheet
