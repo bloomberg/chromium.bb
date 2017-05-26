@@ -486,7 +486,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(
               .ConvertToLength(state.CssToLengthConversionData());
     } else if (ToCSSIdentifierValue(*list_value).GetValueID() ==
                CSSValueEachLine) {
-      text_indent_line_value = kTextIndentEachLine;
+      text_indent_line_value = TextIndentLine::kEachLine;
     } else if (ToCSSIdentifierValue(*list_value).GetValueID() ==
                CSSValueHanging) {
       text_indent_type_value = kTextIndentHanging;

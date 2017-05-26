@@ -162,7 +162,7 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertValue(
   for (const auto& item : ToCSSValueList(value)) {
     if (item->IsIdentifierValue() &&
         ToCSSIdentifierValue(*item).GetValueID() == CSSValueEachLine)
-      line = kTextIndentEachLine;
+      line = TextIndentLine::kEachLine;
     else if (item->IsIdentifierValue() &&
              ToCSSIdentifierValue(*item).GetValueID() == CSSValueHanging)
       type = kTextIndentHanging;

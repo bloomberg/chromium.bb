@@ -437,7 +437,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "TextIndentLine",
-      default_value: "kTextIndentFirstLine",
+      default_value: "TextIndentLine::kFirstLine",
       field_size: 1,
       field_group: "rare-inherited",
     },
