@@ -921,6 +921,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkButtonForget", IDS_SETTINGS_INTERNET_BUTTON_FORGET},
       {"networkButtonViewAccount", IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT},
       {"networkConnectNotAllowed", IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED},
+      {"networkConfigSaveCredentials",
+       IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS},
       {"networkConfigShare", IDS_SETTINGS_INTERNET_CONFIG_SHARE},
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},

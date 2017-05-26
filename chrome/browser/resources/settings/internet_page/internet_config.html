@@ -66,31 +66,36 @@
     <!-- EAP (WiFi, WiMAX, Ethernet) -->
     <template is="dom-if" if="[[showEap_]]">
       <network-config-select id="outer" label="$i18n{OncEAP-Outer}"
-          value="{{configProperties_.WiFi.EAP.Outer}}"
-          items="[[eapOuterItems_]]" onc-prefix="EAP.Outer">
+          value="{{eapProperties_.Outer}}" items="[[eapOuterItems_]]"
+          onc-prefix="EAP.Outer" hidden="[[!showEap_.Outer]]">
       </network-config-select>
       <network-config-select id="inner" label="$i18n{OncEAP-Inner}"
-          value="{{configProperties_.WiFi.EAP.Inner}}"
-          items="[[getEapInnerItems_(configProperties_.WiFi.EAP.Outer)]]"
+          value="{{eapProperties_.Inner}}"
+          items="[[getEapInnerItems_(eapProperties_.Outer)]]"
           onc-prefix="EAP.Inner" hidden="[[!showEap_.Inner]]">
       </network-config-select>
       <network-config-input label="$i18n{OncEAP-SubjectMatch}"
-          value="{{configProperties_.WiFi.EAP.SubjectMatch}}"
-          hidden="[[!showEap.SubjectMatch]]">
+          value="{{eapProperties_.SubjectMatch}}"
+          hidden="[[!showEap_.SubjectMatch]]">
       </network-config-input>
       <network-config-input label="$i18n{OncEAP-Identity}"
-          value="{{configProperties_.WiFi.EAP.Identity}}"
-          hidden="[[!showEap.Identity]]">
+          value="{{eapProperties_.Identity}}">
       </network-config-input>
       <network-config-input label="$i18n{OncEAP-Password}"
-          value="{{configProperties_.WiFi.EAP.Password}}"
-          hidden="[[!showEap.Password]]">
+          value="{{eapProperties_.Password}}" hidden="[[!showEap_.Password]]">
       </network-config-input>
       <network-config-input label="$i18n{OncEAP-AnonymousIdentity}"
-          value="{{configProperties_.WiFi.EAP.AnonymousIdentity}}"
-          hidden="[[!showEap.AnonymousIdentity]]">
+          value="{{eapProperties_.AnonymousIdentity}}"
+          hidden="[[!showEap_.AnonymousIdentity]]">
       </network-config-input>
-
+      <div class="settings-box">
+        <div id="saveCredentialsLabel" class="start">
+          $i18n{networkConfigSaveCredentials}
+        </div>
+        <paper-toggle-button checked="{{eapProperties_.SaveCredentials}}"
+            aria-labelledby="saveCredentialsLabel">
+        </paper-toggle-button>
+      </div>
     </template>
 
     <!-- TODO(stevenjb): Error message for config or cert failure -->

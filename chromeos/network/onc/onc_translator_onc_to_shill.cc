@@ -244,9 +244,11 @@ void LocalTranslator::TranslateWiFi() {
 }
 
 void LocalTranslator::TranslateEAP() {
+  // Note: EAP.Outer may be empty for WiMAX configurations.
   std::string outer;
   onc_object_->GetStringWithoutPathExpansion(::onc::eap::kOuter, &outer);
-  TranslateWithTableAndSet(outer, kEAPOuterTable, shill::kEapMethodProperty);
+  if (!outer.empty())
+    TranslateWithTableAndSet(outer, kEAPOuterTable, shill::kEapMethodProperty);
 
   // Translate the inner protocol only for outer tunneling protocols.
   if (outer == ::onc::eap::kPEAP || outer == ::onc::eap::kEAP_TTLS) {

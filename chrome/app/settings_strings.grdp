@@ -1138,6 +1138,9 @@
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SHARE" desc="Settings > Internet > Network config: Label for setting allowing other device users to use the network configuration.">
       Allow other users of this device to use this network
     </message>
+    <message name="IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS" desc="Settings > Internet > Network config: Label for the setting to save identity and password.">
+      Save identity and password
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ACCESS_POINT" desc="Settings > Internet > Network details: Access Point section label.">
       Access Point
     </message>
