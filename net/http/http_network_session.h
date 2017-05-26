@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
@@ -95,7 +96,7 @@ class NET_EXPORT HttpNetworkSession
     HttpAuthHandlerFactory* http_auth_handler_factory;
     HttpServerProperties* http_server_properties;
     NetLog* net_log;
-    HostMappingRules* host_mapping_rules;
+    HostMappingRules host_mapping_rules;
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     bool ignore_certificate_errors;
     uint16_t testing_fixed_http_port;

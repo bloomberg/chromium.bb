@@ -38,7 +38,6 @@
 #include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
-#include "net/base/host_mapping_rules.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -257,7 +256,6 @@ class MCSProbe {
   MCSProbeAuthPreferences http_auth_preferences_;
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
-  std::unique_ptr<net::HostMappingRules> host_mapping_rules_;
   std::unique_ptr<net::HttpNetworkSession> network_session_;
   std::unique_ptr<net::ProxyService> proxy_service_;
 
@@ -406,7 +404,6 @@ void MCSProbe::InitializeNetworkState() {
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, host_resolver_.get());
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
-  host_mapping_rules_.reset(new net::HostMappingRules());
   proxy_service_ = net::ProxyService::CreateDirectWithNetLog(&net_log_);
 }
 
@@ -421,7 +418,6 @@ void MCSProbe::BuildNetworkSession() {
   session_params.ssl_config_service = new net::SSLConfigServiceDefaults();
   session_params.http_auth_handler_factory = http_auth_handler_factory_.get();
   session_params.http_server_properties = http_server_properties_.get();
-  session_params.host_mapping_rules = host_mapping_rules_.get();
   session_params.ignore_certificate_errors = true;
   session_params.testing_fixed_http_port = 0;
   session_params.testing_fixed_https_port = 0;

@@ -109,7 +109,6 @@ HttpNetworkSession::Params::Params()
       ssl_config_service(nullptr),
       http_auth_handler_factory(nullptr),
       net_log(nullptr),
-      host_mapping_rules(nullptr),
       socket_performance_watcher_factory(nullptr),
       ignore_certificate_errors(false),
       testing_fixed_http_port(0),
