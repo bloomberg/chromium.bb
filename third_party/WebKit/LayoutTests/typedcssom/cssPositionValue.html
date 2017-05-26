@@ -5,14 +5,14 @@
 <script>
 
 test(function() {
-  assert_equals(new CSSPositionValue(new CSSSimpleLength(50, 'px'),
-    new CSSCalcLength({px: -10, em: -3.2, pt: 0})).cssText, '50px calc((-3.2em - 10px) + 0pt)');
-  assert_equals(new CSSPositionValue(new CSSSimpleLength(50, 'px'),
-    new CSSSimpleLength(2, 'em')).cssText, '50px 2em');
-  assert_equals(new CSSPositionValue(new CSSCalcLength({px: -10, em: -3.2, pt: 0}),
-    new CSSCalcLength({px: -10, em: 3.2})).cssText, 'calc((-3.2em - 10px) + 0pt) calc(3.2em - 10px)');
-  assert_equals(new CSSPositionValue(new CSSCalcLength({px: -10, em: -3.2, pt: 0}),
-    new CSSSimpleLength(10, 'percent')).cssText, 'calc((-3.2em - 10px) + 0pt) 10%');
+  assert_equals(new CSSPositionValue(new CSSUnitValue(50, 'px'),
+    new CSSCalcValue({px: -10, em: -3.2, pt: 0})).cssText, '50px calc((-3.2em - 10px) + 0pt)');
+  assert_equals(new CSSPositionValue(new CSSUnitValue(50, 'px'),
+    new CSSUnitValue(2, 'em')).cssText, '50px 2em');
+  assert_equals(new CSSPositionValue(new CSSCalcValue({px: -10, em: -3.2, pt: 0}),
+    new CSSCalcValue({px: -10, em: 3.2})).cssText, 'calc((-3.2em - 10px) + 0pt) calc(3.2em - 10px)');
+  assert_equals(new CSSPositionValue(new CSSCalcValue({px: -10, em: -3.2, pt: 0}),
+    new CSSUnitValue(10, 'percent')).cssText, 'calc((-3.2em - 10px) + 0pt) 10%');
 }, "cssText returns a string with the x and y positions cssStrings separated by a space");
 
 </script>

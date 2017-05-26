@@ -67,16 +67,16 @@ var childComputedStyleMap = getComputedStyleMap(childTestElement);
 test(function() {
   assert_true(computedStyleMap.has('--my-length'));
   var result = computedStyleMap.get('--my-length');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '100px');
-}, 'Getting a length type registered property returns a CSSSimpleLength');
+}, 'Getting a length type registered property returns a CSSUnitValue');
 
 var t1 = async_test('Getting a URL image type registered property returns a CSSURLImageValue');
 function t1Callback() {
   t1.step(function() {
     assert_true(computedStyleMap.has('--my-image'));
     var result = computedStyleMap.get('--my-image');
-    assert_true(result instanceof CSSURLImageValue);
+    assert_equals(result.constructor.name, CSSURLImageValue.name);
     assert_equals(result.cssText, 'url(\"' + imagePath + '\")');
     // FIXME: This section of this test fails. It seems to be a bug in custom properties. See
     // crbug.com/719838
@@ -90,15 +90,15 @@ function t1Callback() {
 
 test(function() {
   var result = computedStyleMap.get('width');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '100px');
-}, 'Getting a width with a length type var value returns a CSSSimpleLength');
+}, 'Getting a width with a length type var value returns a CSSUnitValue');
 
 var t2 = async_test('Getting a background-image with a URL image type var value returns a CSSURLImageValue');
 function t2Callback() {
   t2.step(function() {
     var result = computedStyleMap.get('background-image');
-    assert_true(result instanceof CSSURLImageValue);
+    assert_equals(result.constructor.name, CSSURLImageValue.name);
     assert_equals(result.cssText, 'url(\"' + imagePath + '\")');
     assert_equals(result.state, 'loaded');
     assert_equals(result.intrinsicWidth, 1);
@@ -111,29 +111,29 @@ function t2Callback() {
 test(function() {
   assert_true(childComputedStyleMap.has('--my-inherited-length'));
   var result = childComputedStyleMap.get('--my-inherited-length');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '200px');
-}, 'Getting an inherited length type registered property returns a CSSSimpleLength');
+}, 'Getting an inherited length type registered property returns a CSSUnitValue');
 
 test(function() {
   assert_true(childComputedStyleMap.has('--my-length'));
   result = childComputedStyleMap.get('--my-length');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '0px');
-}, 'Getting a non-inherited length type registered property returns a CSSSimpleLength');
+}, 'Getting a non-inherited length type registered property returns a CSSUnitValue');
 
 test(function() {
   var result = computedStyleMap.get('height');
-  assert_true(result instanceof CSSCalcLength);
+  assert_equals(result.constructor.name, CSSCalcValue.name);
   assert_equals(result.px, 115);
   assert_equals(result.percent, 10);
   assert_equals(result.cssText, 'calc(10% + 115px)');
-}, 'Getting a height with a calc type containing var values returns a CSSCalcLength');
+}, 'Getting a height with a calc type containing var values returns a CSSCalcValue');
 
 test(function() {
   assert_true(computedStyleMap.has('--my-unused-property'));
   result = computedStyleMap.get('--my-unused-property');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '0%');
 }, 'Getting the value of a registered property that isn\'t set on the element ' +
     'returns the initial value for the property');
@@ -146,7 +146,7 @@ test(function() {
 test(function() {
   var result = computedStyleMap.getAll('--my-length');
   assert_equals(result.length, 1);
-  assert_true(result[0] instanceof CSSSimpleLength);
+  assert_equals(result[0].constructor.name, CSSUnitValue.name);
   assert_equals(result[0].cssText, '100px');
 }, 'getAll for a length type registered property returns a single value');
 

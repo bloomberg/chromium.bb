@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Getting a 10px lineHeight results in a CSSUnitValue assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
+PASS getAll for lineHeight returns a single value 
+FAIL Getting a 10% lineHeight results in a CSSUnitValue assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting a number lineHeight results in a CSSUnitValue assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting a calc lineHeight results in a CSSUnitValue assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
+PASS Getting a normal lineHeight results in a CSSKeywordValue 
+Harness: the test ran to completion.
+

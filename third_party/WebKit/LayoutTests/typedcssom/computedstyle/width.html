@@ -11,11 +11,11 @@
 
 testElement.style.width = '10px';
 
-var t1 = async_test("Getting a 10px width results in a CSSSimpleLength");
+var t1 = async_test("Getting a 10px width results in a CSSUnitValue");
 function t1Callback(computedStyleMap) {
   t1.step(function() {
     var result = computedStyleMap.get('width');
-    assert_equals(result.constructor.name, CSSSimpleLength.name);
+    assert_equals(result.constructor.name, CSSUnitValue.name);
     assert_equals(result.cssText, '10px');
   });
   t1.done();

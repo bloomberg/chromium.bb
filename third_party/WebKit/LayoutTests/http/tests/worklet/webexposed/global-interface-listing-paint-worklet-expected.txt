@@ -1,29 +1,6 @@
 CONSOLE MESSAGE: line 147: interface ByteLengthQueuingStrategy
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method size
-CONSOLE MESSAGE: line 147: interface CSSAngleValue : CSSStyleValue
-CONSOLE MESSAGE: line 147:     getter degrees
-CONSOLE MESSAGE: line 147:     getter gradians
-CONSOLE MESSAGE: line 147:     getter radians
-CONSOLE MESSAGE: line 147:     getter turns
-CONSOLE MESSAGE: line 147:     method constructor
-CONSOLE MESSAGE: line 147: interface CSSCalcLength : CSSLengthValue
-CONSOLE MESSAGE: line 147:     getter ch
-CONSOLE MESSAGE: line 147:     getter cm
-CONSOLE MESSAGE: line 147:     getter em
-CONSOLE MESSAGE: line 147:     getter ex
-CONSOLE MESSAGE: line 147:     getter in
-CONSOLE MESSAGE: line 147:     getter mm
-CONSOLE MESSAGE: line 147:     getter pc
-CONSOLE MESSAGE: line 147:     getter percent
-CONSOLE MESSAGE: line 147:     getter pt
-CONSOLE MESSAGE: line 147:     getter px
-CONSOLE MESSAGE: line 147:     getter rem
-CONSOLE MESSAGE: line 147:     getter vh
-CONSOLE MESSAGE: line 147:     getter vmax
-CONSOLE MESSAGE: line 147:     getter vmin
-CONSOLE MESSAGE: line 147:     getter vw
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSImageValue : CSSResourceValue
 CONSOLE MESSAGE: line 147:     getter intrinsicHeight
 CONSOLE MESSAGE: line 147:     getter intrinsicRatio
@@ -32,20 +9,10 @@ CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSKeywordValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter keywordValue
 CONSOLE MESSAGE: line 147:     method constructor
-CONSOLE MESSAGE: line 147: interface CSSLengthValue : CSSStyleValue
-CONSOLE MESSAGE: line 147:     static method from
-CONSOLE MESSAGE: line 147:     method add
-CONSOLE MESSAGE: line 147:     method constructor
-CONSOLE MESSAGE: line 147:     method divide
-CONSOLE MESSAGE: line 147:     method multiply
-CONSOLE MESSAGE: line 147:     method subtract
 CONSOLE MESSAGE: line 147: interface CSSMatrixComponent : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter matrix
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter matrix
-CONSOLE MESSAGE: line 147: interface CSSNumberValue : CSSStyleValue
-CONSOLE MESSAGE: line 147:     getter value
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor
@@ -77,10 +44,6 @@ CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter x
 CONSOLE MESSAGE: line 147:     setter y
 CONSOLE MESSAGE: line 147:     setter z
-CONSOLE MESSAGE: line 147: interface CSSSimpleLength : CSSLengthValue
-CONSOLE MESSAGE: line 147:     getter type
-CONSOLE MESSAGE: line 147:     getter value
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSSkew : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter ax
 CONSOLE MESSAGE: line 147:     getter ay

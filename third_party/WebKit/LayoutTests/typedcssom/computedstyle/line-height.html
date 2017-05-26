@@ -16,9 +16,9 @@ var computedStyleMap = getComputedStyleMap(testElement);
 
 test(function() {
   var result = computedStyleMap.get('line-height');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '10px');
-}, 'Getting a 10px lineHeight results in a CSSSimpleLength');
+}, 'Getting a 10px lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = '20px';
@@ -30,28 +30,28 @@ test(function() {
 test(function() {
   testElement.style.lineHeight = '10%';
   var result = computedStyleMap.get('line-height');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '10px');
-}, 'Getting a 10% lineHeight results in a CSSSimpleLength');
+}, 'Getting a 10% lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = '0.2';
   var result = computedStyleMap.get('line-height');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '20px');
-}, 'Getting a number lineHeight results in a CSSSimpleLength');
+}, 'Getting a number lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = 'calc(10px + 10%)';
   var result = computedStyleMap.get('line-height');
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '20px');
-}, 'Getting a calc lineHeight results in a CSSSimpleLength');
+}, 'Getting a calc lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = 'normal';
   var result = computedStyleMap.get('line-height');
-  assert_true(result instanceof CSSKeywordValue);
+  assert_equals(result.constructor.name, CSSKeywordValue.name);
   assert_equals(result.cssText, 'normal');
 }, 'Getting a normal lineHeight results in a CSSKeywordValue');
 

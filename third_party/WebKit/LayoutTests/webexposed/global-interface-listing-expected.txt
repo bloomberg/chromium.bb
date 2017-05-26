@@ -577,31 +577,6 @@ interface CSS
     static method vw
     attribute @@toStringTag
     method constructor
-interface CSSAngleValue : CSSStyleValue
-    attribute @@toStringTag
-    getter degrees
-    getter gradians
-    getter radians
-    getter turns
-    method constructor
-interface CSSCalcLength : CSSLengthValue
-    attribute @@toStringTag
-    getter ch
-    getter cm
-    getter em
-    getter ex
-    getter in
-    getter mm
-    getter pc
-    getter percent
-    getter pt
-    getter px
-    getter rem
-    getter vh
-    getter vmax
-    getter vmin
-    getter vw
-    method constructor
 interface CSSConditionRule : CSSGroupingRule
     attribute @@toStringTag
     getter conditionText
@@ -647,14 +622,6 @@ interface CSSKeywordValue : CSSStyleValue
     attribute @@toStringTag
     getter keywordValue
     method constructor
-interface CSSLengthValue : CSSStyleValue
-    static method from
-    attribute @@toStringTag
-    method add
-    method constructor
-    method divide
-    method multiply
-    method subtract
 interface CSSMatrixComponent : CSSTransformComponent
     attribute @@toStringTag
     getter matrix
@@ -668,10 +635,6 @@ interface CSSNamespaceRule : CSSRule
     attribute @@toStringTag
     getter namespaceURI
     getter prefix
-    method constructor
-interface CSSNumberValue : CSSStyleValue
-    attribute @@toStringTag
-    getter value
     method constructor
 interface CSSNumericValue : CSSStyleValue
     attribute @@toStringTag
@@ -741,11 +704,6 @@ interface CSSScale : CSSTransformComponent
     setter x
     setter y
     setter z
-interface CSSSimpleLength : CSSLengthValue
-    attribute @@toStringTag
-    getter type
-    getter value
-    method constructor
 interface CSSSkew : CSSTransformComponent
     attribute @@toStringTag
     getter ax

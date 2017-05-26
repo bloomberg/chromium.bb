@@ -20,7 +20,7 @@ CSSRotation* FromCSSRotate(const CSSFunctionValue& value) {
   const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value.Item(0));
   if (primitive_value.IsCalculated() || !primitive_value.IsAngle())
     return nullptr;
-  return CSSRotation::Create(CSSAngleValue::FromCSSValue(primitive_value));
+  return CSSRotation::Create(CSSNumericValue::FromCSSValue(primitive_value));
 }
 
 CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
@@ -36,7 +36,7 @@ CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
   double y = ToCSSPrimitiveValue(value.Item(1)).GetDoubleValue();
   double z = ToCSSPrimitiveValue(value.Item(2)).GetDoubleValue();
 
-  return CSSRotation::Create(x, y, z, CSSAngleValue::FromCSSValue(angle));
+  return CSSRotation::Create(x, y, z, CSSNumericValue::FromCSSValue(angle));
 }
 
 CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
@@ -44,7 +44,7 @@ CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
   const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value.Item(0));
   if (primitive_value.IsCalculated())
     return nullptr;
-  CSSAngleValue* angle = CSSAngleValue::FromCSSValue(primitive_value);
+  CSSNumericValue* angle = CSSNumericValue::FromCSSValue(primitive_value);
   switch (value.FunctionType()) {
     case CSSValueRotateX:
       return CSSRotation::Create(1, 0, 0, angle);
@@ -77,18 +77,22 @@ CSSRotation* CSSRotation::FromCSSValue(const CSSFunctionValue& value) {
 }
 
 CSSFunctionValue* CSSRotation::ToCSSValue() const {
-  CSSFunctionValue* result =
-      CSSFunctionValue::Create(is2d_ ? CSSValueRotate : CSSValueRotate3d);
-  if (!is2d_) {
-    result->Append(
-        *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
-    result->Append(
-        *CSSPrimitiveValue::Create(y_, CSSPrimitiveValue::UnitType::kNumber));
-    result->Append(
-        *CSSPrimitiveValue::Create(z_, CSSPrimitiveValue::UnitType::kNumber));
-  }
-  result->Append(*CSSPrimitiveValue::Create(angle_->Value(), angle_->Unit()));
-  return result;
+  return nullptr;
+  // TODO(meade): Re-implement this when we finish rewriting number/length
+  // types.
+  // CSSFunctionValue* result =
+  //     CSSFunctionValue::Create(is2d_ ? CSSValueRotate : CSSValueRotate3d);
+  // if (!is2d_) {
+  //   result->Append(
+  //      *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
+  //   result->Append(
+  //      *CSSPrimitiveValue::Create(y_, CSSPrimitiveValue::UnitType::kNumber));
+  //   result->Append(
+  //      *CSSPrimitiveValue::Create(z_, CSSPrimitiveValue::UnitType::kNumber));
+  // }
+  // result->Append(*CSSPrimitiveValue::Create(angle_->Value(),
+  //                                           angle_->Unit()));
+  // return result;
 }
 
 }  // namespace blink

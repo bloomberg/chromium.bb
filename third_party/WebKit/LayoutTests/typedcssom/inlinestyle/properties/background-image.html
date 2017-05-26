@@ -19,10 +19,10 @@ runInlineStylePropertyMapTests( {
     'none',
   ],
   validObjects: [
-    new CSSURLImageValue(window.location.href + 'resources/1x1-green.jpg'),
+    new CSSURLImageValue(window.location.href + '/resources/1x1-green.jpg'),
     new CSSURLImageValue(window.location.href)
   ],
   supportsMultiple: false,
-  invalidObjects: [new CSSSimpleLength(4, 'px')]
+  invalidObjects: [new CSSUnitValue(4, 'px')]
 });
 </script>

@@ -12,9 +12,9 @@ test(function() {
   testElement.style.borderTop = '10px solid #000';
 
   var result = computedStyleMap.get('border-top-width');
-  assert_equals(result.constructor.name, CSSSimpleLength.name);
+  assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.cssText, '10px');
-}, "Getting a 10px border-top-width returns a CSSSimpleLength");
+}, "Getting a 10px border-top-width returns a CSSUnitValue");
 
 test(function() {
   testElement.style.borderTop = '20px solid #000';

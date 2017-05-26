@@ -7,10 +7,10 @@
 
 <script>
 
-let zeroAngle = new CSSAngleValue(0, 'deg');
+let zeroAngle = new CSSUnitValue(0, 'deg');
 
 function angleValue(value, unit) {
-  return new CSSAngleValue(value, unit);
+  return new CSSUnitValue(value, unit);
 }
 
 function cssTransformWithRotate(angleValue) {
@@ -103,7 +103,7 @@ runInlineStylePropertyMapTests( {
       cssTransformWithRotate3D(0, 0, 1, angleValue(0.31, 'turn')),
   },
   supportsMultiple: false,
-  invalidObjects: [new CSSSimpleLength(4, 'px')]
+  invalidObjects: [new CSSUnitValue(4, 'px')]
 });
 
 // TODO(meade): Remove/update this test once translate is supported.

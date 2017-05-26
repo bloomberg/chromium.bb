@@ -43,7 +43,7 @@ test(function() {
   for (var i = 0; i < supportedUnits.length; i++) {
     var unit = supportedUnits[i];
     var perspective = new CSSTransformValue([
-        new CSSPerspective(new CSSSimpleLength(i, unit))]);
+        new CSSPerspective(new CSSUnitValue(i, unit))]);
     testElement.styleMap.set('transform', perspective);
 
     var cssText = 'perspective(' + i + unit + ')';

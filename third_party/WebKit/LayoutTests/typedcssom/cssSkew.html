@@ -5,7 +5,7 @@
 <script>
 var EPSILON = 1e-6; // float epsilon
 
-function angle(deg) { return new CSSAngleValue(deg, 'deg'); }
+function angle(deg) { return new CSSUnitValue(deg, 'deg'); }
 
 function tanDegrees(degrees) {
   var radians = degrees * Math.PI / 180;
@@ -17,8 +17,8 @@ var values = [
   {input: new CSSSkew(angle(1), angle(2)), ax: 1, ay: 2, cssText: "skew(1deg, 2deg)"},
   {input: new CSSSkew(angle(-2), angle(-4)), ax: -2, ay: -4, cssText: "skew(-2deg, -4deg)"},
   {input: new CSSSkew(angle(3.4), angle(2.7)), ax: 3.4, ay: 2.7, cssText: "skew(3.4deg, 2.7deg)"},
-  {input: new CSSSkew(new CSSAngleValue(1, 'rad'), angle(0)), ax: 57.2957795, ay: 0, cssText: "skew(1rad, 0deg)"},
-  {input: new CSSSkew(angle(0), new CSSAngleValue(1, 'rad')), ax: 0, ay: 57.2957795, cssText: "skew(0deg, 1rad)"}
+  {input: new CSSSkew(new CSSUnitValue(1, 'rad'), angle(0)), ax: 57.2957795, ay: 0, cssText: "skew(1rad, 0deg)"},
+  {input: new CSSSkew(angle(0), new CSSUnitValue(1, 'rad')), ax: 0, ay: 57.2957795, cssText: "skew(0deg, 1rad)"}
 ];
 
 test(function() {
@@ -41,11 +41,11 @@ test(function() {
 }, "toString() for CSSSkew is correct.");
 
 test(function() {
-  assert_throws(null, function() { new CSSSkew(); });
-  assert_throws(null, function() { new CSSSkew(null); });
-  assert_throws(null, function() { new CSSSkew(1); });
-  assert_throws(null, function() { new CSSSkew('1'); });
-  assert_throws(null, function() { new CSSSkew(angle(1)); });
+  assert_throws(new TypeError(), function() { new CSSSkew(); });
+  assert_throws(new TypeError(), function() { new CSSSkew(null); });
+  assert_throws(new TypeError(), function() { new CSSSkew(1); });
+  assert_throws(new TypeError(), function() { new CSSSkew('1'); });
+  assert_throws(new TypeError(), function() { new CSSSkew(angle(1)); });
 }, "Invalid arguments for CSSSkew throws an exception.");
 
 test(function() {

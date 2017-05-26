@@ -7,7 +7,6 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/cssom/CSSOMKeywords.h"
 #include "core/css/cssom/CSSKeywordValue.h"
-#include "core/css/cssom/CSSLengthValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 
 namespace blink {
@@ -17,10 +16,11 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
   // Shortcut special case.
   if (styleValue.GetType() == CSSStyleValue::kSimpleLengthType ||
       styleValue.GetType() == CSSStyleValue::kCalcLengthType) {
-    if (ToCSSLengthValue(styleValue).ContainsPercent() &&
-        !CSSPropertyMetadata::PropertySupportsPercentage(id)) {
-      return false;
-    }
+    // TODO(meade): Rewrite this once the new length types are spec'd.
+    // if (ToCSSLengthValue(styleValue).ContainsPercent() &&
+    //     !CSSPropertyMetadata::PropertySupportsPercentage(id)) {
+    //   return false;
+    // }
   } else if (styleValue.GetType() == CSSStyleValue::kKeywordType) {
     // Keywords are also handled differently.
     return CSSOMKeywords::ValidKeywordForProperty(
