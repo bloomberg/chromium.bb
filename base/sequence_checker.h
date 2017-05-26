@@ -5,6 +5,7 @@
 #ifndef BASE_SEQUENCE_CHECKER_H_
 #define BASE_SEQUENCE_CHECKER_H_
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/sequence_checker_impl.h"
 
@@ -66,7 +67,7 @@ namespace base {
 // above macros) to get the right version for your build configuration.
 class SequenceCheckerDoNothing {
  public:
-  bool CalledOnValidSequence() const { return true; }
+  bool CalledOnValidSequence() const WARN_UNUSED_RESULT { return true; }
 
   void DetachFromSequence() {}
 };
