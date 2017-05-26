@@ -30,6 +30,17 @@ class ASH_EXPORT ScreenUtil {
   // Returns the display's work area bounds in parent coordinates.
   static gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
 
+  // Returns the display's work area bounds in parent coordinates on lock
+  // screen, i.e. for work area with forced bottom alignment.
+  // Note that unlike |GetDisplayWorkAreaBoundsInParent|, this method uses
+  // work area bounds that are updated when the screen is locked. For example
+  // if shelf alignment is set to right before screen lock,
+  // |GetDisplayWorkAreaBoundsInParent| will return work are bounds for right
+  // shelf alignment - this method will return work area for bottom shelf
+  // alignment (which is always used on lock screen).
+  static gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(
+      aura::Window* window);
+
   // Returns the bounds of the physical display containing the shelf for
   // |window|. Physical displays can differ from logical displays in unified
   // desktop mode.

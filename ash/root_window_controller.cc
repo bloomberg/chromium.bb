@@ -40,6 +40,7 @@
 #include "ash/wm/boot_splash_screen_chromeos.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/fullscreen_window_finder.h"
+#include "ash/wm/lock_action_handler_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_layout_manager.h"
@@ -207,6 +208,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_LockSystemModalContainer,
       kShellWindowId_UnparentedControlContainer,
       kShellWindowId_OverlayContainer,
+      kShellWindowId_LockActionHandlerContainer,
   };
   const int kExtraContainerIdsToMoveInUnifiedMode[] = {
       kShellWindowId_LockScreenContainer,
@@ -795,6 +797,13 @@ void RootWindowController::InitLayoutManagers() {
   lock_modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(lock_modal_container));
 
+  aura::Window* lock_action_handler_container =
+      GetContainer(kShellWindowId_LockActionHandlerContainer);
+  DCHECK(lock_action_handler_container);
+  lock_action_handler_container->SetLayoutManager(
+      new LockActionHandlerLayoutManager(lock_action_handler_container,
+                                         shelf_.get()));
+
   aura::Window* lock_container =
       GetContainer(kShellWindowId_LockScreenContainer);
   DCHECK(lock_container);
@@ -949,6 +958,14 @@ void RootWindowController::CreateContainers() {
   lock_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
   // TODO(beng): stopsevents
+
+  WmWindow* lock_action_handler_container =
+      CreateContainer(kShellWindowId_LockActionHandlerContainer,
+                      "LockActionHandlerContainer", lock_screen_containers);
+  lock_action_handler_container->SetSnapsChildrenToPhysicalPixelBoundary();
+  lock_action_handler_container->SetChildWindowVisibilityChangesAnimated();
+  lock_action_handler_container->SetBoundsInScreenBehaviorForChildren(
+      WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
 
   WmWindow* lock_modal_container =
       CreateContainer(kShellWindowId_LockSystemModalContainer,
