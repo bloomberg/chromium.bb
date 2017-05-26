@@ -52,14 +52,10 @@
 #include "content/public/common/user_agent.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "jni/ContentViewCore_jni.h"
-#include "jni/DragEvent_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ui_base_switches_util.h"
-#include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event_utils.h"
@@ -80,7 +76,6 @@ using base::android::ScopedJavaLocalRef;
 using blink::WebContextMenuData;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
-using ui::MotionEventAndroid;
 
 namespace content {
 
@@ -1142,74 +1137,6 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env,
       GetRenderWidgetHostViewAndroid()->SetBackgroundColorToDefault();
     else
       GetRenderWidgetHostViewAndroid()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  }
-}
-
-bool ContentViewCoreImpl::IsTouchDragDropEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jobj) {
-  return switches::IsTouchDragDropEnabled();
-}
-
-void ContentViewCoreImpl::OnDragEvent(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jobj,
-    jint action,
-    jint x,
-    jint y,
-    jint screen_x,
-    jint screen_y,
-    const base::android::JavaParamRef<jobjectArray>& j_mimeTypes,
-    const base::android::JavaParamRef<jstring>& j_content) {
-  WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents())->GetView());
-
-  const gfx::Point location(x, y);
-  const gfx::Point screen_location(screen_x, screen_y);
-
-  std::vector<base::string16> mime_types;
-  base::android::AppendJavaStringArrayToStringVector(env, j_mimeTypes,
-                                                     &mime_types);
-  switch (action) {
-    case JNI_DragEvent::ACTION_DRAG_ENTERED: {
-      std::vector<DropData::Metadata> metadata;
-      for (const base::string16& mime_type : mime_types) {
-        metadata.push_back(DropData::Metadata::CreateForMimeType(
-            DropData::Kind::STRING, mime_type));
-      }
-      wcva->OnDragEntered(metadata, location, screen_location);
-      break;
-    }
-    case JNI_DragEvent::ACTION_DRAG_LOCATION: {
-      wcva->OnDragUpdated(location, screen_location);
-      break;
-    }
-    case JNI_DragEvent::ACTION_DROP: {
-      base::string16 text_to_drop = ConvertJavaStringToUTF16(env, j_content);
-      DropData drop_data;
-      drop_data.did_originate_from_renderer = false;
-      for (const base::string16& mime_type : mime_types) {
-        if (base::EqualsASCII(mime_type, ui::Clipboard::kMimeTypeURIList)) {
-          drop_data.url = GURL(text_to_drop);
-        } else if (base::EqualsASCII(mime_type, ui::Clipboard::kMimeTypeText)) {
-          drop_data.text = base::NullableString16(text_to_drop, false);
-        } else {
-          drop_data.html = base::NullableString16(text_to_drop, false);
-        }
-      }
-
-      wcva->OnPerformDrop(&drop_data, location, screen_location);
-      break;
-    }
-    case JNI_DragEvent::ACTION_DRAG_EXITED:
-      wcva->OnDragExited();
-      break;
-    case JNI_DragEvent::ACTION_DRAG_ENDED:
-      wcva->OnDragEnded();
-      break;
-    case JNI_DragEvent::ACTION_DRAG_STARTED:
-      // Nothing meaningful to do.
-      break;
   }
 }
 

@@ -3196,7 +3196,7 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onDragEvent(DragEvent event) {
-            return mContentViewCore.onDragEvent(event);
+            return mWebContents.getEventForwarder().onDragEvent(event, mContainerView);
         }
 
         @Override

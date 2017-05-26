@@ -4,15 +4,18 @@
 
 #include "ui/android/event_forwarder.h"
 
+#include "base/android/jni_array.h"
 #include "base/metrics/histogram_macros.h"
 #include "jni/EventForwarder_jni.h"
 #include "ui/android/view_android.h"
-#include "ui/android/view_client.h"
+#include "ui/base/ui_base_switches_util.h"
+#include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/base_event_utils.h"
 
 namespace ui {
 
+using base::android::AppendJavaStringArrayToStringVector;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -28,9 +31,10 @@ EventForwarder::~EventForwarder() {
 
 ScopedJavaLocalRef<jobject> EventForwarder::GetJavaObject() {
   if (java_obj_.is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
     java_obj_.Reset(
-        Java_EventForwarder_create(base::android::AttachCurrentThread(),
-                                   reinterpret_cast<intptr_t>(this)));
+        Java_EventForwarder_create(env, reinterpret_cast<intptr_t>(this),
+                                   switches::IsTouchDragDropEnabled()));
   }
   return ScopedJavaLocalRef<jobject>(java_obj_);
 }
@@ -135,6 +139,26 @@ void EventForwarder::OnMouseWheelEvent(JNIEnv* env,
                                0 /* raw_offset_y_pixels */, &pointer, nullptr);
 
   view_->OnMouseWheelEvent(event);
+}
+
+void EventForwarder::OnDragEvent(JNIEnv* env,
+                                 const JavaParamRef<jobject>& jobj,
+                                 jint action,
+                                 jint x,
+                                 jint y,
+                                 jint screen_x,
+                                 jint screen_y,
+                                 const JavaParamRef<jobjectArray>& j_mimeTypes,
+                                 const JavaParamRef<jstring>& j_content) {
+  float dip_scale = view_->GetDipScale();
+  gfx::PointF location(x / dip_scale, y / dip_scale);
+  gfx::PointF root_location(screen_x / dip_scale, screen_y / dip_scale);
+  std::vector<base::string16> mime_types;
+  AppendJavaStringArrayToStringVector(env, j_mimeTypes, &mime_types);
+
+  DragEventAndroid event(env, action, location, root_location, mime_types,
+                         j_content.obj());
+  view_->OnDragEvent(event);
 }
 
 bool RegisterEventForwarder(JNIEnv* env) {

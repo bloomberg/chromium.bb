@@ -261,12 +261,16 @@ MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& e)
     cached_pointers_[1] = e.cached_pointers_[1];
 }
 
-std::unique_ptr<MotionEventAndroid> MotionEventAndroid::Offset(float x,
-                                                               float y) const {
+std::unique_ptr<MotionEventAndroid> MotionEventAndroid::CreateFor(
+    const gfx::PointF& point) const {
   std::unique_ptr<MotionEventAndroid> event(new MotionEventAndroid(*this));
-  event->cached_pointers_[0] = OffsetCachedPointer(cached_pointers_[0], x, y);
-  if (cached_pointer_count_ > 1)
-    event->cached_pointers_[1] = OffsetCachedPointer(cached_pointers_[1], x, y);
+  if (cached_pointer_count_ > 1) {
+    gfx::Vector2dF diff = event->cached_pointers_[1].position -
+                          event->cached_pointers_[0].position;
+    event->cached_pointers_[1] =
+        CreateCachedPointer(cached_pointers_[1], point + diff);
+  }
+  event->cached_pointers_[0] = CreateCachedPointer(cached_pointers_[0], point);
   return event;
 }
 
@@ -475,14 +479,12 @@ MotionEventAndroid::CachedPointer MotionEventAndroid::FromAndroidPointer(
   return result;
 }
 
-MotionEventAndroid::CachedPointer MotionEventAndroid::OffsetCachedPointer(
+MotionEventAndroid::CachedPointer MotionEventAndroid::CreateCachedPointer(
     const CachedPointer& pointer,
-    float x,
-    float y) const {
+    const gfx::PointF& point) const {
   CachedPointer result;
   result.id = pointer.id;
-  result.position = gfx::PointF(pointer.position.x() + ToDips(x),
-                                pointer.position.y() + ToDips(y));
+  result.position = point;
   result.touch_major = pointer.touch_major;
   result.touch_minor = pointer.touch_minor;
   result.orientation = pointer.orientation;
